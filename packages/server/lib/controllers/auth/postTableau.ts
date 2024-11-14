@@ -18,7 +18,7 @@ import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
@@ -34,11 +34,10 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .strict()
+    .and(connectionCredential);
 
 const paramValidation = z
     .object({
@@ -73,9 +72,11 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
     const { account, environment, authType } = res.locals;
     const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
-    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
 
     let logCtx: LogContext | undefined;
 
@@ -90,14 +91,10 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        await hmacCheck({
-            environment,
-            logCtx,
-            providerConfigKey,
-            connectionId: receivedConnectionId,
-            hmac,
-            res
-        });
+        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+        if (!checked) {
+            return;
+        }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -139,7 +136,6 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
@@ -186,7 +182,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'TABLEAU',
@@ -208,10 +204,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: {
-                providerConfigKey,
-                connectionId: receivedConnectionId
-            }
+            metadata: { providerConfigKey, connectionId }
         });
 
         next(err);

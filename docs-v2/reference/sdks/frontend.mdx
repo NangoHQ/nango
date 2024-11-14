@@ -11,7 +11,7 @@ Trigger authorization flows in your frontend with this SDK. It is available on [
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKNE>' });
 ```
 
 **Parameters**
@@ -19,7 +19,7 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="options" defaultOpen>
-      <ResponseField name="publicKey" type="string" required>
+      <ResponseField name="publicKey" type="string" deprecated>
     Get your public key in the environment settings of the Nango UI. This is key is not sensitive.
       </ResponseField>
 
@@ -146,8 +146,8 @@ const result = nango.auth('<INTEGRATION-ID>', {
         Specify additional [connection configuration](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization) necessary to perform the authorization request.
       </ResponseField>
 
-      <ResponseField name="hmac" type="string">
-        HMAC key to secure the authorization flow (cf. (instructions)[TODO]).
+      <ResponseField name="hmac" type="string" deprecated>
+        HMAC key to secure the authorization flow
       </ResponseField>
 
       <ResponseField name="detectClosedAuthWindow" type="boolean">
