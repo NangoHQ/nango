@@ -45,6 +45,7 @@ export const ENVS = z.object({
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional(),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
+    PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
 
     // Runner
