@@ -3150,19 +3150,19 @@ jira-basic:
             example: domain
             suffix: .atlassian.net
             order: 1
-            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
+            doc_section: '#step-2-finding-your-atlassian-domain'
     credentials:
         username:
             type: string
             title: Email Address
             description: The Email Address of your Jira account
             format: email
-            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
+            doc_section: '#step-3-finding-your-user-name'
         password:
             type: string
             title: API Key
             description: The API Key of your Jira account
-            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
+            doc_section: '#step-1-finding-atlassian-api-key'
 
 jira-data-center:
     display_name: Jira Data Center
