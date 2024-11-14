@@ -8,6 +8,6 @@ export interface DBSyncEndpoint extends Timestamps {
     method: HTTP_METHOD;
     path: string;
     model: string | null;
-    group: string | null;
+    group_name: string | null;
 }
-export type DBSyncEndpointCreate = SetOptional<Omit<DBSyncEndpoint, 'id'>, 'model' | 'group'>;
+export type DBSyncEndpointCreate = SetOptional<Omit<DBSyncEndpoint, 'id'>, 'model' | 'group_name'>;

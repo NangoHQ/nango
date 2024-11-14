@@ -315,7 +315,7 @@ export async function upgradePreBuilt({
                     sync_config_id: newSyncConfigId,
                     method,
                     path,
-                    group: group || null,
+                    group_name: group || null,
                     created_at: now,
                     updated_at: now
                 };
@@ -908,7 +908,7 @@ function endpointToSyncEndpoint(flow: Pick<CleanedIncomingFlowConfig, 'endpoints
             sync_config_id,
             method: endpoint.method,
             path: endpoint.path,
-            group: endpoint.group || null,
+            group_name: endpoint.group || null,
             created_at: new Date(),
             updated_at: new Date()
         };
