@@ -2334,14 +2334,13 @@ freshdesk:
             type: string
             title: FreshDesk API Key
             description: The API Key of your FreshDesk account
-            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
+            doc_section: '#step-1-finding-your-freshdesk-api-key'
         password:
             type: string
             title: ''
             description: ''
             default_value: X
             hidden: true
-            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
     connection_config:
         subdomain:
             type: string
@@ -2350,7 +2349,7 @@ freshdesk:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshdesk.com
-            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
+            doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
     display_name: FreshSales
