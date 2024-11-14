@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.44.0] - 2024-11-14
+
+### Added
+
+- *(authmode)* Add a new signature authmode (#2942) by @hassan254-prog
+- *(integrations)* Add support for emarsys core api (#2944) by @hassan254-prog
+- *(integrations)* Add support for brightcrowd (#2962) by @hassan254-prog
+- *(api)* Expose providers.yaml through server (#2978) by @nalanj
+- *(endpoints)* Store and use "group“ (#2966) by @bodinsamuel
+
+### Changed
+
+- Otlp export (#2977) by @TBonnin
+
+### Fixed
+
+- Lint PR github action is optional on merge queue by @TBonnin
+- *(integrations)* Missing base_url for mindbody (#2981) by @bodinsamuel
+- *(providers)* Fix whatsapp apiKey regex (#2982) by @hassan254-prog
+- *(deploy runner)* For doesn't split json lines properly (#2985) by @TBonnin
+
 ## [v0.43.0] - 2024-11-13
 
 ### Added
@@ -2279,6 +2300,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.44.0]: https://github.com/NangoHQ/nango/compare/v0.43.0..v0.44.0
 [v0.43.0]: https://github.com/NangoHQ/nango/compare/v0.42.22..v0.43.0
 [v0.42.22]: https://github.com/NangoHQ/nango/compare/v0.42.21..v0.42.22
 [v0.42.21]: https://github.com/NangoHQ/nango/compare/v0.42.20..v0.42.21

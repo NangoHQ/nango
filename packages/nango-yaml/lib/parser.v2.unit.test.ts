@@ -314,7 +314,7 @@ describe('parse', () => {
                                 output: ['Top', 'Tip'],
                                 endpoint: [
                                     { method: 'GET', path: '/provider/top' },
-                                    { path: '/provider/tip', entity: 'Record' }
+                                    { path: '/provider/tip', group: 'Record' }
                                 ]
                             }
                         }
@@ -329,7 +329,7 @@ describe('parse', () => {
                 {
                     endpoints: [
                         { method: 'GET', path: '/provider/top' },
-                        { method: 'GET', path: '/provider/tip', entity: 'Record' }
+                        { method: 'GET', path: '/provider/tip', group: 'Record' }
                     ]
                 }
             ]);
