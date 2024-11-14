@@ -73,6 +73,10 @@ async function fetchRunners() {
 
         services = services.concat(filteredServices);
 
+        if (!response.headers.get('ratelimit-remaining') || !response.headers.get('ratelimit-reset')) {
+            throw new Error('Unexpected API format: no rate limit headers');
+        }
+
         const remaining = parseInt(response.headers.get('ratelimit-remaining'));
         const resetMs = (parseInt(response.headers.get('ratelimit-reset')) + 1) * 1000;
 
@@ -98,6 +102,10 @@ async function updateEnvVar(serviceId, key, value) {
     if (!response.ok) {
         const body = await response.text();
         throw new Error(`Failed to update env var ${key} for service ${serviceId}\n${body}`);
+    }
+
+    if (!response.headers.get('ratelimit-remaining') || !response.headers.get('ratelimit-reset')) {
+        throw new Error('Unexpected API format: no rate limit headers');
     }
 
     const remaining = parseInt(response.headers.get('ratelimit-remaining'));
