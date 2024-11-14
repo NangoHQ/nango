@@ -404,11 +404,13 @@ asana-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
+    docs_connect: https://docs.nango.dev/integrations/all/asana-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your asana scim account
+            doc_section: '#step-1-finding-asana-api-key'
 
 ashby:
     display_name: Ashby
@@ -697,6 +699,7 @@ bill-sandbox:
     proxy:
         base_url: https://gateway.stage.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
+    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
 
 bill:
     display_name: Bill (Connect API)
@@ -729,6 +732,7 @@ bitdefender:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
+    docs_connect: https://docs.nango.dev/integrations/all/bitdefender
     connection_config:
         ACCESS_URL:
             type: string
@@ -737,6 +741,7 @@ bitdefender:
             example: https://api.bitdefender.com
             format: uri
             pattern: '^https://.*'
+            doc_section: '#step-1-finding-your-api-key'
 
 bitly:
     display_name: Bitly
@@ -1666,6 +1671,7 @@ datadog:
         retry:
             after: 'X-RateLimit-Reset'
     docs: https://docs.nango.dev/integrations/all/datadog
+    docs_connect: https://docs.nango.dev/integrations/all/datadog/connect
     connection_config:
         siteParameter:
             type: string
@@ -1673,12 +1679,14 @@ datadog:
             description: The site parameter to datadog
             pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
             example: 'us5.datadoghq.com'
+            doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
             type: string
             title: Application Key
             description: The application key required for read data access
             pattern: '^[a-f0-9]{40}$'
             example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
+            doc_section: '#step-2-datadog-api-key-and-credentials'
     credentials:
         apiKey:
             type: string
@@ -1686,6 +1694,7 @@ datadog:
             description: The API key for your Datadog account
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-2-datadog-api-key-and-credentials'
 
 deel:
     display_name: Deel
@@ -2148,6 +2157,7 @@ expensify:
         headers:
             Content-Type: application/x-www-form-urlencoded
     docs: https://docs.nango.dev/integrations/all/expensify
+    docs_connect: https://docs.nango.dev/integrations/all/expensify/connect
 
 factorial:
     display_name: Factorial
@@ -2318,17 +2328,20 @@ freshdesk:
         verification:
             endpoint: /api/v2/settings/helpdesk
     docs: https://docs.nango.dev/integrations/all/freshdesk
+    docs_connect: https://docs.nango.dev/integrations/all/freshdesk/connect
     credentials:
         username:
             type: string
             title: FreshDesk API Key
             description: The API Key of your FreshDesk account
+            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
         password:
             type: string
             title: ''
             description: ''
             default_value: X
             hidden: true
+            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
     connection_config:
         subdomain:
             type: string
@@ -2337,6 +2350,7 @@ freshdesk:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshdesk.com
+            doc_section: '#step-1-finding-your-freshdesk-domain-and-freshdesk-api-key'
 
 freshsales:
     display_name: FreshSales
@@ -3111,6 +3125,7 @@ jira:
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
     docs: https://docs.nango.dev/integrations/all/jira
+    docs_connect: https://docs.nango.dev/integrations/all/jira-basic/connect
 
 jira-basic:
     display_name: Jira (basic auth)
@@ -3135,16 +3150,19 @@ jira-basic:
             example: domain
             suffix: .atlassian.net
             order: 1
+            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
     credentials:
         username:
             type: string
             title: Email Address
             description: The Email Address of your Jira account
             format: email
+            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
         password:
             type: string
             title: API Key
             description: The API Key of your Jira account
+            doc_section: '#step-1-finding-your-atlassian-domain-and-atlassian-api-key'
 
 jira-data-center:
     display_name: Jira Data Center
@@ -3237,6 +3255,7 @@ keeper-scim:
             method: GET
             endpoint: /Users
     docs: https://docs.nango.dev/integrations/all/keeper
+    docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
     credentials:
         apiKey:
             type: string
@@ -3244,6 +3263,7 @@ keeper-scim:
             description: The API key for your node keeper account
             pattern: '^[A-Za-z0-9+/=]+$'
             example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+            doc_section: '#step-1-finding-your-api-key-api-token-and-node-id'
     connection_config:
         node:
             type: string
@@ -3251,6 +3271,7 @@ keeper-scim:
             description: The node id to your Keeper account
             pattern: '^\d{15}$'
             example: '123435384338765'
+            doc_section: '#step-1-finding-your-api-key-api-token-and-node-id'
 
 klipfolio:
     display_name: Klipfolio
@@ -3859,11 +3880,13 @@ miro-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/miro
+    docs_connect: https://docs.nango.dev/integrations/all/miro-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Miro scim account
+            doc_section: '#step-1-finding-miro-api-key'
 
 monday:
     display_name: Monday
@@ -3997,11 +4020,13 @@ notion-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/notion
+    docs_connect: https://docs.nango.dev/integrations/all/notion-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Notion scim account
+            doc_section: '#step-1-finding-your-scim-api-key-token'
 
 odoo:
     display_name: Odoo
@@ -4352,6 +4377,7 @@ perimeter81:
         token_expiration: data.accessTokenExpire
         token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/perimeter81
+    docs_connect: https://docs.nango.dev/integrations/all/perimeter81/connect
     connection_config:
         domain:
             type: string
@@ -4359,6 +4385,7 @@ perimeter81:
             description: The domain for Perimeter81
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
             example: 'perimeter81 | eu.sase.checkpoint'
+            doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
 
 personio:
     display_name: Personio
@@ -5611,11 +5638,13 @@ trello-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/trello
+    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Trello scim account
+            doc_section: '#step-1-finding-your-trello-domain-and-trello-api-key'
 
 tsheetsteam:
     display_name: TSheets
