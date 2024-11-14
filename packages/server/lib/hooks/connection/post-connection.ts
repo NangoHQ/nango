@@ -52,7 +52,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
 
                 return connection as Connection;
             },
-            proxy: async ({ method, endpoint, data, headers, params }: UserProvidedProxyConfiguration) => {
+            proxy: async ({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
                     ...externalConfig,
                     method: method || externalConfig.method || 'GET',
@@ -60,9 +60,15 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                     headers: headers || {},
                     params: params || {}
                 };
+
+                if (baseUrlOverride) {
+                    finalExternalConfig.baseUrlOverride = baseUrlOverride;
+                }
+
                 if (data) {
                     finalExternalConfig.data = data;
                 }
+
                 const { response } = await proxyService.route(finalExternalConfig, internalConfig);
 
                 if (response instanceof Error) {
