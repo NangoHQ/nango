@@ -40,8 +40,6 @@ export * from './clients/locking.js';
 export * from './utils/lock/locking.js';
 export * from './clients/locking.js';
 
-export * from './services/nango-config.service.js';
-
 export * from './models/index.js';
 
 export * from './utils/utils.js';
