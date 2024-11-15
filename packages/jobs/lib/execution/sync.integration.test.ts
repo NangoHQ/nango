@@ -337,11 +337,13 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
         throw new Error('Failed to create connection');
     }
 
+    const config = await seeders.createConfigSeed(env, 'github', 'github');
     const { syncConfig, sync } = await seeders.createSyncSeeds({
         connectionId: connection.id,
-        envId: env.id,
-        providerConfigKey,
-        trackDeletes,
+        environment_id: env.id,
+        nango_config_id: config.id!,
+        sync_name: Math.random().toString(36).substring(7),
+        track_deletes: trackDeletes,
         models: [model]
     });
 
