@@ -957,6 +957,10 @@ export class NangoSync extends NangoAction {
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
         }
+        if (!config.dryRun) {
+            if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+        }
     }
 
     /**
