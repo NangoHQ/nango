@@ -7,12 +7,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
             delete-user:
                 description: Deletes a user in Aircall
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         syncs:
@@ -26,6 +28,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             SuccessResponse:
                 success: boolean
@@ -76,6 +79,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /webhooks
+                    group: Webhooks
                 scopes:
                     - webhook:manage
             list-webhooks:
@@ -85,6 +89,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /webhooks
+                    group: Webhooks
                 scopes:
                     - webhook:manage
             delete-webhook:
@@ -92,6 +97,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /webhooks
+                    group: Webhooks
                 input: DeleteWebhook
                 output: SuccessResponse
                 scopes:
@@ -326,6 +332,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /tasks
+                    group: Tasks
                 sync_type: incremental
             users:
                 runs: every hour
@@ -334,6 +341,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: incremental
             workspaces:
                 runs: every hour
@@ -342,6 +350,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /workspaces
+                    group: Workspaces
             projects:
                 runs: every hour
                 description: Retrieves all projects for a user
@@ -349,6 +358,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /projects
+                    group: Projects
         actions:
             fetch-workspaces:
                 description: >-
@@ -373,6 +383,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /tasks
+                    group: Tasks
                 output: Task
                 description: >
                     Create a task using Asana specific fields and return a unified model
@@ -384,12 +395,14 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /tasks
+                    group: Tasks
                 output: Task
             delete-task:
                 input: Id
                 endpoint:
                     method: DELETE
                     path: /tasks
+                    group: Tasks
                 output: boolean
         models:
             Id:
@@ -692,6 +705,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: AWSCreateUser
             delete-user:
                 description: >
@@ -700,6 +714,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: UserNamEntity
         syncs:
@@ -713,6 +728,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             UserNamEntity:
                 userName: string
@@ -745,6 +761,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /employees
+                    group: Employees
         actions:
             create-employee:
                 description: |
@@ -754,11 +771,13 @@ integrations:
                 endpoint:
                     method: POST
                     path: /employees
+                    group: Employees
                 version: 1.0.0
             update-employee:
                 endpoint:
                     method: PUT
                     path: /employees
+                    group: Employees
                 input: BamboohrUpdateEmployee
                 output: BamboohrResponseStatus
                 description: Update an existing employee in the system
@@ -880,12 +899,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: BillCreateUser
             disable-user:
                 description: Archive an existing user in Bill
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         syncs:
@@ -898,6 +919,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             IdEntity:
                 id: string
@@ -976,12 +998,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: BoxCreateUser
             delete-user:
                 description: Deletes a user in Box. Requires an enterprise account.
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: BoxDeleteUser
         syncs:
@@ -995,6 +1019,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             SuccessResponse:
                 success: boolean
@@ -1275,12 +1300,14 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         actions:
             create-user:
                 description: Creates a user in Calendly
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 output: User
                 input: CreateUser
                 scopes:
@@ -1290,6 +1317,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -1758,6 +1786,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
                 scopes:
                     - user_access_invite
@@ -1766,6 +1795,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -1781,6 +1811,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 scopes:
                     - user_access_read
         models:
@@ -1813,6 +1844,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /categories
+                    group: Categories
                 description: List all categories
                 sync_type: full
                 track_deletes: true
@@ -1823,6 +1855,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /categories
+                    group: Categories
                 description: Create a category in discourse
                 input: CreateCategory
                 output: Category
@@ -1887,6 +1920,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 scopes:
                     - oauth
                     - user_read
@@ -1897,6 +1931,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: DocuSignCreateUser
                 scopes:
                     - oauth
@@ -1906,6 +1941,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -2011,6 +2047,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
                 scopes:
                     - members.write
@@ -2019,6 +2056,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -2047,6 +2085,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 scopes:
                     - members.read
             files:
@@ -2149,6 +2188,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /customers
+                    group: Customers
                 track_deletes: true
             payments:
                 version: 1.0.0
@@ -2172,6 +2212,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /customers
+                    group: Customers
             update-customer:
                 version: 1.0.0
                 description: |
@@ -2181,6 +2222,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /customers
+                    group: Customers
             create-invoice:
                 version: 1.0.0
                 description: |
@@ -2190,6 +2232,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /invoices
+                    group: Invoices
             update-invoice:
                 version: 1.0.0
                 description: |
@@ -2199,6 +2242,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /invoices
+                    group: Invoices
             attach-file-invoice:
                 version: 1.0.0
                 description: |
@@ -2313,6 +2357,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
                 output: ExpsensifyNullableUser
             disable-user:
@@ -2320,6 +2365,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: ExpensifyDisableUser
             list-policies:
@@ -2342,6 +2388,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             IdEntity:
                 id: string
@@ -2428,6 +2475,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /contacts
+                    group: Contacts
                 sync_type: incremental
                 runs: every day
                 output: Contact
@@ -2446,6 +2494,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: full
                 track_deletes: true
                 runs: every day
@@ -2457,12 +2506,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /contacts
+                    group: Contacts
                 input: CreateContact
             delete-contact:
                 description: Deletes a contact in FreshDesk
                 endpoint:
                     method: DELETE
                     path: /contacts
+                    group: Contacts
                 output: SuccessResponse
                 input: IdEntity
             create-user:
@@ -2471,12 +2522,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: FreshdeskCreateUser
             delete-user:
                 description: Deletes a user in FreshDesk
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         models:
@@ -2678,8 +2731,10 @@ integrations:
                 output: GithubRepoFile
                 endpoint:
                     method: GET
-                    path: /github/list-files
+                    path: /files
+                    group: Files
                 scopes: repo
+                version: 1.0.0
             issues-demo:
                 runs: every 5 minutes
                 auto_start: false
@@ -2698,10 +2753,12 @@ integrations:
                 output: GithubWriteFileActionResult
                 endpoint:
                     method: PUT
-                    path: /github/write-file
+                    path: /files
+                    group: Files
                 description: |
                     Write content to a particular github file within a repo. If
                     the file doesn't exist it creates and then writes to it
+                version: 1.0.0
             list-repos:
                 scopes: read:org
                 endpoint:
@@ -3104,6 +3161,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /emails
+                    group: Emails
         actions:
             send-email:
                 input: GmailEmailInput
@@ -3112,9 +3170,11 @@ integrations:
                     - https://www.googleapis.com/auth/gmail.send
                 endpoint:
                     method: POST
-                    path: /send
+                    path: /emails
+                    group: Emails
                 description: |
                     Send an Email using Gmail.
+                version: 1.0.0
             fetch-attachment:
                 input: DocumentInput
                 output: string
@@ -3122,9 +3182,10 @@ integrations:
                     - https://www.googleapis.com/auth/gmail.readonly
                 endpoint:
                     method: GET
-                    path: /fetch-document
+                    path: /attachment
                 description: |
                     An action used to fetch the contents of an attachment.
+                version: 1.0.0
         models:
             OptionalBackfillSetting:
                 backfillPeriodMs: number
@@ -3318,6 +3379,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: GustoCreateUser
                 scopes:
                     - employees:manage
@@ -3326,6 +3388,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: GustoDeleteUser
                 scopes:
@@ -3341,6 +3404,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 scopes:
                     - employees:read
         models:
@@ -3440,7 +3504,9 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /hackerrank-work/interviews
+                    path: /interviews
+                    group: Interviews
+                version: 1.0.0
             teams:
                 runs: every 6 hours
                 description: |
@@ -3449,7 +3515,8 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /hackerrank-work/teams
+                    path: /teams
+                version: 1.0.0
             tests:
                 runs: every 6 hours
                 description: |
@@ -3458,7 +3525,9 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /hackerrank-work/tests
+                    path: /tests
+                    group: Tests
+                version: 1.0.0
             users:
                 runs: every 6 hours
                 description: |
@@ -3467,7 +3536,8 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /hackerrank-work/users
+                    path: /users
+                version: 1.0.0
         actions:
             create-test:
                 description: |
@@ -3476,7 +3546,9 @@ integrations:
                 output: HackerRankWorkTest
                 endpoint:
                     method: POST
-                    path: /hackerrank-work/create-test
+                    path: /tests
+                    group: Tests
+                version: 1.0.0
             create-interview:
                 description: |
                     Action to create an interview on hackerrank work
@@ -3484,7 +3556,9 @@ integrations:
                 output: HackerRankWorkInterview
                 endpoint:
                     method: POST
-                    path: /hackerrank-work/create-interview
+                    path: /interviews
+                    group: Interviews
+                version: 1.0.0
         models:
             HackerRankWorkCreateInterviewInput:
                 id: string
@@ -3635,6 +3709,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 runs: every day
                 output: User
                 scopes:
@@ -3647,6 +3722,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: HarvestCreateUser
                 scopes:
                     - administrator
@@ -3656,6 +3732,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -3751,6 +3828,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /contacts
+                    group: Contacts
             companies:
                 runs: every day
                 description: |
@@ -3764,6 +3842,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /companies
+                    group: Companies
             deals:
                 runs: every day
                 description: >
@@ -3780,6 +3859,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /deals
+                    group: Deals
             products:
                 runs: every day
                 description: |
@@ -3790,6 +3870,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /products
+                    group: Products
                 scopes:
                     - e-commerce
             owners:
@@ -3803,6 +3884,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /owners
+                    group: Owners
             users:
                 runs: every day
                 description: |
@@ -3813,6 +3895,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 version: 1.0.2
                 scopes:
                     - oauth
@@ -3841,6 +3924,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /tasks
+                    group: Tasks
             currency-codes:
                 runs: every day
                 description: |
@@ -3862,6 +3946,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /properties
+                    group: Properties
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
@@ -3869,6 +3954,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /properties
+                    group: Properties
                 scopes:
                     - oauth
                     - crm.schemas.orders.write
@@ -3885,6 +3971,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /deals
+                    group: Deals
                 input: CreateDealInput
                 scopes:
                     - oauth
@@ -3896,6 +3983,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /deal
+                    group: Deals
                 input: UpdateDealInput
                 scopes:
                     - crm.objects.deals.write
@@ -3906,6 +3994,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /deal
+                    group: Deals
                 output: SuccessResponse
                 scopes:
                     - crm.objects.deals.write
@@ -3917,6 +4006,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /pipelines
+                    group: Pipelines
                 scopes:
                     - oauth
                     - crm.objects.deals.read
@@ -3926,6 +4016,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
                 scopes:
                     - oauth
@@ -3936,6 +4027,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -3948,6 +4040,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /roles
+                    group: Roles
                 scopes:
                     - oauth
                     - settings.users.read (standard scope)
@@ -3959,6 +4052,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /roles
+                    group: Roles
                 scopes:
                     - oauth
                     - settings.users.write (standard scope)
@@ -3986,6 +4080,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /contact
+                    group: Contacts
                 input: CreateContactInput
                 scopes:
                     - crm.objects.contacts.write
@@ -3996,6 +4091,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /contact
+                    group: Contacts
                 input: UpdateContactInput
                 scopes:
                     - crm.objects.contacts.write
@@ -4006,6 +4102,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /contact
+                    group: Contacts
                 output: SuccessResponse
                 scopes:
                     - crm.objects.contacts.write
@@ -4015,17 +4112,20 @@ integrations:
                 output: CreateUpdateCompanyOutput
                 endpoint:
                     method: POST
-                    path: /company
+                    path: /companies
+                    group: Companies
                 input: CreateCompanyInput
                 scopes:
                     - crm.objects.companies.write
                     - oauth
+                version: 1.0.0
             update-company:
                 description: Update a single company in Hubspot
                 output: CreateUpdateCompanyOutput
                 endpoint:
                     method: PATCH
-                    path: /company
+                    path: /companies
+                    group: Comapnies
                 input: UpdateCompanyInput
                 scopes:
                     - crm.objects.companies.write
@@ -4035,41 +4135,49 @@ integrations:
                 input: Id
                 endpoint:
                     method: DELETE
-                    path: /company
+                    path: /companies
+                    group: Companies
                 output: SuccessResponse
                 scopes:
                     - crm.objects.companies.write
                     - oauth
+                version: 1.0.1
             create-task:
                 description: Creates a single task in Hubspot
                 output: CreateUpdateTaskOutput
                 endpoint:
                     method: POST
-                    path: /task
+                    path: /tasks
+                    group: Tasks
                 input: CreateTaskInput
                 scopes:
                     - crm.objects.contacts.write
                     - oauth
+                version: 1.0.0
             update-task:
                 description: Updates a single company in Hubspot
                 output: UpdateTaskInput
                 endpoint:
                     method: PATCH
-                    path: /task
+                    path: /tasks
+                    group: Tasks
                 input: CreateUpdateTaskOutput
                 scopes:
                     - crm.objects.contacts.write
                     - oauth
+                version: 1.0.0
             delete-task:
                 description: Deletes a task in Hubspot
                 input: Id
                 endpoint:
                     method: DELETE
-                    path: /task
+                    path: /tasks
+                    group: Tasks
                 output: SuccessResponse
                 scopes:
                     - crm.objects.contacts.write
                     - oauth
+                version: 1.0.0
             create-note:
                 description: Creates a single note in Hubspot
                 input: Note
@@ -4767,6 +4875,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /issues
+                    group: Issues
             projects:
                 runs: every day
                 description: |
@@ -4802,7 +4911,9 @@ integrations:
                 output: CreateIssueOutput
                 endpoint:
                     method: POST
-                    path: /create-issue
+                    path: /issues
+                    group: Issues
+                version: 1.0.0
         models:
             JiraIssueMetadata:
                 projectIdsToSync: JiraProjectId[]
@@ -4885,6 +4996,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: JiraCreateUser
             delete-user:
                 description: >
@@ -4895,6 +5007,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         syncs:
@@ -4908,6 +5021,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
         models:
             IdEntity:
                 id: string
@@ -4937,12 +5051,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 output: User
             delete-user:
                 description: Deletes a user in Keeper
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         syncs:
@@ -4952,6 +5068,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: full
                 track_deletes: true
                 runs: every day
@@ -5033,9 +5150,11 @@ integrations:
                 input: LeverCreateOpportunityInput
                 endpoint:
                     method: POST
-                    path: /lever/create-opportunity
+                    path: /opportunities
+                    group: Opportunities
                 scopes:
                     - opportunities:write:admin
+                version: 1.0.0
         syncs:
             opportunities:
                 runs: every 6 hours
@@ -5045,7 +5164,8 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /lever/opportunities
+                    path: /opportunities
+                    group: Opportunities
                 scopes:
                     - opportunities:read:admin
             opportunities-applications:
@@ -5544,6 +5664,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /customers
+                    group: Customers
                 track_deletes: true
             payments:
                 version: 1.0.0
@@ -5556,6 +5677,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /payments
+                    group: Payments
                 track_deletes: true
             invoices:
                 version: 1.0.0
@@ -5568,9 +5690,10 @@ integrations:
                 endpoint:
                     method: GET
                     path: /invoices
+                    group: Invoices
                 track_deletes: true
             credit-notes:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all credit notes in Netsuite
                 runs: every hour
@@ -5579,7 +5702,8 @@ integrations:
                 auto_start: true
                 endpoint:
                     method: GET
-                    path: /creditnotes
+                    path: /credit-notes
+                    group: Credit Notes
                 track_deletes: true
             locations:
                 version: 1.0.0
@@ -5603,6 +5727,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /customers
+                    group: Customers
             customer-update:
                 version: 1.0.0
                 description: Updates a customer in Netsuite
@@ -5611,6 +5736,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /customers
+                    group: Customers
             invoice-create:
                 version: 2.0.0
                 description: |
@@ -5620,6 +5746,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /invoices
+                    group: Invoices
             invoice-update:
                 version: 1.0.1
                 description: |
@@ -5629,15 +5756,17 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /invoices
+                    group: Invoices
             payment-create:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Creates a payment in Netsuite
                 input: NetsuitePaymentCreateInput
                 output: NetsuitePaymentCreateOutput
                 endpoint:
                     method: POST
-                    path: /payment
+                    path: /payments
+                    group: Payments
             payment-update:
                 version: 1.0.0
                 description: Updates a payment in Netsuite
@@ -5645,7 +5774,8 @@ integrations:
                 output: NetsuitePaymentUpdateOutput
                 endpoint:
                     method: PUT
-                    path: /payment
+                    path: /payments
+                    group: Payments
             credit-note-create:
                 version: 1.0.0
                 description: |
@@ -5654,7 +5784,8 @@ integrations:
                 output: NetsuiteCreditNoteCreateOutput
                 endpoint:
                     method: POST
-                    path: /creditnote
+                    path: /credit-notes
+                    group: Credit Notes
             credit-note-update:
                 version: 1.0.0
                 description: Updates a credit note in Netsuite
@@ -5662,7 +5793,8 @@ integrations:
                 output: NetsuiteCreditNoteUpdateOutput
                 endpoint:
                     method: PUT
-                    path: /creditnote
+                    path: /credit-notes
+                    group: Credit Notes
         models:
             NetsuiteAddress:
                 addressLine1: string | null
@@ -6030,6 +6162,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: incremental
                 scopes:
                     - okta.users.read
@@ -6039,10 +6172,12 @@ integrations:
                 output: User
                 endpoint:
                     method: POST
-                    path: /user
+                    path: /users
+                    group: Users
                 input: OktaCreateUser
                 scopes:
                     - okta.users.manage
+                version: 1.0.0
             add-group:
                 description: Adds a new group with the OKTA_GROUP type to your org
                 output: Group
@@ -6057,7 +6192,8 @@ integrations:
                 output: SuccessResponse
                 endpoint:
                     method: PUT
-                    path: /user-group
+                    path: /user-groups
+                    group: User Groups
                 input: OktaAssignRemoveUserGroup
                 scopes:
                     - okta.groups.manage
@@ -6066,7 +6202,8 @@ integrations:
                 output: SuccessResponse
                 endpoint:
                     method: DELETE
-                    path: /user-group
+                    path: /user-groups
+                    group: User Groups
                 input: OktaAssignRemoveUserGroup
                 scopes:
                     - okta.groups.manage
@@ -6281,12 +6418,14 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 output: User
             delete-user:
                 description: Deletes a user in Perimeter81
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
         syncs:
@@ -6296,6 +6435,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: full
                 track_deletes: true
                 runs: every day
@@ -6484,6 +6624,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /customers
+                    group: Customers
             accounts:
                 description: >
                     Fetches all accounts in QuickBooks. Handles both active and archived
@@ -6495,6 +6636,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /accounts
+                    group: Accounts
             payments:
                 description: >
                     Fetches all payments in QuickBooks. Handles both active and voided
@@ -6506,6 +6648,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /payments
+                    group: Payments
             items:
                 description: >
                     Fetches all items in QuickBooks. Handles both active and archived
@@ -6517,6 +6660,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /items
+                    group: Items
             invoices:
                 description: >
                     Fetches all invoices in QuickBooks. Handles both active and voided
@@ -6528,6 +6672,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /invoices
+                    group: Invoices
         actions:
             create-customer:
                 description: |
@@ -6538,6 +6683,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /customers
+                    group: Customers
             update-customer:
                 description: |
                     Update a single customer in QuickBooks.
@@ -6547,6 +6693,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /customers
+                    group: Customers
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -6556,6 +6703,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /items
+                    group: Items
             update-item:
                 description: |
                     Update a single item in QuickBooks.
@@ -6565,6 +6713,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /items
+                    group: Items
             create-account:
                 description: |
                     Creates a single account in QuickBooks.
@@ -6574,6 +6723,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /accounts
+                    group: Accounts
             update-account:
                 description: |
                     Updates a single account in QuickBooks.
@@ -6583,6 +6733,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /accounts
+                    group: Accounts
             create-invoice:
                 description: |
                     Creates a single invoice in QuickBooks.
@@ -6592,6 +6743,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /invoices
+                    group: Invoices
             update-invoice:
                 description: |
                     Updates a single invoice in QuickBooks.
@@ -6601,6 +6753,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /invoices
+                    group: Invoices
             create-credit-memo:
                 description: |
                     Creates a single credit memo in QuickBooks.
@@ -6610,6 +6763,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /credit-memos
+                    group: Credit Memos
             update-credit-memo:
                 description: |
                     Updates a single credit memo in QuickBooks.
@@ -6619,6 +6773,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /credit-memos
+                    group: Credit Memos
             create-payment:
                 description: |
                     Creates a single payment in QuickBooks.
@@ -6628,6 +6783,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /payments
+                    group: Payments
         models:
             Updates:
                 id: string
@@ -7217,6 +7373,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 output: User
                 scopes:
                     - EditAccounts
@@ -7225,6 +7382,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -7236,6 +7394,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: full
                 track_deletes: true
                 runs: every day
@@ -7309,6 +7468,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /contacts
+                    group: Contacts
                 version: 1.0.0
             update-contact:
                 description: Update a single contact in salesforce
@@ -7320,6 +7480,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /contacts
+                    group: Contacts
                 version: 1.0.0
             delete-contact:
                 description: Delete a single contact in salesforce
@@ -7331,6 +7492,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /contacts
+                    group: Contacts
                 version: 1.0.0
             create-lead:
                 description: Create a single lead in salesforce
@@ -7342,6 +7504,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /leads
+                    group: Leads
                 version: 1.0.0
             update-lead:
                 description: Update a single lead in salesforce
@@ -7353,6 +7516,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /leads
+                    group: Leads
                 version: 1.0.0
             delete-lead:
                 description: Delete a single lead in salesforce
@@ -7364,6 +7528,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /leads
+                    group: Leads
                 version: 1.0.0
             create-account:
                 description: Create a single account in salesforce
@@ -7375,6 +7540,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /accounts
+                    group: Accounts
                 version: 1.0.0
             update-account:
                 description: Update a single account in salesforce
@@ -7386,6 +7552,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /accounts
+                    group: Accounts
                 version: 1.0.0
             delete-account:
                 description: Delete a single account in salesforce
@@ -7397,6 +7564,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /accounts
+                    group: Accounts
                 version: 1.0.0
             create-opportunity:
                 description: Create a single opportunity in salesforce
@@ -7408,6 +7576,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /opportunities
+                    group: Opportunities
                 version: 1.0.0
             update-opportunity:
                 description: Update a single opportunity in salesforce
@@ -7419,6 +7588,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /opportunities
+                    group: Opportunities
                 version: 1.0.0
             delete-opportunity:
                 description: Delete a single opportunity in salesforce
@@ -7430,6 +7600,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /opportunities
+                    group: Opportunities
                 version: 1.0.0
         syncs:
             accounts:
@@ -7442,6 +7613,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /accounts
+                    group: Accounts
             contacts:
                 runs: every hour
                 description: |
@@ -7455,6 +7627,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /contacts
+                    group: Contacts
             leads:
                 runs: every hour
                 description: |
@@ -7467,6 +7640,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /leads
+                    group: Leads
                 version: 1.0.0
             articles:
                 runs: every day
@@ -7502,6 +7676,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /opportunities
+                    group: Opportunities
                 version: 1.0.0
         models:
             IdEntity:
@@ -7958,6 +8133,7 @@ integrations:
                 endpoint:
                     - method: GET
                       path: /messages
+                      group: Messages
                     - method: GET
                       path: /messages-reply
                     - method: GET
@@ -7967,7 +8143,7 @@ integrations:
                     - channels:history
         actions:
             send-message:
-                version: 1.0.1
+                version: 1.0.2
                 description: |
                     An action that sends a message to a slack channel.
                 input: SendMessageInput
@@ -7976,7 +8152,8 @@ integrations:
                 output: SendMessageOutput
                 endpoint:
                     method: POST
-                    path: /send-message
+                    path: /messages
+                    group: Messages
         models:
             SlackUser:
                 id: string
@@ -8169,27 +8346,32 @@ integrations:
             create-lead:
                 endpoint:
                     method: POST
-                    path: /lead
+                    path: /leads
+                    group: Leads
                 description: >-
                     Create a lead with with information about the federal agency, the
                     name, due date, posted date, solicitation number, naics category or
                     categories, the city, state, country, and description.
                 input: CreateLead
                 output: Lead
+                version: 1.0.0
             update-lead:
                 endpoint:
                     method: PUT
-                    path: /lead
+                    path: /leads
+                    group: Leads
                 description: >-
                     Update a lead with any changed information about the federal agency,
                     the name, due date, posted date, solicitation number, naics category
                     or categories, the city, state, country, and description.
                 output: Lead
                 input: UpdateLead
+                version: 1.0.0
             get-leads:
                 endpoint:
                     method: GET
                     path: /leads
+                    group: Leads
                 description: Fetch all leads
                 output: Lead[]
             get-schema:
@@ -8229,10 +8411,12 @@ integrations:
             create-contact:
                 endpoint:
                     method: POST
-                    path: /contact
+                    path: /contacts
+                    group: Contacts
                 input: Contact
                 output: Contact
                 description: Create a contact in the system
+                version: 1.0.0
             list-stages:
                 endpoint:
                     method: GET
@@ -8451,9 +8635,11 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /workable/candidates
+                    path: /candidates
+                    group: Candidates
                 scopes:
                     - r_candidates
+                version: 1.0.0
             candidates-activities:
                 runs: every 6 hours
                 description: |
@@ -8530,7 +8716,9 @@ integrations:
                 input: WorkableCreateCandidateInput
                 endpoint:
                     method: POST
-                    path: /workable/create-candidate
+                    path: /candidates
+                    group: Candidates
+                version: 1.0.0
             create-comment:
                 description: |
                     Action to create a comment on the applicant's timeline
@@ -8749,6 +8937,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /contacts
+                    group: Contacts
                 version: 1.0.1
             accounts:
                 description: >
@@ -8761,6 +8950,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /accounts
+                    group: Accounts
                 version: 1.0.1
             items:
                 description: >
@@ -8775,6 +8965,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /items
+                    group: Items
                 version: 1.0.1
             invoices:
                 description: |
@@ -8786,6 +8977,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /invoices
+                    group: Invoices
                 version: 1.0.1
             payments:
                 description: |
@@ -8797,6 +8989,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /payments
+                    group: Payments
                 version: 1.0.1
         actions:
             create-contact:
@@ -8809,6 +9002,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /contacts
+                    group: Contacts
                 version: 1.0.1
             update-contact:
                 description: >
@@ -8821,6 +9015,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /contacts
+                    group: Contacts
                 version: 1.0.1
             create-invoice:
                 description: |
@@ -8832,6 +9027,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /invoices
+                    group: Invoices
                 version: 1.0.2
             update-invoice:
                 description: |
@@ -8845,6 +9041,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /invoices
+                    group: Invoices
                 version: 1.0.2
             create-credit-note:
                 description: |
@@ -8855,8 +9052,9 @@ integrations:
                 output: CreditNoteActionResponse
                 endpoint:
                     method: POST
-                    path: /creditnotes
-                version: 1.0.1
+                    path: /credit-notes
+                    group: Credit Notes
+                version: 1.0.2
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
@@ -8865,8 +9063,9 @@ integrations:
                 output: CreditNoteActionResponse
                 endpoint:
                     method: PUT
-                    path: /creditnotes
-                version: 1.0.1
+                    path: /credit-notes
+                    group: Credit Notes
+                version: 1.0.2
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
@@ -8877,6 +9076,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /payments
+                    group: Payments
                 version: 1.0.1
             create-item:
                 description: |
@@ -8888,6 +9088,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /items
+                    group: Items
                 version: 1.0.1
             update-item:
                 description: |
@@ -8898,6 +9099,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /items
+                    group: Items
                 version: 1.0.1
         models:
             ActionErrorResponse:
@@ -9167,6 +9369,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /tickets
+                    group: Tickets
                 version: 1.0.0
                 scopes:
                     - tickets:read
@@ -9193,6 +9396,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /categories
+                    group: Categories
                 scopes:
                     - hc:read
             sections:
@@ -9205,6 +9409,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /sections
+                    group: Sections
                 scopes:
                     - hc:read
             users:
@@ -9243,6 +9448,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /sections
+                    group: Sections
                 description: Create a section within a category in the help center
                 scopes:
                     - hc:write
@@ -9251,6 +9457,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /categories
+                    group: Categories
                 input: CategoryCreate
                 description: Create a category within the help center
                 scopes:
@@ -9260,6 +9467,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /tickets
+                    group: Tickets
                 input: TicketCreate
                 version: 1.0.1
                 description: Create a Zendesk ticket
@@ -9270,6 +9478,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 input: IdEntity
                 description: Delete a user in Zendesk
                 scopes:
@@ -9279,6 +9488,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: CreateUser
                 description: >-
                     Create an admin or agent user in Zendesk. Defaults to agent if a role
@@ -9859,6 +10069,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /users
+                    group: Users
                 input: ZoomCreateUser
                 scopes:
                     - user:write
@@ -9868,6 +10079,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /users
+                    group: Users
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -9878,6 +10090,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /meetings
+                    group: Meetings
                 output: Meeting
                 input: CreateMeeting
                 scopes:
@@ -9887,6 +10100,7 @@ integrations:
                 endpoint:
                     method: DELETE
                     path: /meetings
+                    group: Meetings
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
@@ -9902,6 +10116,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 scopes:
                     - user:read
                     - user:read:admin
@@ -9915,6 +10130,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /meetings
+                    group: Meetings
                 scopes:
                     - meeting:read
         models:
