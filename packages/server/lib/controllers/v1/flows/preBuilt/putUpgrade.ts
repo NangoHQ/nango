@@ -4,7 +4,7 @@ import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, flowService, getSyncConfigById, upgradePreBuilt as upgradePrebuiltFlow } from '@nangohq/shared';
-import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
+import { flowConfig } from '../../../sync/deploy/validation.js';
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 const validation = z

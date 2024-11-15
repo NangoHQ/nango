@@ -6,7 +6,6 @@ import archiver from 'archiver';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
-import type { LayoutMode } from '../../models/NangoConfig.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -71,50 +70,6 @@ class LocalFileService {
             result: fs.existsSync(realPath),
             path: realPath
         };
-    }
-
-    /*
-     * Get Layout Mode
-     * @desc determine if the layout mode is nested or root
-     * 1. If the file exists in the root directory already then it is 'root'
-     * 2. If the file exists in the nested path then it is 'nested'
-     * 3. If an existing directory is found for that provider already then it is 'nested'
-     * 4. If there are no files in the root directory at all then it should be
-     * 'nested' since that is the new default
-     * 5. If we're initializing then we should default to nested
-     * 6. Fallback to nested
-     */
-    public getLayoutMode(scriptName: string, providerConfigKey: string, type: string): LayoutMode {
-        if (fs.existsSync(`./${scriptName}.ts`)) {
-            return 'root';
-        }
-
-        const nestedPath = path.resolve(`./${providerConfigKey}/${type}s/${scriptName}.ts`);
-        if (fs.existsSync(nestedPath)) {
-            return 'nested';
-        }
-
-        const nestedProvider = path.resolve(`./${providerConfigKey}`);
-        if (fs.existsSync(nestedProvider)) {
-            return 'nested';
-        }
-
-        const rootPath = fs.realpathSync('./');
-        const files = fs.readdirSync(rootPath);
-        if (files.length === 0) {
-            return 'nested';
-        }
-
-        if (files.includes('nango-integrations')) {
-            const nangoIntegrationsPath = path.resolve(rootPath, 'nango-integrations');
-            const nangoFiles = fs.readdirSync(nangoIntegrationsPath);
-            const expected = ['.env', 'models.ts', 'nango.yaml'];
-            if (nangoFiles.length === 3 && expected.every((file) => nangoFiles.includes(file))) {
-                return 'nested';
-            }
-        }
-
-        return 'nested';
     }
 
     private getFullPathTsFile(integrationPath: string, scriptName: string, providerConfigKey: string, type: string): null | string {

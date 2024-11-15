@@ -1,0 +1,44 @@
+---
+title: Expensify - How do I link my account?
+sidebarTitle: Expensify
+---
+
+
+# Overview
+
+To authenticate with Expensify, you need two key pieces of information:
+1. **Server URL** - The server receiving the API requests
+2. **partnerUserID** - Your unique account identifier
+3. **partnerUserSecret** - Uniquer secret for your account
+
+
+This guide will walk you through finding or creating those credentials within Expensify.
+
+
+Note: Finally, there is a general rate limit of 50 jobs started per minute. 
+Exceeding this limit will result in the following error message: You have been rate-limited. 
+Please try again later or contact help@expensify.com for assistance.
+
+
+### Prerequisites:
+
+- You must set up an Enterprise account with Expensify.
+
+
+#### Step 1: Finding Your partnerUserID and partnerUserSecret
+1. If you don’t already have one, create an Expensify account for free at https://www.expensify.com
+
+2. To generate the keys, go to https://www.expensify.com/tools/integrations/. You will be provided with a **partnerUserID**, **partnerUserSecret** pair and **Server URL**.
+
+Important: Copy and store your partnerUserID and partnerUserSecret securely, they will not be visible again once you leave this page.
+
+
+#### Step 2: Connect Your Expensify Account
+
+<img src="/integrations/all/expensify/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Expensify authentication form.
+Enter your credentials as follows:
+- User Name: Your partnerUserID
+- Password: Your partnerUserSecret
+Click "Connect" to complete the authentication.

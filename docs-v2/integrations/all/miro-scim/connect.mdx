@@ -1,0 +1,54 @@
+---
+title: Miro - How do I link my account?
+sidebarTitle: Miro
+---
+
+
+# Overview
+
+To authenticate with Miro, you need one key piece of information:
+1. **API Key** - Your Miro API Key
+
+
+This guide will walk you through finding or creating those credentials within Miro.
+
+
+### Prerequisites:
+
+- You must set up an Enterprise account with Miro.
+
+
+#### Step 1: Finding Miro API Key
+1. Log in to your Enterprise Miro account. Once logged in, navigate to **Company** settings > **Enterprise integrations**, enable the SCIM Provisioning feature.
+
+<img src="/integrations/all/miro-scim/miro-1.png" />
+
+
+2.  Configure your Identity Provider
+The setup will depend on the Identity Provider you use. 
+Miro supports preconfigured Okta and Entra ID however you can use any Identity Provider of your choice for as long as it allows setting up SCIM.
+
+OKTA setup **https://help.miro.com/hc/en-us/articles/360036768134-Setting-up-automated-provisioning-with-OKTA**
+Entra ID setup **https://help.miro.com/hc/articles/360036777814**
+
+
+3. To generate a new API Key (Token), navigate to **Company** settings > **Enterprise integrations** and click the "Generate new token"
+The **Generate new SCIM token** modal will appear, click **Generate**
+
+<img src="/integrations/all/miro-scim/miro-2.png" />
+
+<img src="/integrations/all/miro-scim/miro-3.png" />
+
+4. After generating a new token, and copy your API Key.
+Note: you must configure the new token in your Identity provider. 
+
+
+#### Step 2: Connect Your Miro Account
+
+<img src="/integrations/all/miro-scim/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Miro authentication form.
+Enter your credentials as follows:
+- API Key: Your API key
+
+Click "Connect" to complete the authentication.

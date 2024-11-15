@@ -5,14 +5,14 @@ export interface IncomingScriptFiles {
     js: string;
     ts: string;
 }
-export interface IncomingPostConnectionScript {
+export interface IncomingOnEventScript {
     name: string;
     fileBody: IncomingScriptFiles;
 }
 
-export interface PostConnectionScriptByProvider {
+export interface OnEventScriptsByProvider {
     providerConfigKey: string;
-    scripts: IncomingPostConnectionScript[];
+    scripts: IncomingOnEventScript[];
 }
 
 export interface NangoConfigMetadata {

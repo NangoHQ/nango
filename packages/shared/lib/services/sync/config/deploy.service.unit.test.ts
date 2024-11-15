@@ -49,7 +49,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
-            postConnectionScriptsByProvider: []
+            onEventScriptsByProvider: []
         });
 
         expect(emptyConfig).not.toBe([]);
@@ -89,7 +89,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
-            postConnectionScriptsByProvider: []
+            onEventScriptsByProvider: []
         });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
@@ -215,7 +215,7 @@ describe('Sync config create', () => {
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 debug,
-                postConnectionScriptsByProvider: []
+                onEventScriptsByProvider: []
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });

@@ -21,7 +21,7 @@ import featureFlags from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
-export * from './services/sync/post-connection.service.js';
+export * from './services/sync/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/run.utils.js';
@@ -39,8 +39,6 @@ export * from './clients/locking.js';
 
 export * from './utils/lock/locking.js';
 export * from './clients/locking.js';
-
-export * from './services/nango-config.service.js';
 
 export * from './models/index.js';
 
