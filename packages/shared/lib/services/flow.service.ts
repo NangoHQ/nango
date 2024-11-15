@@ -21,15 +21,13 @@ class FlowService {
 
         try {
             const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
-            const flows = yaml.load(fs.readFileSync(flowPath).toString()) as FlowsYaml;
+            this.flowsRaw = yaml.load(fs.readFileSync(flowPath).toString()) as FlowsYaml;
 
-            if (flows === undefined || !('integrations' in flows) || Object.keys(flows.integrations).length <= 0) {
+            if (this.flowsRaw === undefined || !('integrations' in this.flowsRaw) || Object.keys(this.flowsRaw.integrations).length <= 0) {
                 throw new Error('empty_flows');
             }
 
-            this.flowsRaw = flows;
-
-            return flows;
+            return this.flowsRaw;
         } catch (err) {
             errorManager.report(`failed_to_find_flows, ${stringifyError(err)}`);
             return {} as FlowsYaml;
@@ -57,7 +55,7 @@ class FlowService {
                 raw: { integrations: { [providerConfigKey]: rest }, models: models },
                 yaml: ''
             });
-            parser.parse(); // we assume it's valid
+            parser.parse(); // we assume it's valid because it's coming from a pre-validated CI
             const parsed = parser.parsed!;
             const integration = parsed.integrations.find((value) => value.providerConfigKey === providerConfigKey)!;
 
