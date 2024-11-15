@@ -137,7 +137,6 @@ export interface NangoSyncConfig {
     id?: number;
     input?: NangoModel | LegacySyncModelSchema;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
