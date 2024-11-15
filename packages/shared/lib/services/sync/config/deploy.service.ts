@@ -13,7 +13,7 @@ import type {
     CleanedIncomingFlowConfig,
     IncomingPreBuiltFlowConfig,
     NangoModel,
-    PostConnectionScriptByProvider,
+    OnEventScriptsByProvider,
     NangoSyncEndpointV2,
     IncomingFlowConfig,
     HTTP_METHOD,
@@ -21,7 +21,7 @@ import type {
     DBSyncEndpointCreate,
     DBSyncEndpoint
 } from '@nangohq/types';
-import { postConnectionScriptService } from '../post-connection.service.js';
+import { onEventScriptService } from '../on-event-scripts.service.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env, Ok } from '@nangohq/utils';
@@ -73,7 +73,7 @@ export async function deploy({
     account,
     flows,
     jsonSchema,
-    postConnectionScriptsByProvider,
+    onEventScriptsByProvider,
     nangoYamlBody,
     logContextGetter,
     orchestrator,
@@ -83,7 +83,7 @@ export async function deploy({
     account: DBTeam;
     flows: CleanedIncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
-    postConnectionScriptsByProvider: PostConnectionScriptByProvider[];
+    onEventScriptsByProvider: OnEventScriptsByProvider[];
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -179,8 +179,8 @@ export async function deploy({
             await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
-        if (postConnectionScriptsByProvider.length > 0) {
-            await postConnectionScriptService.update({ environment, account, postConnectionScriptsByProvider });
+        if (onEventScriptsByProvider.length > 0) {
+            await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
         }
 
         for (const id of idsToMarkAsInactive) {

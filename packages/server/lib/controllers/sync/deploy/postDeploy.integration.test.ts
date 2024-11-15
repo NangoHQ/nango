@@ -45,10 +45,39 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
-                    { code: 'invalid_type', message: 'Required', path: ['postConnectionScriptsByProvider'] },
-                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] },
                     { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
-                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] }
+                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] },
+                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] }
+                ]
+            }
+        });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('should validate onEventScriptsByProvider', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            // @ts-expect-error on purpose
+            body: {
+                debug: false,
+                flowConfigs: [],
+                nangoYamlBody: '',
+                reconcile: false
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: 'Either onEventScriptsByProvider or postConnectionScriptsByProvider must be provided',
+                        path: ['onEventScriptsByProvider or postConnectionScriptsByProvider']
+                    }
                 ]
             }
         });
@@ -64,7 +93,7 @@ describe(`POST ${endpoint}`, () => {
                 debug: false,
                 flowConfigs: [],
                 nangoYamlBody: '',
-                postConnectionScriptsByProvider: [],
+                onEventScriptsByProvider: [],
                 reconcile: false,
                 singleDeployMode: false,
                 jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
@@ -122,7 +151,7 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [],
                     reconcile: false,
                     singleDeployMode: false
                 }
@@ -204,7 +233,7 @@ describe(`POST ${endpoint}`, () => {
                     },
                     flowConfigs: [],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [],
                     reconcile: true,
                     singleDeployMode: false
                 }

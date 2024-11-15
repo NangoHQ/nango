@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { PatchFlowDisable } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { flowConfig } from '../../../sync/deploy/postConfirmation.js';
+import { flowConfig } from '../../../sync/deploy/validation.js';
 import { configService, disableScriptConfig } from '@nangohq/shared';
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
