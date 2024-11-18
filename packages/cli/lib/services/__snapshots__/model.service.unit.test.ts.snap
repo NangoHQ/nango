@@ -359,7 +359,7 @@ export declare class NangoAction {
     });
     protected stringify(): string;
     private proxyConfig;
-    protected exitSyncIfAborted(): void;
+    protected throwIfAborted(): void;
     proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
