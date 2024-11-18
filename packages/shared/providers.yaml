@@ -565,7 +565,8 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        connection_base_url: ${connectionConfig.region}
+        connection_config:
+            region: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
@@ -762,6 +763,18 @@ bitdefender:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key of your Bitdefender account
+            doc_section: '#step-1-finding-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
     connection_config:
         ACCESS_URL:
             type: string
@@ -2185,6 +2198,17 @@ expensify:
         base_url: https://integrations.expensify.com/Integration-Server/
         headers:
             Content-Type: application/x-www-form-urlencoded
+    credentials:
+        username:
+            type: string
+            title: Partner User ID
+            description: Your unique account identifier of Expensify
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
+        password:
+            type: string
+            title: Partner User Secret
+            description: Unique secret for your account
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
     docs: https://docs.nango.dev/integrations/all/expensify
     docs_connect: https://docs.nango.dev/integrations/all/expensify/connect
 
@@ -4663,18 +4687,36 @@ quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
-    redirect_uri_metadata:
-        - realmId
     proxy:
+        connection_config:
+            realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    connection_config:
+        realmId:
+            type: string
+            title: Quickbooks Realm ID
+            optional: true
+            description: The realmId of your quickbooks account
+            pattern: '^\d{16}$'
+            example: '9341453474484455'
 
 quickbooks-sandbox:
     alias: quickbooks
     display_name: Quickbooks (sandbox)
     proxy:
+        connection_config:
+            realmId: ${connectionConfig.realmId}
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    connection_config:
+        realmId:
+            type: string
+            title: Quickbooks Realm ID
+            optional: true
+            description: The realmId of your quickbooks account
+            pattern: '^\d{16}$'
+            example: '9341453474484455'
 
 ragieai:
     display_name: Ragie AI
@@ -6154,6 +6196,7 @@ workable:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
             at: 'X-Rate-Limit-Reset'
+    post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
     connection_config:
         subdomain:
@@ -6163,6 +6206,7 @@ workable:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workable.com
+            optional: true
     credentials:
         apiKey:
             type: string

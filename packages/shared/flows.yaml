@@ -5668,6 +5668,29 @@ integrations:
                 updatedAt: date
                 teamId: string
                 projectIds: string
+    linkedin:
+        actions:
+            post:
+                description: Create a linkedin post with an optional video
+                input: LinkedinVideoPost
+                output: CreateLinkedInPostWithVideoResponse
+                endpoint: POST /videos
+                scopes:
+                    - openid
+                    - profile
+                    - r_basicprofile
+                    - w_member_social
+                    - email
+                    - w_organization_social
+                    - r_organization_social
+        models:
+            LinkedinVideoPost:
+                text: string
+                videoURN: string
+                videoTitle: string
+                ownerId: string
+            CreateLinkedInPostWithVideoResponse:
+                succcess: boolean
     luma:
         syncs:
             list-events:
@@ -6509,7 +6532,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /emails
-                version: 1.0.1
+                version: 1.1.0
         actions:
             fetch-attachment:
                 input: DocumentInput

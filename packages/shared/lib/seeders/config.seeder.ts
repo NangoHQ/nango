@@ -25,10 +25,14 @@ export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
     } as ProviderConfig);
 };
 
-export const createConfigSeed = async (env: DBEnvironment, unique_key: string, provider: string): Promise<ProviderConfig | null> => {
-    return configService.createProviderConfig({
+export const createConfigSeed = async (env: DBEnvironment, unique_key: string, provider: string): Promise<ProviderConfig> => {
+    const created = await configService.createProviderConfig({
         unique_key,
         provider,
         environment_id: env.id
     } as ProviderConfig);
+    if (!created) {
+        throw new Error('failed to created to provider config');
+    }
+    return created;
 };

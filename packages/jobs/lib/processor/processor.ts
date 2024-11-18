@@ -36,14 +36,14 @@ export class Processor {
             });
             webhookWorker.start();
 
-            const postConnectionScriptWorker = new ProcessorWorker({
+            const onEventWorker = new ProcessorWorker({
                 orchestratorUrl: this.orchestratorServiceUrl,
-                groupKey: 'post-connection-script',
+                groupKey: 'on-event',
                 maxConcurrency: 50
             });
-            postConnectionScriptWorker.start();
+            onEventWorker.start();
 
-            this.workers = [syncWorker, actionWorker, webhookWorker, postConnectionScriptWorker];
+            this.workers = [syncWorker, actionWorker, webhookWorker, onEventWorker];
         } catch (e) {
             logger.error(e);
         }
