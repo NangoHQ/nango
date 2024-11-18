@@ -22,7 +22,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     connectionTest as connectionTestHook
 } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
@@ -38,12 +38,9 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        user_scope: z.string().optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .and(connectionCredential);
 
 const paramsValidation = z
     .object({
