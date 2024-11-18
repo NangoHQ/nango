@@ -28,7 +28,7 @@ export enum LeftNavBarItems {
     Syncs,
     TeamSettings,
     UserSettings,
-    InteractiveDemo,
+    GettingStarted,
     Logs
 }
 
@@ -56,7 +56,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { data } = useConnectionsCount(env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate } = useEnvironment(env);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -74,8 +74,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const items = useMemo(() => {
         const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
-        if (meta && showInteractiveDemo && !meta.onboardingComplete) {
-            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/${env}/interactive-demo` });
+        if (meta && showGettingStarted && !meta.onboardingComplete) {
+            list.push({ name: 'Getting Started', icon: RocketIcon, value: LeftNavBarItems.GettingStarted, link: `/${env}/getting-started` });
         }
 
         list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
@@ -89,7 +89,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         });
 
         return list;
-    }, [env, showInteractiveDemo, meta]);
+    }, [env, showGettingStarted, meta]);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
@@ -198,17 +198,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                         <span>Team</span>
                                     </li>
 
-                                    {showInteractiveDemo && meta.onboardingComplete && (
+                                    {showGettingStarted && meta.onboardingComplete && (
                                         <Link
-                                            to="/dev/interactive-demo"
+                                            to="/dev/getting-started"
                                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.InteractiveDemo
+                                                props.selectedItem === LeftNavBarItems.GettingStarted
                                                     ? `${navActiveBg} text-white`
                                                     : `text-gray-400 ${navHoverBg}`
                                             }`}
                                         >
                                             <RocketIcon />
-                                            <p>Interactive Demo</p>
+                                            <p>Getting Started</p>
                                         </Link>
                                     )}
                                     <li
