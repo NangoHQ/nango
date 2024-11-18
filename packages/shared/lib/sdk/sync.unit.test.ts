@@ -501,3 +501,11 @@ describe('Log', () => {
         await nangoAction.log('hello', { foo: 'bar' });
     });
 });
+describe('Aborted script', () => {
+    it('show throw', () => {
+        const ac = new AbortController();
+        const nango = new NangoSync({ ...nangoProps, abortSignal: ac.signal });
+        ac.abort();
+        expect(nango.log('hello')).rejects.toThrowError(new Error('The script was aborted'));
+    });
+});
