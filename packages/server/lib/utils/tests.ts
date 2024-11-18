@@ -48,7 +48,7 @@ export function apiFetch(baseUrl: string) {
                         url.searchParams.set(name, el);
                     }
                 } else {
-                    url.searchParams.set(name, (value as any) || '');
+                    url.searchParams.set(name, value || '');
                 }
             });
         }
