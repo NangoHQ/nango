@@ -2,7 +2,7 @@ import { orchestratorClient } from '../../clients.js';
 import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
 import { NangoError } from '@nangohq/shared';
-import type { NangoProps } from '@nangohq/shared';
+import type { NangoProps, RunnerOutputError } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
@@ -33,24 +33,24 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
     }
 }
 
-export async function handleError({
-    taskId,
-    nangoProps,
-    error
-}: {
-    taskId: string;
-    nangoProps: NangoProps;
-    error: {
-        type: string;
-        payload: Record<string, unknown>;
-        status: number;
-    };
-}): Promise<void> {
+export async function handleError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: RunnerOutputError }): Promise<void> {
     const formattedError = toNangoError({
         err: error,
         defaultErrorType: `${nangoProps.scriptType}_script_failure`,
         scriptName: nangoProps.syncConfig.sync_name
     });
+
+    if (error.type === 'script_aborted') {
+        // do nothing, the script was aborted and its state already updated
+        logger.info(`Script was aborted. Ignoring output.`, {
+            taskId,
+            syncId: nangoProps.syncId,
+            environmentId: nangoProps.environmentId,
+            providerConfigKey: nangoProps.providerConfigKey,
+            connectionId: nangoProps.connectionId
+        });
+        return;
+    }
 
     switch (nangoProps.scriptType) {
         case 'sync':

@@ -695,6 +695,11 @@ export class NangoError extends Error {
                 this.message = `An error occured while generating an WSSE token`;
                 break;
 
+            case 'script_aborted':
+                this.status = 410;
+                this.message = `The script was aborted`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

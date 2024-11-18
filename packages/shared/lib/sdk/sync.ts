@@ -556,14 +556,14 @@ export class NangoAction {
         };
     }
 
-    protected exitSyncIfAborted(): void {
+    protected throwIfAborted(): void {
         if (this.abortSignal?.aborted) {
-            process.exit(0);
+            throw new NangoError('script_aborted');
         }
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (!config.method) {
             config.method = 'GET';
         }
@@ -655,12 +655,12 @@ export class NangoAction {
         | TwoStepCredentials
         | SignatureCredentials
     > {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
         const connectionId = connectionIdOverride || this.connectionId;
@@ -678,7 +678,7 @@ export class NangoAction {
     }
 
     public async setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata);
         } finally {
@@ -687,7 +687,7 @@ export class NangoAction {
     }
 
     public async updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
         } finally {
@@ -704,12 +704,12 @@ export class NangoAction {
     }
 
     public async getMetadata<T = Metadata>(): Promise<T> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
     public async getWebhookURL(): Promise<string | null | undefined> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (this.memoizedIntegration) {
             return this.memoizedIntegration.webhook_url;
         }
@@ -743,7 +743,7 @@ export class NangoAction {
     public async log(message: any, options?: { level?: LogLevel } | { [key: string]: any; level?: never }): Promise<void>;
     public async log(message: string, ...args: [any, { level?: LogLevel }]): Promise<void>;
     public async log(...args: [...any]): Promise<void> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (args.length === 0) {
             return;
         }
@@ -972,7 +972,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
 
         if (!results || results.length === 0) {
             if (this.dryRun) {
@@ -1086,7 +1086,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchDelete received an empty array. No records to delete.');
@@ -1152,7 +1152,7 @@ export class NangoSync extends NangoAction {
     }
 
     public async batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (!results || results.length === 0) {
             if (this.dryRun) {
                 logger.info('batchUpdate received an empty array. No records to update.');
@@ -1212,7 +1212,7 @@ export class NangoSync extends NangoAction {
     }
 
     public override async getMetadata<T = Metadata>(): Promise<T> {
-        this.exitSyncIfAborted();
+        this.throwIfAborted();
         if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
