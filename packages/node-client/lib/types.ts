@@ -236,7 +236,6 @@ export interface UpdateSyncFrequencyResponse {
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
-    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];
@@ -278,7 +277,6 @@ export interface NangoSyncConfig {
 
     input?: NangoSyncModel;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
 }
 

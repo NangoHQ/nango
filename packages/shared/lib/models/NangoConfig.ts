@@ -17,8 +17,7 @@ export interface NangoIntegrationDataV1 {
     sync_config_id?: number;
     pre_built?: boolean;
     is_public?: boolean;
-    endpoint?: string | string[] | NangoSyncEndpointV2 | NangoSyncEndpointV2[];
-    nango_yaml_version?: string;
+    endpoint?: NangoSyncEndpointV2 | NangoSyncEndpointV2[];
     enabled?: boolean;
 }
 
@@ -90,6 +89,7 @@ export interface NangoConfigV2 {
     models: NangoModelV1;
 }
 
+// TODO: drop all V1 interface (except NangoModelV1 that can still exists in DB)
 export type NangoConfig = NangoConfigV1 | NangoConfigV2;
 export type NangoModel = NangoModelV1;
 export type NangoIntegrationData = NangoIntegrationDataV1 | NangoIntegrationDataV2;
@@ -105,8 +105,6 @@ export interface NangoSyncModel {
     description?: string;
     fields: NangoSyncModelField[];
 }
-
-export type LayoutMode = 'root' | 'nested';
 
 export interface NangoSyncConfig {
     name: string;
@@ -130,18 +128,14 @@ export interface NangoSyncConfig {
     // v2 additions
     input?: NangoSyncModel | undefined;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
     upgrade_version?: string;
-
-    layout_mode: LayoutMode;
 }
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
-    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];

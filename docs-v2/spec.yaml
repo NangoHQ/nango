@@ -906,9 +906,6 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: 'v2'
                                                 webhookSubscriptions:
                                                     type: array
                                                     items:
@@ -973,9 +970,6 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: 'v2'
                                     postConnectionScripts:
                                         type: array
                                         items:

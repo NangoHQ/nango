@@ -6,7 +6,7 @@ import type { AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
 import type {
     NangoYamlParsed,
-    PostConnectionScriptByProvider,
+    OnEventScriptsByProvider,
     ScriptFileType,
     IncomingFlowConfig,
     NangoConfigMetadata,
@@ -359,15 +359,15 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-    }): { flowConfigs: IncomingFlowConfig[]; postConnectionScriptsByProvider: PostConnectionScriptByProvider[]; jsonSchema: JSONSchema7 } | null {
+    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[]; jsonSchema: JSONSchema7 } | null {
         const postData: IncomingFlowConfig[] = [];
-        const postConnectionScriptsByProvider: PostConnectionScriptByProvider[] = [];
+        const onEventScriptsByProvider: OnEventScriptsByProvider[] = [];
 
         for (const integration of parsed.integrations) {
             const { providerConfigKey, postConnectionScripts } = integration;
 
             if (postConnectionScripts && postConnectionScripts.length > 0) {
-                const scripts: PostConnectionScriptByProvider['scripts'] = [];
+                const scripts: OnEventScriptsByProvider['scripts'] = [];
                 for (const postConnectionScript of postConnectionScripts) {
                     const files = loadScriptFiles({ scriptName: postConnectionScript, providerConfigKey, fullPath, type: 'post-connection-scripts' });
                     if (!files) {
@@ -376,7 +376,7 @@ class DeployService {
 
                     scripts.push({ name: postConnectionScript, fileBody: files });
                 }
-                postConnectionScriptsByProvider.push({ providerConfigKey, scripts });
+                onEventScriptsByProvider.push({ providerConfigKey, scripts });
             }
 
             if (!optionalActionName) {
@@ -468,9 +468,9 @@ class DeployService {
             }
         }
 
-        if (debug && postConnectionScriptsByProvider) {
-            for (const postConnectionScriptByProvider of postConnectionScriptsByProvider) {
-                const { providerConfigKey, scripts } = postConnectionScriptByProvider;
+        if (debug && onEventScriptsByProvider) {
+            for (const onEventScriptByProvider of onEventScriptsByProvider) {
+                const { providerConfigKey, scripts } = onEventScriptByProvider;
 
                 for (const script of scripts) {
                     const { name } = script;
@@ -485,7 +485,7 @@ class DeployService {
             return null;
         }
 
-        return { flowConfigs: postData, postConnectionScriptsByProvider, jsonSchema };
+        return { flowConfigs: postData, onEventScriptsByProvider: onEventScriptsByProvider, jsonSchema };
     }
 }
 

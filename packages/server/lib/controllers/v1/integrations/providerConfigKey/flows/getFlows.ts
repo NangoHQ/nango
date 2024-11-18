@@ -60,7 +60,7 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
 function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
     for (const endpointObjA of flowA.endpoints) {
         for (const endpointObjB of flowB.endpoints) {
-            if (endpointObjB.method && endpointObjA.method && endpointObjB.path === endpointObjA.path) {
+            if (endpointObjB.method === endpointObjA.method && endpointObjB.path === endpointObjA.path) {
                 return true;
             }
         }

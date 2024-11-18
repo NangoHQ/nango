@@ -50,6 +50,7 @@ export type DeletePublicIntegration = Endpoint<{
 export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
+    Querystring: { env: string };
     Body: { provider: string };
     Success: {
         data: ApiIntegration;
@@ -60,6 +61,7 @@ export type ApiIntegration = Merge<IntegrationConfig, ApiTimestamps>;
 export type GetIntegration = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
+    Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: {
         data: {
@@ -77,6 +79,7 @@ export type GetIntegration = Endpoint<{
 export type PatchIntegration = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/integrations/:providerConfigKey';
+    Querystring: { env: string };
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined }
@@ -110,6 +113,7 @@ export type PatchIntegration = Endpoint<{
 export type DeleteIntegration = Endpoint<{
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey';
+    Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: {
         data: { success: boolean };
@@ -137,7 +141,6 @@ export interface NangoSyncConfig {
     id?: number;
     input?: NangoModel | LegacySyncModelSchema;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
@@ -147,6 +150,7 @@ export interface NangoSyncConfig {
 export type GetIntegrationFlows = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/flows';
+    Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: {
         data: {

@@ -143,3 +143,8 @@ export interface NangoSyncEndpointV2 {
     path: string;
     group?: string | undefined;
 }
+
+// --- Providers Yaml is a modified nango.yaml
+export interface FlowsYaml {
+    integrations: Record<string, NangoYamlV2Integration & { models: NangoYamlModel }>;
+}

@@ -18,7 +18,16 @@ export async function exec(
     codeParams?: object,
     abortController: AbortController = new AbortController()
 ): Promise<RunnerOutput> {
-    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+    const rawNango = (() => {
+        switch (nangoProps.scriptType) {
+            case 'sync':
+            case 'webhook':
+                return new NangoSync(nangoProps);
+            case 'action':
+            case 'post-connection-script':
+                return new NangoAction(nangoProps);
+        }
+    })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
 
