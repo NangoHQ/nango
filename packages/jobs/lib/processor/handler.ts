@@ -5,7 +5,7 @@ import type { Result } from '@nangohq/utils';
 import { startSync, abortSync } from '../execution/sync.js';
 import { startAction } from '../execution/action.js';
 import { startWebhook } from '../execution/webhook.js';
-import { startPostConnection } from '../execution/postConnection.js';
+import { startOnEvent } from '../execution/onEvent.js';
 
 export async function handler(task: OrchestratorTask): Promise<Result<void>> {
     if (task.isSync()) {
@@ -40,10 +40,10 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
             return res;
         });
     }
-    if (task.isPostConnection()) {
-        const span = tracer.startSpan('jobs.handler.postConnection');
+    if (task.isOnEvent()) {
+        const span = tracer.startSpan('jobs.handler.onEvent');
         return await tracer.scope().activate(span, async () => {
-            const res = startPostConnection(task);
+            const res = startOnEvent(task);
             span.finish();
             return res;
         });

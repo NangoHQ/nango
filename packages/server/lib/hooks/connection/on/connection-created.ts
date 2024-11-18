@@ -31,10 +31,10 @@ export async function onConnectionCreated(createdConnection: RecentlyCreatedConn
     );
 
     let failed = false;
-    for (const postConnectionScript of onConnectionCreatedScripts) {
-        const { name, file_location: fileLocation, version } = postConnectionScript;
+    for (const script of onConnectionCreatedScripts) {
+        const { name, file_location: fileLocation, version } = script;
 
-        const res = await getOrchestrator().triggerPostConnectionScript({
+        const res = await getOrchestrator().triggerOnEventScript({
             connection: createdConnection.connection,
             version,
             name,

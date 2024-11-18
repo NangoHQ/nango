@@ -6,7 +6,7 @@ import type { NangoProps } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
-import { handlePostConnectionError, handlePostConnectionSuccess } from '../postConnection.js';
+import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import type { ApiError } from '@nangohq/types';
 import type { ClientError } from '@nangohq/nango-orchestrator';
 import { toNangoError } from './utils/errors.js';
@@ -22,8 +22,8 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
         case 'webhook':
             await handleWebhookSuccess({ nangoProps });
             break;
-        case 'post-connection-script':
-            await handlePostConnectionSuccess({ nangoProps });
+        case 'on-event':
+            await handleOnEventSuccess({ nangoProps });
             break;
     }
     const setSuccess = await orchestratorClient.succeed({ taskId, output: output });
@@ -62,8 +62,8 @@ export async function handleError({
         case 'webhook':
             await handleWebhookError({ nangoProps, error: formattedError });
             break;
-        case 'post-connection-script':
-            await handlePostConnectionError({ nangoProps, error: formattedError });
+        case 'on-event':
+            await handleOnEventError({ nangoProps, error: formattedError });
             break;
     }
 
