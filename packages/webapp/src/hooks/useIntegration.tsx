@@ -1,4 +1,4 @@
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 import type { ListIntegration } from '@nangohq/server';
 import type { SWRError } from '../utils/api';
 import { apiFetch, swrFetcher } from '../utils/api';
@@ -19,10 +19,6 @@ export function useListIntegration(env: string) {
         list: data,
         mutate
     };
-}
-
-export async function revalidateIntegrationsList(env: string) {
-    await mutate(integrationsPath(env));
 }
 
 export function useGetIntegration(env: string, integrationId: string) {

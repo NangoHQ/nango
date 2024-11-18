@@ -19,7 +19,7 @@ import Nango from '@nangohq/frontend';
 import { useDebounce, useUnmount } from 'react-use';
 import { globalEnv } from '../../utils/env';
 import { apiConnectSessions } from '../../hooks/useConnect';
-import { revalidateIntegrationsList, useListIntegration } from '../../hooks/useIntegration';
+import { useListIntegration } from '../../hooks/useIntegration';
 import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -114,7 +114,7 @@ export const ConnectionList: React.FC = () => {
     const hasConnected = useRef<AuthResult | undefined>();
 
     const { environmentAndAccount } = useEnvironment(env);
-    const { list: listIntegration } = useListIntegration(env);
+    const { list: listIntegration, mutate: listIntegrationMutate } = useListIntegration(env);
     const { data: connectionsCount } = useConnectionsCount(env);
 
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
@@ -154,13 +154,13 @@ export const ConnectionList: React.FC = () => {
         (event) => {
             if (event.type === 'close') {
                 void mutate();
-                void revalidateIntegrationsList(env);
+                void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
                 }
             } else if (event.type === 'connect') {
                 void mutate();
-                void revalidateIntegrationsList(env);
+                void listIntegrationMutate();
                 hasConnected.current = event.payload;
             }
         },
