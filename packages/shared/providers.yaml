@@ -734,6 +734,18 @@ bitdefender:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key of your Bitdefender account
+            doc_section: '#step-1-finding-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
     connection_config:
         ACCESS_URL:
             type: string
@@ -2157,6 +2169,17 @@ expensify:
         base_url: https://integrations.expensify.com/Integration-Server/
         headers:
             Content-Type: application/x-www-form-urlencoded
+    credentials:
+        username:
+            type: string
+            title: Partner User ID
+            description: Your unique account identifier of Expensify
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
+        password:
+            type: string
+            title: Partner User Secret
+            description: Unique secret for your account
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
     docs: https://docs.nango.dev/integrations/all/expensify
     docs_connect: https://docs.nango.dev/integrations/all/expensify/connect
 
