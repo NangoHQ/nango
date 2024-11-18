@@ -34,12 +34,6 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
 }
 
 export async function handleError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: RunnerOutputError }): Promise<void> {
-    const formattedError = toNangoError({
-        err: error,
-        defaultErrorType: `${nangoProps.scriptType}_script_failure`,
-        scriptName: nangoProps.syncConfig.sync_name
-    });
-
     if (error.type === 'script_aborted') {
         // do nothing, the script was aborted and its state already updated
         logger.info(`Script was aborted. Ignoring output.`, {
@@ -51,6 +45,12 @@ export async function handleError({ taskId, nangoProps, error }: { taskId: strin
         });
         return;
     }
+
+    const formattedError = toNangoError({
+        err: error,
+        defaultErrorType: `${nangoProps.scriptType}_script_failure`,
+        scriptName: nangoProps.syncConfig.sync_name
+    });
 
     switch (nangoProps.scriptType) {
         case 'sync':
