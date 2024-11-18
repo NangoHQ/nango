@@ -24,7 +24,7 @@ export async function exec(
             case 'webhook':
                 return new NangoSync(nangoProps);
             case 'action':
-            case 'post-connection-script':
+            case 'on-event':
                 return new NangoAction(nangoProps);
         }
     })();

@@ -1,7 +1,7 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
-import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync, TaskSyncAbort } from './types.js';
+import { TaskAction, TaskWebhook, TaskOnEvent, TaskSync, TaskSyncAbort } from './types.js';
 import { z } from 'zod';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -52,9 +52,9 @@ export const webhookArgsSchema = z.object({
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
-export const postConnectionArgsSchema = z.object({
-    type: z.literal('post-connection-script'),
-    postConnectionName: z.string().min(1),
+export const onEventArgsSchema = z.object({
+    type: z.literal('on-event'),
+    onEventName: z.string().min(1),
     version: z.string().min(1),
     fileLocation: z.string().min(1),
     activityLogId: z.string(),
@@ -84,9 +84,9 @@ const webhookSchema = z.object({
     ...commonSchemaFields,
     payload: webhookArgsSchema
 });
-const postConnectionSchema = z.object({
+const onEventSchema = z.object({
     ...commonSchemaFields,
-    payload: postConnectionArgsSchema
+    payload: onEventArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -157,25 +157,25 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    const postConnection = postConnectionSchema.safeParse(task);
-    if (postConnection.success) {
+    const onEvent = onEventSchema.safeParse(task);
+    if (onEvent.success) {
         return Ok(
-            TaskPostConnection({
-                id: postConnection.data.id,
-                state: postConnection.data.state,
-                name: postConnection.data.name,
-                attempt: postConnection.data.retryCount + 1,
-                postConnectionName: postConnection.data.payload.postConnectionName,
-                version: postConnection.data.payload.version,
-                connection: postConnection.data.payload.connection,
-                groupKey: postConnection.data.groupKey,
-                fileLocation: postConnection.data.payload.fileLocation,
-                activityLogId: postConnection.data.payload.activityLogId
+            TaskOnEvent({
+                id: onEvent.data.id,
+                state: onEvent.data.state,
+                name: onEvent.data.name,
+                attempt: onEvent.data.retryCount + 1,
+                onEventName: onEvent.data.payload.onEventName,
+                version: onEvent.data.payload.version,
+                connection: onEvent.data.payload.connection,
+                groupKey: onEvent.data.groupKey,
+                fileLocation: onEvent.data.payload.fileLocation,
+                activityLogId: onEvent.data.payload.activityLogId
             })
         );
     }
     return Err(
-        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncAbort.error)}`
+        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || onEvent.error || syncAbort.error)}`
     );
 }
 

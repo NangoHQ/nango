@@ -18,7 +18,7 @@ import type {
     ExecuteProps,
     ExecuteReturn,
     ExecuteWebhookProps,
-    ExecutePostConnectionProps,
+    ExecuteOnEventProps,
     OrchestratorTask,
     RecurringProps,
     ExecuteSyncProps,
@@ -254,13 +254,13 @@ export class OrchestratorClient {
         return this.execute(schedulingProps);
     }
 
-    public async executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn> {
+    public async executeOnEvent(props: ExecuteOnEventProps): Promise<ExecuteReturn> {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
             args: {
                 ...args,
-                type: 'post-connection-script' as const
+                type: 'on-event' as const
             }
         };
         return this.execute(schedulingProps);
