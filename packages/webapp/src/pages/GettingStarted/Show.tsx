@@ -21,13 +21,12 @@ export const GettingStarted: React.FC = () => {
         // @ts-expect-error yes I want this
         window.onYouTubeIframeAPIReady = () => {
             try {
-                window.YT.Player('player', {
+                const player = window.YT.Player('player', {
                     height: '100%',
                     width: '100%',
                     videoId: 'oTpWlmnv7dM',
                     playerVars: {
-                        playsinline: 1,
-                        origin: 'http://localhost:3003'
+                        playsinline: 1
                     },
                     events: {
                         onStateChange: (event: { data: number }) => {
@@ -45,6 +44,9 @@ export const GettingStarted: React.FC = () => {
                             }
                         }
                     }
+                });
+                player.on('stateChange', (e) => {
+                    console.log('vt', e);
                 });
             } catch {
                 // do nothing
