@@ -1,5 +1,6 @@
 import type { InternalNango as Nango } from './post-connection.js';
 import { isAxiosError } from 'axios';
+import type { WorkableAccountsResponse } from '../response-types/workable.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
@@ -9,7 +10,7 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    const response = await nango.proxy({
+    const response = await nango.proxy<WorkableAccountsResponse>({
         baseUrlOverride: 'https://workable.com',
         endpoint: '/spi/v3/accounts',
         method: 'GET',
@@ -21,7 +22,7 @@ export default async function execute(nango: Nango) {
         throw new Error('Failed to retrieve Workable subdomain');
     }
 
-    const subdomain = response.data.accounts[0].subdomain;
+    const subdomain = response.data.accounts[0]?.subdomain;
 
     await nango.updateConnectionConfig({ subdomain });
 }
