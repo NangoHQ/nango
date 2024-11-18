@@ -1,11 +1,15 @@
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import type { ListIntegration } from '@nangohq/server';
 import type { SWRError } from '../utils/api';
 import { apiFetch, swrFetcher } from '../utils/api';
 import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, PatchIntegration, PostIntegration } from '@nangohq/types';
 
+function integrationsPath(env: string) {
+    return `/api/v1/integrations?env=${env}`;
+}
+
 export function useListIntegration(env: string) {
-    const { data, error, mutate } = useSWR<ListIntegration>(`/api/v1/integrations?env=${env}`, swrFetcher, { refreshInterval: 15000 });
+    const { data, error, mutate } = useSWR<ListIntegration>(integrationsPath(env), swrFetcher, { refreshInterval: 15000 });
 
     const loading = !data && !error;
 
@@ -15,6 +19,10 @@ export function useListIntegration(env: string) {
         list: data,
         mutate
     };
+}
+
+export async function revalidateIntegrationsList(env: string) {
+    await mutate(integrationsPath(env));
 }
 
 export function useGetIntegration(env: string, integrationId: string) {

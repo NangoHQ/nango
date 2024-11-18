@@ -19,7 +19,7 @@ import Nango from '@nangohq/frontend';
 import { useDebounce, useUnmount } from 'react-use';
 import { globalEnv } from '../../utils/env';
 import { apiConnectSessions } from '../../hooks/useConnect';
-import { useListIntegration } from '../../hooks/useIntegration';
+import { revalidateIntegrationsList, useListIntegration } from '../../hooks/useIntegration';
 import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -154,11 +154,13 @@ export const ConnectionList: React.FC = () => {
         (event) => {
             if (event.type === 'close') {
                 void mutate();
+                void revalidateIntegrationsList(env);
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
                 }
             } else if (event.type === 'connect') {
                 void mutate();
+                void revalidateIntegrationsList(env);
                 hasConnected.current = event.payload;
             }
         },
