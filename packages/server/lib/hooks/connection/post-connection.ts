@@ -113,7 +113,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 await logCtx.error('Post connection script failed', { error: e });
                 await logCtx.failed();
 
-                await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment.id),
                     connectionId: upsertedConnection.connection_id,
                     providerConfigKey: upsertedConnection.provider_config_key,
@@ -123,7 +123,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
             }
         }
     } catch (err) {
-        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
+        await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
             environmentId: String(environment.id),
             connectionId: upsertedConnection.connection_id,
             providerConfigKey: upsertedConnection.provider_config_key,

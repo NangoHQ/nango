@@ -193,7 +193,7 @@ const runJob = async (
         },
         isSync: () => true,
         isAction: () => false,
-        isPostConnection: () => false,
+        isOnEvent: () => false,
         isSyncAbort: () => false,
         isWebhook: () => false
     };

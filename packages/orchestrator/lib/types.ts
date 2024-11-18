@@ -1,2 +1,2 @@
-export const taskTypes = ['action', 'webhook', 'sync', 'post-connection-script', 'abort'] as const;
+export const taskTypes = ['action', 'webhook', 'sync', 'on-event', 'abort'] as const;
 export type TaskType = (typeof taskTypes)[number];
