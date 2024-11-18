@@ -150,6 +150,11 @@ export const ConnectionList: React.FC = () => {
         setSelectedIntegration(values);
     };
 
+    const handleFilterErrorChange = (values: string[]) => {
+        const newItems = values.filter((f) => !filterWithError.includes(f));
+        setFilterWithError(newItems);
+    };
+
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'close') {
@@ -315,7 +320,7 @@ export const ConnectionList: React.FC = () => {
                                 options={filterErrors}
                                 selected={filterWithError}
                                 defaultSelect={defaultFilter}
-                                onChange={setFilterWithError}
+                                onChange={handleFilterErrorChange}
                                 all
                             />
                         </div>
