@@ -6509,7 +6509,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /emails
-                version: 1.0.1
+                version: 1.1.0
         actions:
             fetch-attachment:
                 input: DocumentInput
