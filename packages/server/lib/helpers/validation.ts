@@ -28,6 +28,6 @@ export const connectSessionTokenPrefix = 'nango_connect_session_';
 export const connectSessionTokenSchema = z.string().regex(new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`));
 
 export const connectionCredential = z.union([
-    z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }).strict(),
-    z.object({ connect_session_token: connectSessionTokenSchema }).strict()
+    z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),
+    z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
