@@ -4647,7 +4647,7 @@ quickbooks:
             optional: true
             description: The realmId of your quickbooks account
             pattern: '^\d{16}$'
-            example: 9341453474484455
+            example: '9341453474484455'
 
 quickbooks-sandbox:
     alias: quickbooks
@@ -4664,7 +4664,7 @@ quickbooks-sandbox:
             optional: true
             description: The realmId of your quickbooks account
             pattern: '^\d{16}$'
-            example: 9341453474484455
+            example: '9341453474484455'
 
 ragieai:
     display_name: Ragie AI
