@@ -565,7 +565,8 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        connection_base_url: ${connectionConfig.region}
+        connection_config:
+            region: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
@@ -4634,18 +4635,36 @@ quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
-    redirect_uri_metadata:
-        - realmId
     proxy:
+        connection_config:
+            realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    connection_config:
+        realmId:
+            type: string
+            title: Quickbooks Realm ID
+            optional: true
+            description: The realmId of your quickbooks account
+            pattern: '^\d{16}$'
+            example: 9341453474484455
 
 quickbooks-sandbox:
     alias: quickbooks
     display_name: Quickbooks (sandbox)
     proxy:
+        connection_config:
+            realmId: ${connectionConfig.realmId}
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    connection_config:
+        realmId:
+            type: string
+            title: Quickbooks Realm ID
+            optional: true
+            description: The realmId of your quickbooks account
+            pattern: '^\d{16}$'
+            example: 9341453474484455
 
 ragieai:
     display_name: Ragie AI
