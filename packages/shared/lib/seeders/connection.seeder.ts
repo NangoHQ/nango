@@ -28,7 +28,7 @@ export const createConnectionSeed = async (env: DBEnvironment, provider: string)
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
-        provider: 'google',
+        provider: provider,
         parsedRawCredentials: {} as AuthCredentials,
         connectionConfig: {},
         environmentId: env.id,

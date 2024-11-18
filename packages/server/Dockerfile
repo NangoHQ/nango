@@ -11,6 +11,7 @@ WORKDIR /usr/nango-server/src
 COPY packages/server/ packages/server/
 COPY package*.json ./
 COPY packages/webapp/build/ packages/webapp/build/
+COPY packages/connect-ui/ packages/connect-ui/
 COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/kvstore/ packages/kvstore/
