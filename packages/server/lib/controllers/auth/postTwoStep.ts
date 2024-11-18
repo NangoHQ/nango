@@ -30,7 +30,6 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         user_scope: z.string().optional()
     })
-    .strict()
     .and(connectionCredential);
 
 const paramsValidation = z
