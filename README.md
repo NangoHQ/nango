@@ -31,7 +31,7 @@ Nango is a single API to interact with all other external APIs. It should be the
 
 # 📺 Demo video
 
-[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://www.youtube.com/watch?v=pvUpbi04IjQ)
+[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://youtu.be/oTpWlmnv7dM)
 
 # 👩‍💻 Sample code
 
