@@ -120,14 +120,14 @@ export const ConnectionList: React.FC = () => {
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
     const [search, setSearch] = useState<string>('');
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    const [filterWithError, setFilterWithError] = useState<string[]>(defaultFilter);
+    const [filterWithError, setFilterWithError] = useState<string>('');
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
 
     const { data, loading, error, hasNext, offset, setOffset, mutate } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds: selectedIntegration,
-        withError: filterWithError[0] === 'all' ? undefined : filterWithError[0] === 'error'
+        withError: filterWithError === 'all' ? undefined : filterWithError === 'error'
     });
 
     useUnmount(() => {
@@ -152,7 +152,7 @@ export const ConnectionList: React.FC = () => {
 
     const handleFilterErrorChange = (values: string[]) => {
         const newItems = values.filter((f) => !filterWithError.includes(f));
-        setFilterWithError(newItems);
+        setFilterWithError(newItems.length > 0 ? newItems[0] : defaultFilter[0]);
     };
 
     const onEvent: OnConnectEvent = useCallback(
@@ -224,7 +224,7 @@ export const ConnectionList: React.FC = () => {
         columns,
         getCoreRowModel: getCoreRowModel()
     });
-    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError[0] !== 'all';
+    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError !== 'all';
 
     if (error) {
         return (
@@ -318,7 +318,7 @@ export const ConnectionList: React.FC = () => {
                             <MultiSelect
                                 label="Filter Errors"
                                 options={filterErrors}
-                                selected={filterWithError}
+                                selected={[filterWithError]}
                                 defaultSelect={defaultFilter}
                                 onChange={handleFilterErrorChange}
                                 all
