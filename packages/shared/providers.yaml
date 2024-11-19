@@ -762,7 +762,7 @@ bitdefender:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
-    docs_connect: https://docs.nango.dev/integrations/all/bitdefender
+    docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
         username:
             type: string
