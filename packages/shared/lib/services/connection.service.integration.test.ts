@@ -68,7 +68,7 @@ describe('Connection service integration tests', () => {
         });
     });
 
-    describe.only('listConnections', () => {
+    describe('listConnections', () => {
         const googleConfigKey = Math.random().toString(36).substring(7);
         const notionConfigKey = Math.random().toString(36).substring(7);
 
