@@ -820,7 +820,7 @@ class ConnectionService {
 
         if (search) {
             query.where(function () {
-                this.whereRaw('connection_id ILIKE ?', `%${search}%`)
+                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
             });
