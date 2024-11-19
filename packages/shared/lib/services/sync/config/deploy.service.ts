@@ -179,9 +179,7 @@ export async function deploy({
             await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
-        if (onEventScriptsByProvider.length > 0) {
-            await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
-        }
+        await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
 
         for (const id of idsToMarkAsInactive) {
             await switchActiveSyncConfig(id);

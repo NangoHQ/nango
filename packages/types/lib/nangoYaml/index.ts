@@ -1,6 +1,6 @@
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
-export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
+export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
 export type ScriptTypeLiteral = 'action' | 'sync';
 
 // --------------
@@ -36,7 +36,8 @@ export interface NangoYamlV2Integration {
     provider?: string;
     syncs?: Record<string, NangoYamlV2IntegrationSync>;
     actions?: Record<string, NangoYamlV2IntegrationAction>;
-    'post-connection-scripts'?: string[];
+    'on-events'?: Record<string, string[]>;
+    'post-connection-scripts'?: string[]; // DEPRECATED
 }
 export interface NangoYamlV2IntegrationSync {
     endpoint: string | string[] | NangoYamlV2Endpoint | NangoYamlV2Endpoint[];
@@ -76,6 +77,8 @@ export type NangoYamlModelField = boolean | number | string | null | string[] | 
 export type NangoYaml = NangoYamlV1 | NangoYamlV2;
 
 // -------------- Parsed
+export type OnEventType = 'post-connection-creation' | 'pre-connection-deletion';
+
 export interface NangoYamlParsed {
     yamlVersion: 'v1' | 'v2';
     integrations: NangoYamlParsedIntegration[];
@@ -85,7 +88,8 @@ export interface NangoYamlParsedIntegration {
     providerConfigKey: string;
     syncs: ParsedNangoSync[];
     actions: ParsedNangoAction[];
-    postConnectionScripts: string[];
+    onEventScripts: Record<OnEventType, string[]>;
+    postConnectionScripts?: string[]; // DEPRECATED
 }
 export interface ParsedNangoSync {
     name: string;

@@ -84,9 +84,34 @@ const onEventScriptsByProvider = z.array(
     z
         .object({
             providerConfigKey: providerConfigKeySchema,
+            scripts: z.array(
+                z
+                    .object({
+                        name: z.string().min(1).max(255),
+                        fileBody,
+                        event: z.enum(['post-connection-creation', 'pre-connection-deletion'])
+                    })
+                    .strict()
+            )
+        })
+        .strict()
+);
+// DEPRECATED
+const postConnectionScriptsByProvider = z.array(
+    z
+        .object({
+            providerConfigKey: providerConfigKeySchema,
             scripts: z.array(z.object({ name: z.string().min(1).max(255), fileBody }).strict())
         })
         .strict()
+        .transform((data) => ({
+            providerConfigKey: data.providerConfigKey,
+            scripts: data.scripts.map((script) => ({
+                name: script.name,
+                fileBody: script.fileBody,
+                event: 'post-connection-creation'
+            }))
+        }))
 );
 
 const commonValidation = z
@@ -94,7 +119,7 @@ const commonValidation = z
         flowConfigs,
         onEventScriptsByProvider: onEventScriptsByProvider.optional(),
         // postConnectionScriptsByProvider is deprecated but still supported for backwards compatibility
-        postConnectionScriptsByProvider: onEventScriptsByProvider.optional(),
+        postConnectionScriptsByProvider: postConnectionScriptsByProvider.optional(),
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),

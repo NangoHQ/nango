@@ -12,7 +12,8 @@ import type {
     NangoConfigMetadata,
     PostDeploy,
     PostDeployInternal,
-    PostDeployConfirmation
+    PostDeployConfirmation,
+    OnEventType
 } from '@nangohq/types';
 import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
@@ -364,18 +365,27 @@ class DeployService {
         const onEventScriptsByProvider: OnEventScriptsByProvider[] = [];
 
         for (const integration of parsed.integrations) {
-            const { providerConfigKey, postConnectionScripts } = integration;
+            const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
 
-            if (postConnectionScripts && postConnectionScripts.length > 0) {
-                const scripts: OnEventScriptsByProvider['scripts'] = [];
-                for (const postConnectionScript of postConnectionScripts) {
-                    const files = loadScriptFiles({ scriptName: postConnectionScript, providerConfigKey, fullPath, type: 'post-connection-scripts' });
-                    if (!files) {
-                        return null;
+            const scripts: OnEventScriptsByProvider['scripts'] = [];
+            for (const event in onEventScripts || {}) {
+                const e = event as OnEventType;
+                for (const scriptName of onEventScripts[e]) {
+                    const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
+                    if (files) {
+                        scripts.push({ name: scriptName, fileBody: files, event: e });
                     }
-
-                    scripts.push({ name: postConnectionScript, fileBody: files });
                 }
+            }
+
+            // for backward compatibility we also load post-connection-creation scripts
+            for (const scriptName of postConnectionScripts || []) {
+                const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'post-connection-scripts' });
+                if (files) {
+                    scripts.push({ name: scriptName, fileBody: files, event: 'post-connection-creation' });
+                }
+            }
+            if (scripts.length > 0) {
                 onEventScriptsByProvider.push({ providerConfigKey, scripts });
             }
 
@@ -475,7 +485,7 @@ class DeployService {
                 for (const script of scripts) {
                     const { name } = script;
 
-                    printDebug(`Post connection script found for ${providerConfigKey} with name ${name}`);
+                    printDebug(`on-events script found for ${providerConfigKey} with name ${name}`);
                 }
             }
         }
@@ -485,7 +495,7 @@ class DeployService {
             return null;
         }
 
-        return { flowConfigs: postData, onEventScriptsByProvider: onEventScriptsByProvider, jsonSchema };
+        return { flowConfigs: postData, onEventScriptsByProvider, jsonSchema };
     }
 }
 
