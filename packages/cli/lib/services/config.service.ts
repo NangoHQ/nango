@@ -31,7 +31,7 @@ export function parse(fullPath: string, debug = false): Result<NangoYamlParser> 
 
         const valid = validateAndOutput(parser.raw);
         if (!valid) {
-            return Err(new CLIError('failed_to_parse_nango_yaml'));
+            return Err(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         }
 
         parser.parse();
@@ -41,7 +41,7 @@ export function parse(fullPath: string, debug = false): Result<NangoYamlParser> 
                 console.log(`  ${chalk.red('error')} ${error.message}${error.code ? chalk.dim(` [${error.code}]`) : ''}`);
                 console.log('');
             }
-            return Err(new CLIError('failed_to_parse_nango_yaml'));
+            return Err(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         }
         if (parser.warnings.length > 0) {
             parser.warnings.forEach((warn) => {

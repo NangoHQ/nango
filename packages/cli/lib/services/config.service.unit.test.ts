@@ -21,8 +21,7 @@ describe('load', () => {
             throw res.error;
         }
 
-        expect(res).toMatchSnapshot();
-        expect(res).not.toBeNull();
+        expect(res.value.parsed).toMatchSnapshot();
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', () => {
@@ -31,8 +30,7 @@ describe('load', () => {
             throw res.error;
         }
 
-        expect(res).toMatchSnapshot();
-        expect(res).not.toBeNull();
+        expect(res.value.parsed).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', () => {
@@ -45,7 +43,7 @@ describe('load', () => {
             return;
         }
 
-        expect(res).toStrictEqual(new CLIError('failed_to_parse_nango_yaml'));
+        expect(res.error).toStrictEqual(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
     });
 
@@ -59,8 +57,7 @@ describe('load', () => {
             return;
         }
 
-        expect(res).toBeNull();
-        expect(res).toStrictEqual(new CLIError('failed_to_parse_nango_yaml'));
+        expect(res.error).toStrictEqual(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         expect(acc.join('')).toContain('additionalProperty: webhook-subscription');
     });
 });
