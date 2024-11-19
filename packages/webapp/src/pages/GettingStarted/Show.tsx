@@ -19,12 +19,7 @@ export const GettingStarted: React.FC = () => {
         // The API will call this function when page has finished downloading
         // @ts-expect-error yes I want this
         window.onYouTubeIframeAPIReady = () => {
-            console.log('prat');
             setApiReady(true);
-        };
-        // @ts-expect-error yes I want this
-        window.onPlayerStateChange = (event) => {
-            console.log('prout global', event);
         };
     }, []);
     useScript('https://www.youtube.com/iframe_api');
@@ -40,7 +35,10 @@ export const GettingStarted: React.FC = () => {
 
         setHasVideo(true);
         try {
-            const player = window.YT.Player('player', {
+            analyticsTrack('web:getting_started:video:play');
+            // @ts-expect-error I don't understand
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            new window.YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 videoId: 'oTpWlmnv7dM',
@@ -55,21 +53,13 @@ export const GettingStarted: React.FC = () => {
                     onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
-                                console.log('event on end');
-                                break;
-                            case 1:
-                                console.log('event on playing');
-                                break;
-                            case 2:
-                                console.log('event on playing');
+                                analyticsTrack('web:getting_started:video:end');
                                 break;
                             default:
+                                break;
                         }
                     }
                 }
-            });
-            player.addEventListener('stateChange', (e) => {
-                console.log('stateChange', e);
             });
         } catch {
             // do nothing

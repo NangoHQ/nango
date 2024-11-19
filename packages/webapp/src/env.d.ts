@@ -14,10 +14,15 @@ declare global {
 }
 
 declare global {
+    declare class Player {
+        constructor(id: string, obj: Record<string, any>);
+        stopVideo(): void;
+    }
+
     interface Window {
         _env: WindowEnv;
         YT: {
-            Player: (id: string, obj: Record<string, any>) => { stopVideo: () => void; addEventListener: (str: string, cb: (...opts: any[]) => void) => void };
+            Player: Player;
         };
     }
 }
