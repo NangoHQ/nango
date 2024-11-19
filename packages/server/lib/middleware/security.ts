@@ -35,7 +35,8 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://*.posthog.com',
-                    'https://img.logo.dev'
+                    'https://img.logo.dev',
+                    'https://*.ytimg.com'
                 ],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",

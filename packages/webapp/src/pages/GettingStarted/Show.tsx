@@ -8,28 +8,26 @@ import { Helmet } from 'react-helmet';
 import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { cn } from '../../utils/utils';
+import { globalEnv } from '../../utils/env';
 
 export const GettingStarted: React.FC = () => {
-    const ytLoaded = useScript('https://www.youtube.com/iframe_api');
     const analyticsTrack = useAnalyticsTrack();
     const [hasVideo, setHasVideo] = useState(false);
     const [apiReady, setApiReady] = useState(false);
 
     useEffect(() => {
-        if (ytLoaded !== 'ready') {
-            return;
-        }
-
         // The API will call this function when page has finished downloading
         // @ts-expect-error yes I want this
         window.onYouTubeIframeAPIReady = () => {
+            console.log('prat');
             setApiReady(true);
         };
         // @ts-expect-error yes I want this
         window.onPlayerStateChange = (event) => {
             console.log('prout global', event);
         };
-    }, [ytLoaded]);
+    }, []);
+    useScript('https://www.youtube.com/iframe_api');
 
     const triggerVideo = () => {
         if (hasVideo) {
@@ -48,12 +46,12 @@ export const GettingStarted: React.FC = () => {
                 videoId: 'oTpWlmnv7dM',
                 playerVars: {
                     playsinline: 1,
-                    autoplay: true
+                    autoplay: 1,
+                    showinfo: 0,
+                    autohide: 1,
+                    origin: new URL(globalEnv.publicUrl).origin
                 },
                 events: {
-                    onReady: () => {
-                        console.log('salut cest ready');
-                    },
                     onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
@@ -70,7 +68,7 @@ export const GettingStarted: React.FC = () => {
                     }
                 }
             });
-            player.on('stateChange', (e) => {
+            player.addEventListener('stateChange', (e) => {
                 console.log('stateChange', e);
             });
         } catch {

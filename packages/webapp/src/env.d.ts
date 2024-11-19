@@ -17,7 +17,7 @@ declare global {
     interface Window {
         _env: WindowEnv;
         YT: {
-            Player: (id: string, obj: Record<string, any>) => { stopVideo: () => void; on: (str: string, cb: (...opts: any[]) => void) => void };
+            Player: (id: string, obj: Record<string, any>) => { stopVideo: () => void; addEventListener: (str: string, cb: (...opts: any[]) => void) => void };
         };
     }
 }
