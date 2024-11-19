@@ -9,26 +9,30 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { globalEnv } from '../../utils/env';
+import { apiPatchOnboarding } from '../../hooks/ussOnboarding';
+import { useStore } from '../../store';
 
+let ytLoaded = false;
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
+    const env = useStore((state) => state.env);
     const [hasVideo, setHasVideo] = useState(false);
-    const [apiReady, setApiReady] = useState(false);
 
     useEffect(() => {
         // The API will call this function when page has finished downloading
         // @ts-expect-error yes I want this
         window.onYouTubeIframeAPIReady = () => {
-            setApiReady(true);
+            ytLoaded = true;
         };
     }, []);
+
     useScript('https://www.youtube.com/iframe_api');
 
     const triggerVideo = () => {
         if (hasVideo) {
             return;
         }
-        if (!apiReady) {
+        if (!ytLoaded) {
             // adblock
             return;
         }
@@ -47,13 +51,15 @@ export const GettingStarted: React.FC = () => {
                     autoplay: 1,
                     showinfo: 0,
                     autohide: 1,
+                    rel: 0, // remove recommendation
                     origin: new URL(globalEnv.publicUrl).origin
                 },
                 events: {
-                    onStateChange: (event: { data: number }) => {
+                    onStateChange: async (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
                                 analyticsTrack('web:getting_started:video:end');
+                                await apiPatchOnboarding(env);
                                 break;
                             default:
                                 break;
