@@ -21,7 +21,7 @@ import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 import { IconX } from '@tabler/icons-react';
 import type { MaybePromise } from '@nangohq/types';
-import { apiPatchOnboarding } from '../hooks/ussOnboarding';
+import { apiPatchOnboarding } from '../hooks/useOnboarding';
 
 export enum LeftNavBarItems {
     Homepage,

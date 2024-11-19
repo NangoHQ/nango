@@ -9,7 +9,7 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { globalEnv } from '../../utils/env';
-import { apiPatchOnboarding } from '../../hooks/ussOnboarding';
+import { apiPatchOnboarding } from '../../hooks/useOnboarding';
 import { useStore } from '../../store';
 
 let ytLoaded = false;
