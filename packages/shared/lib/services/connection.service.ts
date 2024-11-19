@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { Builder, parseStringPromise } from 'xml2js';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -1781,12 +1781,15 @@ class ConnectionService {
 
             const bodyContent =
                 bodyFormat === 'xml'
-                    ? new Builder({
-                          headless: false,
-                          renderOpts: { pretty: true, indent: '  ', newline: '\n' }
-                      }).buildObject(postBody)
+                    ? new XMLBuilder({
+                          format: true,
+                          indentBy: '  ',
+                          attributeNamePrefix: '$',
+                          ignoreAttributes: false
+                      }).build(postBody)
                     : JSON.stringify(postBody);
 
+            console.log(bodyContent);
             const response = await axios.post(url.toString(), bodyContent, requestOptions);
 
             if (response.status !== 200) {
@@ -1796,10 +1799,13 @@ class ConnectionService {
             let responseData: any = response.data;
 
             if (bodyFormat === 'xml' && typeof response.data === 'string') {
-                responseData = await parseStringPromise(response.data, {
-                    explicitArray: false,
-                    trim: true
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    parseAttributeValue: true,
+                    trimValues: true
                 });
+
+                responseData = parser.parse(response.data);
             }
 
             const parsedCreds = this.parseRawCredentials(responseData, 'TWO_STEP', provider) as TwoStepCredentials;

@@ -4920,8 +4920,7 @@ sage-intacct:
                         password: ${credential.userPassword}
                 content:
                     function:
-                        $:
-                            controlid: '{{$guid}}'
+                        $controlid: '{{$guid}}'
                         getAPISession: ''
     token_headers:
         Content-Type: application/xml
@@ -4939,6 +4938,7 @@ sage-intacct:
             type: string
             title: Sender Password
             description: Your Sage Intacct Sender Password
+            secret: true
         userId:
             type: string
             title: User ID
@@ -4951,6 +4951,7 @@ sage-intacct:
             type: string
             title: User Password
             description: Your Sage Intacct User Password
+            secret: true
 
 salesforce:
     display_name: Salesforce
