@@ -344,6 +344,7 @@
                 "integrations/all/boldsign",
                 "integrations/all/box",
                 "integrations/all/braintree",
+                "integrations/all/brevo",
                 "integrations/all/brex",
                 "integrations/all/builder-io",
                 "integrations/all/buildium",
