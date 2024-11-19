@@ -1,3 +1,5 @@
+import type { CLIError } from './utils/errors';
+
 export interface GlobalOptions {
     autoConfirm: boolean;
     debug: boolean;
@@ -17,3 +19,11 @@ export interface DeployOptions extends GlobalOptions {
 export interface InternalDeployOptions {
     env?: ENV;
 }
+
+export type CLIServiceResponse<T = any> =
+    | {
+          error: CLIError | null;
+      }
+    | {
+          value: T | null;
+      };

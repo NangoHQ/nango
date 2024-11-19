@@ -4,8 +4,8 @@ import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
-import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
-import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { NangoProps, SyncConfig } from '@nangohq/shared';
+import type { Metadata, ParsedNangoAction, ParsedNangoSync, RunnerOutput, ScriptFileType } from '@nangohq/types';
 import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -97,13 +97,14 @@ export class DryRunService {
             return;
         }
 
-        const { success, error, response } = parse(process.cwd(), debug);
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const resParsing = parse(process.cwd(), debug);
+        if (resParsing.isErr()) {
+            console.log(chalk.red(resParsing.error.message));
             return;
         }
 
-        if (options.optionalProviderConfigKey && !response.parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+        const parser = resParsing.value;
+        if (options.optionalProviderConfigKey && !parser.parsed!.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
         }
@@ -113,7 +114,7 @@ export class DryRunService {
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
-        for (const integration of response.parsed.integrations) {
+        for (const integration of parser.parsed!.integrations) {
             if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
                 continue;
             }
@@ -353,7 +354,7 @@ export class DryRunService {
             if (results.error) {
                 const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                if (err instanceof NangoError) {
+                if (err instanceof Error && 'type' in err && 'payload' in err) {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.type})`));
                     if (err.type === 'invalid_action_output' || err.type === 'invalid_action_input' || err.type === 'invalid_sync_record') {
                         displayValidationError(err.payload as any);

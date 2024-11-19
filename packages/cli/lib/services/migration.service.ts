@@ -12,12 +12,12 @@ export const v1toV2Migration = (loadLocation: string): void => {
         return;
     }
 
-    const { response, success } = parse(loadLocation);
-    if (!success || !response?.parsed) {
+    const resParsing = parse(loadLocation);
+    if (resParsing.isErr()) {
         return;
     }
 
-    if (response.parsed.yamlVersion === 'v2') {
+    if (resParsing.value.parsed!.yamlVersion === 'v2') {
         console.log(chalk.blue(`nango.yaml is already at v2.`));
         return;
     }
@@ -77,17 +77,17 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
 }
 
 export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
-    const { response, success } = parse(loadLocation);
-    if (!success || !response?.parsed) {
+    const resParsing = parse(loadLocation);
+    if (resParsing.isErr()) {
         return;
     }
 
-    if (response.parsed.yamlVersion !== 'v2') {
+    if (resParsing.value.parsed!.yamlVersion !== 'v2') {
         console.log(chalk.red(`nango.yaml is not at v2. Nested directories are not supported in v1.`));
         return;
     }
 
-    for (const integration of response.parsed.integrations) {
+    for (const integration of resParsing.value.parsed!.integrations) {
         const integrationPath = path.join(loadLocation, integration.providerConfigKey);
         await createDirectory(integrationPath, debug);
 
@@ -120,17 +120,17 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
 };
 
 export function endpointMigration(loadLocation: string): void {
-    const { response, success } = parse(loadLocation);
-    if (!success || !response?.parsed) {
+    const resParsing = parse(loadLocation);
+    if (resParsing.isErr()) {
         return;
     }
 
-    if (response.parsed.yamlVersion !== 'v2') {
+    if (resParsing.value.parsed!.yamlVersion !== 'v2') {
         console.log(chalk.red(`nango.yaml is not at v2. New endpoint format is only supported in V2`));
         return;
     }
 
-    let dump = response.yaml.replace(
+    let dump = resParsing.value.yaml.replace(
         /^(\s+)endpoint: ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim,
         `$1endpoint:\r\n$1  method: $3\r\n$1  path: $4`
     );

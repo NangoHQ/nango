@@ -53,14 +53,14 @@ class DeployService {
             process.exit(1);
         }
 
-        const { success, error, response } = parse(fullPath, debug);
-
-        if (!success || !response!.parsed) {
-            console.log(chalk.red(error?.message));
+        const resParsing = parse(fullPath, debug);
+        if (resParsing.isErr()) {
+            console.log(chalk.red(resParsing.error.message));
             return;
         }
 
-        const flowData = this.package({ parsed: response!.parsed, fullPath, debug });
+        const parser = resParsing.value;
+        const flowData = this.package({ parsed: parser.parsed!, fullPath, debug });
 
         if (!flowData) {
             return;
@@ -79,7 +79,7 @@ class DeployService {
             await http
                 .post(
                     url,
-                    { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody: response!.yaml },
+                    { targetAccountUUID, targetEnvironment: environmentName, parsed: flowData, nangoYamlBody: parser.yaml },
                     { headers: enrichHeaders() }
                 )
                 .then(() => {
@@ -117,13 +117,13 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const { success, error, response } = parse(fullPath, debug);
-
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const resParsing = parse(fullPath, debug);
+        if (resParsing.isErr()) {
+            console.log(chalk.red(resParsing.error.message));
             return;
         }
 
+        const parser = resParsing.value;
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
         let successfulCompile = false;
@@ -131,7 +131,7 @@ class DeployService {
         if (singleDeployMode) {
             const scriptName: string = String(optionalSyncName || optionalActionName);
             const type = optionalSyncName ? 'syncs' : 'actions';
-            const providerConfigKey = response.parsed.integrations.find((integration) => {
+            const providerConfigKey = parser.parsed!.integrations.find((integration) => {
                 if (optionalSyncName) {
                     return integration.syncs.find((sync) => sync.name === scriptName);
                 } else {
@@ -147,7 +147,7 @@ class DeployService {
                         fullPath,
                         filePath: path.join(parentFilePath, `${scriptName}.ts`)
                     }),
-                    parsed: response.parsed,
+                    parsed: parser.parsed!,
                     debug
                 });
             }
@@ -160,12 +160,12 @@ class DeployService {
             process.exit(1);
         }
 
-        const postData = this.package({ parsed: response.parsed, fullPath, debug, version, optionalSyncName, optionalActionName });
+        const postData = this.package({ parsed: parser.parsed!, fullPath, debug, version, optionalSyncName, optionalActionName });
         if (!postData) {
             return;
         }
 
-        const nangoYamlBody = response.yaml;
+        const nangoYamlBody = parser.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
         const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
@@ -317,13 +317,13 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const { success, error, response } = parse(fullPath, debug);
-
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const resParsing = parse(fullPath, debug);
+        if (resParsing.isErr()) {
+            console.log(chalk.red(resParsing.error.message));
             return;
         }
 
+        const parser = resParsing.value;
         const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {
@@ -331,12 +331,12 @@ class DeployService {
             process.exit(1);
         }
 
-        const postData = this.package({ parsed: response.parsed, fullPath, debug });
+        const postData = this.package({ parsed: parser.parsed!, fullPath, debug });
         if (!postData) {
             return;
         }
 
-        const nangoYamlBody = response.yaml;
+        const nangoYamlBody = parser.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy/internal?customEnvironment=${environment}`;
 
