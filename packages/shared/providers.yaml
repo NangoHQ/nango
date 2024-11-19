@@ -660,6 +660,35 @@ battlenet:
             example: com
             pattern: '^[a-z.]+$'
 
+beehiiv:
+    display_name: Beehiiv
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.beehiiv.com/v2/publications/${connectionConfig.publicationId}
+        verification:
+            method: GET
+            endpoint: /posts
+    docs: https://docs.nango.dev/integrations/all/beehiiv
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Beehiiv account
+            example: 8ab3sjxqvHzyUnP9JhvlfT6C0wsbgr5XQrpaZZjxJkYBPy6sntvT1M2Lk94VQeRb
+            pattern: '^[a-zA-Z0-9]{64}$'
+    connection_config:
+        publicationId:
+            type: string
+            title: Publication Id
+            description: The prefixed ID of the publication object
+            example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
+            pattern: '^(pub_[0-9a-fA-F\-]+)$'
+
 bigcommerce:
     display_name: BigCommerce
     categories:

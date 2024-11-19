@@ -115,7 +115,17 @@ export const EnvironmentSettings: React.FC = () => {
             });
             setWebhookUrl(webhook_settings.primary_url);
             setWebhookUrlSecondary(webhook_settings.secondary_url);
+        } else {
+            setWebhookCheckboxSettings({
+                alwaysSendWebhook: false,
+                sendAuthWebhook: false,
+                sendRefreshFailedWebhook: false,
+                sendSyncFailedWebhook: false
+            });
+            setWebhookUrl('');
+            setWebhookUrlSecondary('');
         }
+
         setHostUrl(host);
         setAccountUUID(uuid);
 
