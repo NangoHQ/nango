@@ -4438,6 +4438,12 @@ perimeter81:
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
             example: 'perimeter81 | eu.sase.checkpoint'
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Perimeter81 account
+            secret: true
 
 personio:
     display_name: Personio
