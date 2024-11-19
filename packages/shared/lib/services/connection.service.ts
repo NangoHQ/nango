@@ -1789,7 +1789,6 @@ class ConnectionService {
                       }).build(postBody)
                     : JSON.stringify(postBody);
 
-            console.log(bodyContent);
             const response = await axios.post(url.toString(), bodyContent, requestOptions);
 
             if (response.status !== 200) {

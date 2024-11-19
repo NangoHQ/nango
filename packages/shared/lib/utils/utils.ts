@@ -177,7 +177,7 @@ export function getWebsocketsPath(): string {
  */
 export function interpolateString(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'timestamp') {
+        if (b === 'now') {
             return new Date().toISOString();
         }
         const r = replacers[b];

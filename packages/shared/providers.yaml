@@ -4908,7 +4908,7 @@ sage-intacct:
             control:
                 senderid: ${credential.senderId}
                 password: ${credential.senderPassword}
-                controlid: ${timestamp}
+                controlid: ${now}
                 uniqueid: false
                 dtdversion: '3.0'
                 includewhitespace: false
