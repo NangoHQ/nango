@@ -50,10 +50,11 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { getConnectSession } from '../services/connectSession.service.js';
+import { hmacCheck } from '../utils/hmac.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const { account, environment } = res.locals;
+        const { account, environment, authType } = res.locals;
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
@@ -95,8 +96,8 @@ class OAuthController {
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
             }
-            const hmacEnabled = await hmacService.isEnabled(environmentId);
-            if (hmacEnabled) {
+
+            if (environment.hmac_enabled && authType !== 'connectSession') {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
                     const error = WSErrBuilder.MissingHmac();
@@ -105,8 +106,8 @@ class OAuthController {
 
                     return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
                 }
-                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, receivedConnectionId);
 
+                const verified = hmacService.verify({ receivedDigest: hmac, environment, values: [providerConfigKey, receivedConnectionId] });
                 if (!verified) {
                     const error = WSErrBuilder.InvalidHmac();
                     await logCtx.error(error.message);
@@ -285,32 +286,18 @@ class OAuthController {
                 return;
             }
 
-            const hmacEnabled = await hmacService.isEnabled(environment.id);
-            if (hmacEnabled) {
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+
+            if (authType !== 'connectSession') {
                 const hmac = req.query['hmac'] as string | undefined;
-                if (!hmac) {
-                    await logCtx.error('Missing HMAC in query params');
-                    await logCtx.failed();
 
-                    errorManager.errRes(res, 'missing_hmac');
-
-                    return;
-                }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
-                if (!verified) {
-                    await logCtx.error('Invalid HMAC');
-                    await logCtx.failed();
-
-                    errorManager.errRes(res, 'invalid_hmac');
-
+                const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+                if (!checked) {
                     return;
                 }
             }
 
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
-
             if (!config) {
                 await logCtx.error('Unknown provider config');
                 await logCtx.failed();

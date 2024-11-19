@@ -84,9 +84,11 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TWO_STEP_AUTH, account.id);
 
-        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
-        if (!checked) {
-            return;
+        if (authType !== 'connectSession') {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
