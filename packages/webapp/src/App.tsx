@@ -12,7 +12,7 @@ import { Toaster } from './components/ui/toast/Toaster';
 import { Signup } from './pages/Account/Signup';
 import { InviteSignup } from './pages/Account/InviteSignup';
 import Signin from './pages/Account/Signin';
-import { InteractiveDemo } from './pages/InteractiveDemo';
+import { GettingStarted } from './pages/GettingStarted/Show';
 import IntegrationList from './pages/Integrations/List';
 import CreateIntegration from './pages/Integrations/Create';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
@@ -43,12 +43,12 @@ const theme = createTheme({
 const App = () => {
     const env = useStore((state) => state.env);
     const signout = useSignout();
-    const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
-        setShowInteractiveDemo(env === 'dev' && globalEnv.features.interactiveDemo);
-    }, [env, setShowInteractiveDemo]);
+        setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
+    }, [env, setShowGettingStarted]);
 
     return (
         <MantineProvider theme={theme}>
@@ -72,9 +72,9 @@ const App = () => {
                         <Route path="/" element={<Root />} />
                         <Route element={<PrivateRoute />} key={env}>
                             <Route path="/:env" element={<Homepage />} />
-                            {showInteractiveDemo && (
-                                <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
-                                    <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
+                            {showGettingStarted && (
+                                <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                                    <Route path="/dev/getting-started" element={<GettingStarted />} />
                                 </Route>
                             )}
                             <Route path="/:env/integrations" element={<IntegrationList />} />

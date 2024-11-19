@@ -1,4 +1,4 @@
-import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud, isLocal } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud } from '@nangohq/utils';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import type { WindowEnv } from '@nangohq/types';
 import { envs } from '@nangohq/logs';
@@ -18,7 +18,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             scripts: flagHasScripts,
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
-            interactiveDemo: isCloud || isLocal
+            gettingStarted: true
         }
     };
     res.setHeader('content-type', 'text/javascript');

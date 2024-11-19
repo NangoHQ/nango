@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { useEffect } from 'react';
 
 const VALID_PATHS = [
-    'interactive-demo',
+    'getting-started',
     'integration',
     'integrations',
     'syncs',
@@ -20,7 +20,7 @@ export const NotFound: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
     const env = useStore((state) => state.env);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export const NotFound: React.FC = () => {
         }
 
         navigate(`/${env}/`);
-    }, [location, env, navigate, showInteractiveDemo]);
+    }, [location, env, navigate, showGettingStarted]);
 
     return null;
 };

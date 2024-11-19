@@ -56,10 +56,6 @@ export const ENVS = z.object({
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
 
-    // Demo
-    DEFAULT_GITHUB_CLIENT_ID: z.string().optional(),
-    DEFAULT_GITHUB_CLIENT_SECRET: z.string().optional(),
-
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),
