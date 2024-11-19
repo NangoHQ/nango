@@ -151,7 +151,18 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     nangoYamlBody: ``,
-                    onEventScriptsByProvider: [],
+                    onEventScriptsByProvider: [
+                        {
+                            providerConfigKey: 'unauthenticated',
+                            scripts: [
+                                {
+                                    name: 'test',
+                                    fileBody: { js: 'js file', ts: 'ts file' },
+                                    event: 'post-connection-creation'
+                                }
+                            ]
+                        }
+                    ],
                     reconcile: false,
                     singleDeployMode: false
                 }
@@ -170,7 +181,6 @@ describe(`POST ${endpoint}`, () => {
             expect(syncConfigs).toStrictEqual([
                 {
                     actions: [],
-                    postConnectionScripts: [],
                     provider: 'unauthenticated',
                     providerConfigKey: 'unauthenticated',
                     syncs: [
