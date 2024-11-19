@@ -120,7 +120,7 @@ export const ConnectionList: React.FC = () => {
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
     const [search, setSearch] = useState<string>('');
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    const [filterWithError, setFilterWithError] = useState<string>('');
+    const [filterWithError, setFilterWithError] = useState<string>('all');
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
 
     const { data, loading, error, hasNext, offset, setOffset, mutate } = useConnections({
