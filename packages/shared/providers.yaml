@@ -2839,6 +2839,41 @@ gorgias:
             example: domain
             suffix: .gorgias.com
 
+grain:
+    display_name: Grain
+    categories:
+        - video
+        - communication
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://grain.com/_/public-api/oauth2/authorize
+    token_url: https://api.grain.com/_/public-api/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.grain.com
+    docs: https://docs.nango.dev/integrations/all/grain
+
+grain-api-key:
+    display_name: Grain (api key)
+    categories:
+        - video
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.grain.com
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grain
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The personal access token to your Grain account
+
 greenhouse:
     display_name: Greenhouse
     categories:
