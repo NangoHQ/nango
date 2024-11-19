@@ -107,8 +107,8 @@ export const GettingStarted: React.FC = () => {
                             </Tag>
                             <h2>Authorize</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-2 h-[33px] w-[33px]">
-                            <IconLockOpen2 stroke={1} size={15} />
+                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                            <IconLockOpen2 stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -133,8 +133,8 @@ export const GettingStarted: React.FC = () => {
                             </Tag>
                             <h2>Read data</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-2 h-[33px] w-[33px]">
-                            <IconRefresh stroke={1} size={15} />
+                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                            <IconRefresh stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -159,8 +159,8 @@ export const GettingStarted: React.FC = () => {
                             </Tag>
                             <h2>Write data</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-2 h-[33px] w-[33px]">
-                            <IconPencil stroke={1} size={15} />
+                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                            <IconPencil stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -185,8 +185,8 @@ export const GettingStarted: React.FC = () => {
                             </Tag>
                             <h2>Build custom integrations</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-2 h-[33px] w-[33px]">
-                            <IconTool stroke={1} size={15} />
+                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                            <IconTool stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
