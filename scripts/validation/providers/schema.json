@@ -320,7 +320,7 @@
                             "enum": ["authorization_code", "client_credentials"]
                         },
                         "request": {
-                            "type": "string"
+                            "anyOf": [{ "type": "string" }, { "type": "object" }]
                         }
                     }
                 },
