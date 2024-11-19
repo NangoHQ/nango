@@ -166,11 +166,7 @@ export type PostPublicSignatureAuthorization = Endpoint<{
         username: string;
         password: string;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };

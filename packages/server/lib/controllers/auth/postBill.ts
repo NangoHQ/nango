@@ -91,9 +91,11 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
         );
         void analytics.track(AnalyticsTypes.PRE_BILL_AUTH, account.id);
 
-        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
-        if (!checked) {
-            return;
+        if (authType !== 'connectSession') {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
