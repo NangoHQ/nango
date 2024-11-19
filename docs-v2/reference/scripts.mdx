@@ -54,7 +54,7 @@ export default async function runAction(nango: NangoAction, input: GithubCreateI
 
 Read more about [integration scripts](/understand/concepts/scripts) to understand what role they play in Nango.
 
-Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily. 
+Integration scripts expose a helper object (`NangoSync` for sync scripts, `NangoAction` for action scripts), which allows to interact with external APIs & Nango more easily.
 
 # HTTP requests
 
@@ -103,7 +103,7 @@ Note that all HTTP requests benefit from automatic credential injection. Because
                 Override the decompress option when making requests. Optional, defaults to false
             </ResponseField>
             <ResponseField name="responseType" type="'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream'">
-                The type of the response. 
+                The type of the response.
             </ResponseField>
         </Expandable>
     </ResponseField>
@@ -129,11 +129,11 @@ Note that all HTTP requests benefit from automatic credential injection. Because
 
 # Logging
 
-You can collect logs in integration scripts. This is particularly useful when: 
+You can collect logs in integration scripts. This is particularly useful when:
 - developing, to debug your integration scripts
 - in production, to collect information about integration script executions & understand issues
 
-Collect logs in integration scripts as follows: 
+Collect logs in integration scripts as follows:
 ```ts
 await nango.log("This is a log.");
 ```
@@ -142,7 +142,7 @@ Logs can be viewed & searched in the Nango UI. We plan to make them exportable i
 
 # Environment variables
 
-Integration scripts sometimes need to access sensitive variables that should not be revealed directly in the code. 
+Integration scripts sometimes need to access sensitive variables that should not be revealed directly in the code.
 
 For this, you can define environment variables in the Nango UI, in the _Environment Settings_ tab. Then you can retrieve these environment variables from integration scripts with:
 
@@ -169,7 +169,7 @@ No parameters.
 
 # Trigger action
 
-Integration scripts currently do not support importing files, which limits the ability to share code between integration scripts. 
+Integration scripts currently do not support importing files, which limits the ability to share code between integration scripts.
 
 As a temporary workaround, you can call action scripts from other integration scripts with:
 
@@ -309,16 +309,16 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
 <Expandable>
 ```json
 {
-    "id": 18393,                                 
-    "created_at": "2023-03-08T09:43:03.725Z",     
-    "updated_at": "2023-03-08T09:43:03.725Z",     
-    "provider_config_key": "github",              
-    "connection_id": "1",                         
+    "id": 18393,
+    "created_at": "2023-03-08T09:43:03.725Z",
+    "updated_at": "2023-03-08T09:43:03.725Z",
+    "provider_config_key": "github",
+    "connection_id": "1",
     "credentials": {
-        "type": "OAUTH2",                         
-        "access_token": "gho_tsXLG73f....",       
-        "refresh_token": "gho_fjofu84u9....",     
-        "expires_at": "2024-03-08T09:43:03.725Z", 
+        "type": "OAUTH2",
+        "access_token": "gho_tsXLG73f....",
+        "refresh_token": "gho_fjofu84u9....",
+        "expires_at": "2024-03-08T09:43:03.725Z",
         "raw": { // Raw token response from the OAuth provider: Contents vary!
             "access_token": "gho_tsXLG73f....",
             "refresh_token": "gho_fjofu84u9....",
@@ -326,17 +326,17 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
             "scope": "public_repo,user"
         }
     },
-    "connection_config": {                       
+    "connection_config": {
         "subdomain": "myshop",
         "realmId": "XXXXX",
         "instance_id": "YYYYYYY"
-    },                      
-    "account_id": 0,                              
-    "metadata": {                                 
+    },
+    "account_id": 0,
+    "metadata": {
         "myProperty": "yes",
         "filter": "closed=true"
     }
-}                              
+}
 ```
 </Expandable>
 
@@ -346,10 +346,10 @@ Sync scripts persist data updates to the Nango cache, which your app later fetch
 
 ### Save records
 
-Upserts records to the Nango cache (i.e. create new records, update existing ones). Each record needs to contain a unique `id` field used to dedupe records. 
+Upserts records to the Nango cache (i.e. create new records, update existing ones). Each record needs to contain a unique `id` field used to dedupe records.
 
 ```js
-const githubIssues: GitHubIssue[] = ...; // Fetch issues from GitHub API. 
+const githubIssues: GitHubIssue[] = ...; // Fetch issues from GitHub API.
 
 await nango.batchSave(githubIssues, 'GitHubIssue');
 ```
@@ -363,7 +363,7 @@ await nango.batchSave(githubIssues, 'GitHubIssue');
 
     <ResponseField name="modelType" type="string" required>
         The model type of the records to persist.
-    </ResponseField>   
+    </ResponseField>
 </Expandable>
 
 ### Delete records
@@ -373,7 +373,7 @@ Marks records as deleted in the Nango cache. Deleted records are still returned 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
 ```js
-const githubIssuesToDelete: { id: string }[] = ...; // Fetch issues to delete from GitHub API. 
+const githubIssuesToDelete: { id: string }[] = ...; // Fetch issues to delete from GitHub API.
 
 await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 ```
@@ -387,7 +387,7 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
 
     <ResponseField name="modelType" type="string" required>
         The model type of the records to delete.
-    </ResponseField>   
+    </ResponseField>
 </Expandable>
 
 
@@ -406,7 +406,7 @@ export default async function runAction(nango: NangoAction): Promise<Response> {
 
 ```
 
-In this case, the response to the trigger action call will be: 
+In this case, the response to the trigger action call will be:
 ```json
 {
   "error_type": "action_script_failure",

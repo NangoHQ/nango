@@ -26,6 +26,7 @@ import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { AvatarOrganization } from '../../components/AvatarCustom';
 import { IconTrash } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
+import { useListIntegration } from '../../hooks/useIntegration';
 
 export enum Tabs {
     Syncs,
@@ -49,6 +50,7 @@ export const ConnectionShow: React.FC = () => {
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: syncs, error: errorSyncs, loading: loadingSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { mutate: listIntegrationMutate } = useListIntegration(env);
 
     // Modal delete
     const [open, setOpen] = useState(false);
@@ -77,6 +79,8 @@ export const ConnectionShow: React.FC = () => {
         setLoadingDelete(true);
         const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
         setLoadingDelete(false);
+
+        void listIntegrationMutate();
 
         if (res.res.status === 200) {
             toast({ title: `Connection deleted!`, variant: 'success' });

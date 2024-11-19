@@ -58,6 +58,7 @@
         "@types/react-dom": "18.3.0",
         "@types/react-helmet": "6.1.11",
         "@types/stringify-object": "4.0.5",
+        "@uidotdev/usehooks": "2.4.1",
         "class-variance-authority": "0.7.0",
         "classnames": "2.5.1",
         "clsx": "2.1.1",

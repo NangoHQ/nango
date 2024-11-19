@@ -19,6 +19,9 @@ import { useEnvironment } from '../hooks/useEnvironment';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
+import { IconX } from '@tabler/icons-react';
+import type { MaybePromise } from '@nangohq/types';
+import { apiPatchOnboarding } from '../hooks/useOnboarding';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -28,7 +31,7 @@ export enum LeftNavBarItems {
     Syncs,
     TeamSettings,
     UserSettings,
-    InteractiveDemo,
+    GettingStarted,
     Logs
 }
 
@@ -40,6 +43,7 @@ interface MenuItem {
     value: LeftNavBarItems;
     icon: React.FC<{ className?: string }>;
     link: string;
+    onClose?: () => MaybePromise<void>;
 }
 
 const navTextColor = 'text-gray-400';
@@ -50,13 +54,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
     const signout = useSignout();
-    const { meta } = useMeta();
+    const { meta, mutate: mutateMeta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
     const { data } = useConnectionsCount(env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate } = useEnvironment(env);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -73,11 +77,21 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, [showUserSettings]);
 
     const items = useMemo(() => {
-        const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
-        if (meta && showInteractiveDemo && !meta.onboardingComplete) {
-            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/${env}/interactive-demo` });
+        const list: MenuItem[] = [];
+        if (meta && showGettingStarted && !meta.onboardingComplete) {
+            list.push({
+                name: 'Getting Started',
+                icon: RocketIcon,
+                value: LeftNavBarItems.GettingStarted,
+                link: `/${env}/getting-started`,
+                onClose: async () => {
+                    await apiPatchOnboarding(env);
+                    void mutateMeta();
+                }
+            });
         }
 
+        list.push({ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` });
         list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
@@ -89,7 +103,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         });
 
         return list;
-    }, [env, showInteractiveDemo, meta]);
+    }, [env, showGettingStarted, meta]);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
@@ -154,15 +168,22 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 <Link
                                     key={item.value}
                                     to={item.link}
-                                    className={`relative flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                    className={`relative flex h-9 p-2 gap-x-3 items-center justify-between rounded-md text-sm ${navTextColor} ${
                                         props.selectedItem === item.value ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                     }`}
                                 >
-                                    <Icon className="w-[18px] h-[18px]" />
-                                    {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
-                                        <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="w-[18px] h-[18px]" />
+                                        {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
+                                            <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                        )}
+                                        <p>{item.name}</p>
+                                    </div>
+                                    {item.onClose && (
+                                        <button className="p-2 hover:text-white" onClick={item.onClose}>
+                                            <IconX size={10} />
+                                        </button>
                                     )}
-                                    <p>{item.name}</p>
                                 </Link>
                             );
                         })}
@@ -198,17 +219,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                         <span>Team</span>
                                     </li>
 
-                                    {showInteractiveDemo && meta.onboardingComplete && (
+                                    {showGettingStarted && meta.onboardingComplete && (
                                         <Link
-                                            to="/dev/interactive-demo"
+                                            to="/dev/getting-started"
                                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.InteractiveDemo
+                                                props.selectedItem === LeftNavBarItems.GettingStarted
                                                     ? `${navActiveBg} text-white`
                                                     : `text-gray-400 ${navHoverBg}`
                                             }`}
                                         >
                                             <RocketIcon />
-                                            <p>Interactive Demo</p>
+                                            <p>Getting Started</p>
                                         </Link>
                                     )}
                                     <li

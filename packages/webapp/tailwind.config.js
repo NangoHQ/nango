@@ -63,7 +63,54 @@ module.exports = {
                 'dark-800': '#09090B',
                 'border-gray-400': '#323439',
                 'text-light': '#A9ACB3',
-                ring: '#A9ACB3'
+                ring: '#A9ACB3',
+
+                // -----
+                // Design system v2
+                //
+                'grayscale-100': '#fafafa',
+                'grayscale-200': '#ececec',
+                'grayscale-300': '#d0d1d0',
+                'grayscale-400': '#a2a2a2',
+                'grayscale-500': '#737473',
+                'grayscale-600': '#454545',
+                'grayscale-700': '#333333',
+                'grayscale-800': '#111111',
+                'grayscale-900': '#09090b',
+
+                'code-mint': '#6ed6ac',
+                'code-blue': '#90a1f0',
+                'code-violet': '#c695c6',
+                'code-gray': '#cfd4d9',
+                'code-orange': '#f09745',
+                'code-yellow': '#f7c752',
+
+                success: '#5bb98b',
+                failure: '#e5484d',
+
+                'success-100': '#f9fef1',
+                'success-200': '#edfbd8',
+                'success-300': '#d4f1c5',
+                'success-400': '#84d65a',
+                'success-500': '#2b641e',
+
+                'warning-100': '#fffcf0',
+                'warning-200': '#fef7d1',
+                'warning-300': '#fcebc2',
+                'warning-400': '#f7c752',
+                'warning-500': '#e6a70d',
+
+                'alert-100': '#fef6f1',
+                'alert-200': '#fce8db',
+                'alert-300': '#f9c9c6',
+                'alert-400': '#ef665b',
+                'alert-500': '#71192f',
+
+                'info-100': '#f0fafe',
+                'info-200': '#d7f1fd',
+                'info-300': '#c2dcfd',
+                'info-400': '#509af8',
+                'info-500': '#0c2a75'
             },
             width: {
                 largebox: '1200px',
@@ -76,6 +123,9 @@ module.exports = {
             },
             fontFamily: {
                 code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']
+            },
+            boxShadow: {
+                card: '0px 2px 50px 5px rgba(51, 51, 51, 0.30), 0px 8px 10px 0px rgba(0, 0, 0, 0.30)'
             }
         }
     },

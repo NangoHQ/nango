@@ -1,6 +1,6 @@
 import type { EndpointMethod } from './api';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
-import type { GetOnboardingStatus } from './onboarding/api';
+import type { PatchOnboarding } from './onboarding/api';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
@@ -90,7 +90,7 @@ export type PrivateApiEndpoints =
     | GetOperation
     | SearchMessages
     | SearchFilters
-    | GetOnboardingStatus
+    | PatchOnboarding
     | PostInternalConnectSessions
     | GetIntegrationFlows
     | DeleteIntegration
