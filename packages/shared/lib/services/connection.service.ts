@@ -789,7 +789,6 @@ class ConnectionService {
             .from<Connection>(`_nango_connections`)
             .select(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
-                db.knex.raw('_nango_connections.created_at as connection_created_at'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
                   (SELECT COALESCE(json_agg(json_build_object(
@@ -808,7 +807,8 @@ class ConnectionService {
             .where({
                 '_nango_connections.environment_id': environmentId,
                 '_nango_connections.deleted': false
-            });
+            })
+            .orderBy('_nango_connections.created_at', 'desc');
 
         if (search) {
             subQuery.where(function () {
@@ -824,6 +824,9 @@ class ConnectionService {
             subQuery.where('_nango_connections.connection_id', connectionId);
         }
 
+        subQuery.limit(limit);
+        subQuery.offset(page * limit);
+
         const query = db.knex
             .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
             .from(subQuery.as('rows'));
@@ -833,10 +836,6 @@ class ConnectionService {
         } else if (withError === true) {
             query.whereRaw("rows.active_logs::jsonb <> '[]'");
         }
-
-        query.limit(limit);
-        query.offset(page * limit);
-        query.orderBy('connection_created_at', 'desc');
 
         return await query;
     }
