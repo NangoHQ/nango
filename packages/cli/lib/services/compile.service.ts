@@ -36,12 +36,11 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res.success) {
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return false;
     }
 
-    const parsed = res.response!;
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
         skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
