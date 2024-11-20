@@ -372,9 +372,11 @@ class DeployService {
                 for (const event of Object.keys(onEventScripts) as OnEventType[]) {
                     for (const scriptName of onEventScripts[event]) {
                         const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
-                        if (files) {
-                            scripts.push({ name: scriptName, fileBody: files, event });
+                        if (!files) {
+                            console.log(chalk.red(`No script files found for "${scriptName}"`));
+                            return null;
                         }
+                        scripts.push({ name: scriptName, fileBody: files, event });
                     }
                 }
 
