@@ -44,6 +44,7 @@ export type * from './endpoints/db.js';
 export type * from './connect/api.js';
 export type * from './connect/session.js';
 export type * from './endUser/index.js';
+export type * from './runner/index.js';
 
 export type * from './nangoYaml/index.js';
 
