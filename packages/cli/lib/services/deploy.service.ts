@@ -360,32 +360,34 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[]; jsonSchema: JSONSchema7 } | null {
+    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
         const postData: IncomingFlowConfig[] = [];
-        const onEventScriptsByProvider: OnEventScriptsByProvider[] = [];
+        const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
         for (const integration of parsed.integrations) {
             const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
 
-            const scripts: OnEventScriptsByProvider['scripts'] = [];
-            for (const event of Object.keys(onEventScripts) as OnEventType[]) {
-                for (const scriptName of onEventScripts[event]) {
-                    const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
-                    if (files) {
-                        scripts.push({ name: scriptName, fileBody: files, event });
+            if (onEventScriptsByProvider) {
+                const scripts: OnEventScriptsByProvider['scripts'] = [];
+                for (const event of Object.keys(onEventScripts) as OnEventType[]) {
+                    for (const scriptName of onEventScripts[event]) {
+                        const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
+                        if (files) {
+                            scripts.push({ name: scriptName, fileBody: files, event });
+                        }
                     }
                 }
-            }
 
-            // for backward compatibility we also load post-connection-creation scripts
-            for (const scriptName of postConnectionScripts || []) {
-                const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'post-connection-scripts' });
-                if (files) {
-                    scripts.push({ name: scriptName, fileBody: files, event: 'post-connection-creation' });
+                // for backward compatibility we also load post-connection-creation scripts
+                for (const scriptName of postConnectionScripts || []) {
+                    const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'post-connection-scripts' });
+                    if (files) {
+                        scripts.push({ name: scriptName, fileBody: files, event: 'post-connection-creation' });
+                    }
                 }
-            }
-            if (scripts.length > 0) {
-                onEventScriptsByProvider.push({ providerConfigKey, scripts });
+                if (scripts.length > 0) {
+                    onEventScriptsByProvider.push({ providerConfigKey, scripts });
+                }
             }
 
             if (!optionalActionName) {

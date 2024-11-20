@@ -130,20 +130,10 @@ const commonValidation = z
 const addOnEventScriptsValidation = <T extends z.ZodType>(schema: T) =>
     // cannot transform commonValidation because it cannot be merge with another schema
     // https://github.com/colinhacks/zod/issues/2474
-    schema
-        .refine(
-            (data) => {
-                return data.onEventScriptsByProvider || data.postConnectionScriptsByProvider;
-            },
-            {
-                message: 'Either onEventScriptsByProvider or postConnectionScriptsByProvider must be provided',
-                path: ['onEventScriptsByProvider or postConnectionScriptsByProvider']
-            }
-        )
-        .transform((data) => ({
-            ...data,
-            onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider || []
-        }));
+    schema.transform((data) => ({
+        ...data,
+        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+    }));
 
 export const validation = addOnEventScriptsValidation(commonValidation);
 

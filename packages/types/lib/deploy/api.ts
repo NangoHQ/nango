@@ -9,7 +9,7 @@ export type PostDeployConfirmation = Endpoint<{
     Path: '/sync/deploy/confirmation';
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        onEventScriptsByProvider: OnEventScriptsByProvider[];
+        onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         reconcile: boolean;
         debug: boolean;
         singleDeployMode?: boolean;
@@ -23,7 +23,7 @@ export type PostDeploy = Endpoint<{
     Path: '/sync/deploy';
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        onEventScriptsByProvider: OnEventScriptsByProvider[];
+        onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
@@ -41,7 +41,7 @@ export type PostDeployInternal = Endpoint<{
     };
     Body: {
         flowConfigs: IncomingFlowConfig[];
-        onEventScriptsByProvider: OnEventScriptsByProvider[];
+        onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
