@@ -1,6 +1,6 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { NANGO_VERSION, environmentService, getOnboardingProgress } from '@nangohq/shared';
+import { NANGO_VERSION, environmentService, getOnboarding } from '@nangohq/shared';
 import type { GetMeta } from '@nangohq/types';
 
 export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
@@ -17,7 +17,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
     }
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
-    const onboarding = await getOnboardingProgress(sessionUser.id);
+    const onboarding = await getOnboarding(sessionUser.id);
     res.status(200).send({
         data: {
             environments,

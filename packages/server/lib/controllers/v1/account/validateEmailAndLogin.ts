@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, userService, AnalyticsTypes, environmentService, createOnboardingProvider } from '@nangohq/shared';
+import { analytics, userService, AnalyticsTypes } from '@nangohq/shared';
 import type { ValidateEmailAndLogin } from '@nangohq/types';
 import { userToAPI } from '../../../formatters/user.js';
 
@@ -60,16 +60,6 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
     const { account_id, email } = user;
 
     void analytics.track(AnalyticsTypes.ACCOUNT_CREATED, account_id, {}, { email });
-
-    const env = await environmentService.getByEnvironmentName(account_id, 'dev');
-
-    if (env) {
-        try {
-            await createOnboardingProvider({ envId: env.id });
-        } catch {
-            logger.error(`Error creating onboarding provider for environment ${env.id}`);
-        }
-    }
 
     req.login(user, function (err) {
         if (err) {

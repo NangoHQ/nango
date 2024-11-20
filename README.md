@@ -79,7 +79,7 @@ But remember, Nango can work with **any API and any use-case**!
 
 # 🚀 Get started
 
-Sign up for free and try the interactive demo:
+Sign up for free:
 
 <a href="https://app.nango.dev/signup" target="_blank">
   <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>

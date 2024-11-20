@@ -49,7 +49,7 @@ export const EmailVerified: React.FC = () => {
 
                     signin(user);
                     toast.success('Email verified successfully!', { position: toast.POSITION.BOTTOM_CENTER });
-                    navigate(`/${env}/interactive-demo`);
+                    navigate(`/${env}/getting-started`);
                 }
             } catch {
                 toast.error('An error occurred while verifying the email. Please try again.', { position: toast.POSITION.BOTTOM_CENTER });

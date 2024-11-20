@@ -38,7 +38,6 @@ export enum LogTypes {
 
 export enum SpanTypes {
     CONNECTION_TEST = 'nango.server.hooks.connectionTest',
-    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
     RUNNER_EXEC = 'nango.runner.exec'
 }
 

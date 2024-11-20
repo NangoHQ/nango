@@ -12,7 +12,6 @@ import {
 import type { CreateSyncArgs } from './manager.service.js';
 import syncManager from './manager.service.js';
 import connectionService from '../connection.service.js';
-import { DEMO_GITHUB_CONFIG_KEY, DEMO_SYNC_NAME } from '../onboarding.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import { stringifyError } from '@nangohq/utils';
@@ -575,69 +574,6 @@ export const getAndReconcileDifferences = async ({
         deletedModels
     };
 };
-
-export interface PausableSyncs {
-    id: string;
-    name: string;
-    config_id: number;
-    provider_unique_key: string;
-    provider: string;
-    environment_id: number;
-    environment_name: string;
-    account_id: number;
-    account_name: string;
-    sync_config_id: number;
-    connection_unique_id: number;
-    connection_id: string;
-    unique_key: string;
-    schedule_id: string;
-}
-export async function findDemoSyncs(): Promise<PausableSyncs[]> {
-    const q = db.knex
-        .queryBuilder()
-        .from('_nango_syncs')
-        .select(
-            '_nango_syncs.id',
-            '_nango_syncs.name',
-            '_nango_accounts.id as account_id',
-            '_nango_accounts.name as account_name',
-            '_nango_environments.id as environment_id',
-            '_nango_environments.name as environment_name',
-            '_nango_configs.id as config_id',
-            '_nango_configs.provider',
-            '_nango_configs.unique_key as provider_unique_key',
-            '_nango_connections.id as connection_unique_id',
-            '_nango_connections.connection_id',
-            '_nango_sync_configs.id as sync_config_id'
-        )
-        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
-        .join('_nango_environments', '_nango_environments.id', '_nango_connections.environment_id')
-        .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-        .join('_nango_configs', function () {
-            this.on('_nango_configs.environment_id', '_nango_connections.environment_id').on(
-                '_nango_configs.unique_key',
-                '_nango_connections.provider_config_key'
-            );
-        })
-        .join('_nango_sync_configs', function () {
-            this.on('_nango_sync_configs.id', '_nango_syncs.sync_config_id')
-                .onVal('_nango_sync_configs.type', 'sync')
-                .onVal('_nango_sync_configs.deleted', false)
-                .onVal('_nango_sync_configs.active', true);
-        })
-        .where({
-            '_nango_syncs.name': DEMO_SYNC_NAME,
-            '_nango_environments.name': 'dev',
-            '_nango_configs.unique_key': DEMO_GITHUB_CONFIG_KEY,
-            '_nango_configs.provider': 'github',
-            '_nango_syncs.deleted': false
-        })
-        .where(db.knex.raw("_nango_syncs.updated_at >  NOW() - INTERVAL '30d'")) // making sure number of syncs returned doesn't grow too large over time. We are assuming the pausing is running at least once during this period
-        .where(db.knex.raw("_nango_syncs.updated_at <  NOW() - INTERVAL '25h'")); // only pausing demo syncs that are older than 25h
-    const syncs: PausableSyncs[] = await q;
-
-    return syncs;
-}
 
 export async function findRecentlyDeletedSync(): Promise<{ id: string; environmentId: number; connectionId: number; models: string[] }[]> {
     const q = db.knex

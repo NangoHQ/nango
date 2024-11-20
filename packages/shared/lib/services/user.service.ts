@@ -2,20 +2,19 @@ import db from '@nangohq/database';
 import * as uuid from 'uuid';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err } from '@nangohq/utils';
-import type { User } from '../models/Admin.js';
 import type { DBUser } from '@nangohq/types';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
 class UserService {
-    async getUserById(id: number): Promise<User | null> {
-        const result = await db.knex.select<User>('*').from<User>(`_nango_users`).where({ id, suspended: false }).first();
+    async getUserById(id: number): Promise<DBUser | null> {
+        const result = await db.knex.select<DBUser>('*').from<DBUser>(`_nango_users`).where({ id, suspended: false }).first();
 
         return result || null;
     }
 
-    async getUserByUuid(uuid: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ uuid }).first();
+    async getUserByUuid(uuid: string): Promise<DBUser | null> {
+        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ uuid }).first();
 
         return result || null;
     }
@@ -36,12 +35,12 @@ class UserService {
         return Err(new Error('user_not_found'));
     }
 
-    async refreshEmailVerificationToken(expiredToken: string): Promise<User | null> {
+    async refreshEmailVerificationToken(expiredToken: string): Promise<DBUser | null> {
         const newToken = uuid.v4();
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
 
         const result = await db.knex
-            .from<User>(`_nango_users`)
+            .from<DBUser>(`_nango_users`)
             .where({ email_verification_token: expiredToken })
             .update({
                 email_verification_token: newToken,
@@ -52,8 +51,8 @@ class UserService {
         return result[0] || null;
     }
 
-    async getUsersByAccountId(accountId: number): Promise<User[]> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ account_id: accountId, suspended: false });
+    async getUsersByAccountId(accountId: number): Promise<DBUser[]> {
+        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ account_id: accountId, suspended: false });
 
         return result;
     }
@@ -61,17 +60,17 @@ class UserService {
     async countUsers(accountId: number): Promise<number> {
         const result = await db.knex
             .select(db.knex.raw('COUNT(id) as total'))
-            .from<User>(`_nango_users`)
+            .from<DBUser>(`_nango_users`)
             .where({ account_id: accountId, suspended: false })
             .first();
 
-        return result.total || 0;
+        return result.total ? parseInt(result.total, 10) : 0;
     }
 
-    async getAnUserByAccountId(accountId: number): Promise<User | null> {
+    async getAnUserByAccountId(accountId: number): Promise<DBUser | null> {
         const result = await db.knex
             .select('*')
-            .from<User>(`_nango_users`)
+            .from<DBUser>(`_nango_users`)
             .where({
                 account_id: accountId,
                 suspended: false
@@ -86,14 +85,14 @@ class UserService {
         return result[0];
     }
 
-    async getUserByEmail(email: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ email: email }).first();
+    async getUserByEmail(email: string): Promise<DBUser | null> {
+        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ email: email }).first();
 
         return result || null;
     }
 
-    async getUserByResetPasswordToken(link: string): Promise<User | null> {
-        const result = await db.knex.select('*').from<User>(`_nango_users`).where({ reset_password_token: link }).first();
+    async getUserByResetPasswordToken(link: string): Promise<DBUser | null> {
+        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ reset_password_token: link }).first();
 
         return result || null;
     }
@@ -112,10 +111,10 @@ class UserService {
         salt?: string;
         account_id: number;
         email_verified: boolean;
-    }): Promise<User | null> {
+    }): Promise<DBUser | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
-        const result: Pick<User, 'id'>[] = await db.knex
-            .from<User>('_nango_users')
+        const result: Pick<DBUser, 'id'>[] = await db.knex
+            .from<DBUser>('_nango_users')
             .insert({
                 email,
                 name,
@@ -136,15 +135,15 @@ class UserService {
         return null;
     }
 
-    async editUserPassword(user: User) {
-        return db.knex.from<User>(`_nango_users`).where({ id: user.id }).update({
+    async editUserPassword(user: Pick<DBUser, 'id' | 'reset_password_token' | 'hashed_password'>) {
+        return db.knex.from<DBUser>(`_nango_users`).where({ id: user.id }).update({
             reset_password_token: user.reset_password_token,
             hashed_password: user.hashed_password
         });
     }
 
     async changePassword(newPassword: string, oldPassword: string, id: number) {
-        return db.knex.from<User>(`_nango_users`).where({ id }).update({
+        return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({
             hashed_password: newPassword,
             salt: oldPassword
         });
@@ -152,12 +151,12 @@ class UserService {
 
     async suspendUser(id: number) {
         if (id !== null && id !== undefined) {
-            await db.knex.from<User>(`_nango_users`).where({ id }).update({ suspended: true, suspended_at: new Date() });
+            await db.knex.from<DBUser>(`_nango_users`).where({ id }).update({ suspended: true, suspended_at: new Date() });
         }
     }
 
     async verifyUserEmail(id: number) {
-        return db.knex.from<User>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
+        return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
     }
 
     async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<DBUser | null> {
