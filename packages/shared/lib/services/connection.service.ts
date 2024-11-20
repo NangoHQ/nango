@@ -742,15 +742,17 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
-    public async count({ environmentId }: { environmentId: number }): Promise<Result<{ total: number; withAuthError: number }>> {
+    public async count({ environmentId }: { environmentId: number }): Promise<Result<{ total: number; withAuthError: number; withSyncError: number }>> {
         const query = db.knex
             .from(`_nango_connections`)
-            .select<{ total_connection: string; with_auth_error: string }>(
+            .select<{ total_connection: string; with_auth_error: string; with_sync_error: string }>(
                 db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
-                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_auth_error')
+                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'auth') as with_auth_error"),
+                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'sync') as with_sync_error"),
+                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
             )
             .leftJoin('_nango_active_logs', (join) => {
-                join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true).andOnVal('type', 'auth');
+                join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true);
             })
             .where({
                 '_nango_connections.environment_id': environmentId,
@@ -762,7 +764,7 @@ class ConnectionService {
             return Err('failed_to_count');
         }
 
-        return Ok({ total: Number(res.total_connection), withAuthError: Number(res.with_auth_error) });
+        return Ok({ total: Number(res.total_connection), withAuthError: Number(res.with_auth_error), withSyncError: Number(res.with_sync_error) });
     }
 
     /**

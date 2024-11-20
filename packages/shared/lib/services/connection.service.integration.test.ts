@@ -7,6 +7,7 @@ import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js
 import { createConnectionSeeds, createConnectionSeed } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import { errorNotificationService } from './notification/error.service.js';
+import { createSyncSeeds } from '../seeders/sync.seeder.js';
 
 describe('Connection service integration tests', () => {
     beforeAll(async () => {
@@ -207,6 +208,48 @@ describe('Connection service integration tests', () => {
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notionOK.connection_id]);
+        });
+    });
+
+    describe('count', () => {
+        it('return total and error counts', async () => {
+            const env = await createEnvironmentSeed();
+
+            const config = await createConfigSeed(env, 'notion', 'notion');
+
+            await createConnectionSeed(env, 'notion');
+
+            const notionAuthError = await createConnectionSeed(env, 'notion');
+            await errorNotificationService.auth.create({
+                type: 'auth',
+                action: 'connection_test',
+                connection_id: notionAuthError.id!,
+                log_id: Math.random().toString(36).substring(7),
+                active: true
+            });
+
+            const notionSyncError = await createConnectionSeed(env, 'notion');
+            const sync = await createSyncSeeds({
+                connectionId: notionSyncError.id!,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'test'
+            });
+            await errorNotificationService.sync.create({
+                type: 'sync',
+                action: 'sync_test',
+                connection_id: notionSyncError.id!,
+                log_id: Math.random().toString(36).substring(7),
+                active: true,
+                sync_id: sync.sync.id
+            });
+
+            const countResult = await connectionService.count({ environmentId: env.id });
+            expect(countResult.isOk()).toBeTruthy();
+            const count = countResult.unwrap();
+            expect(count.total).toBe(3);
+            expect(count.withAuthError).toBe(1);
+            expect(count.withSyncError).toBe(1);
         });
     });
 });
