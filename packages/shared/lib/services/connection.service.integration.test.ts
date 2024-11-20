@@ -245,8 +245,8 @@ describe('Connection service integration tests', () => {
             });
 
             const countResult = await connectionService.count({ environmentId: env.id });
-            expect(countResult.isOk()).toBeTruthy();
             const count = countResult.unwrap();
+
             expect(count.total).toBe(3);
             expect(count.withAuthError).toBe(1);
             expect(count.withSyncError).toBe(1);
