@@ -72,10 +72,6 @@ describe('Connection service integration tests', () => {
     });
 
     describe('listConnections', () => {
-        function connectionIds(listResult: Awaited<ReturnType<typeof connectionService.listConnections>>) {
-            return listResult.map((c) => c.connection.connection_id);
-        }
-
         it('should return all connections', async () => {
             const env = await createEnvironmentSeed();
 
@@ -89,7 +85,8 @@ describe('Connection service integration tests', () => {
                 environmentId: env.id
             });
 
-            expect(connectionIds(dbConnections)).toEqual([notion.connection_id, google.connection_id]);
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([notion.connection_id, google.connection_id]);
         });
 
         it('should paginate', async () => {
@@ -126,7 +123,8 @@ describe('Connection service integration tests', () => {
                 integrationIds: ['google']
             });
 
-            expect(connectionIds(dbConnections)).toEqual([google.connection_id]);
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([google.connection_id]);
         });
 
         it('should filter connections by connection id', async () => {
@@ -142,7 +140,8 @@ describe('Connection service integration tests', () => {
                 connectionId: notion.connection_id
             });
 
-            expect(connectionIds(dbConnections)).toEqual([notion.connection_id]);
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([notion.connection_id]);
         });
 
         it('should filter connections by search', async () => {
@@ -182,7 +181,8 @@ describe('Connection service integration tests', () => {
                 withError: true
             });
 
-            expect(connectionIds(dbConnections)).toEqual([notionError.connection_id]);
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([notionError.connection_id]);
         });
 
         it('should return connections without errors', async () => {
@@ -205,7 +205,8 @@ describe('Connection service integration tests', () => {
                 withError: false
             });
 
-            expect(connectionIds(dbConnections)).toEqual([notionOK.connection_id]);
+            const connectionIds = dbConnections.map((c) => c.connection.connection_id);
+            expect(connectionIds).toEqual([notionOK.connection_id]);
         });
     });
 });
