@@ -21,7 +21,7 @@ import featureFlags from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
-export * from './services/sync/on-event-scripts.service.js';
+export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/run.utils.js';
