@@ -110,7 +110,7 @@ export class DryRunService {
         }
 
         let providerConfigKey: string | undefined;
-        let isOnventScript = false;
+        let isOnEventScript = false;
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
@@ -138,17 +138,17 @@ export class DryRunService {
                     if (script !== syncName) {
                         continue;
                     }
-                    if (isOnventScript) {
+                    if (isOnEventScript) {
                         console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
                         return;
                     }
-                    isOnventScript = true;
+                    isOnEventScript = true;
                     providerConfigKey = integration.providerConfigKey;
                 }
             }
         }
 
-        if ((!scriptInfo && !isOnventScript) || !providerConfigKey) {
+        if ((!scriptInfo && !isOnEventScript) || !providerConfigKey) {
             console.log(
                 chalk.red(
                     `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
@@ -206,7 +206,7 @@ export class DryRunService {
         let type: ScriptFileType = 'syncs';
         if (scriptInfo?.type === 'action') {
             type = 'actions';
-        } else if (isOnventScript) {
+        } else if (isOnEventScript) {
             type = 'on-events';
         }
 

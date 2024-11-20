@@ -368,12 +368,11 @@ class DeployService {
             const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
 
             const scripts: OnEventScriptsByProvider['scripts'] = [];
-            for (const event in onEventScripts || {}) {
-                const e = event as OnEventType;
-                for (const scriptName of onEventScripts[e]) {
+            for (const event of Object.keys(onEventScripts) as OnEventType[]) {
+                for (const scriptName of onEventScripts[event]) {
                     const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
                     if (files) {
-                        scripts.push({ name: scriptName, fileBody: files, event: e });
+                        scripts.push({ name: scriptName, fileBody: files, event });
                     }
                 }
             }

@@ -37,7 +37,10 @@ export interface NangoYamlV2Integration {
     syncs?: Record<string, NangoYamlV2IntegrationSync>;
     actions?: Record<string, NangoYamlV2IntegrationAction>;
     'on-events'?: Record<string, string[]>;
-    'post-connection-scripts'?: string[]; // DEPRECATED
+    /**
+     * @deprecated
+     */
+    'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
     endpoint: string | string[] | NangoYamlV2Endpoint | NangoYamlV2Endpoint[];
@@ -89,7 +92,10 @@ export interface NangoYamlParsedIntegration {
     syncs: ParsedNangoSync[];
     actions: ParsedNangoAction[];
     onEventScripts: Record<OnEventType, string[]>;
-    postConnectionScripts?: string[]; // DEPRECATED
+    /**
+     * @deprecated
+     */
+    postConnectionScripts?: string[];
 }
 export interface ParsedNangoSync {
     name: string;
