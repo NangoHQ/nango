@@ -1,7 +1,6 @@
 import { basePublicUrl } from '@nangohq/utils';
 import { EmailClient } from '../clients/email.client.js';
-import type { User } from '@nangohq/shared';
-import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 
 export function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
@@ -21,7 +20,7 @@ Team Nango</p>
     );
 }
 
-export async function sendResetPasswordEmail({ user, token }: { user: User; token: string }) {
+export async function sendResetPasswordEmail({ user, token }: { user: DBUser; token: string }) {
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         user.email,
@@ -46,13 +45,13 @@ export async function sendInviteEmail({
 }: {
     email: string;
     account: DBTeam;
-    user: Pick<User, 'name'>;
+    user: Pick<DBUser, 'name'>;
     invitation: DBInvitation;
 }) {
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         email,
-        `You’re Invited! Join "${account.name}" on Nango`,
+        `You're Invited! Join "${account.name}" on Nango`,
         `<p>Hi,</p>
 
 <p>${user.name} invites you to join "${account.name}" on Nango.</p>
