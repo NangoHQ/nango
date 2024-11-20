@@ -4356,7 +4356,7 @@ integrations:
                 endpoint:
                     method: PATCH
                     path: /companies
-                    group: Comapnies
+                    group: Companies
                 input: UpdateCompanyInput
                 scopes:
                     - crm.objects.companies.write
