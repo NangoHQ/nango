@@ -20,6 +20,7 @@
                     },
                     "on-events": {
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "post-connection-creation": {
                                 "type": "array",
