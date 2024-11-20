@@ -250,6 +250,7 @@ describe('Connection service integration tests', () => {
             expect(count.total).toBe(3);
             expect(count.withAuthError).toBe(1);
             expect(count.withSyncError).toBe(1);
+            expect(count.withError).toBe(2);
         });
     });
 });
