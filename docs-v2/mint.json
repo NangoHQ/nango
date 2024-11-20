@@ -355,6 +355,7 @@
                 "integrations/all/booking-com",
                 "integrations/all/box",
                 "integrations/all/braintree",
+                "integrations/all/brevo",
                 "integrations/all/brex",
                 "integrations/all/brightcrowd",
                 "integrations/all/builder-io",
