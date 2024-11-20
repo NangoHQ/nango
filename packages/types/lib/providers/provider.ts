@@ -44,7 +44,7 @@ export interface BaseProvider {
     proxy?: {
         base_url: string;
         headers?: Record<string, string>;
-        connection_base_url?: string;
+        connection_config?: Record<string, string>;
         query?: {
             api_key: string;
         };
@@ -127,7 +127,7 @@ export interface ProviderJwt extends BaseProvider {
         };
     };
 }
-export interface ProviderTwoStep extends BaseProvider {
+export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
@@ -136,6 +136,7 @@ export interface ProviderTwoStep extends BaseProvider {
     };
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
+    body_format?: 'xml' | 'json';
 }
 export interface ProviderSignature extends BaseProvider {
     signature: {

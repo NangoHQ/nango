@@ -2655,6 +2655,17 @@ integrations:
                     path: /conversations
                 track_deletes: true
                 sync_type: full
+        actions:
+            conversation:
+                description: >-
+                    List the messages in a conversation in reverse chronological order
+                    (newest first).
+                endpoint:
+                    method: GET
+                    path: /conversations/all
+                    group: Conversations
+                output: FrontMessageOutput
+                input: SingleConversation
         models:
             Conversation:
                 id: string
@@ -2698,6 +2709,95 @@ integrations:
                 name: string
                 handle: string
                 role: from | to | cc | bcc
+            SingleConversation:
+                id: string
+                query?: QueryParams
+            RecipientsObj:
+                _links:
+                    related:
+                        contact: string
+                name: string
+                handle: string
+                role: from | to | cc | bcc
+            AttachmentObj:
+                id: string
+                filename: string
+                url: string
+                content_type: string
+                size: number
+                metadata:
+                    is_inline: boolean
+                    cid: string
+            AuthorObj:
+                _links:
+                    self: string
+                    related:
+                        inboxes: string
+                        conversations: string
+                id: string
+                email: string
+                username: string
+                first_name: string
+                last_name: string
+                is_admin: boolean
+                is_blocked: boolean
+                custom_fields: object
+            FrontMessages:
+                _links:
+                    self: string
+                    related:
+                        conversation: string
+                        message_replied_to?: string
+                        message_seen: string
+                id: string
+                version?: string | null
+                blurb: string
+                error_type: string | null
+                type: >-
+                    call | custom | email | facebook | front_chat | googleplay | intercom
+                    | internal | phone-call | sms | tweet | tweet_dm | whatsapp | yalo_wha
+                is_draft: boolean
+                is_inbound: boolean
+                draft_mode: string | null
+                created_at: number
+                subject: string
+                author: AuthorObj | null
+                recipients: RecipientsObj[]
+                body: string
+                text: string
+                attachments?: AttachmentObj[]
+                signature?: SignatureObj | null
+                metadata?:
+                    intercom_url?: string
+                    duration?: number
+                    have_been_answered?: boolean
+                    external_id?: string
+                    twitter_url?: string
+                    is_retweet?: boolean
+                    have_been_retweeted?: boolean
+                    have_been_favorited?: boolean
+                    thread_ref?: string
+                    headers?: object
+                    chat_visitor_url?: string
+            FrontMessageOutput:
+                messages: FrontMessages[]
+            SignatureObj:
+                _links?:
+                    related?:
+                        owner?: string
+                id?: string
+                name?: string
+                body?: string
+                sender_info?: string
+                is_visible_for_all_teammate_channels?: boolean
+                is_default?: boolean
+                is_private?: boolean
+                channel_ids?: string[]
+            QueryParams:
+                limit?: number
+                page_token?: string
+                sort_by?: string
+                sort_order?: asc | desc
     github:
         syncs:
             issues:
@@ -5668,6 +5768,29 @@ integrations:
                 updatedAt: date
                 teamId: string
                 projectIds: string
+    linkedin:
+        actions:
+            post:
+                description: Create a linkedin post with an optional video
+                input: LinkedinVideoPost
+                output: CreateLinkedInPostWithVideoResponse
+                endpoint: POST /videos
+                scopes:
+                    - openid
+                    - profile
+                    - r_basicprofile
+                    - w_member_social
+                    - email
+                    - w_organization_social
+                    - r_organization_social
+        models:
+            LinkedinVideoPost:
+                text: string
+                videoURN: string
+                videoTitle: string
+                ownerId: string
+            CreateLinkedInPostWithVideoResponse:
+                succcess: boolean
     luma:
         syncs:
             list-events:
@@ -6509,7 +6632,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /emails
-                version: 1.0.1
+                version: 1.1.0
         actions:
             fetch-attachment:
                 input: DocumentInput
@@ -7140,6 +7263,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /customers
+                    group: Customers
             accounts:
                 description: >
                     Fetches all accounts in QuickBooks. Handles both active and archived
@@ -7151,6 +7275,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /accounts
+                    group: Accounts
             payments:
                 description: >
                     Fetches all payments in QuickBooks. Handles both active and voided
@@ -7162,6 +7287,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /payments
+                    group: Payments
             items:
                 description: >
                     Fetches all items in QuickBooks. Handles both active and archived
@@ -7173,6 +7299,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /items
+                    group: Items
             invoices:
                 description: >
                     Fetches all invoices in QuickBooks. Handles both active and voided
@@ -7184,6 +7311,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /invoices
+                    group: Invoices
         actions:
             create-customer:
                 description: |
@@ -7194,6 +7322,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /customers
+                    group: Customers
             update-customer:
                 description: |
                     Update a single customer in QuickBooks.
@@ -7203,6 +7332,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /customers
+                    group: Customers
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -7212,6 +7342,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /items
+                    group: Items
             update-item:
                 description: |
                     Update a single item in QuickBooks.
@@ -7221,6 +7352,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /items
+                    group: Items
             create-account:
                 description: |
                     Creates a single account in QuickBooks.
@@ -7230,6 +7362,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /accounts
+                    group: Accounts
             update-account:
                 description: |
                     Updates a single account in QuickBooks.
@@ -7239,6 +7372,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /accounts
+                    group: Accounts
             create-invoice:
                 description: |
                     Creates a single invoice in QuickBooks.
@@ -7248,6 +7382,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /invoices
+                    group: Invoices
             update-invoice:
                 description: |
                     Updates a single invoice in QuickBooks.
@@ -7257,6 +7392,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /invoices
+                    group: Invoices
             create-credit-memo:
                 description: |
                     Creates a single credit memo in QuickBooks.
@@ -7266,6 +7402,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /credit-memos
+                    group: Credit Memos
             update-credit-memo:
                 description: |
                     Updates a single credit memo in QuickBooks.
@@ -7275,6 +7412,7 @@ integrations:
                 endpoint:
                     method: PUT
                     path: /credit-memos
+                    group: Credit Memos
             create-payment:
                 description: |
                     Creates a single payment in QuickBooks.
@@ -7284,6 +7422,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /payments
+                    group: Payments
         models:
             Updates:
                 id: string

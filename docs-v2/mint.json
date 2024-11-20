@@ -124,7 +124,6 @@
             "group": "Get Started",
             "pages": [
                 "introduction",
-                "demo",
                 "sample-app"
             ]
         },
@@ -344,6 +343,7 @@
                 "integrations/all/autodesk",
                 "integrations/all/bamboohr",
                 "integrations/all/battlenet",
+                "integrations/all/beehiiv",
                 "integrations/all/blandai",
                 "integrations/all/bigcommerce",
                 "integrations/all/bitbucket",
@@ -355,6 +355,7 @@
                 "integrations/all/booking-com",
                 "integrations/all/box",
                 "integrations/all/braintree",
+                "integrations/all/brevo",
                 "integrations/all/brex",
                 "integrations/all/brightcrowd",
                 "integrations/all/builder-io",
@@ -439,6 +440,7 @@
                 "integrations/all/google-play",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+                "integrations/all/grain",
                 "integrations/all/gumroad",
                 "integrations/all/gusto",
                 "integrations/all/hackerrank-work",

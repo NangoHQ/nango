@@ -278,9 +278,9 @@ export class NangoError extends Error {
                 this.message = `Failed to perform the webhook`;
                 break;
 
-            case 'post_connection_failure':
+            case 'on_event_failure':
                 this.status = 400;
-                this.message = `Failed to perform the post connection script`;
+                this.message = `Failed to perform the on-event script`;
                 break;
 
             case 'missing_provider_template':
@@ -575,8 +575,8 @@ export class NangoError extends Error {
                 this.message = `The webhook script failed with an error: ${this.payload}`;
                 break;
 
-            case 'post_connection_script_failure':
-                this.message = `The post-connection script failed with an error: ${this.payload}`;
+            case 'on_event_script_failure':
+                this.message = `The on-event script failed with an error: ${this.payload}`;
                 break;
 
             case 'pass_through_error':
@@ -693,6 +693,11 @@ export class NangoError extends Error {
             case 'wsse_token_generation_error':
                 this.status = 500;
                 this.message = `An error occured while generating an WSSE token`;
+                break;
+
+            case 'script_aborted':
+                this.status = 410;
+                this.message = `The script was aborted`;
                 break;
 
             default:

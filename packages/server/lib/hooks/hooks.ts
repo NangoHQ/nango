@@ -76,13 +76,13 @@ export const connectionCreated = async (
 ): Promise<void> => {
     const { connection, environment, auth_mode } = createdConnectionPayload;
 
-    if (options.initiateSync === true && !isHosted) {
-        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
-    }
-
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, provider, logContextGetter);
         await onConnectionCreated(createdConnectionPayload, provider, logContextGetter);
+    }
+
+    if (options.initiateSync === true && !isHosted) {
+        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);

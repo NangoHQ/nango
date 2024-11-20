@@ -13,7 +13,6 @@ import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
-import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
@@ -106,6 +105,7 @@ import { getConnectionsCount } from './controllers/v1/connections/getConnections
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { cliMinVersion } from './middleware/cliVersionCheck.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
+import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 
 export const router = express.Router();
 
@@ -347,12 +347,7 @@ web.route('/api/v1/flows/:id/enable').patch(webAuth, patchFlowEnable);
 web.route('/api/v1/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
-web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
-web.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
-web.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
-web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
-web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
-web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
+web.route('/api/v1/onboarding').patch(webAuth, patchOnboarding);
 
 web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 web.route('/api/v1/logs/messages').post(webAuth, searchMessages);

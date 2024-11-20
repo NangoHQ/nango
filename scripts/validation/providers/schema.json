@@ -139,8 +139,9 @@
                         "base_url": {
                             "type": "string"
                         },
-                        "connection_base_url": {
-                            "type": "string"
+                        "connection_config": {
+                            "type": "object",
+                            "additionalProperties": true
                         },
                         "decompress": {
                             "type": "boolean"
@@ -319,7 +320,7 @@
                             "enum": ["authorization_code", "client_credentials"]
                         },
                         "request": {
-                            "type": "string"
+                            "anyOf": [{ "type": "string" }, { "type": "object" }]
                         }
                     }
                 },

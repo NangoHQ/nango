@@ -34,7 +34,7 @@ const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
 const nangoPropsSchema = z
     .object({
-        scriptType: z.enum(['action', 'webhook', 'sync', 'post-connection-script']),
+        scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
         connectionId: z.string().min(1),
         environmentId: z.number(),
         environmentName: z.string().min(1),

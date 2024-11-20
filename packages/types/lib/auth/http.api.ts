@@ -24,7 +24,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/tba';
+    Path: '/auth/tba/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -49,7 +49,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/tableau';
+    Path: '/auth/tableau/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -79,7 +79,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/jwt';
+    Path: '/auth/jwt/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -99,7 +99,7 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/unauthenticated';
+    Path: '/auth/unauthenticated/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -125,7 +125,7 @@ export type PostPublicBillAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/bill';
+    Path: '/auth/bill/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -146,7 +146,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/two-step';
+    Path: '/auth/two-step/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>
@@ -166,15 +166,11 @@ export type PostPublicSignatureAuthorization = Endpoint<{
         username: string;
         password: string;
     };
-    Querystring: {
-        connection_id?: string | undefined;
-        params?: Record<string, any> | undefined;
-        hmac?: string | undefined;
-    };
+    Querystring: ConnectionQueryString;
     Params: {
         providerConfigKey: string;
     };
-    Path: '/auth/signature-based';
+    Path: '/auth/signature-based/:providerConfigKey';
     Error:
         | ApiError<'invalid_body'>
         | ApiError<'invalid_query_params'>

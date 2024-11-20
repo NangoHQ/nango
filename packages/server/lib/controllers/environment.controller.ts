@@ -87,7 +87,7 @@ class EnvironmentController {
         }
     }
 
-    async getHmacDigest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    getHmacDigest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment } = res.locals;
             const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
@@ -103,7 +103,7 @@ class EnvironmentController {
             }
 
             if (environment.hmac_enabled && environment.hmac_key) {
-                const digest = await hmacService.digest(environment.id, providerConfigKey as string, connectionId as string);
+                const digest = hmacService.computeDigest({ key: environment.hmac_key, values: [providerConfigKey as string, connectionId as string] });
                 res.status(200).send({ hmac_digest: digest });
             } else {
                 res.status(200).send({ hmac_digest: null });
@@ -132,14 +132,13 @@ class EnvironmentController {
                 return;
             }
 
-            const digest = await hmacService.digest(info.environmentId, integration_key, connectionId as string);
-
             const environment = await environmentService.getById(info.environmentId);
-
             if (!environment) {
                 errorManager.errRes(res, 'account_not_found');
                 return;
             }
+
+            const digest = hmacService.computeDigest({ key: environment.hmac_key!, values: [integration_key, connectionId as string] });
 
             res.status(200).send({ hmac_digest: digest, public_key: environment.public_key, integration_key });
         } catch (err) {

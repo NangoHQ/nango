@@ -16,8 +16,12 @@ describe('package', () => {
         const success = await compileAllFiles({ fullPath: dir, debug: false });
         expect(success).toBe(true);
 
-        const { response } = parse(dir);
-        const res = deployService.package({ parsed: response!.parsed!, debug: false, fullPath: dir });
+        const parsing = parse(dir);
+        if (parsing.isErr()) {
+            throw parsing.error;
+        }
+
+        const res = deployService.package({ parsed: parsing.value.parsed!, debug: false, fullPath: dir });
         expect(removeVersion(JSON.stringify(res!.jsonSchema, null, 2))).toMatchSnapshot();
         expect(
             res?.flowConfigs.map((flow) => {

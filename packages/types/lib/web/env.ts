@@ -12,6 +12,6 @@ export interface WindowEnv {
         scripts: boolean;
         auth: boolean;
         managedAuth: boolean;
-        interactiveDemo: boolean;
+        gettingStarted: boolean;
     };
 }

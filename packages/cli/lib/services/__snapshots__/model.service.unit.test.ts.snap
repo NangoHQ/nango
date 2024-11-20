@@ -287,7 +287,7 @@ export interface DryRunServiceInterface {
     run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 export interface NangoProps {
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
+    scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
     secretKey: string;
     team?: Pick<DBTeam, 'id' | 'name'>;
@@ -359,7 +359,7 @@ export declare class NangoAction {
     });
     protected stringify(): string;
     private proxyConfig;
-    protected exitSyncIfAborted(): void;
+    protected throwIfAborted(): void;
     proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;

@@ -40,7 +40,6 @@ const queryStringValidation = z
         params: z.record(z.any()).optional(),
         user_scope: z.string().optional()
     })
-    .strict()
     .and(connectionCredential);
 
 const paramValidation = z
@@ -97,9 +96,11 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
-        if (!checked) {
-            return;
+        if (authType !== 'connectSession') {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);

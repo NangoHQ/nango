@@ -1,6 +1,6 @@
 import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { TaskPostConnection } from '@nangohq/nango-orchestrator';
+import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config, SyncConfig, NangoConnection, NangoProps } from '@nangohq/shared';
 import { configService, environmentService, getApiUrl, getRunnerFlags, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
@@ -8,7 +8,7 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 
-export async function startPostConnection(task: TaskPostConnection): Promise<Result<void>> {
+export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
@@ -28,14 +28,14 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
-        await logCtx.info(`Starting post connection script '${task.postConnectionName}'`, {
-            postConnection: task.postConnectionName,
+        await logCtx.info(`Starting script '${task.onEventName}'`, {
+            postConnection: task.onEventName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
         });
 
         syncConfig = {
-            sync_name: task.postConnectionName,
+            sync_name: task.onEventName,
             file_location: task.fileLocation,
             models: [],
             track_deletes: false,
@@ -54,7 +54,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
         };
 
         const nangoProps: NangoProps = {
-            scriptType: 'post-connection-script',
+            scriptType: 'on-event',
             host: getApiUrl(),
             team: {
                 id: account.id,
@@ -74,7 +74,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
             startedAt: new Date()
         };
 
-        metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_EXECUTION, 1, { accountId: account.id });
+        metrics.increment(metrics.Types.ON_EVENT_SCRIPT_EXECUTION, 1, { accountId: account.id });
 
         const res = await startScript({
             taskId: task.id,
@@ -88,7 +88,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
 
         return Ok(undefined);
     } catch (err) {
-        const error = new NangoError('post_connection_script_failure', { error: err instanceof Error ? err.message : err });
+        const error = new NangoError('on_event_script_failure', { error: err instanceof Error ? err.message : err });
         await onFailure({
             connection: {
                 id: task.connection.id,
@@ -96,7 +96,7 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
                 environment_id: task.connection.environment_id,
                 provider_config_key: task.connection.provider_config_key
             },
-            syncName: task.postConnectionName,
+            syncName: task.onEventName,
             providerConfigKey: task.connection.provider_config_key,
             activityLogId: task.activityLogId,
             runTime: 0,
@@ -109,10 +109,10 @@ export async function startPostConnection(task: TaskPostConnection): Promise<Res
     }
 }
 
-export async function handlePostConnectionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleOnEventSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const content = `Webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
-        executionType: 'post-connection-script',
+        executionType: 'on-event',
         connectionId: nangoProps.connectionId,
         internalConnectionId: nangoProps.nangoConnectionId,
         accountId: nangoProps.team?.id,
@@ -133,7 +133,7 @@ export async function handlePostConnectionSuccess({ nangoProps }: { nangoProps: 
     await logCtx.success();
 }
 
-export async function handlePostConnectionError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleOnEventError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
     await onFailure({
         connection: {
             id: nangoProps.nangoConnectionId!,
@@ -175,13 +175,13 @@ async function onFailure({
 }): Promise<void> {
     if (team) {
         void bigQueryClient.insert({
-            executionType: 'post-connection-script',
+            executionType: 'on-event',
             connectionId: connection.connection_id,
             internalConnectionId: connection.id,
             accountId: team.id,
             accountName: team.name,
             scriptName: syncName,
-            scriptType: 'post-connection-script',
+            scriptType: 'on-event',
             environmentId: environment.id,
             environmentName: environment.name,
             providerConfigKey: providerConfigKey,

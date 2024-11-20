@@ -18,8 +18,7 @@ export async function hmacCheck({
     hmac?: string | undefined;
     res: Response;
 }): Promise<boolean> {
-    const hmacEnabled = await hmacService.isEnabled(environment.id);
-    if (!hmacEnabled) {
+    if (!environment.hmac_enabled) {
         return true;
     }
 
@@ -32,7 +31,7 @@ export async function hmacCheck({
         return false;
     }
 
-    const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, ...(connectionId ? [connectionId] : []));
+    const verified = hmacService.verify({ receivedDigest: hmac, environment, values: [providerConfigKey, ...(connectionId ? [connectionId] : [])] });
     if (!verified) {
         await logCtx.error('Invalid HMAC');
         await logCtx.failed();

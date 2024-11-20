@@ -1,4 +1,4 @@
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
+import type { NangoProps } from '@nangohq/shared';
 import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
@@ -11,6 +11,7 @@ import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { errorToObject, metrics } from '@nangohq/utils';
 import { logger } from './utils.js';
+import type { RunnerOutput } from '@nangohq/types';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -24,7 +25,7 @@ export async function exec(
             case 'webhook':
                 return new NangoSync(nangoProps);
             case 'action':
-            case 'post-connection-script':
+            case 'on-event':
                 return new NangoAction(nangoProps);
         }
     })();

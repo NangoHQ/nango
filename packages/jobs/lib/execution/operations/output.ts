@@ -6,8 +6,8 @@ import type { NangoProps } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
-import { handlePostConnectionError, handlePostConnectionSuccess } from '../postConnection.js';
-import type { ApiError } from '@nangohq/types';
+import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
+import type { ApiError, RunnerOutputError } from '@nangohq/types';
 import type { ClientError } from '@nangohq/nango-orchestrator';
 import { toNangoError } from './utils/errors.js';
 
@@ -22,8 +22,8 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
         case 'webhook':
             await handleWebhookSuccess({ nangoProps });
             break;
-        case 'post-connection-script':
-            await handlePostConnectionSuccess({ nangoProps });
+        case 'on-event':
+            await handleOnEventSuccess({ nangoProps });
             break;
     }
     const setSuccess = await orchestratorClient.succeed({ taskId, output: output });
@@ -33,19 +33,19 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
     }
 }
 
-export async function handleError({
-    taskId,
-    nangoProps,
-    error
-}: {
-    taskId: string;
-    nangoProps: NangoProps;
-    error: {
-        type: string;
-        payload: Record<string, unknown>;
-        status: number;
-    };
-}): Promise<void> {
+export async function handleError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: RunnerOutputError }): Promise<void> {
+    if (error.type === 'script_aborted') {
+        // do nothing, the script was aborted and its state already updated
+        logger.info(`Script was aborted. Ignoring output.`, {
+            taskId,
+            syncId: nangoProps.syncId,
+            environmentId: nangoProps.environmentId,
+            providerConfigKey: nangoProps.providerConfigKey,
+            connectionId: nangoProps.connectionId
+        });
+        return;
+    }
+
     const formattedError = toNangoError({
         err: error,
         defaultErrorType: `${nangoProps.scriptType}_script_failure`,
@@ -62,8 +62,8 @@ export async function handleError({
         case 'webhook':
             await handleWebhookError({ nangoProps, error: formattedError });
             break;
-        case 'post-connection-script':
-            await handlePostConnectionError({ nangoProps, error: formattedError });
+        case 'on-event':
+            await handleOnEventError({ nangoProps, error: formattedError });
             break;
     }
 

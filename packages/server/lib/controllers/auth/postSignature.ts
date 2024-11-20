@@ -22,7 +22,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     connectionTest as connectionTestHook
 } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 
@@ -38,12 +38,9 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        user_scope: z.string().optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .and(connectionCredential);
 
 const paramsValidation = z
     .object({
@@ -78,9 +75,11 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
     const { account, environment, authType } = res.locals;
     const { username, password }: PostPublicSignatureAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
 
     let logCtx: LogContext | undefined;
 
@@ -95,14 +94,12 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         );
         void analytics.track(AnalyticsTypes.PRE_SIGNATURE_AUTH, account.id);
 
-        await hmacCheck({
-            environment,
-            logCtx,
-            providerConfigKey,
-            connectionId: receivedConnectionId,
-            hmac,
-            res
-        });
+        if (authType !== 'connectSession') {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
+        }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -139,8 +136,6 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
             return;
         }
-
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
         const connectionResponse = await connectionTestHook(
             config.provider,
@@ -207,7 +202,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'SIGNATURE',
@@ -229,10 +224,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: {
-                providerConfigKey,
-                connectionId: receivedConnectionId
-            }
+            metadata: { providerConfigKey, connectionId }
         });
 
         next(err);
