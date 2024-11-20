@@ -101,13 +101,13 @@ class VerificationService {
     }
 
     public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
-        const resParsing = parse(fullPath);
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(fullPath);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return false;
         }
 
-        const parser = resParsing.value;
+        const parser = parsing.value;
         const syncNames = parser.parsed!.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
         const actionNames = parser.parsed!.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);

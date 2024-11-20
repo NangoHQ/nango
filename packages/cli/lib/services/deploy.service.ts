@@ -53,13 +53,13 @@ class DeployService {
             process.exit(1);
         }
 
-        const resParsing = parse(fullPath, debug);
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(fullPath, debug);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return;
         }
 
-        const parser = resParsing.value;
+        const parser = parsing.value;
         const flowData = this.package({ parsed: parser.parsed!, fullPath, debug });
 
         if (!flowData) {
@@ -117,13 +117,13 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const resParsing = parse(fullPath, debug);
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(fullPath, debug);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return;
         }
 
-        const parser = resParsing.value;
+        const parser = parsing.value;
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
 
         let successfulCompile = false;
@@ -317,13 +317,13 @@ class DeployService {
             printDebug(`Environment is set to ${environment}`);
         }
 
-        const resParsing = parse(fullPath, debug);
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(fullPath, debug);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return;
         }
 
-        const parser = resParsing.value;
+        const parser = parsing.value;
         const successfulCompile = await compileAllFiles({ fullPath, debug });
 
         if (!successfulCompile) {

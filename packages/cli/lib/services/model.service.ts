@@ -32,13 +32,13 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
         }
     }
 
-    const resParsing = parse(fullPath, debug);
-    if (resParsing.isErr()) {
-        console.log(chalk.red(resParsing.error.message));
+    const parsing = parse(fullPath, debug);
+    if (parsing.isErr()) {
+        console.log(chalk.red(parsing.error.message));
         return null;
     }
 
-    const modelTs = buildModelsTS({ parsed: resParsing.value.parsed! });
+    const modelTs = buildModelsTS({ parsed: parsing.value.parsed! });
     fs.writeFileSync(fp, modelTs);
 
     if (debug) {
@@ -46,9 +46,9 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
     }
 
     // --- Additional exports
-    generateAdditionalExports({ parsed: resParsing.value.parsed!, fullPath, debug });
+    generateAdditionalExports({ parsed: parsing.value.parsed!, fullPath, debug });
 
-    return resParsing.value.parsed!;
+    return parsing.value.parsed!;
 }
 
 export function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {

@@ -36,12 +36,11 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
     const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
 
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res) {
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return;
     }
 
-    const parsed = res;
     const allSyncNames: Record<string, boolean> = {};
 
     for (const integration of parsed.integrations) {
@@ -222,12 +221,11 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res) {
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return;
     }
 
-    const parsed = res;
     const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {

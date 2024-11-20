@@ -511,15 +511,15 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const resParsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (resParsing.isErr()) {
-            throw resParsing.error;
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
         }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: resParsing.value.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);
@@ -533,15 +533,15 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const resParsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (resParsing.isErr()) {
-            throw resParsing.error;
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
         }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: resParsing.value.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);
@@ -556,15 +556,15 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/github/actions/welcomer.ts`), join(dir, 'welcomer.ts'));
 
-        const resParsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (resParsing.isErr()) {
-            throw resParsing.error;
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
         }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: resParsing.value.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);

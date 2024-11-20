@@ -277,14 +277,14 @@ program
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const resParsing = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             process.exitCode = 1;
             return;
         }
 
-        console.log(chalk.green(JSON.stringify({ ...resParsing.value.parsed, models: Array.from(resParsing.value.parsed!.models.values()) }, null, 2)));
+        console.log(chalk.green(JSON.stringify({ ...parsing.value.parsed, models: Array.from(parsing.value.parsed!.models.values()) }, null, 2)));
     });
 
 // admin only commands

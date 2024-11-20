@@ -97,13 +97,13 @@ export class DryRunService {
             return;
         }
 
-        const resParsing = parse(process.cwd(), debug);
-        if (resParsing.isErr()) {
-            console.log(chalk.red(resParsing.error.message));
+        const parsing = parse(process.cwd(), debug);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return;
         }
 
-        const parser = resParsing.value;
+        const parser = parsing.value;
         if (options.optionalProviderConfigKey && !parser.parsed!.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
