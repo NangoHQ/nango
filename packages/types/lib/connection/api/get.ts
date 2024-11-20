@@ -31,7 +31,7 @@ export type GetConnectionsCount = Endpoint<{
     };
     Path: '/api/v1/connections/count';
     Success: {
-        data: { total: number; withAuthError: number };
+        data: { total: number; withAuthError: number; withSyncError: number; withError: number };
     };
 }>;
 
