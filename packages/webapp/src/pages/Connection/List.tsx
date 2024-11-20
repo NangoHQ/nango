@@ -289,9 +289,9 @@ export const ConnectionList: React.FC = () => {
                     {connectionsCount?.data && (
                         <div className="flex justify-end w-full text-[12px] text-white">
                             {connectionsCount.data.total} connection{connectionsCount.data.total !== 1 ? 's' : ''}
-                            {connectionsCount.data.withAuthError > 0 && (
+                            {connectionsCount.data.withError > 0 && (
                                 <span className="flex items-center ml-1">
-                                    ({connectionsCount?.data.withAuthError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    ({connectionsCount?.data.withError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
                                 </span>
                             )}
                         </div>
