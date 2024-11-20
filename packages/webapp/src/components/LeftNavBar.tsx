@@ -21,7 +21,6 @@ import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 import { IconX } from '@tabler/icons-react';
 import type { MaybePromise } from '@nangohq/types';
-import { apiPatchOnboarding } from '../hooks/useOnboarding';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -54,7 +53,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
     const signout = useSignout();
-    const { meta, mutate: mutateMeta } = useMeta();
+    const { meta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
     const { data } = useConnectionsCount(env);
@@ -78,18 +77,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     const items = useMemo(() => {
         const list: MenuItem[] = [];
-        if (meta && showGettingStarted && !meta.onboardingComplete) {
-            list.push({
-                name: 'Getting Started',
-                icon: RocketIcon,
-                value: LeftNavBarItems.GettingStarted,
-                link: `/${env}/getting-started`,
-                onClose: async () => {
-                    await apiPatchOnboarding(env);
-                    void mutateMeta();
-                }
-            });
-        }
 
         list.push({ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` });
         list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
@@ -190,6 +177,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     </div>
                 </div>
                 <div>
+                    <div>
+                        a
+                        {showGettingStarted && (
+                            <Link
+                                to="/dev/getting-started"
+                                className={`flex h-9 p-2 px-3.5 gap-x-3.5 items-center rounded-md text-sm ${navTextColor} ${
+                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                }`}
+                            >
+                                <RocketIcon />
+                                <p>Getting Started</p>
+                            </Link>
+                        )}
+                    </div>
                     <div
                         className="flex mb-5 py-2 w-full user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer"
                         onClick={() => setShowUserSettings(!showUserSettings)}
@@ -219,19 +220,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                         <span>Team</span>
                                     </li>
 
-                                    {showGettingStarted && meta.onboardingComplete && (
-                                        <Link
-                                            to="/dev/getting-started"
-                                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.GettingStarted
-                                                    ? `${navActiveBg} text-white`
-                                                    : `text-gray-400 ${navHoverBg}`
-                                            }`}
-                                        >
-                                            <RocketIcon />
-                                            <p>Getting Started</p>
-                                        </Link>
-                                    )}
                                     <li
                                         className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
                                         onClick={async () => await signout()}
