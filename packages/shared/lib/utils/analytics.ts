@@ -5,10 +5,8 @@ import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
-import type { User } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { NANGO_VERSION } from '../version.js';
-import type { DBTeam } from '@nangohq/types';
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
@@ -133,9 +131,9 @@ class Analytics {
             eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
             if (isCloud && accountId != null) {
-                const account: DBTeam | null = await accountService.getAccountById(accountId);
+                const account = await accountService.getAccountById(accountId);
                 if (account !== null && account.id !== undefined) {
-                    const users: User[] = await userService.getUsersByAccountId(account.id);
+                    const users = await userService.getUsersByAccountId(account.id);
 
                     if (users.length > 0) {
                         userProperties['email'] = users.map((user) => user.email).join(',');
