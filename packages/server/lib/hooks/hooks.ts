@@ -21,11 +21,12 @@ import type {
     RecentlyCreatedConnection,
     Connection,
     ConnectionConfig,
-    RecentlyFailedConnection
+    RecentlyFailedConnection,
+    Config
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials } from '@nangohq/types';
+import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials, MessageRowInsert } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -195,19 +196,23 @@ export const connectionRefreshFailed = async ({
     await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
 };
 
-export const connectionTest = async (
-    providerName: string,
-    provider: Provider,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
-    connectionId: string,
-    providerConfigKey: string,
-    environment_id: number,
-    connection_config: ConnectionConfig
-): Promise<Result<boolean, NangoError>> => {
+export async function connectionTest({
+    config,
+    provider,
+    credentials,
+    connectionId,
+    connectionConfig
+}: {
+    config: Config;
+    provider: Provider;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+    connectionId: string;
+    connectionConfig: ConnectionConfig;
+}): Promise<Result<{ logs: MessageRowInsert[] }, NangoError>> {
     const providerVerification = provider?.proxy?.verification;
 
     if (!providerVerification) {
-        return Ok(true);
+        return Ok({ logs: [] });
     }
 
     const active = tracer.scope().active();
@@ -215,7 +220,7 @@ export const connectionTest = async (
         childOf: active as Span,
         tags: {
             'nango.provider': provider,
-            'nango.providerConfigKey': providerConfigKey,
+            'nango.providerConfigKey': config.unique_key,
             'nango.connectionId': connectionId
         }
     });
@@ -225,11 +230,11 @@ export const connectionTest = async (
     const connection: Connection = {
         id: -1,
         end_user_id: null,
-        provider_config_key: providerConfigKey,
+        provider_config_key: config.unique_key,
         connection_id: connectionId,
         credentials,
-        connection_config,
-        environment_id,
+        connection_config: connectionConfig,
+        environment_id: config.environment_id,
         created_at: new Date(),
         updated_at: new Date()
     };
@@ -239,8 +244,8 @@ export const connectionTest = async (
         method: method ?? 'GET',
         provider,
         token: credentials,
-        providerName: providerName,
-        providerConfigKey,
+        providerName: config.provider,
+        providerConfigKey: config.unique_key,
         connectionId,
         headers: {
             'Content-Type': 'application/json'
@@ -257,37 +262,41 @@ export const connectionTest = async (
     }
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName,
+        providerName: config.provider,
         connection
     };
 
+    const logs: MessageRowInsert[] = [
+        { type: 'log', level: 'info', message: `Running automatic credentials verification`, createdAt: new Date().toISOString() }
+    ];
     try {
-        const { response } = await proxyService.route(configBody, internalConfig);
+        const { response, logs: logsProxy } = await proxyService.route(configBody, internalConfig);
 
+        logs.push(...logsProxy);
         if (axios.isAxiosError(response)) {
+            const error = new NangoError('connection_test_failed', { response, logs });
             span.setTag('nango.error', response);
-            const error = new NangoError('connection_test_failed', response.response?.data, response.response?.status);
             return Err(error);
         }
 
         if (!response || response instanceof Error) {
-            const error = new NangoError('connection_test_failed');
+            const error = new NangoError('connection_test_failed', { response, logs });
             span.setTag('nango.error', response);
             return Err(error);
         }
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
-            const error = new NangoError('connection_test_failed');
+            const error = new NangoError('connection_test_failed', { response, logs });
             span.setTag('nango.error', response);
             return Err(error);
         }
 
-        return Ok(true);
+        return Ok({ logs });
     } catch (err) {
-        const error = new NangoError('connection_test_failed');
+        const error = new NangoError('connection_test_failed', { err, logs });
         span.setTag('nango.error', err);
         return Err(error);
     } finally {
         span.finish();
     }
-};
+}

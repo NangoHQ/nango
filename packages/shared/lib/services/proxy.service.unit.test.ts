@@ -465,51 +465,6 @@ describe('Proxy service Construct URL Tests', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
-    it('Should strip away the auth token from the headers', () => {
-        const headers = {
-            Accept: 'application/json',
-            Authorization: 'Bearer real-token',
-            'Another-Header': 'value',
-            'Sensitive-Token': 'real-token'
-        };
-
-        const config = {
-            token: 'real-token',
-            headers: headers
-        };
-
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
-
-        expect(strippedHeaders).toEqual({
-            Accept: 'application/json',
-            Authorization: 'Bearer xxxx',
-            'Another-Header': 'value',
-            'Sensitive-Token': 'xxxx'
-        });
-    });
-
-    it('Should strip away an authorization header if there is no token', () => {
-        const headers = {
-            Accept: 'application/json',
-            Authorization: 'Bearer abcdefghijklmnopqrstuvwxyz',
-            'Another-Header': 'value',
-            'Content-Type': 'application/json'
-        };
-
-        const config = {
-            headers: headers
-        };
-
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
-
-        expect(strippedHeaders).toEqual({
-            Accept: 'application/json',
-            Authorization: 'Bearer xxxx',
-            'Another-Header': 'value',
-            'Content-Type': 'application/json'
-        });
-    });
-
     it('Should retry after', async () => {
         const mockAxiosError = {
             response: {

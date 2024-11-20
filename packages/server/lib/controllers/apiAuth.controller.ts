@@ -12,7 +12,7 @@ import {
     getProvider
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import {
@@ -23,6 +23,7 @@ import {
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
+import type { MessageRowInsert } from '@nangohq/types';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -103,17 +104,11 @@ class ApiAuthController {
                 apiKey
             };
 
-            const connectionResponse = await connectionTestHook(
-                config.provider,
-                provider,
-                credentials,
-                connectionId,
-                providerConfigKey,
-                environment.id,
-                connectionConfig
-            );
-
+            const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials, provider });
             if (connectionResponse.isErr()) {
+                if ('logs' in connectionResponse.error.payload) {
+                    await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
+                }
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
@@ -121,6 +116,8 @@ class ApiAuthController {
 
                 return;
             }
+
+            await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
             const [updatedConnection] = await connectionService.upsertAuthConnection({
                 connectionId,
@@ -274,17 +271,11 @@ class ApiAuthController {
                 password
             };
 
-            const connectionResponse = await connectionTestHook(
-                config.provider,
-                provider,
-                credentials,
-                connectionId,
-                providerConfigKey,
-                environment.id,
-                connectionConfig
-            );
-
+            const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials, provider });
             if (connectionResponse.isErr()) {
+                if ('logs' in connectionResponse.error.payload) {
+                    await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
+                }
                 await logCtx.error('Provided credentials are invalid', { provider: config.provider });
                 await logCtx.failed();
 
@@ -292,6 +283,8 @@ class ApiAuthController {
 
                 return;
             }
+
+            await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
             const [updatedConnection] = await connectionService.upsertAuthConnection({
                 connectionId,
