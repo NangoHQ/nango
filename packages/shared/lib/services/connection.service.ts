@@ -788,56 +788,57 @@ class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
-        const subQuery = db.knex
+        const query = db.knex
             .from<Connection>(`_nango_connections`)
-            .select(
+            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
-                  (SELECT COALESCE(json_agg(json_build_object(
-                      'type', type,
-                      'log_id', log_id
-                    )), '[]'::json)
-                    FROM ${ACTIVE_LOG_TABLE}
-                    WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
-                      AND ${ACTIVE_LOG_TABLE}.active = true
-                  ) as active_logs
+                    COALESCE(
+                        json_agg(
+                            json_build_object(
+                                'type', _nango_active_logs.type,
+                                'log_id', _nango_active_logs.log_id
+                            )
+                        ) FILTER (WHERE _nango_active_logs.id IS NOT NULL)
+                        , '[]'::json
+                    ) as active_logs
                `),
+                db.knex.raw('count(_nango_active_logs.id) as active_logs_count'),
                 '_nango_configs.provider'
             )
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .leftJoin(ACTIVE_LOG_TABLE, function () {
+                this.on(`${ACTIVE_LOG_TABLE}.connection_id`, '_nango_connections.id').andOn(`${ACTIVE_LOG_TABLE}.active`, db.knex.raw(true));
+            })
             .where({
                 '_nango_connections.environment_id': environmentId,
                 '_nango_connections.deleted': false
             })
-            .orderBy('_nango_connections.created_at', 'desc');
+            .orderBy('_nango_connections.created_at', 'desc')
+            .groupBy('_nango_connections.id', 'end_users.id', '_nango_configs.provider')
+            .limit(limit)
+            .offset(page * limit);
 
         if (search) {
-            subQuery.where(function () {
-                this.whereRaw('connection_id ILIKE ?', `%${search}%`)
+            query.where(function () {
+                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
             });
         }
         if (integrationIds) {
-            subQuery.whereIn('_nango_configs.unique_key', integrationIds);
+            query.whereIn('_nango_configs.unique_key', integrationIds);
         }
         if (connectionId) {
-            subQuery.where('_nango_connections.connection_id', connectionId);
+            query.where('_nango_connections.connection_id', connectionId);
         }
 
-        subQuery.limit(limit);
-        subQuery.offset(page * limit);
-
-        const query = db.knex
-            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
-            .from(subQuery.as('rows'));
-
         if (withError === false) {
-            query.whereRaw("rows.active_logs::jsonb = '[]'");
+            query.havingRaw('count(_nango_active_logs.id) = 0');
         } else if (withError === true) {
-            query.whereRaw("rows.active_logs::jsonb <> '[]'");
+            query.havingRaw('count(_nango_active_logs.id) > 0');
         }
 
         return await query;
