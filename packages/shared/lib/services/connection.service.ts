@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -1750,7 +1751,9 @@ class ConnectionService {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
 
-        const postBody: Record<string, any> = {};
+        const bodyFormat = provider.body_format || 'json';
+
+        const postBody: Record<string, any> | string = {};
 
         if (provider.token_params) {
             for (const [key, value] of Object.entries(provider.token_params)) {
@@ -1777,15 +1780,35 @@ class ConnectionService {
         try {
             const requestOptions = { headers };
 
-            const response = await axios.post(url.toString(), JSON.stringify(postBody), requestOptions);
+            const bodyContent =
+                bodyFormat === 'xml'
+                    ? new XMLBuilder({
+                          format: true,
+                          indentBy: '  ',
+                          attributeNamePrefix: '$',
+                          ignoreAttributes: false
+                      }).build(postBody)
+                    : JSON.stringify(postBody);
+
+            const response = await axios.post(url.toString(), bodyContent, requestOptions);
 
             if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
-            const { data } = response;
+            let responseData: any = response.data;
 
-            const parsedCreds = this.parseRawCredentials(data, 'TWO_STEP', provider) as TwoStepCredentials;
+            if (bodyFormat === 'xml' && typeof response.data === 'string') {
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    parseAttributeValue: true,
+                    trimValues: true
+                });
+
+                responseData = parser.parse(response.data);
+            }
+
+            const parsedCreds = this.parseRawCredentials(responseData, 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {

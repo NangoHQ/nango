@@ -5,7 +5,6 @@ import chalk from 'chalk';
 import type { JSONSchema7 } from 'json-schema';
 import tsj from 'ts-json-schema-generator';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
-import type { ServiceResponse } from '@nangohq/shared';
 import { printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import { parse } from './config.service.js';
@@ -17,7 +16,7 @@ export type ModelsMap = Map<string, Record<string, any>>;
 /**
  * Load nango.yaml and generate model.ts
  */
-export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): ServiceResponse<NangoYamlParsed> {
+export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: string; debug?: boolean }): NangoYamlParsed | null {
     if (debug) {
         printDebug(`Generating ${TYPES_FILE_NAME} file`);
     }
@@ -33,13 +32,13 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
         }
     }
 
-    const { success, error, response } = parse(fullPath, debug);
-    if (!success || !response?.parsed) {
-        console.log(chalk.red(error?.message));
-        return { success: false, error: null, response: null };
+    const parsing = parse(fullPath, debug);
+    if (parsing.isErr()) {
+        console.log(chalk.red(parsing.error.message));
+        return null;
     }
 
-    const modelTs = buildModelsTS({ parsed: response.parsed });
+    const modelTs = buildModelsTS({ parsed: parsing.value.parsed! });
     fs.writeFileSync(fp, modelTs);
 
     if (debug) {
@@ -47,9 +46,9 @@ export function loadYamlAndGenerate({ fullPath, debug = false }: { fullPath: str
     }
 
     // --- Additional exports
-    generateAdditionalExports({ parsed: response.parsed, fullPath, debug });
+    generateAdditionalExports({ parsed: parsing.value.parsed!, fullPath, debug });
 
-    return { success: true, error: null, response: response.parsed };
+    return parsing.value.parsed!;
 }
 
 export function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 | null {

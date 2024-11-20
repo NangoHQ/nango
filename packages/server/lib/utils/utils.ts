@@ -1,8 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
-import type { User } from '@nangohq/shared';
-import type { Provider, ProviderTwoStep } from '@nangohq/types';
+import type { DBUser, Provider, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
@@ -11,7 +10,7 @@ import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Utils');
 
-export async function getUserFromSession(req: Request<any>): Promise<Result<User, NangoError>> {
+export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
     const sessionUser = req.user;
     if (!sessionUser) {
         const error = new NangoError('user_not_found');
@@ -20,7 +19,6 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<User
     }
 
     const user = await userService.getUserById(sessionUser.id);
-
     if (!user) {
         const error = new NangoError('user_not_found');
         return Err(error);

@@ -910,6 +910,22 @@ braintree-sandbox:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
 
+brevo-api-key:
+    display_name: Brevo (api key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api-key: ${apiKey}
+        base_url: https://api.brevo.com/v3
+    docs: https://docs.nango.dev/integrations/all/brevo
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Brevo account
+
 brex:
     display_name: Brex
     categories:
@@ -4473,6 +4489,12 @@ perimeter81:
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
             example: 'perimeter81 | eu.sase.checkpoint'
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Perimeter81 account
+            secret: true
 
 personio:
     display_name: Personio
@@ -4927,6 +4949,66 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-intacct:
+    display_name: Sage Intacct
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.intacct.com/ia/xml/xmlgw.phtml
+    token_url: https://api.intacct.com/ia/xml/xmlgw.phtml
+    body_format: xml
+    token_params:
+        request:
+            control:
+                senderid: ${credential.senderId}
+                password: ${credential.senderPassword}
+                controlid: ${now}
+                uniqueid: false
+                dtdversion: '3.0'
+                includewhitespace: false
+            operation:
+                authentication:
+                    login:
+                        userid: ${credential.userId}
+                        companyid: ${credential.companyId}
+                        password: ${credential.userPassword}
+                content:
+                    function:
+                        $controlid: '{{$guid}}'
+                        getAPISession: ''
+    token_headers:
+        Content-Type: application/xml
+    token_response:
+        token: response.operation.result.data.api.sessionid
+        token_expiration: response.operation.authentication.sessiontimeout
+        token_expiration_strategy: expireAt
+    docs: https://docs.nango.dev/integrations/all/sage
+    credentials:
+        senderId:
+            type: string
+            title: Sender ID
+            description: Your Sage Intacct Sender ID
+        senderPassword:
+            type: string
+            title: Sender Password
+            description: Your Sage Intacct Sender Password
+            secret: true
+        userId:
+            type: string
+            title: User ID
+            description: Your Sage Intacct User ID
+        companyId:
+            type: string
+            title: Company ID
+            description: Your Sage Intacct Company ID
+        userPassword:
+            type: string
+            title: User Password
+            description: Your Sage Intacct User Password
+            secret: true
 
 salesforce:
     display_name: Salesforce
