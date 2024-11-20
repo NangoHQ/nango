@@ -6126,7 +6126,7 @@ unipile:
     proxy:
         base_url: https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
         headers:
-            x-api-key: ${credentials.apiKey}
+            x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/unipile
     docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
     credentials:
