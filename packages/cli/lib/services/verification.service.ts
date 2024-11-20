@@ -101,18 +101,18 @@ class VerificationService {
     }
 
     public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
-        const { success, error, response } = parse(fullPath);
-
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const parsing = parse(fullPath);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return false;
         }
 
-        const syncNames = response.parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
-        const actionNames = response.parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
+        const parser = parsing.value;
+        const syncNames = parser.parsed!.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+        const actionNames = parser.parsed!.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
         const flows = [...syncNames, ...actionNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile({ fullPath, parsed: response.parsed });
+        const tsFiles = listFilesToCompile({ fullPath, parsed: parser.parsed! });
 
         const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
 
