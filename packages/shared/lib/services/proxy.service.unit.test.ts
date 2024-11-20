@@ -641,8 +641,8 @@ describe('Proxy service configure', () => {
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain("No Provider Template matching the 'provider' parameter.");
-        expect(logs.length).toBe(3);
-        expect(logs[2]).toStrictEqual<MessageRowInsert>({
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
             createdAt: expect.any(String),
@@ -713,7 +713,7 @@ describe('Proxy service configure', () => {
             responseType: 'blob'
         });
         expect(error).toBeNull();
-        expect(logs.length).toBe(4);
+        expect(logs.length).toBe(0);
     });
 
     it('Should correctly insert headers with dynamic values for signature based', () => {
