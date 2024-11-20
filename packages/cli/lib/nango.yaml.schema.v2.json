@@ -18,6 +18,30 @@
                             "_": "post-connection-scripts must be an array of strings."
                         }
                     },
+                    "on-events": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "post-connection-creation": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "errorMessage": {
+                                    "_": "post-connection-creation must be an array of strings."
+                                }
+                            },
+                            "pre-connection-deletion": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "errorMessage": {
+                                    "_": "post-connection-creation must be an array of strings."
+                                }
+                            }
+                        }
+                    },
                     "syncs": {
                         "type": "object",
                         "patternProperties": {

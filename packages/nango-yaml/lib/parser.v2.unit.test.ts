@@ -1,7 +1,13 @@
 import { expect, describe, it } from 'vitest';
 import { NangoYamlParserV2 } from './parser.v2.js';
 import type { NangoYamlParsed, NangoYamlV2 } from '@nangohq/types';
-import { ParserErrorDuplicateEndpoint, ParserErrorMissingId, ParserErrorModelIsLiteral, ParserErrorModelNotFound } from './errors.js';
+import {
+    ParserErrorBothPostConnectionScriptsAndOnEventsPresent,
+    ParserErrorDuplicateEndpoint,
+    ParserErrorMissingId,
+    ParserErrorModelIsLiteral,
+    ParserErrorModelNotFound
+} from './errors.js';
 
 describe('parse', () => {
     it('should parse', () => {
@@ -39,7 +45,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    postConnectionScripts: [],
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
                     actions: [
                         {
                             description: '',
@@ -87,7 +93,7 @@ describe('parse', () => {
                 {
                     providerConfigKey: 'provider',
                     syncs: [],
-                    postConnectionScripts: [],
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
                     actions: [
                         {
                             description: '',
@@ -145,7 +151,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    postConnectionScripts: [],
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
                     actions: []
                 }
             ],
@@ -333,6 +339,46 @@ describe('parse', () => {
                     ]
                 }
             ]);
+        });
+    });
+    it('should error if both post-connection-scripts and on-events are present', () => {
+        const v2: NangoYamlV2 = {
+            models: {},
+            integrations: {
+                provider: {
+                    'post-connection-scripts': ['test'],
+                    'on-events': { 'post-connection-creation': ['test'] }
+                }
+            }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([new ParserErrorBothPostConnectionScriptsAndOnEventsPresent({ path: ['provider', 'on-events'] })]);
+        expect(parser.warnings).toStrictEqual([]);
+    });
+    it('should handle post-connection-scripts', () => {
+        const v2: NangoYamlV2 = {
+            models: {},
+            integrations: { provider: { 'post-connection-scripts': ['test'] } }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([]);
+        expect(parser.warnings).toStrictEqual([]);
+        expect(parser.parsed?.integrations[0]?.postConnectionScripts).toStrictEqual(['test']);
+    });
+    it('should handle on-events', () => {
+        const v2: NangoYamlV2 = {
+            models: {},
+            integrations: { provider: { 'on-events': { 'post-connection-creation': ['test1', 'test2'], 'pre-connection-deletion': ['test3', 'test4'] } } }
+        };
+        const parser = new NangoYamlParserV2({ raw: v2, yaml: '' });
+        parser.parse();
+        expect(parser.errors).toStrictEqual([]);
+        expect(parser.warnings).toStrictEqual([]);
+        expect(parser.parsed?.integrations[0]?.onEventScripts).toStrictEqual({
+            'post-connection-creation': ['test1', 'test2'],
+            'pre-connection-deletion': ['test3', 'test4']
         });
     });
 });

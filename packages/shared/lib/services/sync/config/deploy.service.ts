@@ -83,7 +83,7 @@ export async function deploy({
     account: DBTeam;
     flows: CleanedIncomingFlowConfig[];
     jsonSchema?: JSONSchema7 | undefined;
-    onEventScriptsByProvider: OnEventScriptsByProvider[];
+    onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -179,7 +179,7 @@ export async function deploy({
             await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
-        if (onEventScriptsByProvider.length > 0) {
+        if (onEventScriptsByProvider) {
             await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
         }
 
