@@ -61,6 +61,19 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 { auth: 0, sync: 0 }
             );
 
+            let errorTooltip = '';
+            let errorIcon: 'x' | 'sync' | 'auth' = 'x';
+            if (errorCounts.auth > 0 && errorCounts.sync > 0) {
+                errorTooltip = 'Expired credentials, failed syncs';
+                errorIcon = 'x';
+            } else if (errorCounts.auth > 0) {
+                errorTooltip = 'Expired credentials';
+                errorIcon = 'auth';
+            } else if (errorCounts.sync > 0) {
+                errorTooltip = 'Failed syncs';
+                errorIcon = 'sync';
+            }
+
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
@@ -81,20 +94,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
                     {data.errors.length > 0 && (
-                        <SimpleTooltip
-                            tooltipContent={
-                                errorCounts.auth > 0 && errorCounts.sync > 0
-                                    ? 'Expired credentials, failed syncs'
-                                    : errorCounts.auth > 0
-                                      ? 'Expired credentials'
-                                      : errorCounts.sync > 0
-                                        ? 'Failed syncs'
-                                        : ''
-                            }
-                        >
-                            <ErrorCircle
-                                icon={errorCounts.auth > 0 && errorCounts.sync > 0 ? 'x' : errorCounts.auth > 0 ? 'auth' : errorCounts.sync > 0 ? 'sync' : 'x'}
-                            />
+                        <SimpleTooltip tooltipContent={errorTooltip}>
+                            <ErrorCircle icon={errorIcon} />
                         </SimpleTooltip>
                     )}
                 </div>
