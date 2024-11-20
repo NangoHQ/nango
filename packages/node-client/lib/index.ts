@@ -14,16 +14,20 @@ import type {
     TbaCredentials,
     TableauCredentials,
     UnauthCredentials,
+    BillCredentials,
     GetPublicProviders,
     GetPublicProvider,
     GetPublicListIntegrations,
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
-    PostConnectSessions
+    PostConnectSessions,
+    JwtCredentials,
+    TwoStepCredentials,
+    GetPublicConnections,
+    SignatureCredentials
 } from '@nangohq/types';
 import type {
     Connection,
-    ConnectionList,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
     Integration,
@@ -41,7 +45,6 @@ import type {
 } from './types.js';
 import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
-export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
@@ -262,13 +265,27 @@ export class Nango {
 
     /**
      * Returns a list of connections, optionally filtered by connection ID
-     * @param connectionId - Optional. The ID of the connection to retrieve details of
+     * @param connectionId - Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
+     * @param search - Optional. Search connections. Will search in connection ID or end user profile.
      * @returns A promise that resolves with an array of connection objects
      */
-    public async listConnections(connectionId?: string): Promise<{ connections: ConnectionList[] }> {
-        const response = await this.listConnectionDetails(connectionId);
+    public async listConnections(connectionId?: string, search?: string): Promise<GetPublicConnections['Success']> {
+        const url = new URL(`${this.serverUrl}/connection`);
+        if (connectionId) {
+            url.searchParams.append('connectionId', connectionId);
+        }
+        if (search) {
+            url.searchParams.append('search', search);
+        }
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
+
     /**
      * Returns a connection object, which also contains access credentials and full credentials payload
      * @param providerConfigKey - The integration ID used to create the connection (i.e Unique Key)
@@ -321,6 +338,10 @@ export class Nango {
         | CustomCredentials
         | TbaCredentials
         | TableauCredentials
+        | JwtCredentials
+        | BillCredentials
+        | TwoStepCredentials
+        | SignatureCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
@@ -811,7 +832,10 @@ export class Nango {
         } else if (method?.toUpperCase() === 'PUT') {
             return this.http.put(url, config.data, options);
         } else if (method?.toUpperCase() === 'DELETE') {
-            return this.http.delete(url, options);
+            return this.http.delete(url, {
+                ...options,
+                ...(config.data ? { data: config.data } : {})
+            });
         } else {
             return this.http.get(url, options);
         }
@@ -930,24 +954,6 @@ export class Nango {
         };
 
         return this.http.get(url, { params: params, headers: this.enrichHeaders(headers) });
-    }
-
-    /**
-     * Retrieves details of all connections from the server or details of a specific connection if a connection ID is provided
-     * @param connectionId - Optional. This is the unique connection identifier used to identify this connection
-     * @returns A promise that resolves with the response containing connection details
-     */
-    private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
-        let url = `${this.serverUrl}/connection?`;
-        if (connectionId) {
-            url = url.concat(`connectionId=${connectionId}`);
-        }
-
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-
-        return this.http.get(url, { headers: this.enrichHeaders(headers) });
     }
 
     /**

@@ -16,7 +16,11 @@ import type {
     OAuth2ClientCredentials,
     TBACredentials,
     TableauCredentials,
-    OAuthCredentialsOverride
+    TwoStepCredentials,
+    JwtCredentials,
+    OAuthCredentialsOverride,
+    BillCredentials,
+    SignatureCredentials
 } from './types';
 import { AuthorizationStatus, WSMessageType } from './types.js';
 
@@ -25,6 +29,23 @@ export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
+
+export type NangoOptions = {
+    host?: string;
+    websocketsPath?: string;
+    width?: number;
+    height?: number;
+    debug?: boolean;
+} & (
+    | {
+          connectSessionToken?: string;
+          publicKey?: never;
+      }
+    | {
+          connectSessionToken?: never;
+          publicKey?: string;
+      }
+);
 
 export class AuthError extends Error {
     type;
@@ -48,15 +69,7 @@ export default class Nango {
 
     public win: AuthorizationModal | null = null;
 
-    constructor(config: {
-        host?: string;
-        websocketsPath?: string;
-        publicKey?: string;
-        connectSessionToken?: string;
-        width?: number;
-        height?: number;
-        debug?: boolean;
-    }) {
+    constructor(config: NangoOptions = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -74,12 +87,8 @@ export default class Nango {
             this.height = config.height;
         }
 
-        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
+        this.hostBaseUrl = config.host.replace(/\/+$/, ''); // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
-
-        if ((!config.publicKey && !config.connectSessionToken) || (config.publicKey && config.connectSessionToken)) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
-        }
 
         this.publicKey = config.publicKey;
         this.connectSessionToken = config.connectSessionToken;
@@ -109,6 +118,8 @@ export default class Nango {
         connectionIdOrConnectionConfig?: string | ConnectionConfig,
         moreConnectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let connectionConfig: ConnectionConfig | undefined = moreConnectionConfig;
         if (typeof connectionIdOrConnectionConfig === 'string') {
@@ -135,6 +146,8 @@ export default class Nango {
     public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let options: AuthOptions | undefined = moreOptions;
         if (typeof connectionIdOrOptions === 'string') {
@@ -269,7 +282,7 @@ export default class Nango {
      * Open managed Connect UI
      */
     public openConnectUI(params: ConnectUIProps) {
-        const connect = new ConnectUI(params);
+        const connect = new ConnectUI({ sessionToken: this.connectSessionToken, ...params });
         connect.open();
         return connect;
     }
@@ -287,9 +300,23 @@ export default class Nango {
             | AppStoreCredentials
             | TBACredentials
             | TableauCredentials
+            | JwtCredentials
             | OAuth2ClientCredentials
+            | BillCredentials
+            | TwoStepCredentials
+            | SignatureCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
+
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE') {
+            const signatureCredentials: SignatureCredentials = {
+                type: credentials.type,
+                username: credentials.username,
+                password: credentials.password
+            };
+
+            return { params: signatureCredentials } as unknown as ConnectionConfig;
+        }
 
         if ('username' in credentials) {
             params['username'] = credentials.username || '';
@@ -301,16 +328,34 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
+            const jwtParams: Record<string, string | { id: string; secret: string }> = {};
+            if (credentials.privateKeyId) {
+                jwtParams['privateKeyId'] = credentials.privateKeyId;
+            }
+            if (credentials.issuerId) {
+                jwtParams['issuerId'] = credentials.issuerId;
+            }
+            if (credentials.privateKey) {
+                if (typeof credentials.privateKey === 'string') {
+                    jwtParams['privateKey'] = credentials.privateKey;
+                } else if (typeof credentials.privateKey === 'object' && 'id' in credentials.privateKey && 'secret' in credentials.privateKey) {
+                    jwtParams['privateKey'] = credentials.privateKey;
+                }
+            }
+            return { params: jwtParams } as unknown as ConnectionConfig;
+        }
+
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId,
-                    issuerId: credentials.issuerId,
-                    privateKey: credentials.privateKey
+                    privateKeyId: credentials.privateKeyId as string,
+                    issuerId: credentials.issuerId as string,
+                    privateKey: credentials.privateKey as string
                 }
             };
 
-            if (credentials.scope) {
+            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
                 appStoreCredentials.params['scope'] = credentials.scope;
             }
             return appStoreCredentials as unknown as ConnectionConfig;
@@ -355,6 +400,23 @@ export default class Nango {
             return { params: tableauCredentials } as unknown as ConnectionConfig;
         }
 
+        if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
+            const BillCredentials: BillCredentials = {
+                username: credentials.username,
+                password: credentials.password,
+                organization_id: credentials.organization_id as string,
+                dev_key: credentials.dev_key as string
+            };
+
+            return { params: BillCredentials } as unknown as ConnectionConfig;
+        }
+
+        if ('type' in credentials && credentials.type === 'TWO_STEP') {
+            const twoStepCredentials: Record<string, any> = { ...credentials };
+
+            return { params: twoStepCredentials } as unknown as ConnectionConfig;
+        }
+
         return { params };
     }
 
@@ -363,7 +425,18 @@ export default class Nango {
         credentials
     }: {
         authUrl: string;
-        credentials?: ApiKeyCredentials | BasicApiCredentials | AppStoreCredentials | TBACredentials | TableauCredentials | OAuth2ClientCredentials | undefined;
+        credentials?:
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | AppStoreCredentials
+            | TBACredentials
+            | TableauCredentials
+            | JwtCredentials
+            | BillCredentials
+            | OAuth2ClientCredentials
+            | TwoStepCredentials
+            | SignatureCredentials
+            | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
             method: 'POST',
@@ -401,6 +474,27 @@ export default class Nango {
             throw new AuthError('You must specify credentials.', 'missingCredentials');
         }
 
+        if ('type' in credentials && credentials['type'] === 'TWO_STEP') {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/two-step/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as TwoStepCredentials
+            });
+        }
+
+        if ('type' in credentials && credentials['type'] === 'SIGNATURE' && 'username' in credentials && 'password' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/signature/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as SignatureCredentials
+            });
+        }
+
+        if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/bill/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as BillCredentials
+            });
+        }
+
         if ('apiKey' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
@@ -412,6 +506,13 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as BasicApiCredentials
+            });
+        }
+
+        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as JwtCredentials
             });
         }
 
@@ -512,6 +613,16 @@ export default class Nango {
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
+    }
+
+    /**
+     * Check that we have one valid credential
+     * It's not done in the constructor because if you only use Nango Connect it's not relevant to throw an error
+     */
+    private ensureCredentials() {
+        if (!this.publicKey && !this.connectSessionToken) {
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
+        }
     }
 }
 

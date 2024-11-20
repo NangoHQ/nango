@@ -1,6 +1,6 @@
 import type { NangoError } from '../utils/error.js';
 
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface DBConfig {
     encryption_key_hash?: string | null;

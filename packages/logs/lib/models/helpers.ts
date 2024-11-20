@@ -124,8 +124,9 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'action:run': 'Action execution',
     'admin:impersonation': 'Admin logged into another account',
     'auth:create_connection': 'Create connection',
-    'auth:post_connection': 'Post connection script execution',
+    'auth:post_connection': 'post connection execution',
     'auth:refresh_token': 'Token refresh',
+    'auth:connection_test': 'Connection test',
     'deploy:custom': 'Deploying custom scripts',
     'deploy:prebuilt': 'Deploying pre-built flow',
     'proxy:call': 'Proxy call',
@@ -137,5 +138,5 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'sync:run': 'Sync execution',
     'sync:unpause': 'Sync schedule started',
     'webhook:incoming': 'Received a webhook',
-    'webhook:outgoing': 'Forwarding Webhook'
+    'webhook:forward': 'Forwarding Webhook'
 };

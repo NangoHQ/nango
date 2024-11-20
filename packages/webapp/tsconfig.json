@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "ES5",
-        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "target": "ES2021",
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
         "allowJs": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
@@ -12,7 +12,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-        "module": "esnext",
+        "module": "ESNext",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,

@@ -2,24 +2,12 @@ import { z } from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import type { PostDeployInternal } from '@nangohq/types';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { deploy, errorManager, getAndReconcileDifferences, environmentService, configService, connectionService } from '@nangohq/shared';
+import { deploy, errorManager, getAndReconcileDifferences, environmentService, configService, connectionService, cleanIncomingFlow } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
-import { flowConfigs, jsonSchema, postConnectionScriptsByProvider } from './postConfirmation.js';
+import { validationWithNangoYaml as validation } from './validation.js';
 
 const orchestrator = getOrchestrator();
-
-const validation = z
-    .object({
-        flowConfigs: flowConfigs,
-        postConnectionScriptsByProvider: postConnectionScriptsByProvider,
-        jsonSchema: jsonSchema.optional(),
-        nangoYamlBody: z.string(),
-        reconcile: z.boolean(),
-        debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false)
-    })
-    .strict();
 
 const queryStringValidation = z
     .object({
@@ -95,9 +83,9 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     } = await deploy({
         environment,
         account,
-        flows: body.flowConfigs,
+        flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
-        postConnectionScriptsByProvider: body.postConnectionScriptsByProvider,
+        onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
         jsonSchema: req.body.jsonSchema,
         logContextGetter,

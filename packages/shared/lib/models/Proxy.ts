@@ -1,8 +1,16 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { HTTP_VERB } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials } from './Auth.js';
+import type { HTTP_METHOD } from './Generic.js';
+import type {
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    TbaCredentials,
+    TableauCredentials,
+    JwtCredentials,
+    SignatureCredentials
+} from './Auth.js';
 import type { Connection } from './Connection.js';
-import type { Provider } from '@nangohq/types';
+import type { Provider, TwoStepCredentials } from '@nangohq/types';
 
 export interface File {
     fieldname: string;
@@ -40,9 +48,18 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
-    method: HTTP_VERB;
+    method: HTTP_METHOD;
     providerName: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials;
+    token:
+        | string
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | TwoStepCredentials
+        | SignatureCredentials;
     provider: Provider;
     connection: Connection;
 }
@@ -83,7 +100,10 @@ export interface LinkPagination extends Pagination {
     link_path_in_response_body?: string;
 }
 
+export type OffsetCalculationMethod = 'per-page' | 'by-response-size';
+
 export interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
+    offset_calculation_method?: OffsetCalculationMethod;
 }

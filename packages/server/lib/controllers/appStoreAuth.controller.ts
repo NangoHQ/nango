@@ -1,25 +1,18 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials } from '@nangohq/shared';
-import {
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    configService,
-    connectionService,
-    hmacService,
-    ErrorSourceEnum,
-    LogActionEnum,
-    getProvider
-} from '@nangohq/shared';
+import { errorManager, analytics, AnalyticsTypes, configService, connectionService, ErrorSourceEnum, LogActionEnum, getProvider } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { linkConnection } from '../services/endUser.service.js';
+import db from '@nangohq/database';
+import { hmacCheck } from '../utils/hmac.js';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account } = res.locals;
+        const { environment, account, authType } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
 
@@ -42,29 +35,16 @@ class AppStoreAuthController {
                 return;
             }
 
-            const hmacEnabled = await hmacService.isEnabled(environment.id);
-            if (hmacEnabled) {
+            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+
+            if (authType !== 'connectSession') {
                 const hmac = req.query['hmac'] as string | undefined;
-                if (!hmac) {
-                    await logCtx.error('Missing HMAC in query params');
-                    await logCtx.failed();
 
-                    errorManager.errRes(res, 'missing_hmac');
-
-                    return;
-                }
-                const verified = await hmacService.verify(hmac, environment.id, providerConfigKey, receivedConnectionId);
-                if (!verified) {
-                    await logCtx.error('Invalid HMAC');
-                    await logCtx.failed();
-
-                    errorManager.errRes(res, 'invalid_hmac');
-
+                const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+                if (!checked) {
                     return;
                 }
             }
-
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
@@ -145,9 +125,6 @@ class AppStoreAuthController {
                 return;
             }
 
-            await logCtx.info('App Store auth creation was successful');
-            await logCtx.success();
-
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -157,23 +134,35 @@ class AppStoreAuthController {
                 environmentId: environment.id,
                 accountId: account.id
             });
-
-            if (updatedConnection) {
-                await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-                void connectionCreatedHook(
-                    {
-                        connection: updatedConnection.connection,
-                        environment,
-                        account,
-                        auth_mode: 'APP_STORE',
-                        operation: updatedConnection.operation
-                    },
-                    config.provider,
-                    logContextGetter,
-                    undefined,
-                    logCtx
-                );
+            if (!updatedConnection) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+                await logCtx.error('Failed to create connection');
+                await logCtx.failed();
+                return;
             }
+
+            if (authType === 'connectSession') {
+                const session = res.locals.connectSession;
+                await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            }
+
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.info('App Store auth creation was successful');
+            await logCtx.success();
+
+            void connectionCreatedHook(
+                {
+                    connection: updatedConnection.connection,
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    operation: updatedConnection.operation
+                },
+                config.provider,
+                logContextGetter,
+                undefined,
+                logCtx
+            );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {

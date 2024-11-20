@@ -1,4 +1,4 @@
-import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud, isLocal } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud } from '@nangohq/utils';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import type { WindowEnv } from '@nangohq/types';
 import { envs } from '@nangohq/logs';
@@ -11,14 +11,14 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicSentryKey: process.env['PUBLIC_SENTRY_KEY'] || '',
         publicPosthogKey: process.env['PUBLIC_POSTHOG_KEY'] || '',
         publicPosthogPost: process.env['PUBLIC_POSTHOG_HOST'] || '',
+        publicLogoDevKey: process.env['PUBLIC_LOGODEV_KEY'] || '',
         isCloud,
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
-            interactiveDemo: isCloud || isLocal,
-            connectUI: isCloud || isLocal
+            gettingStarted: true
         }
     };
     res.setHeader('content-type', 'text/javascript');

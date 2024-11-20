@@ -45,7 +45,7 @@ export interface OperationAction {
 }
 export interface OperationAuth {
     type: 'auth';
-    action: 'create_connection' | 'refresh_token' | 'post_connection';
+    action: 'create_connection' | 'refresh_token' | 'post_connection' | 'connection_test';
 }
 export interface OperationAdmin {
     type: 'admin';
@@ -53,7 +53,7 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'outgoing';
+    action: 'incoming' | 'forward';
 }
 export interface OperationDeploy {
     type: 'deploy';

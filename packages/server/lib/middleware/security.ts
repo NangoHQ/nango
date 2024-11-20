@@ -26,8 +26,18 @@ export function securityMiddlewares(): RequestHandler[] {
                 childSrc: "'self'",
                 connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
-                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl],
-                imgSrc: ["'self'", 'data:', hostPublic, hostApi, 'https://*.google-analytics.com', 'https://*.googleapis.com', 'https://*.posthog.com'],
+                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com'],
+                imgSrc: [
+                    "'self'",
+                    'data:',
+                    hostPublic,
+                    hostApi,
+                    'https://*.google-analytics.com',
+                    'https://*.googleapis.com',
+                    'https://*.posthog.com',
+                    'https://img.logo.dev',
+                    'https://*.ytimg.com'
+                ],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",
                 objectSrc: "'self'",
@@ -40,7 +50,8 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://apis.google.com',
-                    'https://*.posthog.com'
+                    'https://*.posthog.com',
+                    'https://www.youtube.com'
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']

@@ -1,4 +1,4 @@
-export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
 export type ScriptTypeLiteral = 'action' | 'sync';
@@ -27,6 +27,11 @@ export interface NangoYamlV2 {
     integrations: Record<string, NangoYamlV2Integration>;
     models: NangoYamlModel;
 }
+export interface NangoYamlV2Endpoint {
+    method?: HTTP_METHOD;
+    path: string;
+    group?: string | undefined;
+}
 export interface NangoYamlV2Integration {
     provider?: string;
     syncs?: Record<string, NangoYamlV2IntegrationSync>;
@@ -34,7 +39,7 @@ export interface NangoYamlV2Integration {
     'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
-    endpoint: string | string[];
+    endpoint: string | string[] | NangoYamlV2Endpoint | NangoYamlV2Endpoint[];
     output: string | string[];
     description?: string;
     sync_type?: SyncTypeLiteral;
@@ -47,7 +52,7 @@ export interface NangoYamlV2IntegrationSync {
     version?: string;
 }
 export interface NangoYamlV2IntegrationAction {
-    endpoint: string;
+    endpoint: string | NangoYamlV2Endpoint;
     output?: string | string[];
     description?: string;
     scopes?: string | string[];
@@ -85,7 +90,7 @@ export interface NangoYamlParsedIntegration {
 export interface ParsedNangoSync {
     name: string;
     type: 'sync';
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointV2[];
     description: string;
     sync_type: SyncTypeLiteral;
     track_deletes: boolean;
@@ -105,7 +110,7 @@ export interface ParsedNangoAction {
     description: string;
     input: string | null;
     output: string[] | null;
-    endpoint: NangoSyncEndpoint | null;
+    endpoint: NangoSyncEndpointV2 | null;
     scopes: string[];
     usedModels: string[];
     version: string;
@@ -129,6 +134,17 @@ export interface NangoModelField {
     optional?: boolean | undefined;
 }
 
-export type NangoSyncEndpoint = {
-    [key in HTTP_VERB]?: string | undefined;
+export type NangoSyncEndpointOld = {
+    [key in HTTP_METHOD]?: string | undefined;
 };
+
+export interface NangoSyncEndpointV2 {
+    method: HTTP_METHOD;
+    path: string;
+    group?: string | undefined;
+}
+
+// --- Providers Yaml is a modified nango.yaml
+export interface FlowsYaml {
+    integrations: Record<string, NangoYamlV2Integration & { models: NangoYamlModel }>;
+}

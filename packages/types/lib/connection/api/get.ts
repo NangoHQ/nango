@@ -1,7 +1,59 @@
-import type { ApiError, Endpoint } from '../../api.js';
-import type { Connection } from '../db.js';
+import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
+import type { DBConnection } from '../db.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
+import type { Merge } from 'type-fest';
+import type { ApiEndUser } from '../../endUser/index.js';
 
+export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
+    provider: string;
+    errors: [{ type: string; log_id: string }];
+    endUser: ApiEndUser | null;
+};
+export type GetConnections = Endpoint<{
+    Method: 'GET';
+    Querystring: {
+        env: string;
+        integrationIds?: string[] | undefined;
+        search?: string | undefined;
+        withError?: boolean | undefined;
+        page?: number | undefined;
+    };
+    Path: '/api/v1/connections';
+    Success: {
+        data: ApiConnectionSimple[];
+    };
+}>;
+
+export type GetConnectionsCount = Endpoint<{
+    Method: 'GET';
+    Querystring: {
+        env: string;
+    };
+    Path: '/api/v1/connections/count';
+    Success: {
+        data: { total: number; withAuthError: number };
+    };
+}>;
+
+export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key'> & {
+    created: string;
+    metadata: Record<string, unknown> | null;
+    provider: string;
+    errors: [{ type: string; log_id: string }];
+};
+export type GetPublicConnections = Endpoint<{
+    Method: 'GET';
+    Querystring: {
+        connectionId?: string | undefined;
+        search?: string | undefined;
+    };
+    Path: '/connection';
+    Success: {
+        connections: ApiPublicConnection[];
+    };
+}>;
+
+export type ApiConnectionFull = Merge<DBConnection, ApiTimestamps>;
 export type GetConnection = Endpoint<{
     Method: 'GET';
     Params: {
@@ -10,19 +62,33 @@ export type GetConnection = Endpoint<{
     Querystring: {
         env: string;
         provider_config_key: string;
-        force_refresh?: 'true' | 'false';
     };
-    Path: '/api/v1/connection/:connectionId';
-    Error:
-        | ApiError<'unknown_connection'>
-        | ApiError<'missing_provider_config'>
-        | ApiError<'unknown_provider'>
-        | ApiError<'missing_connection'>
-        | ApiError<'unknown_provider_config'>;
+    Path: '/api/v1/connections/:connectionId';
+    Error: ApiError<'unknown_provider_config'>;
     Success: {
-        provider: string | null;
-        connection: Connection;
-        errorLog: ActiveLog | null;
+        data: {
+            provider: string | null;
+            connection: ApiConnectionFull;
+            endUser: ApiEndUser | null;
+            errorLog: ActiveLog | null;
+        };
+    };
+}>;
+export type PostConnectionRefresh = Endpoint<{
+    Method: 'POST';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Path: '/api/v1/connections/:connectionId/refresh';
+    Error: ApiError<'unknown_provider_config'> | ApiError<'failed_to_refresh', any, ActiveLog | null>;
+    Success: {
+        data: {
+            success: boolean;
+        };
     };
 }>;
 
@@ -37,7 +103,7 @@ export type DeletePublicConnection = Endpoint<{
 
 export type DeleteConnection = Endpoint<{
     Method: 'DELETE';
-    Path: '/connection/:connectionId';
+    Path: '/api/v1/connections/:connectionId';
     Params: { connectionId: string };
     Querystring: { provider_config_key: string; env: string };
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;

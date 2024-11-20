@@ -17,7 +17,10 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Synced model
-        endpoint: GET /tasks # Generated endpoint to access the synced model.
+        endpoint: # Generated endpoint to access the synced model.
+          method: GET
+          path: /tasks
+          group: Tasks
         sync_type: incremental # Data is replaced ('full') or upserted ('incremental') on each sync execution.
         runs: every 30min # Sync frequency.
         input:  AsanaProject # Necessary input to execute the sync.
@@ -36,7 +39,10 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Returned model
-        endpoint: POST /tasks # Generated endpoint to trigger to action.
+        endpoint: # Generated endpoint to trigger to action.
+          method: POST
+          path: /tasks
+          group: Tasks
         input: # Necessary input to execute the action.
         scopes: # Required scopes.
           - scope1
@@ -95,20 +101,30 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
             - AsanaTask
             - AsanaComment
           endpoint:
-            - GET /tasks
-            - GET /comments
+            - method: GET
+              path: /tasks
+            - method: GET
+              path: /comments
       ```
     </Tip>
 </ResponseField>
 
-<ResponseField name="endpoint" type="string" required>
+<ResponseField name="endpoint" type="string|object" required>
     Defines the endpoint to use to fetch the output model.
 
-    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
+    ```yaml
+    endpoint:
+      method: GET
+      path: /tasks
+      group?: Tasks
+    ```
 
-    Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+    Possible method values are: `GET`
 
     The method/endpoint combination can be shared across syncs to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
+
+    Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
 </ResponseField>
 
 <ResponseField name="sync_type" type="incremental | full" required>
@@ -153,7 +169,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
     </Info>
 </ResponseField>
 
-<ResponseField name="webhook_subscriptions" type="string | string[]">
+<ResponseField name="webhook-subscriptions" type="string | string[]">
     Lists the types of external webhooks the sync script will handle. Multiple syncs can listen to the same subscription. Learn more about handling external webhooks in syncs: [step-by-step guide](/integrate/guides/receive-webhooks-from-an-api#handle-external-webhooks-in-syncs).
 </ResponseField>
 
@@ -171,14 +187,21 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Each action has a corresponding generated endpoint to trigger it, configured in the `endpoint` field below.
 </ResponseField>
 
-<ResponseField name="endpoint" type="string" required>
+<ResponseField name="endpoint" type="string|object" required>
     Defines the endpoint to use to trigger the action.
 
-    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
+    ```yaml
+    endpoint:
+      method: POST
+      path: /tasks
+    ```
 
     Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
 
     The method/endpoint combination can be shared across actions to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
+
+    Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
 </ResponseField>
 
 <ResponseField name="input" type="string">

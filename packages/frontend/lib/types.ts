@@ -33,7 +33,10 @@ export interface ConnectionConfig {
         | AppStoreCredentials
         | TBACredentials
         | TableauCredentials
-        | OAuth2ClientCredentials;
+        | JwtCredentials
+        | TwoStepCredentials
+        | OAuth2ClientCredentials
+        | SignatureCredentials;
 }
 
 export interface OAuthCredentialsOverride {
@@ -70,9 +73,37 @@ export interface TableauCredentials {
     content_url?: string;
 }
 
+export interface JwtCredentials {
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+}
+
 export interface OAuth2ClientCredentials {
     client_id: string;
     client_secret: string;
+}
+
+export interface BillCredentials {
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+}
+
+export interface TwoStepCredentials {
+    type: 'TWO_STEP';
+}
+
+export interface SignatureCredentials {
+    type: 'SIGNATURE';
+    username: string;
+    password: string;
 }
 
 export enum AuthorizationStatus {

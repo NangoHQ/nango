@@ -11,8 +11,8 @@ import type {
     AuthOperationType,
     AuthModeType,
     AuthModes,
-    HTTP_VERB,
-    NangoSyncEndpoint,
+    HTTP_METHOD,
+    NangoSyncEndpointV2,
     AllAuthCredentials,
     OAuth1Credentials,
     OAuth2Credentials,
@@ -26,7 +26,19 @@ import type {
     TbaCredentials,
     RecordMetadata,
     RecordLastAction,
-    NangoRecord
+    NangoRecord,
+    JwtCredentials,
+    TwoStepCredentials,
+    CredentialsCommon,
+    TableauCredentials,
+    BillCredentials,
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration,
+    GetPublicConnections,
+    PostConnectSessions
 } from '@nangohq/types';
 
 export type {
@@ -53,10 +65,25 @@ export type {
     AppStoreCredentials,
     UnauthCredentials,
     CustomCredentials,
-    TbaCredentials
+    CredentialsCommon,
+    TableauCredentials,
+    BillCredentials,
+    TbaCredentials,
+    JwtCredentials,
+    TwoStepCredentials
 };
-export type { HTTP_VERB, NangoSyncEndpoint };
+export type { HTTP_METHOD, NangoSyncEndpointV2 };
 export type { RecordMetadata, RecordLastAction, NangoRecord };
+
+export type {
+    GetPublicProviders,
+    GetPublicProvider,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicIntegration,
+    GetPublicConnections,
+    PostConnectSessions
+};
 
 export interface NangoProps {
     host?: string;
@@ -129,6 +156,7 @@ export interface MetadataChangeResponse {
 
 export interface Connection {
     id?: number;
+    end_user_id: number | null;
     created_at: Date;
     updated_at: Date;
     provider_config_key: string;
@@ -139,15 +167,6 @@ export interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AllAuthCredentials;
-}
-
-export interface ConnectionList {
-    id: number;
-    connection_id: string;
-    provider_config_key: string;
-    provider: string;
-    created: string;
-    metadata?: Metadata | null;
 }
 
 export interface IntegrationWithCreds extends Integration {
@@ -198,6 +217,7 @@ export interface SyncStatus {
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
     frequency: string;
     latestResult: Record<string, StatusAction>;
+    recordCount: Record<string, number>;
 }
 
 export interface StatusAction {
@@ -216,7 +236,6 @@ export interface UpdateSyncFrequencyResponse {
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
-    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];
@@ -250,7 +269,7 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointV2[];
     is_public?: boolean;
     pre_built?: boolean;
     version?: string | null;
@@ -258,7 +277,6 @@ export interface NangoSyncConfig {
 
     input?: NangoSyncModel;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
 }
 

@@ -4,18 +4,31 @@ sidebarTitle: 'Introduction'
 description: 'One platform for all your integrations.'
 ---
 
-Nango is a single API to interact with all other external APIs. It should be the only API you need to integrate to your app. 
+Nango is a single API to interact with all other external APIs. It should be the only API you need to integrate to your app.
 
 <Frame caption="One API, many integrations.">
   <img src="/images/overview.png" />
 </Frame>
 
-# 👩‍💻 Sample code 
+# 📺 Demo video
+
+<div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+    <iframe
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        src="https://www.youtube.com/embed/oTpWlmnv7dM"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+    ></iframe>
+</div>
+
+# 👩‍💻 Sample code
 
 Initiate a new OAuth flow from your frontend:
 
 ```js
-nango.auth('github', 'user123');
+nango.openConnectUI({ sessionToken });
 ```
 
 Get structured objects from external APIs from your backend:
@@ -28,7 +41,7 @@ nango.listRecords<GithubIssue>({
 });
 ```
 
-# 👩🏻‍🔧 Choose your level of service
+# 👩🏻‍🔧 Pre-built and custom integrations
 
 Nango's flexibility ensures it supports any API integration:
 
@@ -53,17 +66,9 @@ Nango's flexibility ensures it supports any API integration:
 
 But remember, Nango can work with **any API and any use-case**!
 
-# 📺 Demo video
-
-
-
-<div style={{position: 'relative', overflow: 'hidden', paddingTop: '56.25%'}}>
-    <iframe style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}} src="https://www.loom.com/embed/d04c67b47e284e86b91b4b99fba548ec?sid=04100b13-c53b-47ce-8150-1a495771ee3f"></iframe>
-</div>
-
 # 🚀 Get started
 
-Sign up for free and try the interactive demo:
+Sign up for free:
 
 <a href="https://app.nango.dev/signup" target="_blank">
   <img alt="Try Nango Cloud" src="/images/nango-deploy-button.svg" noZoom />

@@ -1,7 +1,14 @@
 import type { AxiosResponse } from 'axios';
 import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
-import type { Pagination, UserProvidedProxyConfiguration, CursorPagination, OffsetPagination, LinkPagination } from '../models/Proxy.js';
+import type {
+    Pagination,
+    UserProvidedProxyConfiguration,
+    CursorPagination,
+    OffsetPagination,
+    LinkPagination,
+    OffsetCalculationMethod
+} from '../models/Proxy.js';
 import { PaginationType } from '../models/Proxy.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 
@@ -49,10 +56,10 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const cursorPagination: CursorPagination = paginationConfig;
 
-        let nextCursor: string | undefined;
+        let nextCursor: string | number | undefined;
 
-        while (true) {
-            if (nextCursor) {
+        do {
+            if (typeof nextCursor !== 'undefined') {
                 updatedBodyOrParams[cursorPagination.cursor_name_in_request] = nextCursor;
             }
 
@@ -69,11 +76,15 @@ class PaginationService {
             yield responseData;
 
             nextCursor = get(response.data, cursorPagination.cursor_path_in_response);
-
-            if (!nextCursor || nextCursor.trim().length === 0) {
-                return;
+            if (typeof nextCursor === 'string') {
+                nextCursor = nextCursor.trim();
+                if (!nextCursor) {
+                    nextCursor = undefined;
+                }
+            } else if (typeof nextCursor !== 'number') {
+                nextCursor = undefined;
             }
-        }
+        } while (typeof nextCursor !== 'undefined');
     }
 
     public async *link<T>(
@@ -124,10 +135,11 @@ class PaginationService {
     ): AsyncGenerator<T[], undefined, void> {
         const offsetPagination: OffsetPagination = paginationConfig;
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
+        const offsetCalculationMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
         let offset = offsetPagination.offset_start_value || 0;
 
         while (true) {
-            updatedBodyOrParams[offsetParameterName] = `${offset}`;
+            updatedBodyOrParams[offsetParameterName] = passPaginationParamsInBody ? offset : String(offset);
 
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
@@ -149,7 +161,11 @@ class PaginationService {
                 return;
             }
 
-            offset += responseData.length;
+            if (offsetCalculationMethod === 'per-page') {
+                offset++;
+            } else {
+                offset += responseData.length;
+            }
         }
     }
 

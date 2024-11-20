@@ -1,5 +1,5 @@
 import { v2, client } from '@datadog/datadog-api-client';
-import { isCloud } from '@nangohq/utils';
+import { isCloud, isEnterprise } from '@nangohq/utils';
 
 export enum LogTypes {
     AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',
@@ -25,8 +25,10 @@ export enum LogTypes {
     SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
     SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
     FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
-    POST_CONNECTION_SCRIPT_SUCCESS = 'post_connection_script_success',
-    POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
+    POST_CONNECTION_SUCCESS = 'post_connection_success',
+    POST_CONNECTION_FAILURE = 'post_connection_failure',
+    ON_EVENT_SCRIPT_SUCCESS = 'on_event_script_success',
+    ON_EVENT_SCRIPT_FAILURE = 'on_event_script_failure',
     INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received',
     INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER = 'incoming_webhook_issue_wrong_connection_identifier',
     INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND = 'incoming_webhook_issue_connection_not_found',
@@ -36,7 +38,6 @@ export enum LogTypes {
 
 export enum SpanTypes {
     CONNECTION_TEST = 'nango.server.hooks.connectionTest',
-    JOBS_IDLE_DEMO = 'nango.jobs.cron.idleDemos',
     RUNNER_EXEC = 'nango.runner.exec'
 }
 
@@ -44,10 +45,10 @@ class Telemetry {
     private logInstance: v2.LogsApi | undefined;
     constructor() {
         try {
-            if (isCloud && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
+            if ((isCloud || isEnterprise) && process.env['DD_API_KEY'] && process.env['DD_APP_KEY'] && process.env['DD_SITE']) {
                 const configuration = client.createConfiguration();
                 configuration.setServerVariables({
-                    site: 'us3.datadoghq.com'
+                    site: process.env['DD_SITE']
                 });
                 this.logInstance = new v2.LogsApi(configuration);
             }

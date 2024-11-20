@@ -1,23 +1,9 @@
-import type knex from 'knex';
-import type { EndUser } from '@nangohq/types';
+import type { Knex } from '@nangohq/database';
+import type { DBEndUser, DBInsertEndUser, EndUser, StoredConnection } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
-
-interface DBEndUser {
-    readonly id: number;
-    readonly end_user_id: string;
-    readonly account_id: number;
-    readonly environment_id: number;
-    readonly email: string;
-    readonly display_name?: string | null;
-    readonly organization_id?: string | null;
-    readonly organization_display_name?: string | null;
-    readonly created_at: Date;
-    readonly updated_at: Date | null;
-}
-type DbInsertEndUser = Omit<DBEndUser, 'id' | 'created_at' | 'updated_at'>;
 
 const EndUserMapper = {
     to: (endUser: EndUser): DBEndUser => {
@@ -66,7 +52,7 @@ export class EndUserError extends Error {
 }
 
 export async function createEndUser(
-    db: knex.Knex,
+    db: Knex,
     {
         endUserId,
         email,
@@ -76,7 +62,7 @@ export async function createEndUser(
         environmentId
     }: Pick<EndUser, 'endUserId' | 'email' | 'displayName' | 'organization' | 'accountId' | 'environmentId'>
 ): Promise<Result<EndUser, EndUserError>> {
-    const dbEndUser: DbInsertEndUser = {
+    const dbEndUser: DBInsertEndUser = {
         end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
@@ -99,7 +85,7 @@ export async function createEndUser(
 }
 
 export async function getEndUser(
-    db: knex.Knex,
+    db: Knex,
     props: { endUserId: string; accountId: number; environmentId: number } | { id: number; accountId: number; environmentId: number }
 ): Promise<Result<EndUser, EndUserError>> {
     const endUser = await db<DBEndUser>(END_USERS_TABLE)
@@ -122,7 +108,7 @@ export async function getEndUser(
 }
 
 export async function updateEndUser(
-    db: knex.Knex,
+    db: Knex,
     {
         endUserId,
         accountId,
@@ -155,7 +141,7 @@ export async function updateEndUser(
 }
 
 export async function deleteEndUser(
-    db: knex.Knex,
+    db: Knex,
     { endUserId, accountId, environmentId }: { endUserId: string; accountId: number; environmentId: number }
 ): Promise<Result<void, EndUserError>> {
     const deleted = await db<DBEndUser>(END_USERS_TABLE).where({ end_user_id: endUserId, account_id: accountId, environment_id: environmentId }).delete();
@@ -163,4 +149,12 @@ export async function deleteEndUser(
         return Err(new EndUserError({ code: 'not_found', message: `End user '${endUserId}' not found`, payload: { endUserId, accountId, environmentId } }));
     }
     return Ok(undefined);
+}
+
+export async function linkConnection(db: Knex, { endUserId, connection }: { endUserId: number; connection: Pick<StoredConnection, 'id'> }) {
+    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: endUserId });
+}
+
+export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
+    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: null });
 }

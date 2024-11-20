@@ -53,8 +53,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             let res = '';
 
             const activeEndpointIndex = flow.endpoints.findIndex((endpoint) => {
-                const obj = Object.entries(endpoint)[0];
-                return obj[0] === flow.endpoint.method && obj[1] === flow.endpoint.path;
+                return endpoint.method === flow.endpoint.method && endpoint.path === flow.endpoint.path;
             });
             const outputModelName = Array.isArray(flow.returns) ? flow.returns[activeEndpointIndex] : flow.returns;
             // This code is completely valid but webpack is complaining for some obscure reason
@@ -193,8 +192,11 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                                 <div className="flex gap-2">
                                                     <code className="font-code text-text-light-gray text-s">{field.name}</code>
                                                     <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md">
-                                                        {/* {'value' in field ? (Array.isArray(field.value) ? 'Arr' : field.value) : field.type} */}
-                                                        {'value' in field ? fieldToTypescript({ field }) : field.type}
+                                                        {'value' in field
+                                                            ? fieldToTypescript({ field })
+                                                            : typeof field.type === 'object'
+                                                              ? JSON.stringify(field.type)
+                                                              : field.type}
                                                     </code>
                                                 </div>
                                                 {'optional' in field && field.optional && <div className="text-text-light-gray text-s">Optional</div>}

@@ -41,6 +41,17 @@ if (validator.errors) {
     process.exit(1);
 }
 
+const invalidInterpolation = /(?<!(\$|]))\{/g;
+for (const [providerKey, provider] of Object.entries(providersJson)) {
+    const { credentials, connection_config, ...providerWithoutSensitive } = provider;
+    const strippedProviderYaml = jsYaml.dump({ [providerKey]: providerWithoutSensitive });
+    const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
+    if (match.length > 0) {
+        console.error(chalk.red('error'), 'Provider', chalk.blue(providerKey), `contains interpolation errors. A \`{\` does not have a \`$\` in front of it.`);
+        process.exit(1);
+    }
+}
+
 console.log('✅ JSON schema valid');
 
 // Check if files exist
@@ -55,7 +66,7 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
 }
 
 if (error) {
-    console.log('❌ providers.yaml contains some errors');
+    console.error('❌ providers.yaml contains some errors');
     process.exit(1);
 }
 
@@ -122,7 +133,7 @@ function validateProvider(providerKey: string, provider: Provider) {
             error = true;
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
     } else if (provider.auth_mode === 'BASIC') {
         if (!provider.credentials?.['username']) {
@@ -132,7 +143,7 @@ function validateProvider(providerKey: string, provider: Provider) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "password" is not defined`);
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
     } else {
         if (provider.credentials) {

@@ -9,11 +9,11 @@ import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBSyncConfig, SlimSync } from '@nangohq/types';
+import type { DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: { method: string; path: string }[] };
+type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] | null };
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
@@ -46,15 +46,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             version: syncConfig.version as string,
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
-            endpoints: syncConfig.endpoints_object
-                ? syncConfig.endpoints_object.map((endpoint) => {
-                      return { [endpoint.method]: endpoint.path };
-                  })
-                : [],
+            endpoints: syncConfig.endpoints_object || [],
             input: input as any,
-            nango_yaml_version: 'v2',
             enabled: syncConfig.enabled,
-            layout_mode: 'nested',
             models: syncConfig.model_schema as any,
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
@@ -697,7 +691,7 @@ export async function getSyncConfigsAsStandardConfig(
             '_nango_configs.provider',
             db.knex.raw(
                 `(
-                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    SELECT json_agg(json_build_object('method', method, 'path', path, 'group', group_name))
                     FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`

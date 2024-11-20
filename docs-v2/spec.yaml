@@ -1,4 +1,4 @@
-openapi: '3.1.0'
+openapi: 3.1.0
 info:
     title: 'Nango API'
     description: 'Nango API specs used to authorize & sync data with external APIs.'
@@ -367,9 +367,9 @@ paths:
                   schema:
                       type: array
                       items:
-                        type: string
-                        enum: [webhook]
-                  description: The integration ID (unique_key) that you created in Nango.
+                          type: string
+                          enum: [webhook]
+                  description: Include additional sensitive data
             responses:
                 '200':
                     description: Successfully returned an integration
@@ -397,7 +397,12 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Filter the list of connections based on this connection ID.
+                  description: Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                  description: Search connections. Will search in connection ID or end user profile.
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -418,6 +423,8 @@ paths:
                                                 - provider
                                                 - provider_config_key
                                                 - created
+                                                - metadata
+                                                - errors
                                             properties:
                                                 id:
                                                     type: integer
@@ -437,6 +444,22 @@ paths:
                                                 metadata:
                                                     type: object
                                                     description: Custom metadata attached to the connection
+                                                    nullable: true
+                                                errors:
+                                                    type: array
+                                                    items:
+                                                        type: object
+                                                        properties:
+                                                            type:
+                                                                type: string
+                                                                example: "'auth' or 'sync'"
+                                                            log_id:
+                                                                type: string
+                                                                example: 'VrnbtykXJFckCm3HP93t'
+                                                    description: |
+                                                        List of connection errors. Ex:
+                                                        - Connection credentials are invalid (type=auth)
+                                                        - Last sync for the connnection has failed (type=sync)
 
         post:
             description: Adds a connection for which you already have credentials.
@@ -447,7 +470,6 @@ paths:
                         schema:
                             type: object
                             required:
-                                - connection_id
                                 - provider_config_key
                             properties:
                                 connection_id:
@@ -619,12 +641,12 @@ paths:
                                 connection_id:
                                     oneOf:
                                         - type: string
-                                          example: "connection-123"
+                                          example: 'connection-123'
                                           description: The connection ID used to set the metadata on.
                                         - type: array
                                           items:
                                               type: string
-                                              example: "connection-123"
+                                              example: 'connection-123'
                                           description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
                                 provider_config_key:
                                     type: string
@@ -643,12 +665,12 @@ paths:
                                     connection_id:
                                         oneOf:
                                             - type: string
-                                              example: "connection-123"
+                                              example: 'connection-123'
                                               description: The connection ID used to set the metadata on. Returns an array of connection ids if an array is passed in.
                                             - type: array
                                               items:
                                                   type: string
-                                                  example: "connection-123"
+                                                  example: 'connection-123'
                                               description: The connection IDs used to set the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
                                     provider_config_key:
                                         type: string
@@ -680,12 +702,12 @@ paths:
                                 connection_id:
                                     oneOf:
                                         - type: string
-                                          example: "connection-123"
+                                          example: 'connection-123'
                                           description: The connection ID used to update the metadata on. Accepts an array of connection ids as well
                                         - type: array
                                           items:
                                               type: string
-                                              example: "connection-123"
+                                              example: 'connection-123'
                                           description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
                                 provider_config_key:
                                     type: string
@@ -704,12 +726,12 @@ paths:
                                     connection_id:
                                         oneOf:
                                             - type: string
-                                              example: "connection-123"
+                                              example: 'connection-123'
                                               description: The connection ID used to update the metadata on. Returns an array of connection ids if an array is passed in.
                                             - type: array
                                               items:
                                                   type: string
-                                                  example: "connection-123"
+                                                  example: 'connection-123'
                                               description: The connection IDs used to update the metadata on. If one connection id is invalid in the array the entire operation is aborted with no changes made.
                                     provider_config_key:
                                         type: string
@@ -820,10 +842,10 @@ paths:
                                             properties:
                                                 name:
                                                     type: string
-                                                    example: "github-issues"
+                                                    example: 'github-issues'
                                                 type:
                                                     type: string
-                                                    example: "sync"
+                                                    example: 'sync'
                                                 models:
                                                     type: array
                                                     items:
@@ -831,7 +853,7 @@ paths:
                                                         properties:
                                                             name:
                                                                 type: string
-                                                                example: "GithubIssue"
+                                                                example: 'GithubIssue'
                                                             fields:
                                                                 type: array
                                                                 items:
@@ -839,30 +861,30 @@ paths:
                                                                     properties:
                                                                         name:
                                                                             type: string
-                                                                            example: "title"
+                                                                            example: 'title'
                                                                         type:
                                                                             type: string
-                                                                            example: "string"
+                                                                            example: 'string'
                                                 sync_type:
                                                     type: string
-                                                    example: "INCREMENTAL"
+                                                    example: 'INCREMENTAL'
                                                 runs:
                                                     type: string
-                                                    example: "every 30 minutes"
+                                                    example: 'every 30 minutes'
                                                 track_deletes:
                                                     type: boolean
                                                 auto_start:
                                                     type: boolean
                                                 last_deployed:
                                                     type: string
-                                                    example: "2024-02-01T09:09:03.502Z"
+                                                    example: '2024-02-01T09:09:03.502Z'
                                                 is_public:
                                                     type: boolean
                                                 pre_built:
                                                     type: boolean
                                                 version:
                                                     type: string
-                                                    example: "0.0.3"
+                                                    example: '0.0.3'
                                                 attributes:
                                                     type: object
                                                 input:
@@ -871,7 +893,7 @@ paths:
                                                     type: array
                                                     items:
                                                         type: string
-                                                        example: "GithubIssue"
+                                                        example: 'GithubIssue'
                                                 description:
                                                     type: string
                                                     example: "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\n"
@@ -879,14 +901,11 @@ paths:
                                                     type: array
                                                     items:
                                                         type: string
-                                                        example: "public_repo"
+                                                        example: 'public_repo'
                                                 endpoints:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: "v2"
                                                 webhookSubscriptions:
                                                     type: array
                                                     items:
@@ -898,10 +917,10 @@ paths:
                                             properties:
                                                 name:
                                                     type: string
-                                                    example: "github-issues"
+                                                    example: 'github-issues'
                                                 type:
                                                     type: string
-                                                    example: "sync"
+                                                    example: 'sync'
                                                 models:
                                                     type: array
                                                     items:
@@ -909,7 +928,7 @@ paths:
                                                         properties:
                                                             name:
                                                                 type: string
-                                                                example: "GithubIssue"
+                                                                example: 'GithubIssue'
                                                             fields:
                                                                 type: array
                                                                 items:
@@ -917,13 +936,13 @@ paths:
                                                                     properties:
                                                                         name:
                                                                             type: string
-                                                                            example: "id"
+                                                                            example: 'id'
                                                                         type:
                                                                             type: string
-                                                                            example: "integer"
+                                                                            example: 'integer'
                                                 last_deployed:
                                                     type: string
-                                                    example: "2024-02-28T20:16:38.052Z"
+                                                    example: '2024-02-28T20:16:38.052Z'
                                                 is_public:
                                                     type: boolean
                                                     example: false
@@ -932,7 +951,7 @@ paths:
                                                     example: false
                                                 version:
                                                     type: string
-                                                    example: "4"
+                                                    example: '4'
                                                 attributes:
                                                     type: object
                                                 input:
@@ -946,21 +965,18 @@ paths:
                                                     type: array
                                                     items:
                                                         type: string
-                                                        example: "public_repo"
+                                                        example: 'public_repo'
                                                 endpoints:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: "v2"
                                     postConnectionScripts:
                                         type: array
                                         items:
                                             type: string
                                     provider:
                                         type: string
-                                        example: "github"
+                                        example: 'github'
                 '400':
                     description: Invalid request
                     content:
@@ -987,7 +1003,7 @@ paths:
                   schema:
                       type: string
                   description: |
-                    A marker used to fetch records modified after a specific point in time. If not provided, all records are returned. Each record includes a cursor value found in _nango_metadata.cursor. Save the cursor from the last record retrieved to track your sync progress. Use the cursor parameter together with the limit parameter to paginate through records. The cursor is more precise than modified_after, as it can differentiate between records with the same modification timestamp.
+                      A marker used to fetch records modified after a specific point in time. If not provided, all records are returned. Each record includes a cursor value found in _nango_metadata.cursor. Save the cursor from the last record retrieved to track your sync progress. Use the cursor parameter together with the limit parameter to paginate through records. The cursor is more precise than modified_after, as it can differentiate between records with the same modification timestamp.
                 - name: limit
                   in: query
                   required: false
@@ -1043,7 +1059,7 @@ paths:
                                                 your-properties:
                                                     type: string
                                                     description: The data Nango synced in for you
-                                                    example: "Your synced data, in the schema you (or Nango) defined in nango.yaml"
+                                                    example: 'Your synced data, in the schema you (or Nango) defined in nango.yaml'
                                                 _nango_metadata:
                                                     type: object
                                                     properties:
@@ -1054,23 +1070,23 @@ paths:
                                                         last_action:
                                                             type: string
                                                             description: The last action seen on this record
-                                                            enum: ["ADDED", "UPDATED", "DELETED"]
+                                                            enum: ['ADDED', 'UPDATED', 'DELETED']
                                                         first_seen_at:
                                                             type: string
                                                             description: The timestamp at which Nango first saw this record
-                                                            example: "2023-09-18T15:20:35.941305+00:00"
+                                                            example: '2023-09-18T15:20:35.941305+00:00'
                                                         last_modified_at:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
-                                                            example: "2023-09-18T15:20:35.941305+00:00"
+                                                            example: '2023-09-18T15:20:35.941305+00:00'
                                                         cursor:
                                                             type: string
                                                             description: The current cursor of the record. Use this to fetch records updated after this record
-                                                            example: "MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=="
+                                                            example: 'MjAyNC0wMy0wNFQwNjo1OTo1MS40NzE0NDEtMDU6MDB8fDE1Y2NjODA1LTY0ZDUtNDk0MC1hN2UwLTQ1ZmM3MDQ5OTdhMQ=='
                                     next_cursor:
                                         type: string
                                         description: The base64-encoded cursor for pagination
-                                        example: "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=="
+                                        example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
                 '400':
                     description: Invalid request
                     content:
@@ -1235,12 +1251,12 @@ paths:
                                                     description: The name of the sync.
                                                 status:
                                                     type: string
-                                                    enum: ["RUNNING", "PAUSED", "STOPPED", "SUCCESS", "ERROR"]
+                                                    enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
                                                     description: The current status of the sync.
                                                 type:
                                                     type: string
                                                     description: The most recent sync type completed
-                                                    enum: ["INCREMENTAL", "INITIAL"]
+                                                    enum: ['INCREMENTAL', 'INITIAL']
                                                 finishedAt:
                                                     type: string
                                                     description: ISO string of the most recently completed sync
@@ -1253,6 +1269,9 @@ paths:
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                recordCount:
+                                                    type: object
+                                                    description: Total count of records for each model synced by the sync
                 '400':
                     description: Invalid request
                     content:
@@ -1354,7 +1373,7 @@ paths:
                                     your-properties:
                                         type: string
                                         description: The data returned by the action
-                                        example: "The data returned by the action"
+                                        example: 'The data returned by the action'
 
                 '400':
                     description: Invalid request
@@ -1365,7 +1384,6 @@ paths:
                                 properties:
                                     message:
                                         type: string
-
 
     /environment-variables:
         get:
@@ -1383,12 +1401,11 @@ paths:
                                         name:
                                             type: string
                                             description: The name of the environment variable
-                                            example: "MY_SECRET_KEY"
+                                            example: 'MY_SECRET_KEY'
                                         value:
                                             type: string
                                             description: The value of the environment variable
-                                            example: "SK_373892NSHFNCOWFO..."
-
+                                            example: 'SK_373892NSHFNCOWFO...'
 
     /proxy/{anyPath}:
         get:
@@ -1714,370 +1731,389 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
 
-
 components:
+    responses:
+        BadRequest:
+            description: Bad request
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        Unauthorized:
+            description: Unauthorized
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        NotFound:
+            description: Not Found
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
 
-  responses:
-    BadRequest:
-        description: Bad request
-        content:
-            application/json:
-                schema:
-                    $ref: '#/components/schemas/StdError'
-    Unauthorized:
-        description: Unauthorized
-        content:
-            application/json:
-                schema:
-                    $ref: '#/components/schemas/StdError'
-    NotFound:
-        description: Not Found
-        content:
-            application/json:
-                schema:
-                    $ref: '#/components/schemas/StdError'
-
-  schemas:
-    StdError:
-        type: object
-        additionalProperties: false
-        properties:
-            error:
-                type: object
-                additionalProperties: false
-                required:
-                    - code
-                properties:
-                    code:
-                        type: string
-                    message:
-                        type: string
-                    errors:
-                        type: array
-                        items:
-                            type: object
-
-
-    TokenUrlObject:
-      properties:
-        OAUTH1:
-          type: string
-        OAUTH2:
-          type: string
-        OAUTH2CC:
-          type: string
-        BASIC:
-          type: string
-        API_KEY:
-          type: string
-        APP_STORE:
-          type: string
-        CUSTOM:
-          type: string
-        APP:
-          type: string
-        NONE:
-          type: string
-      additionalProperties: false
-      type: object
-
-    SimplifiedJSONSchema:
-        type: object
-        additionalProperties: false
-        required: ["type", "title", "description"]
-        properties:
-            type:
-                type: string
-                enum: [string]
-            title:
-                type: string
-            description:
-                type: string
-            example:
-                type: string
-            pattern:
-                type: string
-            format:
-                type: string
-    BaseProvider:
-      properties:
-        name:
-            type: string
-        display_name:
-            type: string
-        auth_mode:
-          type: string
-          enum: ['OAUTH1','OAUTH2','OAUTH2_CC','BASIC','API_KEY','APP_STORE','CUSTOM','APP','NONE','TBA','TABLEAU']
-        proxy:
-          properties:
-            base_url:
-              type: string
-            headers:
-              type: object
-            query:
-              properties:
-                api_key:
-                  type: string
-              required:
-                - api_key
-              additionalProperties: false
-              type: object
-            retry:
-              type: object
-              properties:
-                at:
-                    type: string
-                after:
-                    type: string
-            decompress:
-              type: boolean
-            paginate:
-              anyOf: []
-            verification:
-              properties:
-                method:
-                  type: string
-                endpoint:
-                  type: string
-                base_url_override:
-                  type: string
-                headers:
-                  type: object
-              required:
-                - method
-                - endpoint
-              additionalProperties: false
-              type: object
-          required:
-            - base_url
-          additionalProperties: false
-          type: object
-        authorization_url:
-          type: string
-        authorization_url_encode:
-          type: boolean
-        access_token_url:
-          type: string
-        authorization_params:
-          type: object
-        scope_separator:
-          type: string
-        default_scopes:
-          items:
-            type: string
-          type: array
-        token_url:
-          anyOf:
-            - type: string
-            - $ref: '#/components/schemas/TokenUrlObject'
-        token_params:
-          type: object
-        authorization_url_replacements:
-          type: object
-        redirect_uri_metadata:
-          items:
-            type: string
-          type: array
-        token_response_metadata:
-          items:
-            type: string
-          type: array
-        docs:
-          type: string
-        token_expiration_buffer:
-          type: number
-        webhook_routing_script:
-          type: string
-        webhook_user_defined_secret:
-          type: boolean
-        post_connection_script:
-          type: string
-        categories:
-          items:
-            type: string
-          type: array
-        connection_configuration:
-          items:
-            type: string
-          type: array
-        connection_config:
-            $ref: '#/components/schemas/SimplifiedJSONSchema'
-        credentials:
-          type: object
-          properties:
-            apiKey:
-              $ref: '#/components/schemas/SimplifiedJSONSchema'
-
-      required:
-        - auth_mode
-        - name
-        - display_name
-        - docs
-      additionalProperties: false
-      type: object
-    ProviderOAuth2:
-      properties:
-        auth_mode:
-          enum:
-            - OAUTH2
-            - CUSTOM
-          type: string
-        token_params:
-          properties:
-            grant_type:
-              enum:
-                - authorization_code
-                - client_credentials
-              type: string
-          additionalProperties: false
-          type: object
-        disable_pkce:
-          type: boolean
-        refresh_params:
-          properties:
-            grant_type:
-              enum:
-                - refresh_token
-              type: string
-          required:
-            - grant_type
-          additionalProperties: false
-          type: object
-        authorization_method:
-          type: string
-          enum:
-            - body
-            - header
-        body_format:
-          type: string
-          enum:
-            - form
-            - json
-        refresh_url:
-          type: string
-        expires_in_unit:
-          enum:
-            - milliseconds
-          type: string
-        token_request_auth_method:
-          enum:
-            - basic
-            - custom
-          type: string
-      required:
-        - auth_mode
-      additionalProperties: false
-      type: object
-    ProviderOAuth1:
-      properties:
-        auth_mode:
-          enum:
-            - OAUTH1
-          type: string
-        request_url:
-          type: string
-        request_params:
-          type: object
-        request_http_method:
-          enum:
-            - GET
-            - PUT
-            - POST
-          type: string
-        token_http_method:
-          enum:
-            - GET
-            - PUT
-            - POST
-          type: string
-        signature_method:
-          enum:
-            - HMAC-SHA1
-            - RSA-SHA1
-            - PLAINTEXT
-          type: string
-      required:
-        - auth_mode
-        - request_url
-        - signature_method
-      additionalProperties: false
-      type: object
-
-    Provider:
-      anyOf:
-        - $ref: '#/components/schemas/BaseProvider'
-          title: 'Default'
-        - $ref: '#/components/schemas/ProviderOAuth1'
-          title: 'Oauth1'
-        - $ref: '#/components/schemas/ProviderOAuth2'
-          title: 'Oauth2'
-
-    Integration:
-        type: object
-        additionalProperties: false
-        required:
-            - unique_key
-            - display_name
-            - provider
-            - created_at
-            - updated_at
-        properties:
-            unique_key:
-                type: string
-                description: The integration ID that you created in Nango.
-            display_name:
-                type: string
-                description: The provider display name.
-            provider:
-                type: string
-                description: The Nango API Configuration.
-            logo:
-                type: string
-                description: Absolute path to the logo of this integration (svg)
-            created_at:
-                type: string
-                format: date
-                description: When it was created
-            updated_at:
-                type: string
-                format: date
-                description: Last time it was updated
-    ConnectSession:
-        type: object
-        required:
-            - end_user
-        properties:
-            end_user:
-                type: object
-                required:
-                    - id
-                    - email
-                properties:
-                    id:
-                        type: string
-                        description: Uniquely identifies the end user.
-                    email:
-                        type: string
-                    display_name:
-                        type: string
-            organization:
-                type: object
-                properties:
-                    id:
-                        type: string
-                        description: Uniquely identifies the organization the end user belongs to
-                    display_name:
-                        type: string
-            allowed_integrations:
-                type: array
-                description: Filters which integrations the end user can interact with
-                items:
-                    type: string
-            integrations_config_defaults:
-                type: object
-                additionalProperties:
+    schemas:
+        StdError:
+            type: object
+            additionalProperties: false
+            properties:
+                error:
                     type: object
-                    description: the unique name of an integration
+                    additionalProperties: false
+                    required:
+                        - code
                     properties:
-                        connection_config:
+                        code:
+                            type: string
+                        message:
+                            type: string
+                        errors:
+                            type: array
+                            items:
+                                type: object
+
+        TokenUrlObject:
+            properties:
+                OAUTH1:
+                    type: string
+                OAUTH2:
+                    type: string
+                OAUTH2CC:
+                    type: string
+                BASIC:
+                    type: string
+                API_KEY:
+                    type: string
+                APP_STORE:
+                    type: string
+                CUSTOM:
+                    type: string
+                APP:
+                    type: string
+                NONE:
+                    type: string
+            additionalProperties: false
+            type: object
+
+        SimplifiedJSONSchema:
+            type: object
+            additionalProperties: false
+            required: ['type', 'title', 'description']
+            properties:
+                type:
+                    type: string
+                    enum: [string]
+                title:
+                    type: string
+                description:
+                    type: string
+                example:
+                    type: string
+                pattern:
+                    type: string
+                format:
+                    type: string
+        BaseProvider:
+            properties:
+                name:
+                    type: string
+                display_name:
+                    type: string
+                auth_mode:
+                    type: string
+                    enum:
+                        [
+                            'OAUTH1',
+                            'OAUTH2',
+                            'OAUTH2_CC',
+                            'BASIC',
+                            'API_KEY',
+                            'APP_STORE',
+                            'CUSTOM',
+                            'APP',
+                            'NONE',
+                            'TBA',
+                            'TABLEAU',
+                            'JWT',
+                            'BILL',
+                            'TWO_STEP',
+                            'SIGNATURE'
+                        ]
+                proxy:
+                    properties:
+                        base_url:
+                            type: string
+                        headers:
                             type: object
+                        query:
+                            properties:
+                                api_key:
+                                    type: string
+                            required:
+                                - api_key
+                            additionalProperties: false
+                            type: object
+                        retry:
+                            type: object
+                            properties:
+                                at:
+                                    type: string
+                                after:
+                                    type: string
+                        decompress:
+                            type: boolean
+                        paginate:
+                            anyOf: []
+                        verification:
+                            properties:
+                                method:
+                                    type: string
+                                endpoint:
+                                    type: string
+                                base_url_override:
+                                    type: string
+                                headers:
+                                    type: object
+                            required:
+                                - method
+                                - endpoint
+                            additionalProperties: false
+                            type: object
+                    required:
+                        - base_url
+                    additionalProperties: false
+                    type: object
+                authorization_url:
+                    type: string
+                authorization_url_encode:
+                    type: boolean
+                access_token_url:
+                    type: string
+                token_url_encode:
+                    type: boolean
+                authorization_params:
+                    type: object
+                scope_separator:
+                    type: string
+                default_scopes:
+                    items:
+                        type: string
+                    type: array
+                token_url:
+                    anyOf:
+                        - type: string
+                        - $ref: '#/components/schemas/TokenUrlObject'
+                token_params:
+                    type: object
+                authorization_url_replacements:
+                    type: object
+                authorization_url_fragment:
+                    type: string
+                redirect_uri_metadata:
+                    items:
+                        type: string
+                    type: array
+                token_response_metadata:
+                    items:
+                        type: string
+                    type: array
+                docs:
+                    type: string
+                token_expiration_buffer:
+                    type: number
+                webhook_routing_script:
+                    type: string
+                webhook_user_defined_secret:
+                    type: boolean
+                post_connection_script:
+                    type: string
+                categories:
+                    items:
+                        type: string
+                    type: array
+                connection_configuration:
+                    items:
+                        type: string
+                    type: array
+                connection_config:
+                    $ref: '#/components/schemas/SimplifiedJSONSchema'
+                credentials:
+                    type: object
+                    properties:
+                        apiKey:
+                            $ref: '#/components/schemas/SimplifiedJSONSchema'
+
+            required:
+                - auth_mode
+                - name
+                - display_name
+                - docs
+            additionalProperties: false
+            type: object
+        ProviderOAuth2:
+            properties:
+                auth_mode:
+                    enum:
+                        - OAUTH2
+                        - CUSTOM
+                    type: string
+                token_params:
+                    properties:
+                        grant_type:
+                            enum:
+                                - authorization_code
+                                - client_credentials
+                            type: string
+                    additionalProperties: false
+                    type: object
+                disable_pkce:
+                    type: boolean
+                refresh_params:
+                    properties:
+                        grant_type:
+                            enum:
+                                - refresh_token
+                            type: string
+                    required:
+                        - grant_type
+                    additionalProperties: false
+                    type: object
+                authorization_method:
+                    type: string
+                    enum:
+                        - body
+                        - header
+                body_format:
+                    type: string
+                    enum:
+                        - form
+                        - json
+                refresh_url:
+                    type: string
+                expires_in_unit:
+                    enum:
+                        - milliseconds
+                    type: string
+                token_request_auth_method:
+                    enum:
+                        - basic
+                        - custom
+                    type: string
+            required:
+                - auth_mode
+            additionalProperties: false
+            type: object
+        ProviderOAuth1:
+            properties:
+                auth_mode:
+                    enum:
+                        - OAUTH1
+                    type: string
+                request_url:
+                    type: string
+                request_params:
+                    type: object
+                request_http_method:
+                    enum:
+                        - GET
+                        - PUT
+                        - POST
+                    type: string
+                token_http_method:
+                    enum:
+                        - GET
+                        - PUT
+                        - POST
+                    type: string
+                signature_method:
+                    enum:
+                        - HMAC-SHA1
+                        - RSA-SHA1
+                        - PLAINTEXT
+                    type: string
+            required:
+                - auth_mode
+                - request_url
+                - signature_method
+            additionalProperties: false
+            type: object
+
+        Provider:
+            anyOf:
+                - $ref: '#/components/schemas/BaseProvider'
+                  title: 'Default'
+                - $ref: '#/components/schemas/ProviderOAuth1'
+                  title: 'Oauth1'
+                - $ref: '#/components/schemas/ProviderOAuth2'
+                  title: 'Oauth2'
+
+        Integration:
+            type: object
+            additionalProperties: false
+            required:
+                - unique_key
+                - display_name
+                - provider
+                - created_at
+                - updated_at
+            properties:
+                unique_key:
+                    type: string
+                    description: The integration ID that you created in Nango.
+                display_name:
+                    type: string
+                    description: The provider display name.
+                provider:
+                    type: string
+                    description: The Nango API Configuration.
+                logo:
+                    type: string
+                    description: Absolute path to the logo of this integration (svg)
+                created_at:
+                    type: string
+                    format: date
+                    description: When it was created
+                updated_at:
+                    type: string
+                    format: date
+                    description: Last time it was updated
+
+        ConnectSession:
+            type: object
+            required:
+                - end_user
+            properties:
+                end_user:
+                    type: object
+                    required:
+                        - id
+                        - email
+                    properties:
+                        id:
+                            type: string
+                            description: Uniquely identifies the end user.
+                        email:
+                            type: string
+                        display_name:
+                            type: string
+                organization:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                            description: Uniquely identifies the organization the end user belongs to
+                        display_name:
+                            type: string
+                allowed_integrations:
+                    type: array
+                    description: Filters which integrations the end user can interact with
+                    items:
+                        type: string
+                integrations_config_defaults:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        description: the unique name of an integration
+                        properties:
+                            connection_config:
+                                type: object

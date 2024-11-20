@@ -1,10 +1,26 @@
 import type { MaybePromise } from '@nangohq/types';
 import type { ConnectUIEvent, ConnectUIEventToken } from './types';
 
+export type OnConnectEvent = (event: ConnectUIEvent) => MaybePromise<void>;
 export interface ConnectUIProps {
-    sessionToken?: string;
+    /**
+     * The unique token to identify your user. It is required to make UI work but can be set asynchronously.
+     */
+    sessionToken?: string | undefined;
+    /**
+     * The base URL to load the UI
+     * @default `https://connect.nango.dev`
+     */
     baseURL?: string;
-    onEvent?: (event: ConnectUIEvent) => MaybePromise<void>;
+    /**
+     * The base URL to reach Nango API
+     * @default `https://api.nango.dev`
+     */
+    apiURL?: string;
+    /**
+     * A callback to listen to events sent by Nango Connect
+     */
+    onEvent?: OnConnectEvent;
 }
 
 export class ConnectUI {
@@ -14,11 +30,13 @@ export class ConnectUI {
     private listener: ((this: Window, ev: MessageEvent) => any) | null = null;
     private sessionToken;
     private baseURL;
+    private apiURL;
     private onEvent;
 
-    constructor({ sessionToken, baseURL = 'http://localhost:5173', onEvent }: ConnectUIProps) {
+    constructor({ sessionToken, baseURL = 'https://connect.nango.dev', apiURL = 'https://api.nango.dev', onEvent }: ConnectUIProps) {
         this.sessionToken = sessionToken;
         this.baseURL = baseURL;
+        this.apiURL = apiURL;
         this.onEvent = onEvent;
     }
 
@@ -27,10 +45,14 @@ export class ConnectUI {
      */
     open() {
         console.log('Opening connect ui');
+        const baseURL = new URL(this.baseURL);
+        if (this.apiURL) {
+            baseURL.searchParams.append('apiURL', this.apiURL);
+        }
 
         // Create an iframe that will contain the ConnectUI on top of existing UI
         const iframe = document.createElement('iframe');
-        iframe.src = new URL(this.baseURL).href;
+        iframe.src = baseURL.href;
         iframe.id = 'connect-ui';
         iframe.style.position = 'fixed';
         iframe.style.zIndex = '9999';

@@ -12,12 +12,12 @@ import { Toaster } from './components/ui/toast/Toaster';
 import { Signup } from './pages/Account/Signup';
 import { InviteSignup } from './pages/Account/InviteSignup';
 import Signin from './pages/Account/Signin';
-import { InteractiveDemo } from './pages/InteractiveDemo';
+import { GettingStarted } from './pages/GettingStarted/Show';
 import IntegrationList from './pages/Integrations/List';
 import CreateIntegration from './pages/Integrations/Create';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
-import ConnectionList from './pages/Connection/List';
-import Connection from './pages/Connection/Show';
+import { ConnectionList } from './pages/Connection/List';
+import { ConnectionShow } from './pages/Connection/Show';
 import ConnectionCreate from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/Environment/Settings';
 import { PrivateRoute } from './components/PrivateRoute';
@@ -26,7 +26,6 @@ import ResetPassword from './pages/Account/ResetPassword';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
 import { EmailVerified } from './pages/Account/EmailVerified';
-import AuthLink from './pages/AuthLink';
 import { Homepage } from './pages/Homepage/Show';
 import { NotFound } from './pages/NotFound';
 import { LogsSearch } from './pages/Logs/Search';
@@ -44,12 +43,12 @@ const theme = createTheme({
 const App = () => {
     const env = useStore((state) => state.env);
     const signout = useSignout();
-    const setShowInteractiveDemo = useStore((state) => state.setShowInteractiveDemo);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
-        setShowInteractiveDemo(env === 'dev' && globalEnv.features.interactiveDemo);
-    }, [env, setShowInteractiveDemo]);
+        setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
+    }, [env, setShowGettingStarted]);
 
     return (
         <MantineProvider theme={theme}>
@@ -73,9 +72,9 @@ const App = () => {
                         <Route path="/" element={<Root />} />
                         <Route element={<PrivateRoute />} key={env}>
                             <Route path="/:env" element={<Homepage />} />
-                            {showInteractiveDemo && (
-                                <Route path="/dev/interactive-demo" element={<PrivateRoute />}>
-                                    <Route path="/dev/interactive-demo" element={<InteractiveDemo />} />
+                            {showGettingStarted && (
+                                <Route path="/dev/getting-started" element={<PrivateRoute />}>
+                                    <Route path="/dev/getting-started" element={<GettingStarted />} />
                                 </Route>
                             )}
                             <Route path="/:env/integrations" element={<IntegrationList />} />
@@ -85,7 +84,7 @@ const App = () => {
                             <Route path="/:env/connections" element={<ConnectionList />} />
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
                             <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<Connection />} />
+                            <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsSearch />} />
                             <Route path="/:env/environment-settings" element={<EnvironmentSettings />} />
@@ -94,7 +93,6 @@ const App = () => {
                             <Route path="/:env/team-settings" element={<TeamSettings />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                         </Route>
-                        <Route path="/auth-link" element={<AuthLink />} />
                         {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
                         {globalEnv.features.auth && (
                             <>

@@ -9,5 +9,3 @@ export interface ActiveLog extends Timestamps {
     active: boolean;
     sync_id: string | null;
 }
-
-export type ActiveLogIds = Pick<ActiveLog, 'log_id'>;

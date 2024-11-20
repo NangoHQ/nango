@@ -5,17 +5,31 @@ import { z } from 'zod';
 import type { SimplifiedJSONSchema } from '@nangohq/types';
 
 import type { ClassValue } from 'clsx';
+import type { ZodTypeAny } from 'zod';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function jsonSchemaToZod(schema: SimplifiedJSONSchema): z.ZodString {
-    let field = z.string();
-    if (schema.format === 'hostname') field = field.regex(/^[a-zA-Z0-9-]$/);
-    else if (schema.format === 'uuid') field = field.uuid();
-    else if (schema.format === 'uri') field = field.url();
-    if (schema.pattern) field = field.regex(new RegExp(schema.pattern), { message: `Incorrect ${schema.title}` });
+export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
+    let fieldString = z.string();
+    if (schema.format === 'hostname') {
+        fieldString = fieldString.regex(/^[a-zA-Z0-9.-]+$/, 'Invalid hostname');
+    } else if (schema.format === 'uuid') {
+        fieldString = fieldString.uuid();
+    } else if (schema.format === 'uri') {
+        fieldString = fieldString.url();
+    } else if (schema.format === 'email') {
+        fieldString = fieldString.email();
+    }
+    if (schema.pattern) {
+        fieldString = fieldString.regex(new RegExp(schema.pattern), { message: `Incorrect ${schema.title}` });
+    }
 
-    return field;
+    if ('optional' in schema && schema.optional === true) {
+        // https://stackoverflow.com/questions/73715295/react-hook-form-with-zod-resolver-optional-field
+        return z.union([fieldString, z.literal('')]);
+    }
+
+    return fieldString;
 }

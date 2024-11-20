@@ -302,6 +302,14 @@ class EnvironmentService {
         return result[0].id;
     }
 
+    async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereNotNull('otlp_settings');
+        if (result == null) {
+            return [];
+        }
+        return result.map((env) => encryptionManager.decryptEnvironment(env));
+    }
+
     async editCallbackUrl(callbackUrl: string, id: number): Promise<DBEnvironment | null> {
         return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
     }
@@ -326,6 +334,10 @@ class EnvironmentService {
 
     async editHmacKey(hmacKey: string, id: number): Promise<DBEnvironment | null> {
         return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
+    }
+
+    async editOtlpSettings(environmentId: number, otlpSettings: { endpoint: string; headers: Record<string, string> } | null): Promise<DBEnvironment | null> {
+        return db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update({ otlp_settings: otlpSettings }, ['id']);
     }
 
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[] | null> {

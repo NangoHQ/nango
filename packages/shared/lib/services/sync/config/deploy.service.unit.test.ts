@@ -9,14 +9,14 @@ import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { DBTeam, IncomingFlowConfig, DBEnvironment } from '@nangohq/types';
+import type { DBTeam, DBEnvironment, CleanedIncomingFlowConfig } from '@nangohq/types';
 import type { SyncConfig } from '../../../models/Sync.js';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
     executeAction: () => Promise.resolve({}) as any,
     executeWebhook: () => Promise.resolve({}) as any,
-    executePostConnection: () => Promise.resolve({}) as any,
+    executeOnEvent: () => Promise.resolve({}) as any,
     executeSync: () => Promise.resolve({}) as any,
     cancel: () => Promise.resolve({}) as any,
     pauseSync: () => Promise.resolve({}) as any,
@@ -33,7 +33,7 @@ describe('Sync config create', () => {
     const debug = true;
 
     it('Create sync configs correctly', async () => {
-        const syncs: IncomingFlowConfig[] = [];
+        const syncs: CleanedIncomingFlowConfig[] = [];
         const debug = true;
 
         vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
@@ -49,14 +49,14 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
-            postConnectionScriptsByProvider: []
+            onEventScriptsByProvider: []
         });
 
         expect(emptyConfig).not.toBe([]);
     });
 
     it('Throws a provider not found error', async () => {
-        const syncs: IncomingFlowConfig[] = [
+        const syncs: CleanedIncomingFlowConfig[] = [
             {
                 syncName: 'test-sync',
                 type: 'sync',
@@ -69,7 +69,11 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 version: '1',
                 model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
-                track_deletes: true
+                track_deletes: true,
+                endpoints: [
+                    { method: 'GET', path: '/model1' },
+                    { method: 'GET', path: '/model2' }
+                ]
             }
         ];
 
@@ -85,7 +89,7 @@ describe('Sync config create', () => {
             logContextGetter,
             orchestrator: mockOrchestrator,
             debug,
-            postConnectionScriptsByProvider: []
+            onEventScriptsByProvider: []
         });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
@@ -95,7 +99,7 @@ describe('Sync config create', () => {
     });
 
     it('Throws an error at the end of the create sync process', async () => {
-        const syncs: IncomingFlowConfig[] = [
+        const syncs: CleanedIncomingFlowConfig[] = [
             {
                 syncName: 'test-sync',
                 type: 'sync',
@@ -108,7 +112,11 @@ describe('Sync config create', () => {
                 runs: 'every 6h',
                 version: '1',
                 model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]',
-                track_deletes: true
+                track_deletes: true,
+                endpoints: [
+                    { method: 'GET', path: '/model1' },
+                    { method: 'GET', path: '/model2' }
+                ]
             }
         ];
 
@@ -207,7 +215,7 @@ describe('Sync config create', () => {
                 logContextGetter,
                 orchestrator: mockOrchestrator,
                 debug,
-                postConnectionScriptsByProvider: []
+                onEventScriptsByProvider: []
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });

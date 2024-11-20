@@ -3,13 +3,12 @@ import { Skeleton } from '../../../../components/ui/Skeleton';
 import { useGetIntegrationFlows } from '../../../../hooks/useIntegration';
 import { useStore } from '../../../../store';
 import { useMemo } from 'react';
-import type { GetIntegration, HTTP_VERB, NangoSyncConfig } from '@nangohq/types';
+import type { GetIntegration, NangoSyncConfig } from '@nangohq/types';
 import type { FlowGroup, NangoSyncConfigWithEndpoint } from './components/List';
 import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
 
-const allowedGroup = ['customers', 'invoices', 'payments', 'tickets'];
 export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { providerConfigKey } = useParams();
@@ -26,14 +25,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         const tmp: Record<string, NangoSyncConfigWithEndpoint[]> = {};
         for (const flow of data.flows) {
             for (const endpoint of flow.endpoints) {
-                const entries = Object.entries(endpoint)[0];
-                const paths = entries[1].split('/');
-
-                const path = paths[1];
-                if (!path) {
-                    continue;
-                }
-                const groupName = allowedGroup.includes(path) ? path : 'others';
+                const groupName = endpoint.group || 'others';
 
                 let group = tmp[groupName];
                 if (!group) {
@@ -41,7 +33,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                     tmp[groupName] = group;
                 }
 
-                group.push({ ...flow, endpoint: { method: entries[0] as HTTP_VERB, path: entries[1] } });
+                group.push({ ...flow, endpoint });
             }
 
             if (flow.endpoints.length <= 0) {
@@ -54,22 +46,27 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         for (const group of Object.entries(tmp)) {
             groups.push({
                 name: group[0],
-                flows: group[1].sort((a, b) => {
-                    // Sort by length of path
-                    const lenA = (a.endpoint.path.match(/\//g) || []).length;
-                    const lenB = (b.endpoint.path.match(/\//g) || []).length;
-                    if (lenA > lenB) return 1;
-                    else if (lenA < lenB) return -1;
+                flows: group[1]
+                    .sort((a, b) => {
+                        // Sort by length of path
+                        const lenA = (a.endpoint.path.match(/\//g) || []).length;
+                        const lenB = (b.endpoint.path.match(/\//g) || []).length;
+                        if (lenA > lenB) return 1;
+                        else if (lenA < lenB) return -1;
 
-                    // Sort by method
-                    if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
-                    else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
-                    else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
-                    else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
+                        // Sort alphabetically
+                        return a.endpoint.path > b.endpoint.path ? 1 : -1;
+                    })
+                    .sort((a, b) => {
+                        if (a.endpoint.path !== b.endpoint.path) return 0;
 
-                    // Finally sort alphabetically
-                    return a.endpoint.path > b.endpoint.path ? 1 : -1;
-                })
+                        // Sort by method
+                        if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
+                        else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
+                        else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
+                        else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
+                        else return 0;
+                    })
             });
         }
 
@@ -89,10 +86,9 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
         }
 
         for (const flow of data.flows) {
-            for (const endpointObj of flow.endpoints) {
-                const endpoint = Object.entries(endpointObj)[0];
-                if (endpoint[0] === method && endpoint[1] === path) {
-                    return { ...flow, endpoint: { method: method as HTTP_VERB, path } };
+            for (const endpoint of flow.endpoints) {
+                if (endpoint.method === method && endpoint.path === path) {
+                    return { ...flow, endpoint };
                 }
             }
         }

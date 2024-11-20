@@ -18,7 +18,9 @@ import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { linkConnection } from '../../services/endUser.service.js';
+import db from '@nangohq/database';
 
 const bodyValidation = z
     .object({
@@ -32,11 +34,9 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional(),
-        hmac: z.string().optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .and(connectionCredential);
 
 const paramValidation = z
     .object({
@@ -69,11 +69,13 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, authType } = res.locals;
     const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
-    const connectionConfig = params ? getConnectionConfig(params) : {};
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
 
     let logCtx: LogContext | undefined;
 
@@ -88,14 +90,12 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        await hmacCheck({
-            environment,
-            logCtx,
-            providerConfigKey,
-            connectionId: receivedConnectionId,
-            hmac,
-            res
-        });
+        if (authType !== 'connectSession') {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
+        }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
@@ -137,11 +137,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        await logCtx.info('Tableau credentials creation was successful');
-        await logCtx.success();
-
-        const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const [updatedConnection] = await connectionService.upsertTableauConnection({
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
             credentials,
@@ -151,23 +147,35 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             environment,
             account
         });
-
-        if (updatedConnection) {
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-            void connectionCreatedHook(
-                {
-                    connection: updatedConnection.connection,
-                    environment,
-                    account,
-                    auth_mode: 'NONE',
-                    operation: updatedConnection.operation
-                },
-                config.provider,
-                logContextGetter,
-                undefined,
-                logCtx
-            );
+        if (!updatedConnection) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+            await logCtx.error('Failed to create connection');
+            await logCtx.failed();
+            return;
         }
+
+        if (authType === 'connectSession') {
+            const session = res.locals.connectSession;
+            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+        }
+
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.info('Tableau credentials creation was successful');
+        await logCtx.success();
+
+        void connectionCreatedHook(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'TABLEAU',
+                operation: updatedConnection.operation
+            },
+            config.provider,
+            logContextGetter,
+            undefined,
+            logCtx
+        );
 
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {
@@ -175,7 +183,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
                 auth_mode: 'TABLEAU',
@@ -197,10 +205,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.AUTH,
             environmentId: environment.id,
-            metadata: {
-                providerConfigKey,
-                connectionId: receivedConnectionId
-            }
+            metadata: { providerConfigKey, connectionId }
         });
 
         next(err);

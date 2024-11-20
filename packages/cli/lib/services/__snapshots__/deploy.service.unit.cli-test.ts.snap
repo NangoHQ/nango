@@ -40,7 +40,8 @@ exports[`package > should package correctly 2`] = `
     "auto_start": true,
     "endpoints": [
       {
-        "GET": "/hubspot/contacts",
+        "method": "GET",
+        "path": "/hubspot/contacts",
       },
     ],
     "fileBody": {
@@ -113,7 +114,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
   {
     "endpoints": [
       {
-        "POST": "/hubspot/contact",
+        "method": "POST",
+        "path": "/hubspot/contact",
       },
     ],
     "fileBody": {
@@ -171,7 +173,8 @@ export default async function runAction(nango: NangoAction): Promise<void> {
     "auto_start": true,
     "endpoints": [
       {
-        "GET": "/github/issues",
+        "method": "GET",
+        "path": "/github/issues",
       },
     ],
     "fileBody": {
@@ -244,7 +247,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
   {
     "endpoints": [
       {
-        "POST": "/github/issue",
+        "method": "POST",
+        "path": "/github/issue",
       },
     ],
     "fileBody": {

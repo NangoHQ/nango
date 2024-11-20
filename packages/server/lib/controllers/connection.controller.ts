@@ -1,18 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Config as ProviderConfig, OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
+import type { OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
-import {
-    configService,
-    connectionService,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    NangoError,
-    accountService,
-    SlackService,
-    getProvider
-} from '@nangohq/shared';
+import { configService, connectionService, errorManager, NangoError, accountService, SlackService, getProvider } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
@@ -47,11 +37,29 @@ class ConnectionController {
                 metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
             }
 
-            const credentialResponse = await connectionService.getConnectionCredentials({
+            const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
+            if (!integration) {
+                res.status(404).send({
+                    error: {
+                        code: 'unknown_provider_config',
+                        message:
+                            'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
+                    }
+                });
+                return;
+            }
+
+            const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            if (connectionRes.error || !connectionRes.response) {
+                errorManager.errResFromNangoErr(res, connectionRes.error);
+                return;
+            }
+
+            const credentialResponse = await connectionService.refreshOrTestCredentials({
                 account,
                 environment,
-                connectionId,
-                providerConfigKey,
+                connection: connectionRes.response,
+                integration,
                 logContextGetter,
                 instantRefresh,
                 onRefreshSuccess: connectionRefreshSuccessHook,
@@ -60,7 +68,6 @@ class ConnectionController {
 
             if (credentialResponse.isErr()) {
                 errorManager.errResFromNangoErr(res, credentialResponse.error);
-
                 return;
             }
 
@@ -80,59 +87,6 @@ class ConnectionController {
             }
 
             res.status(200).send(connection);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async listConnections(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const accountId = res.locals['account'].id;
-            const isWeb = res.locals['authType'] === 'session' || res.locals['authType'] === 'none';
-
-            const { connectionId } = req.query;
-            const connections = await connectionService.listConnections(environmentId, connectionId as string);
-
-            if (!isWeb) {
-                void analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
-            }
-
-            const configs = await configService.listProviderConfigs(environmentId);
-
-            if (configs == null) {
-                res.status(200).send({ connections: [] });
-
-                return;
-            }
-
-            const uniqueKeyToProvider: Record<string, string> = {};
-            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
-
-            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
-
-            const result: ConnectionList[] = connections.map((connection) => {
-                const list: ConnectionList = {
-                    id: connection.id,
-                    connection_id: connection.connection_id,
-                    provider_config_key: connection.provider,
-                    provider: uniqueKeyToProvider[connection.provider] as string,
-                    created: connection.created,
-                    metadata: connection.metadata
-                };
-
-                if (isWeb) {
-                    list.active_logs = connection.active_logs;
-                }
-
-                return list;
-            });
-
-            res.status(200).send({
-                connections: result.sort(function (a, b) {
-                    return new Date(b.created).getTime() - new Date(a.created).getTime();
-                })
-            });
         } catch (err) {
             next(err);
         }
@@ -646,7 +600,7 @@ class ConnectionController {
                     return;
                 }
 
-                const [imported] = await connectionService.upsertTbaConnection({
+                const [imported] = await connectionService.upsertAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
                     credentials: tbaCredentials,

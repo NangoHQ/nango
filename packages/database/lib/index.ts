@@ -1,7 +1,11 @@
+import path from 'node:path';
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { retry } from '@nangohq/utils';
+import { projectRoot, retry } from '@nangohq/utils';
 import { defaultSchema, getDbConfig } from './getConfig.js';
+
+// Note: we are in dist when it executes but migrations are not compiled
+const directory = path.join(projectRoot, 'packages/database/lib/migrations');
 
 export class KnexDatabase {
     knex: Knex;
@@ -11,7 +15,7 @@ export class KnexDatabase {
         this.knex = knex(dbConfig);
     }
 
-    async migrate(directory: string): Promise<any> {
+    async migrate(): Promise<any> {
         return retry(
             async () =>
                 await this.knex.migrate.latest({
@@ -49,7 +53,7 @@ export const multipleMigrations = async (): Promise<void> => {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 
         const [_, pendingMigrations] = await db.knex.migrate.list({
-            directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
+            directory
         });
 
         if (pendingMigrations.length === 0) {
@@ -57,7 +61,7 @@ export const multipleMigrations = async (): Promise<void> => {
         } else {
             console.log('Migrations pending, running migrations.');
             await db.knex.migrate.latest({
-                directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
+                directory
             });
             console.log('Migrations completed.');
         }

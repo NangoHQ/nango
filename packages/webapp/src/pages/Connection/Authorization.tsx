@@ -1,84 +1,142 @@
-import { useState } from 'react';
 import { Prism } from '@mantine/prism';
-import { Loading } from '@geist-ui/core';
 
 import PrismPlus from '../../components/ui/prism/PrismPlus';
-import type { Connection } from '@nangohq/types';
+import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import SecretInput from '../../components/ui/input/SecretInput';
-import { CopyButton } from '../../components/ui/button/CopyButton';
 import TagsInput from '../../components/ui/input/TagsInput';
+import type React from 'react';
+import { apiRefreshConnection } from '../../hooks/useConnections';
+import { useState } from 'react';
+import { useStore } from '../../store';
+import { useToast } from '../../hooks/useToast';
+import { mutate } from 'swr';
+import { getLogsUrl } from '../../utils/logs';
+import { Info } from '../../components/Info';
+import { Link } from 'react-router-dom';
+import { CopyText } from '../../components/CopyText';
 
 interface AuthorizationProps {
-    connection: Connection;
-    forceRefresh: () => Promise<void>;
-    loaded: boolean;
-    syncLoaded: boolean;
+    connection: ApiConnectionFull;
+    errorLog: ActiveLog | null;
+    endUser: ApiEndUser | null;
 }
 
-export default function Authorization(props: AuthorizationProps) {
-    const { connection, forceRefresh, loaded } = props;
-    const [refreshing, setRefreshing] = useState(false);
+export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorLog, endUser }) => {
+    const { toast } = useToast();
 
-    const handleForceRefresh = async () => {
-        setRefreshing(true);
-        await forceRefresh();
-        setRefreshing(false);
+    const env = useStore((state) => state.env);
+
+    const [loading, setLoading] = useState(false);
+
+    const forceRefresh = async () => {
+        setLoading(true);
+        const res = await apiRefreshConnection({ connectionId: connection.connection_id }, { env, provider_config_key: connection.provider_config_key });
+        setLoading(false);
+
+        if (res.res.status === 200) {
+            toast({ title: `Secrets refreshed`, variant: 'success' });
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/connections/${connection.connection_id}`));
+        } else {
+            toast({ title: `Failed to refresh secrets`, variant: 'error' });
+        }
     };
-
-    if (!loaded) return <Loading spaceRatio={2.5} className="top-24" />;
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
-            <div className="flex">
-                <div className="flex flex-col w-1/2">
+            {errorLog && (
+                <div className="flex my-4">
+                    <Info variant={'destructive'}>
+                        There was an error refreshing the credentials
+                        <Link
+                            to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
+                            className="ml-1 cursor-pointer underline"
+                        >
+                            (logs).
+                        </Link>
+                    </Info>
+                </div>
+            )}
+            <div className="grid grid-cols-3 gap-5">
+                <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Connection ID</span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-white break-all">{connection.connection_id}</span>
-                        <CopyButton text={connection.connection_id} />
+                    <div className="text-s -ml-2">
+                        <CopyText text={connection.connection_id} className=" text-white" />
                     </div>
                 </div>
+
+                {endUser?.id && (
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">User ID</span>
+                        <span className="text-white">{endUser.id}</span>
+                    </div>
+                )}
+                {endUser?.displayName && (
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">User Display Name</span>
+                        <span className="text-white">{endUser.displayName}</span>
+                    </div>
+                )}
+                {endUser?.email && (
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">User Email</span>
+                        <span className="text-white">{endUser.email}</span>
+                    </div>
+                )}
+                {endUser?.organization?.id && (
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Organization ID</span>
+                        <span className="text-white">{endUser.organization.id}</span>
+                    </div>
+                )}
+                {endUser?.organization?.displayName && (
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Organization Name</span>
+                        <span className="text-white">{endUser.organization.displayName}</span>
+                    </div>
+                )}
                 {connection.created_at && (
-                    <div className="flex flex-col w-1/2">
+                    <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Creation Date</span>
                         <span className="text-white">{formatDateToShortUSFormat(connection.created_at.toString())}</span>
                     </div>
                 )}
-            </div>
-            <div className="flex">
-                <div className="flex flex-col w-1/2">
+                <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Auth Type</span>
                     <span className="text-white">{connection.credentials.type || 'None'}</span>
                 </div>
                 {connection.credentials && connection.credentials.type === 'API_KEY' && 'apiKey' in connection.credentials && (
-                    <div className="flex flex-col w-1/2">
+                    <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">{connection.credentials.type}</span>
                         <SecretInput disabled defaultValue={connection.credentials.apiKey} copy={true} />
                     </div>
                 )}
                 {'expires_at' in connection.credentials && connection.credentials.expires_at && (
-                    <div className="flex flex-col w-1/2">
+                    <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
                         <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at.toString())}</span>
                     </div>
                 )}
             </div>
-            {connection.credentials && connection.credentials.type === 'BASIC' && 'password' in connection.credentials && (
-                <div className="flex">
-                    {connection?.credentials.username && (
-                        <div className="flex flex-col w-1/2">
-                            <span className="text-gray-400 text-xs uppercase mb-2">Username</span>
-                            <span className="text-white">{connection?.credentials.username}</span>
-                        </div>
-                    )}
-                    {connection?.credentials.password && (
-                        <div className="flex flex-col w-1/2">
-                            <span className="text-gray-400 text-xs uppercase mb-1">Password</span>
-                            <SecretInput disabled defaultValue={connection?.credentials?.password} copy={true} />
-                        </div>
-                    )}
-                </div>
-            )}
+
+            {connection.credentials &&
+                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL' || connection.credentials.type === 'SIGNATURE') &&
+                'password' in connection.credentials && (
+                    <div className="flex">
+                        {connection?.credentials.username && (
+                            <div className="flex flex-col">
+                                <span className="text-gray-400 text-xs uppercase mb-2">Username</span>
+                                <span className="text-white">{connection?.credentials.username}</span>
+                            </div>
+                        )}
+                        {connection?.credentials.password && (
+                            <div className="flex flex-col">
+                                <span className="text-gray-400 text-xs uppercase mb-1">Password</span>
+                                <SecretInput disabled defaultValue={connection?.credentials?.password} copy={true} />
+                            </div>
+                        )}
+                    </div>
+                )}
             {connection.credentials && 'config_override' in connection.credentials && (
                 <>
                     {connection.credentials.config_override?.client_id && (
@@ -128,6 +186,24 @@ export default function Authorization(props: AuthorizationProps) {
                     />
                 </div>
             )}
+            {connection.credentials?.type === 'TWO_STEP' && (
+                <div>
+                    {Object.keys(connection.credentials)
+                        .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
+                        .map((key) => {
+                            const value = (connection.credentials as Record<string, string>)[key];
+
+                            return (
+                                <div className="flex flex-col" key={key}>
+                                    <span className="text-gray-400 text-xs uppercase mb-1">
+                                        {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+                                    </span>
+                                    <SecretInput disabled defaultValue={value} copy={true} />
+                                </div>
+                            );
+                        })}
+                </div>
+            )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">PAT NAME</span>
@@ -149,7 +225,7 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials && 'token' in connection.credentials && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Token</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.token} copy={true} refresh={handleForceRefresh} />
+                    <SecretInput disabled value={connection.credentials.token} copy={true} refreshing={loading} refresh={forceRefresh} />
                 </div>
             )}
             {(connection.credentials.type === 'OAUTH2' || connection.credentials.type === 'APP') && connection.credentials.access_token && (
@@ -157,9 +233,10 @@ export default function Authorization(props: AuthorizationProps) {
                     <span className="text-gray-400 text-xs uppercase mb-1">Access Token</span>
                     <SecretInput
                         disabled
-                        value={refreshing ? 'Refreshing...' : connection.credentials.access_token}
+                        value={connection.credentials.access_token}
                         copy={true}
-                        refresh={connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token ? handleForceRefresh : undefined}
+                        refreshing={loading}
+                        refresh={connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token ? forceRefresh : undefined}
                     />
                 </div>
             )}
@@ -190,7 +267,55 @@ export default function Authorization(props: AuthorizationProps) {
             {connection.credentials.type === 'OAUTH2' && connection.credentials.refresh_token && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
-                    <SecretInput disabled value={refreshing ? 'Refreshing...' : connection.credentials.refresh_token} copy={true} />
+                    <SecretInput disabled value={connection.credentials.refresh_token} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Issuer ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.issuerId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKeyId && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Private Key ID</span>
+                    <SecretInput disabled defaultValue={connection.credentials.privateKeyId} copy={true} />
+                </div>
+            )}
+
+            {connection.credentials.type === 'JWT' && connection.credentials.privateKey && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">
+                        {typeof connection.credentials.privateKey === 'string' ? 'Private Key' : 'API Key'}
+                    </span>
+                    <SecretInput
+                        disabled
+                        defaultValue={
+                            typeof connection.credentials.privateKey === 'string'
+                                ? connection.credentials.privateKey
+                                : `${(connection.credentials.privateKey as { id: string; secret: string }).id}:${(connection.credentials.privateKey as { id: string; secret: string }).secret}`
+                        }
+                        copy={true}
+                    />
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && connection.credentials.organization_id && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Organization Id</span>
+                    <span className="text-white">{connection.credentials.organization_id}</span>
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && connection.credentials.dev_key && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Dev Key</span>
+                    <SecretInput disabled defaultValue={connection.credentials.dev_key} copy={true} />
+                </div>
+            )}
+            {connection.credentials.type === 'BILL' && 'session_id' in connection.credentials && (
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Session ID</span>
+                    <SecretInput disabled value={connection.credentials.session_id} copy={true} refreshing={loading} refresh={forceRefresh} />
                 </div>
             )}
             <div className="flex flex-col">
@@ -208,6 +333,8 @@ export default function Authorization(props: AuthorizationProps) {
             {(connection.credentials.type === 'OAUTH1' ||
                 connection.credentials.type === 'OAUTH2' ||
                 connection.credentials.type === 'APP' ||
+                connection.credentials.type === 'BILL' ||
+                connection.credentials.type === 'TWO_STEP' ||
                 connection.credentials.type === 'CUSTOM') && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>
@@ -218,4 +345,4 @@ export default function Authorization(props: AuthorizationProps) {
             )}
         </div>
     );
-}
+};

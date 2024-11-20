@@ -1,5 +1,3 @@
-import { stringifyError } from '@nangohq/utils';
-
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -247,6 +245,16 @@ export class NangoError extends Error {
                 this.message = `Missing param 'callback_url'.`;
                 break;
 
+            case 'missing_token_url':
+                this.status = 400;
+                this.message = `Token URL is missing or invalid.`;
+                break;
+
+            case 'bill_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Error fetching Bill credentials`;
+                break;
+
             case 'provider_config_creation_failure':
                 this.status = 500;
                 this.message = `Failed to create the Provider Configuration. Please try again.`;
@@ -270,9 +278,9 @@ export class NangoError extends Error {
                 this.message = `Failed to perform the webhook`;
                 break;
 
-            case 'post_connection_failure':
+            case 'on_event_failure':
                 this.status = 400;
-                this.message = `Failed to perform the post connection script`;
+                this.message = `Failed to perform the on-event script`;
                 break;
 
             case 'missing_provider_template':
@@ -483,6 +491,26 @@ export class NangoError extends Error {
                 this.message = `Actions are only allowed to have one model to be returned and only allow a single endpoint`;
                 break;
 
+            case 'two_step_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Error fetching Two Step credentials`;
+                break;
+
+            case 'signature_token_generation_error':
+                this.status = 400;
+                this.message = `Error generating signature based token`;
+                break;
+
+            case 'unsupported_signature_protocol':
+                this.status = 400;
+                this.message = `Signature protocol not currently supported`;
+                break;
+
+            case 'invalid_two_step_credentials':
+                this.status = 400;
+                this.message = `Invalid credentials provided to create a Two Step connection`;
+                break;
+
             case 'duplicate_endpoint':
                 this.status = 400;
                 this.message = `Duplicate endpoint "${this.payload}" found. Please make sure all endpoints are unique within an integration.`;
@@ -496,6 +524,21 @@ export class NangoError extends Error {
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
+                break;
+
+            case 'invalid_api_key_format':
+                this.status = 400;
+                this.message = `Invalid API key format. It should be of "id:secret".`;
+                break;
+
+            case 'invalid_jwt_private_key':
+                this.status = 400;
+                this.message = `Invalid private key provided for JWT creation.`;
+                break;
+
+            case 'invalid_jwt_private_key_id':
+                this.status = 400;
+                this.message = `Invalid private key Id provided for JWT creation.`;
                 break;
 
             case 'no_config_found':
@@ -532,8 +575,8 @@ export class NangoError extends Error {
                 this.message = `The webhook script failed with an error: ${this.payload}`;
                 break;
 
-            case 'post_connection_script_failure':
-                this.message = `The post-connection script failed with an error: ${this.payload}`;
+            case 'on_event_script_failure':
+                this.message = `The on-event script failed with an error: ${this.payload}`;
                 break;
 
             case 'pass_through_error':
@@ -647,6 +690,16 @@ export class NangoError extends Error {
                 this.message = `An internal error occurred during the script execution`;
                 break;
 
+            case 'wsse_token_generation_error':
+                this.status = 500;
+                this.message = `An error occured while generating an WSSE token`;
+                break;
+
+            case 'script_aborted':
+                this.status = 410;
+                this.message = `The script was aborted`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -658,31 +711,6 @@ export class NangoError extends Error {
         this.payload = payload;
     }
 }
-
-export const formatScriptError = (err: any, errorType: string, scriptName: string) => {
-    let errorMessage: string;
-
-    if ('response' in err && 'data' in err.response) {
-        if (typeof err.response.data === 'string' && (err.response.data.trim().startsWith('<!DOCTYPE html>') || /<\/?[a-z][\s\S]*>/i.test(err.response.data))) {
-            errorMessage = err.response.data;
-        } else {
-            errorMessage = JSON.stringify(err.response.data, null, 2);
-        }
-    } else if (err.message) {
-        errorMessage = err.message;
-    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = stringifyError(err, { pretty: true, stack: true });
-    } else {
-        errorMessage = String(err);
-    }
-
-    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
-
-    const status = err?.response?.status || 500;
-    const error = new NangoError(errorType, content, status);
-
-    return { success: false, error, response: null };
-};
 
 export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
     return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);

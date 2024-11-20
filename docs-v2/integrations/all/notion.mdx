@@ -3,7 +3,7 @@ title: Notion
 sidebarTitle: Notion
 ---
 
-API configuration: [`notion`](https://nango.dev/providers.yaml)
+API configuration: [`notion`](https://nango.dev/providers.yaml), [`notion-scim`](https://nango.dev/providers.yaml)
 
 ## Features
 
@@ -30,5 +30,10 @@ API configuration: [`notion`](https://nango.dev/providers.yaml)
 - The Notion OAuth API doesn't support refreshing tokens, and so doesn't return a refresh token. The access token never expires.
 - Your Notion OAuth app will have the status "internal". You need to [make it "public"](https://developers.notion.com/docs/authorization#how-to-make-an-integration-public) to be able to initiate an OAuth flow. Only then, you will be able to get the OAuth client ID/secret and register your callback URL.
 - No OAuth scope is required by default.
+- Notion SCIM is an enterprise only API that uses an API token. See the Notion [docs](https://www.notion.so/help/provision-users-and-groups-with-scim) for more information
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
+
+<Card title="Connect to notion-scim" icon="link" href="/integrations/all/notion-scim/connect" horizontal>
+  Guide to connect to notion-scim using Nango Connect.
+</Card>

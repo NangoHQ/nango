@@ -13,7 +13,6 @@ import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
-import onboardingController from './controllers/onboarding.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
@@ -29,10 +28,11 @@ import type { Response, Request, RequestHandler } from 'express';
 import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import tracer from 'dd-trace';
-import { getConnection as getConnectionWeb } from './controllers/v1/connection/get.js';
+import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { patchSettings } from './controllers/v1/environment/webhook/patchSettings.js';
+import { postSettings as postOtlpSettings } from './controllers/v1/environment/otlp/postSettings.js';
+import { patchSettings as patchWebhookSettings } from './controllers/v1/environment/webhook/patchSettings.js';
 import { updatePrimaryUrl } from './controllers/v1/environment/webhook/updatePrimaryUrl.js';
 import { updateSecondaryUrl } from './controllers/v1/environment/webhook/updateSecondaryUrl.js';
 import {
@@ -52,6 +52,10 @@ import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
+import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
+import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
+import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -85,7 +89,7 @@ import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js'
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
-import { deleteConnection } from './controllers/v1/connection/deleteConnection.js';
+import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
@@ -95,6 +99,13 @@ import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { getConnections } from './controllers/v1/connections/getConnections.js';
+import { getPublicConnections } from './controllers/connection/getConnections.js';
+import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
+import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
 
 export const router = express.Router();
 
@@ -145,6 +156,7 @@ router.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 router.get('/env.js', getEnvJs);
+router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // -------
 // Public API routes
@@ -161,7 +173,6 @@ publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
@@ -171,10 +182,16 @@ publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
 publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
+publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
+publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
+publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
+publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
+
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
@@ -199,7 +216,7 @@ publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListInteg
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
 publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
-publicAPI.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
+publicAPI.route('/connection').get(apiAuth, getPublicConnections);
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
 publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionController.updateMetadataLegacy.bind(connectionController));
@@ -207,8 +224,8 @@ publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
 publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
-publicAPI.route('/sync/deploy').post(apiAuth, postDeploy);
-publicAPI.route('/sync/deploy/confirmation').post(apiAuth, postDeployConfirmation);
+publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
+publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
@@ -290,7 +307,8 @@ web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.up
 web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchSettings);
+web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchWebhookSettings);
+web.route('/api/v1/environment/otlp/settings').post(webAuth, postOtlpSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
@@ -306,10 +324,12 @@ web.route('/api/v1/integrations/:providerConfigKey/flows').get(webAuth, getInteg
 
 web.route('/api/v1/provider').get(configController.listProvidersFromYaml.bind(configController));
 
-web.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
-web.route('/api/v1/connection/:connectionId').get(webAuth, getConnectionWeb);
-web.route('/api/v1/connection/:connectionId').delete(webAuth, deleteConnection);
-web.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/api/v1/connections').get(webAuth, getConnections);
+web.route('/api/v1/connections/count').get(webAuth, getConnectionsCount);
+web.route('/api/v1/connections/:connectionId').get(webAuth, getConnectionWeb);
+web.route('/api/v1/connections/:connectionId/refresh').post(webAuth, getConnectionRefresh);
+web.route('/api/v1/connections/:connectionId').delete(webAuth, deleteConnection);
+web.route('/api/v1/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 
 web.route('/api/v1/user').get(webAuth, getUser);
 web.route('/api/v1/user').patch(webAuth, patchUser);
@@ -327,12 +347,7 @@ web.route('/api/v1/flows/:id/enable').patch(webAuth, patchFlowEnable);
 web.route('/api/v1/flows/:id/frequency').patch(webAuth, patchFlowFrequency);
 web.route('/api/v1/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
-web.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
-web.route('/api/v1/onboarding').post(webAuth, onboardingController.create.bind(onboardingController));
-web.route('/api/v1/onboarding').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
-web.route('/api/v1/onboarding/deploy').post(webAuth, onboardingController.deploy.bind(onboardingController));
-web.route('/api/v1/onboarding/sync-status').post(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
-web.route('/api/v1/onboarding/action').post(webAuth, onboardingController.writeGithubIssue.bind(onboardingController));
+web.route('/api/v1/onboarding').patch(webAuth, patchOnboarding);
 
 web.route('/api/v1/logs/operations').post(webAuth, searchOperations);
 web.route('/api/v1/logs/messages').post(webAuth, searchMessages);

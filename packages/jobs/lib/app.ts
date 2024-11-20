@@ -1,12 +1,13 @@
 import './tracer.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
-import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
+import { getOtlpRoutes } from '@nangohq/shared';
+import { otlp } from '@nangohq/logs';
 
 const logger = getLogger('Jobs');
 
@@ -64,9 +65,10 @@ try {
     processor.start();
 
     // Register recurring tasks
-    cronAutoIdleDemo();
     deleteSyncsData();
     timeoutLogsOperations();
+
+    otlp.register(getOtlpRoutes);
 } catch (err) {
     logger.error(stringifyError(err));
     process.exit(1);

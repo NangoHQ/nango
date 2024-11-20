@@ -21,18 +21,18 @@ export enum Types {
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
 
-    POST_CONNECTION_SCRIPT_EXECUTION = 'nango.jobs.postConnectionScriptExecution',
-    POST_CONNECTION_SCRIPT_RUNTIME = 'nango.jobs.postConnectionScriptRuntime',
-    POST_CONNECTION_SCRIPT_SUCCESS = 'nango.orch.postConnectionScript.success',
-    POST_CONNECTION_SCRIPT_FAILURE = 'nango.orch.postConnectionScript.failure',
+    ON_EVENT_SCRIPT_EXECUTION = 'nango.jobs.onEventScriptExecution',
+    ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',
+    ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
+    ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
 
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
 
-    REFRESH_TOKENS = 'nango.server.cron.refreshTokens',
-    REFRESH_TOKENS_FAILED = 'nango.server.cron.refreshTokens.failed',
-    REFRESH_TOKENS_SUCCESS = 'nango.server.cron.refreshTokens.success',
+    REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
+    REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
+    REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
 
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { NangoConfigMetadata, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoConfigMetadata, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 import type { SyncType } from './Sync.js';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -17,8 +17,7 @@ export interface NangoIntegrationDataV1 {
     sync_config_id?: number;
     pre_built?: boolean;
     is_public?: boolean;
-    endpoint?: string | string[];
-    nango_yaml_version?: string;
+    endpoint?: NangoSyncEndpointV2 | NangoSyncEndpointV2[];
     enabled?: boolean;
 }
 
@@ -90,6 +89,7 @@ export interface NangoConfigV2 {
     models: NangoModelV1;
 }
 
+// TODO: drop all V1 interface (except NangoModelV1 that can still exists in DB)
 export type NangoConfig = NangoConfigV1 | NangoConfigV2;
 export type NangoModel = NangoModelV1;
 export type NangoIntegrationData = NangoIntegrationDataV1 | NangoIntegrationDataV2;
@@ -106,8 +106,6 @@ export interface NangoSyncModel {
     fields: NangoSyncModelField[];
 }
 
-export type LayoutMode = 'root' | 'nested';
-
 export interface NangoSyncConfig {
     name: string;
     type?: ScriptTypeLiteral;
@@ -120,7 +118,7 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
-    endpoints: NangoSyncEndpoint[];
+    endpoints: NangoSyncEndpointV2[];
     is_public?: boolean | null;
     pre_built?: boolean | null;
     version?: string | null;
@@ -130,18 +128,14 @@ export interface NangoSyncConfig {
     // v2 additions
     input?: NangoSyncModel | undefined;
     sync_type?: SyncType;
-    nango_yaml_version?: string;
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;
     upgrade_version?: string;
-
-    layout_mode: LayoutMode;
 }
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
-    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];

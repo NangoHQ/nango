@@ -19,7 +19,6 @@ services:
         container_name: nango-server
         platform: linux/amd64
         environment:
-            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/database/lib/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -43,11 +42,13 @@ services:
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
             - NANGO_LOGS_ES_USER=${NANGO_LOGS_ES_USER}
             - NANGO_LOGS_ES_PWD=${NANGO_LOGS_ES_PWD}
+            - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
         ports:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
+            - '${CONNECT_UI_PORT:-3009}:${CONNECT_UI_PORT:-3009}'
         depends_on:
             - nango-db
             # - nango-elasticsearch

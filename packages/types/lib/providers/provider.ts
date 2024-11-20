@@ -27,12 +27,15 @@ export interface SimplifiedJSONSchema {
     description: string;
     example?: string;
     pattern?: string;
-    format?: string;
+    optional?: boolean;
+    format?: 'hostname' | 'uri' | 'uuid' | 'email';
     order: number;
     default_value?: string;
     hidden?: string;
+    prefix?: string;
     suffix?: string;
     doc_section?: string;
+    secret?: string;
 }
 
 export interface BaseProvider {
@@ -41,6 +44,7 @@ export interface BaseProvider {
     proxy?: {
         base_url: string;
         headers?: Record<string, string>;
+        connection_config?: Record<string, string>;
         query?: {
             api_key: string;
         };
@@ -61,6 +65,7 @@ export interface BaseProvider {
     scope_separator?: string;
     default_scopes?: string[];
     token_url?: string | TokenUrlObject;
+    token_url_encode?: boolean;
     token_params?: Record<string, string>;
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];
@@ -75,6 +80,8 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    authorization_url_fragment?: string;
+    body_format?: OAuthBodyFormatType;
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -90,7 +97,6 @@ export interface ProviderOAuth2 extends BaseProvider {
         grant_type: 'refresh_token';
     };
     authorization_method?: OAuthAuthorizationMethodType;
-    body_format?: OAuthBodyFormatType;
 
     refresh_url?: string;
     expires_in_unit?: 'milliseconds';
@@ -110,4 +116,33 @@ export interface ProviderOAuth1 extends BaseProvider {
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2;
+export interface ProviderJwt extends BaseProvider {
+    token: {
+        expires_in_ms: number;
+        headers: {
+            alg: string;
+        };
+        payload: {
+            aud: string;
+        };
+    };
+}
+export interface ProviderTwoStep extends BaseProvider {
+    token_headers?: Record<string, string>;
+    token_response: {
+        token: string;
+        token_expiration: string;
+        token_expiration_strategy: 'expireAt' | 'expireIn';
+    };
+    token_expires_in_ms?: number;
+    proxy_header_authorization?: string;
+}
+export interface ProviderSignature extends BaseProvider {
+    signature: {
+        protocol: 'WSSE';
+    };
+    token: {
+        expires_in_ms: number;
+    };
+}
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature;

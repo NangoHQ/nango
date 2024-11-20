@@ -25,7 +25,23 @@
                 },
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU"]
+                    "enum": [
+                        "API_KEY",
+                        "APP",
+                        "APP_STORE",
+                        "BASIC",
+                        "NONE",
+                        "OAUTH1",
+                        "OAUTH2",
+                        "OAUTH2_CC",
+                        "CUSTOM",
+                        "TBA",
+                        "TABLEAU",
+                        "JWT",
+                        "BILL",
+                        "TWO_STEP",
+                        "SIGNATURE"
+                    ]
                 },
                 "authorization_method": {
                     "type": "string",
@@ -118,9 +134,14 @@
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
+                    "required": ["base_url"],
                     "properties": {
                         "base_url": {
                             "type": "string"
+                        },
+                        "connection_config": {
+                            "type": "object",
+                            "additionalProperties": true
                         },
                         "decompress": {
                             "type": "boolean"
@@ -158,6 +179,10 @@
                                 },
                                 "offset_start_value": {
                                     "type": "number"
+                                },
+                                "offset_calculation_method": {
+                                    "type": "string",
+                                    "enum": ["per-page", "by-response-size"]
                                 },
                                 "response_path": {
                                     "type": "string"
@@ -212,6 +237,30 @@
                         }
                     }
                 },
+                "token": {
+                    "type": "object",
+                    "properties": {
+                        "expires_in_ms": {
+                            "type": "number"
+                        },
+                        "headers": {
+                            "type": "object",
+                            "properties": {
+                                "alg": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "payload": {
+                            "type": "object",
+                            "properties": {
+                                "aud": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "redirect_uri_metadata": {
                     "type": "array",
                     "items": {
@@ -249,6 +298,16 @@
                     "type": "string",
                     "enum": ["HMAC-SHA1", "PLAINTEXT"]
                 },
+                "signature": {
+                    "type": "object",
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["WSSE"]
+                        }
+                    },
+                    "required": ["protocol"]
+                },
                 "token_expiration_buffer": {
                     "type": "number"
                 },
@@ -264,6 +323,28 @@
                             "type": "string"
                         }
                     }
+                },
+                "token_headers": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "token_response": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        },
+                        "token_expiration": {
+                            "type": "string"
+                        },
+                        "token_expiration_strategy": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "token_expires_in_ms": {
+                    "type": "number"
                 },
                 "token_request_auth_method": {
                     "type": "string",
@@ -316,10 +397,16 @@
                         }
                     ]
                 },
+                "token_url_encode": {
+                    "type": "boolean"
+                },
                 "webhook_user_defined_secret": {
                     "type": "boolean"
                 },
                 "webhook_routing_script": {
+                    "type": "string"
+                },
+                "authorization_url_fragment": {
                     "type": "string"
                 },
                 "connection_config": {
@@ -348,13 +435,23 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "order": {
                                     "type": "number"
                                 },
+                                "secret": {
+                                    "type": "boolean"
+                                },
+                                "prefix": {
+                                    "type": "string"
+                                },
                                 "suffix": {
                                     "type": "string"
+                                },
+                                "optional": {
+                                    "type": "boolean"
                                 },
                                 "doc_section": {
                                     "type": "string",
@@ -390,10 +487,14 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "default_value": {
                                     "type": "string"
+                                },
+                                "secret": {
+                                    "type": "boolean"
                                 },
                                 "hidden": {
                                     "type": "boolean"

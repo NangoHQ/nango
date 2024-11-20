@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Span, Tracer } from 'dd-trace';
+import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
@@ -25,13 +25,14 @@ import type {
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider } from '@nangohq/types';
+import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
-import { externalPostConnection } from './connection/external-post-connection.js';
+import { onConnectionCreated } from './connection/on/connection-created.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+import tracer from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -75,13 +76,13 @@ export const connectionCreated = async (
 ): Promise<void> => {
     const { connection, environment, auth_mode } = createdConnectionPayload;
 
-    if (options.initiateSync === true && !isHosted) {
-        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
-    }
-
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, provider, logContextGetter);
-        await externalPostConnection(createdConnectionPayload, provider, logContextGetter);
+        await onConnectionCreated(createdConnectionPayload, provider, logContextGetter);
+    }
+
+    if (options.initiateSync === true && !isHosted) {
+        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -155,7 +156,8 @@ export const connectionRefreshFailed = async ({
     authError,
     environment,
     provider,
-    config
+    config,
+    action
 }: {
     connection: Connection;
     environment: DBEnvironment;
@@ -163,10 +165,11 @@ export const connectionRefreshFailed = async ({
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
+    action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
     await errorNotificationService.auth.create({
         type: 'auth',
-        action: 'token_refresh',
+        action,
         connection_id: connection.id!,
         log_id: logCtx.id,
         active: true
@@ -195,12 +198,11 @@ export const connectionRefreshFailed = async ({
 export const connectionTest = async (
     providerName: string,
     provider: Provider,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials,
     connectionId: string,
     providerConfigKey: string,
     environment_id: number,
-    connection_config: ConnectionConfig,
-    tracer: Tracer
+    connection_config: ConnectionConfig
 ): Promise<Result<boolean, NangoError>> => {
     const providerVerification = provider?.proxy?.verification;
 
@@ -222,6 +224,7 @@ export const connectionTest = async (
 
     const connection: Connection = {
         id: -1,
+        end_user_id: null,
         provider_config_key: providerConfigKey,
         connection_id: connectionId,
         credentials,
@@ -263,7 +266,7 @@ export const connectionTest = async (
 
         if (axios.isAxiosError(response)) {
             span.setTag('nango.error', response);
-            const error = new NangoError('connection_test_failed', response, response.response?.status);
+            const error = new NangoError('connection_test_failed', response.response?.data, response.response?.status);
             return Err(error);
         }
 

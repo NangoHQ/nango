@@ -1,72 +1,60 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Loading, useModal } from '@geist-ui/core';
-import { useState, useEffect, Fragment } from 'react';
-import { toast } from 'react-toastify';
-import useSWR, { useSWRConfig } from 'swr';
+import type React from 'react';
+import { useState, useEffect } from 'react';
+import { useSWRConfig } from 'swr';
+import { unstable_serialize } from 'swr/infinite';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
 
-import { requestErrorToast, swrFetcher, useGetConnectionDetailsAPI } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import ActionModal from '../../components/ui/ActionModal';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { Info } from '../../components/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Button from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import Syncs from './Syncs';
-import Authorization from './Authorization';
-import type { SyncResponse } from '../../types';
-import PageNotFound from '../PageNotFound';
+import { Syncs } from './Syncs';
+import { Authorization } from './Authorization';
 import { isHosted } from '../../utils/utils';
 import { connectSlack } from '../../utils/slack-connection';
-import type { GetConnection } from '@nangohq/types';
 
 import { useStore } from '../../store';
-import { getLogsUrl } from '../../utils/logs';
-import { apiDeleteConnection } from '../../hooks/useConnections';
+import { apiDeleteConnection, useConnection } from '../../hooks/useConnections';
+import { useLocalStorage } from 'react-use';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { useSyncs } from '../../hooks/useSyncs';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { AvatarOrganization } from '../../components/AvatarCustom';
+import { IconTrash } from '@tabler/icons-react';
+import { useToast } from '../../hooks/useToast';
+import { useListIntegration } from '../../hooks/useIntegration';
 
 export enum Tabs {
     Syncs,
     Authorization
 }
 
-export default function ShowIntegration() {
-    const { mutate } = useSWRConfig();
-    const env = useStore((state) => state.env);
-    const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
-
-    const [loaded, setLoaded] = useState(false);
-    const [connectionResponse, setConnectionResponse] = useState<GetConnection['Success'] | null>(null);
-    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
-    const [, setFetchingRefreshToken] = useState(false);
-    const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [modalShowSpinner, setModalShowSpinner] = useState(false);
-    const [pageNotFound, setPageNotFound] = useState(false);
-    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
-    const [slackIsConnected, setSlackIsConnected] = useState(true);
-    const getConnectionDetailsAPI = useGetConnectionDetailsAPI(env);
-
+export const ConnectionShow: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { setVisible, bindings } = useModal();
+    const { mutate, cache } = useSWRConfig();
+    const { toast } = useToast();
     const { connectionId, providerConfigKey } = useParams();
+    const [showSlackBanner, setShowSlackBanner] = useLocalStorage(`nango:connection:slack_banner_show`, true);
 
-    const {
-        data: syncs,
-        isLoading: syncLoading,
-        error: syncLoadError,
-        mutate: reload
-    } = useSWR<SyncResponse[]>(`/api/v1/sync?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, swrFetcher, {
-        refreshInterval: 10000,
-        keepPreviousData: false
-    });
+    const env = useStore((state) => state.env);
 
-    useEffect(() => {
-        if (syncLoadError) {
-            requestErrorToast();
-        }
-    }, [syncLoadError]);
+    const { environmentAndAccount, mutate: environmentMutate } = useEnvironment(env);
+
+    const [slackIsConnecting, setSlackIsConnecting] = useState(false);
+    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
+    const [slackIsConnected, setSlackIsConnected] = useState(true);
+    const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
+    const { data: syncs, error: errorSyncs, loading: loadingSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { mutate: listIntegrationMutate } = useListIntegration(env);
+
+    // Modal delete
+    const [open, setOpen] = useState(false);
+    const [loadingDelete, setLoadingDelete] = useState(false);
 
     useEffect(() => {
         if (environmentAndAccount) {
@@ -83,77 +71,37 @@ export default function ShowIntegration() {
         }
     }, [location]);
 
-    useEffect(() => {
-        if (!connectionId || !providerConfigKey) return;
-
-        const getConnections = async () => {
-            const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
-            if (res?.status === 404) {
-                setPageNotFound(true);
-            } else if (res?.status === 200) {
-                const data: GetConnection['Success'] = await res.json();
-                setConnectionResponse(data);
-            } else if (res?.status === 400) {
-                const data = await res.json();
-                if (data.connection) {
-                    setConnectionResponse(data);
-                }
-            } else if (res != null) {
-                setServerErrorMessage(`
-We could not retrieve and/or refresh your access token due to the following error:
-\n\n${(await res.json()).error}
-`);
-                setConnectionResponse({
-                    errorLog: null,
-                    provider: null,
-                    connection: {
-                        provider_config_key: providerConfigKey,
-                        connection_id: connectionId
-                    }
-                } as GetConnection['Success']);
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getConnections();
+    const onDelete = async () => {
+        if (!connectionId || !providerConfigKey) {
+            return;
         }
-    }, [connectionId, providerConfigKey, getConnectionDetailsAPI, loaded, setLoaded]);
 
-    const deleteButtonClicked = async () => {
-        if (!connectionId || !providerConfigKey) return;
-
-        setModalShowSpinner(true);
+        setLoadingDelete(true);
         const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
-        setModalShowSpinner(false);
+        setLoadingDelete(false);
+
+        void listIntegrationMutate();
 
         if (res.res.status === 200) {
-            toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
-            void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connection'), undefined);
+            toast({ title: `Connection deleted!`, variant: 'success' });
+
+            // Both are mandatory because SWR is bad
+            // Since 2021 https://github.com/vercel/swr/issues?q=is%3Aissue+infinite+cache
+            await mutate(
+                unstable_serialize(() => '/api/v1/connections?env=dev&page=0'),
+                undefined,
+                { revalidate: false }
+            );
+            for await (const key of cache.keys()) {
+                if (key.startsWith('/api/v1/connections')) {
+                    cache.delete(key);
+                }
+            }
+
             navigate(`/${env}/connections`, { replace: true });
         } else {
-            toast.error('Failed to delete connection', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `Failed to delete connection`, variant: 'error' });
         }
-    };
-
-    const forceRefresh = async () => {
-        if (!connectionId || !providerConfigKey) return;
-
-        setFetchingRefreshToken(true);
-
-        const res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
-
-        if (res?.status === 200) {
-            const data: GetConnection['Success'] = await res.json();
-            setConnectionResponse(data);
-
-            toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
-        } else if (res != null) {
-            toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
-        }
-        setTimeout(() => {
-            setFetchingRefreshToken(false);
-        }, 400);
     };
 
     const createSlackConnection = async () => {
@@ -161,67 +109,111 @@ We could not retrieve and/or refresh your access token due to the following erro
         if (!environmentAndAccount) return;
         const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
         const onFinish = () => {
-            environmentMutate();
-            toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+            void environmentMutate();
+            toast({ title: `Slack connection created!`, variant: 'success' });
             setSlackIsConnecting(false);
         };
 
         const onFailure = () => {
-            toast.error('Failed to create Slack connection!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ title: `Failed to create Slack connection!`, variant: 'error' });
             setSlackIsConnecting(false);
         };
         await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
-    if (pageNotFound) {
-        return <PageNotFound />;
-    }
-
-    if (!loaded || syncLoading || !connectionResponse) {
+    if (loading || loadingSyncs) {
         return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-                <Loading spaceRatio={2.5} className="-top-36" />
+            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <div className="flex gap-4 justify-between">
+                    <div className="flex gap-6">
+                        <div className="shrink-0">
+                            <div className="w-[80px] h-[80px] p-5 border border-border-gray rounded-xl">
+                                <Skeleton className="w-[40px] h-[40px]" />
+                            </div>
+                        </div>
+                        <div className="my-3 flex flex-col gap-4">
+                            <div className="text-left text-lg font-semibold text-gray-400">
+                                <Skeleton className="w-[150px]" />
+                            </div>
+                            <div className="flex gap-4 items-center">
+                                <Skeleton className="w-[250px]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </DashboardLayout>
         );
     }
 
+    if (error) {
+        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.TeamSettings} />;
+    }
+
+    if (!connection || !syncs) {
+        return null;
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-            <ActionModal
-                bindings={bindings}
-                modalTitle="Delete connection?"
-                modalContent="All credentials & synced data associated with this connection will be deleted."
-                modalAction={() => deleteButtonClicked()}
-                modalShowSpinner={modalShowSpinner}
-                modalTitleColor="text-red-500"
-                setVisible={setVisible}
-            />
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
-                        <Link to={`/${env}/integrations/${connectionResponse.connection.provider_config_key}`}>
-                            <div className="shrink-0">
-                                <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
-                                    {connectionResponse.provider && <IntegrationLogo provider={connectionResponse.provider} height={16} width={16} />}
+                        <div className="relative">
+                            <Link to={`/${env}/integrations/${connection.connection.provider_config_key}`}>
+                                <div className="shrink-0">
+                                    <div className="w-[80px] h-[80px] p-4 border border-border-gray rounded-xl">
+                                        {connection.provider && <IntegrationLogo provider={connection.provider} height={16} width={16} />}
+                                    </div>
                                 </div>
+                            </Link>
+
+                            <div className="absolute -bottom-3 -right-3">
+                                <AvatarOrganization
+                                    size={'sm'}
+                                    email={connection.endUser?.email ? connection.endUser.email : null}
+                                    displayName={
+                                        connection.endUser ? connection.endUser.displayName || connection.endUser.email : connection.connection.connection_id
+                                    }
+                                />
                             </div>
-                        </Link>
+                        </div>
+
                         <div className="mt-3">
-                            <span className="text-left text-xl font-semibold tracking-tight text-gray-400 mb-12">Connection</span>
-                            <h2 className="text-left text-3xl font-semibold tracking-tight text-white break-all">{connectionId}</h2>
+                            <span className="font-semibold tracking-tight text-gray-400">Connection</span>
+                            {connection.endUser ? (
+                                <div className="flex flex-col overflow-hidden">
+                                    <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connection.endUser.email}</h2>
+
+                                    <div className="text-dark-500 text-xs font-code flex gap-2">
+                                        {connection.endUser.displayName && <span>{connection.endUser.displayName}</span>}
+                                        {connection.endUser.organization?.displayName && <span>({connection.endUser.organization?.displayName})</span>}
+                                    </div>
+                                </div>
+                            ) : (
+                                <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connectionId}</h2>
+                            )}
                         </div>
                     </div>
-                    <Button
-                        variant="zinc"
-                        size="sm"
-                        className="flex cursor-pointer text-gray-400 neutral-700 items-center mt-4"
-                        onClick={() => {
-                            setVisible(true);
-                        }}
-                    >
-                        <TrashIcon className="flex h-5 w-5" />
-                        <span className="px-1">Delete</span>
-                    </Button>
+
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant={'emptyFaded'}>
+                                <IconTrash stroke={1} size={18} /> Delete
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogTitle>Delete connection?</DialogTitle>
+                            <DialogDescription>All credentials & synced data associated with this connection will be deleted.</DialogDescription>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant={'zinc'}>Cancel</Button>
+                                </DialogClose>
+                                <Button variant={'danger'} onClick={onDelete} isLoading={loadingDelete}>
+                                    Delete
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
@@ -232,99 +224,35 @@ We could not retrieve and/or refresh your access token due to the following erro
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
-                        {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
-                            <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
-                        )}
+                        {syncs.some((sync) => sync.active_logs?.log_id) && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                     </li>
                     <li
                         className={`flex items-center p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
                         onClick={() => setActiveTab(Tabs.Authorization)}
                     >
                         Authorization
-                        {connectionResponse.errorLog && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                        {connection.errorLog && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                     </li>
                 </ul>
             </section>
 
-            {serverErrorMessage && (
-                <div className="flex my-4">
-                    <Info variant={'destructive'}>{serverErrorMessage}</Info>
-                </div>
-            )}
-
-            {activeTab === Tabs.Authorization && connectionResponse.errorLog && (
-                <div className="flex my-4">
-                    <Info variant={'destructive'}>
-                        <div>
-                            There was an error refreshing the credentials
-                            <Link
-                                to={getLogsUrl({
-                                    env,
-                                    operationId: connectionResponse.errorLog.log_id,
-                                    connections: connectionResponse.connection.connection_id,
-                                    day: connectionResponse.errorLog?.created_at
-                                })}
-                                className="ml-1 cursor-pointer underline"
-                            >
-                                (logs).
-                            </Link>
-                        </div>
-                    </Info>
-                </div>
-            )}
-
-            {activeTab === Tabs.Syncs && syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
-                <div className="flex my-4">
-                    <Info variant={'destructive'}>
-                        <div>
-                            Last sync execution failed for the following sync
-                            {syncs.filter((sync) => sync.active_logs?.log_id).length > 1 ? 's' : ''}:{' '}
-                            {syncs
-                                .filter((sync) => sync.active_logs?.log_id)
-                                .map((sync, index) => (
-                                    <Fragment key={sync.name}>
-                                        {sync.name} (
-                                        <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
-                                            logs
-                                        </Link>
-                                        ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
-                                    </Fragment>
-                                ))}
-                            .
-                        </div>
-                    </Info>
-                </div>
-            )}
-
-            {!slackIsConnected && !isHosted() && (
-                <Info className="mt-4">
-                    <div className="flex text-sm items-center">
-                        <IntegrationLogo provider="slack" height={6} width={6} classNames="flex mr-2" />
-                        Receive instant monitoring alerts on Slack.{' '}
-                        <button
-                            disabled={slackIsConnecting}
-                            onClick={createSlackConnection}
-                            className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
-                        >
-                            Set up now for the {env} environment.
-                        </button>
-                    </div>
+            {!slackIsConnected && !isHosted() && showSlackBanner && (
+                <Info className="mt-4" onClose={() => setShowSlackBanner(false)} icon={<IntegrationLogo provider="slack" height={6} width={6} />}>
+                    Receive instant monitoring alerts on Slack.{' '}
+                    <button
+                        disabled={slackIsConnecting}
+                        onClick={createSlackConnection}
+                        className={`ml-1 ${!slackIsConnecting ? 'cursor-pointer underline' : 'text-text-light-gray'}`}
+                    >
+                        Set up now for the {env} environment.
+                    </button>
                 </Info>
             )}
 
             <section className="mt-10">
-                {activeTab === Tabs.Syncs && (
-                    <Syncs
-                        syncs={syncs}
-                        connection={connectionResponse.connection}
-                        provider={connectionResponse.provider}
-                        reload={reload}
-                        loaded={loaded}
-                        syncLoaded={!syncLoading}
-                    />
-                )}
+                {activeTab === Tabs.Syncs && <Syncs syncs={syncs} connection={connection.connection} provider={connection.provider} />}
                 {activeTab === Tabs.Authorization && (
-                    <Authorization connection={connectionResponse.connection} forceRefresh={forceRefresh} loaded={loaded} syncLoaded={!syncLoading} />
+                    <Authorization endUser={connection.endUser} connection={connection.connection} errorLog={connection.errorLog} />
                 )}
             </section>
             <Helmet>
@@ -332,4 +260,4 @@ We could not retrieve and/or refresh your access token due to the following erro
             </Helmet>
         </DashboardLayout>
     );
-}
+};

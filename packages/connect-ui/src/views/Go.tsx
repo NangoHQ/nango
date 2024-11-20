@@ -33,36 +33,66 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
-    OAUTH2_CC: z.object({}),
+    OAUTH2_CC: z.object({
+        client_id: z.string().min(1),
+        client_secret: z.string().min(1)
+    }),
     TABLEAU: z.object({
         pat_name: z.string().min(1),
         pat_secret: z.string().min(1),
         content_url: z.string().min(1)
     }),
+    JWT: z.object({
+        privateKeyId: z.string().optional(),
+        issuerId: z.string().optional(),
+        privateKey: z.union([
+            z.object({
+                id: z.string(),
+                secret: z.string()
+            }),
+            z.string()
+        ])
+    }),
+    TWO_STEP: z.object({}).catchall(z.any()),
     TBA: z.object({
         oauth_client_id_override: z.string().min(1),
         oauth_client_secret_override: z.string().min(1),
         token_id: z.string().min(1),
         token_secret: z.string().min(1)
     }),
+    BILL: z.object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        organization_id: z.string().min(1),
+        dev_key: z.string().min(1)
+    }),
+    SIGNATURE: z.object({
+        username: z.string().min(1),
+        password: z.string().min(1),
+        type: z.string().min(1)
+    }),
     CUSTOM: z.object({})
 };
 
 const defaultConfiguration: Record<string, { secret: boolean; title: string; example: string }> = {
     'credentials.apiKey': { secret: true, title: 'API Key', example: 'Your API Key' },
-    'credentials.username': { secret: true, title: 'User Name', example: 'Your user name' },
-    'credentials.password': { secret: false, title: 'Password', example: 'Your password' },
+    'credentials.username': { secret: false, title: 'User Name', example: 'Your user name' },
+    'credentials.password': { secret: true, title: 'Password', example: 'Your password' },
     'credentials.pat_name': { secret: false, title: 'Personal App Token', example: 'Your PAT' },
     'credentials.pat_secret': { secret: true, title: 'Personal App Token Secret', example: 'Your PAT Secret' },
     'credentials.content_url': { secret: true, title: 'Content URL', example: 'Your content URL' },
+    'credentials.client_id': { secret: false, title: 'Client ID', example: 'Your Client ID' },
+    'credentials.client_secret': { secret: true, title: 'Client Secret', example: 'Your Client Secret' },
     'credentials.oauth_client_id_override': { secret: false, title: 'OAuth Client ID', example: 'Your OAuth Client ID' },
     'credentials.oauth_client_secret_override': { secret: true, title: 'OAuth Client Secret', example: 'Your OAuth Client Secret' },
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
-    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' }
+    'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
+    'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, setIsDirty } = useGlobal();
+    const { provider, integration, session, isSingleIntegration, setIsDirty } = useGlobal();
     const nango = useNango();
 
     const [loading, setLoading] = useState(false);
@@ -200,15 +230,6 @@ export const Go: React.FC = () => {
         [provider, integration, loading, nango]
     );
 
-    useEffect(() => {
-        if (!shouldAutoTrigger || !nango) {
-            return;
-        }
-
-        // Auto submit when no fields are required (e.g: oauth2)
-        void form.handleSubmit(onSubmit)();
-    }, [shouldAutoTrigger, nango]);
-
     if (!provider || !integration) {
         // typescript pleasing or if we enter the URL directly
         return <Navigate to="/" />;
@@ -248,7 +269,7 @@ export const Go: React.FC = () => {
                         setError(null);
                     }}
                 >
-                    Try Again
+                    Back
                 </Button>
             </main>
         );
@@ -258,11 +279,15 @@ export const Go: React.FC = () => {
         <>
             <header className="flex flex-col gap-8 p-10">
                 <div className="flex justify-between">
-                    <Link to="/" onClick={() => setIsDirty(false)}>
-                        <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
-                            <IconArrowLeft stroke={1} /> back
-                        </Button>
-                    </Link>
+                    {!isSingleIntegration ? (
+                        <Link to="/" onClick={() => setIsDirty(false)}>
+                            <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
+                                <IconArrowLeft stroke={1} /> back
+                            </Button>
+                        </Link>
+                    ) : (
+                        <div></div>
+                    )}
                     <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
                         <IconX stroke={1} />
                     </Button>
@@ -272,70 +297,74 @@ export const Go: React.FC = () => {
                         <img src={integration.logo} />
                     </div>
                     <h1 className="font-semibold text-xl text-dark-800">Link {provider.display_name} Account</h1>
-                    {provider.docs_connect && (
-                        <p className="text-dark-500">
-                            Stuck?{' '}
-                            <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
-                                View connection guide
-                            </Link>
-                        </p>
-                    )}
                 </div>
             </header>
             <main className="h-full overflow-auto p-10 pt-1">
                 <Form {...form}>
                     <form className="flex flex-col gap-4 justify-between grow min-h-full" onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
-                            {orderedFields.map(([name]) => {
-                                const [type, key] = name.split('.') as ['credentials' | 'params', string];
-                                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                                const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
-                                // Not all fields have a definition in providers.yaml so we fallback to default
-                                const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                const isPreconfigured = preconfigured[key];
+                        {orderedFields.length > 0 && (
+                            <div className={cn('flex flex-col gap-8 p-7 rounded-md', !shouldAutoTrigger && 'border border-dark-300')}>
+                                {orderedFields.map(([name]) => {
+                                    const [type, key] = name.split('.') as ['credentials' | 'params', string];
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                    const definition = provider[type === 'credentials' ? 'credentials' : 'connection_config']?.[key];
+                                    // Not all fields have a definition in providers.yaml so we fallback to default
+                                    const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
+                                    const isPreconfigured = preconfigured[key];
+                                    const isOptional = definition && 'optional' in definition && definition.optional === true;
 
-                                return (
-                                    <FormField
-                                        key={name}
-                                        control={form.control}
-                                        defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
-                                        // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
-                                        name={name}
-                                        render={({ field }) => {
-                                            return (
-                                                <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
-                                                    <div>
-                                                        <div className="flex gap-2 items-start pb-1">
-                                                            <FormLabel className="leading-4">{definition?.title || base?.title}</FormLabel>
-                                                            {definition?.doc_section && (
-                                                                <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
-                                                                    <IconInfoCircle size={16} />
-                                                                </Link>
-                                                            )}
+                                    return (
+                                        <FormField
+                                            key={name}
+                                            control={form.control}
+                                            defaultValue={isPreconfigured ?? definition?.default_value ?? ''}
+                                            // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
+                                            name={name}
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
+                                                        <div>
+                                                            <div className="flex gap-2 items-center pb-1">
+                                                                <FormLabel className="leading-5">
+                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-red-base">*</span>}
+                                                                </FormLabel>
+                                                                {isOptional && (
+                                                                    <span className="bg-dark-300 rounded-lg px-2 py-0.5 text-xs text-dark-500">optional</span>
+                                                                )}
+                                                                {definition?.doc_section && (
+                                                                    <Link target="_blank" to={`${provider.docs_connect}${definition.doc_section}`}>
+                                                                        <IconInfoCircle size={16} />
+                                                                    </Link>
+                                                                )}
+                                                            </div>
+                                                            {definition?.description && <FormDescription>{definition.description}</FormDescription>}
                                                         </div>
-                                                        {definition?.description && <FormDescription>{definition.description}</FormDescription>}
-                                                    </div>
-                                                    <div>
-                                                        <FormControl>
-                                                            <CustomInput
-                                                                placeholder={definition?.example || definition?.title || base?.example}
-                                                                suffix={definition?.suffix}
-                                                                {...field}
-                                                                autoComplete="off"
-                                                                type={base?.secret ? 'password' : 'text'}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </div>
-                                                </FormItem>
-                                            );
-                                        }}
-                                    />
-                                );
-                            })}
-                        </div>
-                        {shouldAutoTrigger && provider.auth_mode !== 'NONE' && (
-                            <div className="text-sm text-dark-500 w-full text-center">{loading && 'A popup is opened...'}</div>
+                                                        <div>
+                                                            <FormControl>
+                                                                <CustomInput
+                                                                    placeholder={definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
+                                                                    suffix={definition?.suffix}
+                                                                    {...field}
+                                                                    autoComplete="off"
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </div>
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {shouldAutoTrigger && (
+                            <div className="text-sm text-dark-500 w-full text-center">
+                                We will connect you to {provider.display_name}
+                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popups"}
+                            </div>
                         )}
                         <div className="flex flex-col gap-4">
                             {error && (
@@ -354,6 +383,14 @@ export const Go: React.FC = () => {
                                     A pre-configured field set by the administrator is invalid, please reach out to the support
                                 </div>
                             )}
+                            {provider.docs_connect && (
+                                <p className="text-dark-500 text-center">
+                                    Need help?{' '}
+                                    <Link className="underline text-dark-800" target="_blank" to={provider.docs_connect}>
+                                        View connection guide
+                                    </Link>
+                                </p>
+                            )}
                             <Button
                                 className="w-full"
                                 disabled={!form.formState.isValid || Object.keys(form.formState.errors).length > 0}
@@ -361,7 +398,7 @@ export const Go: React.FC = () => {
                                 size={'lg'}
                                 type="submit"
                             >
-                                {error ? 'Try Again' : 'Connect'}
+                                {error ? 'Try Again' : loading ? 'Connecting...' : 'Connect'}
                             </Button>
                         </div>
                     </form>

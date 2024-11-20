@@ -4,8 +4,7 @@ import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost }
 import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
 import type { DBEnvironment } from '@nangohq/types';
-
-export { cloudHost, stagingHost };
+import get from 'lodash-es/get.js';
 
 export enum UserType {
     Local = 'localhost',
@@ -134,14 +133,13 @@ export function getApiUrl() {
     return getServerBaseUrl();
 }
 
+export function getProvidersUrl() {
+    return `${getApiUrl()}/providers.json`;
+}
+
 export function getGlobalOAuthCallbackUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
-}
-
-export function getGlobalAppCallbackUrl() {
-    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
-    return baseUrl + '/app-auth/connect';
 }
 
 export function getGlobalWebhookReceiveUrl() {
@@ -158,13 +156,6 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     }
 
     return globalCallbackUrl;
-}
-
-export function getAppCallbackUrl(_environmentId?: number) {
-    const globalAppCallbackUrl = getGlobalAppCallbackUrl();
-
-    // TODO add this to settings and make it configurable
-    return globalAppCallbackUrl;
 }
 
 /**
@@ -208,6 +199,39 @@ export function interpolateObjectValues(obj: Record<string, string | undefined>,
         }
     }
     return interpolated;
+}
+
+export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>): Record<string, any> {
+    const interpolated: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+            interpolated[key] = interpolateString(value, dynamicValues);
+        } else if (typeof value === 'object' && value !== null) {
+            interpolated[key] = interpolateObject(value, dynamicValues);
+        } else {
+            interpolated[key] = value;
+        }
+    }
+
+    return interpolated;
+}
+
+export function stripCredential(obj: any): any {
+    if (typeof obj === 'string') {
+        return obj.replace(/credential\./g, '');
+    } else if (typeof obj === 'object' && obj !== null) {
+        const strippedObject: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            strippedObject[key] = stripCredential(value);
+        }
+        return strippedObject;
+    }
+    return obj;
+}
+
+export function extractValueByPath(obj: Record<string, any>, path: string): any {
+    return get(obj, path);
 }
 
 export function connectionCopyWithParsedConnectionConfig(connection: Connection) {

@@ -1,7 +1,8 @@
 import type { TimestampsAndDeleted } from '../db.js';
-import type { ApiKeyCredentials, BasicApiCredentials, AuthModeType, AuthOperationType, AllAuthCredentials } from '../auth/api.js';
+import type { AuthModeType, AuthOperationType, AllAuthCredentials } from '../auth/api.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
+import type { Merge } from 'type-fest';
 
 export type Metadata = Record<string, unknown>;
 
@@ -10,6 +11,7 @@ export type ConnectionConfig = Record<string, any>;
 export interface BaseConnection extends TimestampsAndDeleted {
     id?: number;
     config_id?: number;
+    end_user_id: number | null;
     provider_config_key: string; // TO deprecate
     connection_id: string;
     connection_config: ConnectionConfig;
@@ -24,6 +26,9 @@ export interface StoredConnection extends BaseConnection {
     credentials: Record<string, any>;
 }
 
+// TODO: fix BaseConnection directly
+export type DBConnection = Merge<BaseConnection, { id: number; config_id: number; credentials: Record<string, any> }>;
+
 export interface Connection extends BaseConnection {
     credentials: AllAuthCredentials;
 }
@@ -35,18 +40,6 @@ export type RecentlyCreatedConnection = Pick<StoredConnection, 'id' | 'connectio
     environment: DBEnvironment;
     account: DBTeam;
 };
-
-export interface ApiConnection {
-    id?: number;
-    connection_id: string;
-    provider_config_key: string;
-    config_id?: number;
-    environment_id: number;
-    connection_config: ConnectionConfig;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
-    credentials: BasicApiCredentials | ApiKeyCredentials;
-}
 
 export interface NangoConnection {
     id?: number;

@@ -1,7 +1,6 @@
 import type { JSONSchema7 } from 'json-schema';
-import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
-import type { NangoConfigMetadata, NangoModel, NangoSyncEndpoint, ScriptTypeLiteral } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
+import type { TimestampsAndDeleted } from './Generic.js';
+import type { NangoConfigMetadata, NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -15,7 +14,7 @@ export enum SyncType {
     INCREMENTAL = 'INCREMENTAL',
     FULL = 'FULL',
     WEBHOOK = 'WEBHOOK',
-    POST_CONNECTION_SCRIPT = 'POST_CONNECTION_SCRIPT',
+    ON_EVENT_SCRIPT = 'ON_EVENT_SCRIPT',
     ACTION = 'ACTION'
 }
 
@@ -59,15 +58,16 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
-    type: SyncType;
+    type: SyncType | 'INITIAL';
     name?: string;
     status: SyncStatus;
-    latestResult?: SyncResultByModel;
+    latestResult?: SyncResultByModel | undefined;
     jobStatus?: SyncStatus;
-    frequency: string;
-    finishedAt: Date;
+    frequency: string | null;
+    finishedAt: Date | undefined;
     nextScheduledSyncAt: Date | null;
-    latestExecutionStatus: SyncStatus;
+    latestExecutionStatus: SyncStatus | undefined;
+    recordCount: Record<string, number>;
 }
 
 // TODO: change that to use Parsed type
@@ -97,41 +97,12 @@ export interface SyncConfig extends TimestampsAndDeleted {
     version?: string;
     pre_built?: boolean | null;
     is_public?: boolean | null;
-    endpoints?: NangoSyncEndpoint[];
+    endpoints?: NangoSyncEndpointV2[];
     input?: string | undefined;
     sync_type?: SyncType | undefined;
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema?: JSONSchema7 | null;
-}
-
-export interface SyncEndpoint extends Timestamps {
-    id?: number;
-    sync_config_id: number;
-    method: HTTP_VERB;
-    path: string;
-    model?: string;
-}
-
-export interface SyncDeploymentResult {
-    name: string;
-    version?: string;
-    providerConfigKey: string;
-    type: ScriptTypeLiteral;
-    last_deployed?: Date;
-    input?: string | SyncModelSchema | undefined;
-    models: string | string[];
-    id?: number | undefined;
-
-    /** @deprecated legacy **/
-    sync_name?: string;
-    /** @deprecated legacy **/
-    syncName?: string;
-}
-
-export interface SyncConfigResult {
-    result: SyncDeploymentResult[];
-    logCtx: LogContext;
 }
 
 export enum SyncCommand {

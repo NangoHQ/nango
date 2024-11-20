@@ -1,13 +1,13 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
-import db, { multipleMigrations } from '@nangohq/database';
-import { envs } from '@nangohq/logs';
+import { multipleMigrations } from '@nangohq/database';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
 import type { TaskSync } from '@nangohq/nango-orchestrator';
 import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
+import { Ok, stringifyError } from '@nangohq/utils';
+import { envs } from '../env.js';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 
@@ -18,7 +18,6 @@ describe('Running sync', () => {
     });
 
     afterAll(async () => {
-        await clearDb();
         await clearRecordsDb();
     });
 
@@ -170,10 +169,6 @@ const initDb = async () => {
     await migrateRecords();
 };
 
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-};
-
 const runJob = async (
     rawRecords: UnencryptedRecordData[],
     connection: Connection,
@@ -198,13 +193,13 @@ const runJob = async (
         },
         isSync: () => true,
         isAction: () => false,
-        isPostConnection: () => false,
+        isOnEvent: () => false,
         isSyncAbort: () => false,
         isWebhook: () => false
     };
     const nangoProps = await startSync(task, mockStartScript);
     if (nangoProps.isErr()) {
-        throw new Error(`failed to start sync: ${nangoProps.error.message}`);
+        throw new Error(`failed to start sync: ${stringifyError(nangoProps.error)}`);
     }
 
     // check that sync job is running
@@ -226,7 +221,13 @@ const runJob = async (
     if (formatting.isErr()) {
         throw new Error(`failed to format records`);
     }
-    const upserting = await recordsService.upsert({ records: formatting.value, connectionId: connection.id as number, model, softDelete });
+    const upserting = await recordsService.upsert({
+        records: formatting.value,
+        connectionId: connection.id as number,
+        environmentId: connection.environment_id,
+        model,
+        softDelete
+    });
     if (upserting.isErr()) {
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
     }
@@ -300,7 +301,12 @@ async function populateRecords(
 
     const chunkSize = 1000;
     for (let i = 0; i < records.length; i += chunkSize) {
-        const res = await recordsService.upsert({ records: records.slice(i, i + chunkSize), connectionId: connection.id!, model });
+        const res = await recordsService.upsert({
+            records: records.slice(i, i + chunkSize),
+            connectionId: connection.id!,
+            environmentId: connection.environment_id,
+            model
+        });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);
         }
@@ -315,22 +321,22 @@ async function populateRecords(
 }
 
 async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
-    const envName = Math.random().toString(36).substring(7);
-    const env = await seeders.createEnvironmentSeed(0, envName);
-    const providerConfigKey = Math.random().toString(36).substring(7);
-    const model = Math.random().toString(36).substring(7);
+    const { env } = await seeders.seedAccountEnvAndUser();
+    const model = 'GithubIssue';
 
-    const connection = await seeders.createConnectionSeed(env, providerConfigKey);
+    const connection = await seeders.createConnectionSeed(env, 'github');
 
     if (!connection.id) {
         throw new Error('Failed to create connection');
     }
 
+    const config = await seeders.createConfigSeed(env, 'github', 'github');
     const { syncConfig, sync } = await seeders.createSyncSeeds({
         connectionId: connection.id,
-        envId: env.id,
-        providerConfigKey,
-        trackDeletes,
+        environment_id: env.id,
+        nango_config_id: config.id!,
+        sync_name: Math.random().toString(36).substring(7),
+        track_deletes: trackDeletes,
         models: [model]
     });
 

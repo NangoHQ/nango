@@ -8,8 +8,8 @@ import url from 'url';
 import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-import type { HTTP_VERB, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
-import { NangoError, LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
+import type { HTTP_METHOD, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
+import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
@@ -80,15 +80,38 @@ class ProxyController {
                 headers,
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
-                method: method.toUpperCase() as HTTP_VERB,
+                method: method.toUpperCase() as HTTP_METHOD,
                 retryOn
             };
 
-            const credentialResponse = await connectionService.getConnectionCredentials({
+            const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
+            if (!integration) {
+                await logCtx.error('Provider configuration not found');
+                await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE);
+                res.status(404).send({
+                    error: {
+                        code: 'unknown_provider_config',
+                        message:
+                            'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
+                    }
+                });
+                return;
+            }
+
+            const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            if (connectionRes.error || !connectionRes.response) {
+                await logCtx.error('Failed to get connection', { error: connectionRes.error });
+                await logCtx.failed();
+                errorManager.errResFromNangoErr(res, connectionRes.error);
+                return;
+            }
+
+            const credentialResponse = await connectionService.refreshOrTestCredentials({
                 account,
                 environment,
-                connectionId,
-                providerConfigKey,
+                connection: connectionRes.response,
+                integration,
                 logContextGetter,
                 instantRefresh: false,
                 onRefreshSuccess: connectionRefreshSuccessHook,
@@ -99,24 +122,18 @@ class ProxyController {
                 await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
-                throw new Error(`Failed to get connection credentials: '${credentialResponse.error.message}'`);
+                res.status(400).send({
+                    error: { code: 'server_error', message: `Failed to get connection credentials: '${credentialResponse.error.message}'` }
+                });
+                return;
             }
 
             const { value: connection } = credentialResponse;
 
-            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
-
-            if (!providerConfig) {
-                await logCtx.error('Provider configuration not found');
-                await logCtx.failed();
-                metrics.increment(metrics.Types.PROXY_FAILURE);
-
-                throw new NangoError('unknown_provider_config');
-            }
             await logCtx.enrichOperation({
-                integrationId: providerConfig.id!,
-                integrationName: providerConfig.unique_key,
-                providerName: providerConfig.provider,
+                integrationId: integration.id!,
+                integrationName: integration.unique_key,
+                providerName: integration.provider,
                 connectionId: connection.id!,
                 connectionName: connection.connection_id
             });
@@ -124,7 +141,7 @@ class ProxyController {
             const internalConfig: InternalProxyConfiguration = {
                 existingActivityLogId: logCtx.id,
                 connection,
-                providerName: providerConfig.provider
+                providerName: integration.provider
             };
 
             const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
@@ -143,10 +160,11 @@ class ProxyController {
                 errorManager.errResFromNangoErr(res, error);
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
+                res.status(400).send({ error: { code: 'server_error', message: 'failed to configure proxy' } });
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_VERB, configBody: proxyConfig, logCtx, isDebug });
+            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx, isDebug });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -194,7 +212,7 @@ class ProxyController {
         isDebug
     }: {
         res: Response;
-        method: HTTP_VERB;
+        method: HTTP_METHOD;
         configBody: ApplicationConstructedProxyConfiguration;
         logCtx: LogContext;
         isDebug: boolean;
@@ -268,6 +286,13 @@ class ProxyController {
         });
 
         responseStream.data.on('end', async () => {
+            if (responseStream.status === 204) {
+                res.status(204).end();
+                metrics.increment(metrics.Types.PROXY_SUCCESS);
+                await logCtx.success();
+                return;
+            }
+
             if (!isJsonResponse) {
                 res.send(responseData);
                 await logCtx.success();
@@ -367,7 +392,7 @@ class ProxyController {
         isDebug
     }: {
         res: Response;
-        method: HTTP_VERB;
+        method: HTTP_METHOD;
         url: string;
         config: ApplicationConstructedProxyConfiguration;
         decompress: boolean;

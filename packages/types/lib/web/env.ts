@@ -5,13 +5,13 @@ export interface WindowEnv {
     publicSentryKey: string;
     publicPosthogKey: string;
     publicPosthogPost: string;
+    publicLogoDevKey: string;
     isCloud: boolean;
     features: {
         logs: boolean;
         scripts: boolean;
         auth: boolean;
         managedAuth: boolean;
-        interactiveDemo: boolean;
-        connectUI: boolean;
+        gettingStarted: boolean;
     };
 }

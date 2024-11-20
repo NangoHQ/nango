@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { NangoConnection, HTTP_VERB, Connection } from '@nangohq/shared';
+import type { NangoConnection, HTTP_METHOD, Connection, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
@@ -118,11 +118,24 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncs(connection, orchestrator);
-
+            const rawSyncs = await getSyncs(connection, orchestrator);
+            const syncs = await this.addRecordCount(rawSyncs, connection.id!, environment.id);
             res.send(syncs);
         } catch (e) {
             next(e);
+        }
+    }
+
+    private async addRecordCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
+        const byModel = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
+
+        if (byModel.isOk()) {
+            return syncs.map((sync) => ({
+                ...sync,
+                record_count: Object.fromEntries(sync.models.map((model) => [model, byModel.value[model]?.count ?? 0]))
+            }));
+        } else {
+            return syncs.map((sync) => ({ ...sync, record_count: null }));
         }
     }
 
@@ -218,7 +231,7 @@ class SyncController {
                 return;
             }
 
-            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
+            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_METHOD, path);
             if (action) {
                 const input = req.body || req.params[1];
                 req.body = {};
@@ -510,6 +523,7 @@ class SyncController {
                 provider_config_key as string,
                 syncNames,
                 orchestrator,
+                recordsService,
                 connection_id as string,
                 false,
                 connection

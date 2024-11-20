@@ -1,8 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { Request } from 'express';
-import type { User } from '@nangohq/shared';
-import type { Provider } from '@nangohq/types';
+import type { DBUser, Provider, ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
@@ -11,7 +10,7 @@ import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Utils');
 
-export async function getUserFromSession(req: Request<any>): Promise<Result<User, NangoError>> {
+export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
     const sessionUser = req.user;
     if (!sessionUser) {
         const error = new NangoError('user_not_found');
@@ -20,7 +19,6 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<User
     }
 
     const user = await userService.getUserById(sessionUser.id);
-
     if (!user) {
         const error = new NangoError('user_not_found');
         return Err(error);
@@ -128,6 +126,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         provider.authorization_url ||
         provider.proxy?.base_url ||
         provider.proxy?.headers ||
+        provider.proxy?.connection_config ||
         provider.proxy?.verification ||
         provider.authorization_params ||
         provider.token_params
@@ -135,6 +134,12 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         const cleanParamName = (param: string) => param.replace('${connectionConfig.', '').replace('}', '');
         const tokenUrlMatches = typeof provider.token_url === 'string' ? provider.token_url.match(/\${connectionConfig\.([^{}]*)}/g) || [] : [];
         const authorizationUrlMatches = provider.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g) || [];
+        const connectionConfigMatches = provider.proxy?.connection_config
+            ? Object.values(provider.proxy?.connection_config).flatMap((param) =>
+                  typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
+              )
+            : [];
+
         const authorizationParamsMatches = provider.authorization_params
             ? Object.values(provider.authorization_params).flatMap((param) =>
                   typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
@@ -169,6 +174,7 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         return [
             ...tokenUrlMatches,
             ...authorizationUrlMatches,
+            ...connectionConfigMatches,
             ...authorizationParamsMatches,
             ...tokenParamsMatches,
             ...proxyMatches,
@@ -176,6 +182,32 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
         ]
             .map(cleanParamName)
             .filter((value, index, array) => array.indexOf(value) === index); // remove duplicates
+    }
+
+    return [];
+}
+
+export function parseCredentialParamsFromTemplate(provider: ProviderTwoStep): string[] {
+    const cleanParamName = (param: string) => param.replace('${credential.', '').replace('}', '');
+
+    const extractCredentialParams = (params: Record<string, any>): string[] => {
+        const matches: string[] = [];
+
+        for (const value of Object.values(params)) {
+            if (typeof value === 'string') {
+                const foundMatches = value.match(/\${credential\.([^{}]*)}/g) || [];
+                matches.push(...foundMatches);
+            } else if (typeof value === 'object' && value !== null) {
+                matches.push(...extractCredentialParams(value)); // Recursively search in nested objects
+            }
+        }
+
+        return matches;
+    };
+
+    if (provider.token_params || provider.token_headers) {
+        const tokenParamsMatches = provider.token_params ? extractCredentialParams(provider.token_params) : [];
+        return [...new Set(tokenParamsMatches.map(cleanParamName))]; // Remove duplicates
     }
 
     return [];

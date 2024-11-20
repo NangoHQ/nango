@@ -28,6 +28,10 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
 
+    // Connect
+    NANGO_PUBLIC_CONNECT_URL: z.string().url().optional(),
+    NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
+
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
@@ -41,17 +45,16 @@ export const ENVS = z.object({
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional(),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
+    PROVIDERS_URL: z.string().url().optional(),
+    PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
 
     // Runner
+    RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     RUNNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
-
-    // Demo
-    DEFAULT_GITHUB_CLIENT_ID: z.string().optional(),
-    DEFAULT_GITHUB_CLIENT_SECRET: z.string().optional(),
 
     // --- Third parties
     // AWS
@@ -73,6 +76,7 @@ export const ENVS = z.object({
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),
+    MAILGUN_URL: z.string().url().optional(),
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
@@ -89,7 +93,6 @@ export const ENVS = z.object({
                 'To learn more about NANGO_ENCRYPTION_KEY, please read the doc at https://docs.nango.dev/host/self-host/self-hosting-instructions#encrypt-sensitive-data'
         })
         .optional(),
-    NANGO_DB_MIGRATION_FOLDER: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
 

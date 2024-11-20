@@ -29,12 +29,16 @@ Nango is a single API to interact with all other external APIs. It should be the
 
 <img src="/docs-v2/images/overview.png">
 
-## 👩‍💻 Sample code
+# 📺 Demo video
+
+[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://youtu.be/oTpWlmnv7dM)
+
+# 👩‍💻 Sample code
 
 Initiate a new OAuth flow from your frontend:
 
 ```js
-nango.auth('github', 'user123');
+nango.openConnectUI();
 ```
 
 Get structured objects from external APIs from your backend:
@@ -47,7 +51,7 @@ nango.listRecords<GithubIssue>({
 });
 ```
 
-# 👩🏻‍🔧 Choose your level of service
+# 👩🏻‍🔧 Pre-built and custom integrations
 
 Nango's flexibility ensures it supports any API integration:
 
@@ -58,6 +62,7 @@ Nango's flexibility ensures it supports any API integration:
 # 🔌 250+ pre-built APIs & integrations, or build your own!
 
 [Over 250 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...
 - **CRMs**: Hubspot, Salesforce, ...
@@ -74,7 +79,7 @@ But remember, Nango can work with **any API and any use-case**!
 
 # 🚀 Get started
 
-Sign up for free and try the interactive demo:
+Sign up for free:
 
 <a href="https://app.nango.dev/signup" target="_blank">
   <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
@@ -83,6 +88,7 @@ Sign up for free and try the interactive demo:
 # 🙋‍♀️ Why is Nango open-source?
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
+
 - [Contribute an API](https://docs.nango.dev/customize/guides/contribute-an-api)
 - [Create a custom integration](https://docs.nango.dev/customize/guides/create-a-custom-integration)
 - [Extend an integration template](https://docs.nango.dev/customize/guides/extend-an-integration-template)
@@ -104,4 +110,3 @@ Thank you for continuously making Nango better ❤️
 # 🐻 History
 
 Pizzly (a simple service for OAuth) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
-

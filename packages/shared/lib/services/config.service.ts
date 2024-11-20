@@ -87,15 +87,30 @@ class ConfigService {
             .filter(Boolean) as ProviderConfig[];
     }
 
+    async listIntegrationForApi(environment_id: number): Promise<(ProviderConfig & { connection_count: string })[]> {
+        const connectionCountSubquery = db
+            .knex('_nango_connections')
+            .count('* as connection_count')
+            .where({
+                '_nango_connections.environment_id': db.knex.ref('_nango_configs.environment_id'),
+                '_nango_connections.config_id': db.knex.ref('_nango_configs.id'),
+                deleted: false
+            })
+            .as('connection_count');
+        const res = await db.knex
+            .select<(ProviderConfig & { connection_count: string })[]>('*', connectionCountSubquery)
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ environment_id, deleted: false })
+            .orderBy('provider', 'asc')
+            .orderBy('created_at', 'asc');
+
+        return res;
+    }
+
     async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
         return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, provider, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
             .filter((config) => config != null) as ProviderConfig[];
-    }
-
-    async getAllNames(environment_id: number): Promise<string[]> {
-        const configs = await this.listProviderConfigs(environment_id);
-        return configs.map((config) => config.unique_key);
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {

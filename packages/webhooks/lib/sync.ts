@@ -58,7 +58,7 @@ export const sendSync = async ({
         syncName,
         model,
         // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
-        syncType: operation === 'INCREMENTAL' ? 'INCREMENTAL' : 'INITIAL'
+        syncType: operation === 'FULL' ? 'INITIAL' : operation
     };
     let finalBody: NangoSyncWebhookBody;
 
@@ -69,7 +69,7 @@ export const sendSync = async ({
             responseResults?.added === 0 && responseResults?.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
 
         if (!webhookSettings.on_sync_completion_always && noChanges) {
-            await logCtx?.info('There were no added, updated, or deleted results. No webhook sent, as per your environment settings');
+            await logCtx?.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
 
             return Ok(undefined);
         }

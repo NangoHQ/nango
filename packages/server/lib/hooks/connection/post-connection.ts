@@ -4,7 +4,6 @@ import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, ge
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks.js';
 import type { InternalProxyConfiguration } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
@@ -15,7 +14,7 @@ const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as
 
 export interface InternalNango {
     getConnection: () => Promise<Connection>;
-    proxy: ({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse | AxiosError>;
+    proxy: <T = any>({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
 
@@ -23,22 +22,12 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
     const { connection: upsertedConnection, environment, account } = createdConnection;
     let logCtx: LogContext | undefined;
     try {
-        const credentialResponse = await connectionService.getConnectionCredentials({
-            account,
-            environment,
-            connectionId: upsertedConnection.connection_id,
-            providerConfigKey: upsertedConnection.provider_config_key,
-            logContextGetter,
-            instantRefresh: false,
-            onRefreshSuccess: connectionRefreshSuccessHook,
-            onRefreshFailed: connectionRefreshFailedHook
-        });
-
-        if (credentialResponse.isErr()) {
+        const connectionRes = await connectionService.getConnection(upsertedConnection.connection_id, upsertedConnection.provider_config_key, environment.id);
+        if (connectionRes.error || !connectionRes.response) {
             return;
         }
 
-        const { value: connection } = credentialResponse;
+        const connection = connectionRes.response;
 
         const internalConfig: InternalProxyConfiguration = {
             connection,
@@ -63,7 +52,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
 
                 return connection as Connection;
             },
-            proxy: async ({ method, endpoint, data, headers, params }: UserProvidedProxyConfiguration) => {
+            proxy: async ({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
                     ...externalConfig,
                     method: method || externalConfig.method || 'GET',
@@ -71,9 +60,15 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                     headers: headers || {},
                     params: params || {}
                 };
+
+                if (baseUrlOverride) {
+                    finalExternalConfig.baseUrlOverride = baseUrlOverride;
+                }
+
                 if (data) {
                     finalExternalConfig.data = data;
                 }
+
                 const { response } = await proxyService.route(finalExternalConfig, internalConfig);
 
                 if (response instanceof Error) {
@@ -124,7 +119,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 await logCtx.error('Post connection script failed', { error: e });
                 await logCtx.failed();
 
-                await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
+                await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
                     environmentId: String(environment.id),
                     connectionId: upsertedConnection.connection_id,
                     providerConfigKey: upsertedConnection.provider_config_key,
@@ -134,7 +129,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
             }
         }
     } catch (err) {
-        await telemetry.log(LogTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
+        await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
             environmentId: String(environment.id),
             connectionId: upsertedConnection.connection_id,
             providerConfigKey: upsertedConnection.provider_config_key,

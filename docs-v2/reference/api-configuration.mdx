@@ -193,7 +193,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="auth_mode" type="string" >
-    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU".
+    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL", "TWO_STEP", "SIGNATURE".
 </ResponseField>
 
 <ResponseField name="auth" type="object">
@@ -323,6 +323,9 @@ slack:
                 <ResponseField name="offset_name_in_request" type="string">
                     The name of the offset parameter in the request.
                 </ResponseField>
+                <ResponseField name="offset_calculation_method" type="string">
+                    The method to calculate the offset in the request. Must be one of: "per-page" or "by-response-size". Optional parameter that defaults to "by-response-size".
+                </ResponseField>
                 <ResponseField name="offset_start_value" type="number">
                     The starting value for the offset.
                 </ResponseField>
@@ -434,12 +437,21 @@ slack:
     The URL to get the OAuth 2 credentials from the external API.
 </ResponseField>
 
+<ResponseField name="token_url_encoded" type="boolean">
+    Should the `token_url` be encoded or not
+</ResponseField>
+
+
 <ResponseField name="webhook_user_defined_secret" type="boolean">
     Wether the webhook secret is set by the user.
 </ResponseField>
 
 <ResponseField name="webhook_routing_script" type="array">
     Specifies a script to handle external [webhooks](/understand/concepts/webhooks).
+</ResponseField>
+
+<ResponseField name="authorization_url_fragment" type="string">
+    Specifies a fragment to be appended to the authorization URL, typically used to modify the redirection flow or pass additional information in the URL before the query parameters.
 </ResponseField>
 
 <ResponseField name="connection_config" type="object">

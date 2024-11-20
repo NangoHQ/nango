@@ -1,6 +1,6 @@
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetIntegration, GetIntegrationFlows, HTTP_VERB } from '@nangohq/types';
+import type { GetIntegration, GetIntegrationFlows } from '@nangohq/types';
 import type { NangoSyncConfig } from '@nangohq/shared';
 import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { validationParams } from '../getIntegration.js';
@@ -59,10 +59,8 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
 
 function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
     for (const endpointObjA of flowA.endpoints) {
-        const endpointA = Object.entries(endpointObjA) as unknown as [HTTP_VERB, string];
-
         for (const endpointObjB of flowB.endpoints) {
-            if (endpointObjB[endpointA[0]] && endpointObjB[endpointA[0]] === endpointA[1]) {
+            if (endpointObjB.method === endpointObjA.method && endpointObjB.path === endpointObjA.path) {
                 return true;
             }
         }
@@ -77,7 +75,7 @@ function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]):
         if (flow.type === templateFlow.type && flow.name === templateFlow.name) {
             return flow;
         }
-        if (flow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
+        if (flow.type === 'sync' && templateFlow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
             return flow;
         }
         if (containsSameEndpoint(flow, templateFlow)) {

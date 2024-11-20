@@ -10,6 +10,10 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
+    Jwt: 'JWT';
+    Bill: 'BILL';
+    TwoStep: 'TWO_STEP';
+    Signature: 'SIGNATURE';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -131,11 +135,51 @@ export interface TbaCredentials {
     };
 }
 
+export interface BillCredentials extends CredentialsCommon {
+    type: AuthModes['Bill'];
+    username: string;
+    password: string;
+    organization_id: string;
+    dev_key: string;
+    session_id?: string;
+    user_id?: string;
+    expires_at?: Date | undefined;
+}
+
 export interface TableauCredentials extends CredentialsCommon {
     type: AuthModes['Tableau'];
     pat_name: string;
     pat_secret: string;
     content_url?: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface JwtCredentials {
+    type: AuthModes['Jwt'];
+    privateKeyId?: string;
+    issuerId?: string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface TwoStepCredentials extends CredentialsCommon {
+    type: AuthModes['TwoStep'];
+    [key: string]: any;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface SignatureCredentials {
+    type: AuthModes['Signature'];
+    username: string;
+    password: string;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -159,4 +203,8 @@ export type AllAuthCredentials =
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
-    | TableauCredentials;
+    | TableauCredentials
+    | JwtCredentials
+    | BillCredentials
+    | TwoStepCredentials
+    | SignatureCredentials;
