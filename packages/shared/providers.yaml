@@ -6117,6 +6117,38 @@ unauthenticated:
     webhook_routing_script: unauthenticatedWebhookRouting
     docs: https://docs.nango.dev/integrations/all/unauthenticated
 
+unipile:
+    display_name: Unipile
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/unipile
+    docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Unipile instance
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Unipile instance
+            pattern: '^[a-z0-9_-]+$'
+            example: api1
+            suffix: .unipile.com
+        port:
+            type: string
+            title: Port
+            description: The port of your Unipile instance
+            pattern: '^[0-9]+$'
+            example: '13113'
+
 vimeo:
     display_name: Vimeo
     categories:
