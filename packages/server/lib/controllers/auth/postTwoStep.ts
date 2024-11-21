@@ -21,7 +21,7 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 import { connectionIdSchema, providerConfigKeySchema, connectionCredential } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
-import { checkIfIntegrationIsAllowed } from '../../utils/auth.js';
+import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z.object({}).catchall(z.any()).strict();
 
@@ -115,7 +115,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
-        if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
         }
 

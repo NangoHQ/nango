@@ -23,7 +23,7 @@ import {
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
-import { checkIfIntegrationIsAllowed } from '../utils/auth.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -89,7 +89,7 @@ class ApiAuthController {
                 return;
             }
 
-            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
@@ -273,7 +273,7 @@ class ApiAuthController {
                 return;
             }
 
-            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 

@@ -11,7 +11,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
-import { checkIfIntegrationIsAllowed } from '../../utils/auth.js';
+import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
@@ -91,7 +91,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             return;
         }
 
-        if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
         }
 

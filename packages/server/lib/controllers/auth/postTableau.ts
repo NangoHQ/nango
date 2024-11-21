@@ -21,7 +21,7 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
-import { checkIfIntegrationIsAllowed } from '../../utils/auth.js';
+import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z
     .object({
@@ -121,7 +121,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
         }
 

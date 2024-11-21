@@ -51,7 +51,7 @@ import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
-import { checkIfIntegrationIsAllowed } from '../utils/auth.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -143,7 +143,7 @@ class OAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
-            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
@@ -331,7 +331,7 @@ class OAuthController {
                 return;
             }
 
-            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 

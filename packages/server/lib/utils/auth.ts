@@ -4,7 +4,7 @@ import type { ApiError, IntegrationConfig } from '@nangohq/types';
 import type { Response } from 'express';
 import type { RequestLocals } from './express';
 
-export async function checkIfIntegrationIsAllowed({
+export async function isIntegrationAllowed({
     config,
     logCtx,
     res

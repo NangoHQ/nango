@@ -9,7 +9,7 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
-import { checkIfIntegrationIsAllowed } from '../utils/auth.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -75,7 +75,7 @@ class AppStoreAuthController {
                 return;
             }
 
-            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
