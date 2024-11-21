@@ -323,7 +323,7 @@ export const ConnectionList: React.FC = () => {
                             {connectionsCount.data.total} connection{connectionsCount.data.total !== 1 ? 's' : ''}
                             {connectionsCount.data.withError > 0 && (
                                 <SimpleTooltip
-                                    tooltipContent={`${connectionsCount.data.withAuthError} authorization error${connectionsCount.data.withAuthError !== 1 ? 's' : ''}, ${connectionsCount.data.withSyncError} syncronization error${connectionsCount.data.withSyncError !== 1 ? 's' : ''}`}
+                                    tooltipContent={`${connectionsCount.data.withAuthError} authorization error${connectionsCount.data.withAuthError !== 1 ? 's' : ''}, ${connectionsCount.data.withSyncError} synchronization error${connectionsCount.data.withSyncError !== 1 ? 's' : ''}`}
                                 >
                                     <span className="flex items-center ml-1">
                                         ({connectionsCount?.data.withError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
