@@ -212,14 +212,22 @@ export const Go: React.FC = () => {
             nango.clear();
 
             try {
-                const res =
-                    provider.auth_mode === 'NONE'
-                        ? await nango.create(integration.unique_key, { ...values })
-                        : await nango.auth(integration.unique_key, {
-                              params: values['params'] || {},
-                              credentials: { ...values['credentials'], type: provider.auth_mode },
-                              detectClosedAuthWindow: true
-                          });
+                let res: AuthResult;
+                // Legacy stuff because types were mixed together inappropriately
+                if (provider.auth_mode === 'NONE') {
+                    res = await nango.create(integration.unique_key, { ...values });
+                } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1') {
+                    res = await nango.auth(integration.unique_key, {
+                        ...values,
+                        detectClosedAuthWindow: true
+                    });
+                } else {
+                    res = await nango.auth(integration.unique_key, {
+                        params: values['params'] || {},
+                        credentials: { ...values['credentials'], type: provider.auth_mode },
+                        detectClosedAuthWindow: true
+                    });
+                }
                 setResult(res);
                 triggerConnection(res);
             } catch (err) {

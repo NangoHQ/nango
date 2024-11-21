@@ -2418,6 +2418,7 @@ freshdesk:
             title: FreshDesk API Key
             description: The API Key of your FreshDesk account
             doc_section: '#step-1-finding-your-freshdesk-api-key'
+            secret: true
         password:
             type: string
             title: ''
@@ -6161,6 +6162,7 @@ unanet:
             type: string
             title: API Key
             description: The API key of your Unanet instance
+            secret: true
 
 unauthenticated:
     display_name: Unauthenticated
