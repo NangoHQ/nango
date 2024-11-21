@@ -51,6 +51,7 @@ import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -140,6 +141,10 @@ class OAuthController {
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
+                return;
             }
 
             const session: OAuthSession = {
@@ -323,6 +328,10 @@ class OAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
