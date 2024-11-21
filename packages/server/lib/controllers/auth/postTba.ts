@@ -12,9 +12,9 @@ import {
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
-import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types';
+import type { TbaCredentials, PostPublicTbaAuthorization, MessageRowInsert } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -161,17 +161,11 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             }
         }
 
-        const connectionResponse = await connectionTestHook(
-            config.provider,
-            provider,
-            tbaCredentials,
-            connectionId,
-            providerConfigKey,
-            environment.id,
-            connectionConfig
-        );
-
+        const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider });
         if (connectionResponse.isErr()) {
+            if ('logs' in connectionResponse.error.payload) {
+                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
+            }
             await logCtx.error('Provided credentials are invalid', { provider: config.provider });
             await logCtx.failed();
 
@@ -181,6 +175,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
             return;
         }
+
+        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
