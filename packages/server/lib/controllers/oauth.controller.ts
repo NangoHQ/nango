@@ -51,6 +51,7 @@ import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
+import { checkIfIntegrationIsAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -142,14 +143,8 @@ class OAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
-            if (authType === 'connectSession') {
-                const session = res.locals['connectSession'];
-                if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
-                    await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
-                    await logCtx.failed();
-                    res.status(400).send({ error: { code: 'integration_not_allowed' } });
-                    return;
-                }
+            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+                return;
             }
 
             const session: OAuthSession = {
@@ -336,14 +331,8 @@ class OAuthController {
                 return;
             }
 
-            if (authType === 'connectSession') {
-                const session = res.locals['connectSession'];
-                if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
-                    await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
-                    await logCtx.failed();
-                    res.status(400).send({ error: { code: 'integration_not_allowed' } });
-                    return;
-                }
+            if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+                return;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {

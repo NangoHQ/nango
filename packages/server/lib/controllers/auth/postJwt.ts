@@ -25,6 +25,7 @@ import {
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
+import { checkIfIntegrationIsAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z
     .object({
@@ -130,14 +131,8 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        if (authType === 'connectSession') {
-            const session = res.locals['connectSession'];
-            if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
-                await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
-                await logCtx.failed();
-                res.status(400).send({ error: { code: 'integration_not_allowed' } });
-                return;
-            }
+        if (!(await checkIfIntegrationIsAllowed({ config, res, logCtx }))) {
+            return;
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });

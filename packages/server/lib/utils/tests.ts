@@ -3,7 +3,7 @@ import type { Server } from 'node:http';
 import { createServer } from 'node:http';
 import express from 'express';
 import { expect } from 'vitest';
-import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
+import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath } from '@nangohq/types';
 import getPort from 'get-port';
 import { migrateLogsMapping } from '@nangohq/logs';
 import db, { multipleMigrations } from '@nangohq/database';
@@ -78,7 +78,9 @@ export function apiFetch(baseUrl: string) {
 /**
  * Assert API response is an error
  */
-export function isError(json: any): asserts json is ApiError<any> {
+export function isError<TType extends Record<string, any>>(
+    json: TType extends { json: any } ? never : TType
+): asserts json is Extract<TType extends { json: any } ? never : TType, { error: any }> {
     if (!('error' in json)) {
         console.log('isError', inspect(json, true, 100));
         throw new Error('Response is not an error');
@@ -88,7 +90,9 @@ export function isError(json: any): asserts json is ApiError<any> {
 /**
  * Assert API response is a success
  */
-export function isSuccess<TType extends Record<string, any>>(json: TType): asserts json is Exclude<TType, { error: any }> {
+export function isSuccess<TType extends Record<string, any>>(
+    json: TType extends { json: any } ? never : TType
+): asserts json is Exclude<TType extends { json: any } ? never : TType, { error: any }> {
     if (json && 'error' in json) {
         console.log('isSuccess', inspect(json, true, 100));
         throw new Error('Response is not a success');
