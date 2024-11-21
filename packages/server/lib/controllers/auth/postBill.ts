@@ -121,6 +121,16 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             return;
         }
 
+        if (authType === 'connectSession') {
+            const session = res.locals['connectSession'];
+            if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
+                await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'integration_not_allowed' } });
+                return;
+            }
+        }
+
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
         const { success, error, response: credentials } = await connectionService.getBillCredentials(provider, userName, password, organizationId, devkey);

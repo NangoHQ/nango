@@ -142,6 +142,16 @@ class OAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
             }
 
+            if (authType === 'connectSession') {
+                const session = res.locals['connectSession'];
+                if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
+                    await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
+                    await logCtx.failed();
+                    res.status(400).send({ error: { code: 'integration_not_allowed' } });
+                    return;
+                }
+            }
+
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
@@ -324,6 +334,16 @@ class OAuthController {
                 errorManager.errRes(res, 'invalid_auth_mode');
 
                 return;
+            }
+
+            if (authType === 'connectSession') {
+                const session = res.locals['connectSession'];
+                if (session.allowedIntegrations && !session.allowedIntegrations.includes(config.unique_key)) {
+                    await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
+                    await logCtx.failed();
+                    res.status(400).send({ error: { code: 'integration_not_allowed' } });
+                    return;
+                }
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
