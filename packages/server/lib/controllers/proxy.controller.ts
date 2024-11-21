@@ -9,9 +9,19 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_METHOD, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
-import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
+import {
+    LogActionEnum,
+    errorManager,
+    ErrorSourceEnum,
+    proxyService,
+    connectionService,
+    configService,
+    featureFlags,
+    redactHeaders,
+    redactURL
+} from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
-import { logContextGetter } from '@nangohq/logs';
+import { flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -146,15 +156,7 @@ class ProxyController {
 
             const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
 
-            // We batch save, since we have buffered the createdAt it shouldn't impact order
-            await Promise.all(
-                logs.map(async (log) => {
-                    if (log.level === 'debug' && !isDebug) {
-                        return;
-                    }
-                    await logCtx!.log(log);
-                })
-            );
+            await flushLogsBuffer(logs, logCtx);
 
             if (!success || !proxyConfig || error) {
                 errorManager.errResFromNangoErr(res, error);
@@ -186,12 +188,11 @@ class ProxyController {
             next(err);
         } finally {
             const reqHeaders = getHeaders(req.headers);
-            reqHeaders['authorization'] = 'REDACTED';
             await logCtx?.enrichOperation({
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
                     method: req.method,
-                    headers: reqHeaders
+                    headers: redactHeaders({ headers: reqHeaders })
                 },
                 response: {
                     code: res.statusCode,
@@ -239,21 +240,23 @@ class ProxyController {
     private async handleResponse({
         res,
         responseStream,
+        requestConfig,
         config,
-        url,
         logCtx
     }: {
         res: Response;
         responseStream: AxiosResponse;
         config: ApplicationConstructedProxyConfiguration;
-        url: string;
+        requestConfig: AxiosRequestConfig;
         logCtx: LogContext;
     }) {
-        const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.http(`${config.method.toUpperCase()} ${url} was successful`, {
+        const valuesToFilter = Object.values(config.connection.credentials);
+        const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
+        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
+        await logCtx.http(`${config.method} ${redactedURL} was successful`, {
             request: {
                 method: config.method,
-                url,
+                url: redactedURL,
                 headers: safeHeaders
             },
             response: {
@@ -318,7 +321,19 @@ class ProxyController {
         });
     }
 
-    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ApplicationConstructedProxyConfiguration, logCtx: LogContext) {
+    private async handleErrorResponse({
+        res,
+        e,
+        config,
+        requestConfig,
+        logCtx
+    }: {
+        res: Response;
+        e: unknown;
+        config: ApplicationConstructedProxyConfiguration;
+        requestConfig: AxiosRequestConfig;
+        logCtx: LogContext;
+    }) {
         const error = e as AxiosError;
 
         if (!error.response?.data && error.toJSON) {
@@ -330,9 +345,9 @@ class ProxyController {
                 status
             } = error.toJSON() as any;
 
-            await this.reportError(error, url, config, message, logCtx);
+            await this.reportError({ error, config, requestConfig, errorContent: message, logCtx });
 
-            const errorObject = { message, stack, code, status, url, method };
+            const errorObject = { message, stack, code, status, url: requestConfig.url, method };
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};
@@ -373,7 +388,7 @@ class ProxyController {
                         // Intentionally left blank - errorData will be a string
                     }
                 }
-                void this.reportError(error, url, config, errorData, logCtx);
+                void this.reportError({ error, config, requestConfig, errorContent: errorData, logCtx });
             });
         } else {
             await logCtx.error('Unknown error');
@@ -400,21 +415,21 @@ class ProxyController {
         logCtx: LogContext;
         isDebug: boolean;
     }) {
+        const logs: MessageRowInsert[] = [];
+        const headers = proxyService.constructHeaders(config, method, url);
+
+        if (isDebug) {
+            await logCtx.debug(`${method.toUpperCase()} ${url}`, { headers });
+        }
+
+        const requestConfig: AxiosRequestConfig = {
+            method,
+            url,
+            responseType: 'stream',
+            headers,
+            decompress
+        };
         try {
-            const logs: MessageRowInsert[] = [];
-            const headers = proxyService.constructHeaders(config, method, url);
-
-            if (isDebug) {
-                await logCtx.debug(`${method.toUpperCase()} ${url}`, { headers });
-            }
-
-            const requestConfig: AxiosRequestConfig = {
-                method,
-                url,
-                responseType: 'stream',
-                headers,
-                decompress
-            };
             if (data && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
                 requestConfig.data = data;
             }
@@ -425,38 +440,39 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, config, logs) }
             );
 
-            // We batch save, since we have buffered the createdAt it shouldn't impact order
-            await Promise.all(
-                logs.map(async (log) => {
-                    if (log.level === 'debug' && !isDebug) {
-                        return;
-                    }
-                    await logCtx.log(log);
-                })
-            );
+            await flushLogsBuffer(logs, logCtx);
 
-            await this.handleResponse({ res, responseStream, config, url, logCtx });
+            await this.handleResponse({ res, responseStream, config, requestConfig, logCtx });
         } catch (error) {
-            await this.handleErrorResponse(res, error, url, config, logCtx);
+            await this.handleErrorResponse({ res, e: error, requestConfig, config, logCtx });
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
     }
 
-    private async reportError(
-        error: AxiosError,
-        url: string,
-        config: ApplicationConstructedProxyConfiguration,
-        errorContent: string | Record<string, string>,
-        logCtx: LogContext
-    ) {
-        const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
-        await logCtx.http(`${config.method.toUpperCase()} ${url} failed with status '${error.response?.status}'`, {
+    private async reportError({
+        error,
+        config,
+        requestConfig,
+        errorContent,
+        logCtx
+    }: {
+        error: AxiosError;
+        config: ApplicationConstructedProxyConfiguration;
+        requestConfig: AxiosRequestConfig;
+        errorContent: string | Record<string, string>;
+        logCtx: LogContext;
+    }) {
+        const valuesToFilter = Object.values(config.connection.credentials);
+        const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
+        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
+
+        await logCtx.http(`${requestConfig.method} ${redactedURL} failed with status '${error.response?.status}'`, {
             meta: {
                 content: errorContent
             },
             request: {
                 method: config.method,
-                url,
+                url: redactedURL,
                 headers: safeHeaders
             },
             response: {
