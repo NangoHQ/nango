@@ -385,7 +385,7 @@ export class Orchestrator {
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
-            'onEvent.name': name,
+            'onEventScript.name': name,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
             'connection.provider_config_key': connection.provider_config_key,
@@ -431,7 +431,7 @@ export class Orchestrator {
             const content = `Script was successfully run.`;
 
             await logCtx.info(content, {
-                onEvent: name,
+                onEventScript: name,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });

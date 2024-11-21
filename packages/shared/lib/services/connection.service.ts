@@ -859,14 +859,18 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         orchestrator,
-        logContextGetter
+        logContextGetter,
+        preDeletionHook
     }: {
         connection: Connection;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
         logContextGetter: LogContextGetter;
+        preDeletionHook: () => Promise<void>;
     }): Promise<number> {
+        await preDeletionHook();
+
         const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
@@ -877,6 +881,8 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
+        // TODO: move the following side effects to a post deletion hook
+        // so we can remove the orchestrator and logContextGetter dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         const slackService = new SlackService({ logContextGetter, orchestrator });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id!, environmentId });

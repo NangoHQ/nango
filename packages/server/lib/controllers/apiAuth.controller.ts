@@ -23,6 +23,7 @@ import {
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 import type { MessageRowInsert } from '@nangohq/types';
 
 class ApiAuthController {
@@ -86,6 +87,10 @@ class ApiAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
@@ -262,6 +267,10 @@ class ApiAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 

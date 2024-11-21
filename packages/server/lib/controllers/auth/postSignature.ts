@@ -25,6 +25,7 @@ import {
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
+import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z
     .object({
@@ -121,6 +122,10 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             await logCtx.error('Provider does not support SIGNATURE auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
+            return;
+        }
+
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
         }
 

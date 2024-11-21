@@ -6,6 +6,7 @@ import { connectionService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { preConnectionDeletion } from '../../../../hooks/connection/on/connection-deleted.js';
 
 const validationQuery = z
     .object({
@@ -34,7 +35,7 @@ export const deleteConnection = asyncWrapper<DeleteConnection>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account: team } = res.locals;
     const params: DeleteConnection['Params'] = valParams.data;
     const query: DeleteConnection['Querystring'] = valQuery.data;
 
@@ -45,12 +46,20 @@ export const deleteConnection = asyncWrapper<DeleteConnection>(async (req, res) 
         return;
     }
 
+    const preDeletionHook = () =>
+        preConnectionDeletion({
+            team,
+            environment,
+            connection,
+            logContextGetter
+        });
     const deleted = await connectionService.deleteConnection({
         connection,
         providerConfigKey: query.provider_config_key,
         environmentId: environment.id,
         logContextGetter,
-        orchestrator
+        orchestrator,
+        preDeletionHook
     });
 
     res.status(200).send({ success: deleted > 0 });

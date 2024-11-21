@@ -31,7 +31,7 @@ import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
-import { onConnectionCreated } from './connection/on/connection-created.js';
+import { postConnectionCreation } from './connection/on/connection-created.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 import tracer from 'dd-trace';
 
@@ -79,7 +79,7 @@ export const connectionCreated = async (
 
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, provider, logContextGetter);
-        await onConnectionCreated(createdConnectionPayload, provider, logContextGetter);
+        await postConnectionCreation(createdConnectionPayload, provider, logContextGetter);
     }
 
     if (options.initiateSync === true && !isHosted) {
