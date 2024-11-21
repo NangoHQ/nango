@@ -63,10 +63,10 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             );
 
             let errorTooltip = '';
-            let errorIcon: ErrorCircleIcon = 'x';
+            let errorIcon: ErrorCircleIcon = '!';
             if (errorCounts.auth > 0 && errorCounts.sync > 0) {
                 errorTooltip = 'Expired credentials, failed syncs';
-                errorIcon = 'x';
+                errorIcon = '!';
             } else if (errorCounts.auth > 0) {
                 errorTooltip = 'Expired credentials';
                 errorIcon = 'auth';
