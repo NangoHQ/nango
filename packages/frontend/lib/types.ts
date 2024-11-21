@@ -17,7 +17,7 @@ export interface AuthResult {
 
 export type AuthOptions = {
     detectClosedAuthWindow?: boolean; // If true, `nango.auth()` would fail if the login window is closed before the authorization flow is completed
-} & (ConnectionConfig | OAuth2ClientCredentials | OAuthCredentialsOverride | BasicApiCredentials | ApiKeyCredentials | AppStoreCredentials);
+} & (ConnectionConfig | OAuthCredentialsOverride);
 
 export type ErrorHandler = (errorType: AuthErrorType, errorDesc: string) => void;
 

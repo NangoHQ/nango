@@ -1006,7 +1006,20 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
             }
 
-            let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
+            let connectionConfig = {
+                ...tokenMetadata,
+                ...callbackMetadata,
+                ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
+                    if (session.connectionConfig[key] !== '') {
+                        acc[key] = session.connectionConfig[key];
+                    } else if (key in tokenMetadata || key in callbackMetadata) {
+                        acc[key] = tokenMetadata[key] || callbackMetadata[key];
+                    } else {
+                        acc[key] = '';
+                    }
+                    return acc;
+                }, {})
+            };
 
             let pending = false;
 
@@ -1254,12 +1267,26 @@ class OAuthController {
             .then(async (accessTokenResult) => {
                 const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, 'OAUTH1');
 
+                const connectionConfig = {
+                    ...metadata,
+                    ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
+                        if (session.connectionConfig[key] !== '') {
+                            acc[key] = session.connectionConfig[key];
+                        } else if (key in metadata) {
+                            acc[key] = metadata[key];
+                        } else {
+                            acc[key] = '';
+                        }
+                        return acc;
+                    }, {})
+                };
+
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
                     provider: session.provider,
                     parsedRawCredentials: parsedAccessTokenResult,
-                    connectionConfig: { ...session.connectionConfig, ...metadata },
+                    connectionConfig,
                     environmentId: environment.id,
                     accountId: account.id
                 });
