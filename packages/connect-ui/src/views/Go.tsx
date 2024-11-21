@@ -215,7 +215,11 @@ export const Go: React.FC = () => {
                 const res =
                     provider.auth_mode === 'NONE'
                         ? await nango.create(integration.unique_key, { ...values })
-                        : await nango.auth(integration.unique_key, { ...values, detectClosedAuthWindow: true });
+                        : await nango.auth(integration.unique_key, {
+                              params: values['params'] || {},
+                              credentials: { ...values['credentials'], type: provider.auth_mode },
+                              detectClosedAuthWindow: true
+                          });
                 setResult(res);
                 triggerConnection(res);
             } catch (err) {
