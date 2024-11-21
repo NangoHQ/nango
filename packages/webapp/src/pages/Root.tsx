@@ -7,7 +7,7 @@ export const Root: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
     const env = useStore((state) => state.env);
     const { meta } = useMeta();
 
@@ -16,13 +16,13 @@ export const Root: React.FC = () => {
             return;
         }
 
-        if (env === 'dev' && showInteractiveDemo && !meta.onboardingComplete) {
-            navigate('/dev/interactive-demo');
+        if (env === 'dev' && showGettingStarted && !meta.onboardingComplete) {
+            navigate('/dev/getting-started');
             return;
         }
 
         navigate(`/${env}/`);
-    }, [meta, location, env, navigate, showInteractiveDemo]);
+    }, [meta, location, env, navigate, showGettingStarted]);
 
     return null;
 };

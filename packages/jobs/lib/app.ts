@@ -1,7 +1,6 @@
 import './tracer.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
-import { cronAutoIdleDemo } from './crons/autoIdleDemo.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
@@ -66,7 +65,6 @@ try {
     processor.start();
 
     // Register recurring tasks
-    cronAutoIdleDemo();
     deleteSyncsData();
     timeoutLogsOperations();
 

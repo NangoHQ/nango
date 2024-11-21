@@ -177,6 +177,9 @@ export function getWebsocketsPath(): string {
  */
 export function interpolateString(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
+        if (b === 'now') {
+            return new Date().toISOString();
+        }
         const r = replacers[b];
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });

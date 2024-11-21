@@ -43,6 +43,10 @@ if (validator.errors) {
 
 const invalidInterpolation = /(?<!(\$|]))\{/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
+    // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
+    if (providerKey === 'sage-intacct') {
+        continue;
+    }
     const { credentials, connection_config, ...providerWithoutSensitive } = provider;
     const strippedProviderYaml = jsYaml.dump({ [providerKey]: providerWithoutSensitive });
     const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
@@ -144,6 +148,10 @@ function validateProvider(providerKey: string, provider: Provider) {
         }
         if (!provider.proxy?.verification) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
+        }
+    } else if (provider.auth_mode === 'TWO_STEP') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for TWO_STEP auth mode`);
         }
     } else {
         if (provider.credentials) {

@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -741,15 +742,21 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
     }
 
-    public async count({ environmentId }: { environmentId: number }): Promise<Result<{ total: number; withAuthError: number }>> {
+    public async count({
+        environmentId
+    }: {
+        environmentId: number;
+    }): Promise<Result<{ total: number; withAuthError: number; withSyncError: number; withError: number }>> {
         const query = db.knex
             .from(`_nango_connections`)
-            .select<{ total_connection: string; with_auth_error: string }>(
+            .select<{ total_connection: string; with_auth_error: string; with_sync_error: string; with_error: string }>(
                 db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
-                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_auth_error')
+                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'auth') as with_auth_error"),
+                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'sync') as with_sync_error"),
+                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
             )
             .leftJoin('_nango_active_logs', (join) => {
-                join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true).andOnVal('type', 'auth');
+                join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true);
             })
             .where({
                 '_nango_connections.environment_id': environmentId,
@@ -761,7 +768,12 @@ class ConnectionService {
             return Err('failed_to_count');
         }
 
-        return Ok({ total: Number(res.total_connection), withAuthError: Number(res.with_auth_error) });
+        return Ok({
+            total: Number(res.total_connection),
+            withAuthError: Number(res.with_auth_error),
+            withSyncError: Number(res.with_sync_error),
+            withError: Number(res.with_error)
+        });
     }
 
     /**
@@ -785,56 +797,57 @@ class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
-        const subQuery = db.knex
+        const query = db.knex
             .from<Connection>(`_nango_connections`)
-            .select(
+            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
-                  (SELECT COALESCE(json_agg(json_build_object(
-                      'type', type,
-                      'log_id', log_id
-                    )), '[]'::json)
-                    FROM ${ACTIVE_LOG_TABLE}
-                    WHERE _nango_connections.id = ${ACTIVE_LOG_TABLE}.connection_id
-                      AND ${ACTIVE_LOG_TABLE}.active = true
-                  ) as active_logs
+                    COALESCE(
+                        json_agg(
+                            json_build_object(
+                                'type', _nango_active_logs.type,
+                                'log_id', _nango_active_logs.log_id
+                            )
+                        ) FILTER (WHERE _nango_active_logs.id IS NOT NULL)
+                        , '[]'::json
+                    ) as active_logs
                `),
+                db.knex.raw('count(_nango_active_logs.id) as active_logs_count'),
                 '_nango_configs.provider'
             )
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .leftJoin(ACTIVE_LOG_TABLE, function () {
+                this.on(`${ACTIVE_LOG_TABLE}.connection_id`, '_nango_connections.id').andOn(`${ACTIVE_LOG_TABLE}.active`, db.knex.raw(true));
+            })
             .where({
                 '_nango_connections.environment_id': environmentId,
                 '_nango_connections.deleted': false
             })
-            .orderBy('_nango_connections.created_at', 'desc');
+            .orderBy('_nango_connections.created_at', 'desc')
+            .groupBy('_nango_connections.id', 'end_users.id', '_nango_configs.provider')
+            .limit(limit)
+            .offset(page * limit);
 
         if (search) {
-            subQuery.where(function () {
-                this.whereRaw('connection_id ILIKE ?', `%${search}%`)
+            query.where(function () {
+                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
                     .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
             });
         }
         if (integrationIds) {
-            subQuery.whereIn('_nango_configs.unique_key', integrationIds);
+            query.whereIn('_nango_configs.unique_key', integrationIds);
         }
         if (connectionId) {
-            subQuery.where('_nango_connections.connection_id', connectionId);
+            query.where('_nango_connections.connection_id', connectionId);
         }
 
-        subQuery.limit(limit);
-        subQuery.offset(page * limit);
-
-        const query = db.knex
-            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>('*')
-            .from(subQuery.as('rows'));
-
         if (withError === false) {
-            query.whereRaw("rows.active_logs::jsonb = '[]'");
+            query.havingRaw('count(_nango_active_logs.id) = 0');
         } else if (withError === true) {
-            query.whereRaw("rows.active_logs::jsonb <> '[]'");
+            query.havingRaw('count(_nango_active_logs.id) > 0');
         }
 
         return await query;
@@ -1749,7 +1762,9 @@ class ConnectionService {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig)).toString();
 
-        const postBody: Record<string, any> = {};
+        const bodyFormat = provider.body_format || 'json';
+
+        const postBody: Record<string, any> | string = {};
 
         if (provider.token_params) {
             for (const [key, value] of Object.entries(provider.token_params)) {
@@ -1776,15 +1791,35 @@ class ConnectionService {
         try {
             const requestOptions = { headers };
 
-            const response = await axios.post(url.toString(), JSON.stringify(postBody), requestOptions);
+            const bodyContent =
+                bodyFormat === 'xml'
+                    ? new XMLBuilder({
+                          format: true,
+                          indentBy: '  ',
+                          attributeNamePrefix: '$',
+                          ignoreAttributes: false
+                      }).build(postBody)
+                    : JSON.stringify(postBody);
+
+            const response = await axios.post(url.toString(), bodyContent, requestOptions);
 
             if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
-            const { data } = response;
+            let responseData: any = response.data;
 
-            const parsedCreds = this.parseRawCredentials(data, 'TWO_STEP', provider) as TwoStepCredentials;
+            if (bodyFormat === 'xml' && typeof response.data === 'string') {
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    parseAttributeValue: true,
+                    trimValues: true
+                });
+
+                responseData = parser.parse(response.data);
+            }
+
+            const parsedCreds = this.parseRawCredentials(responseData, 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {

@@ -762,7 +762,7 @@ bitdefender:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/bitdefender
-    docs_connect: https://docs.nango.dev/integrations/all/bitdefender
+    docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
         username:
             type: string
@@ -909,6 +909,22 @@ braintree-sandbox:
     redirect_uri_metadata:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
+
+brevo-api-key:
+    display_name: Brevo (api key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api-key: ${apiKey}
+        base_url: https://api.brevo.com/v3
+    docs: https://docs.nango.dev/integrations/all/brevo
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Brevo account
 
 brex:
     display_name: Brex
@@ -2839,6 +2855,41 @@ gorgias:
             example: domain
             suffix: .gorgias.com
 
+grain:
+    display_name: Grain
+    categories:
+        - video
+        - communication
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://grain.com/_/public-api/oauth2/authorize
+    token_url: https://api.grain.com/_/public-api/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.grain.com
+    docs: https://docs.nango.dev/integrations/all/grain
+
+grain-api-key:
+    display_name: Grain (api key)
+    categories:
+        - video
+        - communication
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.grain.com
+        headers:
+            Authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grain
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The personal access token to your Grain account
+
 greenhouse:
     display_name: Greenhouse
     categories:
@@ -4438,6 +4489,12 @@ perimeter81:
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
             example: 'perimeter81 | eu.sase.checkpoint'
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Perimeter81 account
+            secret: true
 
 personio:
     display_name: Personio
@@ -4583,6 +4640,22 @@ pivotaltracker:
             type: string
             title: API Key
             description: The API key for your Pivotal Tracker account
+
+plain:
+    display_name: Plain
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://core-api.uk.plain.com/graphql/v1
+    docs: https://docs.nango.dev/integrations/all/plain
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Plain account
 
 podium:
     display_name: Podium
@@ -4894,6 +4967,66 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-intacct:
+    display_name: Sage Intacct
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.intacct.com/ia/xml/xmlgw.phtml
+    token_url: https://api.intacct.com/ia/xml/xmlgw.phtml
+    body_format: xml
+    token_params:
+        request:
+            control:
+                senderid: ${credential.senderId}
+                password: ${credential.senderPassword}
+                controlid: ${now}
+                uniqueid: false
+                dtdversion: '3.0'
+                includewhitespace: false
+            operation:
+                authentication:
+                    login:
+                        userid: ${credential.userId}
+                        companyid: ${credential.companyId}
+                        password: ${credential.userPassword}
+                content:
+                    function:
+                        $controlid: '{{$guid}}'
+                        getAPISession: ''
+    token_headers:
+        Content-Type: application/xml
+    token_response:
+        token: response.operation.result.data.api.sessionid
+        token_expiration: response.operation.authentication.sessiontimeout
+        token_expiration_strategy: expireAt
+    docs: https://docs.nango.dev/integrations/all/sage
+    credentials:
+        senderId:
+            type: string
+            title: Sender ID
+            description: Your Sage Intacct Sender ID
+        senderPassword:
+            type: string
+            title: Sender Password
+            description: Your Sage Intacct Sender Password
+            secret: true
+        userId:
+            type: string
+            title: User ID
+            description: Your Sage Intacct User ID
+        companyId:
+            type: string
+            title: Company ID
+            description: Your Sage Intacct Company ID
+        userPassword:
+            type: string
+            title: User Password
+            description: Your Sage Intacct User Password
+            secret: true
 
 salesforce:
     display_name: Salesforce
@@ -6001,6 +6134,38 @@ unauthenticated:
     auth_mode: NONE
     webhook_routing_script: unauthenticatedWebhookRouting
     docs: https://docs.nango.dev/integrations/all/unauthenticated
+
+unipile:
+    display_name: Unipile
+    categories:
+        - crm
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/unipile
+    docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Unipile instance
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Unipile instance
+            pattern: '^[a-z0-9_-]+$'
+            example: api1
+            suffix: .unipile.com
+        port:
+            type: string
+            title: Port
+            description: The port of your Unipile instance
+            pattern: '^[0-9]+$'
+            example: '13113'
 
 vimeo:
     display_name: Vimeo

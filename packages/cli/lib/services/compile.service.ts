@@ -36,12 +36,11 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res.success) {
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return false;
     }
 
-    const parsed = res.response!;
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
         skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -305,12 +304,14 @@ export function listFilesToCompile({
             const syncPath = `${integration.providerConfigKey}/syncs`;
             const actionPath = `${integration.providerConfigKey}/actions`;
             const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
+            const onEventsPath = `${integration.providerConfigKey}/on-events`;
 
             const syncFiles = globFiles(fullPath, syncPath, '*.ts');
             const actionFiles = globFiles(fullPath, actionPath, '*.ts');
             const postFiles = globFiles(fullPath, postConnectionPath, '*.ts');
+            const onEventsFiles = globFiles(fullPath, onEventsPath, '*.ts');
 
-            files = [...files, ...syncFiles, ...actionFiles, ...postFiles];
+            files = [...files, ...syncFiles, ...actionFiles, ...postFiles, ...onEventsFiles];
 
             if (debug) {
                 if (syncFiles.length > 0) {
@@ -320,7 +321,10 @@ export function listFilesToCompile({
                     printDebug(`Found nested action files in ${actionPath}`);
                 }
                 if (postFiles.length > 0) {
-                    printDebug(`Found nested post connection script files in ${postConnectionPath}`);
+                    printDebug(`Found nested post-connection-scripts files in ${postConnectionPath}`);
+                }
+                if (onEventsFiles.length > 0) {
+                    printDebug(`Found nested on-events files in ${onEventsPath}`);
                 }
             }
         });

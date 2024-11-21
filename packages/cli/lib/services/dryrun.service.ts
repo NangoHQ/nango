@@ -4,8 +4,8 @@ import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
-import type { NangoProps, RunnerOutput, SyncConfig } from '@nangohq/shared';
-import type { Metadata, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { NangoProps, SyncConfig } from '@nangohq/shared';
+import type { Metadata, ParsedNangoAction, ParsedNangoSync, RunnerOutput, ScriptFileType } from '@nangohq/types';
 import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -97,23 +97,24 @@ export class DryRunService {
             return;
         }
 
-        const { success, error, response } = parse(process.cwd(), debug);
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const parsing = parse(process.cwd(), debug);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return;
         }
 
-        if (options.optionalProviderConfigKey && !response.parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+        const parser = parsing.value;
+        if (options.optionalProviderConfigKey && !parser.parsed!.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
         }
 
         let providerConfigKey: string | undefined;
-        let isPostConnectionScript = false;
+        let isOnEventScript = false;
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
-        for (const integration of response.parsed.integrations) {
+        for (const integration of parser.parsed!.integrations) {
             if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
                 continue;
             }
@@ -131,23 +132,23 @@ export class DryRunService {
                 providerConfigKey = integration.providerConfigKey;
             }
 
-            // If nothing that could still be a post connection script
+            // If nothing that could still be a on-event script
             if (!scriptInfo) {
-                for (const script of integration.postConnectionScripts) {
+                for (const script of Object.values(integration.onEventScripts).flat()) {
                     if (script !== syncName) {
                         continue;
                     }
-                    if (isPostConnectionScript) {
+                    if (isOnEventScript) {
                         console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
                         return;
                     }
-                    isPostConnectionScript = true;
+                    isOnEventScript = true;
                     providerConfigKey = integration.providerConfigKey;
                 }
             }
         }
 
-        if ((!scriptInfo && !isPostConnectionScript) || !providerConfigKey) {
+        if ((!scriptInfo && !isOnEventScript) || !providerConfigKey) {
             console.log(
                 chalk.red(
                     `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
@@ -205,8 +206,8 @@ export class DryRunService {
         let type: ScriptFileType = 'syncs';
         if (scriptInfo?.type === 'action') {
             type = 'actions';
-        } else if (isPostConnectionScript) {
-            type = 'post-connection-scripts';
+        } else if (isOnEventScript) {
+            type = 'on-events';
         }
 
         const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
@@ -353,7 +354,7 @@ export class DryRunService {
             if (results.error) {
                 const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                if (err instanceof NangoError) {
+                if (err instanceof Error && 'type' in err && 'payload' in err) {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.type})`));
                     if (err.type === 'invalid_action_output' || err.type === 'invalid_action_input' || err.type === 'invalid_sync_record') {
                         displayValidationError(err.payload as any);

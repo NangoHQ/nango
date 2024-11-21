@@ -19,6 +19,8 @@ import { useEnvironment } from '../hooks/useEnvironment';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
+import { IconX } from '@tabler/icons-react';
+import type { MaybePromise } from '@nangohq/types';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -28,7 +30,7 @@ export enum LeftNavBarItems {
     Syncs,
     TeamSettings,
     UserSettings,
-    InteractiveDemo,
+    GettingStarted,
     Logs
 }
 
@@ -40,6 +42,7 @@ interface MenuItem {
     value: LeftNavBarItems;
     icon: React.FC<{ className?: string }>;
     link: string;
+    onClose?: () => MaybePromise<void>;
 }
 
 const navTextColor = 'text-gray-400';
@@ -56,7 +59,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { data } = useConnectionsCount(env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate } = useEnvironment(env);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -73,11 +76,9 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, [showUserSettings]);
 
     const items = useMemo(() => {
-        const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
-        if (meta && showInteractiveDemo && !meta.onboardingComplete) {
-            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/${env}/interactive-demo` });
-        }
+        const list: MenuItem[] = [];
 
+        list.push({ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` });
         list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
@@ -89,7 +90,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         });
 
         return list;
-    }, [env, showInteractiveDemo, meta]);
+    }, [env, showGettingStarted, meta]);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
@@ -154,21 +155,42 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 <Link
                                     key={item.value}
                                     to={item.link}
-                                    className={`relative flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                    className={`relative flex h-9 p-2 gap-x-3 items-center justify-between rounded-md text-sm ${navTextColor} ${
                                         props.selectedItem === item.value ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                     }`}
                                 >
-                                    <Icon className="w-[18px] h-[18px]" />
-                                    {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
-                                        <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="w-[18px] h-[18px]" />
+                                        {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
+                                            <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                        )}
+                                        <p>{item.name}</p>
+                                    </div>
+                                    {item.onClose && (
+                                        <button className="p-2 hover:text-white" onClick={item.onClose}>
+                                            <IconX size={10} />
+                                        </button>
                                     )}
-                                    <p>{item.name}</p>
                                 </Link>
                             );
                         })}
                     </div>
                 </div>
                 <div>
+                    <div>
+                        a
+                        {showGettingStarted && (
+                            <Link
+                                to="/dev/getting-started"
+                                className={`flex h-9 p-2 px-3.5 gap-x-3.5 items-center rounded-md text-sm ${navTextColor} ${
+                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
+                                }`}
+                            >
+                                <RocketIcon />
+                                <p>Getting Started</p>
+                            </Link>
+                        )}
+                    </div>
                     <div
                         className="flex mb-5 py-2 w-full user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer"
                         onClick={() => setShowUserSettings(!showUserSettings)}
@@ -198,19 +220,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                         <span>Team</span>
                                     </li>
 
-                                    {showInteractiveDemo && meta.onboardingComplete && (
-                                        <Link
-                                            to="/dev/interactive-demo"
-                                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.InteractiveDemo
-                                                    ? `${navActiveBg} text-white`
-                                                    : `text-gray-400 ${navHoverBg}`
-                                            }`}
-                                        >
-                                            <RocketIcon />
-                                            <p>Interactive Demo</p>
-                                        </Link>
-                                    )}
                                     <li
                                         className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
                                         onClick={async () => await signout()}
