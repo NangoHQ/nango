@@ -8,6 +8,7 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { AuthModeType } from '@nangohq/types';
 
 class ConfigService {
     async getById(id: number): Promise<ProviderConfig | null> {
@@ -72,6 +73,51 @@ class ConfigService {
         }
 
         return encryptionManager.decryptProviderConfig(result);
+    }
+
+    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        const missingFields = [];
+
+        switch (authMode) {
+            case 'OAUTH1':
+            case 'OAUTH2':
+            case 'TBA':
+                if (providerConfig.oauth_client_id === '') {
+                    missingFields.push('oauth_client_id');
+                }
+
+                if (providerConfig.oauth_client_secret === '') {
+                    missingFields.push('oauth_client_secret');
+                }
+                break;
+
+            case 'APP':
+                if (providerConfig.oauth_client_id === '') {
+                    missingFields.push('oauth_client_id');
+                }
+
+                if (providerConfig.oauth_client_secret === '') {
+                    missingFields.push('oauth_client_secret');
+                }
+
+                if (providerConfig.app_link === '') {
+                    missingFields.push('app_link');
+                }
+                break;
+
+            case 'CUSTOM':
+                break;
+
+            case 'BASIC':
+            case 'API_KEY':
+            case 'APP_STORE':
+            case 'TABLEAU':
+            case 'NONE':
+            case 'OAUTH2_CC':
+                break;
+        }
+
+        return missingFields;
     }
 
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
