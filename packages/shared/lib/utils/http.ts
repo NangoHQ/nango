@@ -35,6 +35,6 @@ export function redactHeaders({
 
 export function redactURL({ url, valuesToFilter }: { url: string; valuesToFilter: string[] }) {
     return valuesToFilter.reduce((curr, value) => {
-        return curr.replace(value, '_REDACTED_');
+        return curr.replace(value, 'REDACTED');
     }, url);
 }
