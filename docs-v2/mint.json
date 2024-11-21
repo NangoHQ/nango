@@ -516,6 +516,7 @@
                 "integrations/all/pinterest",
                 "integrations/all/pipedrive",
                 "integrations/all/pivotaltracker",
+                "integrations/all/plain",
                 "integrations/all/productboard",
                 "integrations/all/podium",
                 "integrations/all/posthog",

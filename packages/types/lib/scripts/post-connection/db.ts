@@ -7,4 +7,5 @@ export interface OnEventScript extends Timestamps {
     file_location: string;
     version: string;
     active: boolean;
+    event: 'POST_CONNECTION_CREATION' | 'PRE_CONNECTION_DELETION';
 }

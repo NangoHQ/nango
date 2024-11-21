@@ -99,6 +99,8 @@ export const GettingStarted: React.FC = () => {
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
                     href="https://docs.nango.dev/integrate/guides/authorize-an-api"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
@@ -125,6 +127,8 @@ export const GettingStarted: React.FC = () => {
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
                     href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api"
                     onClick={() => analyticsTrack('web:getting_started:read')}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
@@ -151,6 +155,8 @@ export const GettingStarted: React.FC = () => {
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
                     href="https://docs.nango.dev/integrate/guides/perform-workflows-with-an-api"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
@@ -177,6 +183,8 @@ export const GettingStarted: React.FC = () => {
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
                     href="https://docs.nango.dev/customize/guides/create-a-custom-integration"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
