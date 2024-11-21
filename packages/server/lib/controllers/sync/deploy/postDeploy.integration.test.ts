@@ -54,36 +54,6 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    it('should validate onEventScriptsByProvider', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            token: env.secret_key,
-            // @ts-expect-error on purpose
-            body: {
-                debug: false,
-                flowConfigs: [],
-                nangoYamlBody: '',
-                reconcile: false
-            }
-        });
-
-        isError(res.json);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'invalid_body',
-                errors: [
-                    {
-                        code: 'custom',
-                        message: 'Either onEventScriptsByProvider or postConnectionScriptsByProvider must be provided',
-                        path: ['onEventScriptsByProvider or postConnectionScriptsByProvider']
-                    }
-                ]
-            }
-        });
-        expect(res.res.status).toBe(400);
-    });
-
     it('should accept empty body', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
@@ -151,7 +121,18 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     nangoYamlBody: ``,
-                    onEventScriptsByProvider: [],
+                    onEventScriptsByProvider: [
+                        {
+                            providerConfigKey: 'unauthenticated',
+                            scripts: [
+                                {
+                                    name: 'test',
+                                    fileBody: { js: 'js file', ts: 'ts file' },
+                                    event: 'post-connection-creation'
+                                }
+                            ]
+                        }
+                    ],
                     reconcile: false,
                     singleDeployMode: false
                 }
@@ -170,7 +151,6 @@ describe(`POST ${endpoint}`, () => {
             expect(syncConfigs).toStrictEqual([
                 {
                     actions: [],
-                    postConnectionScripts: [],
                     provider: 'unauthenticated',
                     providerConfigKey: 'unauthenticated',
                     syncs: [

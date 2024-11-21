@@ -22,7 +22,6 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
         if (!tmp[syncConfig.provider]) {
             tmp[syncConfig.provider] = {
                 actions: [],
-                postConnectionScripts: [],
                 providerConfigKey: syncConfig.unique_key,
                 provider: syncConfig.provider,
                 syncs: []
