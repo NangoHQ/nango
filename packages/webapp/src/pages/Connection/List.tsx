@@ -25,6 +25,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import type { ErrorCircleIcon } from '../../components/ErrorCircle';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import Spinner from '../../components/ui/Spinner';
 import { AvatarOrganization } from '../../components/AvatarCustom';
@@ -62,7 +63,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             );
 
             let errorTooltip = '';
-            let errorIcon: 'x' | 'sync' | 'auth' = 'x';
+            let errorIcon: ErrorCircleIcon = 'x';
             if (errorCounts.auth > 0 && errorCounts.sync > 0) {
                 errorTooltip = 'Expired credentials, failed syncs';
                 errorIcon = 'x';

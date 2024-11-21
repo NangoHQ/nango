@@ -1,7 +1,8 @@
 import { XMarkIcon, ArrowPathIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import type React from 'react';
 
-export const ErrorCircle: React.FC<{ icon?: 'x' | 'sync' | 'auth' }> = ({ icon = 'x' }) => {
+export type ErrorCircleIcon = 'x' | 'sync' | 'auth';
+export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon }> = ({ icon = 'x' }) => {
     return (
         <span className="mx-1 cursor-auto flex h-4 w-4 rounded-full ring-red-base/[.35] ring-4">
             <span className="flex items-center rounded-full bg-red-base h-4 w-4">
