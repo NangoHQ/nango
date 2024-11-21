@@ -82,25 +82,25 @@ class ConfigService {
             case 'OAUTH1':
             case 'OAUTH2':
             case 'TBA':
-                if (providerConfig.oauth_client_id === '') {
+                if (!providerConfig.oauth_client_id) {
                     missingFields.push('oauth_client_id');
                 }
 
-                if (providerConfig.oauth_client_secret === '') {
+                if (!providerConfig.oauth_client_secret) {
                     missingFields.push('oauth_client_secret');
                 }
                 break;
 
             case 'APP':
-                if (providerConfig.oauth_client_id === '') {
+                if (!providerConfig.oauth_client_id) {
                     missingFields.push('oauth_client_id');
                 }
 
-                if (providerConfig.oauth_client_secret === '') {
+                if (!providerConfig.oauth_client_secret) {
                     missingFields.push('oauth_client_secret');
                 }
 
-                if (providerConfig.app_link === '') {
+                if (!providerConfig.app_link) {
                     missingFields.push('app_link');
                 }
                 break;

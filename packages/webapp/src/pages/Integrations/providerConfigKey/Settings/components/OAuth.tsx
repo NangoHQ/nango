@@ -94,3 +94,18 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
         </div>
     );
 };
+
+export const settingsMissingOAuth = (missingFields: string[]): string => {
+    return missingFields
+        .map((field) => {
+            switch (field) {
+                case 'oauth_client_id':
+                    return 'Client ID';
+                case 'oauth_client_secret':
+                    return 'Client Secret';
+                default:
+                    return field;
+            }
+        })
+        .join(', ');
+};
