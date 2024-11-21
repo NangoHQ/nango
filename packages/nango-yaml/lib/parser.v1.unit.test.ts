@@ -39,7 +39,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    postConnectionScripts: [],
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
                     actions: [
                         {
                             description: '',
@@ -93,7 +93,7 @@ describe('parse', () => {
                             version: ''
                         }
                     ],
-                    postConnectionScripts: [],
+                    onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] },
                     actions: []
                 }
             ],

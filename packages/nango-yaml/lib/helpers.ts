@@ -181,7 +181,7 @@ export function shouldQuote(name: string) {
 export function getProviderConfigurationFromPath({ filePath, parsed }: { filePath: string; parsed: NangoYamlParsed }): NangoYamlParsedIntegration | null {
     const pathSegments = filePath.split(path.sep);
     const scriptType = pathSegments.length > 1 ? pathSegments[pathSegments.length - 2] : null;
-    const isNested = scriptType === 'syncs' || scriptType === 'actions' || scriptType === 'post-connection-scripts';
+    const isNested = scriptType && ['syncs', 'actions', 'post-connection-scripts', 'on-events'].includes(scriptType);
 
     const baseName = path.basename(filePath, '.ts');
     let providerConfiguration: NangoYamlParsedIntegration | null = null;

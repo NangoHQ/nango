@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.45.0] - 2024-11-21
+
+### Added
+
+- *(script)* Script for rolling out env vars to render runners (#2984) by @nalanj
+- *(jobs)* Pass PROVIDERS_URL and PROVIDERS_RELOAD_INTERVAL to runners (#2983) by @nalanj
+- *(runner)* Add monitorProviders support for runners (#2989) by @nalanj
+- Rename post-connection-scripts table to on-event-scripts  (#2990) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e63a06160ea95e05aa76a26e3de4010a397553f4 by Hassan_Wari. Commit message: feat(gorgias): add list tickets sync (#109) by @github-actions[bot]
+- *(integration)* Support pulling workable subdomain through post-connection hook (#2991) by @nalanj
+- *(integrations)* Add support for beehiiv (#3007) by @hassan254-prog
+- *(integrations)* Add support for grain (#3017) by @hassan254-prog
+- Getting started (#3001) by @bodinsamuel
+- *(integration)* Add support for sage intacct xml (#3014) by @hassan254-prog
+- *(integrations)* Add support for Brevo API key (#3015) by @giocass-audiencerate
+- *(integrations)* Add support for Unipile  (#2998) by @gkhngyk
+- *(server)* Add sync errors to connection count (#3025) by @nalanj
+- Add support for on-events syntax in nango.yaml (#3021) by @TBonnin
+- *(integrations)* Add Plain API support (#3028) by @omar-inkeep
+
+### Changed
+
+- Connect UI (#2974) by @dannylwe
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/b6e62a32a5aae45e91a54645f4b18e2d74cb7122 by Samuel Bodin. Commit message: feat: migrate to new endpoints format (#108) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/27577d6b54d26c717a549b573bd4eea51c61b0fe by Khaliq. Commit message: feat(group): Backfill Groups (#111) by @github-actions[bot]
+- *(deps)* Bump cross-spawn from 7.0.3 to 7.0.5 (#3000) by @dependabot[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/95ceb42e9e07b1ece34cee6902e57a97c4573440 by Daniel Roy Lwetabe. Commit message: feat(linkedIn): LinkedIn post video action in public template (#104) by @github-actions[bot]
+- *(orchestrator)* Rename PostConnectionTask to OnEventTask (#2997) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8977157b985eaa7a68dab99e32e2cf3bd96e6468 by Daniel Roy Lwetabe. Commit message: feat(front): List conversation messages (#113) by @github-actions[bot]
+
+### Fixed
+
+- *(scripts)* Add more resilient rate limit handling in runner-update-env (#2988) by @nalanj
+- Deprecate publicKey and HMAC (#2980) by @bodinsamuel
+- *(flows)* Fix CI, remove old parsing (#2992) by @bodinsamuel
+- Post-connection-script (#2993) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/290a958b0a5c24502cd35359d60ab0eb0cdc1ec3 by Khaliq. Commit message: fix(outlook): fix sender property (#112) by @github-actions[bot]
+- *(flows)* Correct deduplication (#2994) by @bodinsamuel
+- *(hosted)* Build connect-ui before copying (#2987) by @bodinsamuel
+- *(quickbooks)* Prompt user for a realmId connection config parameter (#2999) by @hassan254-prog
+- *(docs)* Fix urls for jira-basic docs (#3002) by @khaliqgant
+- *(docs)* [nan-2174] update credentials to have better fields (#3003) by @khaliqgant
+- *(auth)* Incorrect validation (#3004) by @bodinsamuel
+- *(auth)* Remove more strict (#3009) by @bodinsamuel
+- *(runner)* Do not exit the runner process when a sync is cancelled (#3008) by @TBonnin
+- *(hmac)* Only handle hmac when using public_key (#3011) by @bodinsamuel
+- *(webapp)* Make sure integrations list is in sync with connections (#3006) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/99abe7cc4d972075cf301418b04075c39bf4c343 by Khaliq. Commit message: fix(groups): backfill quickbooks sandbox (#114) by @github-actions[bot]
+- *(webapp)* Only allow one error filter at a time (#3013) by @nalanj
+- *(webapp)* Clear any cache from swr/infinite (#3005) by @nalanj
+- *(webapp)* Handle empty state for webhook settings coming over the wire (#3010) by @nalanj
+- *(docs)* [nan-2174] update images and docs link (#3016) by @khaliqgant
+- *(webapp)* Fix filterWithError default value (#3018) by @nalanj
+- *(models)* Move User to DBUser (#3020) by @bodinsamuel
+- *(cli)* Remove more from shared (#3019) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f7040563aff78ab1b9978e9af8b9f7e5b13fe28f by Khaliq. Commit message: fix(groups): fix spelling error (#116) by @github-actions[bot]
+- *(server)* Update query to paginate correctly against filter (#3012) by @nalanj
+
 ## [v0.44.0] - 2024-11-14
 
 ### Added
@@ -2300,6 +2358,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.45.0]: https://github.com/NangoHQ/nango/compare/v0.44.0..v0.45.0
 [v0.44.0]: https://github.com/NangoHQ/nango/compare/v0.43.0..v0.44.0
 [v0.43.0]: https://github.com/NangoHQ/nango/compare/v0.42.22..v0.43.0
 [v0.42.22]: https://github.com/NangoHQ/nango/compare/v0.42.21..v0.42.22

@@ -14,7 +14,7 @@ export async function onConnectionCreated(createdConnection: RecentlyCreatedConn
         return;
     }
 
-    const onConnectionCreatedScripts = await onEventScriptService.getByConfig(config_id);
+    const onConnectionCreatedScripts = await onEventScriptService.getByConfig(config_id, 'post-connection-creation');
 
     if (!onConnectionCreatedScripts || onConnectionCreatedScripts.length === 0) {
         return;
