@@ -44,18 +44,17 @@ const filterErrors = [
 
 const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
-        accessorKey: 'id',
-        header: 'Customer',
-        size: 300,
+        accessorKey: 'status',
+        header: '',
+        size: 24,
         cell: ({ row }) => {
             const data = row.original;
-
             const errorCounts = data.errors.reduce(
                 (acc, error) => {
                     if (error.type === 'auth') {
-                        acc.auth += 1;
+                        acc.auth++;
                     } else if (error.type === 'sync') {
-                        acc.sync += 1;
+                        acc.sync++;
                     }
                     return acc;
                 },
@@ -75,6 +74,22 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 errorIcon = 'sync';
             }
 
+            if (data.errors.length > 0) {
+                return (
+                    <SimpleTooltip tooltipContent={errorTooltip}>
+                        <ErrorCircle icon={errorIcon} />
+                    </SimpleTooltip>
+                );
+            }
+        }
+    },
+    {
+        accessorKey: 'id',
+        header: 'Customer',
+        size: 300,
+        cell: ({ row }) => {
+            const data = row.original;
+
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
@@ -93,11 +108,6 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                         </div>
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
-                    )}
-                    {data.errors.length > 0 && (
-                        <SimpleTooltip tooltipContent={errorTooltip}>
-                            <ErrorCircle icon={errorIcon} />
-                        </SimpleTooltip>
                     )}
                 </div>
             );
