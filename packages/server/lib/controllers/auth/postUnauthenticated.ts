@@ -11,6 +11,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
+import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
@@ -87,6 +88,10 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
+            return;
+        }
+
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
         }
 

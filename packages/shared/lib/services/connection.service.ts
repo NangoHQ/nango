@@ -3,7 +3,7 @@ import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import type { Knex } from '@nangohq/database';
 import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials } from '../models/index.js';
+import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Config } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
@@ -32,7 +32,8 @@ import type {
     TwoStepCredentials,
     ProviderTwoStep,
     ProviderSignature,
-    SignatureCredentials
+    SignatureCredentials,
+    MessageRowInsert
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -859,14 +860,18 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         orchestrator,
-        logContextGetter
+        logContextGetter,
+        preDeletionHook
     }: {
         connection: Connection;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
         logContextGetter: LogContextGetter;
+        preDeletionHook: () => Promise<void>;
     }): Promise<number> {
+        await preDeletionHook();
+
         const del = await db.knex
             .from<Connection>(`_nango_connections`)
             .where({
@@ -877,6 +882,8 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
+        // TODO: move the following side effects to a post deletion hook
+        // so we can remove the orchestrator and logContextGetter dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         const slackService = new SlackService({ logContextGetter, orchestrator });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id!, environmentId });
@@ -912,15 +919,13 @@ class ConnectionService {
             action: 'token_refresh' | 'connection_test';
         }) => Promise<void>;
         connectionTestHook?:
-            | ((
-                  providerName: string,
-                  provider: Provider,
-                  credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials,
-                  connectionId: string,
-                  providerConfigKey: string,
-                  environment_id: number,
-                  connection_config: ConnectionConfig
-              ) => Promise<Result<boolean, NangoError>>)
+            | ((args: {
+                  config: Config;
+                  provider: Provider;
+                  credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+                  connectionId: string;
+                  connectionConfig: ConnectionConfig;
+              }) => Promise<Result<{ logs: MessageRowInsert[] }, NangoError>>)
             | undefined;
     }): Promise<Result<Connection, NangoError>> {
         const provider = getProvider(integration.provider);
@@ -998,15 +1003,13 @@ class ConnectionService {
             copy.credentials = response.credentials as OAuth2Credentials;
         } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
             if (connectionTestHook) {
-                const result = await connectionTestHook(
-                    integration.provider,
+                const result = await connectionTestHook({
+                    config: integration,
                     provider,
-                    connection.credentials,
-                    connection.connection_id,
-                    integration.unique_key,
-                    environment.id,
-                    connection.connection_config
-                );
+                    connectionConfig: connection.connection_config,
+                    connectionId: connection.connection_id,
+                    credentials: connection.credentials
+                });
                 if (result.isErr()) {
                     const logCtx = await logContextGetter.create(
                         { operation: { type: 'auth', action: 'connection_test' } },
@@ -1017,6 +1020,13 @@ class ConnectionService {
                             connection: { id: connection.id!, name: connection.connection_id }
                         }
                     );
+                    if ('logs' in result.error.payload) {
+                        await Promise.all(
+                            (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
+                                await logCtx.log(log);
+                            })
+                        );
+                    }
 
                     await logCtx.error('Failed to verify connection', result.error);
                     await logCtx.failed();

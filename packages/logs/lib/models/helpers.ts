@@ -1,8 +1,9 @@
 import { nanoid } from '@nangohq/utils';
-import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
+import type { ConcatOperationList, MessageRow, MessageRowInsert, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
 import type { estypes } from '@elastic/elasticsearch';
 import { defaultOperationExpiration } from '../env.js';
+import type { LogContext } from '../client.js';
 
 export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
@@ -124,6 +125,7 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'action:run': 'Action execution',
     'admin:impersonation': 'Admin logged into another account',
     'auth:create_connection': 'Create connection',
+    'auth:delete_connection': 'Delete connection',
     'auth:post_connection': 'post connection execution',
     'auth:refresh_token': 'Token refresh',
     'auth:connection_test': 'Connection test',
@@ -140,3 +142,15 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:incoming': 'Received a webhook',
     'webhook:forward': 'Forwarding Webhook'
 };
+
+/**
+ * Send buffered logs to elasticsearch
+ * Ultimately it would be better to have LogContextBuffer (or an option in LogContext)
+ */
+export async function flushLogsBuffer(logs: MessageRowInsert[], logCtx: LogContext) {
+    await Promise.all(
+        logs.map(async (log) => {
+            await logCtx.log(log);
+        })
+    );
+}
