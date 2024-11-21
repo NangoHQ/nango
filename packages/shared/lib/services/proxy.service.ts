@@ -13,6 +13,7 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { MessageRowInsert } from '@nangohq/types';
 import { getProvider } from './providers.js';
+import { redactHeaders, redactURL } from '../utils/http.js';
 
 interface Logs {
     logs: MessageRowInsert[];
@@ -71,13 +72,6 @@ class ProxyService {
             return { success: false, error: new NangoError('missing_provider_config_key'), response: null, logs };
         }
 
-        logs.push({
-            type: 'log',
-            level: 'debug',
-            createdAt: new Date().toISOString(),
-            message: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
-        });
-
         let endpoint = passedEndpoint;
 
         let token;
@@ -131,13 +125,6 @@ class ProxyService {
                 break;
         }
 
-        logs.push({
-            type: 'log',
-            level: 'debug',
-            createdAt: new Date().toISOString(),
-            message: 'Proxy: token retrieved successfully'
-        });
-
         const provider = getProvider(providerName);
         if (!provider) {
             logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: `Provider ${providerName} does not exist` });
@@ -155,23 +142,9 @@ class ProxyService {
             return { success: false, error: new NangoError('missing_base_api_url'), response: null, logs };
         }
 
-        logs.push({
-            type: 'log',
-            level: 'debug',
-            createdAt: new Date().toISOString(),
-            message: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || provider.proxy?.base_url}`
-        });
-
         if (!baseUrlOverride && provider.proxy?.base_url && endpoint.includes(provider.proxy.base_url)) {
             endpoint = endpoint.replace(provider.proxy.base_url, '');
         }
-
-        logs.push({
-            type: 'log',
-            level: 'debug',
-            createdAt: new Date().toISOString(),
-            message: `Endpoint set to ${endpoint} with retries set to ${retries} ${retryOn ? `and retryOn set to ${retryOn}` : ''}`
-        });
 
         if (headers && headers['Content-Type'] === 'multipart/form-data') {
             const formData = new FormData();
@@ -328,10 +301,6 @@ class ProxyService {
     /**
      * Send to http method
      * @desc route the call to a HTTP request based on HTTP method passed in
-     * @param {Request} req Express request object
-     * @param {Response} res Express response object
-     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
-     * @param {HTTP_METHOD} method
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
@@ -366,30 +335,6 @@ class ProxyService {
         return this.request(configBody, options);
     }
 
-    public stripSensitiveHeaders(headers: ApplicationConstructedProxyConfiguration['headers'], config: ApplicationConstructedProxyConfiguration) {
-        const safeHeaders = { ...headers };
-
-        if (!config.token) {
-            if (safeHeaders['Authorization']?.includes('Bearer')) {
-                safeHeaders['Authorization'] = safeHeaders['Authorization'].replace(/Bearer.*/, 'Bearer xxxx');
-            }
-
-            return safeHeaders;
-        }
-
-        Object.keys(safeHeaders).forEach((header) => {
-            if (safeHeaders[header] === config.token) {
-                safeHeaders[header] = 'xxxx';
-            }
-            const headerValue = safeHeaders[header];
-            if (headerValue?.includes(config.token as string)) {
-                safeHeaders[header] = headerValue.replace(config.token as string, 'xxxx');
-            }
-        });
-
-        return safeHeaders;
-    }
-
     private async request(config: ApplicationConstructedProxyConfiguration, options: AxiosRequestConfig): Promise<RouteResponse & Logs> {
         const logs: MessageRowInsert[] = [];
         try {
@@ -400,10 +345,10 @@ class ProxyService {
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, config, logs) }
             );
 
-            const handling = this.handleResponse(response, config, options.url!);
+            const handling = this.handleResponse({ response, config, requestConfig: options });
             return { response, logs: [...logs, ...handling.logs] };
         } catch (err) {
-            const handling = this.handleErrorResponse(err, options.url!, config);
+            const handling = this.handleErrorResponse({ error: err, requestConfig: options, config });
             return { response: err as any, logs: [...logs, ...handling.logs] };
         }
     }
@@ -568,19 +513,28 @@ class ProxyService {
         return headers;
     }
 
-    private handleResponse(response: AxiosResponse, config: ApplicationConstructedProxyConfiguration, url: string): Logs {
-        const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
-
+    private handleResponse({
+        response,
+        config,
+        requestConfig
+    }: {
+        response: AxiosResponse;
+        config: ApplicationConstructedProxyConfiguration;
+        requestConfig: AxiosRequestConfig;
+    }): Logs {
+        const valuesToFilter = Object.values(config.connection.credentials);
+        const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
+        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
         return {
             logs: [
                 {
                     type: 'http',
                     level: 'info',
                     createdAt: new Date().toISOString(),
-                    message: `${config.method.toUpperCase()} ${url} was successful`,
+                    message: `${config.method} ${redactedURL} was successful`,
                     request: {
                         method: config.method,
-                        url,
+                        url: redactedURL,
                         headers: safeHeaders
                     },
                     response: {
@@ -592,19 +546,30 @@ class ProxyService {
         };
     }
 
-    private handleErrorResponse(error: unknown, url: string, config: ApplicationConstructedProxyConfiguration): Logs {
+    private handleErrorResponse({
+        error,
+        requestConfig,
+        config
+    }: {
+        error: unknown;
+        requestConfig: AxiosRequestConfig;
+        config: ApplicationConstructedProxyConfiguration;
+    }): Logs {
         const logs: MessageRowInsert[] = [];
 
+        const valuesToFilter = Object.values(config.connection.credentials);
+        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
+
         if (isAxiosError(error)) {
-            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
+            const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
             logs.push({
                 type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${config.method.toUpperCase()} request to ${url} failed`,
+                message: `${config.method} request to ${redactedURL} failed`,
                 request: {
                     method: config.method,
-                    url,
+                    url: redactedURL,
                     headers: safeHeaders
                 },
                 response: {
@@ -619,7 +584,7 @@ class ProxyService {
                         stack: error.stack,
                         code: error.code,
                         status: error.status,
-                        url,
+                        url: redactedURL,
                         data: error.response?.data,
                         safeHeaders
                     }
@@ -630,7 +595,7 @@ class ProxyService {
                 type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${config.method.toUpperCase()} request to ${url} failed`,
+                message: `${config.method} request to ${redactedURL} failed`,
                 error: error as any
             });
         }
