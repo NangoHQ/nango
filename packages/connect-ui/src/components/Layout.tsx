@@ -16,8 +16,8 @@ export const Layout: React.FC = () => {
     });
 
     return (
-        <div className="absolute h-screen  w-screen overflow-hidden flex flex-col items-center pt-[50px] pb-[50px] bg-dark-800 bg-opacity-60">
-            <div ref={ref} className="overflow-hidden flex flex-col bg-white rounded-xl w-[500px] h-full min-h-[500px] shadow-md shadow-dark-800">
+        <div className="absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center pt-[50px] pb-[50px] bg-dark-800 bg-opacity-60">
+            <div ref={ref} className="overflow-hidden flex flex-col bg-white rounded-xl w-[500px] h-full min-h-[600px] max-h-[900px] shadow-md shadow-dark-800">
                 <Outlet />
             </div>
         </div>

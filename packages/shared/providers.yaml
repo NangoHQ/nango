@@ -25,6 +25,7 @@ accelo:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .api.accelo.com
+            prefix: https://
 
 acuity-scheduling:
     display_name: Acuity Scheduling
@@ -110,6 +111,7 @@ adyen:
             pattern: '^[a-z0-9_-]+$'
             example: kyc
             suffix: -(live|test).adyen.com
+            prefix: https://
 
 affinity:
     display_name: Affinity
@@ -483,6 +485,7 @@ auth0:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .auth0.com
+            prefix: https://
 
 avalara:
     display_name: Avalara
@@ -551,6 +554,7 @@ aws:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .amazoncognito.com
+            prefix: https://
         extension:
             type: string
             title: Domain Extension
@@ -602,6 +606,7 @@ bamboohr:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            prefix: https://
             order: 1
 
 bamboohr-basic:
@@ -623,6 +628,7 @@ bamboohr-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
+            prefix: https://
             order: 1
     credentials:
         username:
@@ -879,6 +885,7 @@ booking-com:
             pattern: '^(secure-supply|supply)$'
             example: secure-supply|supply
             suffix: -xml.booking.com
+            prefix: https://
 
 braintree:
     display_name: Braintree
@@ -1220,6 +1227,7 @@ chargebee:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .chargebee.com
+            prefix: https://
 
 chattermill:
     display_name: Chattermill
@@ -1247,6 +1255,7 @@ chattermill:
             pattern: '^(app|api|backend)$'
             example: 'app|api|backend'
             suffix: .chattermill.com
+            prefix: https://
 
 checkr-partner:
     display_name: Checkr Partner
@@ -1500,6 +1509,7 @@ connectwise-psa:
             pattern: '^api-(au|eu|na)$'
             example: api-au
             suffix: .myconnectwise.net
+            prefix: https://
         apiVersion:
             type: string
             title: Api version
@@ -1566,6 +1576,7 @@ contentful:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .contentful.com
+            prefix: https://
 
 contentstack:
     display_name: Contentstack
@@ -1583,6 +1594,7 @@ contentstack:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .contentstack.com
+            prefix: https://
         appId:
             type: string
             title: App ID
@@ -2014,6 +2026,7 @@ egnyte:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .egnyte.com
+            prefix: https://
 
 elevenlabs:
     display_name: Eleven Labs
@@ -2076,6 +2089,7 @@ entrata:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .entrata.com
+            prefix: https://
 
 envoy:
     display_name: Envoy
@@ -2404,6 +2418,7 @@ freshdesk:
             title: FreshDesk API Key
             description: The API Key of your FreshDesk account
             doc_section: '#step-1-finding-your-freshdesk-api-key'
+            secret: true
         password:
             type: string
             title: ''
@@ -2418,6 +2433,7 @@ freshdesk:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshdesk.com
+            prefix: https://
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
@@ -2440,6 +2456,7 @@ freshsales:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshsales.io
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -2462,6 +2479,7 @@ freshservice:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshservice.com
+            prefix: https://
 
 front:
     display_name: Front
@@ -2854,6 +2872,7 @@ gorgias:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .gorgias.com
+            prefix: https://
 
 grain:
     display_name: Grain
@@ -2914,6 +2933,7 @@ greenhouse:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .greenhouse.io
+            prefix: https://
 
 greenhouse-basic:
     display_name: Greenhouse (basic auth)
@@ -2937,6 +2957,7 @@ greenhouse-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .greenhouse.io
+            prefix: https://
 
 gumroad:
     display_name: Gumroad
@@ -3150,6 +3171,7 @@ insightly:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .insightly.com
+            prefix: https://
 
 instantly:
     display_name: Instantly
@@ -3251,6 +3273,7 @@ jira-basic:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
+            prefix: https://
             order: 1
             doc_section: '#step-2-finding-your-atlassian-domain'
     credentials:
@@ -3461,6 +3484,7 @@ kustomer:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .kustomerapp.com
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -4184,6 +4208,7 @@ okta:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .okta.com
+            prefix: https://
 
 okta-preview:
     alias: okta
@@ -4201,6 +4226,7 @@ okta-preview:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .oktapreview.com
+            prefix: https://
 
 one-drive:
     display_name: One Drive
@@ -4487,8 +4513,11 @@ perimeter81:
             title: Domain
             description: The domain for Perimeter81
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
-            example: 'perimeter81 | eu.sase.checkpoint'
+            example: '(perimeter81,eu.sase.checkpoint)'
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
+            suffix: .com
+            prefix: https://api.
+            order: 1
     credentials:
         apiKey:
             type: string
@@ -4641,6 +4670,22 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+plain:
+    display_name: Plain
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://core-api.uk.plain.com/graphql/v1
+    docs: https://docs.nango.dev/integrations/all/plain
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Plain account
+
 podium:
     display_name: Podium
     categories:
@@ -4692,6 +4737,7 @@ posthog:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .posthog.com
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -4736,6 +4782,7 @@ qualtrics:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .qualtrics.com
+            prefix: https://
 
 quickbooks:
     display_name: Quickbooks
@@ -4744,6 +4791,8 @@ quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+    redirect_uri_metadata:
+        - realmId
     proxy:
         connection_config:
             realmId: ${connectionConfig.realmId}
@@ -4844,6 +4893,7 @@ rapidapi:
             pattern: '^[a-z0-9_-]+$'
             example: api-football-v1
             suffix: .p.rapidapi.com
+            prefix: https://
 
 reddit:
     display_name: Reddit
@@ -5077,6 +5127,7 @@ salesforce-experience-cloud:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .my.site.com
+            prefix: https://
         instance_url:
             type: string
             title: Instance URL
@@ -5217,6 +5268,7 @@ servicenow:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .service-now.com
+            prefix: https://
 
 sharepoint-online:
     display_name: SharePoint Online
@@ -5260,6 +5312,7 @@ shopify:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .myshopify.com
+            prefix: https://
 
 shortcut:
     display_name: Shortcut
@@ -5639,6 +5692,7 @@ teamtailor:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .teamtailor.com
+            prefix: https://
     credentials:
         apiKey:
             type: string
@@ -6110,6 +6164,7 @@ unanet:
             type: string
             title: API Key
             description: The API key of your Unanet instance
+            secret: true
 
 unauthenticated:
     display_name: Unauthenticated
@@ -6142,6 +6197,7 @@ unipile:
             pattern: '^[a-z0-9_-]+$'
             example: api1
             suffix: .unipile.com
+            prefix: https://
         port:
             type: string
             title: Port
@@ -6296,6 +6352,7 @@ wildix-pbx:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .wildixin.com
+            prefix: https://
 
 wordpress:
     display_name: WordPress
@@ -6355,6 +6412,7 @@ workable:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workable.com
+            prefix: https://
             optional: true
     credentials:
         apiKey:
@@ -6389,6 +6447,7 @@ workable-oauth:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workable.com
+            prefix: https://
 
 workday:
     display_name: Workday
@@ -6406,6 +6465,7 @@ workday:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workday.com
+            prefix: https://
 
 wrike:
     display_name: Wrike
@@ -6519,6 +6579,7 @@ zendesk:
             pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .zendesk.com
+            prefix: https://
 
 zenefits:
     display_name: Zenefits
@@ -6561,6 +6622,9 @@ zoho:
             title: Domain Extension
             description: The domain extension of your Zoho account
             pattern: '^[a-z.]+$'
+            prefix: https://accounts.zoho.
+            example: com
+            suffix: /
 
 zoho-books:
     display_name: Zoho Books

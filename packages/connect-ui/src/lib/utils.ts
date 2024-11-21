@@ -21,6 +21,8 @@ export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
         fieldString = fieldString.url();
     } else if (schema.format === 'email') {
         fieldString = fieldString.email();
+    } else {
+        fieldString = fieldString.min(1, 'This field is required');
     }
     if (schema.pattern) {
         fieldString = fieldString.regex(new RegExp(schema.pattern), { message: `Incorrect ${schema.title}` });

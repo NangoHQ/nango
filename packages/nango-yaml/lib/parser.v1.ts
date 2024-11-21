@@ -82,7 +82,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                 providerConfigKey: integrationName,
                 syncs,
                 actions,
-                postConnectionScripts: []
+                onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [] }
             };
 
             output.push(parsedIntegration);

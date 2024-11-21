@@ -21,7 +21,10 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
           "version": "",
         },
       ],
-      "postConnectionScripts": [],
+      "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+      },
       "providerConfigKey": "demo-github-integration",
       "syncs": [
         {
@@ -216,7 +219,10 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "version": "",
         },
       ],
-      "postConnectionScripts": [],
+      "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+      },
       "providerConfigKey": "demo-github-integration",
       "syncs": [
         {

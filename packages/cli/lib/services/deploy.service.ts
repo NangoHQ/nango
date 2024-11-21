@@ -12,7 +12,8 @@ import type {
     NangoConfigMetadata,
     PostDeploy,
     PostDeployInternal,
-    PostDeployConfirmation
+    PostDeployConfirmation,
+    OnEventType
 } from '@nangohq/types';
 import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
@@ -359,24 +360,36 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[]; jsonSchema: JSONSchema7 } | null {
+    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
         const postData: IncomingFlowConfig[] = [];
-        const onEventScriptsByProvider: OnEventScriptsByProvider[] = [];
+        const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
         for (const integration of parsed.integrations) {
-            const { providerConfigKey, postConnectionScripts } = integration;
+            const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
 
-            if (postConnectionScripts && postConnectionScripts.length > 0) {
+            if (onEventScriptsByProvider) {
                 const scripts: OnEventScriptsByProvider['scripts'] = [];
-                for (const postConnectionScript of postConnectionScripts) {
-                    const files = loadScriptFiles({ scriptName: postConnectionScript, providerConfigKey, fullPath, type: 'post-connection-scripts' });
-                    if (!files) {
-                        return null;
+                for (const event of Object.keys(onEventScripts) as OnEventType[]) {
+                    for (const scriptName of onEventScripts[event]) {
+                        const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
+                        if (!files) {
+                            console.log(chalk.red(`No script files found for "${scriptName}"`));
+                            return null;
+                        }
+                        scripts.push({ name: scriptName, fileBody: files, event });
                     }
-
-                    scripts.push({ name: postConnectionScript, fileBody: files });
                 }
-                onEventScriptsByProvider.push({ providerConfigKey, scripts });
+
+                // for backward compatibility we also load post-connection-creation scripts
+                for (const scriptName of postConnectionScripts || []) {
+                    const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'post-connection-scripts' });
+                    if (files) {
+                        scripts.push({ name: scriptName, fileBody: files, event: 'post-connection-creation' });
+                    }
+                }
+                if (scripts.length > 0) {
+                    onEventScriptsByProvider.push({ providerConfigKey, scripts });
+                }
             }
 
             if (!optionalActionName) {
@@ -475,7 +488,7 @@ class DeployService {
                 for (const script of scripts) {
                     const { name } = script;
 
-                    printDebug(`Post connection script found for ${providerConfigKey} with name ${name}`);
+                    printDebug(`on-events script found for ${providerConfigKey} with name ${name}`);
                 }
             }
         }
@@ -485,7 +498,7 @@ class DeployService {
             return null;
         }
 
-        return { flowConfigs: postData, onEventScriptsByProvider: onEventScriptsByProvider, jsonSchema };
+        return { flowConfigs: postData, onEventScriptsByProvider, jsonSchema };
     }
 }
 

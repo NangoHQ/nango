@@ -110,7 +110,7 @@ export class DryRunService {
         }
 
         let providerConfigKey: string | undefined;
-        let isPostConnectionScript = false;
+        let isOnEventScript = false;
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
@@ -132,23 +132,23 @@ export class DryRunService {
                 providerConfigKey = integration.providerConfigKey;
             }
 
-            // If nothing that could still be a post connection script
+            // If nothing that could still be a on-event script
             if (!scriptInfo) {
-                for (const script of integration.postConnectionScripts) {
+                for (const script of Object.values(integration.onEventScripts).flat()) {
                     if (script !== syncName) {
                         continue;
                     }
-                    if (isPostConnectionScript) {
+                    if (isOnEventScript) {
                         console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
                         return;
                     }
-                    isPostConnectionScript = true;
+                    isOnEventScript = true;
                     providerConfigKey = integration.providerConfigKey;
                 }
             }
         }
 
-        if ((!scriptInfo && !isPostConnectionScript) || !providerConfigKey) {
+        if ((!scriptInfo && !isOnEventScript) || !providerConfigKey) {
             console.log(
                 chalk.red(
                     `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
@@ -206,8 +206,8 @@ export class DryRunService {
         let type: ScriptFileType = 'syncs';
         if (scriptInfo?.type === 'action') {
             type = 'actions';
-        } else if (isPostConnectionScript) {
-            type = 'post-connection-scripts';
+        } else if (isOnEventScript) {
+            type = 'on-events';
         }
 
         const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
