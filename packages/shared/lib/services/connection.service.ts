@@ -59,7 +59,6 @@ import {
     extractValueByPath,
     stripCredential
 } from '../utils/utils.js';
-import { flushLogsBuffer } from '@nangohq/logs';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -1015,7 +1014,11 @@ class ConnectionService {
                         }
                     );
                     if ('logs' in result.error.payload) {
-                        await flushLogsBuffer(result.error.payload['logs'] as MessageRowInsert[], logCtx);
+                        await Promise.all(
+                            (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
+                                await logCtx.log(log);
+                            })
+                        );
                     }
 
                     await logCtx.error('Failed to verify connection', result.error);
