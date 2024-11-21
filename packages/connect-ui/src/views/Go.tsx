@@ -53,7 +53,9 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
             z.string()
         ])
     }),
-    TWO_STEP: z.object({}).catchall(z.any()),
+    TWO_STEP: z.object({
+        // TWO_STEP is custom every time
+    }),
     TBA: z.object({
         oauth_client_id_override: z.string().min(1),
         oauth_client_secret_override: z.string().min(1),
@@ -136,6 +138,13 @@ export const Go: React.FC = () => {
         // Modify base form with credentials specific
         for (const [name, schema] of Object.entries(provider.credentials || [])) {
             baseForm.shape[name] = jsonSchemaToZod(schema);
+
+            // In case the field only exists in provider.yaml (TWO_STEP)
+            const fullName = `credentials.${name}`;
+            if (!orderedFields[fullName]) {
+                order += 1;
+                orderedFields[fullName] = order;
+            }
         }
 
         // Append connectionConfig object
@@ -162,7 +171,9 @@ export const Go: React.FC = () => {
             ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {})
         });
 
-        const fieldCount = Object.keys(fields.shape).length;
+        const fieldCount =
+            (fields.shape.credentials ? Object.keys(fields.shape.credentials.shape).length : 0) +
+            (fields.shape.params ? Object.keys(fields.shape.params?.shape).length : 0);
         const resolver = zodResolver(fields);
         return {
             shouldAutoTrigger: fieldCount - hiddenFields <= 0,
@@ -277,8 +288,8 @@ export const Go: React.FC = () => {
 
     return (
         <>
-            <header className="flex flex-col gap-8 p-10">
-                <div className="flex justify-between">
+            <header className="relative m-10">
+                <div className="absolute top-0 left-0 w-full flex justify-between">
                     {!isSingleIntegration ? (
                         <Link to="/" onClick={() => setIsDirty(false)}>
                             <Button className="gap-1" title="Back to integrations list" variant={'transparent'}>
@@ -292,7 +303,7 @@ export const Go: React.FC = () => {
                         <IconX stroke={1} />
                     </Button>
                 </div>
-                <div className="flex flex-col gap-5 items-center">
+                <div className="flex flex-col gap-5 items-center pt-10">
                     <div className="w-[70px] h-[70px] bg-white transition-colors rounded-xl shadow-card p-2.5 group-hover:bg-dark-100">
                         <img src={integration.logo} />
                     </div>
@@ -361,10 +372,14 @@ export const Go: React.FC = () => {
                             </div>
                         )}
                         {shouldAutoTrigger && (
-                            <div className="text-sm text-dark-500 w-full text-center">
-                                We will connect you to {provider.display_name}
-                                {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popups"}
-                            </div>
+                            <>
+                                <div></div>
+                                <div className="text-sm text-dark-500 w-full text-center -mt-20">
+                                    {/* visual centering */}
+                                    We will connect you to {provider.display_name}
+                                    {provider.auth_mode === 'OAUTH2' && ". A popup will open, please make sure your browser doesn't block popups"}
+                                </div>
+                            </>
                         )}
                         <div className="flex flex-col gap-4">
                             {error && (
