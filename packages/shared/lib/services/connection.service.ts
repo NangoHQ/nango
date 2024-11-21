@@ -750,7 +750,7 @@ class ConnectionService {
         const query = db.knex
             .from(`_nango_connections`)
             .select<{ total_connection: string; with_auth_error: string; with_sync_error: string; with_error: string }>(
-                db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
+                db.knex.raw('COUNT(DISTINCT _nango_connections.id) as total_connection'),
                 db.knex.raw("COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type = 'auth') as with_auth_error"),
                 db.knex.raw("COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type = 'sync') as with_sync_error"),
                 db.knex.raw('COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
