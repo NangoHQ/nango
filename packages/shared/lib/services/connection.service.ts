@@ -751,9 +751,9 @@ class ConnectionService {
             .from(`_nango_connections`)
             .select<{ total_connection: string; with_auth_error: string; with_sync_error: string; with_error: string }>(
                 db.knex.raw('COUNT(_nango_connections.*) as total_connection'),
-                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'auth') as with_auth_error"),
-                db.knex.raw("COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type = 'sync') as with_sync_error"),
-                db.knex.raw('COUNT(_nango_connections.*) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
+                db.knex.raw("COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type = 'auth') as with_auth_error"),
+                db.knex.raw("COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type = 'sync') as with_sync_error"),
+                db.knex.raw('COUNT(DISTINCT _nango_connections.id) FILTER (WHERE _nango_active_logs.type IS NOT NULL) as with_error')
             )
             .leftJoin('_nango_active_logs', (join) => {
                 join.on('_nango_active_logs.connection_id', '_nango_connections.id').andOnVal('active', true);
@@ -763,6 +763,7 @@ class ConnectionService {
                 '_nango_connections.deleted': false
             })
             .first();
+
         const res = await query;
         if (!res) {
             return Err('failed_to_count');
