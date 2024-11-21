@@ -161,7 +161,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 >
                                     <div className="flex items-center gap-3">
                                         <Icon className="w-[18px] h-[18px]" />
-                                        {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
+                                        {item.name === 'Connections' && data?.data.withError !== undefined && data.data.withError > 0 && (
                                             <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
                                         )}
                                         <p>{item.name}</p>
