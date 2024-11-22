@@ -2,11 +2,16 @@ import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude,
 import { basePublicUrl } from '@nangohq/utils';
 
 export function integrationToApi(data: IntegrationConfig): ApiIntegration {
-    return {
+    const apiIntegration = {
         ...data,
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString()
     };
+
+    delete apiIntegration.oauth_client_secret_iv;
+    delete apiIntegration.oauth_client_secret_tag;
+
+    return apiIntegration;
 }
 
 export function integrationToPublicApi({
