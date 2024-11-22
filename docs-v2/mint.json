@@ -67,111 +67,63 @@
     ],
     "redirects": [
         {
-            "source": "/guides/custom",
-            "destination": "/customize/guides/create-a-custom-integration"
+            "source": "/introduction",
+            "destination": "/home"
         },
         {
-            "source": "/guides/action",
-            "destination": "/integrate/guides/perform-workflows-with-an-api"
+            "source": "/integrate/guides/authorize-an-api",
+            "destination": "/guides/getting-started/authorize-an-api-from-your-app"
         },
         {
-            "source": "/guides/sync",
-            "destination": "/integrate/guides/sync-data-from-an-api"
-        },
-        {
-            "source": "/guides/oauth",
-            "destination": "/integrate/guides/authorize-an-api"
-        },
-        {
-            "source": "/guides/proxy",
-            "destination": "/integrate/guides/proxy-requests-to-an-api"
-        },
-        {
-            "source": "/guides/webhooks",
-            "destination": "/understand/concepts/webhooks"
-        },
-        {
-            "source": "/guides/advanced-auth",
-            "destination": "/integrate/guides/authorize-an-api"
-        },
-        {
-            "source": "/guides/field-mapping",
-            "destination": "/integrate/guides/advanced/use-custom-field-mappings"
-        },
-        {
-            "source": "/guides/api-key",
-            "destination": "/integrate/guides/authorize-an-api"
-        },
-        {
-            "source": "/guides/contribute",
-            "destination": "/customize/guides/contribute-an-api"
-        },
-        {
-            "source": "/integration-templates",
-            "destination": "/integrations/overview"
-        },
-        {
-            "source": "/guides/cloud",
-            "destination": "/host/cloud"
-        },
-        {
-            "source": "/guides/managed-integrations",
-            "destination": "/host/managed-integrations"
+            "source": "/customize/guides/create-a-custom-integration",
+            "destination": "/guides/customize/create-a-custom-integration"
         }
     ],
     "navigation": [
         {
             "group": "Get Started",
             "pages": [
-                "introduction",
+                "home",
+                "what-is-nango",
                 "sample-app"
             ]
         },
         {
-            "group": "Use Integrations",
+            "group": "Getting Started",
             "pages": [
-                "integrate/overview",
-                {
-                    "group": "Step-by-step guides",
-                    "pages": [
-                        "integrate/guides/authorize-an-api",
-                        "integrate/guides/sync-data-from-an-api",
-                        "integrate/guides/perform-workflows-with-an-api",
-                        "integrate/guides/proxy-requests-to-an-api",
-                        "integrate/guides/receive-webhooks-from-an-api",
-                        {
-                            "group": "Advanced",
-                            "pages": [
-                                "integrate/guides/advanced/authorize-an-api-headless",
-                                "integrate/guides/advanced/store-customer-specific-data",
-                                "integrate/guides/advanced/use-custom-field-mappings",
-                                "integrate/guides/advanced/verify-webhooks-from-nango"
-                            ]
-                        }
-                    ]
-                }
+                "guides/getting-started/configure-an-integration",
+                "guides/getting-started/authorize-an-api-from-your-app",
+                "guides/getting-started/read-from-an-api",
+                "guides/getting-started/write-to-an-api"
             ]
         },
         {
-            "group": "Build Integrations",
+            "group": "Advanced Guides",
             "pages": [
-                "customize/overview",
                 {
-                    "group": "Step-by-step guides",
+                    "group": "Customize integrations",
                     "pages": [
-                        "customize/guides/setup",
-                        "customize/guides/create-a-custom-integration",
-                        "customize/guides/extend-an-integration-template",
-                        "customize/guides/contribute-an-api",
-                        {
-                            "group": "Advanced",
-                            "pages": [
-                                "customize/guides/advanced/handle-rate-limits",
-                                "customize/guides/advanced/handle-large-datasets",
-                                "customize/guides/advanced/migrate-integration-configuration",
-                                "customize/guides/advanced/validate-input-and-output"
-                            ]
-                        }
+                        "guides/customize/setup",
+                        "guides/customize/create-a-custom-integration",
+                        "guides/customize/extend-an-integration-template",
+                        "guides/customize/contribute-an-api",
+                        "guides/customize/handle-rate-limits",
+                        "guides/customize/handle-large-datasets",
+                        "guides/customize/migrate-integration-configuration",
+                        "guides/customize/validate-input-and-output"
+                    ]
+                },
+                {
+                    "group": "Other advanced guides",
+                    "pages": [
+                        "guides/proxy-requests-to-an-api",
+                        "guides/receive-webhooks-from-an-api",
+                        "guides/authorize-an-api-from-your-app-with-custom-ui",
+                        "guides/otlp-export",
+                        "guides/whitelabel-oauth",
+                        "guides/store-customer-specific-data",
+                        "guides/use-custom-field-mappings",
+                        "guides/verify-webhooks-from-nango"
                     ]
                 }
             ]
@@ -180,10 +132,10 @@
             "group": "Understand Nango",
             "pages": [
                 "understand/core-concepts",
-                "understand/architecture",
                 {
                     "group": "All concepts",
                     "pages": [
+                        "understand/concepts/architecture",
                         "understand/concepts/integrations",
                         "understand/concepts/connections",
                         "understand/concepts/scripts",
@@ -201,7 +153,6 @@
             "group": "Host Nango",
             "pages": [
                 "host/cloud",
-                "host/managed-integrations",
                 {
                     "group": "Self-hosting instructions",
                     "pages": [
@@ -212,12 +163,6 @@
                         "host/self-host/digital-ocean"
                     ]
                 }
-            ]
-        },
-        {
-            "group": "Other Features",
-            "pages": [
-                "features/otlp-export"
             ]
         },
         {
