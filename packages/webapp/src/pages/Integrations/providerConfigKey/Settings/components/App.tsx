@@ -40,7 +40,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
     };
 
     return (
-        <div className="mt-10 flex gap-10">
+        <div className="mt-10 flex flex-col gap-10">
             {environment.callback_url && (
                 <InfoBloc
                     title="Setup URL"
