@@ -8,6 +8,8 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { AuthModeType } from '@nangohq/types';
+import { getProvider } from './providers.js';
 
 interface ValidationRule {
     field: keyof ProviderConfig;
@@ -120,7 +122,16 @@ class ConfigService {
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
+        const missingFields = this.validateProviderConfig(provider.auth_mode, config);
+
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
+        configToInsert.missing_fields = missingFields;
+
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
@@ -177,10 +188,18 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig) {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
+        const encrypted = encryptionManager.encryptProviderConfig(config);
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, encrypted);
+
         return db.knex
             .from<ProviderConfig>(`_nango_configs`)
             .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
-            .update(encryptionManager.encryptProviderConfig(config));
+            .update(encrypted);
     }
 
     async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
@@ -247,17 +266,17 @@ class ConfigService {
         {
             field: 'oauth_client_id',
             modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
-            isValid: (config) => config.oauth_client_id
+            isValid: (config) => !!config.oauth_client_id
         },
         {
             field: 'oauth_client_secret',
             modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
-            isValid: (config) => config.oauth_client_secret
+            isValid: (config) => !!config.oauth_client_secret
         },
         {
             field: 'app_link',
             modes: ['APP'],
-            isValid: (config) => config.app_link
+            isValid: (config) => !!config.app_link
         }
     ];
 

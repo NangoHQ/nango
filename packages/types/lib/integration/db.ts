@@ -12,4 +12,5 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     oauth_client_secret_tag?: string | null;
     app_link?: string | null;
     custom?: Record<string, string>;
+    missing_fields: string[];
 }

@@ -132,7 +132,8 @@ describe('Sync config create', () => {
                 post_connection_scripts: null,
                 environment_id: 1,
                 created_at: new Date(),
-                updated_at: new Date()
+                updated_at: new Date(),
+                missing_fields: []
             });
         });
 
