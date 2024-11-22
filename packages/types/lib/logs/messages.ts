@@ -43,10 +43,16 @@ export interface OperationAction {
     type: 'action';
     action: 'run';
 }
+
+export interface OperationOnEvents {
+    type: 'events';
+    action: 'run';
+}
+
 // TODO: rename to OperationConnection
 export interface OperationAuth {
     type: 'auth';
-    action: 'create_connection' | 'delete_connection' | 'refresh_token' | 'post_connection' | 'connection_test';
+    action: 'create_connection' | 'refresh_token' | 'post_connection' | 'connection_test';
 }
 export interface OperationAdmin {
     type: 'admin';
@@ -60,7 +66,15 @@ export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type OperationList = OperationSync | OperationProxy | OperationAction | OperationWebhook | OperationDeploy | OperationAuth | OperationAdmin;
+export type OperationList =
+    | OperationSync
+    | OperationProxy
+    | OperationAction
+    | OperationWebhook
+    | OperationOnEvents
+    | OperationDeploy
+    | OperationAuth
+    | OperationAdmin;
 
 /**
  * Full schema
