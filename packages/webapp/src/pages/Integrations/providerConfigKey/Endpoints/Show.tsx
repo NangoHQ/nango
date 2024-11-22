@@ -62,8 +62,12 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
 
                         // Sort by method
                         if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
-                        else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
-                        else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
+                        else if (
+                            a.endpoint.method === 'POST' &&
+                            (b.endpoint.method === 'PUT' || b.endpoint.method === 'PATCH' || b.endpoint.method === 'DELETE')
+                        )
+                            return -1;
+                        else if (a.endpoint.method === 'PUT' && (b.endpoint.method === 'PATCH' || b.endpoint.method === 'DELETE')) return -1;
                         else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
                         else return 0;
                     })
