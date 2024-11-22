@@ -2948,6 +2948,8 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
+        verification:
+            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     connection_config:
         resource:
@@ -2958,6 +2960,22 @@ greenhouse-basic:
             example: domain
             suffix: .greenhouse.io
             prefix: https://
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
 
 gumroad:
     display_name: Gumroad
