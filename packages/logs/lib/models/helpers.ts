@@ -13,7 +13,7 @@ export interface FormatMessageData {
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined;
+    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to script or something similar because it also apply to actions and on-events scripts
     meta?: MessageRow['meta'];
 }
 
