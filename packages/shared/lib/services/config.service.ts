@@ -9,6 +9,12 @@ import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigI
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 
+interface ValidationRule {
+    field: keyof ProviderConfig;
+    modes: AuthModeType[];
+    isValid(config: ProviderConfig): boolean;
+}
+
 class ConfigService {
     async getById(id: number): Promise<ProviderConfig | null> {
         const result = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).first();
@@ -235,6 +241,30 @@ class ConfigService {
         }
 
         return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
+    }
+
+    VALIDATION_RULES: ValidationRule[] = [
+        {
+            field: 'oauth_client_id',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            isValid: (config) => config.oauth_client_id
+        },
+        {
+            field: 'oauth_client_secret',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            isValid: (config) => config.oauth_client_secret
+        },
+        {
+            field: 'app_link',
+            modes: ['APP'],
+            isValid: (config) => config.app_link
+        }
+    ];
+
+    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        return this.VALIDATION_RULES.filter((rule) => rule.modes.includes(authMode))
+            .filter((rule) => !rule.isValid(providerConfig))
+            .map((rule) => rule.field.toString());
     }
 }
 
