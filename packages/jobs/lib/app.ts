@@ -2,7 +2,7 @@ import './tracer.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { getLogger, stringifyError, once } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
@@ -31,7 +31,7 @@ try {
     };
     void check();
 
-    const close = async () => {
+    const close = once(async () => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
         processor.stop();
@@ -39,7 +39,7 @@ try {
         srv.close(() => {
             process.exit();
         });
-    };
+    });
 
     process.on('SIGINT', () => {
         logger.info('Received SIGINT...');
