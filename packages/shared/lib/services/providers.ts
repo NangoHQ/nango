@@ -43,7 +43,6 @@ export async function monitorProviders(): Promise<() => void> {
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
     let running = true;
-    logger.debug(reloadInterval);
     void (async function () {
         while (running) {
             await new Promise((resolve) => setTimeout(resolve, reloadInterval));
