@@ -71,11 +71,11 @@
             "destination": "/home"
         },
         {
-            "source": "/integrate/guides/authorize-an-api",
+            "source": "/guides/getting-started/authorize-an-api-from-your-app",
             "destination": "/guides/getting-started/authorize-an-api-from-your-app"
         },
         {
-            "source": "/customize/guides/create-a-custom-integration",
+            "source": "/guides/customize/create-a-custom-integration",
             "destination": "/guides/customize/create-a-custom-integration"
         }
     ],

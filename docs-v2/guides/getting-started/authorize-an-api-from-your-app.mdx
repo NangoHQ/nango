@@ -5,7 +5,7 @@ description: 'Step-by-step guide on getting user authorization to access an exte
 ---
 
 <Info>
-Pre-requisite: completion of the [_Configure an integration_ guide](/guides/main/create-an-integration).
+Pre-requisite: completion of the [_Configure an integration_ guide](/guides/getting-started/configure-an-integration).
 </Info>
 
 Nango Connect requires a unique temporary token to securely authenticate your users.
@@ -135,7 +135,7 @@ Nango webhooks are post requests with the following JSON body:
 For each successful authorization attempt, persist the connection ID & integration ID in your database. You will need them to retrieve the connection credentials later.
 
 <Info>
-Before using Nango in production, we advise [verifying webhook signatures](/integrate/guides/advanced/verify-webhooks-from-nango).
+Before using Nango in production, we advise [verifying webhook signatures](/guides/verify-webhooks-from-nango).
 </Info>
 
 # You are ready
@@ -143,7 +143,7 @@ Before using Nango in production, we advise [verifying webhook signatures](/inte
 Your users can now launch Nango Connect and connect to any of your integrations, Nango is taking care of the rest.
 
 
-<Card title="Want to build your own UI?" icon="code" href="/integrate/guides/advanced/authorize-an-api-headless" horizontal>
+<Card title="Want to build your own UI?" icon="code" href="/guides/authorize-an-api-from-your-app-with-custom-ui" horizontal>
   Use the Headless API to create your custom experience
 </Card>
 
