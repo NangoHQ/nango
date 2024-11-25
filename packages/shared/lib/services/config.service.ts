@@ -12,7 +12,7 @@ import type { AuthModeType } from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface ValidationRule {
-    field: keyof ProviderConfig;
+    field: keyof ProviderConfig | 'app_id' | 'private_key';
     modes: AuthModeType[];
     isValid(config: ProviderConfig): boolean;
 }
@@ -263,18 +263,28 @@ class ConfigService {
     VALIDATION_RULES: ValidationRule[] = [
         {
             field: 'oauth_client_id',
-            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
             isValid: (config) => !!config.oauth_client_id
         },
         {
             field: 'oauth_client_secret',
-            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
             isValid: (config) => !!config.oauth_client_secret
         },
         {
             field: 'app_link',
-            modes: ['APP'],
+            modes: ['APP', 'CUSTOM'],
             isValid: (config) => !!config.app_link
+        },
+        {
+            field: 'app_id',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['app_id']
+        },
+        {
+            field: 'private_key',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['private_key']
         }
     ];
 
