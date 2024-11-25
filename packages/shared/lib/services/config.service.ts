@@ -127,10 +127,8 @@ class ConfigService {
             throw new NangoError('unknown_provider');
         }
 
-        const missingFields = this.validateProviderConfig(provider.auth_mode, config);
-
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
-        configToInsert.missing_fields = missingFields;
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
 
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
