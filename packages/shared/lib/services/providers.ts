@@ -6,8 +6,10 @@ import { NangoError } from '../utils/error.js';
 import { dirname } from '../utils/utils.js';
 import { getLogger, ENVS, parseEnvs } from '@nangohq/utils';
 import { createHash } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('providers');
+const envs = parseEnvs(ENVS);
 
 let providers: Record<string, Provider> | undefined = undefined;
 
@@ -24,13 +26,13 @@ export function getProvider(providerName: string): Provider | null {
     return providers?.[providerName] ?? null;
 }
 
+let polling = false;
+let providersHash = '';
+
 // Monitors for changes to providers over HTTP. Returns a function to clean up
 // the monitoring.
 export async function monitorProviders(): Promise<() => void> {
-    const envs = parseEnvs(ENVS);
-
     const providersUrl = envs.PROVIDERS_URL;
-    const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
 
     // fall back to standard disk loading if no URL is provided
     if (!providersUrl) {
@@ -38,11 +40,30 @@ export async function monitorProviders(): Promise<() => void> {
     }
 
     const providersRaw = await fetchProvidersRaw(providersUrl);
-    let providersHash = createHash('sha1').update(providersRaw).digest('hex');
+    providersHash = createHash('sha1').update(providersRaw).digest('hex');
+
     providers = JSON.parse(providersRaw) as Record<string, Provider>;
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
-    const timeout = setInterval(async () => {
+    void pollProviders(providersUrl);
+
+    return () => {
+        polling = false;
+    };
+}
+
+async function pollProviders(providersUrl: string) {
+    if (polling) {
+        return;
+    }
+
+    polling = true;
+
+    const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
+
+    while (polling) {
+        await setTimeout(reloadInterval);
+
         try {
             const providersRaw = await fetchProvidersRaw(providersUrl);
             const newProvidersHash = createHash('sha1').update(providersRaw).digest('hex');
@@ -55,9 +76,7 @@ export async function monitorProviders(): Promise<() => void> {
         } catch (err) {
             logger.error('Failed to fetch providers.json', err);
         }
-    }, reloadInterval);
-
-    return () => clearInterval(timeout);
+    }
 }
 
 async function fetchProvidersRaw(providersUrl: string): Promise<string> {
