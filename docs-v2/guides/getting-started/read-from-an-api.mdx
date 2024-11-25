@@ -1,11 +1,11 @@
 ---
-title: 'Sync data from an API'
-sidebarTitle: 'Sync data from an API'
+title: 'Read from an API'
+sidebarTitle: 'Read from an API'
 description: 'Step-by-step guide on how to continuously sync data from an API (using a sync template).'
 ---
 
 <Info>
-Pre-requisite: creation of an integration and at least one connection ([step-by-step guide](/integrate/guides/authorize-an-api)).
+Pre-requisite: completion of the [_Configure an integration_ guide](/guides/getting-started/configure-an-integration).
 </Info>
 
 # Activate a sync template
@@ -19,7 +19,7 @@ Nango will automatically sync the corresponding [records](/understand/concepts/s
 <Tip>
 Is there no template for your API? Or none matching your exact use case?
 
-Learn more about how to [build a custom integration](/customize/guides/create-a-custom-integration), [extend a template](/customize/guides/extend-an-integration-template) or [request custom integrations from Nango experts](/host/managed-integrations).
+Learn more about how to [build a custom integration](/guides/customize/create-a-custom-integration) and [extend a template](/guides/customize/extend-an-integration-template).
 </Tip>
 
 # Listen for webhooks from Nango
@@ -46,7 +46,7 @@ Webhooks with non-2xx responses are retried with exponential backoff.
 </Tip>
 
 <Warning>
-Before using webhooks in production, verify their origin ([step-by-step guide](/integrate/guides/advanced/verify-webhooks-from-nango)).
+Before using webhooks in production, verify their origin ([step-by-step guide](/guides/verify-webhooks-from-nango)).
 </Warning>
 
 # Fetch the latest data
@@ -170,7 +170,7 @@ So, the overall logic for cursor-based synchronization should be:
 
 # Write back to APIs (2-way syncing)
 
-Write back to APIs with actions ([step-by-step guide](/integrate/guides/perform-workflows-with-an-api)) or proxy requests ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
+Write back to APIs with actions ([step-by-step guide](/guides/getting-started/write-to-an-api)) or proxy requests ([step-by-step guide](/guides/proxy-requests-to-an-api)).
 
 # Troubleshoot errors & monitor
 

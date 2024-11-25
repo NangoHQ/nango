@@ -14,6 +14,7 @@ import {
     connectionRefreshFailed as connectionRefreshFailedHook
 } from '../hooks/hooks.js';
 import { getOrchestrator } from '../utils/utils.js';
+import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 
 export type { ConnectionList };
 
@@ -94,7 +95,7 @@ class ConnectionController {
 
     async deleteAdminConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
+            const { environment, account: team } = res.locals;
             const connectionId = req.params['connectionId'] as string;
 
             if (!connectionId) {
@@ -126,12 +127,20 @@ class ConnectionController {
                 return;
             }
 
+            const preDeletionHook = () =>
+                preConnectionDeletion({
+                    team,
+                    environment,
+                    connection,
+                    logContextGetter
+                });
             await connectionService.deleteConnection({
                 connection,
                 providerConfigKey: integration_key,
                 environmentId: info!.environmentId,
                 orchestrator,
-                logContextGetter
+                logContextGetter,
+                preDeletionHook
             });
 
             // Kill all notifications associated with this env

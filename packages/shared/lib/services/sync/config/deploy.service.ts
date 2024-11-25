@@ -21,7 +21,7 @@ import type {
     DBSyncEndpointCreate,
     DBSyncEndpoint
 } from '@nangohq/types';
-import { onEventScriptService } from '../on-event-scripts.service.js';
+import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { NangoError } from '../../../utils/error.js';
 import telemetry, { LogTypes } from '../../../utils/telemetry.js';
 import { env, Ok } from '@nangohq/utils';

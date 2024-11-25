@@ -73,18 +73,18 @@ const Integrations: React.FC = () => {
 
     return (
         <>
-            <header className="flex flex-col gap-4 p-10 ">
-                <div className="flex justify-end">
+            <header className="relative m-10">
+                <div className="absolute top-0 left-0 w-full flex justify-end">
                     <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
                         <IconX stroke={1} />
                     </Button>
                 </div>
-                <div className="flex flex-col gap-5 text-center">
+                <div className="flex flex-col gap-5 text-center pt-10">
                     <h1 className="font-semibold text-xl text-dark-800">Select Integration</h1>
                     <p className="text-dark-500">Please select an API integration from the list below.</p>
                 </div>
             </header>
-            <main className="h-full overflow-auto m-9 mt-1 p-1">
+            <main className="h-full overflow-auto m-9 mt-1 p-1 ">
                 <div className="flex flex-col">
                     {data.data.map((integration) => {
                         return <Integration key={integration.unique_key} integration={integration} />;

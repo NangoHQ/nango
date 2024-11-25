@@ -9,6 +9,7 @@ import { connectionCreated as connectionCreatedHook, connectionCreationFailed as
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
@@ -71,6 +72,10 @@ class AppStoreAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 

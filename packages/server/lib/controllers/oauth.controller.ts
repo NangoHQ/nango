@@ -51,6 +51,7 @@ import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -140,6 +141,10 @@ class OAuthController {
                 await logCtx.failed();
 
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
+                return;
             }
 
             const session: OAuthSession = {
@@ -323,6 +328,10 @@ class OAuthController {
 
                 errorManager.errRes(res, 'invalid_auth_mode');
 
+                return;
+            }
+
+            if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
 
@@ -1006,7 +1015,20 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
             }
 
-            let connectionConfig = { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata };
+            let connectionConfig = {
+                ...tokenMetadata,
+                ...callbackMetadata,
+                ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
+                    if (session.connectionConfig[key] !== '') {
+                        acc[key] = session.connectionConfig[key];
+                    } else if (key in tokenMetadata || key in callbackMetadata) {
+                        acc[key] = tokenMetadata[key] || callbackMetadata[key];
+                    } else {
+                        acc[key] = '';
+                    }
+                    return acc;
+                }, {})
+            };
 
             let pending = false;
 
@@ -1254,12 +1276,26 @@ class OAuthController {
             .then(async (accessTokenResult) => {
                 const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, 'OAUTH1');
 
+                const connectionConfig = {
+                    ...metadata,
+                    ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
+                        if (session.connectionConfig[key] !== '') {
+                            acc[key] = session.connectionConfig[key];
+                        } else if (key in metadata) {
+                            acc[key] = metadata[key];
+                        } else {
+                            acc[key] = '';
+                        }
+                        return acc;
+                    }, {})
+                };
+
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
                     provider: session.provider,
                     parsedRawCredentials: parsedAccessTokenResult,
-                    connectionConfig: { ...session.connectionConfig, ...metadata },
+                    connectionConfig,
                     environmentId: environment.id,
                     accountId: account.id
                 });

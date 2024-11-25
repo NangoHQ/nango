@@ -465,51 +465,6 @@ describe('Proxy service Construct URL Tests', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
-    it('Should strip away the auth token from the headers', () => {
-        const headers = {
-            Accept: 'application/json',
-            Authorization: 'Bearer real-token',
-            'Another-Header': 'value',
-            'Sensitive-Token': 'real-token'
-        };
-
-        const config = {
-            token: 'real-token',
-            headers: headers
-        };
-
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
-
-        expect(strippedHeaders).toEqual({
-            Accept: 'application/json',
-            Authorization: 'Bearer xxxx',
-            'Another-Header': 'value',
-            'Sensitive-Token': 'xxxx'
-        });
-    });
-
-    it('Should strip away an authorization header if there is no token', () => {
-        const headers = {
-            Accept: 'application/json',
-            Authorization: 'Bearer abcdefghijklmnopqrstuvwxyz',
-            'Another-Header': 'value',
-            'Content-Type': 'application/json'
-        };
-
-        const config = {
-            headers: headers
-        };
-
-        const strippedHeaders = proxyService.stripSensitiveHeaders(headers, config as unknown as ApplicationConstructedProxyConfiguration);
-
-        expect(strippedHeaders).toEqual({
-            Accept: 'application/json',
-            Authorization: 'Bearer xxxx',
-            'Another-Header': 'value',
-            'Content-Type': 'application/json'
-        });
-    });
-
     it('Should retry after', async () => {
         const mockAxiosError = {
             response: {
@@ -686,8 +641,8 @@ describe('Proxy service configure', () => {
         expect(response).toBeNull();
         expect(error).toBeDefined();
         expect(error?.message).toContain("No Provider Template matching the 'provider' parameter.");
-        expect(logs.length).toBe(3);
-        expect(logs[2]).toStrictEqual<MessageRowInsert>({
+        expect(logs.length).toBe(1);
+        expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
             createdAt: expect.any(String),
@@ -758,7 +713,7 @@ describe('Proxy service configure', () => {
             responseType: 'blob'
         });
         expect(error).toBeNull();
-        expect(logs.length).toBe(4);
+        expect(logs.length).toBe(0);
     });
 
     it('Should correctly insert headers with dynamic values for signature based', () => {

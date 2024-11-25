@@ -31,7 +31,8 @@ export type PostPublicTbaAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -56,7 +57,8 @@ export type PostPublicTableauAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -86,7 +88,8 @@ export type PostPublicJwtAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -106,7 +109,8 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -132,7 +136,8 @@ export type PostPublicBillAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -153,7 +158,8 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -177,7 +183,8 @@ export type PostPublicSignatureAuthorization = Endpoint<{
         | ApiError<'unknown_provider_config'>
         | ApiError<'unknown_provider_template'>
         | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>;
+        | ApiError<'invalid_credentials'>
+        | ApiError<'integration_not_allowed'>;
     Success: {
         providerConfigKey: string;
         connectionId: string;
