@@ -4594,7 +4594,7 @@ personio-recruiting:
         company:
             type: string
             title: Company Name
-            description: The company name of your Workday account
+            description: The company name of your Personio account
         partnerId:
             type: string
             title: Partner ID
