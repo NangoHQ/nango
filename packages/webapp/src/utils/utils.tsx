@@ -8,7 +8,7 @@ export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
-export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
+export const syncDocs = 'https://docs.nango.dev/guides/getting-started/read-from-an-api';
 export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
 export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
 

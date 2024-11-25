@@ -1,63 +1,12 @@
 ---
-title: 'Authorize an API'
-sidebarTitle: 'Authorize an API'
-description: 'Step-by-step guide on how to getting user authorization to access an external API on their behalf.'
+title: 'Authorize users from your app'
+sidebarTitle: 'Authorize users from your app'
+description: 'Step-by-step guide on getting user authorization to access an external API, from your application.'
 ---
 
-# Create a free Nango account
-
-Sign up for a free Nango account (**this feature is free & unlimited**, no credit card needed):
-[![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
-
-# Create an integration
-
-Go to the _Integrations_ tab, choose to configure a new [integration](/understand/concepts/integrations), and choose an API to integrate with.
-
-<Tip>
-    Each API has a dedicated Nango documentation page with useful links, gotchas, etc.
-</Tip>
-
-APIs have different ways to authorize requests: OAuth, API key, Basic, custom. Nango abstracts away the difficulties of working with each one.
-
-**For OAuth**
-
-OAuth APIs require you to register your OAuth application on their developer portal.
-
-When registering, the API provider will prompt you for the `Callback URL`. Use the one displayed in the Nango integration settings. Remember to register the required scopes in the Nango integration settings and, if necessary, with the API provider.
-
-Collect your OAuth app's `Client ID` and `Client Secret` from the API portal and input them in your Nango integration settings.
-
-**For API Key & Basic**
-
-No configuration is necessary for APIs supporting API key & Basic authorization.
-
-**For Custom Authorization**
-
-APIs like Stripe & GitHub Apps have custom authorization. Configurations vary and are described in the Nango integration settings.
-
-# Test the authorization
-
-<Tip>
-Your can test the authorization flow directly in the Nango UI, using your own external account credentials.
-
-In production, the authorization flow will be triggered from your app, promping each of your customers' to enter their external account credentials (cf. next section).
-</Tip>
-
-On the Nango integration page, click `Add Connection` to test the authorization. After authorizing API access for one of the modes described below, a [connection](/understand/concepts/connections) should be successfully created in the _Connections_ tab.
-
-**For OAuth**
-
-Input your external account credentials in the popup dialog to test the authorization.
-
-**For API Key & Basic**
-
-Input the API key (or username/password for Basic) to test the authorization.
-
-**For Custom Authorization**
-
-The authorization flow will vary based on the API, but you will most likely have to log in to your external account via a popup dialog.
-
-# Authorize users from your app
+<Info>
+Pre-requisite: completion of the [_Configure an integration_ guide](/guides/getting-started/configure-an-integration).
+</Info>
 
 Nango Connect requires a unique temporary token to securely authenticate your users.
 
@@ -186,7 +135,7 @@ Nango webhooks are post requests with the following JSON body:
 For each successful authorization attempt, persist the connection ID & integration ID in your database. You will need them to retrieve the connection credentials later.
 
 <Info>
-Before using Nango in production, we advise [verifying webhook signatures](/integrate/guides/advanced/verify-webhooks-from-nango).
+Before using Nango in production, we advise [verifying webhook signatures](/guides/verify-webhooks-from-nango).
 </Info>
 
 # You are ready
@@ -194,7 +143,7 @@ Before using Nango in production, we advise [verifying webhook signatures](/inte
 Your users can now launch Nango Connect and connect to any of your integrations, Nango is taking care of the rest.
 
 
-<Card title="Want to build your own UI?" icon="code" href="/integrate/guides/advanced/authorize-an-api-headless" horizontal>
+<Card title="Want to build your own UI?" icon="code" href="/guides/authorize-an-api-from-your-app-with-custom-ui" horizontal>
   Use the Headless API to create your custom experience
 </Card>
 
