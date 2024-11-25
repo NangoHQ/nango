@@ -289,9 +289,7 @@ class ConfigService {
     ];
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
-        return this.VALIDATION_RULES.filter((rule) => rule.modes.includes(authMode))
-            .filter((rule) => !rule.isValid(providerConfig))
-            .map((rule) => rule.field.toString());
+        return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 }
 
