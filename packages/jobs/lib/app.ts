@@ -35,6 +35,7 @@ try {
         logger.info('Closing...');
         clearTimeout(healthCheck);
         processor.stop();
+        otlp.stop();
         await db.knex.destroy();
         srv.close(() => {
             process.exit();

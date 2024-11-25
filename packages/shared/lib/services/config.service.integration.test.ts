@@ -97,5 +97,25 @@ describe('Config service integration tests', () => {
 
             expect(maybeError).toEqual(['app_link']);
         });
+
+        it('should return an error for a custom config with no app_id or private key', () => {
+            const maybeError = configService.validateProviderConfig('CUSTOM', {
+                unique_key: 'abc123',
+                provider: 'provider',
+                oauth_client_id: 'id',
+                oauth_client_secret: 'secret',
+                app_link: 'https://github.com/some/app',
+                environment_id: 1,
+                created_at: new Date(),
+                updated_at: new Date(),
+                missing_fields: [],
+                custom: {
+                    app_id: '',
+                    private_key: ''
+                }
+            });
+
+            expect(maybeError).toEqual(['app_id', 'private_key']);
+        });
     });
 });

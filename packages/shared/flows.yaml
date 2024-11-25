@@ -1922,8 +1922,8 @@ integrations:
                     path: /users
                     group: Users
                 scopes:
-                    - oauth
-                    - user_read
+                    - openid
+                    - signature
         actions:
             create-user:
                 description: Creates a user in DocuSign
@@ -1934,8 +1934,8 @@ integrations:
                     group: Users
                 input: DocuSignCreateUser
                 scopes:
-                    - oauth
-                    - user_write
+                    - openid
+                    - signature
             delete-user:
                 description: Deletes a user in DocuSign
                 endpoint:
@@ -1945,8 +1945,8 @@ integrations:
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
-                    - oauth
-                    - user_write
+                    - openid
+                    - signature
         models:
             IdEntity:
                 id: string
@@ -1988,8 +1988,8 @@ integrations:
                     method: GET
                     path: /users
                 scopes:
-                    - oauth
-                    - user_read
+                    - openid
+                    - signature
         actions:
             create-user:
                 description: Creates a user in DocuSign sandbox
@@ -1999,8 +1999,8 @@ integrations:
                     path: /users
                 input: DocuSignCreateUser
                 scopes:
-                    - oauth
-                    - user_write
+                    - openid
+                    - signature
             delete-user:
                 description: Deletes a user in DocuSign sandbox
                 endpoint:
@@ -2009,8 +2009,8 @@ integrations:
                 output: SuccessResponse
                 input: IdEntity
                 scopes:
-                    - oauth
-                    - user_write
+                    - openid
+                    - signature
         models:
             IdEntity:
                 id: string

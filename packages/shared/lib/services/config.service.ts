@@ -12,7 +12,7 @@ import type { AuthModeType } from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface ValidationRule {
-    field: keyof ProviderConfig;
+    field: keyof ProviderConfig | 'app_id' | 'private_key';
     modes: AuthModeType[];
     isValid(config: ProviderConfig): boolean;
 }
@@ -127,10 +127,8 @@ class ConfigService {
             throw new NangoError('unknown_provider');
         }
 
-        const missingFields = this.validateProviderConfig(provider.auth_mode, config);
-
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
-        configToInsert.missing_fields = missingFields;
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
 
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
@@ -265,25 +263,33 @@ class ConfigService {
     VALIDATION_RULES: ValidationRule[] = [
         {
             field: 'oauth_client_id',
-            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
             isValid: (config) => !!config.oauth_client_id
         },
         {
             field: 'oauth_client_secret',
-            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP'],
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
             isValid: (config) => !!config.oauth_client_secret
         },
         {
             field: 'app_link',
-            modes: ['APP'],
+            modes: ['APP', 'CUSTOM'],
             isValid: (config) => !!config.app_link
+        },
+        {
+            field: 'app_id',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['app_id']
+        },
+        {
+            field: 'private_key',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['private_key']
         }
     ];
 
     validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
-        return this.VALIDATION_RULES.filter((rule) => rule.modes.includes(authMode))
-            .filter((rule) => !rule.isValid(providerConfig))
-            .map((rule) => rule.field.toString());
+        return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 }
 

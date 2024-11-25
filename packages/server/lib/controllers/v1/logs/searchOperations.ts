@@ -18,6 +18,7 @@ const validation = z
                     'all',
                     'action',
                     'sync',
+                    'events',
                     'sync:init',
                     'sync:cancel',
                     'sync:pause',
