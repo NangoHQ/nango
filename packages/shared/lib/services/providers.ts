@@ -6,6 +6,7 @@ import { NangoError } from '../utils/error.js';
 import { dirname } from '../utils/utils.js';
 import { getLogger, ENVS, parseEnvs } from '@nangohq/utils';
 import { createHash } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('providers');
 
@@ -62,7 +63,7 @@ async function pollProviders() {
     const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
 
     while (polling) {
-        await new Promise((resolve) => setTimeout(resolve, reloadInterval));
+        await setTimeout(reloadInterval);
 
         try {
             const providersRaw = await fetchProvidersRaw(providersUrl);
