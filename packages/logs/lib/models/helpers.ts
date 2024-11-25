@@ -13,7 +13,7 @@ export interface FormatMessageData {
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined;
+    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to script or something similar because it also apply to actions and on-events scripts
     meta?: MessageRow['meta'];
 }
 
@@ -125,7 +125,6 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'action:run': 'Action execution',
     'admin:impersonation': 'Admin logged into another account',
     'auth:create_connection': 'Create connection',
-    'auth:delete_connection': 'Delete connection',
     'auth:post_connection': 'post connection execution',
     'auth:refresh_token': 'Token refresh',
     'auth:connection_test': 'Connection test',
@@ -140,7 +139,9 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'sync:run': 'Sync execution',
     'sync:unpause': 'Sync schedule started',
     'webhook:incoming': 'Received a webhook',
-    'webhook:forward': 'Forwarding Webhook'
+    'webhook:forward': 'Forwarding Webhook',
+    'events:post_connection_creation': 'Post connection creation script execution',
+    'events:pre_connection_deletion': 'Pre connection creation script execution'
 };
 
 /**
