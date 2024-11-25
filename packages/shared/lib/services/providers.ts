@@ -24,13 +24,15 @@ export function getProvider(providerName: string): Provider | null {
     return providers?.[providerName] ?? null;
 }
 
+let polling = false;
+let providersHash = '';
+
 // Monitors for changes to providers over HTTP. Returns a function to clean up
 // the monitoring.
 export async function monitorProviders(): Promise<() => void> {
     const envs = parseEnvs(ENVS);
 
     const providersUrl = envs.PROVIDERS_URL;
-    const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
 
     // fall back to standard disk loading if no URL is provided
     if (!providersUrl) {
@@ -38,33 +40,43 @@ export async function monitorProviders(): Promise<() => void> {
     }
 
     const providersRaw = await fetchProvidersRaw(providersUrl);
-    let providersHash = createHash('sha1').update(providersRaw).digest('hex');
+    providersHash = createHash('sha1').update(providersRaw).digest('hex');
+
     providers = JSON.parse(providersRaw) as Record<string, Provider>;
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
-    let running = true;
-    void (async function () {
-        while (running) {
-            await new Promise((resolve) => setTimeout(resolve, reloadInterval));
-
-            try {
-                const providersRaw = await fetchProvidersRaw(providersUrl);
-                const newProvidersHash = createHash('sha1').update(providersRaw).digest('hex');
-
-                if (newProvidersHash !== providersHash) {
-                    providersHash = newProvidersHash;
-                    providers = JSON.parse(providersRaw) as Record<string, Provider>;
-                    logger.info(`Providers reloaded (${providersHash})`);
-                }
-            } catch (err) {
-                logger.error('Failed to fetch providers.json', err);
-            }
-        }
-    })();
+    void pollProviders();
 
     return () => {
-        running = false;
+        polling = false;
     };
+}
+
+async function pollProviders() {
+    if (polling) {
+        return;
+    }
+
+    polling = true;
+    const providersUrl = envs.PROVIDERS_URL;
+    const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
+
+    while (polling) {
+        await new Promise((resolve) => setTimeout(resolve, reloadInterval));
+
+        try {
+            const providersRaw = await fetchProvidersRaw(providersUrl);
+            const newProvidersHash = createHash('sha1').update(providersRaw).digest('hex');
+
+            if (newProvidersHash !== providersHash) {
+                providersHash = newProvidersHash;
+                providers = JSON.parse(providersRaw) as Record<string, Provider>;
+                logger.info(`Providers reloaded (${providersHash})`);
+            }
+        } catch (err) {
+            logger.error('Failed to fetch providers.json', err);
+        }
+    }
 }
 
 async function fetchProvidersRaw(providersUrl: string): Promise<string> {
