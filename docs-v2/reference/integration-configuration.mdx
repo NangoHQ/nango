@@ -48,6 +48,12 @@ integrations:
           - scope1
           - scope2
 
+    on-events:
+        post-connection-creation:
+            - setup
+            - moreSetup
+        pre-connection-deletion:
+            - cleanup
 
 models:
   AsanaTask: # Schema for sync output AND action input/output.
@@ -72,6 +78,10 @@ Integration configuration fields are under `integrations.<INTEGRATION-ID>`.
 
 <ResponseField name="actions" type="object">
     Lists the actions for a given integration.
+</ResponseField>
+
+<ResponseField name="on-events" type="object">
+    Lists the events and scripts executed when those events occur.
 </ResponseField>
 
 ### Sync fields
@@ -218,9 +228,39 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Defaults to no scope.
 </ResponseField>
 
-# Model types
+### On-Events fields
 
-The `models` section contains the schemas referenced in the inputs & outputs of the above `integrations` section.
+`on-events` configuration fields are under `integrations.<INTEGRATION-ID>.on-events.<EVENT-NAME>`.
+
+<Tip>
+    Nango currently supports the following events:
+    - post-connection-creation
+    - pre-connection-deletion
+</Tip>
+
+<ResponseField name="post-connection-creation" type="string[]">
+    Lists the scripts to execute after a new connection is created.
+
+    Example:
+    ```yaml
+    on-events:
+      post-connection-creation:
+        - setup
+        - initialize-webhooks
+    ```
+</ResponseField>
+
+<ResponseField name="pre-connection-deletion" type="string[]">
+    Lists the scripts to execute before a connection is deleted.
+
+    Example:
+    ```yaml
+    on-events:
+      pre-connection-deletion:
+        - cleanup
+        - remove-webhooks
+    ```
+</ResponseField>
 
 ### Basic types
 
