@@ -108,10 +108,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         } else if (body.authType === 'CUSTOM') {
             integration.oauth_client_id = body.clientId;
             integration.oauth_client_secret = body.clientSecret;
-            integration.oauth_client_id = body.appId;
             integration.app_link = body.appLink;
             // This is a legacy thing
-            integration.custom = { private_key: Buffer.from(body.privateKey).toString('base64') };
+            integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
         }
     }
 
