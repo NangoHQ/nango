@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('providers');
+const envs = parseEnvs(ENVS);
 
 let providers: Record<string, Provider> | undefined = undefined;
 
@@ -31,8 +32,6 @@ let providersHash = '';
 // Monitors for changes to providers over HTTP. Returns a function to clean up
 // the monitoring.
 export async function monitorProviders(): Promise<() => void> {
-    const envs = parseEnvs(ENVS);
-
     const providersUrl = envs.PROVIDERS_URL;
 
     // fall back to standard disk loading if no URL is provided
@@ -46,20 +45,20 @@ export async function monitorProviders(): Promise<() => void> {
     providers = JSON.parse(providersRaw) as Record<string, Provider>;
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
-    void pollProviders();
+    void pollProviders(providersUrl);
 
     return () => {
         polling = false;
     };
 }
 
-async function pollProviders() {
+async function pollProviders(providersUrl: string) {
     if (polling) {
         return;
     }
 
     polling = true;
-    const providersUrl = envs.PROVIDERS_URL;
+
     const reloadInterval = envs.PROVIDERS_RELOAD_INTERVAL;
 
     while (polling) {
