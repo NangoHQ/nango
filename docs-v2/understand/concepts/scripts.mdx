@@ -40,13 +40,13 @@ Scripts provide access to a `nango` object ([reference](/reference/scripts)), pr
 
 ### Performance considerations
 
-Scripts should be somewhat CPU and memory-efficient to prevent operational issues (cf. [recommendations](/customize/guides/advanced/handle-large-datasets)). They execute within a runner VM allocated to your Nango workspace, which has specified limits on memory and CPU usage. Exceeding these limits can cause crashes or delays in processing actions and syncs. Opting for paid plans grants access to VMs with enhanced resources and auto-scaling capabilities for better performance.
+Scripts should be somewhat CPU and memory-efficient to prevent operational issues (cf. [recommendations](/guides/customize/handle-large-datasets)). They execute within a runner VM allocated to your Nango workspace, which has specified limits on memory and CPU usage. Exceeding these limits can cause crashes or delays in processing actions and syncs. Opting for paid plans grants access to VMs with enhanced resources and auto-scaling capabilities for better performance.
 
 ### Testing & deployment
 
 You should test your integration scripts locally to ensure they function as expected (using the [CLI](#the-nango-cli)). Once verified, they are deployed to Nango's cloud infrastructure, where they operate across different [environments](/understand/concepts/environments).
 
-Upon deployment, integration scripts are stored in blob storage. The Nango runner loads and executes these integration scripts as needed ([architecture](/understand/architecture)).
+Upon deployment, integration scripts are stored in blob storage. The Nango runner loads and executes these integration scripts as needed ([architecture](/understand/concepts/architecture)).
 
 ### Limitations
 
@@ -71,7 +71,7 @@ Specifically for syncs, it details the schedule for syncing operations, whether 
 Webhook configurations are also detailed in this file, outlining the subscription mechanisms for receiving updates from external APIs.
 
 ### Development & deployment
-When developing a new integration script, your first step should be to define it in the `nango.yaml` file. Following this, you can use the [CLI](#the-nango-cli) to generate the necessary integration script scaffolding ([step-by-step guide](/customize/guides/create-a-custom-integration)).
+When developing a new integration script, your first step should be to define it in the `nango.yaml` file. Following this, you can use the [CLI](#the-nango-cli) to generate the necessary integration script scaffolding ([step-by-step guide](/guides/customize/create-a-custom-integration)).
 
 After deploying changes to your integration configuration to a Nango cloud environment, these updates will be visible within the Nango UI under the integration's _Endpoints_ tab, ensuring you have a clear overview of the configurations in effect for your integrations.
 
@@ -83,7 +83,7 @@ Consult the [reference](/reference/integration-configuration) for technical deta
 
 # The Nango CLI
 
-The Nango Command-Line Interface (CLI), installed via `npm`, lets you generate, compile, test, and deploy integration scripts & configuration. For a detailed installation guide, refer to the [step-by-step guide](/customize/guides/setup).
+The Nango Command-Line Interface (CLI), installed via `npm`, lets you generate, compile, test, and deploy integration scripts & configuration. For a detailed installation guide, refer to the [step-by-step guide](/guides/customize/setup).
 
 ### Usage guidelines
 - **Integration folder:** All commands (with the exception of `init`) must be executed within the designated Nango [integration folder](#integration-folder).
@@ -110,10 +110,6 @@ The `nango-integrations` folder is generated via the Nango CLI and governs the c
 
 ### Version Control
 You should version-control the `nango-integrations` folder, either with your main codebase or separately. Ensure the `.env` file is excluded to protect your API keys.
-
-### Collaboration with Nango on integrations
-For those using Nango's [managed integration service](/host/managed-integrations), Nango team contributions to the `nango-integrations` folder come via PRs in a shared GitHub repository. These PRs contain updates or new integrations that you can merge and deploy.
-
 
 # Nango endpoint generation & consumption
 

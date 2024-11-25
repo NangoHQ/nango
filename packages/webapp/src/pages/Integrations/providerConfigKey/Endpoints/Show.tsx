@@ -9,6 +9,8 @@ import { EndpointsList } from './components/List';
 import { EndpointOne } from './components/One';
 import PageNotFound from '../../../PageNotFound';
 
+const METHOD_PRIORITY = { GET: 1, POST: 2, PUT: 3, PATCH: 4, DELETE: 5 };
+
 export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['data'] }> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { providerConfigKey } = useParams();
@@ -61,11 +63,7 @@ export const EndpointsShow: React.FC<{ integration: GetIntegration['Success']['d
                         if (a.endpoint.path !== b.endpoint.path) return 0;
 
                         // Sort by method
-                        if (a.endpoint.method === 'GET' && b.endpoint.method !== 'GET') return -1;
-                        else if (a.endpoint.method === 'POST' && b.endpoint.method === 'PUT') return -1;
-                        else if (a.endpoint.method === 'PUT' && b.endpoint.method === 'PATCH') return -1;
-                        else if (a.endpoint.method === 'PATCH' && b.endpoint.method === 'DELETE') return -1;
-                        else return 0;
+                        return METHOD_PRIORITY[a.endpoint.method] - METHOD_PRIORITY[b.endpoint.method];
                     })
             });
         }
