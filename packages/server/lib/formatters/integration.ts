@@ -2,16 +2,19 @@ import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude,
 import { basePublicUrl } from '@nangohq/utils';
 
 export function integrationToApi(data: IntegrationConfig): ApiIntegration {
-    const apiIntegration = {
-        ...data,
+    return {
+        id: data.id,
+        unique_key: data.unique_key,
+        provider: data.provider,
+        oauth_client_id: data.oauth_client_id,
+        oauth_client_secret: data.oauth_client_secret,
+        oauth_scopes: data.oauth_scopes,
+        environment_id: data.environment_id,
+        app_link: data.app_link,
+        custom: data.custom,
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString()
     };
-
-    delete apiIntegration.oauth_client_secret_iv;
-    delete apiIntegration.oauth_client_secret_tag;
-
-    return apiIntegration;
 }
 
 export function integrationToPublicApi({
