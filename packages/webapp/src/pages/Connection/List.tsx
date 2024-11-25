@@ -25,7 +25,6 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import type { ErrorCircleIcon } from '../../components/ErrorCircle';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import Spinner from '../../components/ui/Spinner';
 import { AvatarOrganization } from '../../components/AvatarCustom';
@@ -62,19 +61,6 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 { auth: 0, sync: 0 }
             );
 
-            let errorTooltip = '';
-            let errorIcon: ErrorCircleIcon = '!';
-            if (errorCounts.auth > 0 && errorCounts.sync > 0) {
-                errorTooltip = 'Expired credentials, failed syncs';
-                errorIcon = '!';
-            } else if (errorCounts.auth > 0) {
-                errorTooltip = 'Expired credentials';
-                errorIcon = 'auth';
-            } else if (errorCounts.sync > 0) {
-                errorTooltip = 'Failed syncs';
-                errorIcon = 'sync';
-            }
-
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
@@ -94,9 +80,15 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
-                    {data.errors.length > 0 && (
-                        <SimpleTooltip tooltipContent={errorTooltip}>
-                            <ErrorCircle icon={errorIcon} />
+                    {errorCounts.auth > 0 && (
+                        <SimpleTooltip tooltipContent="Expired credentials">
+                            <ErrorCircle icon="auth" />
+                        </SimpleTooltip>
+                    )}
+
+                    {errorCounts.sync > 0 && (
+                        <SimpleTooltip tooltipContent="Failed syncs">
+                            <ErrorCircle icon="sync" />
                         </SimpleTooltip>
                     )}
                 </div>
@@ -444,7 +436,10 @@ export const ConnectionList: React.FC = () => {
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
-                        <Link to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app" className="text-blue-500">
+                        <Link
+                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                            className="text-blue-500"
+                        >
                             Nango Connect
                         </Link>
                         , or manually here.

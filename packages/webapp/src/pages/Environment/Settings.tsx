@@ -569,7 +569,10 @@ export const EnvironmentSettings: React.FC = () => {
 
                                     <Info variant={'warning'}>
                                         Public Key is deprecated, please use{' '}
-                                        <Link className="underline" to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app">
+                                        <Link
+                                            className="underline"
+                                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                                        >
                                             Nango Connect
                                         </Link>
                                     </Info>
@@ -728,7 +731,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                     <div className="flex text-black text-sm">
                                                         {`To register with external OAuth apps (cf. `}
                                                         <a
-                                                            href="https://docs.nango.dev/integrate/guides/authorize-an-api#use-a-custom-callback-url"
+                                                            href="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#use-a-custom-callback-url"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue ml-1"
@@ -805,7 +808,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 <div className="flex text-black text-sm">
                                                     {`Be notified when new data is available from Nango (cf. `}
                                                     <a
-                                                        href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api#listen-for-webhooks-from-nango"
+                                                        href="https://docs.nango.dev/guides/getting-started/read-from-an-api#listen-for-webhooks-from-nango"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -878,7 +881,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                         <div className="flex text-black text-sm">
                                                             {`Be notified when new data is available from Nango (cf. `}
                                                             <a
-                                                                href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api#listen-for-webhooks-from-nango"
+                                                                href="https://docs.nango.dev/guides/getting-started/read-from-an-api#listen-for-webhooks-from-nango"
                                                                 target="_blank"
                                                                 rel="noreferrer"
                                                                 className="text-text-blue ml-1"
@@ -940,7 +943,10 @@ export const EnvironmentSettings: React.FC = () => {
                                     </label>
                                     <Info variant={'warning'}>
                                         HMAC is deprecated, please use{' '}
-                                        <Link className="underline" to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app">
+                                        <Link
+                                            className="underline"
+                                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                                        >
                                             Nango Connect
                                         </Link>
                                     </Info>

@@ -262,7 +262,8 @@ const initDb = async () => {
         oauth_client_id: '',
         oauth_client_secret: '',
         created_at: now,
-        updated_at: now
+        updated_at: now,
+        missing_fields: []
     });
     if (!providerConfig) throw new Error('Provider config not created');
 

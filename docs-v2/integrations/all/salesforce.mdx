@@ -9,11 +9,11 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml), [`salesforc
 
 | Features | Status |
 | - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | ✅ |
+| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
+| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
+| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
+| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/guides/receive-webhooks-from-an-api) | ✅ |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
@@ -30,7 +30,7 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml), [`salesforc
 
 Salesforce uses a different API base URL, called the `instance_url`, for each customer.
 
-Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization) for you.
+Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/getting-started/authorize-an-api-from-your-app#apis-requiring-connection-specific-configuration-for-authorization) for you.
 
 If you use the Nango Proxy, it is automatically using the correct API base URL. But, if needed, you can retrieve the `instance_url` with the [backend SDK](/reference/sdks/node#get-a-connection-with-credentials) or [Connections API](/reference/api/connection/get).
 

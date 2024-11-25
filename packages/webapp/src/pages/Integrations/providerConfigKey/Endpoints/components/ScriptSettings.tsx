@@ -141,7 +141,7 @@ export const ScriptSettings: React.FC<{
                     <div className="text-s text-text-light-gray pt-7">
                         Nango endpoints are powered by integration scripts. Some of the following configurations can only be changed by modifying this
                         underlying script. If the source is a template, you will need to extend it to change certain configurations (
-                        <Link to="https://docs.nango.dev/customize/guides/extend-an-integration-template" className="underline">
+                        <Link to="https://docs.nango.dev/guides/customize/extend-an-integration-template" className="underline">
                             guide
                         </Link>
                         ).

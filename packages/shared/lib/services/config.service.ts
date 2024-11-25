@@ -9,6 +9,13 @@ import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigI
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { AuthModeType } from '@nangohq/types';
+import { getProvider } from './providers.js';
+
+interface ValidationRule {
+    field: keyof ProviderConfig | 'app_id' | 'private_key';
+    modes: AuthModeType[];
+    isValid(config: ProviderConfig): boolean;
+}
 
 class ConfigService {
     async getById(id: number): Promise<ProviderConfig | null> {
@@ -75,51 +82,6 @@ class ConfigService {
         return encryptionManager.decryptProviderConfig(result);
     }
 
-    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
-        const missingFields = [];
-
-        switch (authMode) {
-            case 'OAUTH1':
-            case 'OAUTH2':
-            case 'TBA':
-                if (!providerConfig.oauth_client_id) {
-                    missingFields.push('oauth_client_id');
-                }
-
-                if (!providerConfig.oauth_client_secret) {
-                    missingFields.push('oauth_client_secret');
-                }
-                break;
-
-            case 'APP':
-                if (!providerConfig.oauth_client_id) {
-                    missingFields.push('oauth_client_id');
-                }
-
-                if (!providerConfig.oauth_client_secret) {
-                    missingFields.push('oauth_client_secret');
-                }
-
-                if (!providerConfig.app_link) {
-                    missingFields.push('app_link');
-                }
-                break;
-
-            case 'CUSTOM':
-                break;
-
-            case 'BASIC':
-            case 'API_KEY':
-            case 'APP_STORE':
-            case 'TABLEAU':
-            case 'NONE':
-            case 'OAUTH2_CC':
-                break;
-        }
-
-        return missingFields;
-    }
-
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
         return (
             await db.knex
@@ -160,7 +122,14 @@ class ConfigService {
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
@@ -217,10 +186,18 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig) {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
+        const encrypted = encryptionManager.encryptProviderConfig(config);
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, encrypted);
+
         return db.knex
             .from<ProviderConfig>(`_nango_configs`)
             .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
-            .update(encryptionManager.encryptProviderConfig(config));
+            .update(encrypted);
     }
 
     async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
@@ -281,6 +258,38 @@ class ConfigService {
         }
 
         return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
+    }
+
+    VALIDATION_RULES: ValidationRule[] = [
+        {
+            field: 'oauth_client_id',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
+            isValid: (config) => !!config.oauth_client_id
+        },
+        {
+            field: 'oauth_client_secret',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
+            isValid: (config) => !!config.oauth_client_secret
+        },
+        {
+            field: 'app_link',
+            modes: ['APP', 'CUSTOM'],
+            isValid: (config) => !!config.app_link
+        },
+        {
+            field: 'app_id',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['app_id']
+        },
+        {
+            field: 'private_key',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['private_key']
+        }
+    ];
+
+    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 }
 
