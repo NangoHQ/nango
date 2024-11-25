@@ -42,22 +42,30 @@ export async function monitorProviders(): Promise<() => void> {
     providers = JSON.parse(providersRaw) as Record<string, Provider>;
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
-    const timeout = setInterval(async () => {
-        try {
-            const providersRaw = await fetchProvidersRaw(providersUrl);
-            const newProvidersHash = createHash('sha1').update(providersRaw).digest('hex');
+    let running = true;
+    logger.debug(reloadInterval);
+    void (async function () {
+        while (running) {
+            await new Promise((resolve) => setTimeout(resolve, reloadInterval));
 
-            if (newProvidersHash !== providersHash) {
-                providersHash = newProvidersHash;
-                providers = JSON.parse(providersRaw) as Record<string, Provider>;
-                logger.info(`Providers reloaded (${providersHash})`);
+            try {
+                const providersRaw = await fetchProvidersRaw(providersUrl);
+                const newProvidersHash = createHash('sha1').update(providersRaw).digest('hex');
+
+                if (newProvidersHash !== providersHash) {
+                    providersHash = newProvidersHash;
+                    providers = JSON.parse(providersRaw) as Record<string, Provider>;
+                    logger.info(`Providers reloaded (${providersHash})`);
+                }
+            } catch (err) {
+                logger.error('Failed to fetch providers.json', err);
             }
-        } catch (err) {
-            logger.error('Failed to fetch providers.json', err);
         }
-    }, reloadInterval);
+    })();
 
-    return () => clearInterval(timeout);
+    return () => {
+        running = false;
+    };
 }
 
 async function fetchProvidersRaw(providersUrl: string): Promise<string> {
