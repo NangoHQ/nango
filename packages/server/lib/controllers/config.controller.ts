@@ -418,7 +418,8 @@ class ConfigController {
                 app_link,
                 environment_id: environmentId,
                 created_at: new Date(),
-                updated_at: new Date()
+                updated_at: new Date(),
+                missing_fields: []
             };
             if (custom) {
                 config.custom = custom;
