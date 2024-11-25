@@ -198,7 +198,8 @@ export const ShowIntegration: React.FC = () => {
                 </Link>
                 <Link to="./settings">
                     <Button variant={tab === 'settings' ? 'active' : 'zombie'}>
-                        Settings{data.missingFields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                        Settings
+                        {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                     </Button>
                 </Link>
             </nav>

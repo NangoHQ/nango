@@ -67,8 +67,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
                 connectionsCount: count,
                 webhookSecret,
                 webhookUrl: provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.unique_key}` : null
-            },
-            missingFields: configService.validateProviderConfig(provider.auth_mode, integration)
+            }
         }
     });
 });

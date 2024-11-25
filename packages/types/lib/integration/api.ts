@@ -72,7 +72,6 @@ export type GetIntegration = Endpoint<{
                 webhookUrl: string | null;
                 webhookSecret: string | null;
             };
-            missingFields: string[];
         };
     };
 }>;

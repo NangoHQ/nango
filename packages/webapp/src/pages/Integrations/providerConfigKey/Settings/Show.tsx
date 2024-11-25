@@ -4,8 +4,8 @@ import { SettingsOAuth, settingsMissingOAuth } from './components/OAuth';
 import { useStore } from '../../../../store';
 import { useEnvironment } from '../../../../hooks/useEnvironment';
 import type { EnvironmentAndAccount } from '@nangohq/server';
-import { SettingsApp } from './components/App';
-import { SettingsCustom } from './components/Custom';
+import { SettingsApp, settingsMissingApp } from './components/App';
+import { SettingsCustom, settingsMissingCustom } from './components/Custom';
 import { SettingsDefault } from './components/Default';
 
 export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
@@ -42,13 +42,13 @@ const missingFieldsMessage = (data: GetIntegration['Success']['data']): string |
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA':
-            return settingsMissingOAuth(data.missingFields);
+            return settingsMissingOAuth(data.integration.missing_fields);
 
         case 'APP':
-            return '';
+            return settingsMissingApp(data.integration.missing_fields);
 
         case 'CUSTOM':
-            return '';
+            return settingsMissingCustom(data.integration.missing_fields);
 
         case 'BASIC':
         case 'API_KEY':

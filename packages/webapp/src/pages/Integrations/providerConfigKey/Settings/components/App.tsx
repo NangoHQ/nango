@@ -105,3 +105,20 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
         </div>
     );
 };
+
+export const settingsMissingApp = (missingFields: string[]): string => {
+    return missingFields
+        .map((field) => {
+            switch (field) {
+                case 'oauth_client_id':
+                    return 'App ID';
+                case 'oauth_client_secret':
+                    return 'App Private Key';
+                case 'app_link':
+                    return 'App Public Link';
+                default:
+                    return field;
+            }
+        })
+        .join(', ');
+};
