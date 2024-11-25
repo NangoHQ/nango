@@ -21,7 +21,7 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
-    const [appId, setAppId] = useState(integration.oauth_client_id || '');
+    const [appId, setAppId] = useState(integration.custom?.app_id || '');
     const [appLink, setAppLink] = useState(integration.app_link || '');
     const [privateKey, setPrivateKey] = useState(integration.custom?.private_key || '');
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
