@@ -31,7 +31,7 @@ export async function postConnectionCreation(
         const { name, file_location: fileLocation, version } = script;
 
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'events', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
+            { operation: { type: 'events', action: 'post_connection_creation' }, expiresAt: defaultOperationExpiration.action() },
             {
                 account,
                 environment,
