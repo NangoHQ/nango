@@ -92,8 +92,7 @@
                     "type": "array",
                     "items": {
                         "type": "string"
-                    },
-                    "enum": ["base_url", "scopes"]
+                    }
                 },
                 "authorization_url_replacements": {
                     "type": "object",
