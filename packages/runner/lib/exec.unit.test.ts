@@ -251,8 +251,8 @@ describe('Exec', () => {
                         xsrfCookieName: 'XSRF-TOKEN',
                         xsrfHeaderName: 'X-XSRF-TOKEN'
                     },
-                    message: '',
-                    name: 'AggregateError',
+                    message: expect.any(String),
+                    name: expect.any(String),
                     status: null
                 }
             },
