@@ -425,7 +425,7 @@ class ConfigController {
                 config.custom = custom;
             }
 
-            const result = await configService.createProviderConfig(config);
+            const result = await configService.createProviderConfig(config, provider);
 
             if (result) {
                 void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: result.provider });

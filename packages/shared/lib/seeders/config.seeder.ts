@@ -1,36 +1,67 @@
 import configService from '../services/config.service.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { DBEnvironment } from '@nangohq/types';
+import { getProvider } from '../services/providers.js';
 
 export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
-    await configService.createProviderConfig({
-        unique_key: Math.random().toString(36).substring(7),
-        provider: 'google',
-        environment_id: env.id
-    } as ProviderConfig);
-    await configService.createProviderConfig({
-        unique_key: Math.random().toString(36).substring(7),
-        provider: 'google',
-        environment_id: env.id
-    } as ProviderConfig);
-    await configService.createProviderConfig({
-        unique_key: Math.random().toString(36).substring(7),
-        provider: 'google',
-        environment_id: env.id
-    } as ProviderConfig);
-    await configService.createProviderConfig({
-        unique_key: Math.random().toString(36).substring(7),
-        provider: 'notion',
-        environment_id: env.id
-    } as ProviderConfig);
+    const googleProvider = getProvider('google');
+    if (!googleProvider) {
+        throw new Error('createConfigSeeds: google provider not found');
+    }
+
+    const notionProvider = getProvider('notion');
+    if (!notionProvider) {
+        throw new Error('createConfigSeeds: notion provider not found');
+    }
+
+    await configService.createProviderConfig(
+        {
+            unique_key: Math.random().toString(36).substring(7),
+            provider: 'google',
+            environment_id: env.id
+        } as ProviderConfig,
+        googleProvider
+    );
+    await configService.createProviderConfig(
+        {
+            unique_key: Math.random().toString(36).substring(7),
+            provider: 'google',
+            environment_id: env.id
+        } as ProviderConfig,
+        googleProvider
+    );
+    await configService.createProviderConfig(
+        {
+            unique_key: Math.random().toString(36).substring(7),
+            provider: 'google',
+            environment_id: env.id
+        } as ProviderConfig,
+        googleProvider
+    );
+    await configService.createProviderConfig(
+        {
+            unique_key: Math.random().toString(36).substring(7),
+            provider: 'notion',
+            environment_id: env.id
+        } as ProviderConfig,
+        notionProvider
+    );
 };
 
-export const createConfigSeed = async (env: DBEnvironment, unique_key: string, provider: string): Promise<ProviderConfig> => {
-    const created = await configService.createProviderConfig({
-        unique_key,
-        provider,
-        environment_id: env.id
-    } as ProviderConfig);
+export const createConfigSeed = async (env: DBEnvironment, unique_key: string, providerName: string): Promise<ProviderConfig> => {
+    const provider = getProvider(providerName);
+    if (!provider) {
+        throw new Error(`createConfigSeed: ${providerName} provider not found`);
+    }
+
+    const created = await configService.createProviderConfig(
+        {
+            unique_key,
+            provider: providerName,
+            environment_id: env.id
+        } as ProviderConfig,
+        provider
+    );
     if (!created) {
         throw new Error('failed to created to provider config');
     }
