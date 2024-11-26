@@ -24,7 +24,8 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
                 actions: [],
                 providerConfigKey: syncConfig.unique_key,
                 provider: syncConfig.provider,
-                syncs: []
+                syncs: [],
+                [`on-events`]: []
             };
         }
 
