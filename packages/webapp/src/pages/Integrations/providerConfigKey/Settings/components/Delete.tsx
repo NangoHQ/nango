@@ -6,6 +6,7 @@ import { useToast } from '../../../../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
+import { invalidateConnections } from '../../../../../hooks/useConnections';
 
 export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration }> = ({ env, integration }) => {
     const { toast } = useToast();
@@ -26,13 +27,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             toast({ title: `Integration "${integration.unique_key}" has been deleted`, variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
 
-            // Invalidate SWR Infinite cache for connections
-            for (const key of cache.keys()) {
-                if (key.includes('/api/v1/connections?')) {
-                    void mutate(key, undefined);
-                    cache.delete(key);
-                }
-            }
+            invalidateConnections(cache, mutate);
 
             navigate(`/${env}/integrations`);
         }
