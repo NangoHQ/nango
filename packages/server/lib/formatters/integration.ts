@@ -13,7 +13,8 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         app_link: data.app_link,
         custom: data.custom,
         created_at: data.created_at.toISOString(),
-        updated_at: data.updated_at.toISOString()
+        updated_at: data.updated_at.toISOString(),
+        missing_fields: data.missing_fields
     };
 }
 
