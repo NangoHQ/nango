@@ -98,7 +98,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        if (isConnectSession) {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
