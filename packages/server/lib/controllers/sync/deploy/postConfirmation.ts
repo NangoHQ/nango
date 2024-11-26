@@ -1,7 +1,7 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostDeployConfirmation } from '@nangohq/types';
+import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getAndReconcileDifferences } from '@nangohq/shared';
+import { eventTypeMapper, getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { validation } from './validation.js';
@@ -24,7 +24,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
     const body: PostDeployConfirmation['Body'] = val.data;
     const environmentId = res.locals['environment'].id;
 
-    const result = await getAndReconcileDifferences({
+    const syncAndActionDifferences = await getAndReconcileDifferences({
         environmentId,
         flows: body.flowConfigs,
         performAction: false,
@@ -33,9 +33,40 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         logContextGetter,
         orchestrator
     });
-    if (!result) {
+    if (!syncAndActionDifferences) {
         res.status(500).send({ error: { code: 'server_error' } });
         return;
+    }
+
+    let result: ScriptDifferences;
+    if (body.onEventScriptsByProvider) {
+        const diff = await onEventScriptService.diffChanges({
+            environmentId,
+            onEventScriptsByProvider: body.onEventScriptsByProvider
+        });
+        result = {
+            ...syncAndActionDifferences,
+            newOnEventScripts: diff.added.map((script) => {
+                return {
+                    providerConfigKey: script.providerConfigKey,
+                    name: script.name,
+                    event: eventTypeMapper.fromDb(script.event)
+                };
+            }),
+            deletedOnEventScripts: diff.deleted.map((script) => {
+                return {
+                    providerConfigKey: script.providerConfigKey,
+                    name: script.name,
+                    event: eventTypeMapper.fromDb(script.event)
+                };
+            })
+        };
+    } else {
+        result = {
+            ...syncAndActionDifferences,
+            newOnEventScripts: [],
+            deletedOnEventScripts: []
+        };
     }
 
     res.status(200).send(result);
