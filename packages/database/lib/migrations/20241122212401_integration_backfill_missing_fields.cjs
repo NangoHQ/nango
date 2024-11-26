@@ -7,8 +7,14 @@ const fs = require('node:fs');
 const yaml = require('js-yaml');
 
 exports.up = async function (knex) {
+    let providers;
     const providersPath = path.join(__dirname, '..', '..', '..', 'shared', 'providers.yaml');
-    const providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
+    try {
+        providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
+    } catch (e) {
+        console.error(`Warning: Failed to load providers.yaml. ${e.message}. Skipping migration. Configuration warnings will not be accurate.`);
+        return;
+    }
 
     const needsClientId = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
     const clientIdProviders = Object.entries(providers)
