@@ -169,7 +169,7 @@ export async function exec(
                     success: false,
                     error: {
                         type: error.type,
-                        payload: error.payload,
+                        payload: truncateJson(error.payload),
                         status: error.status
                     },
                     response: null
@@ -193,7 +193,7 @@ export async function exec(
                         success: false,
                         error: {
                             type: 'script_http_error',
-                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500
                         },
                         response: null
