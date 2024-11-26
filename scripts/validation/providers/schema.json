@@ -88,8 +88,12 @@
                 "authorization_url": {
                     "type": "string"
                 },
-                "authorization_url_encode": {
-                    "type": "boolean"
+                "authorization_url_skip_encode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "enum": ["base_url", "scopes"]
                 },
                 "authorization_url_replacements": {
                     "type": "object",
@@ -397,8 +401,11 @@
                         }
                     ]
                 },
-                "token_url_encode": {
-                    "type": "boolean"
+                "token_url_skip_encode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "webhook_user_defined_secret": {
                     "type": "boolean"

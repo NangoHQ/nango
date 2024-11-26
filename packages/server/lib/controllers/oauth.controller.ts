@@ -533,12 +533,27 @@ class OAuthController {
                     oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, provider, connectionConfig)
                 );
 
+                const scopeSeparator = provider.scope_separator || ' ';
+                const scopes = providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(scopeSeparator) : '';
+
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
-                    scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : '',
+                    scope: scopes,
                     state: session.id,
                     ...allAuthParams
                 });
+
+                if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                    const url = new URL(authorizationUri);
+                    const queryParams = new URLSearchParams(url.search);
+                    queryParams.delete('scope');
+                    let newQuery = queryParams.toString();
+                    if (scopes) {
+                        newQuery = newQuery ? `${newQuery}&scope=${scopes}` : `scope=${scopes}`;
+                    }
+                    url.search = newQuery;
+                    authorizationUri = url.toString();
+                }
 
                 if (provider.authorization_url_fragment) {
                     const urlObj = new URL(authorizationUri);
