@@ -75,7 +75,7 @@ export const connectionCreated = async (
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
     logCtx?: LogContext
 ): Promise<void> => {
-    const { connection, environment, auth_mode } = createdConnectionPayload;
+    const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
         await postConnection(createdConnectionPayload, provider, logContextGetter);
@@ -93,6 +93,7 @@ export const connectionCreated = async (
         environment,
         webhookSettings,
         auth_mode,
+        endUser,
         success: true,
         operation: 'creation',
         provider,
