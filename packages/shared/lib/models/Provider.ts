@@ -15,6 +15,7 @@ export interface Config extends TimestampsAndDeleted {
     oauth_client_secret_tag?: string | null;
     app_link?: string | null | undefined;
     custom?: Record<string, string> | undefined;
+    missing_fields: string[];
 }
 
 export interface IntegrationWithCreds extends Integration {
