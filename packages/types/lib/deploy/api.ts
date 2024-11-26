@@ -3,7 +3,7 @@ import type { JSONSchema7 } from 'json-schema';
 import type { Endpoint, ApiError } from '../api.js';
 import type { IncomingFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
-import type { OnEventType } from '../nangoYaml/index.js';
+import type { OnEventType } from '../scripts/on-events/api.js';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';

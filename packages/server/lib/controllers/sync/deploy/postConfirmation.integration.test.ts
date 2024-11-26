@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
-import { eventTypeMapper, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
 
 const endpoint = '/sync/deploy/confirmation';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -123,7 +123,7 @@ describe(`POST ${endpoint}`, () => {
                 {
                     name: existingOnEvent.name,
                     providerConfigKey: existingOnEvent.providerConfigKey,
-                    event: eventTypeMapper.fromDb(existingOnEvent.event)
+                    event: existingOnEvent.event
                 }
             ]
         });

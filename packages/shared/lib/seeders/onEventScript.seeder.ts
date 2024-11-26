@@ -9,7 +9,7 @@ export async function createOnEventScript({
     account: DBTeam;
     environment: DBEnvironment;
     providerConfigKey: string;
-}): Promise<OnEventScript & { providerConfigKey: string }> {
+}): Promise<OnEventScript> {
     const scripts: OnEventScriptsByProvider[] = [
         {
             providerConfigKey,

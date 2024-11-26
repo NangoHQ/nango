@@ -1,7 +1,7 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { eventTypeMapper, getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
+import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
 import { validation } from './validation.js';
@@ -50,14 +50,14 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
                 return {
                     providerConfigKey: script.providerConfigKey,
                     name: script.name,
-                    event: eventTypeMapper.fromDb(script.event)
+                    event: script.event
                 };
             }),
             deletedOnEventScripts: diff.deleted.map((script) => {
                 return {
                     providerConfigKey: script.providerConfigKey,
                     name: script.name,
-                    event: eventTypeMapper.fromDb(script.event)
+                    event: script.event
                 };
             })
         };
