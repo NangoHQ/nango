@@ -229,7 +229,7 @@ describe('Exec', () => {
                             'Content-Type': 'application/json',
                             'Nango-Is-Dry-Run': 'true',
                             'Nango-Is-Sync': 'true',
-                            'User-Agent': 'nango-node-client/0.45.0 (darwin/23.2.0; node.js/20.12.2); sdk'
+                            'User-Agent': expect.any(String)
                         },
                         maxBodyLength: -1,
                         maxContentLength: -1,
