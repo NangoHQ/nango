@@ -28,7 +28,8 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     }
 
     const body: PostIntegration['Body'] = valBody.data;
-    if (!getProvider(body.provider)) {
+    const provider = getProvider(body.provider);
+    if (!provider) {
         res.status(400).send({
             error: { code: 'invalid_body', message: 'invalid provider' }
         });
@@ -37,7 +38,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
 
     const { environment, account } = res.locals;
 
-    const integration = await configService.createEmptyProviderConfig(body.provider, environment.id);
+    const integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
 
     void analytics.track(AnalyticsTypes.CONFIG_CREATED, account.id, { provider: body.provider });
 

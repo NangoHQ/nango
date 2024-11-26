@@ -8,7 +8,7 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, Provider } from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface ValidationRule {
@@ -121,12 +121,7 @@ class ConfigService {
             .filter((config) => config != null) as ProviderConfig[];
     }
 
-    async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
-        const provider = getProvider(config.provider);
-        if (!provider) {
-            throw new NangoError('unknown_provider');
-        }
-
+    async createProviderConfig(config: ProviderConfig, provider: Provider): Promise<ProviderConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
 
@@ -134,18 +129,21 @@ class ConfigService {
         return res[0] ?? null;
     }
 
-    async createEmptyProviderConfig(provider: string, environment_id: number): Promise<ProviderConfig> {
+    async createEmptyProviderConfig(providerName: string, environment_id: number, provider: Provider): Promise<ProviderConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ provider, environment_id, deleted: false })
+            .where({ provider: providerName, environment_id, deleted: false })
             .first();
 
-        const config = await this.createProviderConfig({
-            environment_id,
-            unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: providerName
+            } as ProviderConfig,
             provider
-        } as ProviderConfig);
+        );
 
         if (!config) {
             throw new NangoError('unknown_provider_config');
@@ -241,17 +239,24 @@ class ConfigService {
         providerConfigKey: string
     ): Promise<{ copiedToId: number; copiedFromId: number } | null> {
         const fromConfig = await this.getProviderConfig(providerConfigKey, fromEnvironmentId);
-
         if (!fromConfig || !fromConfig.id) {
             return null;
         }
 
+        const provider = getProvider(fromConfig.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
         const { id: foundConfigId, ...configWithoutId } = fromConfig;
-        const providerConfigResponse = await this.createProviderConfig({
-            ...configWithoutId,
-            environment_id: toEnvironmentId,
-            unique_key: fromConfig.unique_key
-        });
+        const providerConfigResponse = await this.createProviderConfig(
+            {
+                ...configWithoutId,
+                environment_id: toEnvironmentId,
+                unique_key: fromConfig.unique_key
+            },
+            provider
+        );
 
         if (!providerConfigResponse) {
             return null;
