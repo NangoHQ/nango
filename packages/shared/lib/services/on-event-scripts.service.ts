@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import remoteFileService from '../file/remote.service.js';
+import remoteFileService from './file/remote.service.js';
 import { env } from '@nangohq/utils';
 import type { OnEventScriptsByProvider, OnEventScript, DBTeam, DBEnvironment, OnEventType } from '@nangohq/types';
-import { increment } from './config/config.service.js';
-import configService from '../config.service.js';
+import { increment } from './sync/config/config.service.js';
+import configService from './config.service.js';
 
 const TABLE = 'on_event_scripts';
 

@@ -1,9 +1,14 @@
 import type { RecentlyCreatedConnection } from '@nangohq/shared';
 import { onEventScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration } from '@nangohq/logs';
 import { getOrchestrator } from '../../../utils/utils.js';
 
-export async function onConnectionCreated(createdConnection: RecentlyCreatedConnection, provider: string, logContextGetter: LogContextGetter): Promise<void> {
+export async function postConnectionCreation(
+    createdConnection: RecentlyCreatedConnection,
+    provider: string,
+    logContextGetter: LogContextGetter
+): Promise<void> {
     if (!createdConnection) {
         return;
     }
@@ -14,26 +19,28 @@ export async function onConnectionCreated(createdConnection: RecentlyCreatedConn
         return;
     }
 
-    const onConnectionCreatedScripts = await onEventScriptService.getByConfig(config_id, 'post-connection-creation');
+    const event = 'post-connection-creation';
 
-    if (!onConnectionCreatedScripts || onConnectionCreatedScripts.length === 0) {
+    const postConnectionCreationScripts = await onEventScriptService.getByConfig(config_id, event);
+
+    if (postConnectionCreationScripts.length === 0) {
         return;
     }
 
-    const logCtx = await logContextGetter.create(
-        { operation: { type: 'auth', action: 'post_connection' } },
-        {
-            account,
-            environment,
-            integration: { id: config_id, name: connection.provider_config_key, provider },
-            connection: { id: connection.id, name: connection.connection_id }
-        }
-    );
-
-    let failed = false;
-    for (const script of onConnectionCreatedScripts) {
+    for (const script of postConnectionCreationScripts) {
         const { name, file_location: fileLocation, version } = script;
 
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'events', action: 'post_connection_creation' }, expiresAt: defaultOperationExpiration.action() },
+            {
+                account,
+                environment,
+                integration: { id: config_id, name: connection.provider_config_key, provider: provider },
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: script.id, name: script.name },
+                meta: { event }
+            }
+        );
         const res = await getOrchestrator().triggerOnEventScript({
             connection: createdConnection.connection,
             version,
@@ -42,13 +49,9 @@ export async function onConnectionCreated(createdConnection: RecentlyCreatedConn
             logCtx
         });
         if (res.isErr()) {
-            failed = true;
+            await logCtx.failed();
+        } else {
+            await logCtx.success();
         }
-    }
-
-    if (failed) {
-        await logCtx.failed();
-    } else {
-        await logCtx.success();
     }
 }

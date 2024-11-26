@@ -25,7 +25,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { ErrorCircle } from '../../components/ui/label/error-circle';
+import { ErrorCircle } from '../../components/ErrorCircle';
 import Spinner from '../../components/ui/Spinner';
 import { AvatarOrganization } from '../../components/AvatarCustom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
@@ -33,6 +33,7 @@ import { IconChevronDown } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
 import type { ApiConnectionSimple } from '@nangohq/types';
 import { CopyText } from '../../components/CopyText';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -47,6 +48,19 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         size: 300,
         cell: ({ row }) => {
             const data = row.original;
+
+            const errorCounts = data.errors.reduce(
+                (acc, error) => {
+                    if (error.type === 'auth') {
+                        acc.auth += 1;
+                    } else if (error.type === 'sync') {
+                        acc.sync += 1;
+                    }
+                    return acc;
+                },
+                { auth: 0, sync: 0 }
+            );
+
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
@@ -66,7 +80,17 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
-                    {row.original.errors.length > 0 && <ErrorCircle />}
+                    {errorCounts.auth > 0 && (
+                        <SimpleTooltip tooltipContent="Expired credentials">
+                            <ErrorCircle icon="auth" />
+                        </SimpleTooltip>
+                    )}
+
+                    {errorCounts.sync > 0 && (
+                        <SimpleTooltip tooltipContent="Failed syncs">
+                            <ErrorCircle icon="sync" />
+                        </SimpleTooltip>
+                    )}
                 </div>
             );
         }
@@ -289,10 +313,14 @@ export const ConnectionList: React.FC = () => {
                     {connectionsCount?.data && (
                         <div className="flex justify-end w-full text-[12px] text-white">
                             {connectionsCount.data.total} connection{connectionsCount.data.total !== 1 ? 's' : ''}
-                            {connectionsCount.data.withAuthError > 0 && (
-                                <span className="flex items-center ml-1">
-                                    ({connectionsCount?.data.withAuthError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
-                                </span>
+                            {connectionsCount.data.withError > 0 && (
+                                <SimpleTooltip
+                                    tooltipContent={`${connectionsCount.data.withAuthError} authorization error${connectionsCount.data.withAuthError !== 1 ? 's' : ''}, ${connectionsCount.data.withSyncError} synchronization error${connectionsCount.data.withSyncError !== 1 ? 's' : ''}`}
+                                >
+                                    <span className="flex items-center ml-1">
+                                        ({connectionsCount?.data.withError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    </span>
+                                </SimpleTooltip>
                             )}
                         </div>
                     )}
@@ -408,7 +436,10 @@ export const ConnectionList: React.FC = () => {
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
-                        <Link to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app" className="text-blue-500">
+                        <Link
+                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                            className="text-blue-500"
+                        >
                             Nango Connect
                         </Link>
                         , or manually here.

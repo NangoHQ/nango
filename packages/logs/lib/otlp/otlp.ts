@@ -5,7 +5,6 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { once, stringifyError } from '@nangohq/utils';
 import { logger } from '../utils.js';
 import { RoutingSpanProcessor } from './otlpSpanProcessor.js';
-import { setInterval } from 'timers';
 
 // Enable OpenTelemetry console logging
 // import { DiagLogLevel, DiagConsoleLogger, diag } from '@opentelemetry/api';
@@ -53,10 +52,17 @@ async function updateRoutes(getRoutes: () => Promise<RouteConfig[]>) {
 }
 
 export const otlp = {
+    running: false,
     register: once(async (getRoutes: () => Promise<RouteConfig[]>) => {
-        await updateRoutes(getRoutes);
-        setInterval(async () => await updateRoutes(getRoutes), 10000);
+        otlp.running = true;
+        while (otlp.running) {
+            await updateRoutes(getRoutes);
+            await new Promise((resolve) => setTimeout(resolve, 15000));
+        }
     }),
+    stop: () => {
+        otlp.running = false;
+    },
     tracer: trace.getTracer('nango-otlp'),
     routingAttributeKey: 'otlp.internal.routingKey'
 };

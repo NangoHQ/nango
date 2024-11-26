@@ -56,7 +56,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No sync executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/integrate/guides/sync-data-from-an-api" className="underline text-white">
+                                <Link to="https://docs.nango.dev/guides/getting-started/read-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -71,7 +71,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No action executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/integrate/guides/perform-workflows-with-an-api" className="underline text-white">
+                                <Link to="https://docs.nango.dev/guides/getting-started/write-to-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
@@ -85,7 +85,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No proxy requests sent in the last 14 days.{' '}
-                            <Link to="https://docs.nango.dev/integrate/guides/proxy-requests-to-an-api" className="underline text-white">
+                            <Link to="https://docs.nango.dev/guides/proxy-requests-to-an-api" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>
@@ -99,7 +99,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No webhook executions in the last 14 days.{' '}
-                                <Link to="https://docs.nango.dev/integrate/guides/receive-webhooks-from-an-api" className="underline text-white">
+                                <Link to="https://docs.nango.dev/guides/receive-webhooks-from-an-api" className="underline text-white">
                                     Learn more
                                 </Link>
                             </div>
