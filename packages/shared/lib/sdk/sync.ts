@@ -4,7 +4,7 @@ import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, isAxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
 import {
@@ -594,6 +594,10 @@ export class NangoAction {
                     await this.sendLogToPersist(log);
                 })
             );
+            if (isAxiosError(response)) {
+                // remove axiosError.config to avoid huge payload/logs
+                delete response.config;
+            }
 
             if (response instanceof Error) {
                 throw response;
