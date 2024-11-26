@@ -85,12 +85,14 @@ export const onEventScriptService = {
             }
             if (onEventInserts.length > 0) {
                 type R = Awaited<ReturnType<typeof onEventScriptService.update>>;
-                return await trx
-                    .insert<OnEventScript[]>(onEventInserts)
-                    .into(TABLE)
-                    .returning('*')
-                    .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
-                    .select<R>([`${TABLE}.*`, '_nango_configs.provider_config_key as providerConfigKey']);
+                const res = await trx
+                    .with('inserted', (qb) => {
+                        qb.insert(onEventInserts).into(TABLE).returning('*');
+                    })
+                    .select<R>(['inserted.*', '_nango_configs.unique_key as providerConfigKey'])
+                    .from('inserted')
+                    .join('_nango_configs', 'inserted.config_id', '_nango_configs.id');
+                return res;
             }
             return [];
         });
