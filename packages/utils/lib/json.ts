@@ -15,6 +15,10 @@ export function stringifyObject(value: any): string {
             }
             if (key === 'Authorization') {
                 return '[Redacted]';
+            } else if (key === 'httpAgent' || key === 'httpsAgent') {
+                return undefined;
+            } else if (key === 'stack') {
+                return undefined;
             }
             return value;
         },

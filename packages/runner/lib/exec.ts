@@ -9,7 +9,7 @@ import * as zod from 'zod';
 import * as soap from 'soap';
 import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
-import { errorToObject, metrics } from '@nangohq/utils';
+import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { RunnerOutput } from '@nangohq/types';
 
@@ -154,7 +154,9 @@ export async function exec(
                     success: false,
                     error: {
                         type,
-                        payload: Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}, // TODO: fix ActionError so payload is always an object
+                        payload: truncateJson(
+                            Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
+                        ), // TODO: fix ActionError so payload is always an object
                         status: 500
                     },
                     response: null
@@ -180,7 +182,7 @@ export async function exec(
                         success: false,
                         error: {
                             type: 'script_http_error',
-                            payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
+                            payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
                             status: error.response.status
                         },
                         response: null
@@ -204,7 +206,7 @@ export async function exec(
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                         status: 500
                     },
                     response: null
@@ -216,7 +218,7 @@ export async function exec(
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                         status: 500
                     },
                     response: null

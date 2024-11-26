@@ -149,4 +149,116 @@ describe('Exec', () => {
         });
         expect(res.success).toEqual(false);
     });
+
+    it('should truncate a large error', async () => {
+        const nangoProps = getNangoProps();
+        const jsCode = `
+        fn = async (nango) => {
+            throw new nango.ActionError({
+                message: "A manual error",
+                reason: "a".repeat(1_000_000),
+            });
+        };
+        exports.default = fn
+        `;
+        const res = await exec(nangoProps, jsCode);
+
+        expect(res.error).toStrictEqual({
+            payload: {
+                message: 'A manual error'
+            },
+            status: 500,
+            type: 'action_script_runtime_error'
+        });
+        expect(res.success).toEqual(false);
+    });
+
+    it('should redac Authorization', async () => {
+        const nangoProps = getNangoProps();
+        const jsCode = `
+        fn = async (nango) => {
+            throw new nango.ActionError({
+                message: "A manual error",
+                Authorization: 'a very secret secret'
+            });
+        };
+        exports.default = fn
+        `;
+        const res = await exec(nangoProps, jsCode);
+
+        expect(res.error).toStrictEqual({
+            payload: {
+                message: 'A manual error',
+                Authorization: '[Redacted]'
+            },
+            status: 500,
+            type: 'action_script_runtime_error'
+        });
+        expect(res.success).toEqual(false);
+    });
+
+    it('should truncate caught AxiosError', async () => {
+        const nangoProps = getNangoProps();
+        const jsCode = `
+        fn = async (nango) => {
+            try {
+                await nango.getConnection();
+            } catch (err) {
+                throw new nango.ActionError({
+                    message: "A manual error",
+                    reason: err,
+                });
+            }
+        };
+        exports.default = fn
+        `;
+        const res = await exec(nangoProps, jsCode);
+
+        expect(res.error).toStrictEqual({
+            payload: {
+                message: 'A manual error',
+                reason: {
+                    code: expect.any(String),
+                    config: {
+                        adapter: ['xhr', 'http', 'fetch'],
+                        env: {},
+                        headers: {
+                            Accept: 'application/json, text/plain, */*',
+                            'Accept-Encoding': 'gzip, compress, deflate, br',
+                            Authorization: '[Redacted]',
+                            'Content-Type': 'application/json',
+                            'Nango-Is-Dry-Run': 'true',
+                            'Nango-Is-Sync': 'true',
+                            'User-Agent': 'nango-node-client/0.45.0 (darwin/23.2.0; node.js/20.12.2); sdk'
+                        },
+                        maxBodyLength: -1,
+                        maxContentLength: -1,
+                        method: 'get',
+                        params: {
+                            force_refresh: false,
+                            provider_config_key: 'provider-config-key',
+                            refresh_token: false
+                        },
+                        timeout: 0,
+                        transformRequest: [null],
+                        transformResponse: [null],
+                        transitional: {
+                            clarifyTimeoutError: false,
+                            forcedJSONParsing: true,
+                            silentJSONParsing: true
+                        },
+                        url: 'http://localhost:3003/connection/connection-id',
+                        xsrfCookieName: 'XSRF-TOKEN',
+                        xsrfHeaderName: 'X-XSRF-TOKEN'
+                    },
+                    message: '',
+                    name: 'AggregateError',
+                    status: null
+                }
+            },
+            status: 500,
+            type: 'action_script_runtime_error'
+        });
+        expect(res.success).toEqual(false);
+    });
 });
