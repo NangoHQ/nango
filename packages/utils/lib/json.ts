@@ -3,7 +3,7 @@ import truncateJsonPkg from 'truncate-json';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
 
-const ignoredKeys = ['httpAgent', 'httpsAgent', 'trace', '_sessionCache'];
+const ignoredKeys = ['httpAgent', 'httpsAgent', 'trace', '_sessionCache', 'stack'];
 /**
  * Safely stringify an object (mostly handle circular ref and known problematic keys)
  */
