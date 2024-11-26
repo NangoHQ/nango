@@ -3,6 +3,7 @@ import PageNotFound from '../pages/PageNotFound';
 import DashboardLayout from '../layout/DashboardLayout';
 import { Info } from './Info';
 import type { LeftNavBarItems } from './LeftNavBar';
+import { Helmet } from 'react-helmet';
 
 export const ErrorPageComponent: React.FC<{ title: string; error: ApiError<string>; page: LeftNavBarItems }> = ({ title, error, page }) => {
     if (error.error.code === 'not_found') {
@@ -11,6 +12,9 @@ export const ErrorPageComponent: React.FC<{ title: string; error: ApiError<strin
 
     return (
         <DashboardLayout selectedItem={page}>
+            <Helmet>
+                <title>Error - Nango</title>
+            </Helmet>
             <h2 className="text-3xl font-semibold text-white mb-16">{title}</h2>
             <Info variant={'destructive'}>
                 An error occurred, refresh your page or reach out to the support.{' '}
