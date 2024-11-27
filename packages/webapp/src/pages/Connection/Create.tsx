@@ -20,6 +20,7 @@ import SecretTextArea from '../../components/ui/input/SecretTextArea';
 import { useStore } from '../../store';
 import type { AuthModeType } from '@nangohq/types';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import { Helmet } from 'react-helmet';
 
 export default function IntegrationCreate() {
     const { mutate } = useSWRConfig();
@@ -625,6 +626,9 @@ nango.${integration?.authMode === 'NONE' ? 'create' : 'auth'}('${integration?.un
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <Helmet>
+                <title>Create Connection - Nango</title>
+            </Helmet>
             {integrations && !!integrations.length && publicKey && hostUrl && (
                 <div className="pb-40">
                     <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
