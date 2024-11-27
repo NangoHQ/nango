@@ -41,7 +41,7 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
 
     const queryInclude = new Set(query.include || []);
     if (queryInclude.size > 0 && authType !== 'secretKey') {
-        // This is not allowed right now anyway but it's too prevent any mistakes
+        // This endpoint is not reachable any other way right now BUT it's to prevent any future mistakes
         res.status(403).send({ error: { code: 'invalid_permissions', message: "Can't include credentials without a private key" } });
         return;
     }
