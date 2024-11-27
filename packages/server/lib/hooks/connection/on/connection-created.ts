@@ -50,8 +50,6 @@ export async function postConnectionCreation(
         });
         if (res.isErr()) {
             await logCtx.failed();
-        } else {
-            await logCtx.success();
         }
     }
 }

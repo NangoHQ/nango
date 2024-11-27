@@ -52,8 +52,6 @@ export async function preConnectionDeletion({
         });
         if (res.isErr()) {
             await logCtx.failed();
-        } else {
-            await logCtx.success();
         }
     }
 }
