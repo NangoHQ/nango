@@ -23,6 +23,8 @@ import { apiConnectSessions } from '../../../hooks/useConnect';
 import { useToast } from '../../../hooks/useToast';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { useSWRConfig } from 'swr';
+import { clearConnectionsCache } from '../../../hooks/useConnections';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -39,6 +41,8 @@ export const ShowIntegration: React.FC = () => {
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<string | undefined>();
+
+    const { mutate, cache } = useSWRConfig();
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -65,10 +69,12 @@ export const ShowIntegration: React.FC = () => {
                 }
             } else if (event.type === 'connect') {
                 console.log('connected', event);
+
+                clearConnectionsCache(cache, mutate);
                 hasConnected.current = event.payload.connectionId;
             }
         },
-        [toast]
+        [toast, cache, mutate, env, navigate, data?.integration.unique_key]
     );
 
     const onClickConnectUI = () => {
