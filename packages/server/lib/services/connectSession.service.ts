@@ -3,7 +3,7 @@ import * as keystore from '@nangohq/keystore';
 import type { ConnectSession, DBEndUser, EndUser } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { EndUserMapper } from './endUser.service';
+import { EndUserMapper } from './endUser.service.js';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
