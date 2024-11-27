@@ -23,7 +23,8 @@ export const buttonStyles = cva(
                 hover: 'hover:bg-hover-gray text-white',
                 zinc: 'bg-active-gray hover:bg-neutral-800 text-gray-400 border border-neutral-700',
                 icon: 'bg-transparent text-text-light-gray hover:text-white focus:text-white',
-                emptyFaded: 'border border-text-light-gray text-text-light-gray hover:text-white focus:text-white',
+                emptyFaded:
+                    'border border-grayscale-700 text-grayscale-400 hover:text-white focus:text-white hover:border-grayscale-400 focus:border-grayscale-400',
                 popoverItem: 'w-full rounded hover:bg-black text-gray-400',
 
                 // Design system v2

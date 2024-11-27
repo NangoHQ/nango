@@ -13,7 +13,7 @@ import Nango from '@nangohq/frontend';
 import { useUnmount, useSearchParam } from 'react-use';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { Tag } from '../../components/ui/label/Tag';
-import { IconBulb, IconCheck, IconChevronDown, IconChevronRight, IconCode, IconHelpCircle } from '@tabler/icons-react';
+import { IconBook, IconBulb, IconCheck, IconChevronDown, IconChevronRight, IconCode, IconHelpCircle } from '@tabler/icons-react';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../../components/ui/Collapsible';
 import { Input } from '../../components/ui/input/Input';
@@ -414,7 +414,10 @@ export const ConnectionCreate: React.FC = () => {
                                 <p className="text-sm text-grayscale-400">Authorize your users with a pre-built UI.</p>
                             </main>
                             <footer className="mt-4">
-                                <Button variant={'primary'}>Connect UI</Button>
+                                <Button variant={'emptyFaded'}>
+                                    <IconBook stroke={1} size={18} />
+                                    Connect UI Docs
+                                </Button>
                             </footer>
                         </a>
                         <a
@@ -435,7 +438,9 @@ export const ConnectionCreate: React.FC = () => {
                                 <p className="text-sm text-grayscale-400">Build your own authorize experience</p>
                             </main>
                             <footer className="mt-4">
-                                <Button variant={'primary'}>Connect Custom</Button>
+                                <Button variant={'emptyFaded'}>
+                                    <IconBook stroke={1} size={18} /> Connect UI Docs
+                                </Button>
                             </footer>
                         </a>
                     </div>
