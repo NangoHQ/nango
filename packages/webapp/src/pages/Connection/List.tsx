@@ -20,7 +20,6 @@ import { useDebounce, useUnmount } from 'react-use';
 import { globalEnv } from '../../utils/env';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { useListIntegration } from '../../hooks/useIntegration';
-import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -34,6 +33,8 @@ import { useToast } from '../../hooks/useToast';
 import type { ApiConnectionSimple } from '@nangohq/types';
 import { CopyText } from '../../components/CopyText';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
+import { Helmet } from 'react-helmet';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -253,23 +254,15 @@ export const ConnectionList: React.FC = () => {
     const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError !== 'all';
 
     if (error) {
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-                <Info variant={'destructive'}>
-                    An error occurred, refresh your page or reach out to the support.{' '}
-                    {error.error.code === 'generic_error_support' && (
-                        <>
-                            (id: <span className="select-all">{error.error.payload}</span>)
-                        </>
-                    )}
-                </Info>
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Connections" error={error} page={LeftNavBarItems.Connections} />;
     }
 
     if (!connections || !readyToDisplay) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+                <Helmet>
+                    <title>Connections - Nango</title>
+                </Helmet>
                 <h2 className="text-3xl font-semibold text-white mb-4">Connections</h2>
 
                 <div className="flex gap-2 flex-col">
@@ -283,6 +276,9 @@ export const ConnectionList: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <Helmet>
+                <title>Connections - Nango</title>
+            </Helmet>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">

@@ -124,6 +124,9 @@ export const ConnectionShow: React.FC = () => {
     if (loading || loadingSyncs) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Connection - Nango</title>
+                </Helmet>
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
                         <div className="shrink-0">
@@ -146,7 +149,7 @@ export const ConnectionShow: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.TeamSettings} />;
+        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.Connections} />;
     }
 
     if (!connection || !syncs) {
@@ -155,6 +158,9 @@ export const ConnectionShow: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <Helmet>
+                <title>{connection.endUser?.email || connection.connection.connection_id} - Connection - Nango</title>
+            </Helmet>
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
