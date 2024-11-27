@@ -25,7 +25,10 @@ export const buttonStyles = cva(
                 icon: 'bg-transparent text-text-light-gray hover:text-white focus:text-white',
                 emptyFaded: 'border border-text-light-gray text-text-light-gray hover:text-white focus:text-white',
                 popoverItem: 'w-full rounded hover:bg-black text-gray-400',
-                link: 'text-grayscale-400 hover:text-white focus:text-white'
+
+                // Design system v2
+                link: 'text-grayscale-400 hover:text-white focus:text-white',
+                select: 'bg-grayscale-900 text-grayscale-400 border border-grayscale-900 hover:text-white focus:text-white hover:border-grayscale-600'
             },
             size: {
                 auto: '',

@@ -7,7 +7,7 @@ import * as endUserService from '../../services/endUser.service.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-const bodySchema = z
+export const bodySchema = z
     .object({
         end_user: z
             .object({
