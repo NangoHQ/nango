@@ -136,24 +136,3 @@ export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data'];
         </div>
     );
 };
-
-export const settingsMissingCustom = (missingFields: string[]): string => {
-    return missingFields
-        .map((field) => {
-            switch (field) {
-                case 'oauth_client_id':
-                    return 'Client ID';
-                case 'oauth_client_secret':
-                    return 'Client Secret';
-                case 'app_link':
-                    return 'App Public Link';
-                case 'app_id':
-                    return 'App ID';
-                case 'private_key':
-                    return 'App Private Key';
-                default:
-                    return field;
-            }
-        })
-        .join(', ');
-};
