@@ -13,11 +13,49 @@ import { InfoBloc } from '../../../../../components/InfoBloc';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
 import type { EnvironmentAndAccount } from '@nangohq/server';
+import { Info } from '../../../../../components/Info';
 
-export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration, meta, template },
-    environment
-}) => {
+const FIELD_DISPLAY_NAMES: Record<string, Record<string, string>> = {
+    OAUTH1: {
+        oauth_client_id: 'Client ID',
+        oauth_client_secret: 'Client Secret'
+    },
+    OAUTH2: {
+        oauth_client_id: 'Client ID',
+        oauth_client_secret: 'Client Secret'
+    },
+    TBA: {
+        oauth_client_id: 'Client ID',
+        oauth_client_secret: 'Client Secret'
+    },
+    APP: {
+        oauth_client_id: 'App ID',
+        oauth_client_secret: 'App Private Key',
+        app_link: 'App Public Link'
+    },
+    CUSTOM: {
+        oauth_client_id: 'Client ID',
+        oauth_client_secret: 'Client Secret',
+        app_link: 'App Public Link',
+        app_id: 'App ID',
+        private_key: 'App Private Key'
+    }
+} as const;
+
+function missingFieldsMessage(
+    template: GetIntegration['Success']['data']['template'],
+    integration: GetIntegration['Success']['data']['integration']
+): string | null {
+    const mappings = FIELD_DISPLAY_NAMES[template.auth_mode];
+    if (!mappings) return null;
+
+    return integration.missing_fields.map((field) => mappings[field] || field).join(', ');
+}
+
+export const SettingsGeneral: React.FC<{
+    data: GetIntegration['Success']['data'];
+    environment: EnvironmentAndAccount['environment'];
+}> = ({ data: { integration, meta, template }, environment }) => {
     const { toast } = useToast();
     const navigate = useNavigate();
 
@@ -59,6 +97,12 @@ export const SettingsGeneral: React.FC<{ data: GetIntegration['Success']['data']
 
     return (
         <div className="flex flex-col gap-8">
+            {integration.missing_fields.length > 0 && (
+                <Info variant="warning">
+                    This integration cannot create connections until the following fields are configured: {missingFieldsMessage(template, integration)}
+                </Info>
+            )}
+
             <div className="grid grid-cols-2 gap-10">
                 <InfoBloc title="API Provider">{integration?.provider}</InfoBloc>
                 <InfoBloc title="Integration ID">
