@@ -61,7 +61,7 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
                         required
                         minLength={1}
                         variant={'flat'}
-                        after={<CopyButton text={integration.oauth_client_id} />}
+                        after={<CopyButton text={integration.oauth_client_id || ''} />}
                     />
                 </InfoBloc>
 
