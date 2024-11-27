@@ -8,17 +8,19 @@ import type {
     ErrorPayload,
     AuthOperationType,
     NangoAuthWebhookBodyBase,
-    DBEnvironment
+    DBEnvironment,
+    EndUser
 } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 
-export const sendAuth = async ({
+export async function sendAuth({
     connection,
     environment,
     webhookSettings,
     auth_mode,
     success,
+    endUser,
     error,
     operation,
     provider,
@@ -30,12 +32,13 @@ export const sendAuth = async ({
     webhookSettings: ExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
+    endUser?: EndUser | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
     provider: string;
     type: WebhookTypes;
     logCtx?: LogContext | undefined;
-} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {
+} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
         return;
     }
@@ -55,7 +58,8 @@ export const sendAuth = async ({
         authMode: auth_mode,
         provider,
         environment: environment.name,
-        operation
+        operation,
+        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId } : undefined
     };
 
     if (success) {
@@ -74,7 +78,7 @@ export const sendAuth = async ({
     const webhooks = [
         { url: webhookSettings.primary_url, type: 'webhook url' },
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
-    ].filter((webhook) => webhook.url) as { url: string; type: string }[];
+    ].filter((webhook) => webhook.url);
 
     await deliver({
         webhooks,
@@ -83,4 +87,4 @@ export const sendAuth = async ({
         environment,
         logCtx
     });
-};
+}
