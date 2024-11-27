@@ -59,13 +59,13 @@ export interface BaseProvider {
         };
     };
     authorization_url?: string;
-    authorization_url_encode?: boolean;
+    authorization_url_skip_encode?: string[];
     access_token_url?: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
     default_scopes?: string[];
     token_url?: string | TokenUrlObject;
-    token_url_encode?: boolean;
+    token_url_skip_encode?: string[];
     token_params?: Record<string, string>;
     authorization_url_replacements?: Record<string, string>;
     redirect_uri_metadata?: string[];

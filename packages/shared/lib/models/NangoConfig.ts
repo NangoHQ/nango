@@ -139,4 +139,5 @@ export interface StandardNangoConfig {
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];
+    [`on-events`]: NangoSyncConfig[];
 }

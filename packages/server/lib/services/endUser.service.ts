@@ -5,7 +5,7 @@ import type { Result } from '@nangohq/utils';
 
 const END_USERS_TABLE = 'end_users';
 
-const EndUserMapper = {
+export const EndUserMapper = {
     to: (endUser: EndUser): DBEndUser => {
         return {
             id: endUser.id,

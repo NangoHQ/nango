@@ -7,8 +7,16 @@ const fs = require('node:fs');
 const yaml = require('js-yaml');
 
 exports.up = async function (knex) {
+    let providers;
     const providersPath = path.join(__dirname, '..', '..', '..', 'shared', 'providers.yaml');
-    const providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
+    try {
+        providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
+    } catch (e) {
+        console.error(
+            `Warning: Failed to load providers.yaml. Skipping migration. Missing fields on existing integrations will not show warnings in the dashboard until they are saved again. Underlying error: ${e.message}. `
+        );
+        return;
+    }
 
     const needsClientId = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
     const clientIdProviders = Object.entries(providers)
@@ -19,6 +27,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', clientIdProviders)
         .whereRaw("NOT (missing_fields @> '{oauth_client_id}')")
+        .where('oauth_client_id', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'oauth_client_id')") });
 
     const needsClientSecret = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
@@ -30,6 +39,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', clientSecretProviders)
         .whereRaw("NOT (missing_fields @> '{oauth_client_secret}')")
+        .where('oauth_client_secret', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'oauth_client_secret')") });
 
     const needsAppLink = ['APP'];
@@ -41,6 +51,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', appLinkProviders)
         .whereRaw("NOT (missing_fields @> '{app_link}')")
+        .where('app_link', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'app_link')") });
 };
 

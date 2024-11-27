@@ -30,6 +30,10 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'TABLEAU':
         case 'NONE':
         case 'OAUTH2_CC':
+        case 'BILL':
+        case 'JWT':
+        case 'SIGNATURE':
+        case 'TWO_STEP':
             return <SettingsDefault data={data} environment={environment} />;
 
         default:

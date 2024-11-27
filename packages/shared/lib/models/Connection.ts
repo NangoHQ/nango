@@ -1,5 +1,5 @@
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { AuthModeType, Metadata, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment, ActiveLog } from '@nangohq/types';
+import type { AuthModeType, Metadata, AuthOperationType, AllAuthCredentials, DBTeam, DBEnvironment, ActiveLog, EndUser } from '@nangohq/types';
 
 export type ConnectionConfig = Record<string, any>;
 
@@ -32,6 +32,7 @@ export interface RecentlyCreatedConnection {
     operation: AuthOperationType;
     environment: DBEnvironment;
     account: DBTeam;
+    endUser: EndUser | undefined;
 }
 
 export interface FailedConnectionError {

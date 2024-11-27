@@ -5,12 +5,13 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { requestErrorToast } from '../../utils/api';
 
 import { useStore } from '../../store';
 import { useListIntegration } from '../../hooks/useIntegration';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
+import { Helmet } from 'react-helmet';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 
 export default function IntegrationList() {
     const navigate = useNavigate();
@@ -20,17 +21,15 @@ export default function IntegrationList() {
     const { list: data, error } = useListIntegration(env);
 
     if (error) {
-        requestErrorToast();
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-                <Loading spaceRatio={2.5} className="-top-36" />
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Integrations" error={error} page={LeftNavBarItems.Integrations} />;
     }
 
     if (!data) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Integrations - Nango</title>
+                </Helmet>
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
@@ -40,6 +39,9 @@ export default function IntegrationList() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Helmet>
+                <title>Integrations - Nango</title>
+            </Helmet>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
                 {integrations.length > 0 && (

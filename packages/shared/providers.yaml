@@ -2591,7 +2591,8 @@ github-app-oauth:
     alias: github
     auth_mode: CUSTOM
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
-    authorization_url_encode: false
+    authorization_url_skip_encode:
+        - base_url
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
@@ -4469,6 +4470,8 @@ pennylane:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    authorization_url_skip_encode:
+        - scopes
     docs: https://docs.nango.dev/integrations/all/pennylane
 
 peopledatalabs:
@@ -5664,6 +5667,19 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+
+tapclicks:
+    display_name: TapClicks
+    auth_mode: OAUTH2_CC
+    categories:
+        - marketing
+        - analytics
+    token_url: https://api.tapclicks.com/oauth/accesstoken
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.tapclicks.com/v2
+    docs: https://docs.nango.dev/integrations/all/tapclicks
 
 tableau:
     display_name: Tableau

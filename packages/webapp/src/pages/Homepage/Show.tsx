@@ -5,6 +5,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { InsightChart } from './components/InsightChart';
 import { useMeta } from '../../hooks/useMeta';
 import { globalEnv } from '../../utils/env';
+import { Helmet } from 'react-helmet';
 
 export const Homepage: React.FC = () => {
     const { meta } = useMeta();
@@ -17,6 +18,9 @@ export const Homepage: React.FC = () => {
     if (!globalEnv.features.logs) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+                <Helmet>
+                    <title>Homepage - Nango</title>
+                </Helmet>
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col gap-2">
                         <h2 className="text-3xl font-semibold text-white flex gap-4 items-center">Hello, {me.name}!</h2>
@@ -39,6 +43,9 @@ export const Homepage: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Homepage}>
+            <Helmet>
+                <title>Homepage - Nango</title>
+            </Helmet>
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-3xl font-semibold text-white flex gap-4 items-center">Hello, {me.name}!</h2>

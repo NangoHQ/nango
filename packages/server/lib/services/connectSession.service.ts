@@ -1,8 +1,9 @@
 import type { Knex } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import type { ConnectSession } from '@nangohq/types';
+import type { ConnectSession, DBEndUser, EndUser } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import { EndUserMapper } from './endUser.service.js';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
@@ -56,6 +57,11 @@ export class ConnectSessionError extends Error {
     }
 }
 
+export interface ConnectSessionAndEndUser {
+    connectSession: ConnectSession;
+    endUser: EndUser;
+}
+
 export async function createConnectSession(
     db: Knex,
     {
@@ -97,19 +103,32 @@ export async function getConnectSession(
         accountId: number;
         environmentId: number;
     }
-): Promise<Result<ConnectSession, ConnectSessionError>> {
-    const session = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).first();
+): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
+    const session = await db
+        .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
+        .select<{ connect_session: DBConnectSession; end_user: DBEndUser }>(
+            db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`),
+            db.raw('row_to_json(end_users.*) as end_user')
+        )
+        .join('end_users', 'end_users.id', `${CONNECT_SESSIONS_TABLE}.end_user_id`)
+        .where({
+            [`${CONNECT_SESSIONS_TABLE}.id`]: id,
+            [`${CONNECT_SESSIONS_TABLE}.account_id`]: accountId,
+            [`${CONNECT_SESSIONS_TABLE}.environment_id`]: environmentId
+        })
+        .first();
     if (!session) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
-    return Ok(ConnectSessionMapper.from(session));
+    return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session), endUser: EndUserMapper.from(session.end_user) });
 }
 
-export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSession, ConnectSessionError>> {
+export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
     const getSession = await keystore.getPrivateKey(db, token);
     if (getSession.isErr()) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
+
     const privateKey = getSession.value;
     const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
     if (session.isErr()) {
