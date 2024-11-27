@@ -1489,6 +1489,25 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
 
+copper:
+    display_name: Copper
+    categories:
+        - CRM
+    auth_mode: OAUTH2
+    proxy:
+        base_url: https://api.copper.com/developer_api/
+    docs: https://docs.nango.dev/integrations/all/copper
+    default_scopes:
+        - developer/v1/all
+    authorization_url: https://app.copper.com/oauth/authorize
+    token_url: https://app.copper.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+
 connectwise-psa:
     display_name: ConnectWise PSA
     categories:
