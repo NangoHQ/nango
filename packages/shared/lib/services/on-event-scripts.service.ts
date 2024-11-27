@@ -173,7 +173,7 @@ export const onEventScriptService = {
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
         // Create a map of existing scripts for easier lookup
-        const existingMap = new Map(existingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
+        const previousMap = new Map(existingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));
 
         for (const provider of onEventScriptsByProvider) {
             const config = await configService.getProviderConfig(provider.providerConfigKey, environmentId);
@@ -182,13 +182,13 @@ export const onEventScriptService = {
             for (const script of provider.scripts) {
                 const key = `${config.id}:${script.name}:${script.event}`;
 
-                const maybeScript = existingMap.get(key);
+                const maybeScript = previousMap.get(key);
                 if (maybeScript) {
                     // Script already exists - it's an update
                     res.updated.push(maybeScript);
 
                     // Remove from map to track deletions
-                    existingMap.delete(key);
+                    previousMap.delete(key);
                 } else {
                     // Script doesn't exist - it's new
                     res.added.push({
@@ -204,7 +204,7 @@ export const onEventScriptService = {
         }
 
         // Any remaining scripts in the map were not found - they are deleted
-        res.deleted.push(...Array.from(existingMap.values()));
+        res.deleted.push(...Array.from(previousMap.values()));
 
         return res;
     }
