@@ -12,6 +12,15 @@ export type ConnectionQueryString = {
     | { connect_session_token: string }
 );
 
+type AuthErrors =
+    | ApiError<'invalid_body'>
+    | ApiError<'invalid_query_params'>
+    | ApiError<'unknown_provider_config'>
+    | ApiError<'unknown_provider_template'>
+    | ApiError<'invalid_auth_mode'>
+    | ApiError<'invalid_credentials'>
+    | ApiError<'integration_not_allowed'>;
+
 export type PostPublicTbaAuthorization = Endpoint<{
     Method: 'POST';
     Body: {
@@ -25,14 +34,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/tba/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -51,14 +53,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/tableau/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -82,14 +77,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/jwt/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -103,14 +91,7 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/unauthenticated/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -130,14 +111,7 @@ export type PostPublicBillAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/bill/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -152,14 +126,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/two-step/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;
@@ -177,14 +144,7 @@ export type PostPublicSignatureAuthorization = Endpoint<{
         providerConfigKey: string;
     };
     Path: '/auth/signature-based/:providerConfigKey';
-    Error:
-        | ApiError<'invalid_body'>
-        | ApiError<'invalid_query_params'>
-        | ApiError<'unknown_provider_config'>
-        | ApiError<'unknown_provider_template'>
-        | ApiError<'invalid_auth_mode'>
-        | ApiError<'invalid_credentials'>
-        | ApiError<'integration_not_allowed'>;
+    Error: AuthErrors;
     Success: {
         providerConfigKey: string;
         connectionId: string;

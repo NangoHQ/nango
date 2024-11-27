@@ -57,7 +57,7 @@ export type PostIntegration = Endpoint<{
     };
 }>;
 
-export type ApiIntegration = Merge<IntegrationConfig, ApiTimestamps>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type GetIntegration = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';

@@ -30,6 +30,7 @@ import { globalEnv } from '../../utils/env';
 import { useLocalStorage } from 'react-use';
 import { Info } from '../../components/Info';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -460,6 +461,9 @@ export const EnvironmentSettings: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings}>
+            <Helmet>
+                <title>Environment Settings - Nango</title>
+            </Helmet>
             <Modal {...bindings} wrapClassName="!w-max overflow-visible">
                 <div className="flex justify-between">
                     <div className="flex h-full">

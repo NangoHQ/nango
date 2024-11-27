@@ -8,6 +8,14 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
+import type { AuthModeType, Provider } from '@nangohq/types';
+import { getProvider } from './providers.js';
+
+interface ValidationRule {
+    field: keyof ProviderConfig | 'app_id' | 'private_key';
+    modes: AuthModeType[];
+    isValid(config: ProviderConfig): boolean;
+}
 
 class ConfigService {
     async getById(id: number): Promise<ProviderConfig | null> {
@@ -113,24 +121,29 @@ class ConfigService {
             .filter((config) => config != null) as ProviderConfig[];
     }
 
-    async createProviderConfig(config: ProviderConfig): Promise<ProviderConfig | null> {
+    async createProviderConfig(config: ProviderConfig, provider: Provider): Promise<ProviderConfig | null> {
         const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+
         const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
 
-    async createEmptyProviderConfig(provider: string, environment_id: number): Promise<ProviderConfig> {
+    async createEmptyProviderConfig(providerName: string, environment_id: number, provider: Provider): Promise<ProviderConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ provider, environment_id, deleted: false })
+            .where({ provider: providerName, environment_id, deleted: false })
             .first();
 
-        const config = await this.createProviderConfig({
-            environment_id,
-            unique_key: exists?.count === '0' ? provider : `${provider}-${nanoid(4).toLocaleLowerCase()}`,
+        const config = await this.createProviderConfig(
+            {
+                environment_id,
+                unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
+                provider: providerName
+            } as ProviderConfig,
             provider
-        } as ProviderConfig);
+        );
 
         if (!config) {
             throw new NangoError('unknown_provider_config');
@@ -171,10 +184,18 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig) {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
+        const encrypted = encryptionManager.encryptProviderConfig(config);
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, encrypted);
+
         return db.knex
             .from<ProviderConfig>(`_nango_configs`)
             .where({ id: config.id!, environment_id: config.environment_id, deleted: false })
-            .update(encryptionManager.encryptProviderConfig(config));
+            .update(encrypted);
     }
 
     async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
@@ -218,23 +239,62 @@ class ConfigService {
         providerConfigKey: string
     ): Promise<{ copiedToId: number; copiedFromId: number } | null> {
         const fromConfig = await this.getProviderConfig(providerConfigKey, fromEnvironmentId);
-
         if (!fromConfig || !fromConfig.id) {
             return null;
         }
 
+        const provider = getProvider(fromConfig.provider);
+        if (!provider) {
+            throw new NangoError('unknown_provider');
+        }
+
         const { id: foundConfigId, ...configWithoutId } = fromConfig;
-        const providerConfigResponse = await this.createProviderConfig({
-            ...configWithoutId,
-            environment_id: toEnvironmentId,
-            unique_key: fromConfig.unique_key
-        });
+        const providerConfigResponse = await this.createProviderConfig(
+            {
+                ...configWithoutId,
+                environment_id: toEnvironmentId,
+                unique_key: fromConfig.unique_key
+            },
+            provider
+        );
 
         if (!providerConfigResponse) {
             return null;
         }
 
         return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
+    }
+
+    VALIDATION_RULES: ValidationRule[] = [
+        {
+            field: 'oauth_client_id',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
+            isValid: (config) => !!config.oauth_client_id
+        },
+        {
+            field: 'oauth_client_secret',
+            modes: ['OAUTH1', 'OAUTH2', 'TBA', 'APP', 'CUSTOM'],
+            isValid: (config) => !!config.oauth_client_secret
+        },
+        {
+            field: 'app_link',
+            modes: ['APP', 'CUSTOM'],
+            isValid: (config) => !!config.app_link
+        },
+        {
+            field: 'app_id',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['app_id']
+        },
+        {
+            field: 'private_key',
+            modes: ['CUSTOM'],
+            isValid: (config) => !!config.custom?.['private_key']
+        }
+    ];
+
+    validateProviderConfig(authMode: AuthModeType, providerConfig: ProviderConfig): string[] {
+        return this.VALIDATION_RULES.flatMap((rule) => (rule.modes.includes(authMode) && !rule.isValid(providerConfig) ? [rule.field] : []));
     }
 }
 

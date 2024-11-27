@@ -49,19 +49,21 @@ import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
+import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const { account, environment, authType } = res.locals;
+        const { account, environment } = res.locals;
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
+        const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
 
@@ -98,7 +100,7 @@ class OAuthController {
                 return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
             }
 
-            if (environment.hmac_enabled && authType !== 'connectSession') {
+            if (environment.hmac_enabled && !isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
                     const error = WSErrBuilder.MissingHmac();
@@ -252,11 +254,12 @@ class OAuthController {
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account, authType } = res.locals;
+        const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
+        const isConnectSession = res.locals['authType'] === 'connectSession';
 
         if (!body.client_id) {
             errorManager.errRes(res, 'missing_client_id');
@@ -293,7 +296,7 @@ class OAuthController {
 
             const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-            if (authType !== 'connectSession') {
+            if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
 
                 const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -377,7 +380,7 @@ class OAuthController {
                 return;
             }
 
-            if (authType === 'connectSession') {
+            if (isConnectSession) {
                 const session = res.locals.connectSession;
                 await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
             }
@@ -391,7 +394,8 @@ class OAuthController {
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
                 config.provider,
                 logContextGetter,
@@ -533,12 +537,27 @@ class OAuthController {
                     oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, provider, connectionConfig)
                 );
 
+                const scopeSeparator = provider.scope_separator || ' ';
+                const scopes = providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(scopeSeparator) : '';
+
                 let authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
-                    scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : '',
+                    scope: scopes,
                     state: session.id,
                     ...allAuthParams
                 });
+
+                if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                    const url = new URL(authorizationUri);
+                    const queryParams = new URLSearchParams(url.search);
+                    queryParams.delete('scope');
+                    let newQuery = queryParams.toString();
+                    if (scopes) {
+                        newQuery = newQuery ? `${newQuery}&scope=${scopes}` : `scope=${scopes}`;
+                    }
+                    url.search = newQuery;
+                    authorizationUri = url.toString();
+                }
 
                 if (provider.authorization_url_fragment) {
                     const urlObj = new URL(authorizationUri);
@@ -1105,15 +1124,21 @@ class OAuthController {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
             }
 
+            let connectSession: ConnectSessionAndEndUser | undefined;
             if (session.connectSessionId) {
-                const connectSession = await getConnectSession(db.knex, { id: session.connectSessionId, accountId: account.id, environmentId: environment.id });
-                if (connectSession.isErr()) {
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
                     await logCtx.error('Failed to get session');
                     await logCtx.failed();
                     return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                 }
 
-                await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+                connectSession = connectSessionRes.value;
+                await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
             }
 
             await logCtx.debug(
@@ -1137,7 +1162,8 @@ class OAuthController {
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: connectSession?.endUser
                 },
                 session.provider,
                 logContextGetter,
@@ -1154,7 +1180,8 @@ class OAuthController {
                             environment,
                             account,
                             auth_mode: provider.auth_mode,
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: connectSession?.endUser
                         },
                         config.provider,
                         logContextGetter,
@@ -1305,19 +1332,21 @@ class OAuthController {
                     return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
                 }
 
+                let connectSession: ConnectSessionAndEndUser | undefined;
                 if (session.connectSessionId) {
-                    const connectSession = await getConnectSession(db.knex, {
+                    const connectSessionRes = await getConnectSession(db.knex, {
                         id: session.connectSessionId,
                         accountId: account.id,
                         environmentId: environment.id
                     });
-                    if (connectSession.isErr()) {
+                    if (connectSessionRes.isErr()) {
                         await logCtx.error('Failed to get session');
                         await logCtx.failed();
                         return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     }
 
-                    await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+                    connectSession = connectSessionRes.value;
+                    await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
                 }
 
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
@@ -1343,7 +1372,8 @@ class OAuthController {
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
-                        operation: updatedConnection.operation
+                        operation: updatedConnection.operation,
+                        endUser: connectSession?.endUser
                     },
                     session.provider,
                     logContextGetter,
