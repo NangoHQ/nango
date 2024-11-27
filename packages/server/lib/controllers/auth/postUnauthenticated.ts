@@ -46,11 +46,12 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -61,7 +62,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         );
         void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -112,7 +113,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -127,7 +128,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 environment,
                 account,
                 auth_mode: 'NONE',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

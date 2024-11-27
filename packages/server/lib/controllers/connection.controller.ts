@@ -311,7 +311,8 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'OAUTH2',
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: undefined
                         },
                         providerName,
                         logContextGetter
@@ -374,7 +375,8 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'OAUTH2_CC',
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: undefined
                         },
                         providerName,
                         logContextGetter
@@ -423,7 +425,8 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'OAUTH2',
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: undefined
                         },
                         providerName,
                         logContextGetter
@@ -466,7 +469,8 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'API_KEY',
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: undefined
                         },
                         providerName,
                         logContextGetter
@@ -507,7 +511,8 @@ class ConnectionController {
                             environment,
                             account,
                             auth_mode: 'API_KEY',
-                            operation: res.operation
+                            operation: res.operation,
+                            endUser: undefined
                         },
                         providerName,
                         logContextGetter
@@ -655,7 +660,8 @@ class ConnectionController {
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
-                        operation: updatedConnection.operation || 'unknown'
+                        operation: updatedConnection.operation || 'unknown',
+                        endUser: undefined
                     },
                     providerName,
                     logContextGetter

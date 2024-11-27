@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.45.1] - 2024-11-27
+
+### Added
+
+- Trigger pre connection deletion script on connection deletion (#3027) by @TBonnin
+- *(webapp)* Surface all connection error counts (#3026) by @nalanj
+- Add docs for on-events scripts (#3047) by @TBonnin
+- *(integrations)* Add support for Tapclicks (#3052) by @hassan254-prog
+- *(server)* Add missing fields column for integrations to db (#3045) by @nalanj
+- *(ui)* Add missing page titles (#3066) by @bodinsamuel
+- *(webhooks)* Send end user on connection creation (#3065) by @bodinsamuel
+
+### Changed
+
+- Clean up errors (#3024) by @bodinsamuel
+- Update pull_request_template (#3033) by @TBonnin
+- Fix docs redirects (#3055) by @bastienbeurier
+- Improve Salesforce API docs (#3058) by @rguldener
+- Improve authorization guide (#3064) by @bastienbeurier
+
+### Fixed
+
+- *(getting-started)* Feedback (#3023) by @bodinsamuel
+- *(docs)* Plain update (#3029) by @khaliqgant
+- *(connect-ui)* Handle two_step, and various (#3030) by @bodinsamuel
+- *(connectionConfig)* Ensure user's connectionConfig takes precedence (#3031) by @hassan254-prog
+- *(logs)* Correctly logs request headers, redac headers and url, log verification (#3022) by @bodinsamuel
+- *(connect-ui)* Enforce session token integrations (#3032) by @bodinsamuel
+- *(server)* Update query for counting errors to ensure distinct connections (#3034) by @nalanj
+- *(webapp)* Layout bug on app integration settings page (#3038) by @nalanj
+- *(jobs)* Execute close only once (#3036) by @TBonnin
+- *(connect)* Improve greenhouse support (#3039) by @bodinsamuel
+- AcquireTimeoutMillis to equal statement timeout (#3043) by @TBonnin
+- Db pool acquireTimeoutMillis cannot be zero (#3046) by @TBonnin
+- *(webapp)* Show separate icons for connection error types (#3040) by @nalanj
+- *(ui)* Improve endpoints ordering (#3041) by @bodinsamuel
+- *(docs)* Docs cleanup (#3051) by @khaliqgant
+- *(docs)* Link fixes (#3053) by @khaliqgant
+- Not using setInterval for otlp export config refresh (#3056) by @TBonnin
+- *(server)* Remove secrets from in app integration api response (#3048) by @nalanj
+- *(webapp, server)* Fix custom auth issues (#3042) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f3ce0b10745b4b814759f7ff77d7f7fb05e8b043 by Khaliq. Commit message: fix(docusign): fix username (#122) by @github-actions[bot]
+- Improve on-events script logs (#3049) by @TBonnin
+- *(runner)* Remove setInterval from providers reload (#3057) by @nalanj
+- *(docs)* Fix some typos in docs (#3059) by @nalanj
+- *(webapp)* Missing delete button (#3061) by @hassan254-prog
+- *(runner)* Always truncate errors (#3063) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d718b188f9d3e40f2dd1ec269ac9a0de4ec40e09 by Hassan_Wari. Commit message: fix(salesforce): remove last_name as it might not be configured on all salesforce accounts (#124) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/6d5d24dd5d972ba7b3653cdbf0f73f89b484b56e by Khaliq. Commit message: fix(sym-links): Add support for symlinked nango.yaml so it stays in sync (#121) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0b4c7696fc1a009c3a3f921639efb80af00bd09f by Khaliq. Commit message: fix(aliases): Fix upload alias (#125) by @github-actions[bot]
+- *(authorization)* Authorization url encoding (#3062) by @hassan254-prog
+- Missing .js extension (#3070) by @bodinsamuel
+
 ## [v0.45.0] - 2024-11-21
 
 ### Added
@@ -2358,6 +2411,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.45.1]: https://github.com/NangoHQ/nango/compare/v0.45.0..v0.45.1
 [v0.45.0]: https://github.com/NangoHQ/nango/compare/v0.44.0..v0.45.0
 [v0.44.0]: https://github.com/NangoHQ/nango/compare/v0.43.0..v0.44.0
 [v0.43.0]: https://github.com/NangoHQ/nango/compare/v0.42.22..v0.43.0

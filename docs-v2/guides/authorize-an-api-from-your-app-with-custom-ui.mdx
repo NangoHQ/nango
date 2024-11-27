@@ -4,20 +4,20 @@ sidebarTitle: 'Authorize an API from you app (custom UI)'
 description: 'Step-by-step guide on getting user authorization with your own UI.'
 ---
 
-# Authorize users from your app using your own UI
+<Info>
+Pre-requisites: 
+- complete the [_Configure an integration_ guide](/guides/getting-started/configure-an-integration)
+- generate a [Connect session token](/guides/getting-started/authorize-an-api-from-your-app#generate-a-session-token-backend)
+</Info>
 
 ## Integrate the frontend SDK
-
-Once you have tested that the authorization flow works for your own external account, you can trigger authorization flows for your customers from your app with the Nango SDK.
-
-Get your `Public Key` from the _Environment Settings_ tab.
 
 In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantiate-the-frontend-sdk)):
 
 ```ts
 import Nango from '@nangohq/frontend';
 
-const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKNE>' });
+const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
 ```
 
 Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
@@ -85,11 +85,7 @@ nango
 
 </Tabs>
 
-<Tip>
-Nango will automatically collect, store, and refresh the API credentials as needed.
-</Tip>
-
-## APIs requiring connection-specific configuration for authorization
+## Handle APIs requiring connection-specific configuration for authorization
 
 Some APIs require connection-specific configuration (e.g. Zendesk, Shopify).
 
@@ -97,7 +93,9 @@ For example, Zendesk has the following authorization URL, where the subdomain is
 
 `https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
 
-For these cases, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
+When using the [Connect UI](/guides/getting-started/authorize-an-api-from-your-app#option-1-use-the-nango-connect-ui), this information is collected from the end user with an automatically-generated form.
+
+But when using a custom UI, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
 
 ```js
 nango.auth('zendesk', {
@@ -113,11 +111,10 @@ nango.auth('zendesk', {
 });
 ```
 
-This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)), API ([reference](/reference/api/connection/get)), and the Nango UI.
+This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connection/get)), or see it in connection details in the Nango UI.
 
-# Troubleshoot authorization errors
-
-If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
+# Next
+Once the authorization succeeds, follow the [_Save the connection ID_ section](/guides/getting-started/authorize-an-api-from-your-app#save-the-connection-id-backend) to finish implementation of the authorization flow.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
