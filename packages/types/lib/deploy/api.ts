@@ -3,6 +3,7 @@ import type { JSONSchema7 } from 'json-schema';
 import type { Endpoint, ApiError } from '../api.js';
 import type { IncomingFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
+import type { OnEventType } from '../scripts/on-events/api.js';
 
 export type PostDeployConfirmation = Endpoint<{
     Method: 'POST';
@@ -15,7 +16,7 @@ export type PostDeployConfirmation = Endpoint<{
         singleDeployMode?: boolean;
         jsonSchema?: JSONSchema7 | undefined;
     };
-    Success: SyncAndActionDifferences;
+    Success: ScriptDifferences;
 }>;
 
 export type PostDeploy = Endpoint<{
@@ -68,10 +69,21 @@ export interface SlimAction {
     name: string;
 }
 
+export interface SlimOnEventScript {
+    providerConfigKey: string;
+    name: string;
+    event: OnEventType;
+}
+
 export interface SyncAndActionDifferences {
     newSyncs: SlimSync[];
     deletedSyncs: SlimSync[];
     newActions: SlimAction[];
     deletedActions: SlimAction[];
     deletedModels: string[];
+}
+
+export interface ScriptDifferences extends SyncAndActionDifferences {
+    newOnEventScripts: SlimOnEventScript[];
+    deletedOnEventScripts: SlimOnEventScript[];
 }
