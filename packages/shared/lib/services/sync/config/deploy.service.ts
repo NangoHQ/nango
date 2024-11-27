@@ -180,7 +180,17 @@ export async function deploy({
         }
 
         if (onEventScriptsByProvider) {
-            await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
+            const updated = await onEventScriptService.update({ environment, account, onEventScriptsByProvider });
+            const result: SyncDeploymentResult[] = updated.map((u) => {
+                return {
+                    name: u.name,
+                    version: u.version,
+                    providerConfigKey: u.providerConfigKey,
+                    type: 'on-event',
+                    models: []
+                };
+            });
+            deployResults.push(...result);
         }
 
         for (const id of idsToMarkAsInactive) {
