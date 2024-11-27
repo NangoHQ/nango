@@ -39,7 +39,7 @@ export function useConnections(queries: GetConnections['Querystring']) {
     return { loading, error: error?.json, data, hasNext, offset: size, setOffset: setSize, mutate };
 }
 
-export function invalidateConnections(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
+export function clearConnectionsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
     for (const key of cache.keys()) {
         if (key.includes('/api/v1/connections?')) {
             void mutate(key, undefined);
