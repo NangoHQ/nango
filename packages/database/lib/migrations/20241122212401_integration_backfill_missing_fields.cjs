@@ -12,7 +12,9 @@ exports.up = async function (knex) {
     try {
         providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
     } catch (e) {
-        console.error(`Warning: Failed to load providers.yaml. ${e.message}. Skipping migration. Configuration warnings will not be accurate.`);
+        console.error(
+            `Warning: Failed to load providers.yaml. Skipping migration. Missing fields on existing integrations will not show warnings in the dashboard until they are saved again. Underlying error: ${e.message}. `
+        );
         return;
     }
 
