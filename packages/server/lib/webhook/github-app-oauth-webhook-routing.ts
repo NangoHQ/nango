@@ -98,7 +98,8 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     environment,
                     account,
                     auth_mode: 'APP',
-                    operation: res.operation
+                    operation: res.operation,
+                    endUser: undefined // TODO fix this
                 },
                 integration.provider,
                 logContextGetter,

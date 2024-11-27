@@ -7534,6 +7534,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
                 sync_type: incremental
                 scopes:
                     - okta.users.read
@@ -7543,10 +7544,12 @@ integrations:
                 output: User
                 endpoint:
                     method: POST
-                    path: /user
+                    path: /users
+                    group: Users
                 input: OktaCreateUser
                 scopes:
                     - okta.users.manage
+                version: 1.0.0
             add-group:
                 description: Adds a new group with the OKTA_GROUP type to your org
                 output: Group
@@ -7561,7 +7564,8 @@ integrations:
                 output: SuccessResponse
                 endpoint:
                     method: PUT
-                    path: /user-group
+                    path: /user-groups
+                    group: User Groups
                 input: OktaAssignRemoveUserGroup
                 scopes:
                     - okta.groups.manage
@@ -7570,7 +7574,8 @@ integrations:
                 output: SuccessResponse
                 endpoint:
                     method: DELETE
-                    path: /user-group
+                    path: /user-groups
+                    group: User Groups
                 input: OktaAssignRemoveUserGroup
                 scopes:
                     - okta.groups.manage

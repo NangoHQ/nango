@@ -64,13 +64,14 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
     const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -85,7 +86,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TWO_STEP_AUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -154,7 +155,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -169,7 +170,8 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 environment,
                 account,
                 auth_mode: 'TWO_STEP',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

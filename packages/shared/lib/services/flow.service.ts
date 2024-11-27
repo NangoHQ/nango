@@ -62,7 +62,8 @@ class FlowService {
             const std: StandardNangoConfig = {
                 providerConfigKey,
                 actions: [],
-                syncs: []
+                syncs: [],
+                [`on-events`]: []
             };
 
             for (const item of [...integration.actions, ...integration.syncs]) {

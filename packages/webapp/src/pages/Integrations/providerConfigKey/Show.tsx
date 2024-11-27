@@ -8,7 +8,6 @@ import { useStore } from '../../../store';
 import { PlusIcon } from '@radix-ui/react-icons';
 import { useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
-import { Info } from '../../../components/Info';
 import PageNotFound from '../../PageNotFound';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
@@ -22,6 +21,10 @@ import { baseUrl } from '../../../utils/utils';
 import { globalEnv } from '../../../utils/env';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { useToast } from '../../../hooks/useToast';
+import { Helmet } from 'react-helmet';
+import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { useSWRConfig } from 'swr';
+import { clearConnectionsCache } from '../../../hooks/useConnections';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -38,6 +41,8 @@ export const ShowIntegration: React.FC = () => {
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<string | undefined>();
+
+    const { mutate, cache } = useSWRConfig();
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -64,10 +69,12 @@ export const ShowIntegration: React.FC = () => {
                 }
             } else if (event.type === 'connect') {
                 console.log('connected', event);
+
+                clearConnectionsCache(cache, mutate);
                 hasConnected.current = event.payload.connectionId;
             }
         },
-        [toast]
+        [toast, cache, mutate, env, navigate, data?.integration.unique_key]
     );
 
     const onClickConnectUI = () => {
@@ -100,6 +107,9 @@ export const ShowIntegration: React.FC = () => {
     if (loading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Integration - Nango</title>
+                </Helmet>
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
                         <div className="shrink-0">
@@ -122,23 +132,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     if (error) {
-        if (error.error.code === 'not_found') {
-            return <PageNotFound />;
-        }
-
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
-                <h2 className="text-3xl font-semibold text-white mb-16">Integration</h2>
-                <Info variant={'destructive'}>
-                    An error occurred, refresh your page or reach out to the support.{' '}
-                    {error.error.code === 'generic_error_support' && (
-                        <>
-                            (id: <span className="select-all">{error.error.payload}</span>)
-                        </>
-                    )}
-                </Info>
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Integration" error={error} page={LeftNavBarItems.Integrations} />;
     }
 
     if (!data) {
@@ -147,6 +141,9 @@ export const ShowIntegration: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations} ref={ref}>
+            <Helmet>
+                <title>{data.integration.unique_key} - Integration - Nango</title>
+            </Helmet>
             <div className="flex gap-4 justify-between">
                 <div className="flex gap-6">
                     <div className="shrink-0">

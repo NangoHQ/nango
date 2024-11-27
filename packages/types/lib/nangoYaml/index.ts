@@ -1,7 +1,7 @@
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
-export type ScriptTypeLiteral = 'action' | 'sync';
+export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
 
 // --------------
 // YAML V1

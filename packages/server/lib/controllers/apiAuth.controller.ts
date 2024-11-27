@@ -28,10 +28,11 @@ import type { MessageRowInsert } from '@nangohq/types';
 
 class ApiAuthController {
     async apiKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { account, environment, authType } = res.locals;
+        const { account, environment } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
         try {
@@ -53,7 +54,7 @@ class ApiAuthController {
 
             const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-            if (authType !== 'connectSession') {
+            if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
 
                 const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -141,7 +142,7 @@ class ApiAuthController {
                 return;
             }
 
-            if (authType === 'connectSession') {
+            if (isConnectSession) {
                 const session = res.locals.connectSession;
                 await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
             }
@@ -156,7 +157,8 @@ class ApiAuthController {
                     environment,
                     account,
                     auth_mode: 'API_KEY',
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
                 config.provider,
                 logContextGetter,
@@ -203,10 +205,11 @@ class ApiAuthController {
     }
 
     async basic(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { account, environment, authType } = res.locals;
+        const { account, environment } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
 
@@ -229,7 +232,7 @@ class ApiAuthController {
 
             const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-            if (authType !== 'connectSession') {
+            if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
 
                 const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -313,7 +316,7 @@ class ApiAuthController {
                 return;
             }
 
-            if (authType === 'connectSession') {
+            if (isConnectSession) {
                 const session = res.locals.connectSession;
                 await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
             }
@@ -328,7 +331,8 @@ class ApiAuthController {
                     environment,
                     account,
                     auth_mode: 'API_KEY',
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
                 config.provider,
                 logContextGetter,
