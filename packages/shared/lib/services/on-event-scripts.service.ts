@@ -25,8 +25,8 @@ export const onEventScriptService = {
         environment: DBEnvironment;
         account: DBTeam;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
-    }): Promise<void> {
-        await db.knex.transaction(async (trx) => {
+    }): Promise<(OnEventScript & { providerConfigKey: string })[]> {
+        return db.knex.transaction(async (trx) => {
             const onEventInserts: Omit<OnEventScript, 'id' | 'created_at' | 'updated_at'>[] = [];
 
             // Deactivate all previous scripts for the environment
@@ -84,8 +84,17 @@ export const onEventScriptService = {
                 }
             }
             if (onEventInserts.length > 0) {
-                await trx.insert(onEventInserts).into(TABLE);
+                type R = Awaited<ReturnType<typeof onEventScriptService.update>>;
+                const res = await trx
+                    .with('inserted', (qb) => {
+                        qb.insert(onEventInserts).into(TABLE).returning('*');
+                    })
+                    .select<R>(['inserted.*', '_nango_configs.unique_key as providerConfigKey'])
+                    .from('inserted')
+                    .join('_nango_configs', 'inserted.config_id', '_nango_configs.id');
+                return res;
             }
+            return [];
         });
     },
     getByConfig: async (configId: number, event: OnEventType): Promise<OnEventScript[]> => {
