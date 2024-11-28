@@ -3,7 +3,7 @@ import { Nango, getUserAgent } from '@nangohq/node';
 import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
@@ -89,15 +89,6 @@ interface SerializerOptions {
 interface ParamsSerializerOptions extends SerializerOptions {
     encode?: ParamEncoder;
     serialize?: CustomParamsSerializer;
-}
-
-export interface AxiosResponse<T = any, D = any> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: any;
-    config: D;
-    request?: any;
 }
 
 interface UserLogParameters {
@@ -657,6 +648,14 @@ export class NangoAction {
     > {
         this.throwIfAborted();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
+    }
+
+    /**
+     * Get current integration
+     */
+    public async getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']> {
+        this.throwIfAborted();
+        return (await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, queries)).data;
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
