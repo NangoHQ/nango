@@ -1874,6 +1874,8 @@ discourse:
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.defaultHost}
+        retry:
+            after: 'Retry-After'
         headers:
             Api-Username: ${connectionConfig.apiUsername}
             Api-Key: ${apiKey}
