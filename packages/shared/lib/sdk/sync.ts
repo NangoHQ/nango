@@ -399,6 +399,7 @@ export interface EnvironmentVariable {
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
+const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 const RECORDS_VALIDATION_SAMPLE = 5;
 
 export const defaultPersistApi = axios.create({
@@ -434,11 +435,8 @@ export class NangoAction {
 
     public ActionError = ActionError;
 
-    private memoizedConnections: Map<string, { connection: Connection; timestamp: number } | undefined> = new Map<
-        string,
-        { connection: Connection; timestamp: number }
-    >();
-    private memoizedIntegration: GetPublicIntegration['Success']['data'] | undefined;
+    private memoizedConnections = new Map<string, { connection: Connection; timestamp: number }>();
+    private memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
@@ -655,7 +653,16 @@ export class NangoAction {
      */
     public async getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']> {
         this.throwIfAborted();
-        return (await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, queries)).data;
+
+        const key = queries?.include?.join(',') || 'default';
+        const has = this.memoizedIntegration.get(key);
+        if (has && MEMOIZED_INTEGRATION_TTL > Date.now() - has.timestamp) {
+            return has.integration;
+        }
+
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, queries);
+        this.memoizedIntegration.set(key, { integration, timestamp: Date.now() });
+        return integration;
     }
 
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
@@ -709,16 +716,8 @@ export class NangoAction {
 
     public async getWebhookURL(): Promise<string | null | undefined> {
         this.throwIfAborted();
-        if (this.memoizedIntegration) {
-            return this.memoizedIntegration.webhook_url;
-        }
-
-        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
-        if (!integration || !integration.provider) {
-            throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
-        }
-        this.memoizedIntegration = integration;
-        return this.memoizedIntegration.webhook_url;
+        const integration = await this.getIntegration({ include: ['webhook'] });
+        return integration.webhook_url;
     }
 
     /**
