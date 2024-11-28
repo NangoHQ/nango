@@ -1,0 +1,40 @@
+---
+title: Copper
+sidebarTitle: Copper
+---
+
+API configuration: [`copper`](https://nango.dev/providers.yaml)
+
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth) + API Key](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
+| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
+| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
+| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [Generate a copper API token in your copper developer account](https://support.copper.com/en/articles/8823347-generating-an-api-key)
+-   [How to register your Oauth Application](https://developer.copper.com/introduction/oauth/index.html#2-prerequisites)
+-   [OAuth related docs](https://developer.copper.com/introduction/oauth/quickstart.html)
+-   [List of OAuth scopes](https://developer.copper.com/introduction/oauth/index.html#7-scopes)
+-   [Copper API docs](https://developer.copper.com/introduction/requests.html#headers)
+-   [API rate liming](https://developer.copper.com/introduction/requests.html#rate-limits)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- Copper offers both OAuth and API_KEY authentication modes. To use OAuth2.0 with Copper, you must first register your application. 
+To register your application, [contact](https://developer.copper.com/introduction/oauth/index.html#:~:text=To%20register%20your,all%20authorization%20flows.) copper.
+
+- You will need to provide the name and purpose of your application as well as a URL to an HTTPS endpoint that will handle the secure callback.
+You will receive two credentials, client_id and client_secret, required for all authorization flows.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/apollo.mdx)</Note>

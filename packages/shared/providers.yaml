@@ -1492,7 +1492,7 @@ codeclimate:
 copper:
     display_name: Copper
     categories:
-        - CRM
+        - crm
     auth_mode: OAUTH2
     proxy:
         base_url: https://api.copper.com/developer_api/
@@ -2326,7 +2326,7 @@ firefish:
     display_name: Firefish
     scope_separator: ' '
     categories:
-        - CRM
+        - crm
     auth_mode: OAUTH2_CC
     token_url: https://api.firefishsoftware.com/authorization/token
     token_params:
