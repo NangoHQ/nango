@@ -2670,6 +2670,7 @@ integrations:
                     method: GET
                     path: /conversations/all
                     group: Conversations
+                version: 1.0.1
                 output: FrontMessageOutput
                 input: SingleConversation
         models:
@@ -11203,13 +11204,12 @@ integrations:
                 description: |
                     Fetches a list of tickets from Zendesk
                 output: Ticket
-                sync_type: full
-                track_deletes: true
+                sync_type: incremental
                 endpoint:
                     method: GET
                     path: /tickets
                     group: Tickets
-                version: 1.0.0
+                version: 1.0.1
                 scopes:
                     - tickets:read
             articles:
@@ -11441,63 +11441,54 @@ integrations:
                 priority: string | null
                 status: string
             Ticket:
-                requester_id: number
-                allow_attachments: boolean
-                allow_channelback: boolean
-                assignee_email: string
-                assignee_id: number
-                attribute_value_ids: number[]
-                brand_id: number
-                collaborator_ids: number[]
-                collaborators: any[]
-                comment: object
-                created_at: string
-                custom_fields: any[]
-                custom_status_id: number
-                description: string
-                due_at: string
-                email_cc_ids: number[]
-                email_ccs: object
-                external_id: string
-                follower_ids: number[]
-                followers: object
-                followup_ids: number[]
-                forum_topic_id: number
-                from_messaging_channel: boolean
-                group_id: number
-                has_incidents: boolean
+                url: string | null
                 id: number
-                is_public: boolean
-                macro_id: number
-                macro_ids: number[]
-                metadata: object
-                organization_id: number
-                priority: string
-                problem_id: number
-                raw_subject: string
-                recipient: string
-                requester: object
-                safe_update: boolean
-                satisfaction_rating:
-                    aliqua38: number
-                sharing_agreement_ids: number[]
-                status: string
-                subject: string
-                submitter_id: number
-                tags: string[]
-                ticket_form_id: number
-                type: string
-                updated_at: string
-                updated_stamp: string
-                url: string
-                via:
-                    channel: string
-                    source:
-                        eu__4: number
-                        id__8f: string
-                via_followup_source_id: number
-                via_id: number
-                voice_comment: object
+                external_id: string | null
+                via: Via | null
+                created_at: string | null
+                updated_at: string | null
+                generated_timestamp: number | null
+                type: string | null
+                subject: string | null
+                raw_subject: string | null
+                description: string | null
+                priority: string | null
+                status: string | null
+                recipient: string | null
+                requester_id: number | null
+                submitter_id: number | null
+                assignee_id: number | null
+                organization_id: number | null
+                group_id: number | null
+                collaborator_ids: number[] | null
+                follower_ids: number[] | null
+                email_cc_ids: number[] | null
+                forum_topic_id: string | null
+                problem_id: string | null
+                has_incidents: boolean | null
+                is_public: boolean | null
+                due_at: string | null
+                tags: string[] | null
+                custom_fields: CustomFields[] | null
+                satisfaction_rating: object | null
+                sharing_agreement_ids: number[] | null
+                custom_status_id: number | null
+                fields: CustomFields[] | null
+                followup_ids: number[] | null
+                ticket_form_id: number | null
+                brand_id: number | null
+                allow_channelback: boolean | null
+                allow_attachments: boolean | null
+                from_messaging_channel: boolean | null
+            Via:
+                channel: string
+                source:
+                    from: object
+                    to: object
+                    rel: string | null
+            CustomFields:
+                id: number
+                value: string | null
             SearchTicketInput:
                 query: string
             SearchTicketOutput:
