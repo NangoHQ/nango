@@ -24,6 +24,7 @@ import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { DBTeam, GetPublicIntegration, MessageRowInsert } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
+import { redactHeaders, redactURL } from '../utils/http.js';
 
 const logger = getLogger('SDK');
 
@@ -487,6 +488,13 @@ export class NangoAction {
                 };
             }
         }
+        if (!config.axios?.response) {
+            axiosSettings.interceptors = {
+                response: {
+                    onFulfilled: this.logAPICall.bind(this)
+                }
+            };
+        }
 
         if (config.environmentName) {
             this.environmentName = config.environmentName;
@@ -763,7 +771,12 @@ export class NangoAction {
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
+            // TODO: control this logger inside dryrun instead
+            if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
+                logger[logLevelToLogger[level] ?? 'info'].apply(null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
+            } else {
+                logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
+            }
             return;
         }
 
@@ -915,6 +928,42 @@ export class NangoAction {
             logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
             throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
+    }
+
+    private logAPICall(res: AxiosResponse): AxiosResponse {
+        if (!res.config.url) {
+            return res;
+        }
+
+        const valuesToFilter: string[] = [
+            ...Array.from(this.memoizedConnections.values()).reduce<string[]>((acc, conn) => {
+                if (!conn) {
+                    return acc;
+                }
+                acc.push(...Object.values(conn.connection.credentials));
+                return acc;
+            }, []),
+            this.nango.secretKey
+        ];
+
+        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
+        void this.log(
+            `${method} ${res.config.url}`,
+            {
+                type: 'http',
+                request: {
+                    method: method,
+                    url: redactURL({ url: res.config.url, valuesToFilter }),
+                    headers: redactHeaders({ headers: res.config.headers })
+                },
+                response: {
+                    code: res.status,
+                    headers: redactHeaders({ headers: res.headers, valuesToFilter })
+                }
+            },
+            { level: res.status > 299 ? 'error' : 'info' }
+        );
+        return res;
     }
 }
 
