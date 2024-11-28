@@ -1,5 +1,9 @@
 declare global {
     namespace Express {
+        /**
+         * You should avoid using this type (req.user)
+         * It's serialized in session, which means we can't easily add / remove fields
+         */
         interface User {
             id: number;
             email: string;
