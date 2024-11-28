@@ -1,6 +1,6 @@
 import configService from '../services/config.service.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBEnvironment } from '@nangohq/types';
+import type { DBEnvironment, IntegrationConfig } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 
 export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
@@ -48,7 +48,12 @@ export const createConfigSeeds = async (env: DBEnvironment): Promise<void> => {
     );
 };
 
-export const createConfigSeed = async (env: DBEnvironment, unique_key: string, providerName: string): Promise<ProviderConfig> => {
+export async function createConfigSeed(
+    env: DBEnvironment,
+    unique_key: string,
+    providerName: string,
+    rest?: Partial<IntegrationConfig>
+): Promise<IntegrationConfig> {
     const provider = getProvider(providerName);
     if (!provider) {
         throw new Error(`createConfigSeed: ${providerName} provider not found`);
@@ -58,12 +63,13 @@ export const createConfigSeed = async (env: DBEnvironment, unique_key: string, p
         {
             unique_key,
             provider: providerName,
-            environment_id: env.id
-        } as ProviderConfig,
+            environment_id: env.id,
+            ...rest
+        },
         provider
     );
     if (!created) {
         throw new Error('failed to created to provider config');
     }
     return created;
-};
+}

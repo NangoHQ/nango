@@ -25,7 +25,8 @@ export type ResDefaultErrors =
     | ApiError<'malformed_auth_header'>
     | ApiError<'unknown_account'>
     | ApiError<'unknown_connect_session_token'>
-    | ApiError<'invalid_cli_version'>;
+    | ApiError<'invalid_cli_version'>
+    | ApiError<'invalid_permissions'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**

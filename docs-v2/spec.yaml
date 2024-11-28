@@ -368,7 +368,7 @@ paths:
                       type: array
                       items:
                           type: string
-                          enum: [webhook]
+                          enum: [webhook, credentials]
                   description: Include additional sensitive data
             responses:
                 '200':
@@ -381,7 +381,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        $ref: '#/components/schemas/Integration'
+                                        $ref: '#/components/schemas/IntegrationFull'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -2077,6 +2077,50 @@ components:
                     type: string
                     format: date
                     description: Last time it was updated
+        IntegrationFull:
+            allOf:
+                - $ref: '#/components/schemas/Integration'
+                - type: object
+                  additionalProperties: false
+                  properties:
+                      webhook_url:
+                          type: string
+                          description: Configure your integration webhooks to point to this URL
+                          nullable: true
+                      credentials:
+                          nullable: true
+                          oneOf:
+                              - type: object
+                                additionalProperties: false
+                                properties:
+                                    type:
+                                        type: string
+                                        enum: ['OAUTH2', 'OAUTH1', 'TBA']
+                                    client_id:
+                                        type: string
+                                        nullable: true
+                                    client_secret:
+                                        type: string
+                                        nullable: true
+                                    scopes:
+                                        type: string
+                                        nullable: true
+
+                              - type: object
+                                additionalProperties: false
+                                properties:
+                                    type:
+                                        type: string
+                                        enum: ['APP']
+                                    app_id:
+                                        type: string
+                                        nullable: true
+                                    private_key:
+                                        type: string
+                                        nullable: true
+                                    app_link:
+                                        type: string
+                                        nullable: true
 
         ConnectSession:
             type: object

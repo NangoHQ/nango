@@ -100,4 +100,15 @@ describe(`GET ${endpoint}`, () => {
         isError(res.json);
         expect(res.res.status).toBe(404);
     });
+
+    it('should get credentials', async () => {
+        const env = await seeders.createEnvironmentSeed();
+        await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'foo', oauth_client_secret: 'bar', oauth_scopes: 'hello, world' });
+
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: { include: ['credentials'] } });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.credentials).toStrictEqual({ client_id: 'foo', client_secret: 'bar', scopes: 'hello, world', type: 'OAUTH2' });
+    });
 });
