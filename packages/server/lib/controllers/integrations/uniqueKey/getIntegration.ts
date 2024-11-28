@@ -12,7 +12,7 @@ export const validationParams = z
     })
     .strict();
 
-const valInclude = z.enum(['webhook']);
+const valInclude = z.enum(['webhook', 'credentials']);
 const validationQuery = z
     .object({
         include: z
@@ -35,11 +35,16 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, authType } = res.locals;
     const params: GetPublicIntegration['Params'] = valParams.data;
     const query: GetPublicIntegration['Querystring'] = valQuery.data;
 
     const queryInclude = new Set(query.include || []);
+    if (queryInclude.size > 0 && authType !== 'secretKey') {
+        // This endpoint is not reachable any other way right now BUT it's to prevent any future mistakes
+        res.status(403).send({ error: { code: 'invalid_permissions', message: "Can't include credentials without a private key" } });
+        return;
+    }
 
     const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
     if (!integration) {
@@ -56,6 +61,25 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
     const include: ApiPublicIntegrationInclude = {};
     if (queryInclude.has('webhook')) {
         include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.provider}` : null;
+    }
+    if (queryInclude.has('credentials')) {
+        if (provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'TBA') {
+            include.credentials = {
+                type: provider.auth_mode,
+                client_id: integration.oauth_client_id,
+                client_secret: integration.oauth_client_secret,
+                scopes: integration.oauth_scopes || null
+            };
+        } else if (provider.auth_mode === 'APP') {
+            include.credentials = {
+                type: provider.auth_mode,
+                app_id: integration.oauth_client_id,
+                private_key: integration.oauth_client_secret,
+                app_link: integration.app_link || null
+            };
+        } else {
+            include.credentials = null;
+        }
     }
 
     res.status(200).send({

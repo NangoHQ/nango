@@ -110,7 +110,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
 }
 
 export async function handleOnEventSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
-    const content = `Webhook "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
+    const content = `Script "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
         executionType: 'on-event',
         connectionId: nangoProps.connectionId,

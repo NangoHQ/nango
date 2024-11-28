@@ -2,7 +2,7 @@ import type { Merge } from 'type-fest';
 import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
 import type { Provider } from '../providers/provider';
-import type { AuthModeType } from '../auth/api';
+import type { AuthModeType, AuthModes } from '../auth/api';
 import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '../nangoYaml';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
 import type { JSONSchema7 } from 'json-schema';
@@ -14,6 +14,10 @@ export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
+    credentials?:
+        | { type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA']; client_id: string | null; client_secret: string | null; scopes: string | null }
+        | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null }
+        | null;
 }
 
 export type GetPublicListIntegrationsLegacy = Endpoint<{
@@ -27,6 +31,7 @@ export type GetPublicListIntegrationsLegacy = Endpoint<{
 export type GetPublicListIntegrations = Endpoint<{
     Method: 'GET';
     Path: '/integrations';
+    Querystring?: { connect_session_token: string };
     Success: {
         data: ApiPublicIntegration[];
     };
@@ -36,7 +41,7 @@ export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
-    Querystring: { include?: 'webhook'[] | undefined };
+    Querystring: { include?: ('webhook' | 'credentials')[] | undefined };
     Success: { data: ApiPublicIntegration };
 }>;
 

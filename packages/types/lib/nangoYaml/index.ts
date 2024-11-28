@@ -1,3 +1,5 @@
+import type { OnEventType } from '../scripts/on-events/api';
+
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
@@ -80,8 +82,6 @@ export type NangoYamlModelField = boolean | number | string | null | string[] | 
 export type NangoYaml = NangoYamlV1 | NangoYamlV2;
 
 // -------------- Parsed
-export type OnEventType = 'post-connection-creation' | 'pre-connection-deletion';
-
 export interface NangoYamlParsed {
     yamlVersion: 'v1' | 'v2';
     integrations: NangoYamlParsedIntegration[];

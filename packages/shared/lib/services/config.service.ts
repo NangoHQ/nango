@@ -8,7 +8,7 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type { AuthModeType, Provider } from '@nangohq/types';
+import type { AuthModeType, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface ValidationRule {
@@ -121,15 +121,15 @@ class ConfigService {
             .filter((config) => config != null) as ProviderConfig[];
     }
 
-    async createProviderConfig(config: ProviderConfig, provider: Provider): Promise<ProviderConfig | null> {
-        const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
-        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
+    async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
+        const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
+        configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
 
-        const res = await db.knex.from<ProviderConfig>(`_nango_configs`).insert(configToInsert).returning('*');
+        const res = await db.knex.from<IntegrationConfig>(`_nango_configs`).insert(configToInsert).returning('*');
         return res[0] ?? null;
     }
 
-    async createEmptyProviderConfig(providerName: string, environment_id: number, provider: Provider): Promise<ProviderConfig> {
+    async createEmptyProviderConfig(providerName: string, environment_id: number, provider: Provider): Promise<IntegrationConfig> {
         const exists = await db.knex
             .count<{ count: string }>('*')
             .from<ProviderConfig>(`_nango_configs`)
@@ -141,7 +141,7 @@ class ConfigService {
                 environment_id,
                 unique_key: exists?.count === '0' ? providerName : `${providerName}-${nanoid(4).toLocaleLowerCase()}`,
                 provider: providerName
-            } as ProviderConfig,
+            },
             provider
         );
 

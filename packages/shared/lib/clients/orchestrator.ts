@@ -52,7 +52,7 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
-    executeOnEvent(props: ExecuteOnEventProps): Promise<ExecuteReturn>;
+    executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;

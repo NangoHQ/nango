@@ -27,6 +27,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', clientIdProviders)
         .whereRaw("NOT (missing_fields @> '{oauth_client_id}')")
+        .where('oauth_client_id', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'oauth_client_id')") });
 
     const needsClientSecret = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
@@ -38,6 +39,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', clientSecretProviders)
         .whereRaw("NOT (missing_fields @> '{oauth_client_secret}')")
+        .where('oauth_client_secret', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'oauth_client_secret')") });
 
     const needsAppLink = ['APP'];
@@ -49,6 +51,7 @@ exports.up = async function (knex) {
         .from('_nango_configs')
         .whereIn('provider', appLinkProviders)
         .whereRaw("NOT (missing_fields @> '{app_link}')")
+        .where('app_link', null)
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'app_link')") });
 };
 

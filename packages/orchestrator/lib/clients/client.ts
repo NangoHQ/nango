@@ -254,17 +254,28 @@ export class OrchestratorClient {
         return this.execute(schedulingProps);
     }
 
-    public async executeOnEvent(props: ExecuteOnEventProps): Promise<ExecuteReturn> {
+    public async executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn> {
         const { args, ...rest } = props;
         const schedulingProps = {
+            retry: { count: 0, max: 0 },
+            timeoutSettingsInSecs: {
+                createdToStarted: 30,
+                startedToCompleted: 5 * 60,
+                heartbeat: 99999
+            },
             ...rest,
             args: {
                 ...args,
                 type: 'on-event' as const
             }
         };
-        return this.execute(schedulingProps);
+        const res = await this.immediate(schedulingProps);
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok(undefined);
     }
+
     public async searchTasks({
         ids,
         groupKey,

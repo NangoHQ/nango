@@ -8,6 +8,8 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 
 import { useStore } from '../../store';
 import { useListIntegration } from '../../hooks/useIntegration';
+import { ErrorCircle } from '../../components/ErrorCircle';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 
@@ -61,7 +63,7 @@ export default function IntegrationList() {
                                 <div className="w-1/3">Connections</div>
                                 <div className="w-24">Active Scripts</div>
                             </div>
-                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts }) => (
+                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts, missing_fields_count }) => (
                                 <div
                                     key={`tr-${uniqueKey}`}
                                     className={`flex gap-4 ${
@@ -76,6 +78,11 @@ export default function IntegrationList() {
                                             <IntegrationLogo provider={provider} height={7} width={7} />
                                         </div>
                                         <p className="truncate">{uniqueKey}</p>
+                                        {missing_fields_count > 0 && (
+                                            <SimpleTooltip tooltipContent="Missing configuration">
+                                                <ErrorCircle icon="!" variant="warning" />
+                                            </SimpleTooltip>
+                                        )}
                                     </div>
                                     <div className="flex items-center w-1/3">
                                         <p className="">{connection_count}</p>
