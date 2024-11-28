@@ -31,6 +31,7 @@ export interface Integration {
     creationDate: Date | undefined;
     connectionConfigParams?: string[];
     credentialParams?: string[];
+    missing_fields_count: number;
 }
 
 export interface ListIntegration {
@@ -131,7 +132,8 @@ class ConfigController {
                         provider: config.provider,
                         scripts: activeFlows.length,
                         connection_count: Number(config.connection_count),
-                        creationDate: config.created_at
+                        creationDate: config.created_at,
+                        missing_fields_count: config.missing_fields.length
                     };
 
                     // Used by legacy connection create
