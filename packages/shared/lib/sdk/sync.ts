@@ -925,7 +925,10 @@ export class NangoAction {
         }
 
         if (response.status > 299) {
-            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            logger.error(
+                `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}' log=${JSON.stringify(log)}`,
+                this.stringify()
+            );
             throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
     }
