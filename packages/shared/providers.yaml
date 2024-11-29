@@ -1534,6 +1534,7 @@ copper-api-key:
         verification:
             method: GET
             endpoint: /v1/account
+    docs_connect: https://docs.nango.dev/integrations/all/copper/connect
     credentials:
         apiKey:
             type: string
@@ -1541,6 +1542,7 @@ copper-api-key:
             description: The API key for your Copper account
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-1-finding-copper-api-key'
     connection_config:
         userEmail:
             type: string
