@@ -949,7 +949,7 @@ class ConnectionService {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
                 environmentId: environment.id,
-                providerConfig: integration,
+                providerConfig: integration as ProviderConfig,
                 provider: provider as ProviderOAuth2,
                 environment_id: environment.id,
                 instantRefresh
@@ -979,7 +979,7 @@ class ConnectionService {
                         },
                         environment,
                         provider,
-                        config: integration,
+                        config: integration as ProviderConfig,
                         action: 'token_refresh'
                     });
                 }
@@ -996,7 +996,7 @@ class ConnectionService {
                 await onRefreshSuccess({
                     connection,
                     environment,
-                    config: integration
+                    config: integration as ProviderConfig
                 });
             }
 
@@ -1004,7 +1004,7 @@ class ConnectionService {
         } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
             if (connectionTestHook) {
                 const result = await connectionTestHook({
-                    config: integration,
+                    config: integration as ProviderConfig,
                     provider,
                     connectionConfig: connection.connection_config,
                     connectionId: connection.connection_id,
@@ -1039,7 +1039,7 @@ class ConnectionService {
                         },
                         environment,
                         provider,
-                        config: integration,
+                        config: integration as ProviderConfig,
                         action: 'connection_test'
                     });
 
@@ -1054,7 +1054,7 @@ class ConnectionService {
                     await onRefreshSuccess({
                         connection,
                         environment,
-                        config: integration
+                        config: integration as ProviderConfig
                     });
                 }
             }

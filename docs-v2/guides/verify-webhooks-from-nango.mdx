@@ -4,13 +4,23 @@ sidebarTitle: 'Verify webhooks from Nango'
 description: 'Step-by-step guide on how to verify the signatures of webhooks from Nango.'
 ---
 
-Validate webhook provenance by looking at the `X-Nango-Signature` header. 
+Validate webhook provenance by looking at the `X-Nango-Signature` header.
 
-It's a SHA-256 hash generated using the secret key found in the _Environment Settings_ in the Nango UI. 
+It's a SHA-256 hash generated using the secret key found in the _Environment Settings_ in the Nango UI.
 
 The webhook signature can be generated with the following code:
 
 <Tabs>
+
+<Tab title="Node SDK">
+
+```typescript
+async (req, res) => {
+    const signature = req.headers['x-nango-signature'];
+    const isValid = nango.verifyWebhookSignature(signature, req.body);
+}
+```
+</Tab>
 
 <Tab title="Javascript/Typescript">
 

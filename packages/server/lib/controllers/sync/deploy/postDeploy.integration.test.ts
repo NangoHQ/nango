@@ -141,7 +141,8 @@ describe(`POST ${endpoint}`, () => {
             isSuccess(res.json);
 
             expect(res.json).toStrictEqual<typeof res.json>([
-                { models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' }
+                { models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' },
+                { models: [], name: 'test', providerConfigKey: 'unauthenticated', type: 'on-event', version: '0.0.1' }
             ]);
             expect(res.res.status).toBe(200);
 
@@ -151,6 +152,7 @@ describe(`POST ${endpoint}`, () => {
             expect(syncConfigs).toStrictEqual([
                 {
                     actions: [],
+                    'on-events': [],
                     provider: 'unauthenticated',
                     providerConfigKey: 'unauthenticated',
                     syncs: [

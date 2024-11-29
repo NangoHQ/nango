@@ -4,7 +4,7 @@ import type { Provider } from './provider';
 export type GetPublicProviders = Endpoint<{
     Method: 'GET';
     Path: `/providers`;
-    Querystring: { search?: string | undefined };
+    Querystring: { search?: string | undefined; connect_session_token?: string };
     Success: {
         data: ApiProvider[];
     };
@@ -15,6 +15,7 @@ export type GetPublicProvider = Endpoint<{
     Method: 'GET';
     Path: `/providers/:provider`;
     Params: { provider: string };
+    Querystring?: { connect_session_token: string };
     Success: {
         data: ApiProvider;
     };

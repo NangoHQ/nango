@@ -70,7 +70,62 @@ describe(`POST ${endpoint}`, () => {
             deletedSyncs: [],
             newActions: [],
             newSyncs: [],
-            deletedModels: []
+            deletedModels: [],
+            newOnEventScripts: [],
+            deletedOnEventScripts: []
+        });
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should show correct on-events scripts diff', async () => {
+        const { account, env: environment } = await seeders.seedAccountEnvAndUser();
+        const { unique_key: providerConfigKey } = await seeders.createConfigSeed(environment, 'notion-123', 'notion');
+        const existingOnEvent = await seeders.createOnEventScript({ account, environment, providerConfigKey });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: environment.secret_key,
+            body: {
+                debug: false,
+                flowConfigs: [],
+                onEventScriptsByProvider: [
+                    {
+                        providerConfigKey,
+                        scripts: [
+                            {
+                                name: 'new-script',
+                                event: 'post-connection-creation',
+                                fileBody: { js: '', ts: '' }
+                            }
+                        ]
+                    }
+                ],
+                reconcile: false
+            }
+        });
+
+        isSuccess(res.json);
+
+        expect(res.json).toStrictEqual<typeof res.json>({
+            deletedActions: [],
+            deletedSyncs: [],
+            newActions: [],
+            newSyncs: [],
+            deletedModels: [],
+            newOnEventScripts: [
+                {
+                    name: 'new-script',
+                    providerConfigKey,
+                    event: 'post-connection-creation'
+                }
+            ],
+            deletedOnEventScripts: [
+                {
+                    name: existingOnEvent.name,
+                    providerConfigKey: existingOnEvent.providerConfigKey,
+                    event: existingOnEvent.event
+                }
+            ]
         });
         expect(res.res.status).toBe(200);
     });

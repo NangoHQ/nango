@@ -277,8 +277,6 @@ const initDb = async () => {
             environment_id: env.id,
             oauth_client_id: '',
             oauth_client_secret: '',
-            created_at: now,
-            updated_at: now,
             missing_fields: []
         },
         googleProvider

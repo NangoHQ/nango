@@ -1254,6 +1254,21 @@ const { data } = await nango.createConnectSession({
 ```
 </Expandable>
 
+
+# Webhook
+
+### Verify Webhook Signature
+
+Asserts that a Webhook is coming from Nango's backend.
+
+```js
+async (req, res) => {
+    const signature = req.headers['x-nango-signature'];
+    const isValid = nango.verifyWebhookSignature(signature, req.body);
+}
+```
+
+
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>

@@ -1,6 +1,6 @@
 import type { Timestamps } from '../../db.js';
 
-export interface OnEventScript extends Timestamps {
+export interface DBOnEventScript extends Timestamps {
     id: number;
     config_id: number;
     name: string;
