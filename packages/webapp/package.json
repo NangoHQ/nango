@@ -89,5 +89,8 @@
         "webpack": "5.94.0",
         "zustand": "4.5.5"
     },
-    "proxy": "http://localhost:3003"
+    "proxy": "http://localhost:3003",
+    "dependencies": {
+        "husky": "^9.1.7"
+    }
 }

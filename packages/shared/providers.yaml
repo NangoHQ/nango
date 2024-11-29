@@ -1496,7 +1496,6 @@ copper:
     auth_mode: OAUTH2
     proxy:
         base_url: https://api.copper.com/developer_api/
-    docs: https://docs.nango.dev/integrations/all/copper
     default_scopes:
         - developer/v1/all
     authorization_url: https://app.copper.com/oauth/authorize
@@ -1507,6 +1506,36 @@ copper:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/copper
+
+copper-api-key:
+    display_name: Copper (api key)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.copper.com/developer_api
+        headers:
+            X-PW-AccessToken: ${apiKey}
+            X-PW-Application: developer_api
+            X-PW-UserEmail: ${connectionConfig.userEmail}
+            Content-Type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/account
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Copper account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+    connection_config:
+        userEmail:
+            type: string
+            title: User Email
+            description: Email address of the user who generated the token
+    docs: https://docs.nango.dev/integrations/all/copper
 
 connectwise-psa:
     display_name: ConnectWise PSA
