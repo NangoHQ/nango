@@ -44,8 +44,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
-import type { RunnerFlags } from '../services/sync/run.utils.js';
-import type { DBTeam } from '@nangohq/types';
+import type { DBTeam, RunnerFlags } from '@nangohq/types';
 export declare const oldLevelToNewLevel: {
     readonly debug: "debug";
     readonly info: "info";
@@ -102,7 +101,6 @@ interface LinkPagination extends Pagination {
 interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
     offset_start_value?: number;
-    offset_calculation_method?: 'per-page' | 'by-response-size';
 }
 interface RetryHeaderConfig {
     at?: string;
@@ -136,10 +134,6 @@ export interface AuthModes {
     None: 'NONE';
     TBA: 'TBA';
     Tableau: 'TABLEAU';
-    Jwt: 'JWT';
-    Bill: 'BILL';
-    TwoStep: 'TWO_STEP';
-    Signature: 'SIGNATURE';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
@@ -207,45 +201,11 @@ interface TableauCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
-interface JwtCredentials {
-    type: AuthModes['Jwt'];
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey: {
-        id: string;
-        secret: string;
-    } | string;
-    token?: string;
-    expires_at?: Date | undefined;
-}
-interface BillCredentials extends CredentialsCommon {
-    type: AuthModes['Bill'];
-    username: string;
-    password: string;
-    organization_id: string;
-    dev_key: string;
-    session_id?: string;
-    user_id?: string;
-    expires_at?: Date | undefined;
-}
-interface TwoStepCredentials extends CredentialsCommon {
-    type: AuthModes['TwoStep'];
-    [key: string]: any;
-    token?: string;
-    expires_at?: Date | undefined;
-}
-interface SignatureCredentials {
-    type: AuthModes['Signature'];
-    username: string;
-    password: string;
-    token?: string;
-    expires_at?: Date | undefined;
-}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials | CustomCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -264,7 +224,6 @@ interface Connection {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     credentials: AuthCredentials;
-    end_user_id: number | null;
 }
 export declare class ActionError<T = Record<string, unknown>> extends Error {
     type: string;
@@ -287,7 +246,7 @@ export interface DryRunServiceInterface {
     run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
 }
 export interface NangoProps {
-    scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
+    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
     host?: string;
     secretKey: string;
     team?: Pick<DBTeam, 'id' | 'name'>;
@@ -312,8 +271,8 @@ export interface NangoProps {
         };
         messages: unknown[];
     } | undefined;
-    rawSaveOutput?: Map<string, unknown[]> | undefined;
-    rawDeleteOutput?: Map<string, unknown[]> | undefined;
+    rawSaveOutput?: unknown[] | undefined;
+    rawDeleteOutput?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
@@ -359,14 +318,14 @@ export declare class NangoAction {
     });
     protected stringify(): string;
     private proxyConfig;
-    protected throwIfAborted(): void;
+    protected exitSyncIfAborted(): void;
     proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials>;
+    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
@@ -416,8 +375,8 @@ export declare class NangoSync extends NangoAction {
         };
         messages: unknown[];
     } | undefined;
-    rawSaveOutput?: Map<string, unknown[]>;
-    rawDeleteOutput?: Map<string, unknown[]>;
+    rawSaveOutput?: unknown[];
+    rawDeleteOutput?: unknown[];
     stubbedMetadata?: Metadata | undefined;
     private batchSize;
     constructor(config: NangoProps);

@@ -9,14 +9,15 @@ import {
     configService,
     environmentService,
     errorManager,
+    featureFlags,
     getApiUrl,
-    getRunnerFlags,
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -72,7 +73,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date()
         };
 
