@@ -5,7 +5,6 @@ import {
     externalWebhookService,
     getApiUrl,
     getLastSyncDate,
-    getRunnerFlags,
     updateSyncJobStatus,
     SyncStatus,
     errorManager,
@@ -22,7 +21,8 @@ import {
     createSyncJob,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    getEndUserByConnectionId
+    getEndUserByConnectionId,
+    featureFlags
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -37,6 +37,7 @@ import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
 import db from '@nangohq/database';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
@@ -139,7 +140,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig: syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser

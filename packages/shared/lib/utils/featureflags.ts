@@ -4,7 +4,7 @@ import { getRedisUrl } from './utils.js';
 
 const logger = getLogger('FeatureFlags');
 
-class FeatureFlags {
+export class FeatureFlags {
     redis: RedisKVStore | undefined;
 
     constructor(redis: RedisKVStore | undefined) {

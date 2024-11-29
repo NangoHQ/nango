@@ -1,13 +1,7 @@
-import featureFlags from '../../utils/featureflags.js';
+import type { FeatureFlags } from '@nangohq/shared';
+import type { RunnerFlags } from '@nangohq/types';
 
-export interface RunnerFlags {
-    validateActionInput: boolean;
-    validateActionOutput: boolean;
-    validateSyncRecords: boolean;
-    validateSyncMetadata: boolean;
-}
-
-export async function getRunnerFlags(): Promise<RunnerFlags> {
+export async function getRunnerFlags(featureFlags: FeatureFlags): Promise<RunnerFlags> {
     const [validateActionInput, validateActionOutput, validateSyncRecords, validateSyncMetadata] = await Promise.all([
         featureFlags.isEnabled('runner.validateActionInput', 'global', false),
         featureFlags.isEnabled('runner.validateActionOutput', 'global', false),

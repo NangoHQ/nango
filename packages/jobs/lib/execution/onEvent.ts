@@ -2,12 +2,13 @@ import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config, SyncConfig, NangoConnection, NangoProps } from '@nangohq/shared';
-import { configService, environmentService, getApiUrl, getEndUserByConnectionId, getRunnerFlags, NangoError } from '@nangohq/shared';
+import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -78,7 +79,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),
             endUser
         };
