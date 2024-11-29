@@ -21,7 +21,8 @@ import {
     configService,
     createSyncJob,
     getSyncConfigRaw,
-    getSyncJobByRunId
+    getSyncJobByRunId,
+    getEndUserByConnectionId
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -35,6 +36,7 @@ import { records } from '@nangohq/records';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
+import db from '@nangohq/database';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
@@ -45,6 +47,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     let syncType: SyncType = SyncType.FULL;
     let providerConfig: Config | null = null;
     let syncConfig: SyncConfig | null = null;
+    let endUser: NangoProps['endUser'] | null = null;
+
     try {
         lastSyncDate = await getLastSyncDate(task.syncId);
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
@@ -69,6 +73,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        endUser = getEndUser.isOk()
+            ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
+            : null;
 
         syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 
@@ -132,7 +141,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             debug: task.debug || false,
             runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
-            ...(lastSyncDate ? { lastSyncDate } : {})
+            ...(lastSyncDate ? { lastSyncDate } : {}),
+            endUser
         };
 
         if (task.debug) {
@@ -167,7 +177,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncConfig,
             runTime: 0,
             models: syncConfig?.models || [],
-            error
+            error,
+            endUser
         });
         return Err(error);
     }
@@ -244,7 +255,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     models: [model],
                     runTime,
                     syncConfig: nangoProps.syncConfig,
-                    error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model })
+                    error: new NangoError('sync_job_update_failure', { syncJobId: nangoProps.syncJobId, model }),
+                    endUser: nangoProps.endUser
                 });
                 return;
             }
@@ -380,7 +392,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
-            internalIntegrationId: nangoProps.syncConfig.nango_config_id
+            internalIntegrationId: nangoProps.syncConfig.nango_config_id,
+            endUser: nangoProps.endUser
         });
 
         metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
@@ -409,7 +422,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
-            error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err })
+            error: new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err }),
+            endUser: nangoProps.endUser
         });
     }
 }
@@ -443,7 +457,8 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
-        error
+        error,
+        endUser: nangoProps.endUser
     });
 }
 
@@ -464,6 +479,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         if (!syncJob) {
             throw new Error(`Sync job not found for syncId: ${task.syncId}`);
         }
+
         const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
             throw new Error(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
@@ -479,6 +495,8 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         if (!syncConfig) {
             throw new Error(`Sync config not found. TaskId: ${task.id}`);
         }
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
 
         const isCancel = task.abortedTask.state === 'CANCELLED';
         await onFailure({
@@ -502,7 +520,10 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             failureSource: ErrorSourceEnum.CUSTOMER,
             syncConfig,
             runTime: 0,
-            error: new NangoError('sync_script_failure', task.reason)
+            error: new NangoError('sync_script_failure', task.reason),
+            endUser: getEndUser.isOk()
+                ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
+                : null
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
         if (setSuccess.isErr()) {
@@ -536,7 +557,8 @@ async function onFailure({
     runTime,
     isCancel,
     failureSource,
-    error
+    error,
+    endUser
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -555,6 +577,7 @@ async function onFailure({
     syncConfig: SyncConfig | null;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
+    endUser: NangoProps['endUser'];
 }): Promise<void> {
     if (team && environment) {
         void bigQueryClient.insert({
@@ -573,7 +596,8 @@ async function onFailure({
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
-            internalIntegrationId: syncConfig?.nango_config_id || null
+            internalIntegrationId: syncConfig?.nango_config_id || null,
+            endUser
         });
     }
 

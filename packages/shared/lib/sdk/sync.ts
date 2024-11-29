@@ -393,6 +393,7 @@ export interface NangoProps {
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+    endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;

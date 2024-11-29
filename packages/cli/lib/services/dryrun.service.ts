@@ -329,7 +329,8 @@ export class DryRunService {
                     validateSyncRecords: this.validation,
                     validateSyncMetadata: false
                 },
-                startedAt: new Date()
+                startedAt: new Date(),
+                endUser: null
             };
             if (options.saveResponses) {
                 nangoProps.rawSaveOutput = new Map<string, unknown[]>();
