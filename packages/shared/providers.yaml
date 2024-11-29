@@ -425,6 +425,17 @@ ashby:
             method: POST
             endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key of your Ashby account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 atlassian:
     display_name: Atlassian
