@@ -1,6 +1,6 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import type { BigQuery as BigQueryType } from '@google-cloud/bigquery';
-import { getLogger, isCloud } from '@nangohq/utils';
+import { getLogger, flagHasBigQuery } from '@nangohq/utils';
 
 const logger = getLogger('BigQueryClient');
 
@@ -40,10 +40,10 @@ const fields = [
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
-    { name: 'internalIntegrationId', type: 'INTEGER' }
-    // { name: 'endUserId', type: 'INTEGER' },
-    // { name: 'endUserUserId', type: 'STRING' },
-    // { name: 'endUserOrgId', type: 'STRING' }
+    { name: 'internalIntegrationId', type: 'INTEGER' },
+    { name: 'endUserId', type: 'INTEGER' },
+    { name: 'endUserUserId', type: 'STRING' },
+    { name: 'endUserOrgId', type: 'STRING' }
 ] as const;
 
 interface TypeMap {
@@ -80,11 +80,13 @@ class BigQueryClient {
     }
 
     private async initialize() {
+        if (!flagHasBigQuery) {
+            return;
+        }
+
         try {
-            if (isCloud) {
-                await this.createDataSet();
-                await this.createTable();
-            }
+            await this.createDataSet();
+            await this.createTable();
         } catch (e) {
             logger.error('Error initializing', e);
         }
@@ -126,7 +128,7 @@ class BigQueryClient {
     }
 
     public async insert(data: RunScriptRow, tableName?: string) {
-        if (isCloud) {
+        if (!flagHasBigQuery) {
             return;
         }
 
@@ -148,10 +150,10 @@ class BigQueryClient {
                 content: data.content,
                 runTimeInSeconds: data.runTimeInSeconds,
                 createdAt: data.createdAt,
-                internalIntegrationId: data.internalIntegrationId
-                // endUserId: data.endUser?.id,
-                // endUserOrgId: data.endUser?.orgId,
-                // endUserUserId: data.endUser?.endUserId
+                internalIntegrationId: data.internalIntegrationId,
+                endUserId: data.endUser?.id,
+                endUserOrgId: data.endUser?.orgId,
+                endUserUserId: data.endUser?.endUserId
             };
             await this.client.dataset(this.datasetName).table(table).insert(insertData);
         } catch (err) {
