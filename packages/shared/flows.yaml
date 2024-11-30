@@ -604,7 +604,7 @@ integrations:
                     Action to update history an application stage.
                 endpoint:
                     method: POST
-                    path: /candidates/create
+                    path: /candidates
                     group: Candidates
                 scopes:
                     - candidatesWrite
