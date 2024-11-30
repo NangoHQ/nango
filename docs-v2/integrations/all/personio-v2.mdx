@@ -1,0 +1,46 @@
+---
+title: Personio (v2)
+sidebarTitle: Personio (v2)
+---
+
+API configurations: [`personio`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Features | Status |
+| - | - |
+| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
+| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
+| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
+| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to register an Application](https://developer.personio.de/docs/getting-started-with-the-personio-api)
+-   [OAuth-related docs](https://developer.personio.de/reference/auth)
+-   [Web API docs (their REST API)](https://developer.personio.de/reference/introduction)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+    - If you want to use the recruiting API, you should use the `personio` provider. This `v2` is only for the main Personio API.
+    - An example of setting them in the `nango.auth` call:
+    ```ts
+    nango.auth('personio', 'test-connection-id', { params: { partnerId: 'YOUR_CUSTOM_NAME', appId: 'UNIQUE_NAME' },
+        credentials: {
+            client_id: '<your-client-id>',
+            client_secret: '<your-client-secret>'
+        }
+      })
+      .then((result: { providerConfigKey: string; connectionId: string }) => {
+        // do something
+      }).catch((err: { message: string; type: string }) => {
+        // handle error
+      });
+    ```
+
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/personio.mdx)</Note>

@@ -4582,6 +4582,21 @@ personio:
             title: App ID
             description: The app ID of your Personio account
 
+personio-v2:
+    display_name: Personio (v2)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://api.personio.de/v2
+        headers:
+            Content-Type: application/x-www-form-urlencoded
+    token_url: https://api.personio.de/v2/auth/token
+    scope_separator: ' '
+    docs: https://docs.nango.dev/integrations/all/personio
+    token_params:
+        grant_type: client_credentials
+
 personio-recruiting:
     display_name: Personio Recruiting
     categories:
