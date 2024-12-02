@@ -9,13 +9,10 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { globalEnv } from '../../utils/env';
-import { apiPatchOnboarding } from '../../hooks/useOnboarding';
-import { useStore } from '../../store';
 
 let ytLoaded = false;
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
-    const env = useStore((state) => state.env);
     const [hasVideo, setHasVideo] = useState(false);
 
     useEffect(() => {
@@ -55,11 +52,10 @@ export const GettingStarted: React.FC = () => {
                     origin: new URL(globalEnv.publicUrl).origin
                 },
                 events: {
-                    onStateChange: async (event: { data: number }) => {
+                    onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
                                 analyticsTrack('web:getting_started:video:end');
-                                await apiPatchOnboarding(env);
                                 break;
                             default:
                                 break;
