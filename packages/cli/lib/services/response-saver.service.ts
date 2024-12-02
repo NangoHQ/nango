@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import type { AxiosResponse } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Connection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
 
@@ -11,6 +11,11 @@ interface CachedRequest {
     requestIdentityHash: string;
     requestIdentity: unknown[];
     data: unknown;
+}
+
+interface ConfigIdentity {
+    requestIdentityHash: string;
+    requestIdentity: unknown[];
 }
 
 export function ensureDirectoryExists(directoryName: string): void {
@@ -83,37 +88,79 @@ export function onAxiosRequestFulfilled({
         return response;
     }
 
-    const [pathname, params] = response.request.path.split('?');
+    const [pathname] = response.request.path.split('?');
     const strippedPath = pathname.replace('/', '');
 
-    const requestIdentity = [
-        ['method', method],
-        ['pathname', pathname],
-        ['params', params]
-    ];
-
-    const headers = response.request.getHeaders();
-    for (const [key, value] of Object.entries(headers)) {
-        if (FILTER_HEADERS.includes(key)) {
-            continue;
-        }
-        requestIdentity.push([`headers.${key}`, value]);
-    }
-
-    requestIdentity.sort((a, b) => a[0].localeCompare(b[0]));
-
-    const requestHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
+    const requestIdentity = computeConfigIdentity(response.config);
 
     saveResponse<CachedRequest>({
         directoryName,
         data: {
-            requestIdentityHash: requestHash,
-            requestIdentity,
-            response: response.data
+            ...requestIdentity,
+            data: response.data
         },
-        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestHash}.json`,
+        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestIdentity.requestIdentityHash}.json`,
         concatenateIfExists: false
     });
 
     return response;
+}
+
+function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
+    const method = config.method?.toLowerCase() || 'get';
+
+    const requestIdentity = [
+        ['method', method],
+        ['url', config.url],
+        ['params', config.params]
+    ];
+
+    const dataIdentity = computeDataIdentity(config);
+    if (dataIdentity) {
+        requestIdentity.push(['data', dataIdentity]);
+    }
+
+    if (config.headers !== undefined) {
+        // headers are always an object, not an AxiosHeaders type, because of
+        // how the proxy function works
+        for (const [key, value] of Object.entries(config.headers)) {
+            if (FILTER_HEADERS.includes(key)) {
+                continue;
+            }
+            requestIdentity.push([`headers.${key}`, value]);
+        }
+    }
+
+    // sort by key so we have a consistent hash
+    requestIdentity.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+
+    const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
+
+    return {
+        requestIdentityHash,
+        requestIdentity
+    };
+}
+
+function computeDataIdentity(config: AxiosRequestConfig): string | undefined {
+    const data = config.data;
+
+    if (!data) {
+        return undefined;
+    }
+
+    let dataString = '';
+    if (typeof data === 'string') {
+        dataString = data;
+    } else if (Buffer.isBuffer(data)) {
+        dataString = data.toString('base64');
+    } else {
+        dataString = JSON.stringify(data);
+    }
+
+    if (dataString.length > 1000) {
+        return 'sha1:' + crypto.createHash('sha1').update(dataString).digest('hex');
+    } else {
+        return dataString;
+    }
 }
