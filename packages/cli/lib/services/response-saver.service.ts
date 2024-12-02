@@ -121,14 +121,8 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     }
 
     if (config.headers !== undefined) {
-        // headers are always an object, not an AxiosHeaders type, because of
-        // how the proxy function works
-        for (const [key, value] of Object.entries(config.headers)) {
-            if (FILTER_HEADERS.includes(key)) {
-                continue;
-            }
-            requestIdentity.push([`headers.${key}`, value]);
-        }
+        const filteredHeaders = Object.fromEntries(Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key)));
+        requestIdentity.push([`headers`, filteredHeaders]);
     }
 
     // sort by key so we have a consistent hash
