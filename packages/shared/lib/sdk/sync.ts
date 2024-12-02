@@ -23,6 +23,7 @@ import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
+import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('SDK');
 
@@ -146,7 +147,7 @@ export interface ProxyConfiguration {
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;
-    data?: unknown;
+    data?: JsonValue | string | Buffer | undefined;
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;

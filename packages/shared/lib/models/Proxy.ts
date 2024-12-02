@@ -11,6 +11,7 @@ import type {
 } from './Auth.js';
 import type { Connection } from './Connection.js';
 import type { Provider, TwoStepCredentials } from '@nangohq/types';
+import type { JsonValue } from 'type-fest';
 
 export interface File {
     fieldname: string;
@@ -29,7 +30,7 @@ interface BaseProxyConfiguration {
     connectionId: string;
     endpoint: string;
     retries?: number;
-    data?: unknown;
+    data?: JsonValue | string | Buffer | undefined;
     files?: File[];
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;

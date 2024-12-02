@@ -159,7 +159,7 @@ class ProxyService {
                 });
             }
 
-            data = formData;
+            data = formData.getBuffer();
         }
 
         const configBody: ApplicationConstructedProxyConfiguration = {
