@@ -22,8 +22,6 @@ import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { ErrorCircle } from '../../components/ErrorCircle';
 import Spinner from '../../components/ui/Spinner';
 import { AvatarOrganization } from '../../components/AvatarCustom';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
-import { IconChevronDown } from '@tabler/icons-react';
 import type { ApiConnectionSimple } from '@nangohq/types';
 import { CopyText } from '../../components/CopyText';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
@@ -221,28 +219,12 @@ export const ConnectionList: React.FC = () => {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    <div className="flex items-center bg-white rounded-md">
-                        <Link to={`/${env}/connections/create`}>
-                            <Button className="rounded-r-none">
-                                <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                                Add Connection
-                            </Button>
-                        </Link>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
-                                    <IconChevronDown stroke={1} size={18} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/${env}/connections/create-legacy`}>
-                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    <Link to={`/${env}/connections/create`}>
+                        <Button>
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                            Add Connection
+                        </Button>
+                    </Link>
                 </div>
             </div>
             {connections && (connections.length > 0 || hasFiltered) && (

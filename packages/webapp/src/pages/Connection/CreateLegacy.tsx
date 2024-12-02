@@ -1,4 +1,4 @@
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useSWRConfig } from 'swr';
@@ -21,6 +21,7 @@ import { useStore } from '../../store';
 import type { AuthModeType } from '@nangohq/types';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { Helmet } from 'react-helmet';
+import { useSearchParam } from 'react-use';
 
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
@@ -63,7 +64,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [issuerId, setIssuerId] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
-    const { providerConfigKey } = useParams();
+    const providerConfigKey = useSearchParam('providerConfigKey');
     const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {

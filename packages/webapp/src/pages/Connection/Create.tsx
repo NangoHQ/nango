@@ -12,25 +12,29 @@ import { globalEnv } from '../../utils/env';
 import Nango from '@nangohq/frontend';
 import { useUnmount, useSearchParam } from 'react-use';
 import { apiConnectSessions } from '../../hooks/useConnect';
-import { Tag } from '../../components/ui/label/Tag';
-import { IconBook, IconBulb, IconCheck, IconChevronDown, IconChevronRight, IconCode, IconHelpCircle } from '@tabler/icons-react';
+import { IconBook, IconCheck, IconChevronDown, IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../../components/ui/Collapsible';
 import { Input } from '../../components/ui/input/Input';
 import { useUser } from '../../hooks/useUser';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/Popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/Command';
 import { cn } from '../../utils/utils';
 import type { Integration } from '@nangohq/server';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { clearConnectionsCache } from '../../hooks/useConnections';
+import { useSWRConfig } from 'swr';
+import { Info } from '../../components/Info';
 
 export const ConnectionCreate: React.FC = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
     const paramExtended = useSearchParam('extended');
     const paramIntegrationId = useSearchParam('integration_id');
+    const navigate = useNavigate();
+    const { mutate, cache } = useSWRConfig();
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
@@ -56,14 +60,14 @@ export const ConnectionCreate: React.FC = () => {
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'close') {
-                // void mutate();
                 void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
+                    navigate(`/${env}/connections/${integration?.uniqueKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
-                // void mutate();
                 void listIntegrationMutate();
+                clearConnectionsCache(cache, mutate);
                 hasConnected.current = event.payload;
             }
         },
@@ -138,18 +142,18 @@ export const ConnectionCreate: React.FC = () => {
             <div className="grid grid-cols-2 text-white">
                 <div className="pr-10">
                     <div className="flex flex-col gap-8">
-                        <h1 className="text-2xl">Create test connection</h1>
+                        <h1 className="text-2xl">Create a test connection</h1>
                         <div className="flex flex-col gap-4">
-                            <label htmlFor="integration_id">Integration ID</label>
+                            <label htmlFor="integration_id">Pick an integration</label>
                             <Popover open={open} onOpenChange={setOpen}>
                                 <PopoverTrigger asChild>
-                                    <Button role="combobox" variant={'select'} size={'lg'} className="justify-between">
+                                    <Button role="combobox" variant={'select'} size={'lg'} className="justify-between" disabled={Boolean(paramIntegrationId)}>
                                         {integration ? (
                                             <div className="flex gap-3">
                                                 <IntegrationLogo provider={integration.provider} /> {integration.uniqueKey}
                                             </div>
                                         ) : (
-                                            'Allow all integrations'
+                                            'Choose from the list'
                                         )}
                                         <IconChevronDown stroke={1} size={18} />
                                     </Button>
@@ -200,199 +204,210 @@ export const ConnectionCreate: React.FC = () => {
                                 </PopoverContent>
                             </Popover>
                         </div>
-                        <Collapsible>
-                            <CollapsibleTrigger className="text-grayscale-400" asChild>
-                                <Button variant={'link'} size={'auto'} className="text-sm [&[data-state=open]>svg]:rotate-90">
-                                    <IconChevronRight size={18} stroke={1} className="transition-transform duration-200" /> Test user info
-                                </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="pt-8 flex flex-col gap-8">
-                                <div className="flex flex-col gap-4">
-                                    <label htmlFor="test_user_email" className="flex gap-2 items-center">
-                                        Test User Email
-                                        <div>
-                                            <span className="text-alert-400 text-s align-super">*</span>
-                                        </div>
-                                        <SimpleTooltip
-                                            side="right"
-                                            align="center"
-                                            tooltipContent={
-                                                <p className="text-s">
-                                                    Emulate your End User Email. In your production this would be your user&apos;s email.
-                                                    <br />
-                                                    <Link
-                                                        to="https://docs.nango.dev/reference/api/connect/sessions/create"
-                                                        className="underline"
-                                                        target="_blank"
-                                                    >
-                                                        Documentation
-                                                    </Link>
-                                                </p>
-                                            }
-                                        >
-                                            <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
-                                        </SimpleTooltip>
-                                    </label>
-                                    <Input
-                                        variant={'black'}
-                                        inputSize={'lg'}
-                                        id="test_user_email"
-                                        placeholder="you@email.com"
-                                        autoComplete="email"
-                                        type="email"
-                                        value={testUserEmail}
-                                        onChange={(e) => setTestUserEmail(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-4">
-                                    <label htmlFor="test_user_id" className="flex gap-2">
-                                        Test User ID
-                                        <div>
-                                            <span className="text-alert-400 text-s align-super">*</span>
-                                        </div>
-                                        <SimpleTooltip
-                                            side="right"
-                                            align="center"
-                                            tooltipContent={
-                                                <p className="text-s">
-                                                    Emulate your End User ID. In your production this would be your user&apos;s id.
-                                                    <br />
-                                                    <Link
-                                                        to="https://docs.nango.dev/reference/api/connect/sessions/create"
-                                                        className="underline"
-                                                        target="_blank"
-                                                    >
-                                                        Documentation
-                                                    </Link>
-                                                </p>
-                                            }
-                                        >
-                                            <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
-                                        </SimpleTooltip>
-                                    </label>
-                                    <Input
-                                        variant={'black'}
-                                        inputSize={'lg'}
-                                        id="test_user_id"
-                                        placeholder="Your user internal ID"
-                                        value={testUserId}
-                                        onChange={(e) => setTestUserId(e.target.value)}
-                                    />
-                                </div>
-                                {paramExtended && (
-                                    <>
-                                        <div className="flex flex-col gap-4">
-                                            <label htmlFor="test_user_display_name" className="flex gap-2">
-                                                Test User Display Name
-                                                <SimpleTooltip
-                                                    side="right"
-                                                    align="center"
-                                                    tooltipContent={
-                                                        <p className="text-s">
-                                                            Emulate your End User Display Name. In your production this would be your user&apos;s display name.
-                                                            <br />
-                                                            <Link
-                                                                to="https://docs.nango.dev/reference/api/connect/sessions/create"
-                                                                className="underline"
-                                                                target="_blank"
-                                                            >
-                                                                Documentation
-                                                            </Link>
-                                                        </p>
-                                                    }
-                                                >
-                                                    <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
-                                                </SimpleTooltip>
-                                            </label>
-                                            <Input
-                                                variant={'black'}
-                                                inputSize={'lg'}
-                                                id="test_user_id"
-                                                placeholder="Your user internal ID"
-                                                value={testUserName}
-                                                onChange={(e) => setTestUserName(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-4">
-                                            <label htmlFor="test_org_id" className="flex gap-2">
-                                                Test User Organization ID
-                                                <SimpleTooltip
-                                                    side="right"
-                                                    align="center"
-                                                    tooltipContent={
-                                                        <p className="text-s">
-                                                            Emulate your End User Organization ID. In your production this would be your user&apos;s
-                                                            organization ID.
-                                                            <br />
-                                                            <Link
-                                                                to="https://docs.nango.dev/reference/api/connect/sessions/create"
-                                                                className="underline"
-                                                                target="_blank"
-                                                            >
-                                                                Documentation
-                                                            </Link>
-                                                        </p>
-                                                    }
-                                                >
-                                                    <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
-                                                </SimpleTooltip>
-                                            </label>
-                                            <Input
-                                                variant={'black'}
-                                                inputSize={'lg'}
-                                                id="test_org_id"
-                                                placeholder="Your user's organization ID"
-                                                value={testOrgId}
-                                                onChange={(e) => setTestOrgId(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-4">
-                                            <label htmlFor="test_org_name" className="flex gap-2">
-                                                Test User Organization Name
-                                                <SimpleTooltip
-                                                    side="right"
-                                                    align="center"
-                                                    tooltipContent={
-                                                        <p className="text-s">
-                                                            Emulate your End User Organization Name. In your production this would be your user&apos;s
-                                                            organization name.
-                                                            <br />
-                                                            <Link
-                                                                to="https://docs.nango.dev/reference/api/connect/sessions/create"
-                                                                className="underline"
-                                                                target="_blank"
-                                                            >
-                                                                Documentation
-                                                            </Link>
-                                                        </p>
-                                                    }
-                                                >
-                                                    <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
-                                                </SimpleTooltip>
-                                            </label>
-                                            <Input
-                                                variant={'black'}
-                                                inputSize={'lg'}
-                                                id="test_org_name"
-                                                placeholder="Your user's organization name"
-                                                value={testOrgName}
-                                                onChange={(e) => setTestOrgName(e.target.value)}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </CollapsibleContent>
-                        </Collapsible>
-                        <div>
-                            <Button onClick={onClickConnectUI} size="lg" className="" disabled={!testUserId || !testUserEmail}>
-                                Create test connection
+
+                        <Info title="Test connections: user info">
+                            For test connections, the user info is automatically populated with your Nango account details. The user email is simply the one you
+                            used to sign up for Nango and doesn’t need to match the email used for the third-party system. This email is used only for display
+                            purposes to help associate the connection with its creator and does not affect the functionality of the connection.
+                        </Info>
+
+                        {paramExtended && (
+                            <Collapsible>
+                                <CollapsibleTrigger className="text-grayscale-400" asChild>
+                                    <Button variant={'link'} size={'auto'} className="text-sm [&[data-state=open]>svg]:rotate-90">
+                                        <IconChevronRight size={18} stroke={1} className="transition-transform duration-200" /> Test user info
+                                    </Button>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="pt-8 flex flex-col gap-8">
+                                    <div className="flex flex-col gap-4">
+                                        <label htmlFor="test_user_email" className="flex gap-2 items-center">
+                                            Test User Email
+                                            <div>
+                                                <span className="text-alert-400 text-s align-super">*</span>
+                                            </div>
+                                            <SimpleTooltip
+                                                side="right"
+                                                align="center"
+                                                tooltipContent={
+                                                    <p className="text-s">
+                                                        Emulate your End User Email. In your production this would be your user&apos;s email.
+                                                        <br />
+                                                        <Link
+                                                            to="https://docs.nango.dev/reference/api/connect/sessions/create"
+                                                            className="underline"
+                                                            target="_blank"
+                                                        >
+                                                            Documentation
+                                                        </Link>
+                                                    </p>
+                                                }
+                                            >
+                                                <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
+                                            </SimpleTooltip>
+                                        </label>
+                                        <Input
+                                            variant={'black'}
+                                            inputSize={'lg'}
+                                            id="test_user_email"
+                                            placeholder="you@email.com"
+                                            autoComplete="email"
+                                            type="email"
+                                            value={testUserEmail}
+                                            onChange={(e) => setTestUserEmail(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-4">
+                                        <label htmlFor="test_user_id" className="flex gap-2">
+                                            Test User ID
+                                            <div>
+                                                <span className="text-alert-400 text-s align-super">*</span>
+                                            </div>
+                                            <SimpleTooltip
+                                                side="right"
+                                                align="center"
+                                                tooltipContent={
+                                                    <p className="text-s">
+                                                        Emulate your End User ID. In your production this would be your user&apos;s id.
+                                                        <br />
+                                                        <Link
+                                                            to="https://docs.nango.dev/reference/api/connect/sessions/create"
+                                                            className="underline"
+                                                            target="_blank"
+                                                        >
+                                                            Documentation
+                                                        </Link>
+                                                    </p>
+                                                }
+                                            >
+                                                <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
+                                            </SimpleTooltip>
+                                        </label>
+                                        <Input
+                                            variant={'black'}
+                                            inputSize={'lg'}
+                                            id="test_user_id"
+                                            placeholder="Your user internal ID"
+                                            value={testUserId}
+                                            onChange={(e) => setTestUserId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-4">
+                                        <label htmlFor="test_user_display_name" className="flex gap-2">
+                                            Test User Display Name
+                                            <SimpleTooltip
+                                                side="right"
+                                                align="center"
+                                                tooltipContent={
+                                                    <p className="text-s">
+                                                        Emulate your End User Display Name. In your production this would be your user&apos;s display name.
+                                                        <br />
+                                                        <Link
+                                                            to="https://docs.nango.dev/reference/api/connect/sessions/create"
+                                                            className="underline"
+                                                            target="_blank"
+                                                        >
+                                                            Documentation
+                                                        </Link>
+                                                    </p>
+                                                }
+                                            >
+                                                <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
+                                            </SimpleTooltip>
+                                        </label>
+                                        <Input
+                                            variant={'black'}
+                                            inputSize={'lg'}
+                                            id="test_user_id"
+                                            placeholder="Your user internal ID"
+                                            value={testUserName}
+                                            onChange={(e) => setTestUserName(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-4">
+                                        <label htmlFor="test_org_id" className="flex gap-2">
+                                            Test User Organization ID
+                                            <SimpleTooltip
+                                                side="right"
+                                                align="center"
+                                                tooltipContent={
+                                                    <p className="text-s">
+                                                        Emulate your End User Organization ID. In your production this would be your user&apos;s organization
+                                                        ID.
+                                                        <br />
+                                                        <Link
+                                                            to="https://docs.nango.dev/reference/api/connect/sessions/create"
+                                                            className="underline"
+                                                            target="_blank"
+                                                        >
+                                                            Documentation
+                                                        </Link>
+                                                    </p>
+                                                }
+                                            >
+                                                <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
+                                            </SimpleTooltip>
+                                        </label>
+                                        <Input
+                                            variant={'black'}
+                                            inputSize={'lg'}
+                                            id="test_org_id"
+                                            placeholder="Your user's organization ID"
+                                            value={testOrgId}
+                                            onChange={(e) => setTestOrgId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-4">
+                                        <label htmlFor="test_org_name" className="flex gap-2">
+                                            Test User Organization Name
+                                            <SimpleTooltip
+                                                side="right"
+                                                align="center"
+                                                tooltipContent={
+                                                    <p className="text-s">
+                                                        Emulate your End User Organization Name. In your production this would be your user&apos;s organization
+                                                        name.
+                                                        <br />
+                                                        <Link
+                                                            to="https://docs.nango.dev/reference/api/connect/sessions/create"
+                                                            className="underline"
+                                                            target="_blank"
+                                                        >
+                                                            Documentation
+                                                        </Link>
+                                                    </p>
+                                                }
+                                            >
+                                                <IconHelpCircle stroke={1} size={18} className="text-grayscale-500" />
+                                            </SimpleTooltip>
+                                        </label>
+                                        <Input
+                                            variant={'black'}
+                                            inputSize={'lg'}
+                                            id="test_org_name"
+                                            placeholder="Your user's organization name"
+                                            value={testOrgName}
+                                            onChange={(e) => setTestOrgName(e.target.value)}
+                                        />
+                                    </div>
+                                </CollapsibleContent>
+                            </Collapsible>
+                        )}
+                        <div className="flex gap-4">
+                            <Button onClick={onClickConnectUI} size="md" disabled={!integration}>
+                                Authorize
                             </Button>
+
+                            <Link to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.uniqueKey}` : ''}`}>
+                                <Button onClick={onClickConnectUI} size="md" variant={'emptyFaded'}>
+                                    Authorize (deprecated flow)
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
                 <div className="border-l border-l-grayscale-800 pl-10">
                     <div className="flex flex-col gap-10">
-                        <h1 className="text-2xl">Add to your app directly</h1>
+                        <h1 className="text-2xl">Embed in your app</h1>
                         <a
                             className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
                             href="https://docs.nango.dev/integrate/guides/authorize-an-api"
@@ -401,47 +416,17 @@ export const ConnectionCreate: React.FC = () => {
                         >
                             <header className="flex justify-between">
                                 <div className="flex gap-3 items-start">
-                                    <h2>Connect UI</h2>
-                                    <Tag bgClassName="border bg-success-400 border-success-400 px-2 bg-opacity-30" textClassName="text-success-400">
-                                        Recommended
-                                    </Tag>
+                                    <h2>Authorize users from your app</h2>
                                 </div>
                                 <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
-                                    <IconBulb stroke={1} size={18} />
-                                </div>
-                            </header>
-                            <main>
-                                <p className="text-sm text-grayscale-400">Authorize your users with a pre-built UI.</p>
-                            </main>
-                            <footer className="mt-4">
-                                <Button variant={'emptyFaded'}>
                                     <IconBook stroke={1} size={18} />
-                                    Connect UI Docs
-                                </Button>
-                            </footer>
-                        </a>
-                        <a
-                            className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                            href="https://docs.nango.dev/guides/authorize-an-api-from-your-app-with-custom-ui"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <header className="flex justify-between">
-                                <div className="flex gap-3 items-start">
-                                    <h2>Custom UI</h2>
-                                </div>
-                                <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
-                                    <IconCode stroke={1} size={18} />
                                 </div>
                             </header>
                             <main>
-                                <p className="text-sm text-grayscale-400">Build your own authorize experience</p>
+                                <p className="text-sm text-grayscale-400">
+                                    Learn how to embed Nango in your app to let users authorize 3rd-party APIs seamlessly.
+                                </p>
                             </main>
-                            <footer className="mt-4">
-                                <Button variant={'emptyFaded'}>
-                                    <IconBook stroke={1} size={18} /> Connect UI Docs
-                                </Button>
-                            </footer>
                         </a>
                     </div>
                 </div>

@@ -12,8 +12,6 @@ import PageNotFound from '../../PageNotFound';
 import { useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../../components/ui/DropdownMenu';
-import { IconChevronDown } from '@tabler/icons-react';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 
@@ -105,28 +103,12 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                 </div>
                 <div className="shrink-0">
-                    <div className="flex items-center bg-white rounded-md">
-                        <Link to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
-                            <Button className="rounded-r-none">
-                                <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                                Add Connection
-                            </Button>
-                        </Link>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
-                                    <IconChevronDown stroke={1} size={18} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/${env}/connections/create`}>
-                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    <Link to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
+                        <Button>
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                            Add Connection
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
