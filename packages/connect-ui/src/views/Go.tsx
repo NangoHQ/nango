@@ -150,6 +150,10 @@ export const Go: React.FC = () => {
         // Append connectionConfig object
         const additionalFields: z.ZodRawShape = {};
         for (const [name, schema] of Object.entries(provider.connection_config || [])) {
+            if (schema.automated) {
+                continue;
+            }
+
             additionalFields[name] = jsonSchemaToZod(schema);
 
             if (schema.order) {
@@ -345,7 +349,7 @@ export const Go: React.FC = () => {
                                             name={name}
                                             render={({ field }) => {
                                                 return (
-                                                    <FormItem className={cn(isPreconfigured || definition?.hidden ? 'hidden' : null)}>
+                                                    <FormItem className={cn(isPreconfigured || definition?.hidden || definition?.automated ? 'hidden' : null)}>
                                                         <div>
                                                             <div className="flex gap-2 items-center pb-1">
                                                                 <FormLabel className="leading-5">

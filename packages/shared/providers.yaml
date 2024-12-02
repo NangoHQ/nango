@@ -2645,6 +2645,7 @@ github-app:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 github-app-oauth:
     display_name: GitHub App (oauth)
@@ -2674,6 +2675,7 @@ github-app-oauth:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 gitlab:
     display_name: GitLab
@@ -5184,7 +5186,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
-            optional: true
+            automated: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5205,6 +5207,7 @@ salesforce-sandbox:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
