@@ -1,4 +1,4 @@
-name: Run cli tests on Windows
+name: Run Client Tests
 
 on:
     push:
@@ -7,10 +7,6 @@ on:
             - staging/**
     pull_request:
     merge_group:
-
-concurrency:
-    group: tests-windows/${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
 
 jobs:
     tests:

@@ -8,10 +8,6 @@ on:
     pull_request:
     merge_group:
 
-concurrency:
-    group: validation-${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
-
 jobs:
     yaml_validation_job:
         runs-on: ubuntu-latest
