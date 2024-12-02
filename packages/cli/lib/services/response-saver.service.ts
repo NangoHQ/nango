@@ -155,7 +155,15 @@ function computeDataIdentity(config: AxiosRequestConfig): string | undefined {
     } else if (Buffer.isBuffer(data)) {
         dataString = data.toString('base64');
     } else {
-        dataString = JSON.stringify(data);
+        try {
+            dataString = JSON.stringify(data);
+        } catch (e) {
+            if (e instanceof Error) {
+                throw new Error(`Unable to compute request identity: ${e.message}`);
+            } else {
+                throw new Error('Unable to compute request identity');
+            }
+        }
     }
 
     if (dataString.length > 1000) {
