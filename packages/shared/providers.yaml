@@ -2768,10 +2768,25 @@ gong:
     proxy:
         base_url: https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
+    docs_connect: https://docs.nango.dev/integrations/all/gong/connect
+    credentials:
+        username:
+            type: string
+            title: username
+            description: Your Gong Access Key
+            pattern: '^[a-zA-Z0-9-]+$'
+        password:
+            type: string
+            title: Password
+            description: Your Gong Access Key Secret
+            default_value: ''
+            doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
 
 gong-oauth:
     display_name: Gong (oauth)
     auth_mode: OAUTH2
+    categories:
+        - productivity
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
