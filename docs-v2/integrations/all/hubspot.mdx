@@ -3,37 +3,93 @@ title: HubSpot
 sidebarTitle: HubSpot
 ---
 
-# Authorization mode
+## Overview
 
-<Card title="OAuth 2" icon="window" horizontal>
-    Users provide their regular Hubspot account credentials.
-</Card>
+<CardGroup cols={3}>
+<Card title="Pre-built tooling" icon="screwdriver-wrench" href="#pre-built-tooling"/>
+<Card title="Pre-built use-cases" icon="square-check" href="#pre-built-use-cases"/>
+<Card title="Pre-requisites" icon="triangle-exclamation" href="#pre-requisites"/>
+<Card title="Setup guide" icon="rocket" href="#setup-guide"/>
+<Card title="Useful links" icon="circle-info" href="#useful-links"/>
+<Card title="API gotchas" icon="biohazard" href="#api-gotchas"/>
+</CardGroup>
 
-# Pre-built integrations
+## Pre-built tooling
 
-| Category | Pre-built integrations |
-| - | - |
-| Companies | list, create, update, delete |
-| Contacts | list, create, update, delete |
-| Deals | list, create, update, delete |
-| Owners | list |
-| Pipelines | list |
-| Products | list |
-| Properties | list, create |
-| Roles | list, update |
-| Tasks | list, create, update, delete |
-| Other | 9 other endpoints |
+<AccordionGroup>  
+  <Accordion title="✅ Authorization">
+    | Tools | Status | 
+    | - | - | 
+    | Pre-built authorization (OAuth 2) | ✅ |
+    | Credentials auto-refresh | ✅ |
+    | Authorization input validation | ✅ |
+    | Pre-built authorization UI | ✅ |
+    | Custom authorization UI | ✅ |
+    | End-user authorization guidelines | ✅ |
+    | Invalid credentials detection | ✅ |
+  </Accordion>
+  <Accordion title="✅ Read & write data">
+    | Tools | Status | 
+    | - | - | 
+    | Pre-built use-cases | ✅ |
+    | API unification | ✅ |
+    | 2-way sync | ✅ |
+    | Webhooks from Nango on data modifications | ✅ |
+    | Real-time webhooks from 3rd-party API | ✅ |
+    | Proxy requests | ✅ |
+  </Accordion>
+  <Accordion title="✅ Observability & data quality">
+    | Tools | Status | 
+    | - | - | 
+    | HTTP request logging | ✅ |
+    | End-to-type type safety | ✅ |
+    | Data runtime validation | ✅ |
+  </Accordion>
+  <Accordion title="✅ Customization">
+    | Tools | Status | 
+    | - | - | 
+    | Create or customize use-cases | ✅ |
+    | Pre-configured pagination | ✅ |
+    | Pre-configured rate-limit handling | ✅ |
+    | Per-customer configurations | ✅ |
+  </Accordion>
+</AccordionGroup>  
 
-<Card title="Browse the pre-built integration code" icon="code" horizontal>
-</Card>
+## Pre-built use-cases
 
-<Tip>Not seeing the endpoints you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+<AccordionGroup>  
+  <Accordion title="Companies">
+  | Endpoint | Description | Readme | 
+  | - | - | - |
+  | `GET /companies` | Fetches a list of companies from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.ts)|
+  | `POST /companies` | Creates a single company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.ts)|
+  | `PATCH /companies` | Update a single company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.ts)|
+  | `DEL /companies` | Deletes a company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.ts)|
+  </Accordion>
+  <Accordion title="Contacts"></Accordion>
+  <Accordion title="Deals"></Accordion>
+  <Accordion title="Owners"></Accordion>
+  <Accordion title="Pipelines"></Accordion>
+  <Accordion title="Products"></Accordion>
+  <Accordion title="Properties"></Accordion>
+  <Accordion title="Roles"></Accordion>
+  <Accordion title="Tasks"></Accordion>
+  <Accordion title="Others"></Accordion>
+</AccordionGroup>  
 
-# Pre-requisites
+<Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
 
-🎉 There are no pre-requisites to build a Hubspot integration.
+## Pre-requisites
 
-# Setup guide
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup [here](https://developers.hubspot.com/). |
+| Paid test account | ✅ Not required | Free, self-signup [here](https://hubspot.com/). | 
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+## Setup guide
 
 <Steps>
   <Step title="Create a developer account">
@@ -53,21 +109,40 @@ sidebarTitle: HubSpot
     If you don't have a Hubspot account already, create one to test your integration. 
   </Step>
   <Step title="Next">
-    Follow the [_Getting Started_ guide](/guides/getting-started).
+    Follow the [_Getting Started_ guides](/guides/getting-started).
   </Step>
 </Steps>
 
-<Tip>Some difficulties getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-# Useful resources
+## Useful links
 
--   [How to register an Application](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
--   [OAuth-related docs](https://developers.hubspot.com/docs/api/oauth-quickstart-guide)
--   [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes)
--   [API](https://developers.hubspot.com/docs/api/overview)
+<AccordionGroup>  
+  <Accordion title="General">
+    - [Website](https://www.hubspot.com/)
+  </Accordion>
+  <Accordion title="Documentation">
+    - [API documentation](https://developers.hubspot.com/beta-docs/reference/api/overview)
+  </Accordion>
+  <Accordion title="Registration">
+    - [Create a test account](https://app.hubspot.com/signup-hubspot/crm)
+    - [Create a developer account](https://app.hubspot.com/signup-hubspot/developers)
+  </Accordion>
+  <Accordion title="Developer">
+    - [Developer console](https://app.hubspot.com/)
+  </Accordion>
+  <Accordion title="Authorization">
+    - [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide)
+    - [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
+    - [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes)
+  </Accordion>
+  <Accordion title="Rate Limiting">
+    - [Details on rate limits](https://developers.hubspot.com/beta-docs/guides/apps/api-usage/usage-details)
+  </Accordion>
+</AccordionGroup>  
 
-<Note>Add _Useful resources_ by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+## API gotchas
 
-# API Gotchas
+_No reported gotchas yet_
 
-<Note>Add _Gotchas_ by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+<Note>Contribute _Useful Links_ & _API Gotchas_ by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
