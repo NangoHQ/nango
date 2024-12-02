@@ -46,7 +46,7 @@ export const ConnectionCreate: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [integration, setIntegration] = useState<Integration>();
     const [testUserEmail, setTestUserEmail] = useState(user!.email);
-    const [testUserId, setTestUserId] = useState(user!.uuid);
+    const [testUserId, setTestUserId] = useState(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
     const [testUserName, setTestUserName] = useState(user!.name);
     const [testOrgName, setTestOrgName] = useState('');
     const [testOrgId, setTestOrgId] = useState('');
