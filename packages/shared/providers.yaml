@@ -1990,6 +1990,44 @@ emarsys:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
 
+ebay:
+    display_name: eBay
+    categories:
+        - marketplace
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.ebay.com/oauth2/authorize
+    token_url: https://api.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
+
+ebay-sandbox:
+    display_name: eBay (sandbox)
+    categories:
+        - marketplace
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.sandbox.ebay.com/oauth2/authorize
+    token_url: https://api.sandbox.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.sandbox.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
+
 e-conomic:
     display_name: e-conomic
     categories:
