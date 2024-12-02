@@ -8,15 +8,15 @@ import { getFormattedMessage } from '../models/helpers.js';
 
 export async function start() {
     if (!envs.NANGO_LOGS_ENABLED) {
-        logger.warning('OpenSearch is disabled, skipping');
+        logger.warning('Elasticsearch is disabled, skipping');
         return;
     }
 
-    logger.info('🔄 OpenSearch service starting...');
+    logger.info('🔄 Elasticsearch service starting...');
 
     await migrateMapping();
 
-    logger.info('✅ OpenSearch');
+    logger.info('✅ Elasticsearch');
 }
 
 export async function migrateMapping() {
