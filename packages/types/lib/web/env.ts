@@ -4,8 +4,9 @@ export interface WindowEnv {
     connectUrl: string;
     publicSentryKey: string;
     publicPosthogKey: string;
-    publicPosthogPost: string;
+    publicPosthogHost: string;
     publicLogoDevKey: string;
+    publicKoalaKey: string;
     isCloud: boolean;
     features: {
         logs: boolean;

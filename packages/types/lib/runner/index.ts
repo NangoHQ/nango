@@ -8,3 +8,10 @@ export interface RunnerOutput {
     error: RunnerOutputError | null;
     response?: any; // TODO: define response type
 }
+
+export interface RunnerFlags {
+    validateActionInput: boolean;
+    validateActionOutput: boolean;
+    validateSyncRecords: boolean;
+    validateSyncMetadata: boolean;
+}

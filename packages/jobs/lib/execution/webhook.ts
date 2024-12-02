@@ -11,8 +11,8 @@ import {
     createSyncJob,
     environmentService,
     externalWebhookService,
+    featureFlags,
     getApiUrl,
-    getRunnerFlags,
     getSyncByIdAndName,
     getSyncConfigRaw,
     updateSyncJobStatus
@@ -22,6 +22,7 @@ import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let team: DBTeam | undefined;
@@ -102,7 +103,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date()
         };
 

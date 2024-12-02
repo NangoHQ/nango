@@ -553,6 +553,72 @@ integrations:
                 endpoint:
                     method: POST
                     path: /notes
+            application-change-source:
+                output: AshbyResponse
+                input: ChangeSource
+                description: |
+                    Action to change source of application.
+                endpoint:
+                    method: POST
+                    path: /applications/source
+                    group: Applications
+                scopes:
+                    - candidatesWrite
+            application-change-stage:
+                output: AshbyResponse
+                input: ChangeStage
+                description: |
+                    Action to change stage of an application.
+                endpoint:
+                    method: POST
+                    path: /applications/stage
+                    group: Applications
+                scopes:
+                    - candidatesWrite
+            application-update:
+                output: AshbyResponse
+                input: ChangeSource | ChangeStage | UpdateHistory
+                description: |
+                    Action to update an application stage.
+                endpoint:
+                    method: PATCH
+                    path: /applications/update
+                    group: Applications
+                scopes:
+                    - candidatesWrite
+            application-update-history:
+                output: AshbyResponse
+                input: UpdateHistory
+                description: |
+                    Action to update history an application stage.
+                endpoint:
+                    method: POST
+                    path: /applications/history
+                    group: Applications
+                scopes:
+                    - candidatesWrite
+            create-candidate:
+                output: AshbyResponse
+                input: CreateCandidate
+                description: |
+                    Action to update history an application stage.
+                endpoint:
+                    method: POST
+                    path: /candidates
+                    group: Candidates
+                scopes:
+                    - candidatesWrite
+            interview-stage:
+                output: StagesResponse
+                input: InterviewStageList
+                description: |
+                    List all interview stages for an interview plan in order.
+                endpoint:
+                    method: GET
+                    path: /interviews/stages
+                    group: Interviews
+                scopes:
+                    - interviewsRead
         models:
             AshbyCandidate:
                 id: string
@@ -674,6 +740,10 @@ integrations:
                     updatedAt: date
                 hiringTeam: string[]
                 appliedViaJobPostingId: string
+            StagesResponse:
+                stages: InterviewStageListResponse[]
+            InterviewStageList:
+                interviewPlanId: string
             AshbyCreateNoteResponse:
                 id: string
                 createdAt: date
@@ -697,6 +767,190 @@ integrations:
             NoteObject:
                 value: string
                 type: string
+            ChangeStage:
+                applicationId: string
+                interviewStageId: string
+                archiveReasonId?: string
+            ChangeSource:
+                applicationId: string
+                sourceId: string
+            CreateCandidate:
+                name: string
+                email?: string
+                phoneNumber?: string
+                linkedInUrl?: string
+                githubUrl?: string
+                website?: string
+                alternateEmailAddresses?: string[]
+                sourceId?: string
+                creditedToUserId?: string
+                location?:
+                    city?: string
+                    region?: string
+                    country?: string
+                createdAt?: date
+            AshbyCreateCandidateResponse:
+                id: string
+                createdAt?: date
+                updatedAt?: date
+                name: string
+                primaryEmailAddress?:
+                    value: string
+                    type: string
+                    isPrimary: boolean
+                emailAddresses?: EmailAddressObject[]
+                primaryPhoneNumber?: PrimaryNumberObject[]
+                phoneNumbers: PhoneNumbersObject[]
+                socialLinks: SocialLinksObject[]
+                tags: TagsObject[]
+                position?: string | null
+                company?: string | null
+                applicationIds: string[]
+                resumeFileHandle?:
+                    id: string
+                    name: string
+                    handle: string
+                fileHandles: FileaHandlesObject[]
+                customFields?: object[]
+                profileUrl: string
+                source?:
+                    id: string
+                    title: string
+                    isArchived: boolean
+                    sourceType?:
+                        id: string
+                        title: string
+                        isArchived: string
+                creditedToUser?:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+                    globalRole: string
+                    isEnabled: boolean
+                    updatedAt: date
+                timezone?: string
+                primaryLocation?:
+                    id: string
+                    locationSummary: string
+                    locationComponents: LocationComponentsObject[]
+            EmailAddressObject:
+                value: string
+                type: string
+                isPrimary: boolean
+            PrimaryNumberObject:
+                value: string
+                type: string
+                isPrimary: boolean
+            PhoneNumbersObject:
+                value: string
+                type: string
+                isPrimary: boolean
+            SocialLinksObject:
+                type: string
+                url: string
+            TagsObject:
+                id: string
+                title: string
+                isArchived: boolean
+            FileaHandlesObject:
+                id: string
+                name: string
+                handle: string
+            LocationComponentsObject:
+                type: string
+                name: string
+            InterviewStageListResponse:
+                id: string
+                title: string
+                type: string
+                orderInInterviewPlan: number
+                interviewStageGroupId?: string
+                interviewPlanId: string
+            AshbyResponse:
+                success: boolean
+                errors?: string[]
+                results?: >-
+                    AshByApplicationSuccessObject | AshbyCreateCandidateResponse |
+                    InterviewStageListResponse
+                moreDataAvailable?: boolean
+            HiringTeamObject:
+                email: string
+                firstName: string
+                lastName: string
+                role: string
+                userId: string
+            UpdateApplication:
+                applicationId: string
+                sourceId?: string
+                creditedToUserId?: string
+                createdAt?: date
+                sendNotifications?: boolean
+            UpdateAshbyApplication:
+                applicationId: string
+                sourceId?: string
+                interviewStageId?: string
+                archiveReasonId?: string
+                applicationHistory?: ApplicationHistoryObject[]
+            UpdateHistory:
+                applicationId: string
+                applicationHistory: ApplicationHistoryObject[]
+            ApplicationHistoryObject:
+                stageId: string
+                stageNumber: number
+                enteredStageAt: date
+                applicationHistoryId?: string
+                archiveReasonId?: string
+            AshByApplicationSuccessObject:
+                id: string
+                createdAt: date
+                updatedAt: date
+                status: string
+                customFields: object[]
+                candidate:
+                    id: string
+                    name: string
+                    primaryEmailAddress?:
+                        value: string
+                        type: any
+                        isPrimary: string
+                    primaryPhoneNumber?: object
+                currentInterviewStage:
+                    id: string
+                    title: string
+                    type: string
+                    orderInInterviewPlan: number
+                    interviewStageGroupId?: string
+                    interviewPlanId: string
+                source?:
+                    id: string
+                    title: string
+                    isArchived: boolean
+                    sourceType:
+                        id: string
+                        title: string
+                        isArchived: boolean
+                archiveReason?:
+                    id: string
+                    text: string
+                    reasonType: string
+                    isArchived: boolean
+                archivedAt?: date
+                job:
+                    id: string
+                    title: string
+                    locationId: string
+                    departmentId: string
+                creditedToUser?:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email?: string
+                    globalRole: string
+                    isEnabled: boolean
+                    updatedAt: date
+                hiringTeam: HiringTeamObject[]
+                appliedViaJobPostingId?: string
     aws-iam:
         actions:
             create-user:
@@ -2670,6 +2924,7 @@ integrations:
                     method: GET
                     path: /conversations/all
                     group: Conversations
+                version: 1.0.1
                 output: FrontMessageOutput
                 input: SingleConversation
         models:
@@ -2944,6 +3199,122 @@ integrations:
             GithubCreateIssueResult:
                 url: string | undefined
                 status: number
+    github-app:
+        actions:
+            repositories:
+                description: List all repositories accessible to this Github App
+                output: RepoResponse
+                endpoint:
+                    method: GET
+                    path: /repositories
+                    group: Repositories
+        models:
+            RepoResponse:
+                repositories: Repository[]
+            Repository:
+                allow_forking: boolean
+                archive_url: string
+                archived: boolean
+                assignees_url: string
+                blobs_url: string
+                branches_url: string
+                clone_url: string
+                collaborators_url: string
+                comments_url: string
+                commits_url: string
+                compare_url: string
+                contents_url: string
+                contributors_url: string
+                created_at: string
+                default_branch: string
+                deployments_url: string
+                description: string
+                disabled: boolean
+                downloads_url: string
+                events_url: string
+                fork: boolean
+                forks: number
+                forks_count: number
+                forks_url: string
+                full_name: string
+                git_commits_url: string
+                git_refs_url: string
+                git_tags_url: string
+                git_url: string
+                has_discussions: boolean
+                has_downloads: boolean
+                has_issues: boolean
+                has_pages: boolean
+                has_projects: boolean
+                has_wiki: boolean
+                homepage: string | null
+                hooks_url: string
+                html_url: string
+                id: number
+                is_template: boolean
+                issue_comment_url: string
+                issue_events_url: string
+                issues_url: string
+                keys_url: string
+                labels_url: string
+                language: string
+                languages_url: string
+                license: string | null
+                merges_url: string
+                milestones_url: string
+                mirror_url: string | null
+                name: string
+                node_id: string
+                notifications_url: string
+                open_issues: number
+                open_issues_count: number
+                owner:
+                    avatar_url: string
+                    events_url: string
+                    followers_url: string
+                    following_url: string
+                    gists_url: string
+                    gravatar_id: string
+                    html_url: string
+                    id: number
+                    login: string
+                    node_id: string
+                    organizations_url: string
+                    received_events_url: string
+                    repos_url: string
+                    site_admin: boolean
+                    starred_url: string
+                    subscriptions_url: string
+                    type: string
+                    url: string
+                permissions:
+                    admin: boolean
+                    maintain: boolean
+                    pull: boolean
+                    push: boolean
+                    triage: boolean
+                private: boolean
+                pulls_url: string
+                pushed_at: string
+                releases_url: string
+                size: number
+                ssh_url: string
+                stargazers_count: number
+                stargazers_url: string
+                statuses_url: string
+                subscribers_url: string
+                subscription_url: string
+                svn_url: string
+                tags_url: string
+                teams_url: string
+                topics: string[]
+                trees_url: string
+                updated_at: string
+                url: string
+                visibility: string
+                watchers: number
+                watchers_count: number
+                web_commit_signoff_required: boolean
     google:
         syncs:
             workspace-org-units:
@@ -5395,6 +5766,112 @@ integrations:
                 scopes:
                     - opportunities:write:admin
                 version: 1.0.0
+            get-stages:
+                description: |
+                    Action to get lists all pipeline stages in your Lever account.
+                output: GetStages
+                endpoint:
+                    method: GET
+                    path: /stages
+                    group: Opportunities
+            users:
+                description: >
+                    Lists all the users in your Lever account. Only active users are
+                    included by default..
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+            get-postings:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /posts/single
+                    group: Posts
+            get-archive-reasons:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /archived/reasons
+                    group: Opportunities
+            posting:
+                description: |
+                    Get single posts for your account in Lever
+                output: SuccessResponse
+                input: SinglePost
+                endpoint:
+                    method: GET
+                    path: /posts
+                    group: Posts
+            update-opportunity-links:
+                description: |
+                    Update the links in an opportunity
+                output: SuccessResponse
+                input: UpdateLinks
+                endpoint:
+                    method: POST
+                    path: /links
+                    group: Opportunities
+            update-opportunity-sources:
+                description: |
+                    Update the sources in an opportunity
+                output: SuccessResponse
+                input: UpdateSources
+                endpoint:
+                    method: POST
+                    path: /sources
+                    group: Opportunities
+            update-opportunity-stage:
+                description: |
+                    Update the stage in an opportunity
+                output: SuccessResponse
+                input: UpdateOpportunityStage
+                endpoint:
+                    method: POST
+                    path: /stages
+                    group: Opportunities
+            update-opportunity-tags:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: UpdateTags
+                endpoint:
+                    method: POST
+                    path: /tags
+                    group: Opportunities
+            update-opportunity-archived:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: ArchiveOpportunity
+                endpoint:
+                    method: PUT
+                    path: /archived
+                    group: Opportunities
+            apply-posting:
+                description: >
+                    Submit an application on behalf of a candidate. This endpoint can only
+                    be used to submit applications to published or unlisted postings.
+                output: SuccessResponse
+                input: ApplyToPosting
+                endpoint:
+                    method: POST
+                    path: /posts/apply
+                    group: Posts
+            update-opportunity:
+                description: |
+                    Update an opportunity
+                output: ReturnObjUpdateOpportunity
+                input: UpdateOpportunity
+                endpoint:
+                    method: POST
+                    path: /opportunity/update
+                    group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
@@ -5620,6 +6097,7 @@ integrations:
                     uploadedAt: number
                     downloadUrl: string
             LeverPosting:
+                perform_as?: string
                 id: string
                 text: string
                 createdAt: number
@@ -5705,6 +6183,172 @@ integrations:
                 createdAt: number | undefined
                 archived: ArchievedEntry | undefined
                 contact: string[] | undefined
+            UpdateOpportunityStage:
+                perform_as?: string
+                stage: string
+                opportunityId: string
+            ArchiveOpportunity:
+                perform_as?: string
+                reason: string
+                requisitionId?: string
+                opportunityId: string
+                cleanInterviews?: boolean
+            ArchiveObject:
+                reason: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            UpdateLinks:
+                perform_as?: string
+                links: string[]
+                opportunityId: string
+                delete: boolean
+            UpdateTags:
+                opportunityId: string
+                perform_as?: string
+                tags: string[]
+                delete: boolean
+            UpdateSources:
+                opportunityId: string
+                perform_as?: string
+                sources: string[]
+                delete: boolean
+            Stages:
+                id: string
+                text: string
+            GetStages:
+                stages: Stages[]
+            Users:
+                id: string
+                name: string
+                username: string
+                email: string
+                accessRole: string
+                photo: string | null
+                createdAt: number
+                deactivatedAt: string | null
+                externalDirectoryId: string | null
+                linkedContactIds: string[] | null
+                jobTitle: string | null
+                managerId: string | null
+            GetUsers:
+                users: Users[]
+            SuccessResponse:
+                success: boolean
+                opportunityId?: string
+                response?: LeverOpportunity
+            ApplyCandidate:
+                send_confirmation_email?: boolean
+                customQuestions: any[]
+                personalInformation: any[]
+                eeoResponses: object
+                urls: any[]
+                ipAddress?: string
+                source?: string
+                consent?: object
+                diversitySurvey?: object
+                origin?: string
+            PostingCategories:
+                team: string
+                department: string
+                location?: string
+                commitment?: string
+                allLocations?: string[]
+            ContentList:
+                text: string
+                content: string
+            PostingContent:
+                descriptionHtml: string
+                lists?: ContentList[]
+                closingPostingHtml?: string
+            SinglePost:
+                id: string
+            QuestionResponse:
+                name: string
+                value: string
+            ApplyToPosting:
+                postId: string
+                send_confirmation_email?: boolean
+                personalInformation: QuestionResponse[]
+                eeoResponses: object
+                urls?: QuestionResponse[]
+                CustomQuestions?: CustomQuestion[]
+                ipAddress?: string
+                source?: string
+                consent?:
+                    marketing:
+                        provided: boolean
+                        compliancePolicyId: string
+                    store:
+                        provided: boolean
+                        compliancePolicyId: string
+                diversitySurvey?:
+                    surveyId: string
+                    candidateSelectedLocation: string
+                    responses: DiversityQuestionResponse[]
+                origin?: string
+            CustomQuestionResponse:
+                value: string
+            CustomQuestion:
+                id: string
+                fields: CustomQuestionResponse[]
+            DiversityQuestionResponse:
+                questionId: string
+                questionText: string
+                questionType: string
+                answer: string
+            UpdateOpportunity:
+                opportunityId: string
+                perform_as?: string
+                delete?: boolean
+                links?: string[]
+                sources?: string[]
+                stage?: string
+                tags?: string[]
+                reason?: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            StageChangesObject:
+                toStageId: string
+                toStageIndex: number
+                updatedAt: number
+                userId: string
+            ReturnObjUpdateOpportunity:
+                data:
+                    id?: string
+                    name?: string
+                    headline?: string
+                    contact?: string
+                    emails?: string[]
+                    phones?: string[]
+                    confidentiality?: string
+                    location?: string
+                    links?: string[]
+                    archived?:
+                        reason?: string
+                        archivedAt?: number
+                    createdAt?: number
+                    updatedAt?: number
+                    lastInteractionAt?: number
+                    lastAdvancedAt?: number
+                    snoozedUntil?: number | null
+                    archivedAt?: number
+                    archiveReason?: string
+                    stage?: string
+                    stageChanges?: StageChangesObject[]
+                    owner?: string
+                    tags?: string[]
+                    sources?: string[]
+                    origin?: string
+                    sourcedBy?: string
+                    applications?: string[]
+                    resume?: string
+                    followers?: string[]
+                    urls?:
+                        list?: string
+                        show?: string
+                    dataProtection?: object | null
+                    isAnonymized?: boolean
+                    opportunityLocation?: string
     lever-basic:
         actions:
             create-note:
@@ -5729,6 +6373,112 @@ integrations:
                 scopes:
                     - opportunities:write:admin
                 version: 1.0.0
+            get-stages:
+                description: |
+                    Action to get lists all pipeline stages in your Lever account.
+                output: GetStages
+                endpoint:
+                    method: GET
+                    path: /stages
+                    group: Opportunities
+            users:
+                description: >
+                    Lists all the users in your Lever account. Only active users are
+                    included by default..
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+            get-postings:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /posts/single
+                    group: Posts
+            get-archive-reasons:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /archived/reasons
+                    group: Opportunities
+            posting:
+                description: |
+                    Get single posts for your account in Lever
+                output: SuccessResponse
+                input: SinglePost
+                endpoint:
+                    method: GET
+                    path: /posts
+                    group: Posts
+            update-opportunity-links:
+                description: |
+                    Update the links in an opportunity
+                output: SuccessResponse
+                input: UpdateLinks
+                endpoint:
+                    method: POST
+                    path: /links
+                    group: Opportunities
+            update-opportunity-sources:
+                description: |
+                    Update the sources in an opportunity
+                output: SuccessResponse
+                input: UpdateSources
+                endpoint:
+                    method: POST
+                    path: /sources
+                    group: Opportunities
+            update-opportunity-stage:
+                description: |
+                    Update the stage in an opportunity
+                output: SuccessResponse
+                input: UpdateOpportunityStage
+                endpoint:
+                    method: POST
+                    path: /stages
+                    group: Opportunities
+            update-opportunity-tags:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: UpdateTags
+                endpoint:
+                    method: POST
+                    path: /tags
+                    group: Opportunities
+            update-opportunity-archived:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: ArchiveOpportunity
+                endpoint:
+                    method: PUT
+                    path: /archived
+                    group: Opportunities
+            apply-posting:
+                description: >
+                    Submit an application on behalf of a candidate. This endpoint can only
+                    be used to submit applications to published or unlisted postings.
+                output: SuccessResponse
+                input: ApplyToPosting
+                endpoint:
+                    method: POST
+                    path: /posts/apply
+                    group: Posts
+            update-opportunity:
+                description: |
+                    Update an opportunity
+                output: ReturnObjUpdateOpportunity
+                input: UpdateOpportunity
+                endpoint:
+                    method: POST
+                    path: /opportunity/update
+                    group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
@@ -5954,6 +6704,7 @@ integrations:
                     uploadedAt: number
                     downloadUrl: string
             LeverPosting:
+                perform_as?: string
                 id: string
                 text: string
                 createdAt: number
@@ -6039,6 +6790,172 @@ integrations:
                 createdAt: number | undefined
                 archived: ArchievedEntry | undefined
                 contact: string[] | undefined
+            UpdateOpportunityStage:
+                perform_as?: string
+                stage: string
+                opportunityId: string
+            ArchiveOpportunity:
+                perform_as?: string
+                reason: string
+                requisitionId?: string
+                opportunityId: string
+                cleanInterviews?: boolean
+            ArchiveObject:
+                reason: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            UpdateLinks:
+                perform_as?: string
+                links: string[]
+                opportunityId: string
+                delete: boolean
+            UpdateTags:
+                opportunityId: string
+                perform_as?: string
+                tags: string[]
+                delete: boolean
+            UpdateSources:
+                opportunityId: string
+                perform_as?: string
+                sources: string[]
+                delete: boolean
+            Stages:
+                id: string
+                text: string
+            GetStages:
+                stages: Stages[]
+            Users:
+                id: string
+                name: string
+                username: string
+                email: string
+                accessRole: string
+                photo: string | null
+                createdAt: number
+                deactivatedAt: string | null
+                externalDirectoryId: string | null
+                linkedContactIds: string[] | null
+                jobTitle: string | null
+                managerId: string | null
+            GetUsers:
+                users: Users[]
+            SuccessResponse:
+                success: boolean
+                opportunityId?: string
+                response?: LeverOpportunity
+            ApplyCandidate:
+                send_confirmation_email?: boolean
+                customQuestions: any[]
+                personalInformation: any[]
+                eeoResponses: object
+                urls: any[]
+                ipAddress?: string
+                source?: string
+                consent?: object
+                diversitySurvey?: object
+                origin?: string
+            PostingCategories:
+                team: string
+                department: string
+                location?: string
+                commitment?: string
+                allLocations?: string[]
+            ContentList:
+                text: string
+                content: string
+            PostingContent:
+                descriptionHtml: string
+                lists?: ContentList[]
+                closingPostingHtml?: string
+            SinglePost:
+                id: string
+            QuestionResponse:
+                name: string
+                value: string
+            ApplyToPosting:
+                postId: string
+                send_confirmation_email?: boolean
+                personalInformation: QuestionResponse[]
+                eeoResponses: object
+                urls?: QuestionResponse[]
+                CustomQuestions?: CustomQuestion[]
+                ipAddress?: string
+                source?: string
+                consent?:
+                    marketing:
+                        provided: boolean
+                        compliancePolicyId: string
+                    store:
+                        provided: boolean
+                        compliancePolicyId: string
+                diversitySurvey?:
+                    surveyId: string
+                    candidateSelectedLocation: string
+                    responses: DiversityQuestionResponse[]
+                origin?: string
+            CustomQuestionResponse:
+                value: string
+            CustomQuestion:
+                id: string
+                fields: CustomQuestionResponse[]
+            DiversityQuestionResponse:
+                questionId: string
+                questionText: string
+                questionType: string
+                answer: string
+            UpdateOpportunity:
+                opportunityId: string
+                perform_as?: string
+                delete?: boolean
+                links?: string[]
+                sources?: string[]
+                stage?: string
+                tags?: string[]
+                reason?: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            StageChangesObject:
+                toStageId: string
+                toStageIndex: number
+                updatedAt: number
+                userId: string
+            ReturnObjUpdateOpportunity:
+                data:
+                    id?: string
+                    name?: string
+                    headline?: string
+                    contact?: string
+                    emails?: string[]
+                    phones?: string[]
+                    confidentiality?: string
+                    location?: string
+                    links?: string[]
+                    archived?:
+                        reason?: string
+                        archivedAt?: number
+                    createdAt?: number
+                    updatedAt?: number
+                    lastInteractionAt?: number
+                    lastAdvancedAt?: number
+                    snoozedUntil?: number | null
+                    archivedAt?: number
+                    archiveReason?: string
+                    stage?: string
+                    stageChanges?: StageChangesObject[]
+                    owner?: string
+                    tags?: string[]
+                    sources?: string[]
+                    origin?: string
+                    sourcedBy?: string
+                    applications?: string[]
+                    resume?: string
+                    followers?: string[]
+                    urls?:
+                        list?: string
+                        show?: string
+                    dataProtection?: object | null
+                    isAnonymized?: boolean
+                    opportunityLocation?: string
     lever-basic-sandbox:
         actions:
             create-note:
@@ -6063,6 +6980,112 @@ integrations:
                 scopes:
                     - opportunities:write:admin
                 version: 1.0.0
+            get-stages:
+                description: |
+                    Action to get lists all pipeline stages in your Lever account.
+                output: GetStages
+                endpoint:
+                    method: GET
+                    path: /stages
+                    group: Opportunities
+            users:
+                description: >
+                    Lists all the users in your Lever account. Only active users are
+                    included by default..
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+            get-postings:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /posts/single
+                    group: Posts
+            get-archive-reasons:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /archived/reasons
+                    group: Opportunities
+            posting:
+                description: |
+                    Get single posts for your account in Lever
+                output: SuccessResponse
+                input: SinglePost
+                endpoint:
+                    method: GET
+                    path: /posts
+                    group: Posts
+            update-opportunity-links:
+                description: |
+                    Update the links in an opportunity
+                output: SuccessResponse
+                input: UpdateLinks
+                endpoint:
+                    method: POST
+                    path: /links
+                    group: Opportunities
+            update-opportunity-sources:
+                description: |
+                    Update the sources in an opportunity
+                output: SuccessResponse
+                input: UpdateSources
+                endpoint:
+                    method: POST
+                    path: /sources
+                    group: Opportunities
+            update-opportunity-stage:
+                description: |
+                    Update the stage in an opportunity
+                output: SuccessResponse
+                input: UpdateOpportunityStage
+                endpoint:
+                    method: POST
+                    path: /stages
+                    group: Opportunities
+            update-opportunity-tags:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: UpdateTags
+                endpoint:
+                    method: POST
+                    path: /tags
+                    group: Opportunities
+            update-opportunity-archived:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: ArchiveOpportunity
+                endpoint:
+                    method: PUT
+                    path: /archived
+                    group: Opportunities
+            apply-posting:
+                description: >
+                    Submit an application on behalf of a candidate. This endpoint can only
+                    be used to submit applications to published or unlisted postings.
+                output: SuccessResponse
+                input: ApplyToPosting
+                endpoint:
+                    method: POST
+                    path: /posts/apply
+                    group: Posts
+            update-opportunity:
+                description: |
+                    Update an opportunity
+                output: ReturnObjUpdateOpportunity
+                input: UpdateOpportunity
+                endpoint:
+                    method: POST
+                    path: /opportunity/update
+                    group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
@@ -6288,6 +7311,7 @@ integrations:
                     uploadedAt: number
                     downloadUrl: string
             LeverPosting:
+                perform_as?: string
                 id: string
                 text: string
                 createdAt: number
@@ -6373,6 +7397,172 @@ integrations:
                 createdAt: number | undefined
                 archived: ArchievedEntry | undefined
                 contact: string[] | undefined
+            UpdateOpportunityStage:
+                perform_as?: string
+                stage: string
+                opportunityId: string
+            ArchiveOpportunity:
+                perform_as?: string
+                reason: string
+                requisitionId?: string
+                opportunityId: string
+                cleanInterviews?: boolean
+            ArchiveObject:
+                reason: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            UpdateLinks:
+                perform_as?: string
+                links: string[]
+                opportunityId: string
+                delete: boolean
+            UpdateTags:
+                opportunityId: string
+                perform_as?: string
+                tags: string[]
+                delete: boolean
+            UpdateSources:
+                opportunityId: string
+                perform_as?: string
+                sources: string[]
+                delete: boolean
+            Stages:
+                id: string
+                text: string
+            GetStages:
+                stages: Stages[]
+            Users:
+                id: string
+                name: string
+                username: string
+                email: string
+                accessRole: string
+                photo: string | null
+                createdAt: number
+                deactivatedAt: string | null
+                externalDirectoryId: string | null
+                linkedContactIds: string[] | null
+                jobTitle: string | null
+                managerId: string | null
+            GetUsers:
+                users: Users[]
+            SuccessResponse:
+                success: boolean
+                opportunityId?: string
+                response?: LeverOpportunity
+            ApplyCandidate:
+                send_confirmation_email?: boolean
+                customQuestions: any[]
+                personalInformation: any[]
+                eeoResponses: object
+                urls: any[]
+                ipAddress?: string
+                source?: string
+                consent?: object
+                diversitySurvey?: object
+                origin?: string
+            PostingCategories:
+                team: string
+                department: string
+                location?: string
+                commitment?: string
+                allLocations?: string[]
+            ContentList:
+                text: string
+                content: string
+            PostingContent:
+                descriptionHtml: string
+                lists?: ContentList[]
+                closingPostingHtml?: string
+            SinglePost:
+                id: string
+            QuestionResponse:
+                name: string
+                value: string
+            ApplyToPosting:
+                postId: string
+                send_confirmation_email?: boolean
+                personalInformation: QuestionResponse[]
+                eeoResponses: object
+                urls?: QuestionResponse[]
+                CustomQuestions?: CustomQuestion[]
+                ipAddress?: string
+                source?: string
+                consent?:
+                    marketing:
+                        provided: boolean
+                        compliancePolicyId: string
+                    store:
+                        provided: boolean
+                        compliancePolicyId: string
+                diversitySurvey?:
+                    surveyId: string
+                    candidateSelectedLocation: string
+                    responses: DiversityQuestionResponse[]
+                origin?: string
+            CustomQuestionResponse:
+                value: string
+            CustomQuestion:
+                id: string
+                fields: CustomQuestionResponse[]
+            DiversityQuestionResponse:
+                questionId: string
+                questionText: string
+                questionType: string
+                answer: string
+            UpdateOpportunity:
+                opportunityId: string
+                perform_as?: string
+                delete?: boolean
+                links?: string[]
+                sources?: string[]
+                stage?: string
+                tags?: string[]
+                reason?: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            StageChangesObject:
+                toStageId: string
+                toStageIndex: number
+                updatedAt: number
+                userId: string
+            ReturnObjUpdateOpportunity:
+                data:
+                    id?: string
+                    name?: string
+                    headline?: string
+                    contact?: string
+                    emails?: string[]
+                    phones?: string[]
+                    confidentiality?: string
+                    location?: string
+                    links?: string[]
+                    archived?:
+                        reason?: string
+                        archivedAt?: number
+                    createdAt?: number
+                    updatedAt?: number
+                    lastInteractionAt?: number
+                    lastAdvancedAt?: number
+                    snoozedUntil?: number | null
+                    archivedAt?: number
+                    archiveReason?: string
+                    stage?: string
+                    stageChanges?: StageChangesObject[]
+                    owner?: string
+                    tags?: string[]
+                    sources?: string[]
+                    origin?: string
+                    sourcedBy?: string
+                    applications?: string[]
+                    resume?: string
+                    followers?: string[]
+                    urls?:
+                        list?: string
+                        show?: string
+                    dataProtection?: object | null
+                    isAnonymized?: boolean
+                    opportunityLocation?: string
     lever-sandbox:
         actions:
             create-note:
@@ -6397,6 +7587,112 @@ integrations:
                 scopes:
                     - opportunities:write:admin
                 version: 1.0.0
+            get-stages:
+                description: |
+                    Action to get lists all pipeline stages in your Lever account.
+                output: GetStages
+                endpoint:
+                    method: GET
+                    path: /stages
+                    group: Opportunities
+            users:
+                description: >
+                    Lists all the users in your Lever account. Only active users are
+                    included by default..
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+            get-postings:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /posts/single
+                    group: Posts
+            get-archive-reasons:
+                description: |
+                    Get all Posts for your account in Lever
+                output: SuccessResponse
+                endpoint:
+                    method: GET
+                    path: /archived/reasons
+                    group: Opportunities
+            posting:
+                description: |
+                    Get single posts for your account in Lever
+                output: SuccessResponse
+                input: SinglePost
+                endpoint:
+                    method: GET
+                    path: /posts
+                    group: Posts
+            update-opportunity-links:
+                description: |
+                    Update the links in an opportunity
+                output: SuccessResponse
+                input: UpdateLinks
+                endpoint:
+                    method: POST
+                    path: /links
+                    group: Opportunities
+            update-opportunity-sources:
+                description: |
+                    Update the sources in an opportunity
+                output: SuccessResponse
+                input: UpdateSources
+                endpoint:
+                    method: POST
+                    path: /sources
+                    group: Opportunities
+            update-opportunity-stage:
+                description: |
+                    Update the stage in an opportunity
+                output: SuccessResponse
+                input: UpdateOpportunityStage
+                endpoint:
+                    method: POST
+                    path: /stages
+                    group: Opportunities
+            update-opportunity-tags:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: UpdateTags
+                endpoint:
+                    method: POST
+                    path: /tags
+                    group: Opportunities
+            update-opportunity-archived:
+                description: |
+                    Update the tags in an opportunity
+                output: SuccessResponse
+                input: ArchiveOpportunity
+                endpoint:
+                    method: PUT
+                    path: /archived
+                    group: Opportunities
+            apply-posting:
+                description: >
+                    Submit an application on behalf of a candidate. This endpoint can only
+                    be used to submit applications to published or unlisted postings.
+                output: SuccessResponse
+                input: ApplyToPosting
+                endpoint:
+                    method: POST
+                    path: /posts/apply
+                    group: Posts
+            update-opportunity:
+                description: |
+                    Update an opportunity
+                output: ReturnObjUpdateOpportunity
+                input: UpdateOpportunity
+                endpoint:
+                    method: POST
+                    path: /opportunity/update
+                    group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
@@ -6622,6 +7918,7 @@ integrations:
                     uploadedAt: number
                     downloadUrl: string
             LeverPosting:
+                perform_as?: string
                 id: string
                 text: string
                 createdAt: number
@@ -6707,6 +8004,172 @@ integrations:
                 createdAt: number | undefined
                 archived: ArchievedEntry | undefined
                 contact: string[] | undefined
+            UpdateOpportunityStage:
+                perform_as?: string
+                stage: string
+                opportunityId: string
+            ArchiveOpportunity:
+                perform_as?: string
+                reason: string
+                requisitionId?: string
+                opportunityId: string
+                cleanInterviews?: boolean
+            ArchiveObject:
+                reason: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            UpdateLinks:
+                perform_as?: string
+                links: string[]
+                opportunityId: string
+                delete: boolean
+            UpdateTags:
+                opportunityId: string
+                perform_as?: string
+                tags: string[]
+                delete: boolean
+            UpdateSources:
+                opportunityId: string
+                perform_as?: string
+                sources: string[]
+                delete: boolean
+            Stages:
+                id: string
+                text: string
+            GetStages:
+                stages: Stages[]
+            Users:
+                id: string
+                name: string
+                username: string
+                email: string
+                accessRole: string
+                photo: string | null
+                createdAt: number
+                deactivatedAt: string | null
+                externalDirectoryId: string | null
+                linkedContactIds: string[] | null
+                jobTitle: string | null
+                managerId: string | null
+            GetUsers:
+                users: Users[]
+            SuccessResponse:
+                success: boolean
+                opportunityId?: string
+                response?: LeverOpportunity
+            ApplyCandidate:
+                send_confirmation_email?: boolean
+                customQuestions: any[]
+                personalInformation: any[]
+                eeoResponses: object
+                urls: any[]
+                ipAddress?: string
+                source?: string
+                consent?: object
+                diversitySurvey?: object
+                origin?: string
+            PostingCategories:
+                team: string
+                department: string
+                location?: string
+                commitment?: string
+                allLocations?: string[]
+            ContentList:
+                text: string
+                content: string
+            PostingContent:
+                descriptionHtml: string
+                lists?: ContentList[]
+                closingPostingHtml?: string
+            SinglePost:
+                id: string
+            QuestionResponse:
+                name: string
+                value: string
+            ApplyToPosting:
+                postId: string
+                send_confirmation_email?: boolean
+                personalInformation: QuestionResponse[]
+                eeoResponses: object
+                urls?: QuestionResponse[]
+                CustomQuestions?: CustomQuestion[]
+                ipAddress?: string
+                source?: string
+                consent?:
+                    marketing:
+                        provided: boolean
+                        compliancePolicyId: string
+                    store:
+                        provided: boolean
+                        compliancePolicyId: string
+                diversitySurvey?:
+                    surveyId: string
+                    candidateSelectedLocation: string
+                    responses: DiversityQuestionResponse[]
+                origin?: string
+            CustomQuestionResponse:
+                value: string
+            CustomQuestion:
+                id: string
+                fields: CustomQuestionResponse[]
+            DiversityQuestionResponse:
+                questionId: string
+                questionText: string
+                questionType: string
+                answer: string
+            UpdateOpportunity:
+                opportunityId: string
+                perform_as?: string
+                delete?: boolean
+                links?: string[]
+                sources?: string[]
+                stage?: string
+                tags?: string[]
+                reason?: string
+                cleanInterviews?: boolean
+                requisitionId?: string
+            StageChangesObject:
+                toStageId: string
+                toStageIndex: number
+                updatedAt: number
+                userId: string
+            ReturnObjUpdateOpportunity:
+                data:
+                    id?: string
+                    name?: string
+                    headline?: string
+                    contact?: string
+                    emails?: string[]
+                    phones?: string[]
+                    confidentiality?: string
+                    location?: string
+                    links?: string[]
+                    archived?:
+                        reason?: string
+                        archivedAt?: number
+                    createdAt?: number
+                    updatedAt?: number
+                    lastInteractionAt?: number
+                    lastAdvancedAt?: number
+                    snoozedUntil?: number | null
+                    archivedAt?: number
+                    archiveReason?: string
+                    stage?: string
+                    stageChanges?: StageChangesObject[]
+                    owner?: string
+                    tags?: string[]
+                    sources?: string[]
+                    origin?: string
+                    sourcedBy?: string
+                    applications?: string[]
+                    resume?: string
+                    followers?: string[]
+                    urls?:
+                        list?: string
+                        show?: string
+                    dataProtection?: object | null
+                    isAnonymized?: boolean
+                    opportunityLocation?: string
     linear:
         syncs:
             issues:
@@ -11203,13 +12666,12 @@ integrations:
                 description: |
                     Fetches a list of tickets from Zendesk
                 output: Ticket
-                sync_type: full
-                track_deletes: true
+                sync_type: incremental
                 endpoint:
                     method: GET
                     path: /tickets
                     group: Tickets
-                version: 1.0.0
+                version: 1.0.1
                 scopes:
                     - tickets:read
             articles:
@@ -11441,63 +12903,54 @@ integrations:
                 priority: string | null
                 status: string
             Ticket:
-                requester_id: number
-                allow_attachments: boolean
-                allow_channelback: boolean
-                assignee_email: string
-                assignee_id: number
-                attribute_value_ids: number[]
-                brand_id: number
-                collaborator_ids: number[]
-                collaborators: any[]
-                comment: object
-                created_at: string
-                custom_fields: any[]
-                custom_status_id: number
-                description: string
-                due_at: string
-                email_cc_ids: number[]
-                email_ccs: object
-                external_id: string
-                follower_ids: number[]
-                followers: object
-                followup_ids: number[]
-                forum_topic_id: number
-                from_messaging_channel: boolean
-                group_id: number
-                has_incidents: boolean
+                url: string | null
                 id: number
-                is_public: boolean
-                macro_id: number
-                macro_ids: number[]
-                metadata: object
-                organization_id: number
-                priority: string
-                problem_id: number
-                raw_subject: string
-                recipient: string
-                requester: object
-                safe_update: boolean
-                satisfaction_rating:
-                    aliqua38: number
-                sharing_agreement_ids: number[]
-                status: string
-                subject: string
-                submitter_id: number
-                tags: string[]
-                ticket_form_id: number
-                type: string
-                updated_at: string
-                updated_stamp: string
-                url: string
-                via:
-                    channel: string
-                    source:
-                        eu__4: number
-                        id__8f: string
-                via_followup_source_id: number
-                via_id: number
-                voice_comment: object
+                external_id: string | null
+                via: Via | null
+                created_at: string | null
+                updated_at: string | null
+                generated_timestamp: number | null
+                type: string | null
+                subject: string | null
+                raw_subject: string | null
+                description: string | null
+                priority: string | null
+                status: string | null
+                recipient: string | null
+                requester_id: number | null
+                submitter_id: number | null
+                assignee_id: number | null
+                organization_id: number | null
+                group_id: number | null
+                collaborator_ids: number[] | null
+                follower_ids: number[] | null
+                email_cc_ids: number[] | null
+                forum_topic_id: string | null
+                problem_id: string | null
+                has_incidents: boolean | null
+                is_public: boolean | null
+                due_at: string | null
+                tags: string[] | null
+                custom_fields: CustomFields[] | null
+                satisfaction_rating: object | null
+                sharing_agreement_ids: number[] | null
+                custom_status_id: number | null
+                fields: CustomFields[] | null
+                followup_ids: number[] | null
+                ticket_form_id: number | null
+                brand_id: number | null
+                allow_channelback: boolean | null
+                allow_attachments: boolean | null
+                from_messaging_channel: boolean | null
+            Via:
+                channel: string
+                source:
+                    from: object
+                    to: object
+                    rel: string | null
+            CustomFields:
+                id: number
+                value: string | null
             SearchTicketInput:
                 query: string
             SearchTicketOutput:
