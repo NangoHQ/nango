@@ -5169,7 +5169,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
-            optional: true
+            automated: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5190,6 +5190,7 @@ salesforce-sandbox:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
