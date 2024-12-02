@@ -3030,7 +3030,7 @@ greenhouse-basic:
             type: string
             title: API key
             description: The API Key of your Greenhouse account
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-zA-Z0-9-]+$'
             secret: true
         password:
             type: string
