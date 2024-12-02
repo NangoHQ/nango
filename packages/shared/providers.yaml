@@ -2554,6 +2554,8 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
         base_url: https://api2.frontapp.com
+        retry:
+            after: 'Retry-after'
         paginate:
             type: link
             response_path: _results
