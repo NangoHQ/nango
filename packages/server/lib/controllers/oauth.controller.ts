@@ -150,10 +150,9 @@ class OAuthController {
             }
 
             if (isConnectSession) {
+                // Session token always win
                 const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
-                // No matter what we don't want ill intentioned users to specify their own oauth_scopes
-                // session token always win
-                userScope = defaults?.connectionConfig.oauth_scopes || undefined;
+                userScope = defaults?.user_scopes || undefined;
             }
 
             const session: OAuthSession = {
@@ -202,7 +201,11 @@ class OAuthController {
                 });
             }
 
-            if (connectionConfig['oauth_scopes_override']) {
+            if (isConnectSession) {
+                // Session token always win
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override || undefined;
+            } else if (connectionConfig['oauth_scopes_override']) {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
@@ -930,7 +933,7 @@ class OAuthController {
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
 
-        // check for oauth overrides in the connnection config
+        // check for oauth overrides in the connection config
         if (session.connectionConfig['oauth_client_id_override']) {
             config.oauth_client_id = session.connectionConfig['oauth_client_id_override'];
         }

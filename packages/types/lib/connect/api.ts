@@ -6,9 +6,10 @@ export interface ConnectSessionPayload {
         | Record<
               string,
               {
+                  user_scopes?: string | undefined;
                   connection_config: {
                       [key: string]: unknown;
-                      oauth_scopes?: string | undefined;
+                      oauth_scopes_override?: string | undefined;
                   };
               }
           >

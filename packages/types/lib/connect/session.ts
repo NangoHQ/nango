@@ -7,9 +7,11 @@ export interface ConnectSession {
     readonly integrationsConfigDefaults?: Record<
         string,
         {
+            /** Only used by Slack */
+            user_scopes?: string | undefined;
             connectionConfig: {
                 [key: string]: unknown;
-                oauth_scopes?: string | undefined;
+                oauth_scopes_override?: string | undefined;
             };
         }
     > | null;
