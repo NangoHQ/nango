@@ -23,7 +23,7 @@ import type { DBEnvironment, DBTeam, ConnectSession, DBUser, EndUser } from '@na
 
 export interface RequestLocals {
     authType?: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
-    user?: Pick<DBUser, 'id' | 'email' | 'name'>;
+    user?: DBUser;
     account?: DBTeam;
     environment?: DBEnvironment;
     connectSession?: ConnectSession;
