@@ -477,6 +477,7 @@ export class NangoAction {
             }
         }
         if (!config.axios?.response) {
+            // Leave the priority to saving response instead of logging
             axiosSettings.interceptors = {
                 response: {
                     onFulfilled: this.logAPICall.bind(this)
@@ -768,12 +769,15 @@ export class NangoAction {
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            // TODO: control this logger inside dryrun instead
+            const logLevel = logLevelToLogger[level] ?? 'info';
+
+            // TODO: we shouldn't use a floating logger, it should be passed from dryrun or runner
             if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
-                logger[logLevelToLogger[level] ?? 'info'].apply(null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
+                logger[logLevel].apply(null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
             } else {
-                logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
+                logger[logLevel].apply(null, args as any);
             }
+
             return;
         }
 
@@ -935,6 +939,8 @@ export class NangoAction {
             return res;
         }
 
+        // We compte on the fly because connection's credentials can change during a single run
+        // We could further optimize this and cache it when the memoizedConnection is updated
         const valuesToFilter: string[] = [
             ...Array.from(this.memoizedConnections.values()).reduce<string[]>((acc, conn) => {
                 if (!conn) {
@@ -954,7 +960,7 @@ export class NangoAction {
                 request: {
                     method: method,
                     url: redactURL({ url: res.config.url, valuesToFilter }),
-                    headers: redactHeaders({ headers: res.config.headers })
+                    headers: redactHeaders({ headers: res.config.headers, valuesToFilter })
                 },
                 response: {
                     code: res.status,
