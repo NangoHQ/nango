@@ -525,6 +525,7 @@ avalara:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     credentials:
         username:
             type: string
@@ -558,6 +559,7 @@ avalara-sandbox:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     credentials:
         username:
             type: string
@@ -622,6 +624,7 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     credentials:
         username:
             type: string
@@ -680,6 +683,7 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     connection_config:
         subdomain:
             type: string
@@ -1064,6 +1068,7 @@ builder-io-private:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     connection_config:
         domain:
             type: string
@@ -1094,6 +1099,7 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     connection_config:
         domain:
             type: string
@@ -1128,6 +1134,7 @@ buildium:
             method: GET
             endpoint: /v1/rentals
     docs: https://docs.nango.dev/integrations/all/buildium
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
     connection_config:
         clientId:
             type: string
