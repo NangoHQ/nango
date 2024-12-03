@@ -1,0 +1,56 @@
+---
+title: Woocommerce - How do I link my account?
+sidebarTitle: Woocommerce
+---
+
+
+# Overview
+
+To authenticate with Woocommerce, you need two key pieces of information:
+1. **Consumer key** - Your unique account identifier
+2. **Consumer secret** - Secert key associated with Consumer key
+
+
+This guide will walk you through finding or creating those credentials within Woocommerce.
+
+
+### Prerequisites:
+
+- You must set up an Woocommerce on a Wordpress instance.
+
+
+#### Step 1: Finding Your Woocommerce Consumer Key
+1. Log into your Wordpress instance with admin access and navigate to `Woocommerce` on the left panel and
+navigate to `WooCommerce` > `Settings` > `Advanced` > `REST API`.
+
+<img src="/integrations/all/woocommerce/woo_1.png" />
+
+2. Click the "Add Key" button. In the next screen, add a description and select the WordPress user you would like to generate the key for.
+3. Choose the level of access for this REST API key, which can be Read access, Write access or Read/Write access. Then click the "Generate API Key" 
+button and WooCommerce will generate keys for the selected user.
+4. Copy your `Consumer Key`.
+
+<img src="/integrations/all/woocommerce/woo_2.png" />
+
+
+#### Step 2: Finding Your Woocommerce Consumer Secret
+1. From the previous step, securely store your `Consumer secret` key.
+
+
+<img src="/integrations/all/woocommerce/woo_3.png" />
+
+
+Important: Copy and store your Consumer Key securely, it will not be visible again once you leave this page.
+
+
+#### Step 3: Connect Your Woocommerce Account
+
+<img src="/integrations/all/woocommerce/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Woocommerce authentication form.
+Enter your credentials as follows:
+- User Name: Your Consumer key
+- Password: Your Consumer secret
+- Domain: Your Wordpress intance domain
+
+Click "Connect" to complete the authentication.

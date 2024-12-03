@@ -6526,6 +6526,7 @@ woocommerce:
             method: GET
             endpoint: /wp-json/wc/v3/customers
     docs: https://docs.nango.dev/integrations/all/woocommerce
+    docs_connect: https://docs.nango.dev/integrations/all/woocommerce/connect
     connection_config:
         storeURL:
             type: string
