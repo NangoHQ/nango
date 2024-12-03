@@ -36,6 +36,7 @@ export interface SimplifiedJSONSchema {
     suffix?: string;
     doc_section?: string;
     secret?: string;
+    automated: boolean;
 }
 
 export interface BaseProvider {

@@ -3,7 +3,7 @@ import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/te
 import { seeders } from '@nangohq/shared';
 import db from '@nangohq/database';
 import type { DBEnvironment } from '@nangohq/types';
-import * as endUserService from '../../services/endUser.service.js';
+import * as endUserService from '@nangohq/shared';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 

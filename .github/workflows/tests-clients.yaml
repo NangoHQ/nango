@@ -1,4 +1,4 @@
-name: Test node client
+name: Run Client Tests
 
 on:
     push:
@@ -8,16 +8,15 @@ on:
     pull_request:
     merge_group:
 
-concurrency:
-    group: tests-node-client/${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
-
 jobs:
-    tests-node-client:
-        runs-on: ubuntu-latest
+    tests:
         strategy:
+            fail-fast: false
             matrix:
-                node-version: [18.x, 20.x]
+                node-version: [18.x, 20.x, 22.x]
+                os: [ubuntu-latest, windows-latest]
+
+        runs-on: ${{ matrix.os }}
 
         steps:
             - uses: actions/checkout@v4
@@ -30,21 +29,27 @@ jobs:
                   cache: 'npm'
                   node-version: ${{ matrix.node-version }}
 
-            - name: Build
-              run: |
-                  npm ci
-                  npm run ts-build
-                  pushd packages/node-client
-                  npm run build
-                  popd
+            - run: npm ci
 
-            - name: Test CJS
+            - name: Build Typescript
+              run: npm run ts-build
+
+            - run: npm run test:cli
+            - run: npm run test:unit -- packages/cli
+
+            - name: Build Node Client
+              run: |
+                  npm run -w @nangohq/node build
+
+            - name: Test Node CJS
+              shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.cjs)
                   echo "$RES";
                   [ "$RES" != *"Done"* ] || { exit 1; }
 
-            - name: Test ESM
+            - name: Test Node ESM
+              shell: bash
               run: |
                   RES=$(node packages/node-client/tests/built.js)
                   echo "$RES";

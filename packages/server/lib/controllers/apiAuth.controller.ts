@@ -9,7 +9,8 @@ import {
     getConnectionConfig,
     ErrorSourceEnum,
     LogActionEnum,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
@@ -20,7 +21,6 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     connectionTest as connectionTestHook
 } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
 import { isIntegrationAllowed } from '../utils/auth.js';

@@ -10,7 +10,8 @@ import {
     getProvider,
     errorManager,
     ErrorSourceEnum,
-    LogActionEnum
+    LogActionEnum,
+    linkConnection
 } from '@nangohq/shared';
 import type { TbaCredentials, PostPublicTbaAuthorization, MessageRowInsert } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -22,7 +23,6 @@ import {
     connectionCreationFailed as connectionCreationFailedHook
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
