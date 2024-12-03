@@ -9264,6 +9264,583 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    pennylane:
+        actions:
+            create-customer:
+                description: |
+                    Action to create a customer in pennylane
+                input: PennylaneIndividualCustomer
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /customers
+                    group: Customers
+            create-invoice:
+                description: |
+                    Action to create an invoice in pennylane
+                input: CreateInvoice
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /invoices
+                    group: Invoices
+            create-supplier:
+                description: |
+                    Action to create a supplier in pennylane
+                input: CreateSupplier
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /suppliers
+                    group: Suppliers
+            update-customer:
+                description: |
+                    Action to update a supplier in pennylane
+                input: UpdatePennylaneCustomer
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /customers
+                    group: Customers
+            update-invoice:
+                description: |
+                    Action to update an invoice in pennylane
+                input: UpdateInvoice
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /invoices
+                    group: Invoices
+            update-supplier:
+                description: |
+                    Action to update a supplier in pennylane
+                input: UpdateSupplier
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /suppliers
+                    group: Suppliers
+            create-product:
+                description: |
+                    Action to create a product in pennylane
+                input: CreateProduct
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /products
+                    group: Products
+            update-product:
+                description: |
+                    Action to update a product in pennylane
+                input: UpdateProduct
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /products
+                    group: Products
+        syncs:
+            customers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of customers from pennylane
+                output: PennylaneCustomer
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /customers
+                    group: Customers
+                scopes:
+                    - accounting
+                version: 1.0.0
+            suppliers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of suppliers from pennylane
+                output: PennylaneSupplier
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /suppliers
+                    group: Suppliers
+                scopes:
+                    - supplier_invoices
+                version: 1.0.0
+            invoices:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of customer invoices from pennylane
+                output: PennylaneInvoice
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /invoices
+                    group: Invoices
+                scopes:
+                    - customer_invoices
+                version: 1.0.0
+            products:
+                runs: every 6 hours
+                description: |
+                    Fetches a list products from pennylane
+                output: PennylaneProduct
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /products
+                    group: Products
+                scopes:
+                    - accounting
+                version: 1.0.0
+        models:
+            CreateInvoice:
+                create_customer?: boolean
+                create_products?: boolean
+                update_customer?: boolean
+                date: string
+                deadline: string
+                draft?: boolean
+                customer_source_id: string
+                external_id?: string | null
+                pdf_invoice_free_text?: string | null
+                pdf_invoice_subject?: string | null
+                currency?: string
+                special_mention?: string | null
+                discount?: number
+                language?: string
+                transactions_reference?: TransactionReferenceObject
+                line_items: >-
+                    LineItemWithTax[] | LineItemWithoutTax[] |
+                    LineItemWithExistingProduct[]
+                categories?: CategoryObject[]
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                imputation_dates?:
+                    start_date: string
+                    end_date: string
+            UpdateInvoice:
+                id: string
+                label?: string | null
+                invoice_number?: string | null
+                quote_group_uuid?: string
+                is_draft?: boolean
+                is_estimate?: boolean
+                currency?: string
+                amount?: string
+                currency_amount?: string
+                currency_amount_before_tax?: string
+                exchange_rate?: number
+                date?: string | null
+                deadline?: string | null
+                currency_tax?: string
+                language?: string
+                paid?: boolean
+                fully_paid_at?: string | null
+                status?: string | null
+                discount?: string
+                discount_type?: string
+                public_url?: string
+                file_url?: string | null
+                filename?: string
+                remaining_amount?: string
+                source?: InvoiceSource
+                special_mention?: string | null
+                updated_at?: string
+                imputation_dates?: ImputationDateObject | null
+                customer?: PennylaneIndividualCustomer
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                line_items?: InvoiceLineItem[]
+                categories?: InvoiceCategory[]
+                transactions_reference?: TransactionReferenceObject
+                payments?: PaymentsObject[]
+                matched_transactions?: MatchedTransactionsObject[]
+                pdf_invoice_free_text?: string
+                pdf_invoice_subject?: string
+                billing_subscription?: BillingSubscriptionObject | null
+            UpdateInvoiceResponse:
+                invoice: UpdateInvoice
+            CreateSupplier:
+                name: string
+                reg_no?: string
+                address: string
+                postal_code: string
+                city: string
+                country_alpha2: string
+                recipient?: string
+                vat_number?: string
+                source_id?: string
+                emails: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            UpdateSupplier:
+                source_id: string
+                name?: string
+                reg_no?: string
+                address?: string
+                postal_code?: string
+                city?: string
+                country_alpha2?: string
+                recipient?: string
+                vat_number?: string
+                emails?: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            UpdateSupplierResponse:
+                supplier:
+                    source_id: string
+                    name?: string
+                    reg_no?: string
+                    address?: string
+                    postal_code?: string
+                    city?: string
+                    country_alpha2?: string
+                    recipient?: string
+                    vat_number?: string
+                    emails?: string[]
+                    iban?: string
+                    payment_conditions?: string
+                    phone?: string
+                    reference?: string
+                    notes?: string
+            InvoiceResponse:
+                invoice: PennylaneInvoice
+            PennylaneInvoice:
+                id: string
+                amount: string | null
+                billing_subscription?: BillingSubscriptionObject | null
+                categories?: InvoiceCategory[] | null
+                currency: string | null
+                currency_amount: string | null
+                currency_amount_before_tax?: string | null
+                currency_tax: string | null
+                customer?: PennylaneIndividualCustomer
+                customer_name: string
+                customer_validation_needed: boolean | null
+                date?: date | string
+                deadline: string | null
+                discount: string | null
+                discount_type?: string | null
+                exchange_rate: number | null
+                file_url: string | null
+                filename: string | null
+                fully_paid_at?: date | null
+                imputation_dates: ImputationDateObject | null
+                invoice_number?: string | null
+                is_draft: boolean
+                is_estimate?: boolean
+                label?: string | null
+                language?: string | null
+                line_items?: InvoiceLineItem[]
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                matched_transactions?: MatchedTransactionsObject[]
+                paid: boolean
+                payments: object[]
+                pdf_invoice_free_text: string
+                pdf_invoice_subject: string
+                public_url: string | null
+                quote_group_uuid?: string | null
+                remaining_amount: string | null
+                source: string | null
+                special_mention: string | null
+                status: string | null
+                transactions_reference?: TransactionReferenceObject | null
+                updated_at: date | string
+            LineItemWithTax:
+                label: string
+                quantity: number
+                section_rank?: number
+                currency_amount: number
+                plan_item_number?: string
+                unit: string
+                vat_rate: string
+                description?: string
+                discount?: number
+            LineItemWithoutTax:
+                label: string
+                quantity: number
+                section_rank?: number
+                currency_amount_before_tax: number
+                plan_item_number?: string
+                unit: string
+                vat_rate: string
+                description?: string
+                discount?: number
+            LineItemWithExistingProduct:
+                label?: string
+                quantity: number
+                discount?: number
+                section_rank?: number
+                plan_item_number?: string
+                product:
+                    source_id: string
+                    price?: number
+                    vat_rate?: string
+                    unit?: string
+            ImputationDateObject:
+                start_date: string
+                end_date: string
+            CategoryObject:
+                source_id: string
+                weight: number | null
+                amount: number | null
+            LineItemsSectionsAttributesObject:
+                title?: string | null
+                description?: string | null
+                rank: number
+            InvoiceLineItem:
+                id?: number
+                label?: string
+                unit?: string | null
+                quantity?: string
+                amount?: string
+                currency_amount?: string
+                description?: string
+                product_id?: string | null
+                vat_rate?: string
+                currency_price_before_tax?: string
+                currency_tax?: string
+                raw_currency_unit_price?: string
+                discount?: string
+                discount_type?: string
+                section_rank?: number | null
+                v2_id?: number | null
+                product_v2_id?: number | null
+            InvoiceCategory:
+                source_id: string
+                weight: string
+                label: string
+                direction: string | null
+                created_at: date | string
+                updated_at: date | string
+            TransactionReferenceObject:
+                banking_provider: string | null
+                provider_field_name: string | null
+                provider_field_value: string | null
+            PaymentsObject:
+                label: string
+                created_at: date | string
+                currency_amount: string
+            MatchedTransactionsObject:
+                label: string | null
+                amount: string | null
+                group_uuid: string | null
+                date: date | null
+                fee: string | null
+                currency: string
+            BillingSubscriptionObject:
+                id: string | null
+            IndividualCustomer: PennylaneIndividualCustomer
+            UpdateIndividualCustomer:
+                id: string
+                customer: PennylaneIndividualCustomer
+            IndividualCustomerResponse:
+                customer:
+                    first_name?: string
+                    last_name?: string
+                    gender?: string | null
+                    name?: string
+                    updated_at?: string
+                    source_id: string
+                    emails?: string[]
+                    billing_iban?: string | null
+                    customer_type?: string
+                    recipient?: string
+                    billing_address?:
+                        address?: string
+                        postal_code?: string
+                        city?: string
+                        country_alpha2?: string
+                    delivery_address?:
+                        address?: string
+                        postal_code?: string
+                        city?: string
+                        country_alpha2?: string
+                    payment_conditions?: string
+                    phone?: string
+                    reference?: string
+                    notes?: string
+                    plan_item?:
+                        number: string
+                        label: string
+                        enabled: boolean
+                        vat_rate: string
+                        country_alpha2: string
+                        description: string
+                    mandates?: MandateObject[]
+            MandateObject:
+                provider: string
+                source_id: string
+            PennylaneIndividualCustomer:
+                customer_type?: string
+                first_name: string
+                last_name: string
+                country_alpha2: string
+                gender?: string | null
+                address?: string
+                postal_code?: string
+                city?: string
+                source_id?: string
+                emails?: string[]
+                billing_iban?: string
+                delivery_address?: string | DeliveryAddressObject
+                vat_number?: string | null
+                delivery_postal_code?: string
+                delivery_city?: string
+                delivery_country_alpha2?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+                mandate?:
+                    provider?: string
+                    source_id: string
+                plan_item?:
+                    number?: string
+                    label?: string
+                    enabled?: boolean
+                    vat_rate?: string
+                    country_alpha2?: string
+                    description?: string
+            PennylaneSuccessResponse:
+                success: boolean
+                source_id: string
+            UpdatePennylaneCustomer:
+                id: string
+                first_name?: string
+                last_name?: string
+                gender?: string
+                address?: string
+                vat_number?: string | null
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+                recipient?: string | null
+                source_id?: string | null
+                emails?: string[] | null
+                billing_iban?: string | null
+                delivery_address?: DeliveryAddressObject | null
+                delivery_postal_code?: string | null
+                delivery_country?: string | null
+                delivery_country_alpha2?: string | null
+                payment_conditions?: string | null
+                phone?: string | null
+                reference?: string | null
+                notes?: string | null
+            DeliveryAddressObject:
+                address?: string
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+            PennylaneCustomer:
+                id: string
+                first_name?: string
+                last_name?: string
+                gender?: string
+                address?: string
+                vat_number?: string | null
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+                recipient?: string | null
+                source_id?: string | null
+                emails?: string[] | null
+                billing_iban?: string | null
+                delivery_address?: DeliveryAddressObject | null
+                delivery_postal_code?: string | null
+                delivery_country_alpha2?: string | null
+                payment_conditions?: string | null
+                phone?: string | null
+                reference?: string | null
+                notes?: string | null
+            PennylaneSupplier:
+                name: string
+                id?: string
+                reg_no?: string
+                address: string
+                postal_code: string
+                city: string
+                country_alpha2: string
+                recipient?: string
+                vat_number?: string
+                source_id?: string
+                emails: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            CreateProduct:
+                source_id: string
+                label: string
+                description?: string
+                unit: string
+                price_before_tax?: number
+                price: number
+                vat_rate: string
+                currency: string
+                reference?: string | null
+                substance?: string | null
+            UpdateProduct:
+                source_id: string
+                label?: string
+                description?: string
+                unit?: string
+                price_before_tax?: number
+                price?: number
+                vat_rate?: string
+                currency?: string
+                reference?: string | null
+                substance?: string | null
+            PennylaneProduct:
+                id: string
+                source_id: string
+                label: string
+                description?: string
+                unit: string
+                price_before_tax?: number
+                price: number
+                vat_rate: string
+                currency: string
+                reference?: string | null
+                substance?: string | null
+            InvoiceMapper:
+                create_customer: boolean
+                create_products: boolean
+                update_customer: boolean
+                invoice:
+                    date: string
+                    deadline: string
+                    draft: boolean
+                    customer:
+                        source_id: string
+                    currency: string
+                    line_items: >-
+                        LineItemWithTax[] | LineItemWithoutTax[] |
+                        LineItemWithExistingProduct[]
+                    pdf_invoice_free_text: string
+                    pdf_invoice_subject: string
+                    special_mention: string | null
+                    discount: number
+                    categories: CategoryObject[] | null
+                    transactions_reference?:
+                        banking_provider: string
+                        provider_field_name: string
+                        provider_field_value: string
+                    imputation_dates?:
+                        start_date: string
+                        end_date: string
     perimeter81:
         actions:
             create-user:
