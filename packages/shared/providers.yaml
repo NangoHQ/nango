@@ -5236,6 +5236,7 @@ salesforce-experience-cloud:
             description: The instance URL of your Salesforce Experience Cloud account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesloft:
     display_name: Salesloft
