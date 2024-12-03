@@ -202,9 +202,10 @@ class OAuthController {
             }
 
             if (isConnectSession) {
-                // Session token always win
                 const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
-                config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override || undefined;
+                if (defaults?.connectionConfig.oauth_scopes_override) {
+                    config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override;
+                }
             } else if (connectionConfig['oauth_scopes_override']) {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
