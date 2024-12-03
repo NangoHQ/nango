@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.46.0] - 2024-12-03
+
+### Added
+
+- *(server)* Backfill missing_fields on _nango_config (#3050) by @nalanj
+- *(webapp)* Show integration issues in their settings (#3044) by @nalanj
+- *(api)* Expose credentials in GET /integrations/:uniqueKey (#3074) by @bodinsamuel
+- *(integrations)* Add copper integration (#3071) by @dannylwe
+- *(ui)* Add Koala (#3090) by @bodinsamuel
+- Adds personio_v2 provider (#3089) by @tonibardina
+- *(sdk)* Automatically log http calls to API (#3081) by @bodinsamuel
+
+### Changed
+
+- Verify webhook signature helper (#3078) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/c816bbeb786860540d064796ec6f94319da1b5dc by Hassan_Wari. Commit message: feat(zendesk): improve zendesk tickets sync (#120) by @github-actions[bot]
+- Change sample app port (#3079) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/339a89eeb81fc23139213c018b30e420d2b595af by Daniel Roy Lwetabe. Commit message: feat(lever): lever and ashby actions  (#119) by @github-actions[bot]
+- Improvements to What is Nango page (#3085) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a20d56a2f00b286eb18572566b9c5a51424cd681 by Khaliq. Commit message: feat(gh-app): GitHub app sync (#130) by @github-actions[bot]
+- Split CLI/Node tests  (#3096) by @bodinsamuel
+
+### Fixed
+
+- *(cli)* Show on-events scripts in nango deploy output (#3067) by @TBonnin
+- *(webapp)* Invalidate cache on deleting integrations and adding connection from integration page (#3068) by @nalanj
+- *(server)* Actually only update fields that are missing data (#3073) by @nalanj
+- *(CLI)* Show on-events scripts in `nango deploy` confirmation message (#3069) by @TBonnin
+- Do not wait for on-event script to finish when triggering them (#3075) by @TBonnin
+- *(integrations)* Configure Discourse rate limit header (#3077) by @bodinsamuel
+- *(integration)* Update ashby providers.yaml (#3082) by @dannylwe
+- *(integration)* Update docusign docs (#3084) by @dannylwe
+- *(jobs)* Move runner flags outside shared (#3083) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8b5866773a768bedf6ce23a7e99a9fc5d8cf3bc4 by Daniel Roy Lwetabe. Commit message: fix(ashby): update nango.yaml (#129) by @github-actions[bot]
+- *(getting-started)* Revert to top of menu (#3087) by @bodinsamuel
+- *(ui)* Prevent renaming integration with active connections by @bodinsamuel
+- *(deploy)* Description was missing after upgrade (#3091) by @bodinsamuel
+- *(providers)* Change greenhouse api key validation (#3095) by @bodinsamuel
+- *(ui)* Prevent renaming integration with active connections (#3092) by @bodinsamuel
+- *(api)* Improve user model usage (#3076) by @bodinsamuel
+- *(providers)* Allow fields to be marked as automated (#3094) by @bodinsamuel
+- *(sdk)* Expose getIntegration() (#3080) by @bodinsamuel
+- *(data-ingestion)* Log end user (#3086) by @bodinsamuel
+
 ## [v0.45.1] - 2024-11-27
 
 ### Added
@@ -2411,6 +2455,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.46.0]: https://github.com/NangoHQ/nango/compare/v0.45.1..v0.46.0
 [v0.45.1]: https://github.com/NangoHQ/nango/compare/v0.45.0..v0.45.1
 [v0.45.0]: https://github.com/NangoHQ/nango/compare/v0.44.0..v0.45.0
 [v0.44.0]: https://github.com/NangoHQ/nango/compare/v0.43.0..v0.44.0
