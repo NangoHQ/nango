@@ -3550,6 +3550,7 @@ klaviyo:
             type: string
             title: API Key
             description: The API key for your Klaviyo account
+            doc_section: '#step-1-finding-klaviyo-api-key'
 
 klaviyo-oauth:
     display_name: Klaviyo (oauth)
