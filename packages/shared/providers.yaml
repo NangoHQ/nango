@@ -1993,7 +1993,6 @@ emarsys:
 ebay:
     display_name: eBay
     categories:
-        - marketplace
         - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://auth.ebay.com/oauth2/authorize
@@ -2012,7 +2011,6 @@ ebay:
 ebay-sandbox:
     display_name: eBay (sandbox)
     categories:
-        - marketplace
         - e-commerce
     auth_mode: OAUTH2
     authorization_url: https://auth.sandbox.ebay.com/oauth2/authorize
