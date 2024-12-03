@@ -102,7 +102,7 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     }
 
     if (config.headers !== undefined) {
-        const filteredHeaders = Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key));
+        const filteredHeaders = Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
         sortEntries(filteredHeaders);
         requestIdentity.push([`headers`, filteredHeaders]);
     }
