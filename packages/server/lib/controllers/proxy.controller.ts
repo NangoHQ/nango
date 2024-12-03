@@ -273,7 +273,7 @@ class ProxyController {
         const isJsonResponse = contentType.includes('application/json');
         const isChunked = transferEncoding === 'chunked';
         const isEncoded = Boolean(contentEncoding);
-        const isAttachmentOrInline = /(attachment|inline)/i.test(contentDisposition);
+        const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
         if (isChunked || isEncoded || isAttachmentOrInline) {
             const passThroughStream = new PassThrough();
