@@ -10,7 +10,7 @@ const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent',
 interface CachedRequest {
     requestIdentityHash: string;
     requestIdentity: unknown[];
-    data: unknown;
+    response: unknown;
 }
 
 interface ConfigIdentity {
@@ -97,7 +97,7 @@ export function onAxiosRequestFulfilled({
         directoryName,
         data: {
             ...requestIdentity,
-            data: response.data
+            response: response.data
         },
         customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestIdentity.requestIdentityHash}.json`,
         concatenateIfExists: false
@@ -108,11 +108,12 @@ export function onAxiosRequestFulfilled({
 
 function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
+    const params = sortEntries(Object.entries(config.params || {}));
 
-    const requestIdentity = [
+    const requestIdentity: [string, unknown][] = [
         ['method', method],
         ['url', config.url],
-        ['params', config.params]
+        ['params', params]
     ];
 
     const dataIdentity = computeDataIdentity(config);
@@ -121,12 +122,13 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     }
 
     if (config.headers !== undefined) {
-        const filteredHeaders = Object.fromEntries(Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key)));
+        const filteredHeaders = Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key));
+        sortEntries(filteredHeaders);
         requestIdentity.push([`headers`, filteredHeaders]);
     }
 
     // sort by key so we have a consistent hash
-    requestIdentity.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    sortEntries(requestIdentity);
 
     const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
 
@@ -134,6 +136,10 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
         requestIdentityHash,
         requestIdentity
     };
+}
+
+function sortEntries(entries: [string, unknown][]): [string, unknown][] {
+    return entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 }
 
 function computeDataIdentity(config: AxiosRequestConfig): string | undefined {
