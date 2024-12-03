@@ -23,6 +23,7 @@ import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
+import { redactHeaders, redactURL } from '../utils/http.js';
 
 const logger = getLogger('SDK');
 
@@ -475,6 +476,14 @@ export class NangoAction {
                 };
             }
         }
+        if (!config.axios?.response) {
+            // Leave the priority to saving response instead of logging
+            axiosSettings.interceptors = {
+                response: {
+                    onFulfilled: this.logAPICall.bind(this)
+                }
+            };
+        }
 
         if (config.environmentName) {
             this.environmentName = config.environmentName;
@@ -760,7 +769,15 @@ export class NangoAction {
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
+            const logLevel = logLevelToLogger[level] ?? 'info';
+
+            // TODO: we shouldn't use a floating logger, it should be passed from dryrun or runner
+            if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
+                logger[logLevel].apply(null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
+            } else {
+                logger[logLevel].apply(null, args as any);
+            }
+
             return;
         }
 
@@ -909,9 +926,50 @@ export class NangoAction {
         }
 
         if (response.status > 299) {
-            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            logger.error(
+                `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}' log=${JSON.stringify(log)}`,
+                this.stringify()
+            );
             throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
+    }
+
+    private logAPICall(res: AxiosResponse): AxiosResponse {
+        if (!res.config.url) {
+            return res;
+        }
+
+        // We compte on the fly because connection's credentials can change during a single run
+        // We could further optimize this and cache it when the memoizedConnection is updated
+        const valuesToFilter: string[] = [
+            ...Array.from(this.memoizedConnections.values()).reduce<string[]>((acc, conn) => {
+                if (!conn) {
+                    return acc;
+                }
+                acc.push(...Object.values(conn.connection.credentials));
+                return acc;
+            }, []),
+            this.nango.secretKey
+        ];
+
+        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
+        void this.log(
+            `${method} ${res.config.url}`,
+            {
+                type: 'http',
+                request: {
+                    method: method,
+                    url: redactURL({ url: res.config.url, valuesToFilter }),
+                    headers: redactHeaders({ headers: res.config.headers, valuesToFilter })
+                },
+                response: {
+                    code: res.status,
+                    headers: redactHeaders({ headers: res.headers, valuesToFilter })
+                }
+            },
+            { level: res.status > 299 ? 'error' : 'info' }
+        );
+        return res;
     }
 }
 
