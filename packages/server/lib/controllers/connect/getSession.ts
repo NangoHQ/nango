@@ -1,7 +1,7 @@
 import type { GetConnectSession } from '@nangohq/types';
 import db from '@nangohq/database';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import * as endUserService from '../../services/endUser.service.js';
+import * as endUserService from '@nangohq/shared';
 import { requireEmptyQuery, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {

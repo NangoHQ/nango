@@ -27,6 +27,7 @@ export * from './services/sync/job.service.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
+export * from './services/endUser.service.js';
 export * from './services/onboarding.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
