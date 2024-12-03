@@ -44,8 +44,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
-import type { RunnerFlags } from '../services/sync/run.utils.js';
-import type { DBTeam, GetPublicIntegration } from '@nangohq/types';
+import type { DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
 export declare const oldLevelToNewLevel: {
     readonly debug: "debug";
     readonly info: "info";
