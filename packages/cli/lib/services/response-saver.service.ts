@@ -5,7 +5,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Connection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
 
-const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host'];
+const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host', 'connection-id', 'provider-config-key'];
 
 interface ConfigIdentity {
     method: string;
