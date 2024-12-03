@@ -14,6 +14,7 @@ import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 import { Info } from '../../../../../components/Info';
+import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
 
 const FIELD_DISPLAY_NAMES: Record<string, Record<string, string>> = {
     OAUTH1: {
@@ -139,9 +140,13 @@ export const SettingsGeneral: React.FC<{
                     ) : (
                         <div className="flex items-center text-white text-sm">
                             <div className="mr-2">{integration.unique_key}</div>
-                            <Button variant={'icon'} onClick={() => setShowEditIntegrationId(true)} size={'xs'}>
-                                <Pencil1Icon />
-                            </Button>
+                            <SimpleTooltip
+                                tooltipContent={meta.connectionsCount > 0 ? "You can't change an integration id when you have active connections" : ''}
+                            >
+                                <Button variant={'icon'} onClick={() => setShowEditIntegrationId(true)} size={'xs'} disabled={meta.connectionsCount > 0}>
+                                    <Pencil1Icon />
+                                </Button>
+                            </SimpleTooltip>
                         </div>
                     )}
                 </InfoBloc>

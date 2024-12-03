@@ -37,7 +37,8 @@ import {
     hmacService,
     ErrorSourceEnum,
     interpolateObjectValues,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -47,7 +48,6 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';

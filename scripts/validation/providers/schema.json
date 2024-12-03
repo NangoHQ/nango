@@ -323,7 +323,14 @@
                             "enum": ["authorization_code", "client_credentials"]
                         },
                         "request": {
-                            "anyOf": [{ "type": "string" }, { "type": "object" }]
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
@@ -462,6 +469,9 @@
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
+                                },
+                                "automated": {
+                                    "type": "boolean"
                                 }
                             }
                         }

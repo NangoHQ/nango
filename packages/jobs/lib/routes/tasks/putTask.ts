@@ -70,6 +70,7 @@ const nangoPropsSchema = z
         secretKey: z.string().min(1),
         debug: z.boolean(),
         startedAt: z.coerce.date(),
+        endUser: z.object({ id: z.number(), endUserId: z.string().nullable(), orgId: z.string().nullable() }).nullable(),
         runnerFlags: z
             .object({
                 validateActionInput: z.boolean().default(false),

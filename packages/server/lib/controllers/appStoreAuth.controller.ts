@@ -1,12 +1,21 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials } from '@nangohq/shared';
-import { errorManager, analytics, AnalyticsTypes, configService, connectionService, ErrorSourceEnum, LogActionEnum, getProvider } from '@nangohq/shared';
+import {
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    configService,
+    connectionService,
+    ErrorSourceEnum,
+    LogActionEnum,
+    getProvider,
+    linkConnection
+} from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
 import { isIntegrationAllowed } from '../utils/auth.js';

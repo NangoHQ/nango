@@ -21,6 +21,10 @@ declare global {
 
     interface Window {
         _env: WindowEnv;
+        // koala
+        ko?: { identify: (str: string, ...args: any[]) => void; reset: () => void };
+
+        // Youtube
         YT: {
             Player: Player;
         };
