@@ -198,15 +198,17 @@ export class Nango {
         params: string | GetPublicIntegration['Params'],
         queries?: boolean | GetPublicIntegration['Querystring']
     ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
         if (typeof params === 'string') {
             const url = `${this.serverUrl}/config/${params}`;
-            const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: queries } });
+            const response = await this.http.get(url, { headers: this.enrichHeaders(headers), params: { include_creds: queries } });
             return response.data;
         } else {
             const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
             addQueryParams(url, queries as GetPublicIntegration['Querystring']);
 
-            const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+            const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
             return response.data;
         }
     }

@@ -3,7 +3,7 @@ import { Nango, getUserAgent } from '@nangohq/node';
 import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
@@ -88,15 +88,6 @@ interface SerializerOptions {
 interface ParamsSerializerOptions extends SerializerOptions {
     encode?: ParamEncoder;
     serialize?: CustomParamsSerializer;
-}
-
-export interface AxiosResponse<T = any, D = any> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: any;
-    config: D;
-    request?: any;
 }
 
 interface UserLogParameters {
@@ -408,6 +399,7 @@ export interface EnvironmentVariable {
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
+const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 const RECORDS_VALIDATION_SAMPLE = 5;
 
 export const defaultPersistApi = axios.create({
@@ -443,11 +435,8 @@ export class NangoAction {
 
     public ActionError = ActionError;
 
-    private memoizedConnections: Map<string, { connection: Connection; timestamp: number } | undefined> = new Map<
-        string,
-        { connection: Connection; timestamp: number }
-    >();
-    private memoizedIntegration: GetPublicIntegration['Success']['data'] | undefined;
+    private memoizedConnections = new Map<string, { connection: Connection; timestamp: number }>();
+    private memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
@@ -659,6 +648,23 @@ export class NangoAction {
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
+    /**
+     * Get current integration
+     */
+    public async getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']> {
+        this.throwIfAborted();
+
+        const key = queries?.include?.join(',') || 'default';
+        const has = this.memoizedIntegration.get(key);
+        if (has && MEMOIZED_INTEGRATION_TTL > Date.now() - has.timestamp) {
+            return has.integration;
+        }
+
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, queries);
+        this.memoizedIntegration.set(key, { integration, timestamp: Date.now() });
+        return integration;
+    }
+
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
         this.throwIfAborted();
 
@@ -710,16 +716,8 @@ export class NangoAction {
 
     public async getWebhookURL(): Promise<string | null | undefined> {
         this.throwIfAborted();
-        if (this.memoizedIntegration) {
-            return this.memoizedIntegration.webhook_url;
-        }
-
-        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
-        if (!integration || !integration.provider) {
-            throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
-        }
-        this.memoizedIntegration = integration;
-        return this.memoizedIntegration.webhook_url;
+        const integration = await this.getIntegration({ include: ['webhook'] });
+        return integration.webhook_url;
     }
 
     /**
