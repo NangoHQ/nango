@@ -956,6 +956,542 @@ integrations:
                     updatedAt: date
                 hiringTeam: HiringTeamObject[]
                 appliedViaJobPostingId?: string
+    avalara:
+        actions:
+            create-transaction:
+                description: |
+                    Creates a new transaction
+                input: CreateTransaction
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, SSTAdmin, TechnicalSupportAdmin,
+                    TechnicalSupportUser
+                endpoint:
+                    method: POST
+                    path: /transactions
+                    group: Transactions
+            commit-transaction:
+                description: |
+                    Marks a transaction by changing its status to Committed
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, ProStoresOperator, SSTAdmin,
+                    TechnicalSupportAdmin
+                endpoint:
+                    method: PUT
+                    path: /transactions
+                    group: Transactions
+            void-transaction:
+                description: >
+                    Voids the current transaction uniquely identified by the
+                    transactionCode
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, BatchServiceAdmin, CompanyAdmin,
+                    CSPTester, ProStoresOperator, SSTAdmin, TechnicalSupportAdmin
+                endpoint:
+                    method: DELETE
+                    path: /transactions
+                    group: Transactions
+        syncs:
+            transactions:
+                description: List all transactions with a default backfill date of one year.
+                input: ConnectionMetadata
+                output: Transaction
+                runs: every hour
+                endpoint:
+                    method: GET
+                    path: /transactions
+                    group: Transactions
+        models:
+            IdEntity:
+                id: string
+            ConnectionMetadata:
+                company: string
+                backfillPeriodMs?: number
+            Transaction:
+                id: string
+                code: string
+                companyId: number
+                date: string
+                paymentDate: string
+                status: string
+                type: string
+                batchCode: string
+                currencyCode: string
+                exchangeRateCurrencyCode: string
+                customerUsageType: string
+                entityUseCode: string
+                customerVendorCode: string
+                customerCode: string
+                exemptNo: string
+                reconciled: boolean
+                locationCode: string
+                reportingLocationCode: string
+                purchaseOrderNo: string
+                referenceCode: string
+                salespersonCode: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                totalAmount: number
+                totalExempt: number
+                totalDiscount: number
+                totalTax: number
+                totalTaxable: number
+                totalTaxCalculated: number
+                adjustmentReason: string
+                adjustmentDescription: string
+                locked: boolean
+                region: string
+                country: string
+                version: number
+                softwareVersion: string
+                originAddressId: number
+                destinationAddressId: number
+                exchangeRateEffectiveDate: string
+                exchangeRate: number
+                isSellerImporterOfRecord: boolean
+                description: string
+                email: string
+                businessIdentificationNo: string
+                modifiedDate: string
+                modifiedUserId: number
+                taxDate: string
+                lines: Line[]
+                locationTypes: any[]
+                messages: string[]
+                summary: string[]
+                addresses?: TransactionAddress[]
+                taxDetailsByTaxType?: TaxDetailsByTaxType[]
+            Line:
+                id: number
+                transactionId: number
+                lineNumber: string
+                boundaryOverrideId: number
+                entityUseCode: string
+                description: string
+                destinationAddressId: number
+                originAddressId: number
+                discountAmount: number
+                discountTypeId: number
+                exemptAmount: number
+                exemptCertId: number
+                exemptNo: string
+                isItemTaxable: boolean
+                isSSTP: boolean
+                itemCode: string
+                lineAmount: number
+                quantity: number
+                ref1: string
+                reportingDate: string
+                revAccount: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxCalculated: number
+                taxCode: string
+                taxDate: string
+                taxEngine: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                taxIncluded: boolean
+                details: Detail[]
+                vatNumberTypeId: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            Detail:
+                id: number
+                transactionLineId: number
+                transactionId: number
+                addressId: number
+                country: string
+                region: string
+                stateFIPS: string
+                exemptAmount: number
+                exemptReasonId: number
+                exemptRuleId: number
+                inState: boolean
+                jurisCode: string
+                jurisName: string
+                jurisdictionId: number
+                signatureCode: string
+                stateAssignedNo: string
+                jurisType: string
+                nonTaxableAmount: number
+                nonTaxableRuleId: number
+                nonTaxableType: string
+                rate: number
+                rateRuleId: number
+                rateSourceId: number
+                serCode: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxType: string
+                taxName: string
+                taxAuthorityTypeId: number
+                taxRegionId: number
+                taxCalculated: number
+                taxOverride: number
+                rateType: string
+                taxableUnits: number
+                nonTaxableUnits: number
+                exemptUnits: number
+                reportingTaxableUnits: number
+                reportingNonTaxableUnits: number
+                reportingExemptUnits: number
+                reportingTax: number
+                reportingTaxCalculated: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            TransactionAddress:
+                id: number
+                transactionId: number
+                boundaryLevel: string
+                line1: string
+                city: string
+                region: string
+                postalCode: string
+                country: string
+                taxRegionId: number
+            TaxDetailsByTaxType:
+                taxType: string
+                totalTaxable: number
+                totalExempt: number
+                totalNonTaxable: number
+                totalTax: number
+            CreateTransaction:
+                invoice: Invoice
+                externalCustomerId: string
+                companyCode?: string
+                addresses:
+                    singleLocation?: Address
+                    shipFrom?: Address
+                    shipTo?: Address
+                    pointOfOrderOrigin?: Address
+                    pointOfOrderAcceptance?: Address
+                    goodsPlaceOrServiceRendered?: Address
+                    import?: Address
+                    billTo?: Address
+            TransactionCode:
+                transactionCode: string
+            Address:
+                line1?: string
+                city?: string
+                region?: string
+                country?: string
+                postalCode?: string
+            InvoiceCoupon:
+                name: string
+                discountAmount: number
+            InvoiceLineItemTier:
+                unitCount: string
+                unitAmount: string
+                totalAmount: number
+            InvoiceLineItem:
+                id?: string | undefined
+                billingItemId?: string | null | undefined
+                name: string
+                description: string | null
+                unitsCount: number
+                unitAmount: string
+                taxAmount: number
+                taxRate: string
+                amount?: number | undefined
+                amountExcludingTax: number
+                periodStart: string | null
+                periodEnd: string | null
+                invoiceLineItemTiers: InvoiceLineItemTier[]
+            Invoice:
+                id: string
+                invoiceNumber: string
+                emissionDate: string
+                dueDate: string
+                status: >-
+                    to_pay | partially_paid | paid | late | grace_period | to_pay_batch |
+                    voided
+                taxRate: string
+                currency: string
+                invoiceLineItems: InvoiceLineItem[]
+                coupons: InvoiceCoupon[]
+                type: invoice | refund
+                discountAmount: number
+    avalara-sandbox:
+        actions:
+            create-transaction:
+                description: |
+                    Creates a new transaction
+                input: CreateTransaction
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, SSTAdmin, TechnicalSupportAdmin,
+                    TechnicalSupportUser
+                endpoint:
+                    method: POST
+                    path: /transactions
+                    group: Transactions
+            commit-transaction:
+                description: |
+                    Marks a transaction by changing its status to Committed
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, ProStoresOperator, SSTAdmin,
+                    TechnicalSupportAdmin
+                endpoint:
+                    method: PUT
+                    path: /transactions
+                    group: Transactions
+            void-transaction:
+                description: >
+                    Voids the current transaction uniquely identified by the
+                    transactionCode
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, BatchServiceAdmin, CompanyAdmin,
+                    CSPTester, ProStoresOperator, SSTAdmin, TechnicalSupportAdmin
+                endpoint:
+                    method: DELETE
+                    path: /transactions
+                    group: Transactions
+        syncs:
+            transactions:
+                description: List all transactions with a default backfill date of one year.
+                input: ConnectionMetadata
+                output: Transaction
+                runs: every hour
+                endpoint:
+                    method: GET
+                    path: /transactions
+                    group: Transactions
+        models:
+            IdEntity:
+                id: string
+            ConnectionMetadata:
+                company: string
+                backfillPeriodMs?: number
+            Transaction:
+                id: string
+                code: string
+                companyId: number
+                date: string
+                paymentDate: string
+                status: string
+                type: string
+                batchCode: string
+                currencyCode: string
+                exchangeRateCurrencyCode: string
+                customerUsageType: string
+                entityUseCode: string
+                customerVendorCode: string
+                customerCode: string
+                exemptNo: string
+                reconciled: boolean
+                locationCode: string
+                reportingLocationCode: string
+                purchaseOrderNo: string
+                referenceCode: string
+                salespersonCode: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                totalAmount: number
+                totalExempt: number
+                totalDiscount: number
+                totalTax: number
+                totalTaxable: number
+                totalTaxCalculated: number
+                adjustmentReason: string
+                adjustmentDescription: string
+                locked: boolean
+                region: string
+                country: string
+                version: number
+                softwareVersion: string
+                originAddressId: number
+                destinationAddressId: number
+                exchangeRateEffectiveDate: string
+                exchangeRate: number
+                isSellerImporterOfRecord: boolean
+                description: string
+                email: string
+                businessIdentificationNo: string
+                modifiedDate: string
+                modifiedUserId: number
+                taxDate: string
+                lines: Line[]
+                locationTypes: any[]
+                messages: string[]
+                summary: string[]
+                addresses?: TransactionAddress[]
+                taxDetailsByTaxType?: TaxDetailsByTaxType[]
+            Line:
+                id: number
+                transactionId: number
+                lineNumber: string
+                boundaryOverrideId: number
+                entityUseCode: string
+                description: string
+                destinationAddressId: number
+                originAddressId: number
+                discountAmount: number
+                discountTypeId: number
+                exemptAmount: number
+                exemptCertId: number
+                exemptNo: string
+                isItemTaxable: boolean
+                isSSTP: boolean
+                itemCode: string
+                lineAmount: number
+                quantity: number
+                ref1: string
+                reportingDate: string
+                revAccount: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxCalculated: number
+                taxCode: string
+                taxDate: string
+                taxEngine: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                taxIncluded: boolean
+                details: Detail[]
+                vatNumberTypeId: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            Detail:
+                id: number
+                transactionLineId: number
+                transactionId: number
+                addressId: number
+                country: string
+                region: string
+                stateFIPS: string
+                exemptAmount: number
+                exemptReasonId: number
+                exemptRuleId: number
+                inState: boolean
+                jurisCode: string
+                jurisName: string
+                jurisdictionId: number
+                signatureCode: string
+                stateAssignedNo: string
+                jurisType: string
+                nonTaxableAmount: number
+                nonTaxableRuleId: number
+                nonTaxableType: string
+                rate: number
+                rateRuleId: number
+                rateSourceId: number
+                serCode: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxType: string
+                taxName: string
+                taxAuthorityTypeId: number
+                taxRegionId: number
+                taxCalculated: number
+                taxOverride: number
+                rateType: string
+                taxableUnits: number
+                nonTaxableUnits: number
+                exemptUnits: number
+                reportingTaxableUnits: number
+                reportingNonTaxableUnits: number
+                reportingExemptUnits: number
+                reportingTax: number
+                reportingTaxCalculated: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            TransactionAddress:
+                id: number
+                transactionId: number
+                boundaryLevel: string
+                line1: string
+                city: string
+                region: string
+                postalCode: string
+                country: string
+                taxRegionId: number
+            TaxDetailsByTaxType:
+                taxType: string
+                totalTaxable: number
+                totalExempt: number
+                totalNonTaxable: number
+                totalTax: number
+            CreateTransaction:
+                invoice: Invoice
+                externalCustomerId: string
+                companyCode?: string
+                addresses:
+                    singleLocation?: Address
+                    shipFrom?: Address
+                    shipTo?: Address
+                    pointOfOrderOrigin?: Address
+                    pointOfOrderAcceptance?: Address
+                    goodsPlaceOrServiceRendered?: Address
+                    import?: Address
+                    billTo?: Address
+            TransactionCode:
+                transactionCode: string
+            Address:
+                line1?: string
+                city?: string
+                region?: string
+                country?: string
+                postalCode?: string
+            InvoiceCoupon:
+                name: string
+                discountAmount: number
+            InvoiceLineItemTier:
+                unitCount: string
+                unitAmount: string
+                totalAmount: number
+            InvoiceLineItem:
+                id?: string | undefined
+                billingItemId?: string | null | undefined
+                name: string
+                description: string | null
+                unitsCount: number
+                unitAmount: string
+                taxAmount: number
+                taxRate: string
+                amount?: number | undefined
+                amountExcludingTax: number
+                periodStart: string | null
+                periodEnd: string | null
+                invoiceLineItemTiers: InvoiceLineItemTier[]
+            Invoice:
+                id: string
+                invoiceNumber: string
+                emissionDate: string
+                dueDate: string
+                status: >-
+                    to_pay | partially_paid | paid | late | grace_period | to_pay_batch |
+                    voided
+                taxRate: string
+                currency: string
+                invoiceLineItems: InvoiceLineItem[]
+                coupons: InvoiceCoupon[]
+                type: invoice | refund
+                discountAmount: number
     aws-iam:
         actions:
             create-user:
