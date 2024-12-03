@@ -2,7 +2,17 @@ import type { Endpoint } from '../api.js';
 
 export interface ConnectSessionPayload {
     allowed_integrations?: string[] | undefined;
-    integrations_config_defaults?: Record<string, { connection_config: Record<string, unknown> }> | undefined;
+    integrations_config_defaults?:
+        | Record<
+              string,
+              {
+                  connection_config: {
+                      [key: string]: unknown;
+                      oauth_scopes?: string | undefined;
+                  };
+              }
+          >
+        | undefined;
     end_user: {
         id: string;
         email: string;

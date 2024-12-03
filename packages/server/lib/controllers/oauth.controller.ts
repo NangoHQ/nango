@@ -62,7 +62,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
-        const userScope = req.query['user_scope'] as string | undefined;
+        let userScope = req.query['user_scope'] as string | undefined;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
@@ -147,6 +147,13 @@ class OAuthController {
 
             if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
+            }
+
+            if (isConnectSession) {
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                // No matter what we don't want ill intentioned users to specify their own oauth_scopes
+                // session token always win
+                userScope = defaults?.connectionConfig.oauth_scopes || undefined;
             }
 
             const session: OAuthSession = {

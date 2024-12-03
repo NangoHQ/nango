@@ -28,7 +28,7 @@ const bodySchema = z
             .record(
                 z
                     .object({
-                        connection_config: z.record(z.unknown())
+                        connection_config: z.object({ oauth_scopes: z.string().optional() }).passthrough()
                     })
                     .strict()
             )
