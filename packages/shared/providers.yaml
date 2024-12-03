@@ -121,6 +121,18 @@ affinity:
     proxy:
         base_url: https://api.affinity.co
     docs: https://docs.nango.dev/integrations/all/affinity
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: API Key
+            description: Your Affinity API Key
+            doc_section: '#step-1-finding-your-api-key'
 
 aircall:
     display_name: Aircall
@@ -265,6 +277,7 @@ anrok:
             type: string
             title: API Key
             description: The API key for your Anrok account
+            doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
     display_name: Amplitude
@@ -512,12 +525,24 @@ avalara:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    credentials:
+        username:
+            type: string
+            title: User Name / Account ID
+            description: Your User Name / Account ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Password / License Key
+            description: Your Password / License Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
             pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
     display_name: Avalara (sandbox)
@@ -533,12 +558,24 @@ avalara-sandbox:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    credentials:
+        username:
+            type: string
+            title: User Name / Account ID
+            description: Your User Name / Account ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Password / License Key
+            description: Your Password / License Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
             pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
     display_name: AWS
@@ -585,6 +622,17 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
+    credentials:
+        username:
+            type: string
+            title: Access Key ID
+            description: Your Access Key ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Secret Access Key
+            description: Your Secret Access Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         region:
             type: string
@@ -592,6 +640,7 @@ aws-iam:
             description: The region to where your AWS account is hosted
             example: us-east-1
             pattern: '^[a-z0-9-]+$'
+            doc_section: '#step-2-finding-your-region-host'
 
 bamboohr:
     display_name: BambooHR
@@ -641,6 +690,7 @@ bamboohr-basic:
             suffix: .bamboohr.com
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         username:
             type: string
@@ -648,6 +698,7 @@ bamboohr-basic:
             description: The API Key of your BambooHR account
             pattern: '^[a-zA-Z0-9]+$'
             secret: true
+            doc_section: '#step-2-finding-your-api-key'
         password:
             type: string
             title: Password
@@ -969,8 +1020,11 @@ brex-api-key:
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API key for your Brex account
+            title: API Token
+            description: The API Token to your Brex account
+            example: bxt_vRUwQT3snBmA1IDVq5iK1kXc4N0bhxr377z4
+            pattern: '^bxt_[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-token'
 
 brex-staging:
     display_name: Brex (staging)
@@ -1014,10 +1068,11 @@ builder-io-private:
         domain:
             type: string
             title: Domain
-            description: The domain of your Builder.io account
-            example: app.builder.io
+            description: The domain used to access your Builder.io API
+            example: cdn.builder.io
             format: hostname
             prefix: https://
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
@@ -1025,6 +1080,7 @@ builder-io-private:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+            doc_section: '#step-2-finding-your-api-key'
 
 builder-io-public:
     display_name: Builder.io (public)
@@ -1042,10 +1098,11 @@ builder-io-public:
         domain:
             type: string
             title: Domain
-            description: The domain of your Builder.io account
-            example: app.builder.io
+            description: The domain used to access your Builder.io API
+            example: builder.io
             format: hostname
             prefix: https://
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
@@ -1053,6 +1110,7 @@ builder-io-public:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+            doc_section: '#step-2-finding-your-api-key'
 
 buildium:
     display_name: Buildium
@@ -1077,6 +1135,7 @@ buildium:
             description: Your API Key Client ID
             pattern: '^[a-f0-9-]+$'
             example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
+            doc_section: '#step-1-finding-your-api-key-and-client-id'
     credentials:
         apiKey:
             type: string
@@ -1084,6 +1143,7 @@ buildium:
             description: The API key for your Buildium account
             pattern: '^[A-Za-z0-9+/]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
+            doc_section: '#step-1-finding-your-api-key-and-client-id'
 
 cal-com-v1:
     display_name: Cal.com (v1)
@@ -1107,6 +1167,7 @@ cal-com-v1:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
+            doc_section: '#step-1-finding-your-api-key'
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
@@ -1134,6 +1195,7 @@ cal-com-v2:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
+            doc_section: '#step-1-finding-your-api-key'
 
 calendly:
     display_name: Calendly
@@ -1174,6 +1236,9 @@ canny:
             type: string
             title: API Key
             description: The API key for your Canny account
+            example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 certn:
     display_name: Certn
