@@ -145,71 +145,88 @@ export const ConnectionCreate: React.FC = () => {
                         <h1 className="text-2xl">Create a test connection</h1>
                         <div className="flex flex-col gap-4">
                             <label htmlFor="integration_id">Pick an integration</label>
-                            <Popover open={open} onOpenChange={setOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button role="combobox" variant={'select'} size={'lg'} className="justify-between" disabled={Boolean(paramIntegrationId)}>
-                                        {integration ? (
-                                            <div className="flex gap-3">
-                                                <IntegrationLogo provider={integration.provider} /> {integration.uniqueKey}
-                                            </div>
-                                        ) : (
-                                            'Choose from the list'
-                                        )}
-                                        <IconChevronDown stroke={1} size={18} />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    side="bottom"
-                                    align="start"
-                                    style={{ width: 'var(--radix-popover-trigger-width)' }}
-                                    className="bg-grayscale-900 w-full px-3"
-                                >
-                                    <Command>
-                                        <CommandInput
-                                            placeholder="Search integrations..."
-                                            className="text-white ring-0 focus:ring-0 focus-visible:outline-none"
-                                        ></CommandInput>
-                                        <CommandList className="max-h-[400px]">
-                                            <CommandEmpty>No framework found.</CommandEmpty>
-                                            <CommandGroup className="px-0">
-                                                {listIntegration?.integrations.map((item) => {
-                                                    const checked = integration && item.uniqueKey === integration.uniqueKey;
-                                                    return (
-                                                        <CommandItem
-                                                            key={item.uniqueKey}
-                                                            value={item.uniqueKey}
-                                                            onSelect={(curr) => {
-                                                                setIntegration(
-                                                                    integration && curr === integration.uniqueKey
-                                                                        ? undefined
-                                                                        : listIntegration.integrations.find((v) => v.uniqueKey === curr)!
-                                                                );
-                                                                setOpen(false);
-                                                            }}
-                                                            className={cn(
-                                                                'items-center pl-2 py-2.5 justify-between text-white',
-                                                                checked && 'bg-grayscale-1000'
-                                                            )}
-                                                        >
-                                                            <div className="flex gap-3">
-                                                                <IntegrationLogo provider={item.provider} /> {item.uniqueKey}
-                                                            </div>
-                                                            <IconCheck className={cn('mr-2 h-4 w-4', checked ? 'opacity-100' : 'opacity-0')} />
-                                                        </CommandItem>
-                                                    );
-                                                })}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+                            <div className="flex gap-4">
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            role="combobox"
+                                            variant={'select'}
+                                            size={'lg'}
+                                            className="justify-between grow"
+                                            disabled={Boolean(paramIntegrationId)}
+                                        >
+                                            {integration ? (
+                                                <div className="flex gap-3">
+                                                    <IntegrationLogo provider={integration.provider} /> {integration.uniqueKey}
+                                                </div>
+                                            ) : (
+                                                'Choose from the list'
+                                            )}
+                                            <IconChevronDown stroke={1} size={18} />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        side="bottom"
+                                        align="start"
+                                        style={{ width: 'var(--radix-popover-trigger-width)' }}
+                                        className="bg-grayscale-900 w-full px-3"
+                                    >
+                                        <Command>
+                                            <CommandInput
+                                                placeholder="Search integrations..."
+                                                className="text-white ring-0 focus:ring-0 focus-visible:outline-none"
+                                            ></CommandInput>
+                                            <CommandList className="max-h-[400px]">
+                                                <CommandEmpty>No framework found.</CommandEmpty>
+                                                <CommandGroup className="px-0">
+                                                    {listIntegration?.integrations.map((item) => {
+                                                        const checked = integration && item.uniqueKey === integration.uniqueKey;
+                                                        return (
+                                                            <CommandItem
+                                                                key={item.uniqueKey}
+                                                                value={item.uniqueKey}
+                                                                onSelect={(curr) => {
+                                                                    setIntegration(
+                                                                        integration && curr === integration.uniqueKey
+                                                                            ? undefined
+                                                                            : listIntegration.integrations.find((v) => v.uniqueKey === curr)!
+                                                                    );
+                                                                    setOpen(false);
+                                                                }}
+                                                                className={cn(
+                                                                    'items-center pl-2 py-2.5 justify-between text-white',
+                                                                    checked && 'bg-grayscale-1000'
+                                                                )}
+                                                            >
+                                                                <div className="flex gap-3">
+                                                                    <IntegrationLogo provider={item.provider} /> {item.uniqueKey}
+                                                                </div>
+                                                                <IconCheck className={cn('mr-2 h-4 w-4', checked ? 'opacity-100' : 'opacity-0')} />
+                                                            </CommandItem>
+                                                        );
+                                                    })}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+
+                                <Button onClick={onClickConnectUI} size="lg" disabled={!integration}>
+                                    Authorize
+                                </Button>
+                            </div>
                         </div>
 
-                        <Info title="Test connections: user info">
-                            For test connections, the user info is automatically populated with your Nango account details. The user email is simply the one you
-                            used to sign up for Nango and doesn’t need to match the email used for the third-party system. This email is used only for display
-                            purposes to help associate the connection with its creator and does not affect the functionality of the connection.
-                        </Info>
+                        <SimpleTooltip
+                            className="max-w-[400px]"
+                            align="center"
+                            side="bottom"
+                            tooltipContent={
+                                'The user email is simply the one you used to sign up for Nango and doesn’t need to match the email used for the third-party system. This email is used only for display purposes to help associate the connection with its creator and does not affect the functionality of the connection.'
+                            }
+                        >
+                            <Info>Test user email and name use your Nango account details.</Info>
+                        </SimpleTooltip>
 
                         {paramExtended && (
                             <Collapsible>
@@ -393,13 +410,9 @@ export const ConnectionCreate: React.FC = () => {
                             </Collapsible>
                         )}
                         <div className="flex gap-4">
-                            <Button onClick={onClickConnectUI} size="md" disabled={!integration}>
-                                Authorize
-                            </Button>
-
                             <Link to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.uniqueKey}` : ''}`}>
-                                <Button onClick={onClickConnectUI} size="md" variant={'emptyFaded'}>
-                                    Authorize (deprecated flow)
+                                <Button onClick={onClickConnectUI} size="md" variant={'link'}>
+                                    Or use deprecated flow <IconChevronRight stroke={1} size={18} />
                                 </Button>
                             </Link>
                         </div>

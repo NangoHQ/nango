@@ -27,7 +27,7 @@ export const Info: React.FC<{ children: React.ReactNode; icon?: React.ReactNode;
                 </div>
             )}
             <div className="w-full flex items-center justify-between">
-                <div>
+                <div className="flex flex-col gap-2">
                     {title && <AlertTitle>{title}</AlertTitle>}
                     <AlertDescription>{children}</AlertDescription>
                 </div>
