@@ -1,0 +1,41 @@
+---
+title: Front - How do I link my account?
+sidebarTitle: Front
+---
+
+
+# Overview
+
+To authenticate with Front, you will need your client credentials, which are:
+1. **Client ID** - A unique identifier for your client.
+2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
+
+This guide will walk you through the process of obtaining these credentials within Front.
+
+### Prerequisites:
+
+- You must have a registered account with Front.
+
+### Instructions:
+
+#### Step 1: Generating your API client credentials
+1. Head to the [Developer's Page](https://app.frontapp.com/settings/developers) and click on **Create app**.
+<img src="/integrations/all/front/create-app.png" />
+2. A form will be presented to you, in here please fill out your application's name and description.
+3. Once you submit this form, an application will be created for you. You will then need to enable OAuth in the **OAuth** tab.
+<img src="/integrations/all/front/enable-oauth.png" />
+4. Once this is done, a pair of client credentials(Client Id and Client Secret) will be generated. Please also add your **Redirect URLs**.
+<img src="/integrations/all/front/front-oauth.png" />
+#### Step 2: Enter credentials in the Connect UI
+
+After obtaining both the **Client ID** and **Client Secret**:
+1. Open the form where you need to authenticate with Front within Nango.
+2. Enter the **Client ID** in the designated field.
+3. Enter the **Client Secret** in the Client Secret field. You can leave the **scopes** blank, as Front does not currently support scoped access tokens.
+<img src="/integrations/all/front/nango-integration.png" />
+4. After adding this click on the **Save** button at the bottom right then click on **Add Connection** at the top right.
+<img src="/integrations/all/front/form.png" style={{maxWidth: "450px" }}/>
+5. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Front.
+ 
