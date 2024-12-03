@@ -4663,15 +4663,18 @@ personio:
     token_url: https://api.personio.de/v1/auth
     body_format: json
     docs: https://docs.nango.dev/integrations/all/personio
+    docs_connect: https://docs.nango.dev/integrations/all/personio/connect
     connection_config:
         partnerId:
             type: string
             title: Partner ID
             description: The partner ID of your Personio account
+            doc_section: '#step-1-finding-personio-client-id'
         appId:
             type: string
             title: App ID
             description: The app ID of your Personio account
+            doc_section: '#step-2-finding-personio-client-secret'
 
 personio-recruiting:
     display_name: Personio Recruiting
