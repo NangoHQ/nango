@@ -3632,6 +3632,18 @@ lever-basic:
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+    docs_connect: https://docs.nango.dev/integrations/all/lever-basic/connect
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: The API Key of your lever account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 lever-sandbox:
     display_name: Lever (sandbox)
