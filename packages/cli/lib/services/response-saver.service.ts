@@ -7,15 +7,17 @@ import type { Metadata } from '@nangohq/types';
 
 const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host'];
 
+interface ConfigIdentity {
+    method: string;
+    endpoint: string;
+    requestIdentityHash: string;
+    requestIdentity: unknown[];
+}
+
 interface CachedRequest {
     requestIdentityHash: string;
     requestIdentity: unknown[];
     response: unknown;
-}
-
-interface ConfigIdentity {
-    requestIdentityHash: string;
-    requestIdentity: unknown[];
 }
 
 export function ensureDirectoryExists(directoryName: string): void {
@@ -48,7 +50,6 @@ export function onAxiosRequestFulfilled({
         return response;
     }
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
-    const method = response.config.method?.toLowerCase() || 'get';
 
     if (response.request.path.includes(`/connection/${connectionId}?provider_config_key=${providerConfigKey}`)) {
         const connection = response.data as Connection;
@@ -69,9 +70,6 @@ export function onAxiosRequestFulfilled({
         return response;
     }
 
-    const [pathname] = response.request.path.split('?');
-    const strippedPath = pathname.replace('/', '');
-
     const requestIdentity = computeConfigIdentity(response.config);
 
     saveResponse<CachedRequest>({
@@ -80,7 +78,7 @@ export function onAxiosRequestFulfilled({
             ...requestIdentity,
             response: response.data
         },
-        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+        customFilePath: `mocks/nango/${requestIdentity.method}/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
     });
 
     return response;
@@ -90,9 +88,12 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
     const params = sortEntries(Object.entries(config.params || {}));
 
+    const url = new URL(config.url!);
+    const endpoint = url.pathname.replace(/^\/proxy\//, '');
+
     const requestIdentity: [string, unknown][] = [
         ['method', method],
-        ['url', config.url],
+        ['endpoint', endpoint],
         ['params', params]
     ];
 
@@ -113,6 +114,8 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
 
     return {
+        method,
+        endpoint,
         requestIdentityHash,
         requestIdentity
     };
