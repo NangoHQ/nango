@@ -24,28 +24,11 @@ export function ensureDirectoryExists(directoryName: string): void {
     }
 }
 
-function saveResponse<T>({
-    directoryName,
-    data,
-    customFilePath,
-    concatenateIfExists
-}: {
-    directoryName: string;
-    data: T | T[];
-    customFilePath: string;
-    concatenateIfExists: boolean;
-}): void {
+function saveResponse<T>({ directoryName, data, customFilePath }: { directoryName: string; data: T | T[]; customFilePath: string }): void {
     ensureDirectoryExists(`${directoryName}/mocks`);
 
     const filePath = path.join(directoryName, customFilePath);
     ensureDirectoryExists(path.dirname(filePath));
-
-    if (fs.existsSync(filePath)) {
-        const existingData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        if (concatenateIfExists && Array.isArray(existingData) && Array.isArray(data)) {
-            data = data.concat(existingData);
-        }
-    }
 
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
@@ -74,15 +57,13 @@ export function onAxiosRequestFulfilled({
         saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
             directoryName,
             data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
-            customFilePath: 'mocks/nango/getConnection.json',
-            concatenateIfExists: false
+            customFilePath: 'mocks/nango/getConnection.json'
         });
 
         saveResponse<Metadata>({
             directoryName,
             data: connection.metadata as Metadata,
-            customFilePath: 'mocks/nango/getMetadata.json',
-            concatenateIfExists: false
+            customFilePath: 'mocks/nango/getMetadata.json'
         });
 
         return response;
@@ -99,8 +80,7 @@ export function onAxiosRequestFulfilled({
             ...requestIdentity,
             response: response.data
         },
-        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestIdentity.requestIdentityHash}.json`,
-        concatenateIfExists: false
+        customFilePath: `mocks/nango/${method}/${strippedPath}/${syncName}/${requestIdentity.requestIdentityHash}.json`
     });
 
     return response;
