@@ -52,9 +52,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
-        endUser = getEndUser.isOk()
-            ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
-            : null;
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
+        }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
         await logCtx.info(`Starting action '${task.actionName}'`, {

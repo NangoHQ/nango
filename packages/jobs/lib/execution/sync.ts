@@ -76,9 +76,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         environment = accountAndEnv.environment;
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
-        endUser = getEndUser.isOk()
-            ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
-            : null;
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
+        }
 
         syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
 

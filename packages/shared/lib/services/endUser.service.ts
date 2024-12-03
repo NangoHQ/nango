@@ -160,7 +160,7 @@ export async function unlinkConnection(db: Knex, { connection }: { connection: P
 }
 
 export async function getEndUserByConnectionId(db: Knex, props: { connectionId: number }): Promise<Result<EndUser, EndUserError>> {
-    const endUser = await db<DBEndUser>(END_USERS_TABLE)
+    const endUser = await db(END_USERS_TABLE)
         .select<DBEndUser>(`${END_USERS_TABLE}.*`)
         .join('_nango_connections', '_nango_connections.end_user_id', `${END_USERS_TABLE}.id`)
         .where('_nango_connections.id', '=', props.connectionId)
