@@ -2647,6 +2647,7 @@ github-app:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 github-app-oauth:
     display_name: GitHub App (oauth)
@@ -2676,6 +2677,7 @@ github-app-oauth:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 gitlab:
     display_name: GitLab
@@ -3032,7 +3034,7 @@ greenhouse-basic:
             type: string
             title: API key
             description: The API Key of your Greenhouse account
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-zA-Z0-9-]+$'
             secret: true
         password:
             type: string
@@ -4634,6 +4636,21 @@ personio:
             title: App ID
             description: The app ID of your Personio account
 
+personio-v2:
+    display_name: Personio (v2)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://api.personio.de/v2
+        headers:
+            Content-Type: application/x-www-form-urlencoded
+    token_url: https://api.personio.de/v2/auth/token
+    scope_separator: ' '
+    docs: https://docs.nango.dev/integrations/all/personio
+    token_params:
+        grant_type: client_credentials
+
 personio-recruiting:
     display_name: Personio Recruiting
     categories:
@@ -5171,7 +5188,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
-            optional: true
+            automated: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5192,6 +5209,7 @@ salesforce-sandbox:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud

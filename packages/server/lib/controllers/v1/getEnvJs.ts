@@ -10,8 +10,9 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         connectUrl: connectUrl,
         publicSentryKey: process.env['PUBLIC_SENTRY_KEY'] || '',
         publicPosthogKey: process.env['PUBLIC_POSTHOG_KEY'] || '',
-        publicPosthogPost: process.env['PUBLIC_POSTHOG_HOST'] || '',
+        publicPosthogHost: process.env['PUBLIC_POSTHOG_HOST'] || '',
         publicLogoDevKey: process.env['PUBLIC_LOGODEV_KEY'] || '',
+        publicKoalaKey: process.env['PUBLIC_KOALA_KEY'] || '',
         isCloud,
         features: {
             logs: envs.NANGO_LOGS_ENABLED,

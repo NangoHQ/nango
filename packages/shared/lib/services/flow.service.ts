@@ -84,7 +84,8 @@ class FlowService {
                         models: item.usedModels.map((name) => parsed.models.get(name)!) as any,
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null
+                        json_schema: null,
+                        metadata: { description: item.description, scopes: item.scopes }
                     });
                 } else {
                     std.syncs.push({
@@ -107,7 +108,8 @@ class FlowService {
                         models: item.usedModels.map((name) => parsed.models.get(name)!) as any,
                         last_deployed: null,
                         webhookSubscriptions: [],
-                        json_schema: null
+                        json_schema: null,
+                        metadata: { description: item.description, scopes: item.scopes }
                     });
                 }
             }

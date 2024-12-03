@@ -35,7 +35,8 @@ const nangoProps: NangoProps = {
     nangoConnectionId: 1,
     debug: false,
     runnerFlags: {} as any,
-    startedAt: new Date()
+    startedAt: new Date(),
+    endUser: null
 };
 
 describe('cache', () => {

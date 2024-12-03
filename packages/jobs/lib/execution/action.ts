@@ -11,6 +11,7 @@ import {
     errorManager,
     featureFlags,
     getApiUrl,
+    getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
@@ -18,12 +19,15 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';
+import db from '@nangohq/database';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
     let syncConfig: SyncConfig | null = null;
+    let endUser: NangoProps['endUser'] | null = null;
+
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
         if (!accountAndEnv) {
@@ -45,6 +49,11 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         });
         if (!syncConfig) {
             throw new Error(`Action config not found: ${task.id}`);
+        }
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
@@ -74,7 +83,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             syncConfig: syncConfig,
             debug: false,
             runnerFlags: await getRunnerFlags(featureFlags),
-            startedAt: new Date()
+            startedAt: new Date(),
+            endUser
         };
 
         metrics.increment(metrics.Types.ACTION_EXECUTION, 1, { accountId: account.id });
@@ -108,7 +118,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             error,
             syncConfig,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
-            ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {})
+            ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {}),
+            endUser
         });
         return Err(error);
     }
@@ -145,7 +156,8 @@ export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoPro
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
-        internalIntegrationId: nangoProps.syncConfig.nango_config_id
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id,
+        endUser: nangoProps.endUser
     });
 }
 
@@ -165,7 +177,8 @@ export async function handleActionError({ nangoProps, error }: { nangoProps: Nan
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
         syncConfig: nangoProps.syncConfig,
-        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {})
+        ...(nangoProps.team ? { team: { id: nangoProps.team.id, name: nangoProps.team.name } } : {}),
+        endUser: nangoProps.endUser
     });
 }
 
@@ -179,7 +192,8 @@ async function onFailure({
     activityLogId,
     syncConfig,
     runTime,
-    error
+    error,
+    endUser
 }: {
     connection: NangoConnection;
     team?: { id: number; name: string };
@@ -191,6 +205,7 @@ async function onFailure({
     syncConfig: SyncConfig | null;
     runTime: number;
     error: NangoError;
+    endUser: NangoProps['endUser'];
 }): Promise<void> {
     if (team) {
         void bigQueryClient.insert({
@@ -209,7 +224,8 @@ async function onFailure({
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
-            internalIntegrationId: syncConfig?.nango_config_id || null
+            internalIntegrationId: syncConfig?.nango_config_id || null,
+            endUser
         });
     }
     const logCtx = await logContextGetter.get({ id: activityLogId });
