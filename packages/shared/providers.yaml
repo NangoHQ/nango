@@ -3030,6 +3030,7 @@ greenhouse-basic:
         verification:
             endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
         resource:
             type: string
