@@ -3,7 +3,7 @@ import { Nango, getUserAgent } from '@nangohq/node';
 import type { AdminAxiosProps } from '@nangohq/node';
 import paginateService from '../services/paginate.service.js';
 import proxyService from '../services/proxy.service.js';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios, { AxiosError } from 'axios';
 import { getPersistAPIUrl } from '../utils/utils.js';
 import type { UserProvidedProxyConfiguration } from '../models/Proxy.js';
@@ -23,6 +23,7 @@ import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
+import { redactHeaders, redactURL } from '../utils/http.js';
 
 const logger = getLogger('SDK');
 
@@ -88,15 +89,6 @@ interface SerializerOptions {
 interface ParamsSerializerOptions extends SerializerOptions {
     encode?: ParamEncoder;
     serialize?: CustomParamsSerializer;
-}
-
-export interface AxiosResponse<T = any, D = any> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: any;
-    config: D;
-    request?: any;
 }
 
 interface UserLogParameters {
@@ -392,6 +384,7 @@ export interface NangoProps {
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+    endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
@@ -407,6 +400,7 @@ export interface EnvironmentVariable {
 }
 
 const MEMOIZED_CONNECTION_TTL = 60000;
+const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 const RECORDS_VALIDATION_SAMPLE = 5;
 
 export const defaultPersistApi = axios.create({
@@ -442,11 +436,8 @@ export class NangoAction {
 
     public ActionError = ActionError;
 
-    private memoizedConnections: Map<string, { connection: Connection; timestamp: number } | undefined> = new Map<
-        string,
-        { connection: Connection; timestamp: number }
-    >();
-    private memoizedIntegration: GetPublicIntegration['Success']['data'] | undefined;
+    private memoizedConnections = new Map<string, { connection: Connection; timestamp: number }>();
+    private memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
 
     constructor(config: NangoProps, { persistApi }: { persistApi: AxiosInstance } = { persistApi: defaultPersistApi }) {
         this.connectionId = config.connectionId;
@@ -485,6 +476,14 @@ export class NangoAction {
                     }
                 };
             }
+        }
+        if (!config.axios?.response) {
+            // Leave the priority to saving response instead of logging
+            axiosSettings.interceptors = {
+                response: {
+                    onFulfilled: this.logAPICall.bind(this)
+                }
+            };
         }
 
         if (config.environmentName) {
@@ -658,6 +657,23 @@ export class NangoAction {
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
+    /**
+     * Get current integration
+     */
+    public async getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']> {
+        this.throwIfAborted();
+
+        const key = queries?.include?.join(',') || 'default';
+        const has = this.memoizedIntegration.get(key);
+        if (has && MEMOIZED_INTEGRATION_TTL > Date.now() - has.timestamp) {
+            return has.integration;
+        }
+
+        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, queries);
+        this.memoizedIntegration.set(key, { integration, timestamp: Date.now() });
+        return integration;
+    }
+
     public async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection> {
         this.throwIfAborted();
 
@@ -709,16 +725,8 @@ export class NangoAction {
 
     public async getWebhookURL(): Promise<string | null | undefined> {
         this.throwIfAborted();
-        if (this.memoizedIntegration) {
-            return this.memoizedIntegration.webhook_url;
-        }
-
-        const { data: integration } = await this.nango.getIntegration({ uniqueKey: this.providerConfigKey }, { include: ['webhook'] });
-        if (!integration || !integration.provider) {
-            throw Error(`There was no provider found for the provider config key: ${this.providerConfigKey}`);
-        }
-        this.memoizedIntegration = integration;
-        return this.memoizedIntegration.webhook_url;
+        const integration = await this.getIntegration({ include: ['webhook'] });
+        return integration.webhook_url;
     }
 
     /**
@@ -762,7 +770,15 @@ export class NangoAction {
         const level = userDefinedLevel?.level ?? 'info';
 
         if (this.dryRun) {
-            logger[logLevelToLogger[level] ?? 'info'].apply(null, args as any);
+            const logLevel = logLevelToLogger[level] ?? 'info';
+
+            // TODO: we shouldn't use a floating logger, it should be passed from dryrun or runner
+            if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
+                logger[logLevel].apply(null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
+            } else {
+                logger[logLevel].apply(null, args as any);
+            }
+
             return;
         }
 
@@ -911,9 +927,50 @@ export class NangoAction {
         }
 
         if (response.status > 299) {
-            logger.error(`Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`, this.stringify());
+            logger.error(
+                `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}' log=${JSON.stringify(log)}`,
+                this.stringify()
+            );
             throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
         }
+    }
+
+    private logAPICall(res: AxiosResponse): AxiosResponse {
+        if (!res.config.url) {
+            return res;
+        }
+
+        // We compte on the fly because connection's credentials can change during a single run
+        // We could further optimize this and cache it when the memoizedConnection is updated
+        const valuesToFilter: string[] = [
+            ...Array.from(this.memoizedConnections.values()).reduce<string[]>((acc, conn) => {
+                if (!conn) {
+                    return acc;
+                }
+                acc.push(...Object.values(conn.connection.credentials));
+                return acc;
+            }, []),
+            this.nango.secretKey
+        ];
+
+        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
+        void this.log(
+            `${method} ${res.config.url}`,
+            {
+                type: 'http',
+                request: {
+                    method: method,
+                    url: redactURL({ url: res.config.url, valuesToFilter }),
+                    headers: redactHeaders({ headers: res.config.headers, valuesToFilter })
+                },
+                response: {
+                    code: res.status,
+                    headers: redactHeaders({ headers: res.headers, valuesToFilter })
+                }
+            },
+            { level: res.status > 299 ? 'error' : 'info' }
+        );
+        return res;
     }
 }
 

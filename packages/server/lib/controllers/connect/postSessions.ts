@@ -3,11 +3,11 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as endUserService from '../../services/endUser.service.js';
+import * as endUserService from '@nangohq/shared';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-const bodySchema = z
+export const bodySchema = z
     .object({
         end_user: z
             .object({
@@ -28,7 +28,12 @@ const bodySchema = z
             .record(
                 z
                     .object({
-                        connection_config: z.record(z.unknown())
+                        user_scopes: z.string().optional(),
+                        connection_config: z
+                            .object({
+                                oauth_scopes_override: z.string().optional()
+                            })
+                            .passthrough()
                     })
                     .strict()
             )
@@ -120,7 +125,10 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             allowedIntegrations: req.body.allowed_integrations || null,
             integrationsConfigDefaults: req.body.integrations_config_defaults
                 ? Object.fromEntries(
-                      Object.entries(req.body.integrations_config_defaults).map(([key, value]) => [key, { connectionConfig: value.connection_config }])
+                      Object.entries(req.body.integrations_config_defaults).map(([key, value]) => [
+                          key,
+                          { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
+                      ])
                   )
                 : null
         });

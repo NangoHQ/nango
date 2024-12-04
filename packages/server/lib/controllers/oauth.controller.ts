@@ -37,7 +37,8 @@ import {
     hmacService,
     ErrorSourceEnum,
     interpolateObjectValues,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -47,7 +48,6 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';
@@ -62,7 +62,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
-        const userScope = req.query['user_scope'] as string | undefined;
+        let userScope = req.query['user_scope'] as string | undefined;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
@@ -149,6 +149,12 @@ class OAuthController {
                 return;
             }
 
+            if (isConnectSession) {
+                // Session token always win
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                userScope = defaults?.user_scopes || undefined;
+            }
+
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
@@ -195,7 +201,12 @@ class OAuthController {
                 });
             }
 
-            if (connectionConfig['oauth_scopes_override']) {
+            if (isConnectSession) {
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                if (defaults?.connectionConfig.oauth_scopes_override) {
+                    config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override;
+                }
+            } else if (connectionConfig['oauth_scopes_override']) {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
@@ -923,7 +934,7 @@ class OAuthController {
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
 
-        // check for oauth overrides in the connnection config
+        // check for oauth overrides in the connection config
         if (session.connectionConfig['oauth_client_id_override']) {
             config.oauth_client_id = session.connectionConfig['oauth_client_id_override'];
         }

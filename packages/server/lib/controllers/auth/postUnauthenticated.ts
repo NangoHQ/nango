@@ -4,20 +4,18 @@ import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
 

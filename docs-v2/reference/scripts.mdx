@@ -202,6 +202,28 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
 
 _TbD_
 
+# Get Integration
+
+Returns the current integration information
+
+```js
+await nango.getIntegration();
+```
+
+With credentials
+
+```js
+await nango.getIntegration({ include: ['credentials'] });
+```
+
+**Parameters**
+
+See `GET /integrations/{uniqueKey}` query parameters: [documentation](/reference/api/integration/get)
+
+**Response**
+
+See `GET /integrations/{uniqueKey}` response: [documentation](/reference/api/integration/get)
+
 # Manage connection metadata
 
 ### Get connection metadata
