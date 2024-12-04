@@ -33,6 +33,8 @@ interface CachedRequest {
     requestIdentityHash: string;
     requestIdentity: unknown[];
     response: unknown;
+    status: number;
+    headers: Record<string, string>;
 }
 
 export function ensureDirectoryExists(directoryName: string): void {
@@ -91,7 +93,9 @@ export function onAxiosRequestFulfilled({
         directoryName,
         data: {
             ...requestIdentity,
-            response: response.data
+            response: response.data,
+            status: response.status,
+            headers: response.headers as Record<string, string>
         },
         customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
     });
