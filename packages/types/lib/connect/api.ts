@@ -57,5 +57,5 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionPayload, 'allowed_integrations'>;
+    Body: Pick<ConnectSessionPayload, 'allowed_integrations' | 'end_user' | 'organization'>;
 }>;
