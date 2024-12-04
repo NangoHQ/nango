@@ -18,7 +18,7 @@ import CreateIntegration from './pages/Integrations/Create';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
-import ConnectionCreate from './pages/Connection/Create';
+import { ConnectionCreate } from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/Environment/Settings';
 import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/Account/ForgotPassword';
@@ -35,6 +35,7 @@ import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { Root } from './pages/Root';
 import { globalEnv } from './utils/env';
+import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { Helmet } from 'react-helmet';
 
 const theme = createTheme({
@@ -95,7 +96,7 @@ const App = () => {
                             <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />
                             <Route path="/:env/connections" element={<ConnectionList />} />
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                            <Route path="/:env/connections/create-legacy" element={<ConnectionCreateLegacy />} />
                             <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsSearch />} />

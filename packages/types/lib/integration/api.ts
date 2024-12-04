@@ -52,6 +52,16 @@ export type DeletePublicIntegration = Endpoint<{
     Success: { success: true };
 }>;
 
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
+
+export type GetIntegrations = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations';
+    Success: {
+        data: ApiIntegration[];
+    };
+}>;
+
 export type PostIntegration = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/integrations';
@@ -62,7 +72,6 @@ export type PostIntegration = Endpoint<{
     };
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type GetIntegration = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
