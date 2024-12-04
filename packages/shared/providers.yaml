@@ -2996,10 +2996,10 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
 
@@ -3016,16 +3016,14 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
             order: 1
