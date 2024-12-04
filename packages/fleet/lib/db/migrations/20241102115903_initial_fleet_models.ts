@@ -44,10 +44,6 @@ export async function up(knex: Knex): Promise<void> {
             );
         `);
         await trx.raw(`
-            CREATE UNIQUE INDEX idx_${NODES_TABLE}_routingId_deploymentId
-                ON ${NODES_TABLE}(routing_id, deployment_id);
-        `);
-        await trx.raw(`
             CREATE INDEX idx_${NODES_TABLE}_routingId_state
                 ON ${NODES_TABLE}(routing_id, state)
                 WHERE state IN ('PENDING', 'STARTING', 'RUNNING', 'OUTDATED');

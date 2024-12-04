@@ -50,28 +50,6 @@ describe('Nodes', () => {
             lastStateTransitionAt: expect.any(Date)
         });
     });
-    it('should fail to create a node with the same routingId and deploymentId', async () => {
-        const routingId = 'my-routing-id';
-        await nodes.create(db, {
-            routingId,
-            deploymentId: activeDeployment.id,
-            url: 'http://localhost:3000',
-            image: 'nangohq/my-image:latest',
-            cpuMilli: 500,
-            memoryMb: 1024,
-            storageMb: 512
-        });
-        const result = await nodes.create(db, {
-            routingId,
-            deploymentId: activeDeployment.id,
-            url: 'http://localhost:3000',
-            image: 'nangohq/my-image:latest',
-            cpuMilli: 500,
-            memoryMb: 1024,
-            storageMb: 512
-        });
-        expect(result.isErr()).toBe(true);
-    });
     it('should transition between valid states and error when transitioning between invalid states', async () => {
         for (const from of nodeStates) {
             for (const to of nodeStates) {
