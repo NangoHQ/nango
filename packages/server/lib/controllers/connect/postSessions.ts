@@ -56,9 +56,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
 
     const { account, environment } = res.locals;
 
-    let reply: { status: number; data: unknown } = { status: 500, data: { error: { code: 'server_error', message: 'Unknown error' } } };
-
-    await db.knex.transaction(async (trx) => {
+    const { status, body } = await db.knex.transaction(async (trx) => {
         // Check if the endUser exists in the database
         const getEndUser = await endUserService.getEndUser(trx, {
             endUserId: req.body.end_user.id,
@@ -69,8 +67,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         let endUserInternalId: number;
         if (getEndUser.isErr()) {
             if (getEndUser.error.code !== 'not_found') {
-                reply = { status: 500, data: { error: { code: 'server_error', message: 'Failed to get end user' } } };
-                return;
+                return { status: 500, data: { error: { code: 'server_error', message: 'Failed to get end user' } } };
             }
             // create end user if it doesn't exist yet
             const createEndUser = await endUserService.createEndUser(trx, {
@@ -87,8 +84,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 environmentId: environment.id
             });
             if (createEndUser.isErr()) {
-                reply = { status: 500, data: { error: { code: 'server_error', message: 'Failed to create end user' } } };
-                return;
+                return { status: 500, data: { error: { code: 'server_error', message: 'Failed to create end user' } } };
             }
             endUserInternalId = createEndUser.value.id;
         } else {
@@ -112,8 +108,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                         : null
                 });
                 if (updateEndUser.isErr()) {
-                    reply = { status: 500, data: { error: { code: 'server_error', message: 'Failed to update end user' } } };
-                    return;
+                    return { status: 500, data: { error: { code: 'server_error', message: 'Failed to update end user' } } };
                 }
             }
             endUserInternalId = getEndUser.value.id;
@@ -135,8 +130,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 : null
         });
         if (createConnectSession.isErr()) {
-            reply = { status: 500, data: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
-            return;
+            return { status: 500, data: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
         }
         // create a private key for the connect session
         const createPrivateKey = await keystore.createPrivateKey(trx, {
@@ -148,13 +142,11 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             ttlInMs: 30 * 60 * 1000 // 30 minutes
         });
         if (createPrivateKey.isErr()) {
-            reply = { status: 500, data: { error: { code: 'server_error', message: 'Failed to create session token' } } };
-            return;
+            return { status: 500, data: { error: { code: 'server_error', message: 'Failed to create session token' } } };
         }
         const [token, privateKey] = createPrivateKey.value;
-        reply = { status: 201, data: { token, expires_at: privateKey.expiresAt } };
-        return;
+        return { status: 201, body: { data: { token, expires_at: privateKey.expiresAt! } } };
     });
 
-    res.status(reply.status).send(reply.data);
+    res.status(status).send(body);
 });
