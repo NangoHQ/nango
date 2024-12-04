@@ -1,21 +1,31 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials } from '@nangohq/shared';
-import { errorManager, analytics, AnalyticsTypes, configService, connectionService, ErrorSourceEnum, LogActionEnum, getProvider } from '@nangohq/shared';
+import {
+    errorManager,
+    analytics,
+    AnalyticsTypes,
+    configService,
+    connectionService,
+    ErrorSourceEnum,
+    LogActionEnum,
+    getProvider,
+    linkConnection
+} from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import { hmacCheck } from '../utils/hmac.js';
 import { isIntegrationAllowed } from '../utils/auth.js';
 
 class AppStoreAuthController {
     async auth(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account, authType } = res.locals;
+        const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        const isConnectSession = res.locals['authType'] === 'connectSession';
 
         let logCtx: LogContext | undefined;
 
@@ -38,7 +48,7 @@ class AppStoreAuthController {
 
             const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
-            if (authType !== 'connectSession') {
+            if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
 
                 const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -146,7 +156,7 @@ class AppStoreAuthController {
                 return;
             }
 
-            if (authType === 'connectSession') {
+            if (isConnectSession) {
                 const session = res.locals.connectSession;
                 await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
             }
@@ -161,7 +171,8 @@ class AppStoreAuthController {
                     environment,
                     account,
                     auth_mode: 'APP_STORE',
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
                 config.provider,
                 logContextGetter,

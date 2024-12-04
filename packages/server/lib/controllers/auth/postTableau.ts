@@ -11,7 +11,8 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import type { PostPublicTableauAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -19,7 +20,6 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
@@ -70,13 +70,14 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
     const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -91,7 +92,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -159,7 +160,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -174,7 +175,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 environment,
                 account,
                 auth_mode: 'TABLEAU',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

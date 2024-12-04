@@ -3,7 +3,17 @@ import { server } from './server.js';
 import fetch from 'node-fetch';
 import type { AuthCredentials, Sync, SyncConfig, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
-import { environmentService, connectionService, createSync, createSyncJob, SyncType, SyncStatus, accountService, configService } from '@nangohq/shared';
+import {
+    environmentService,
+    connectionService,
+    createSync,
+    createSyncJob,
+    SyncType,
+    SyncStatus,
+    accountService,
+    configService,
+    getProvider
+} from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords } from '@nangohq/records';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
@@ -255,15 +265,22 @@ const initDb = async () => {
         { account: { id: env.account_id, name: '' }, environment: { id: env.id, name: env.name } }
     );
 
-    const providerConfig = await configService.createProviderConfig({
-        unique_key: 'provider-test',
-        provider: 'google',
-        environment_id: env.id,
-        oauth_client_id: '',
-        oauth_client_secret: '',
-        created_at: now,
-        updated_at: now
-    });
+    const googleProvider = getProvider('google');
+    if (!googleProvider) {
+        throw new Error('google provider not found');
+    }
+
+    const providerConfig = await configService.createProviderConfig(
+        {
+            unique_key: 'provider-test',
+            provider: 'google',
+            environment_id: env.id,
+            oauth_client_id: '',
+            oauth_client_secret: '',
+            missing_fields: []
+        },
+        googleProvider
+    );
     if (!providerConfig) throw new Error('Provider config not created');
 
     const [syncConfig] = await db.knex

@@ -425,6 +425,17 @@ ashby:
             method: POST
             endpoint: apiKey.info
     docs: https://docs.nango.dev/integrations/all/ashby
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key of your Ashby account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 atlassian:
     display_name: Atlassian
@@ -1489,6 +1500,56 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
 
+copper:
+    display_name: Copper
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    proxy:
+        base_url: https://api.copper.com/developer_api/
+    default_scopes:
+        - developer/v1/all
+    authorization_url: https://app.copper.com/oauth/authorize
+    token_url: https://app.copper.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/copper
+
+copper-api-key:
+    display_name: Copper (api key)
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.copper.com/developer_api
+        headers:
+            X-PW-AccessToken: ${apiKey}
+            X-PW-Application: developer_api
+            X-PW-UserEmail: ${connectionConfig.userEmail}
+            Content-Type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/account
+    docs_connect: https://docs.nango.dev/integrations/all/copper/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Copper account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-1-finding-copper-api-key'
+    connection_config:
+        userEmail:
+            type: string
+            title: User Email
+            description: Email address of the user who generated the token
+    docs: https://docs.nango.dev/integrations/all/copper
+
 connectwise-psa:
     display_name: ConnectWise PSA
     categories:
@@ -1874,6 +1935,8 @@ discourse:
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.defaultHost}
+        retry:
+            after: 'Retry-After'
         headers:
             Api-Username: ${connectionConfig.apiUsername}
             Api-Key: ${apiKey}
@@ -2343,7 +2406,7 @@ firefish:
     display_name: Firefish
     scope_separator: ' '
     categories:
-        - CRM
+        - crm
     auth_mode: OAUTH2_CC
     token_url: https://api.firefishsoftware.com/authorization/token
     token_params:
@@ -2618,6 +2681,7 @@ github-app:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 github-app-oauth:
     display_name: GitHub App (oauth)
@@ -2627,7 +2691,8 @@ github-app-oauth:
     alias: github
     auth_mode: CUSTOM
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
-    authorization_url_encode: false
+    authorization_url_skip_encode:
+        - base_url
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
@@ -2646,6 +2711,7 @@ github-app-oauth:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 gitlab:
     display_name: GitLab
@@ -3002,7 +3068,7 @@ greenhouse-basic:
             type: string
             title: API key
             description: The API Key of your Greenhouse account
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-zA-Z0-9-]+$'
             secret: true
         password:
             type: string
@@ -4505,6 +4571,8 @@ pennylane:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    authorization_url_skip_encode:
+        - scopes
     docs: https://docs.nango.dev/integrations/all/pennylane
 
 peopledatalabs:
@@ -4601,6 +4669,21 @@ personio:
             type: string
             title: App ID
             description: The app ID of your Personio account
+
+personio-v2:
+    display_name: Personio (v2)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://api.personio.de/v2
+        headers:
+            Content-Type: application/x-www-form-urlencoded
+    token_url: https://api.personio.de/v2/auth/token
+    scope_separator: ' '
+    docs: https://docs.nango.dev/integrations/all/personio
+    token_params:
+        grant_type: client_credentials
 
 personio-recruiting:
     display_name: Personio Recruiting
@@ -5139,7 +5222,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
-            optional: true
+            automated: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5160,6 +5243,7 @@ salesforce-sandbox:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
@@ -5188,6 +5272,7 @@ salesforce-experience-cloud:
             description: The instance URL of your Salesforce Experience Cloud account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesloft:
     display_name: Salesloft
@@ -5700,6 +5785,19 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://docs.nango.dev/integrations/all/survey-monkey
+
+tapclicks:
+    display_name: TapClicks
+    auth_mode: OAUTH2_CC
+    categories:
+        - marketing
+        - analytics
+    token_url: https://api.tapclicks.com/oauth/accesstoken
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.tapclicks.com/v2
+    docs: https://docs.nango.dev/integrations/all/tapclicks
 
 tableau:
     display_name: Tableau

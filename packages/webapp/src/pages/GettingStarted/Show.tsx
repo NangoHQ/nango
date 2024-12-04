@@ -9,13 +9,10 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { cn } from '../../utils/utils';
 import { globalEnv } from '../../utils/env';
-import { apiPatchOnboarding } from '../../hooks/useOnboarding';
-import { useStore } from '../../store';
 
 let ytLoaded = false;
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
-    const env = useStore((state) => state.env);
     const [hasVideo, setHasVideo] = useState(false);
 
     useEffect(() => {
@@ -55,11 +52,10 @@ export const GettingStarted: React.FC = () => {
                     origin: new URL(globalEnv.publicUrl).origin
                 },
                 events: {
-                    onStateChange: async (event: { data: number }) => {
+                    onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
                                 analyticsTrack('web:getting_started:video:end');
-                                await apiPatchOnboarding(env);
                                 break;
                             default:
                                 break;
@@ -97,7 +93,7 @@ export const GettingStarted: React.FC = () => {
             <div className="grid grid-cols-2 text-white gap-7">
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                    href="https://docs.nango.dev/integrate/guides/authorize-an-api"
+                    href="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
                     target="_blank"
                     rel="noreferrer"
@@ -125,7 +121,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/integrate/guides/sync-data-from-an-api"
+                    href="https://docs.nango.dev/guides/getting-started/read-from-an-api"
                     onClick={() => analyticsTrack('web:getting_started:read')}
                     target="_blank"
                     rel="noreferrer"
@@ -153,7 +149,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/integrate/guides/perform-workflows-with-an-api"
+                    href="https://docs.nango.dev/guides/getting-started/write-to-an-api"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
                     target="_blank"
                     rel="noreferrer"
@@ -181,7 +177,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/customize/guides/create-a-custom-integration"
+                    href="https://docs.nango.dev/guides/customize/create-a-custom-integration"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
                     rel="noreferrer"

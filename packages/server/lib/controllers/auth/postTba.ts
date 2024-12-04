@@ -10,7 +10,8 @@ import {
     getProvider,
     errorManager,
     ErrorSourceEnum,
-    LogActionEnum
+    LogActionEnum,
+    linkConnection
 } from '@nangohq/shared';
 import type { TbaCredentials, PostPublicTbaAuthorization, MessageRowInsert } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -22,7 +23,6 @@ import {
     connectionCreationFailed as connectionCreationFailedHook
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
@@ -74,7 +74,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
 
     const body: PostPublicTbaAuthorization['Body'] = val.data;
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
@@ -83,6 +83,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -97,7 +98,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -199,7 +200,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -214,7 +215,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 environment,
                 account,
                 auth_mode: 'TBA',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

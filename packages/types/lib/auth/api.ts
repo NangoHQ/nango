@@ -68,8 +68,6 @@ export interface ApiKeyCredentials {
     apiKey: string;
 }
 
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
-
 export interface AppCredentials {
     type: AuthModes['App'];
     access_token: string;

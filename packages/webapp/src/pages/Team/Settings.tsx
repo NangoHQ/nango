@@ -1,5 +1,4 @@
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import { Info } from '../../components/Info';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -8,6 +7,8 @@ import { TeamInfo } from './components/Info';
 import { TeamUsers } from './components/Users';
 import { AddTeamMember } from './components/AddTeamMember';
 import { Admin } from './components/Admin';
+import { Helmet } from 'react-helmet';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 
 export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -17,6 +18,9 @@ export const TeamSettings: React.FC = () => {
     if (loading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
+                <Helmet>
+                    <title>Team Settings - Nango</title>
+                </Helmet>
                 <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
@@ -27,23 +31,14 @@ export const TeamSettings: React.FC = () => {
     }
 
     if (error) {
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
-                <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
-                <Info variant={'destructive'}>
-                    An error occurred, refresh your page or reach out to the support.{' '}
-                    {error.error.code === 'generic_error_support' && (
-                        <>
-                            (id: <span className="select-all">{error.error.payload}</span>)
-                        </>
-                    )}
-                </Info>
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Team Settings" error={error} page={LeftNavBarItems.TeamSettings} />;
     }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
+            <Helmet>
+                <title>Team Settings - Nango</title>
+            </Helmet>
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
                 <AddTeamMember team={team!} />

@@ -1,5 +1,6 @@
 import type { Merge } from 'type-fest';
-import type { NangoModel, NangoSyncEndpointOld, NangoSyncEndpointV2, OnEventType, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { NangoModel, NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
+import type { OnEventType } from '../scripts/on-events/api';
 
 export interface IncomingScriptFiles {
     js: string;

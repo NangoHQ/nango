@@ -1,6 +1,6 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PatchUser } from '@nangohq/types';
+import type { DBUser, PatchUser } from '@nangohq/types';
 import { userService } from '@nangohq/shared';
 import { z } from 'zod';
 import { userToAPI } from '../../../formatters/user.js';
@@ -26,7 +26,7 @@ export const patchUser = asyncWrapper<PatchUser, never>(async (req, res) => {
         return;
     }
 
-    const user = req.user!;
+    const user = res.locals['user'] as DBUser; // type is slightly wrong because we are not in an endpoint with an ?env=
     const body: PatchUser['Body'] = val.data;
 
     const updated = await userService.update({ id: user.id, ...body });

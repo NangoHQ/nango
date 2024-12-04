@@ -4,20 +4,18 @@ import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
 
@@ -46,11 +44,12 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -61,7 +60,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         );
         void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -112,7 +111,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -127,7 +126,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 environment,
                 account,
                 auth_mode: 'NONE',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

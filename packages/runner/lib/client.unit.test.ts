@@ -31,7 +31,8 @@ describe('Runner client', () => {
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,
-        stubbedMetadata: {}
+        stubbedMetadata: {},
+        endUser: null
     };
 
     beforeAll(() => {

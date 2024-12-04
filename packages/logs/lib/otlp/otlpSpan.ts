@@ -105,5 +105,8 @@ function shouldTrace(operation: OperationRow): boolean {
     if (operation.operation.type === 'webhook') {
         return true;
     }
+    if (operation.operation.type === 'events') {
+        return true;
+    }
     return false;
 }

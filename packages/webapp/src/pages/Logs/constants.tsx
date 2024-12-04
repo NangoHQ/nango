@@ -106,6 +106,7 @@ export const typesOptions = [
         ]
     },
     { value: 'action', name: 'Action' },
+    { value: 'events', name: 'Events' },
     { value: 'proxy', name: 'Proxy' },
     { value: 'deploy', name: 'Deploy' },
     { value: 'auth', name: 'Auth' },

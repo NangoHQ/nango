@@ -539,7 +539,7 @@ class ProxyService {
                     },
                     response: {
                         code: response.status,
-                        headers: response.headers as Record<string, string>
+                        headers: (response.headers || {}) as Record<string, string>
                     }
                 }
             ]
@@ -574,7 +574,7 @@ class ProxyService {
                 },
                 response: {
                     code: error.response?.status || 500,
-                    headers: error.response?.headers as Record<string, string>
+                    headers: (error.response?.headers || {}) as Record<string, string>
                 },
                 error: {
                     name: error.name,

@@ -394,7 +394,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests-to-an-api)).
 </Info>
 
 <Tip>
@@ -1253,6 +1253,21 @@ const { data } = await nango.createConnectSession({
 }
 ```
 </Expandable>
+
+
+# Webhook
+
+### Verify Webhook Signature
+
+Asserts that a Webhook is coming from Nango's backend.
+
+```js
+async (req, res) => {
+    const signature = req.headers['x-nango-signature'];
+    const isValid = nango.verifyWebhookSignature(signature, req.body);
+}
+```
+
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

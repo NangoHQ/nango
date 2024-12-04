@@ -62,7 +62,7 @@ export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; en
                         required
                         minLength={1}
                         variant={'flat'}
-                        after={<CopyButton text={integration.oauth_client_id} />}
+                        after={<CopyButton text={integration.oauth_client_id || ''} />}
                     />
                 </InfoBloc>
                 <InfoBloc title="App Public Link">

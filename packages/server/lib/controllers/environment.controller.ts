@@ -22,12 +22,13 @@ export interface EnvironmentAndAccount {
     webhook_settings: ExternalWebhook | null;
     host: string;
     uuid: string;
+    name: string;
     email: string;
     slack_notifications_channel: string | null;
 }
 
 class EnvironmentController {
-    async getEnvironment(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async getEnvironment(_: Request, res: Response<{ environmentAndAccount: EnvironmentAndAccount }, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment, account, user } = res.locals;
 
@@ -74,10 +75,11 @@ class EnvironmentController {
             res.status(200).send({
                 environmentAndAccount: {
                     environment,
-                    env_variables: environmentVariables,
+                    env_variables: environmentVariables || [],
                     webhook_settings: webhookSettings,
                     host: baseUrl,
                     uuid: account.uuid,
+                    name: account.name,
                     email: user.email,
                     slack_notifications_channel
                 }

@@ -3,9 +3,18 @@ import { basePublicUrl } from '@nangohq/utils';
 
 export function integrationToApi(data: IntegrationConfig): ApiIntegration {
     return {
-        ...data,
+        id: data.id,
+        unique_key: data.unique_key,
+        provider: data.provider,
+        oauth_client_id: data.oauth_client_id,
+        oauth_client_secret: data.oauth_client_secret,
+        oauth_scopes: data.oauth_scopes,
+        environment_id: data.environment_id,
+        app_link: data.app_link,
+        custom: data.custom,
         created_at: data.created_at.toISOString(),
-        updated_at: data.updated_at.toISOString()
+        updated_at: data.updated_at.toISOString(),
+        missing_fields: data.missing_fields
     };
 }
 

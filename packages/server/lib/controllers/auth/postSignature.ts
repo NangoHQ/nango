@@ -11,7 +11,8 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import type { MessageRowInsert, PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -23,7 +24,6 @@ import {
     connectionTest as connectionTestHook
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
@@ -74,13 +74,14 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const { username, password }: PostPublicSignatureAuthorization['Body'] = val.data;
     const queryString: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -95,7 +96,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         );
         void analytics.track(AnalyticsTypes.PRE_SIGNATURE_AUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -174,7 +175,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -189,7 +190,8 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 environment,
                 account,
                 auth_mode: 'SIGNATURE',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

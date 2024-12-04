@@ -11,7 +11,8 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import type { MessageRowInsert, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -23,7 +24,6 @@ import {
     connectionTest as connectionTestHook
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
@@ -80,13 +80,14 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment } = res.locals;
     const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     const connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
     let logCtx: LogContext | undefined;
 
@@ -101,7 +102,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         );
         void analytics.track(AnalyticsTypes.PRE_JWT_AUTH, account.id);
 
-        if (authType !== 'connectSession') {
+        if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
             if (!checked) {
                 return;
@@ -180,7 +181,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        if (authType === 'connectSession') {
+        if (isConnectSession) {
             const session = res.locals.connectSession;
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
@@ -195,7 +196,8 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 environment,
                 account,
                 auth_mode: 'JWT',
-                operation: updatedConnection.operation
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
             config.provider,
             logContextGetter,

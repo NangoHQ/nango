@@ -5,10 +5,13 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { requestErrorToast } from '../../utils/api';
 
 import { useStore } from '../../store';
 import { useListIntegration } from '../../hooks/useIntegration';
+import { ErrorCircle } from '../../components/ErrorCircle';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
+import { Helmet } from 'react-helmet';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 
 export default function IntegrationList() {
     const navigate = useNavigate();
@@ -18,17 +21,15 @@ export default function IntegrationList() {
     const { list: data, error } = useListIntegration(env);
 
     if (error) {
-        requestErrorToast();
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-                <Loading spaceRatio={2.5} className="-top-36" />
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Integrations" error={error} page={LeftNavBarItems.Integrations} />;
     }
 
     if (!data) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Integrations - Nango</title>
+                </Helmet>
                 <Loading spaceRatio={2.5} className="-top-36" />
             </DashboardLayout>
         );
@@ -38,6 +39,9 @@ export default function IntegrationList() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Helmet>
+                <title>Integrations - Nango</title>
+            </Helmet>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
                 {integrations.length > 0 && (
@@ -59,7 +63,7 @@ export default function IntegrationList() {
                                 <div className="w-1/3">Connections</div>
                                 <div className="w-24">Active Scripts</div>
                             </div>
-                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts }) => (
+                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts, missing_fields_count }) => (
                                 <div
                                     key={`tr-${uniqueKey}`}
                                     className={`flex gap-4 ${
@@ -74,6 +78,11 @@ export default function IntegrationList() {
                                             <IntegrationLogo provider={provider} height={7} width={7} />
                                         </div>
                                         <p className="truncate">{uniqueKey}</p>
+                                        {missing_fields_count > 0 && (
+                                            <SimpleTooltip tooltipContent="Missing configuration">
+                                                <ErrorCircle icon="!" variant="warning" />
+                                            </SimpleTooltip>
+                                        )}
                                     </div>
                                     <div className="flex items-center w-1/3">
                                         <p className="">{connection_count}</p>

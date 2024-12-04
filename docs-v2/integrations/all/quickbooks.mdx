@@ -9,11 +9,11 @@ API configuration: [`quickbooks`](https://nango.dev/providers.yaml), [`quickbook
 
 | Features | Status |
 | - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
+| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
+| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
+| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
+| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
@@ -28,7 +28,7 @@ API configuration: [`quickbooks`](https://nango.dev/providers.yaml), [`quickbook
 
 ## API gotchas
 
-- QuickBooks requires a company ID/realmId for each API request. To obtain this when creating a new connection on Nango, go to Settings and select Your Account and Settings. On the Your Account page, your Company ID (found under the Billing & Subscription tab) will be displayed at the top.
+- QuickBooks requires a company ID/realmId for each API request. To obtain this when creating a new connection on Nango, go to Settings and select Your Account and Settings. On the Your Account page, your Company ID (found under the Billing & Subscription tab) will be displayed at the top. Nango can automatically retrieve this for you, or you can manually override it by specifying the realmId when creating a new connection.
 - You can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve it, or when you fetch the Connection credentials with the REST API or SDK
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
