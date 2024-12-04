@@ -11,7 +11,7 @@ import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvid
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert } from '@nangohq/types';
+import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
 import { getProvider } from './providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
 
@@ -259,7 +259,8 @@ class ProxyService {
             (error.response?.status === 403 && error.response.headers['x-ratelimit-remaining'] && error.response.headers['x-ratelimit-remaining'] === '0') ||
             error.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
-            config.retryOn?.includes(Number(error.response?.status))
+            config.retryOn?.includes(Number(error.response?.status)) ||
+            this.isProviderRetryTriggered(config.provider.proxy?.retry, error)
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';
@@ -297,6 +298,32 @@ class ProxyService {
 
         return false;
     };
+
+    private isProviderRetryTriggered(retryConfig: RetryHeaderConfig | undefined, response: AxiosError): boolean {
+        if (!retryConfig) {
+            return false;
+        }
+
+        const { status_code, body_contains } = retryConfig;
+
+        const statusCodeValid =
+            status_code && status_code.includes('x')
+                ? (() => {
+                      const statusCode = response.response?.status?.toString().charAt(0);
+                      return statusCode && status_code.includes(statusCode);
+                  })()
+                : true;
+
+        const bodyContainsValid = body_contains
+            ? (() => {
+                  const body = response.response?.data;
+                  const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+                  return bodyString.includes(body_contains);
+              })()
+            : true;
+
+        return Boolean(statusCodeValid && bodyContainsValid);
+    }
 
     /**
      * Send to http method
