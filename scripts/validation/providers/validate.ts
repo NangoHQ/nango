@@ -155,7 +155,7 @@ function validateProvider(providerKey: string, provider: Provider) {
                         console.error(
                             chalk.red('error'),
                             chalk.blue(providerKey),
-                            `"connection_config > ${key} > doc_section" does not exists in ${providerKey}/connect.mdx`
+                            `"connection_config > ${key} > doc_section" does not exist in ${providerKey}/connect.mdx`
                         );
                         error = true;
                     }
@@ -178,7 +178,7 @@ function validateProvider(providerKey: string, provider: Provider) {
                         console.error(
                             chalk.red('error'),
                             chalk.blue(providerKey),
-                            `"credentials > ${key} > doc_section" does not exists in ${providerKey}/connect.mdx`
+                            `"credentials > ${key} > doc_section" does not exist in ${providerKey}/connect.mdx`
                         );
                         error = true;
                     }
