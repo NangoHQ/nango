@@ -1,0 +1,66 @@
+---
+title: Marketo - How do I link my account?
+sidebarTitle: Marketo
+---
+
+
+# Overview
+
+To authenticate with Marketo, you need two key piece of information:
+1. **Client ID** - Your Marketo Access Client ID
+2. **Client Secret** - Your Marketo Client Secret
+
+
+This guide will walk you through finding or creating those credentials within Marketo.
+
+
+### Prerequisites:
+
+- You must set up an account with Marketo.
+
+
+#### Step 1: Finding Marketo API Key and API Key secret
+1. Create a API role (if you not already) and give it the `Read-Only Lead` permission with a descriptive name and click `Create`.
+
+<img src="/integrations/all/marketo/marketo_a.webp" />
+<img src="/integrations/all/marketo/marketo_b.webp" />
+
+2. Back to the Users tab and click `Invite New User`. Give your user a descriptive name 
+that indicates that it is an API user, and an Email Address and click `Next`.
+
+<img src="/integrations/all/marketo/marketo_c.webp" />
+
+3. Proceed to check the `API Only` option and award your user the API role that you created and click `Next`.
+
+4. To complete the user creation process, click `Send`.
+
+<img src="/integrations/all/marketo/marketo_d.webp" />
+
+5. Navigate to `LaunchPoint` > `New` and `New Service`. Give your service a descriptive name and select Custom from the Service dropdown menu.
+Give it a description, then select your new user from the API Only User dropdown menu and click `Create`.
+
+
+<img src="/integrations/all/marketo/marketo_1.webp" />
+<img src="/integrations/all/marketo/marketo_2.webp" />
+
+
+6. Navigate to `Admin` > `Integration` > `LaunchPoint` and click `View Details` for your new service to access the `Client ID` and `Client Secret`.
+
+<img src="/integrations/all/marketo/marketo_3.webp" />
+
+7. Next, navigate to `Admin` > `Integration` > `Web Services` to get the identity url.
+
+
+<img src="/integrations/all/marketo/marketo_f.webp" />
+
+
+#### Step 2: Connect Your Marketo Account
+
+<img src="/integrations/all/gong/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Marketo authentication form.
+Enter your credentials as follows:
+- username: Your Marketo Access Key
+- password: Your Marketo Access Key Secret
+
+Click "Connect" to complete the authentication.
