@@ -5,7 +5,22 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Connection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
 
-const FILTER_HEADERS = ['authorization', 'user-agent', 'nango-proxy-user-agent', 'accept-encoding', 'retries', 'host', 'connection-id', 'provider-config-key'];
+const FILTER_HEADERS = [
+    'authorization',
+    'user-agent',
+    'nango-proxy-user-agent',
+    'accept-encoding',
+    'retries',
+    'host',
+    'connection-id',
+    'provider-config-key',
+    'nango-is-sync',
+    'nango-is-dry-run',
+    'nango-activity-log-id',
+    'content-type',
+    'accept',
+    'base-url-override'
+];
 
 interface ConfigIdentity {
     method: string;
@@ -78,7 +93,7 @@ export function onAxiosRequestFulfilled({
             ...requestIdentity,
             response: response.data
         },
-        customFilePath: `mocks/nango/${requestIdentity.method}/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+        customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
     });
 
     return response;
