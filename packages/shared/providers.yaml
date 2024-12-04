@@ -121,6 +121,7 @@ affinity:
     proxy:
         base_url: https://api.affinity.co
     docs: https://docs.nango.dev/integrations/all/affinity
+    docs_connect: https://docs.nango.dev/integrations/all/affinity/connect
     credentials:
         username:
             type: string
@@ -272,6 +273,7 @@ anrok:
         retry:
             after: 'Retry-After'
     docs: https://docs.nango.dev/integrations/all/anrok
+    docs_connect: https://docs.nango.dev/integrations/all/anrok/connect
     credentials:
         apiKey:
             type: string
@@ -624,7 +626,7 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
         username:
             type: string
@@ -683,7 +685,7 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bamboohr-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -1021,6 +1023,7 @@ brex-api-key:
             Authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+    docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
     credentials:
         apiKey:
             type: string
@@ -1055,6 +1058,7 @@ brightcrowd:
             cursor_path_in_response: nextPageToken
             cursor_name_in_request: pageToken
     docs: https://docs.nango.dev/integrations/all/brightcrowd
+    docs_connect: https://docs.nango.dev/integrations/all/brightcrowd/connect
 
 builder-io-private:
     display_name: Builder.io (private)
@@ -1068,7 +1072,7 @@ builder-io-private:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io/connect
     connection_config:
         domain:
             type: string
@@ -1099,7 +1103,7 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io/connect
     connection_config:
         domain:
             type: string
@@ -1134,7 +1138,7 @@ buildium:
             method: GET
             endpoint: /v1/rentals
     docs: https://docs.nango.dev/integrations/all/buildium
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/buildium/connect
     connection_config:
         clientId:
             type: string
@@ -1167,6 +1171,7 @@ cal-com-v1:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com/connect
     credentials:
         apiKey:
             type: string
@@ -1195,6 +1200,7 @@ cal-com-v2:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com/connect
     credentials:
         apiKey:
             type: string
@@ -1238,6 +1244,7 @@ canny:
             method: POST
             endpoint: /boards/list
     docs: https://docs.nango.dev/integrations/all/canny
+    docs_connect: https://docs.nango.dev/integrations/all/canny/connect
     credentials:
         apiKey:
             type: string
@@ -5833,6 +5840,7 @@ tapclicks:
     proxy:
         base_url: https://api.tapclicks.com/v2
     docs: https://docs.nango.dev/integrations/all/tapclicks
+    docs_connect: https://docs.nango.dev/integrations/all/tapclicks/connect
 
 tableau:
     display_name: Tableau
