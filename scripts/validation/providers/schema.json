@@ -209,12 +209,6 @@
                                 },
                                 "at": {
                                     "type": "string"
-                                },
-                                "status_code": {
-                                    "type": "string"
-                                },
-                                "body_contains": {
-                                    "type": "string"
                                 }
                             }
                         },
