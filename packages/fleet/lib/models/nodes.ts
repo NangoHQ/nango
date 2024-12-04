@@ -19,7 +19,6 @@ export const validNodeStateTransitions = [
     { from: 'IDLE', to: 'TERMINATED' }
 ] as const;
 export type ValidNodeStateTransitions = (typeof validNodeStateTransitions)[number];
-
 const NodeStateTransition = {
     validate({ from, to }: { from: NodeState; to: Omit<NodeState, 'ERROR'> }): Result<ValidNodeStateTransitions> {
         const transition = validNodeStateTransitions.find((t) => t.from === from && t.to === to);

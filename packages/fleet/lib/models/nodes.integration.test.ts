@@ -2,12 +2,13 @@ import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as nodes from './nodes.js';
 import * as deployments from './deployments.js';
 import { nodeStates } from '../types.js';
-import type { NodeState, Node, RoutingId } from '../types.js';
+import type { NodeState, Node, RoutingId, CommitHash } from '../types.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import type { knex } from 'knex';
 import { nanoid } from '@nangohq/utils';
 import { generateCommitHash } from './helpers.test.js';
 
+const previousDeployment = generateCommitHash();
 const activeDeployment = generateCommitHash();
 
 describe('Nodes', () => {
@@ -15,6 +16,7 @@ describe('Nodes', () => {
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
+        await deployments.create(db, previousDeployment);
         await deployments.create(db, activeDeployment);
     });
 
@@ -47,10 +49,32 @@ describe('Nodes', () => {
             error: null
         });
     });
+    it('should fail to create a node with the same routingId and deploymentId', async () => {
+        const routingId = 'my-routing-id';
+        await nodes.create(db, {
+            routingId,
+            deploymentId: activeDeployment,
+            url: 'http://localhost:3000',
+            image: 'nangohq/my-image:latest',
+            cpuMilli: 500,
+            memoryMb: 1024,
+            storageMb: 512
+        });
+        const result = await nodes.create(db, {
+            routingId,
+            deploymentId: activeDeployment,
+            url: 'http://localhost:3000',
+            image: 'nangohq/my-image:latest',
+            cpuMilli: 500,
+            memoryMb: 1024,
+            storageMb: 512
+        });
+        expect(result.isErr()).toBe(true);
+    });
     it('should transition between valid states and error when transitioning between invalid states', async () => {
         for (const from of nodeStates) {
             for (const to of nodeStates) {
-                const t = await createNodeWithState(db, from);
+                const t = await createNodeWithState(db, { state: from });
                 if (nodes.validNodeStateTransitions.find((v) => v.from === from && v.to === to)) {
                     // sleep to ensure lastStateTransitionAt is different from the previous state
                     await new Promise((resolve) => void setTimeout(resolve, 2));
@@ -65,15 +89,19 @@ describe('Nodes', () => {
         }
     });
     it('should be searchable', async () => {
-        const route1PendingNode = await createNodeWithState(db, 'PENDING', '1');
-        const route1RunningNode = await createNodeWithState(db, 'RUNNING', route1PendingNode.routingId);
-        const startingNode = await createNodeWithState(db, 'STARTING');
-        const runningNode = await createNodeWithState(db, 'RUNNING');
-        const outdatedNode = await createNodeWithState(db, 'OUTDATED');
-        const finishingNode = await createNodeWithState(db, 'FINISHING');
-        const idleNode = await createNodeWithState(db, 'IDLE');
-        const terminatedNode = await createNodeWithState(db, 'TERMINATED');
-        const errorNode = await createNodeWithState(db, 'ERROR');
+        const route1PendingNode = await createNodeWithState(db, { state: 'PENDING', routingId: '1' });
+        const route1RunningNode = await createNodeWithState(db, {
+            state: 'RUNNING',
+            routingId: route1PendingNode.routingId,
+            deploymentId: previousDeployment
+        });
+        const startingNode = await createNodeWithState(db, { state: 'STARTING' });
+        const runningNode = await createNodeWithState(db, { state: 'RUNNING' });
+        const outdatedNode = await createNodeWithState(db, { state: 'OUTDATED' });
+        const finishingNode = await createNodeWithState(db, { state: 'FINISHING' });
+        const idleNode = await createNodeWithState(db, { state: 'IDLE' });
+        const terminatedNode = await createNodeWithState(db, { state: 'TERMINATED' });
+        const errorNode = await createNodeWithState(db, { state: 'ERROR' });
 
         const searchAllStates = await nodes.search(db, {
             states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR']
@@ -104,7 +132,7 @@ describe('Nodes', () => {
     });
     it('should be searchable (with pagination support)', async () => {
         for (let i = 0; i < 12; i++) {
-            await createNodeWithState(db, 'PENDING', i.toString());
+            await createNodeWithState(db, { state: 'PENDING', routingId: i.toString() });
         }
         const searchFirstPage = (await nodes.search(db, { states: ['PENDING'], limit: 5 })).unwrap();
         expect(searchFirstPage.nodes.size).toBe(5);
@@ -120,8 +148,11 @@ describe('Nodes', () => {
     });
 });
 
-async function createNodeWithState(db: knex.Knex, state: NodeState, routingId: RoutingId = nanoid()): Promise<Node> {
-    let node = await createNode(db, routingId);
+async function createNodeWithState(
+    db: knex.Knex,
+    { state, routingId = nanoid(), deploymentId = activeDeployment }: { state: NodeState; routingId?: RoutingId; deploymentId?: CommitHash }
+): Promise<Node> {
+    let node = await createNode(db, { routingId, deploymentId });
     if (state == 'ERROR') {
         return (await nodes.fail(db, { nodeId: node.id, error: 'my error' })).unwrap();
     }
@@ -137,10 +168,10 @@ async function createNodeWithState(db: knex.Knex, state: NodeState, routingId: R
     return node;
 }
 
-async function createNode(db: knex.Knex, routingId: RoutingId): Promise<Node> {
+async function createNode(db: knex.Knex, { routingId, deploymentId }: { routingId: RoutingId; deploymentId: CommitHash }): Promise<Node> {
     const node = await nodes.create(db, {
         routingId,
-        deploymentId: activeDeployment,
+        deploymentId,
         url: 'http://localhost:1234',
         image: 'nangohq/my-image:latest',
         cpuMilli: 500,
