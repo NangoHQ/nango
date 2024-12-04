@@ -2994,10 +2994,10 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
 
@@ -3020,10 +3020,10 @@ greenhouse-basic:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
             order: 1
