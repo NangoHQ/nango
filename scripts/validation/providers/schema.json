@@ -104,7 +104,37 @@
                 "categories": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "accounting",
+                            "analytics",
+                            "ats",
+                            "banking",
+                            "cms",
+                            "communication",
+                            "crm",
+                            "design",
+                            "dev-tools",
+                            "e-commerce",
+                            "erp",
+                            "gaming",
+                            "hr",
+                            "invoicing",
+                            "knowledge-base",
+                            "legal",
+                            "marketing",
+                            "other",
+                            "payment",
+                            "productivity",
+                            "search",
+                            "social",
+                            "sports",
+                            "storage",
+                            "support",
+                            "surveys",
+                            "ticketing",
+                            "video"
+                        ]
                     }
                 },
                 "connection_configuration": {
@@ -153,7 +183,7 @@
                             "type": "object",
                             "additionalProperties": false,
                             "patternProperties": {
-                                "^[a-zA-Z0-9-]+$": {
+                                "^[a-z0-9-]+$": {
                                     "type": "string"
                                 }
                             }
@@ -205,10 +235,12 @@
                             "additionalProperties": false,
                             "properties": {
                                 "after": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
                                 },
                                 "at": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
                                 }
                             }
                         },
