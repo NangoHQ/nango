@@ -26,7 +26,8 @@ export type ResDefaultErrors =
     | ApiError<'unknown_account'>
     | ApiError<'unknown_connect_session_token'>
     | ApiError<'invalid_cli_version'>
-    | ApiError<'invalid_permissions'>;
+    | ApiError<'invalid_permissions'>
+    | ApiError<'invalid_connect_session_token_format'>;
 
 export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /**
