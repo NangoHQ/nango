@@ -54,7 +54,7 @@ describe('Nodes', () => {
         const routingId = 'my-routing-id';
         await nodes.create(db, {
             routingId,
-            deploymentId: activeDeployment,
+            deploymentId: activeDeployment.id,
             url: 'http://localhost:3000',
             image: 'nangohq/my-image:latest',
             cpuMilli: 500,
@@ -63,7 +63,7 @@ describe('Nodes', () => {
         });
         const result = await nodes.create(db, {
             routingId,
-            deploymentId: activeDeployment,
+            deploymentId: activeDeployment.id,
             url: 'http://localhost:3000',
             image: 'nangohq/my-image:latest',
             cpuMilli: 500,
