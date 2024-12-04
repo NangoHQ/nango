@@ -26,12 +26,20 @@ interface ConfigIdentity {
     method: string;
     endpoint: string;
     requestIdentityHash: string;
-    requestIdentity: unknown[];
+    requestIdentity: RequestIdentity;
+}
+
+interface RequestIdentity {
+    method: string;
+    endpoint: string;
+    params: [string, unknown][];
+    headers: [string, unknown][];
+    data?: unknown;
 }
 
 interface CachedRequest {
     requestIdentityHash: string;
-    requestIdentity: unknown[];
+    requestIdentity: RequestIdentity;
     response: unknown;
     status: number;
     headers: Record<string, string>;
@@ -110,26 +118,23 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const url = new URL(config.url!);
     const endpoint = url.pathname.replace(/^\/proxy\//, '');
 
-    const requestIdentity: [string, unknown][] = [
-        ['method', method],
-        ['endpoint', endpoint],
-        ['params', params]
-    ];
-
     const dataIdentity = computeDataIdentity(config);
-    if (dataIdentity) {
-        requestIdentity.push(['data', dataIdentity]);
-    }
 
+    let headers: [string, string][] = [];
     if (config.headers !== undefined) {
         const filteredHeaders = Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
         sortEntries(filteredHeaders);
-        requestIdentity.push([`headers`, filteredHeaders]);
+        headers = filteredHeaders;
     }
 
-    // sort by key so we have a consistent hash
-    sortEntries(requestIdentity);
-
+    // order is important to the request hash
+    const requestIdentity = {
+        method,
+        endpoint,
+        params,
+        headers,
+        data: dataIdentity
+    };
     const requestIdentityHash = crypto.createHash('sha1').update(JSON.stringify(requestIdentity)).digest('hex');
 
     return {
