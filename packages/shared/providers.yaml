@@ -6600,6 +6600,7 @@ workday:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
     docs: https://docs.nango.dev/integrations/all/workday
+    docs_connect: https://docs.nango.dev/integrations/all/workday/connect
     connection_config:
         subdomain:
             type: string
