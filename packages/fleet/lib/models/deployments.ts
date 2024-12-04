@@ -1,7 +1,8 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 import type { CommitHash, Deployment } from '../types.js';
+import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
@@ -54,8 +55,8 @@ export async function create(db: knex.Knex, commitId: CommitHash): Promise<Resul
             }
             return Ok(DBDeployment.to(inserted));
         });
-    } catch (err: unknown) {
-        return Err(new Error(`Error creating deployment '${commitId}': ${stringifyError(err)}`));
+    } catch (err) {
+        return Err(new FleetError(`deployment_creation_error`, { cause: err, context: { commitId } }));
     }
 }
 
@@ -64,7 +65,7 @@ export async function getActive(db: knex.Knex): Promise<Result<Deployment | unde
         const active = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ superseded_at: null }).first();
         return Ok(active ? DBDeployment.to(active) : undefined);
     } catch (err: unknown) {
-        return Err(new Error(`Error getting active deployments: ${stringifyError(err)}`));
+        return Err(new FleetError(`deployment_get_active_error`, { cause: err }));
     }
 }
 
@@ -72,10 +73,10 @@ export async function get(db: knex.Knex, id: number): Promise<Result<Deployment>
     try {
         const deployment = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ id }).first();
         if (!deployment) {
-            return Err(new Error(`Error: no deployment '${id}' found`));
+            return Err(new FleetError(`deployment_not_found`, { context: { id } }));
         }
         return Ok(DBDeployment.to(deployment));
     } catch (err: unknown) {
-        return Err(new Error(`Error getting deployment '${id}': ${stringifyError(err)}`));
+        return Err(new FleetError(`deployment_not_found`, { cause: err, context: { id } }));
     }
 }

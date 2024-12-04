@@ -1,7 +1,8 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
-import { Ok, Err, stringifyError } from '@nangohq/utils';
+import { Ok, Err } from '@nangohq/utils';
 import type { NodeState, Node, RoutingId } from '../types.js';
+import { FleetError } from '../utils/errors.js';
 
 export const NODES_TABLE = 'nodes';
 
@@ -25,7 +26,7 @@ const NodeStateTransition = {
         if (transition) {
             return Ok(transition);
         } else {
-            return Err(new Error(`Invalid state transition from ${from} to ${to}`));
+            return Err(new FleetError(`node_invalid_state_transition`, { context: { from: from.toString(), to: to.toString() } }));
         }
     }
 };
@@ -98,23 +99,27 @@ export async function create(db: knex.Knex, nodeProps: Omit<Node, 'id' | 'create
     try {
         const inserted = await db.from<DBNode>(NODES_TABLE).insert(newNode).returning('*');
         if (!inserted?.[0]) {
-            return Err(new Error(`Error: no node '${nodeProps.routingId}' created`));
+            return Err(new FleetError(`node_creation_error`, { context: nodeProps }));
         }
         return Ok(DBNode.from(inserted[0]));
     } catch (err) {
-        return Err(new Error(`Error creating node '${JSON.stringify(nodeProps)}': ${stringifyError(err)}`));
+        return Err(new FleetError(`node_creation_error`, { cause: err, context: nodeProps }));
     }
 }
 export async function get(db: knex.Knex, nodeId: number, options: { forUpdate: boolean } = { forUpdate: false }): Promise<Result<Node>> {
-    const query = db.select<DBNode>('*').from(NODES_TABLE).where({ id: nodeId }).first();
-    if (options.forUpdate) {
-        query.forUpdate();
+    try {
+        const query = db.select<DBNode>('*').from(NODES_TABLE).where({ id: nodeId }).first();
+        if (options.forUpdate) {
+            query.forUpdate();
+        }
+        const node = await query;
+        if (!node) {
+            return Err(new FleetError(`node_not_found`, { context: { nodeId } }));
+        }
+        return Ok(DBNode.from(node));
+    } catch (err) {
+        return Err(new FleetError(`node_not_found`, { cause: err, context: { nodeId } }));
     }
-    const node = await query;
-    if (!node) {
-        return Err(new Error(`Node with id '${nodeId}' not found`));
-    }
-    return Ok(DBNode.from(node));
 }
 
 export async function search(
@@ -131,38 +136,42 @@ export async function search(
         nextCursor?: number;
     }>
 > {
-    const limit = params.limit || 1000;
-    const query = db
-        .select<DBNode[]>('*')
-        .from(NODES_TABLE)
-        .whereIn('state', params.states)
-        .orderBy('id')
-        .limit(limit + 1); // fetch one more than limit to determine if there are more results
+    try {
+        const limit = params.limit || 1000;
+        const query = db
+            .select<DBNode[]>('*')
+            .from(NODES_TABLE)
+            .whereIn('state', params.states)
+            .orderBy('id')
+            .limit(limit + 1); // fetch one more than limit to determine if there are more results
 
-    if (params.routingId) {
-        query.where({ routing_id: params.routingId });
+        if (params.routingId) {
+            query.where({ routing_id: params.routingId });
+        }
+        if (params.cursor) {
+            query.where('id', '>=', params.cursor);
+        }
+
+        const nodes = await query;
+
+        const nextCursor = nodes.length > limit ? nodes.pop()?.id : undefined;
+
+        const nodesMap = new Map<RoutingId, Node[]>();
+
+        for (const node of nodes) {
+            const routingId = node.routing_id;
+            const existingNodes = nodesMap.get(routingId) || [];
+            existingNodes.push(DBNode.from(node));
+            nodesMap.set(routingId, existingNodes);
+        }
+
+        return Ok({
+            nodes: nodesMap,
+            ...(nextCursor ? { nextCursor } : {})
+        });
+    } catch (err) {
+        return Err(new FleetError(`node_search_error`, { cause: err, context: params }));
     }
-    if (params.cursor) {
-        query.where('id', '>=', params.cursor);
-    }
-
-    const nodes = await query;
-
-    const nextCursor = nodes.length > limit ? nodes.pop()?.id : undefined;
-
-    const nodesMap = new Map<RoutingId, Node[]>();
-
-    for (const node of nodes) {
-        const routingId = node.routing_id;
-        const existingNodes = nodesMap.get(routingId) || [];
-        existingNodes.push(DBNode.from(node));
-        nodesMap.set(routingId, existingNodes);
-    }
-
-    return Ok({
-        nodes: nodesMap,
-        ...(nextCursor ? { nextCursor } : {})
-    });
 }
 
 export async function transitionTo(
@@ -172,30 +181,34 @@ export async function transitionTo(
         newState: Omit<NodeState, 'ERROR'>;
     }
 ): Promise<Result<Node>> {
-    return db.transaction(async (trx) => {
-        const node = await get(trx, props.nodeId, { forUpdate: true });
-        if (node.isErr()) {
-            return Err(new Error(`Node '${props.nodeId}' not found`));
-        }
+    try {
+        return db.transaction(async (trx) => {
+            const getNode = await get(trx, props.nodeId, { forUpdate: true });
+            if (getNode.isErr()) {
+                return getNode;
+            }
 
-        const transition = NodeStateTransition.validate({ from: node.value.state, to: props.newState });
-        if (transition.isErr()) {
-            return Err(transition.error);
-        }
+            const transition = NodeStateTransition.validate({ from: getNode.value.state, to: props.newState });
+            if (transition.isErr()) {
+                return Err(transition.error);
+            }
 
-        const updated = await trx
-            .from<DBNode>(NODES_TABLE)
-            .where('id', props.nodeId)
-            .update({
-                state: transition.value.to,
-                last_state_transition_at: new Date()
-            })
-            .returning('*');
-        if (!updated?.[0]) {
-            return Err(new Error(`Node '${props.nodeId}' not updated`));
-        }
-        return Ok(DBNode.from(updated[0]));
-    });
+            const updated = await trx
+                .from<DBNode>(NODES_TABLE)
+                .where('id', props.nodeId)
+                .update({
+                    state: transition.value.to,
+                    last_state_transition_at: new Date()
+                })
+                .returning('*');
+            if (!updated?.[0]) {
+                return Err(new FleetError(`node_transition_error`, { context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
+            }
+            return Ok(DBNode.from(updated[0]));
+        });
+    } catch (err) {
+        return Err(new FleetError(`node_transition_error`, { cause: err, context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
+    }
 }
 
 export async function fail(
@@ -205,13 +218,17 @@ export async function fail(
         error: string;
     }
 ): Promise<Result<Node>> {
-    const updated = await db
-        .from<DBNode>(NODES_TABLE)
-        .where({ id: props.nodeId })
-        .update({ state: 'ERROR', error: props.error, last_state_transition_at: new Date() })
-        .returning('*');
-    if (!updated?.[0]) {
-        return Err(new Error(`Node '${props.nodeId}' not failed`));
+    try {
+        const updated = await db
+            .from<DBNode>(NODES_TABLE)
+            .where({ id: props.nodeId })
+            .update({ state: 'ERROR', error: props.error, last_state_transition_at: new Date() })
+            .returning('*');
+        if (!updated?.[0]) {
+            return Err(new FleetError(`node_fail_error`, { context: props }));
+        }
+        return Ok(DBNode.from(updated[0]));
+    } catch (err) {
+        return Err(new FleetError(`node_fail_error`, { cause: err, context: props }));
     }
-    return Ok(DBNode.from(updated[0]));
 }
