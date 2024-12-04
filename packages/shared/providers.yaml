@@ -746,7 +746,7 @@ bill-sandbox:
     proxy:
         base_url: https://gateway.stage.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
-    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bill-sandbox/connect
 
 bill:
     display_name: Bill (Connect API)
@@ -2590,6 +2590,8 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
         base_url: https://api2.frontapp.com
+        retry:
+            after: 'Retry-after'
         paginate:
             type: link
             response_path: _results
@@ -3030,10 +3032,10 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
 
@@ -3050,16 +3052,14 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
             order: 1
@@ -6031,7 +6031,6 @@ trello-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/trello
-    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
@@ -6335,7 +6334,6 @@ unipile:
         headers:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/unipile
-    docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
     credentials:
         apiKey:
             type: string
