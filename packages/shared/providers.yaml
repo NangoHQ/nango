@@ -3014,8 +3014,6 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     connection_config:
         resource:
