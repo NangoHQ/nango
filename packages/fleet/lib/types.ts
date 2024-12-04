@@ -1,6 +1,7 @@
 export type CommitHash = string & { readonly length: 40 };
 
 export interface Deployment {
+    readonly id: number;
     readonly commitId: CommitHash;
     readonly createdAt: Date;
     readonly supersededAt: Date | null;
@@ -14,7 +15,7 @@ export type NodeState = (typeof nodeStates)[number];
 export interface Node {
     readonly id: number;
     readonly routingId: RoutingId;
-    readonly deploymentId: CommitHash;
+    readonly deploymentId: number;
     readonly url: string | null;
     readonly state: NodeState;
     readonly image: string;

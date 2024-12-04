@@ -26,14 +26,11 @@ describe('Deployments', () => {
             const commitId1 = generateCommitHash();
             const commitId2 = generateCommitHash();
 
-            await deployments.create(db, commitId1);
-            await deployments.create(db, commitId2);
+            const deployment1 = (await deployments.create(db, commitId1)).unwrap();
+            const deployment2 = (await deployments.create(db, commitId2)).unwrap();
 
-            const deployment1 = (await deployments.get(db, commitId1)).unwrap();
-            const deployment2 = (await deployments.get(db, commitId2)).unwrap();
-
-            expect(deployment1.supersededAt).not.toBe(null);
-            expect(deployment2.supersededAt).toBe(null);
+            expect((await deployments.get(db, deployment1.id)).unwrap().supersededAt).not.toBe(null);
+            expect((await deployments.get(db, deployment2.id)).unwrap().supersededAt).toBe(null);
         });
     });
 

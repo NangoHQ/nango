@@ -6,6 +6,7 @@ import type { CommitHash, Deployment } from '../types.js';
 export const DEPLOYMENTS_TABLE = 'deployments';
 
 export interface DBDeployment {
+    readonly id: number;
     readonly commit_id: CommitHash;
     readonly created_at: Date;
     readonly superseded_at: Date | null;
@@ -14,6 +15,7 @@ export interface DBDeployment {
 const DBDeployment = {
     to(dbDeployment: DBDeployment): Deployment {
         return {
+            id: dbDeployment.id,
             commitId: dbDeployment.commit_id,
             createdAt: dbDeployment.created_at,
             supersededAt: dbDeployment.superseded_at
@@ -21,6 +23,7 @@ const DBDeployment = {
     },
     from(deployment: Deployment): DBDeployment {
         return {
+            id: deployment.id,
             commit_id: deployment.commitId,
             created_at: deployment.createdAt,
             superseded_at: deployment.supersededAt
@@ -40,7 +43,7 @@ export async function create(db: knex.Knex, commitId: CommitHash): Promise<Resul
                 })
                 .update({ superseded_at: now });
             // insert new deployment
-            const dbDeployment: DBDeployment = {
+            const dbDeployment: Omit<DBDeployment, 'id'> = {
                 commit_id: commitId,
                 created_at: now,
                 superseded_at: null
@@ -65,14 +68,14 @@ export async function getActive(db: knex.Knex): Promise<Result<Deployment | unde
     }
 }
 
-export async function get(db: knex.Knex, commitId: CommitHash): Promise<Result<Deployment>> {
+export async function get(db: knex.Knex, id: number): Promise<Result<Deployment>> {
     try {
-        const deployment = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ commit_id: commitId }).first();
+        const deployment = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ id }).first();
         if (!deployment) {
-            return Err(new Error(`Error: no deployment '${commitId}' found`));
+            return Err(new Error(`Error: no deployment '${id}' found`));
         }
         return Ok(DBDeployment.to(deployment));
     } catch (err: unknown) {
-        return Err(new Error(`Error getting deployment '${commitId}': ${stringifyError(err)}`));
+        return Err(new Error(`Error getting deployment '${id}': ${stringifyError(err)}`));
     }
 }

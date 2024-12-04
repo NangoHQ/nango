@@ -6,7 +6,8 @@ export async function up(knex: Knex): Promise<void> {
     await knex.transaction(async (trx) => {
         await trx.raw(`
             CREATE TABLE ${DEPLOYMENTS_TABLE} (
-                commit_id char(40) PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
+                commit_id char(40) NOT NULL,
                 created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 superseded_at timestamp with time zone
             );
@@ -30,7 +31,7 @@ export async function up(knex: Knex): Promise<void> {
             CREATE TABLE ${NODES_TABLE} (
                 id SERIAL PRIMARY KEY,
                 routing_id varchar(255) NOT NULL,
-                deployment_id char(40) NOT NULL REFERENCES deployments(commit_id) ON DELETE CASCADE,
+                deployment_id int NOT NULL REFERENCES deployments(id) ON DELETE CASCADE,
                 url varchar(1024),
                 state node_states NOT NULL,
                 image varchar(255) NOT NULL,

@@ -1,7 +1,7 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err, stringifyError } from '@nangohq/utils';
-import type { NodeState, Node, CommitHash, RoutingId } from '../types.js';
+import type { NodeState, Node, RoutingId } from '../types.js';
 
 export const NODES_TABLE = 'nodes';
 
@@ -33,7 +33,7 @@ const NodeStateTransition = {
 export interface DBNode {
     readonly id: number;
     readonly routing_id: RoutingId;
-    readonly deployment_id: CommitHash;
+    readonly deployment_id: number;
     readonly url: string | null;
     readonly state: NodeState;
     readonly image: string;
@@ -101,8 +101,8 @@ export async function create(db: knex.Knex, nodeProps: Omit<Node, 'id' | 'create
             return Err(new Error(`Error: no node '${nodeProps.routingId}' created`));
         }
         return Ok(DBNode.from(inserted[0]));
-    } catch (err: unknown) {
-        return Err(new Error(`Error creating node '${nodeProps.routingId}': ${stringifyError(err)}`));
+    } catch (err) {
+        return Err(new Error(`Error creating node '${JSON.stringify(nodeProps)}': ${stringifyError(err)}`));
     }
 }
 export async function get(db: knex.Knex, nodeId: number, options: { forUpdate: boolean } = { forUpdate: false }): Promise<Result<Node>> {
