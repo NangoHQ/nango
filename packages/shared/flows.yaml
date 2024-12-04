@@ -526,6 +526,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /candidates
+                    group: Candidates
             jobs:
                 runs: every hour
                 output: AshbyJob
@@ -536,6 +537,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /jobs
+                    group: Jobs
         actions:
             create-application:
                 output: AshbyCreateApplicationResponse
@@ -545,6 +547,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /applications
+                    group: Applications
             create-note:
                 output: AshbyCreateNoteResponse
                 input: AshbyCreateNoteInput
@@ -553,6 +556,7 @@ integrations:
                 endpoint:
                     method: POST
                     path: /notes
+                    group: Notes
             application-change-source:
                 output: AshbyResponse
                 input: ChangeSource
@@ -579,13 +583,14 @@ integrations:
                 output: AshbyResponse
                 input: ChangeSource | ChangeStage | UpdateHistory
                 description: |
-                    Action to update an application stage.
+                    Action to update an application.
                 endpoint:
                     method: PATCH
-                    path: /applications/update
+                    path: /applications
                     group: Applications
                 scopes:
                     - candidatesWrite
+                version: 1.0.0
             application-update-history:
                 output: AshbyResponse
                 input: UpdateHistory
@@ -601,7 +606,7 @@ integrations:
                 output: AshbyResponse
                 input: CreateCandidate
                 description: |
-                    Action to update history an application stage.
+                    Action to create a candidate.
                 endpoint:
                     method: POST
                     path: /candidates
@@ -951,6 +956,542 @@ integrations:
                     updatedAt: date
                 hiringTeam: HiringTeamObject[]
                 appliedViaJobPostingId?: string
+    avalara:
+        actions:
+            create-transaction:
+                description: |
+                    Creates a new transaction
+                input: CreateTransaction
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, SSTAdmin, TechnicalSupportAdmin,
+                    TechnicalSupportUser
+                endpoint:
+                    method: POST
+                    path: /transactions
+                    group: Transactions
+            commit-transaction:
+                description: |
+                    Marks a transaction by changing its status to Committed
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, ProStoresOperator, SSTAdmin,
+                    TechnicalSupportAdmin
+                endpoint:
+                    method: PUT
+                    path: /transactions
+                    group: Transactions
+            void-transaction:
+                description: >
+                    Voids the current transaction uniquely identified by the
+                    transactionCode
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, BatchServiceAdmin, CompanyAdmin,
+                    CSPTester, ProStoresOperator, SSTAdmin, TechnicalSupportAdmin
+                endpoint:
+                    method: DELETE
+                    path: /transactions
+                    group: Transactions
+        syncs:
+            transactions:
+                description: List all transactions with a default backfill date of one year.
+                input: ConnectionMetadata
+                output: Transaction
+                runs: every hour
+                endpoint:
+                    method: GET
+                    path: /transactions
+                    group: Transactions
+        models:
+            IdEntity:
+                id: string
+            ConnectionMetadata:
+                company: string
+                backfillPeriodMs?: number
+            Transaction:
+                id: string
+                code: string
+                companyId: number
+                date: string
+                paymentDate: string
+                status: string
+                type: string
+                batchCode: string
+                currencyCode: string
+                exchangeRateCurrencyCode: string
+                customerUsageType: string
+                entityUseCode: string
+                customerVendorCode: string
+                customerCode: string
+                exemptNo: string
+                reconciled: boolean
+                locationCode: string
+                reportingLocationCode: string
+                purchaseOrderNo: string
+                referenceCode: string
+                salespersonCode: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                totalAmount: number
+                totalExempt: number
+                totalDiscount: number
+                totalTax: number
+                totalTaxable: number
+                totalTaxCalculated: number
+                adjustmentReason: string
+                adjustmentDescription: string
+                locked: boolean
+                region: string
+                country: string
+                version: number
+                softwareVersion: string
+                originAddressId: number
+                destinationAddressId: number
+                exchangeRateEffectiveDate: string
+                exchangeRate: number
+                isSellerImporterOfRecord: boolean
+                description: string
+                email: string
+                businessIdentificationNo: string
+                modifiedDate: string
+                modifiedUserId: number
+                taxDate: string
+                lines: Line[]
+                locationTypes: any[]
+                messages: string[]
+                summary: string[]
+                addresses?: TransactionAddress[]
+                taxDetailsByTaxType?: TaxDetailsByTaxType[]
+            Line:
+                id: number
+                transactionId: number
+                lineNumber: string
+                boundaryOverrideId: number
+                entityUseCode: string
+                description: string
+                destinationAddressId: number
+                originAddressId: number
+                discountAmount: number
+                discountTypeId: number
+                exemptAmount: number
+                exemptCertId: number
+                exemptNo: string
+                isItemTaxable: boolean
+                isSSTP: boolean
+                itemCode: string
+                lineAmount: number
+                quantity: number
+                ref1: string
+                reportingDate: string
+                revAccount: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxCalculated: number
+                taxCode: string
+                taxDate: string
+                taxEngine: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                taxIncluded: boolean
+                details: Detail[]
+                vatNumberTypeId: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            Detail:
+                id: number
+                transactionLineId: number
+                transactionId: number
+                addressId: number
+                country: string
+                region: string
+                stateFIPS: string
+                exemptAmount: number
+                exemptReasonId: number
+                exemptRuleId: number
+                inState: boolean
+                jurisCode: string
+                jurisName: string
+                jurisdictionId: number
+                signatureCode: string
+                stateAssignedNo: string
+                jurisType: string
+                nonTaxableAmount: number
+                nonTaxableRuleId: number
+                nonTaxableType: string
+                rate: number
+                rateRuleId: number
+                rateSourceId: number
+                serCode: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxType: string
+                taxName: string
+                taxAuthorityTypeId: number
+                taxRegionId: number
+                taxCalculated: number
+                taxOverride: number
+                rateType: string
+                taxableUnits: number
+                nonTaxableUnits: number
+                exemptUnits: number
+                reportingTaxableUnits: number
+                reportingNonTaxableUnits: number
+                reportingExemptUnits: number
+                reportingTax: number
+                reportingTaxCalculated: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            TransactionAddress:
+                id: number
+                transactionId: number
+                boundaryLevel: string
+                line1: string
+                city: string
+                region: string
+                postalCode: string
+                country: string
+                taxRegionId: number
+            TaxDetailsByTaxType:
+                taxType: string
+                totalTaxable: number
+                totalExempt: number
+                totalNonTaxable: number
+                totalTax: number
+            CreateTransaction:
+                invoice: Invoice
+                externalCustomerId: string
+                companyCode?: string
+                addresses:
+                    singleLocation?: Address
+                    shipFrom?: Address
+                    shipTo?: Address
+                    pointOfOrderOrigin?: Address
+                    pointOfOrderAcceptance?: Address
+                    goodsPlaceOrServiceRendered?: Address
+                    import?: Address
+                    billTo?: Address
+            TransactionCode:
+                transactionCode: string
+            Address:
+                line1?: string
+                city?: string
+                region?: string
+                country?: string
+                postalCode?: string
+            InvoiceCoupon:
+                name: string
+                discountAmount: number
+            InvoiceLineItemTier:
+                unitCount: string
+                unitAmount: string
+                totalAmount: number
+            InvoiceLineItem:
+                id?: string | undefined
+                billingItemId?: string | null | undefined
+                name: string
+                description: string | null
+                unitsCount: number
+                unitAmount: string
+                taxAmount: number
+                taxRate: string
+                amount?: number | undefined
+                amountExcludingTax: number
+                periodStart: string | null
+                periodEnd: string | null
+                invoiceLineItemTiers: InvoiceLineItemTier[]
+            Invoice:
+                id: string
+                invoiceNumber: string
+                emissionDate: string
+                dueDate: string
+                status: >-
+                    to_pay | partially_paid | paid | late | grace_period | to_pay_batch |
+                    voided
+                taxRate: string
+                currency: string
+                invoiceLineItems: InvoiceLineItem[]
+                coupons: InvoiceCoupon[]
+                type: invoice | refund
+                discountAmount: number
+    avalara-sandbox:
+        actions:
+            create-transaction:
+                description: |
+                    Creates a new transaction
+                input: CreateTransaction
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, SSTAdmin, TechnicalSupportAdmin,
+                    TechnicalSupportUser
+                endpoint:
+                    method: POST
+                    path: /transactions
+                    group: Transactions
+            commit-transaction:
+                description: |
+                    Marks a transaction by changing its status to Committed
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, AccountUser, BatchServiceAdmin,
+                    CompanyAdmin, CompanyUser, CSPTester, ProStoresOperator, SSTAdmin,
+                    TechnicalSupportAdmin
+                endpoint:
+                    method: PUT
+                    path: /transactions
+                    group: Transactions
+            void-transaction:
+                description: >
+                    Voids the current transaction uniquely identified by the
+                    transactionCode
+                input: TransactionCode
+                output: IdEntity
+                scopes: >-
+                    AccountAdmin, AccountOperator, BatchServiceAdmin, CompanyAdmin,
+                    CSPTester, ProStoresOperator, SSTAdmin, TechnicalSupportAdmin
+                endpoint:
+                    method: DELETE
+                    path: /transactions
+                    group: Transactions
+        syncs:
+            transactions:
+                description: List all transactions with a default backfill date of one year.
+                input: ConnectionMetadata
+                output: Transaction
+                runs: every hour
+                endpoint:
+                    method: GET
+                    path: /transactions
+                    group: Transactions
+        models:
+            IdEntity:
+                id: string
+            ConnectionMetadata:
+                company: string
+                backfillPeriodMs?: number
+            Transaction:
+                id: string
+                code: string
+                companyId: number
+                date: string
+                paymentDate: string
+                status: string
+                type: string
+                batchCode: string
+                currencyCode: string
+                exchangeRateCurrencyCode: string
+                customerUsageType: string
+                entityUseCode: string
+                customerVendorCode: string
+                customerCode: string
+                exemptNo: string
+                reconciled: boolean
+                locationCode: string
+                reportingLocationCode: string
+                purchaseOrderNo: string
+                referenceCode: string
+                salespersonCode: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                totalAmount: number
+                totalExempt: number
+                totalDiscount: number
+                totalTax: number
+                totalTaxable: number
+                totalTaxCalculated: number
+                adjustmentReason: string
+                adjustmentDescription: string
+                locked: boolean
+                region: string
+                country: string
+                version: number
+                softwareVersion: string
+                originAddressId: number
+                destinationAddressId: number
+                exchangeRateEffectiveDate: string
+                exchangeRate: number
+                isSellerImporterOfRecord: boolean
+                description: string
+                email: string
+                businessIdentificationNo: string
+                modifiedDate: string
+                modifiedUserId: number
+                taxDate: string
+                lines: Line[]
+                locationTypes: any[]
+                messages: string[]
+                summary: string[]
+                addresses?: TransactionAddress[]
+                taxDetailsByTaxType?: TaxDetailsByTaxType[]
+            Line:
+                id: number
+                transactionId: number
+                lineNumber: string
+                boundaryOverrideId: number
+                entityUseCode: string
+                description: string
+                destinationAddressId: number
+                originAddressId: number
+                discountAmount: number
+                discountTypeId: number
+                exemptAmount: number
+                exemptCertId: number
+                exemptNo: string
+                isItemTaxable: boolean
+                isSSTP: boolean
+                itemCode: string
+                lineAmount: number
+                quantity: number
+                ref1: string
+                reportingDate: string
+                revAccount: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxCalculated: number
+                taxCode: string
+                taxDate: string
+                taxEngine: string
+                taxOverrideType: string
+                taxOverrideAmount: number
+                taxOverrideReason: string
+                taxIncluded: boolean
+                details: Detail[]
+                vatNumberTypeId: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            Detail:
+                id: number
+                transactionLineId: number
+                transactionId: number
+                addressId: number
+                country: string
+                region: string
+                stateFIPS: string
+                exemptAmount: number
+                exemptReasonId: number
+                exemptRuleId: number
+                inState: boolean
+                jurisCode: string
+                jurisName: string
+                jurisdictionId: number
+                signatureCode: string
+                stateAssignedNo: string
+                jurisType: string
+                nonTaxableAmount: number
+                nonTaxableRuleId: number
+                nonTaxableType: string
+                rate: number
+                rateRuleId: number
+                rateSourceId: number
+                serCode: string
+                sourcing: string
+                tax: number
+                taxableAmount: number
+                taxType: string
+                taxName: string
+                taxAuthorityTypeId: number
+                taxRegionId: number
+                taxCalculated: number
+                taxOverride: number
+                rateType: string
+                taxableUnits: number
+                nonTaxableUnits: number
+                exemptUnits: number
+                reportingTaxableUnits: number
+                reportingNonTaxableUnits: number
+                reportingExemptUnits: number
+                reportingTax: number
+                reportingTaxCalculated: number
+                recoverabilityPercentage: number
+                recoverableAmount: number
+                nonRecoverableAmount: number
+            TransactionAddress:
+                id: number
+                transactionId: number
+                boundaryLevel: string
+                line1: string
+                city: string
+                region: string
+                postalCode: string
+                country: string
+                taxRegionId: number
+            TaxDetailsByTaxType:
+                taxType: string
+                totalTaxable: number
+                totalExempt: number
+                totalNonTaxable: number
+                totalTax: number
+            CreateTransaction:
+                invoice: Invoice
+                externalCustomerId: string
+                companyCode?: string
+                addresses:
+                    singleLocation?: Address
+                    shipFrom?: Address
+                    shipTo?: Address
+                    pointOfOrderOrigin?: Address
+                    pointOfOrderAcceptance?: Address
+                    goodsPlaceOrServiceRendered?: Address
+                    import?: Address
+                    billTo?: Address
+            TransactionCode:
+                transactionCode: string
+            Address:
+                line1?: string
+                city?: string
+                region?: string
+                country?: string
+                postalCode?: string
+            InvoiceCoupon:
+                name: string
+                discountAmount: number
+            InvoiceLineItemTier:
+                unitCount: string
+                unitAmount: string
+                totalAmount: number
+            InvoiceLineItem:
+                id?: string | undefined
+                billingItemId?: string | null | undefined
+                name: string
+                description: string | null
+                unitsCount: number
+                unitAmount: string
+                taxAmount: number
+                taxRate: string
+                amount?: number | undefined
+                amountExcludingTax: number
+                periodStart: string | null
+                periodEnd: string | null
+                invoiceLineItemTiers: InvoiceLineItemTier[]
+            Invoice:
+                id: string
+                invoiceNumber: string
+                emissionDate: string
+                dueDate: string
+                status: >-
+                    to_pay | partially_paid | paid | late | grace_period | to_pay_batch |
+                    voided
+                taxRate: string
+                currency: string
+                invoiceLineItems: InvoiceLineItem[]
+                coupons: InvoiceCoupon[]
+                type: invoice | refund
+                discountAmount: number
     aws-iam:
         actions:
             create-user:
@@ -2915,6 +3456,7 @@ integrations:
                     path: /conversations
                 track_deletes: true
                 sync_type: full
+                version: 1.0.1
         actions:
             conversation:
                 description: >-
@@ -5746,17 +6288,20 @@ integrations:
         actions:
             create-note:
                 description: |
-                    Action to create a note and add it to a candidate profile in Lever
+                    Action to create a note and add it to an opportunity.
                 output: LeverOpportunityNote
                 input: LeverCreateNoteInput
                 endpoint:
                     method: POST
-                    path: /lever/create-note
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:write:admin
+                version: 1.0.0
             create-opportunity:
-                description: |
-                    Action to create candidates and opportunities in Lever
+                description: >
+                    Create an opportunity and optionally candidates associated with the
+                    opportunity
                 output: LeverOpportunity
                 input: LeverCreateOpportunityInput
                 endpoint:
@@ -5768,16 +6313,19 @@ integrations:
                 version: 1.0.0
             get-stages:
                 description: |
-                    Action to get lists all pipeline stages in your Lever account.
+                    Action to get lists all pipeline stages. Note that this does 
+                    not paginate the response so it is possible that not all stages 
+                    are returned.
                 output: GetStages
                 endpoint:
                     method: GET
-                    path: /stages
-                    group: Opportunities
+                    path: /stages/limited
+                    group: Stages
+                version: 1.0.0
             users:
                 description: >
                     Lists all the users in your Lever account. Only active users are
-                    included by default..
+                    included by default.
                 output: SuccessResponse
                 endpoint:
                     method: GET
@@ -5785,29 +6333,33 @@ integrations:
                     group: Users
             get-postings:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all posts for your account. Note that this does
+                    not paginate the response so it is possible that not all postings 
+                    are returned.
                 output: SuccessResponse
                 endpoint:
                     method: GET
-                    path: /posts/single
+                    path: /posts/limited
                     group: Posts
+                version: 1.0.0
             get-archive-reasons:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all archived reasons
                 output: SuccessResponse
                 endpoint:
                     method: GET
                     path: /archived/reasons
-                    group: Opportunities
-            posting:
+                    group: Archived
+            get-posting:
                 description: |
-                    Get single posts for your account in Lever
+                    Get single post for your account in Lever
                 output: SuccessResponse
                 input: SinglePost
                 endpoint:
                     method: GET
-                    path: /posts
+                    path: /posts/single
                     group: Posts
+                version: 1.0.0
             update-opportunity-links:
                 description: |
                     Update the links in an opportunity
@@ -5815,8 +6367,9 @@ integrations:
                 input: UpdateLinks
                 endpoint:
                     method: POST
-                    path: /links
+                    path: /opportunities/links
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-sources:
                 description: |
                     Update the sources in an opportunity
@@ -5824,8 +6377,9 @@ integrations:
                 input: UpdateSources
                 endpoint:
                     method: POST
-                    path: /sources
+                    path: /opportunities/sources
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-stage:
                 description: |
                     Update the stage in an opportunity
@@ -5833,8 +6387,9 @@ integrations:
                 input: UpdateOpportunityStage
                 endpoint:
                     method: POST
-                    path: /stages
+                    path: /opportunities/stages
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-tags:
                 description: |
                     Update the tags in an opportunity
@@ -5842,17 +6397,19 @@ integrations:
                 input: UpdateTags
                 endpoint:
                     method: POST
-                    path: /tags
+                    path: /opportunities/tags
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-archived:
                 description: |
-                    Update the tags in an opportunity
+                    Update the archived state of an opportunity
                 output: SuccessResponse
                 input: ArchiveOpportunity
                 endpoint:
                     method: PUT
-                    path: /archived
+                    path: /opportunities/archived
                     group: Opportunities
+                version: 1.0.0
             apply-posting:
                 description: >
                     Submit an application on behalf of a candidate. This endpoint can only
@@ -5869,14 +6426,14 @@ integrations:
                 output: ReturnObjUpdateOpportunity
                 input: UpdateOpportunity
                 endpoint:
-                    method: POST
-                    path: /opportunity/update
+                    method: PATCH
+                    path: /opportunities
                     group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all pipeline opportunities for contacts in Lever
+                    Fetches al opportunities
                 output: LeverOpportunity
                 sync_type: incremental
                 endpoint:
@@ -5893,54 +6450,63 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-applications
+                    path: /applications
+                    group: Applications
                 scopes:
                     - applications:read:admin
+                version: 1.0.0
             opportunities-feedbacks:
                 runs: every 6 hours
                 description: >
-                    Fetches a list of all feedback forms for a candidate for a specific
-                    Opportunity in lever
+                    Fetches a list of all feedback forms for a candidate for every single
+                    opportunity
                 output: LeverOpportunityFeedback
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-feedbacks
+                    path: /opportunities/feedback
+                    group: Opportunities
                 scopes:
                     - feedback:read:admin
             opportunities-interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all interviewers for a specific Opportunity in lever
+                    Fetches a list of all interviews for every single opportunity
                 output: LeverOpportunityInterview
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-interviews
+                    path: /opportunities/interviews
+                    group: Opportunities
                 scopes:
                     - interviews:read:admin
+                version: 1.0.0
             opportunities-notes:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all notes for a specific candidate in lever
+                    Fetches a list of all notes for every single opportunity
                 output: LeverOpportunityNote
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-notes
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:read:admin
+                version: 1.0.0
             opportunities-offers:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all offers for a specific candidate in lever.
+                    Fetches a list of all offers for every single opportunity
                 output: LeverOpportunityOffer
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-offers
+                    path: /offers
+                    group: Offers
                 scopes:
                     - offers:write:admin
+                version: 1.0.0
             postings:
                 runs: every 6 hours
                 description: |
@@ -5949,10 +6515,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings
+                    path: /postings
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            postings-apply:
+                version: 1.0.0
+            postings-questions:
                 runs: every 6 hours
                 description: >
                     Fetches a list of all questions included in a posting’s application
@@ -5961,10 +6529,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings-apply
+                    path: /postings/questions
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            stage:
+                version: 1.0.0
+            stages:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline stages in Lever
@@ -5972,9 +6542,11 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/stage
+                    path: /stages
+                    group: Stages
                 scopes:
                     - stages:read:admin
+                version: 1.0.0
         models:
             LeverOpportunity:
                 id: string
@@ -6353,17 +6925,20 @@ integrations:
         actions:
             create-note:
                 description: |
-                    Action to create a note and add it to a candidate profile in Lever
+                    Action to create a note and add it to an opportunity.
                 output: LeverOpportunityNote
                 input: LeverCreateNoteInput
                 endpoint:
                     method: POST
-                    path: /lever/create-note
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:write:admin
+                version: 1.0.0
             create-opportunity:
-                description: |
-                    Action to create candidates and opportunities in Lever
+                description: >
+                    Create an opportunity and optionally candidates associated with the
+                    opportunity
                 output: LeverOpportunity
                 input: LeverCreateOpportunityInput
                 endpoint:
@@ -6375,16 +6950,19 @@ integrations:
                 version: 1.0.0
             get-stages:
                 description: |
-                    Action to get lists all pipeline stages in your Lever account.
+                    Action to get lists all pipeline stages. Note that this does 
+                    not paginate the response so it is possible that not all stages 
+                    are returned.
                 output: GetStages
                 endpoint:
                     method: GET
-                    path: /stages
-                    group: Opportunities
+                    path: /stages/limited
+                    group: Stages
+                version: 1.0.0
             users:
                 description: >
                     Lists all the users in your Lever account. Only active users are
-                    included by default..
+                    included by default.
                 output: SuccessResponse
                 endpoint:
                     method: GET
@@ -6392,29 +6970,33 @@ integrations:
                     group: Users
             get-postings:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all posts for your account. Note that this does
+                    not paginate the response so it is possible that not all postings 
+                    are returned.
                 output: SuccessResponse
                 endpoint:
                     method: GET
-                    path: /posts/single
+                    path: /posts/limited
                     group: Posts
+                version: 1.0.0
             get-archive-reasons:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all archived reasons
                 output: SuccessResponse
                 endpoint:
                     method: GET
                     path: /archived/reasons
-                    group: Opportunities
-            posting:
+                    group: Archived
+            get-posting:
                 description: |
-                    Get single posts for your account in Lever
+                    Get single post for your account in Lever
                 output: SuccessResponse
                 input: SinglePost
                 endpoint:
                     method: GET
-                    path: /posts
+                    path: /posts/single
                     group: Posts
+                version: 1.0.0
             update-opportunity-links:
                 description: |
                     Update the links in an opportunity
@@ -6422,8 +7004,9 @@ integrations:
                 input: UpdateLinks
                 endpoint:
                     method: POST
-                    path: /links
+                    path: /opportunities/links
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-sources:
                 description: |
                     Update the sources in an opportunity
@@ -6431,8 +7014,9 @@ integrations:
                 input: UpdateSources
                 endpoint:
                     method: POST
-                    path: /sources
+                    path: /opportunities/sources
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-stage:
                 description: |
                     Update the stage in an opportunity
@@ -6440,8 +7024,9 @@ integrations:
                 input: UpdateOpportunityStage
                 endpoint:
                     method: POST
-                    path: /stages
+                    path: /opportunities/stages
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-tags:
                 description: |
                     Update the tags in an opportunity
@@ -6449,17 +7034,19 @@ integrations:
                 input: UpdateTags
                 endpoint:
                     method: POST
-                    path: /tags
+                    path: /opportunities/tags
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-archived:
                 description: |
-                    Update the tags in an opportunity
+                    Update the archived state of an opportunity
                 output: SuccessResponse
                 input: ArchiveOpportunity
                 endpoint:
                     method: PUT
-                    path: /archived
+                    path: /opportunities/archived
                     group: Opportunities
+                version: 1.0.0
             apply-posting:
                 description: >
                     Submit an application on behalf of a candidate. This endpoint can only
@@ -6476,14 +7063,14 @@ integrations:
                 output: ReturnObjUpdateOpportunity
                 input: UpdateOpportunity
                 endpoint:
-                    method: POST
-                    path: /opportunity/update
+                    method: PATCH
+                    path: /opportunities
                     group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all pipeline opportunities for contacts in Lever
+                    Fetches al opportunities
                 output: LeverOpportunity
                 sync_type: incremental
                 endpoint:
@@ -6500,54 +7087,63 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-applications
+                    path: /applications
+                    group: Applications
                 scopes:
                     - applications:read:admin
+                version: 1.0.0
             opportunities-feedbacks:
                 runs: every 6 hours
                 description: >
-                    Fetches a list of all feedback forms for a candidate for a specific
-                    Opportunity in lever
+                    Fetches a list of all feedback forms for a candidate for every single
+                    opportunity
                 output: LeverOpportunityFeedback
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-feedbacks
+                    path: /opportunities/feedback
+                    group: Opportunities
                 scopes:
                     - feedback:read:admin
             opportunities-interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all interviewers for a specific Opportunity in lever
+                    Fetches a list of all interviews for every single opportunity
                 output: LeverOpportunityInterview
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-interviews
+                    path: /opportunities/interviews
+                    group: Opportunities
                 scopes:
                     - interviews:read:admin
+                version: 1.0.0
             opportunities-notes:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all notes for a specific candidate in lever
+                    Fetches a list of all notes for every single opportunity
                 output: LeverOpportunityNote
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-notes
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:read:admin
+                version: 1.0.0
             opportunities-offers:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all offers for a specific candidate in lever.
+                    Fetches a list of all offers for every single opportunity
                 output: LeverOpportunityOffer
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-offers
+                    path: /offers
+                    group: Offers
                 scopes:
                     - offers:write:admin
+                version: 1.0.0
             postings:
                 runs: every 6 hours
                 description: |
@@ -6556,10 +7152,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings
+                    path: /postings
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            postings-apply:
+                version: 1.0.0
+            postings-questions:
                 runs: every 6 hours
                 description: >
                     Fetches a list of all questions included in a posting’s application
@@ -6568,10 +7166,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings-apply
+                    path: /postings/questions
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            stage:
+                version: 1.0.0
+            stages:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline stages in Lever
@@ -6579,9 +7179,11 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/stage
+                    path: /stages
+                    group: Stages
                 scopes:
                     - stages:read:admin
+                version: 1.0.0
         models:
             LeverOpportunity:
                 id: string
@@ -6960,17 +7562,20 @@ integrations:
         actions:
             create-note:
                 description: |
-                    Action to create a note and add it to a candidate profile in Lever
+                    Action to create a note and add it to an opportunity.
                 output: LeverOpportunityNote
                 input: LeverCreateNoteInput
                 endpoint:
                     method: POST
-                    path: /lever/create-note
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:write:admin
+                version: 1.0.0
             create-opportunity:
-                description: |
-                    Action to create candidates and opportunities in Lever
+                description: >
+                    Create an opportunity and optionally candidates associated with the
+                    opportunity
                 output: LeverOpportunity
                 input: LeverCreateOpportunityInput
                 endpoint:
@@ -6982,16 +7587,19 @@ integrations:
                 version: 1.0.0
             get-stages:
                 description: |
-                    Action to get lists all pipeline stages in your Lever account.
+                    Action to get lists all pipeline stages. Note that this does 
+                    not paginate the response so it is possible that not all stages 
+                    are returned.
                 output: GetStages
                 endpoint:
                     method: GET
-                    path: /stages
-                    group: Opportunities
+                    path: /stages/limited
+                    group: Stages
+                version: 1.0.0
             users:
                 description: >
                     Lists all the users in your Lever account. Only active users are
-                    included by default..
+                    included by default.
                 output: SuccessResponse
                 endpoint:
                     method: GET
@@ -6999,29 +7607,33 @@ integrations:
                     group: Users
             get-postings:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all posts for your account. Note that this does
+                    not paginate the response so it is possible that not all postings 
+                    are returned.
                 output: SuccessResponse
                 endpoint:
                     method: GET
-                    path: /posts/single
+                    path: /posts/limited
                     group: Posts
+                version: 1.0.0
             get-archive-reasons:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all archived reasons
                 output: SuccessResponse
                 endpoint:
                     method: GET
                     path: /archived/reasons
-                    group: Opportunities
-            posting:
+                    group: Archived
+            get-posting:
                 description: |
-                    Get single posts for your account in Lever
+                    Get single post for your account in Lever
                 output: SuccessResponse
                 input: SinglePost
                 endpoint:
                     method: GET
-                    path: /posts
+                    path: /posts/single
                     group: Posts
+                version: 1.0.0
             update-opportunity-links:
                 description: |
                     Update the links in an opportunity
@@ -7029,8 +7641,9 @@ integrations:
                 input: UpdateLinks
                 endpoint:
                     method: POST
-                    path: /links
+                    path: /opportunities/links
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-sources:
                 description: |
                     Update the sources in an opportunity
@@ -7038,8 +7651,9 @@ integrations:
                 input: UpdateSources
                 endpoint:
                     method: POST
-                    path: /sources
+                    path: /opportunities/sources
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-stage:
                 description: |
                     Update the stage in an opportunity
@@ -7047,8 +7661,9 @@ integrations:
                 input: UpdateOpportunityStage
                 endpoint:
                     method: POST
-                    path: /stages
+                    path: /opportunities/stages
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-tags:
                 description: |
                     Update the tags in an opportunity
@@ -7056,17 +7671,19 @@ integrations:
                 input: UpdateTags
                 endpoint:
                     method: POST
-                    path: /tags
+                    path: /opportunities/tags
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-archived:
                 description: |
-                    Update the tags in an opportunity
+                    Update the archived state of an opportunity
                 output: SuccessResponse
                 input: ArchiveOpportunity
                 endpoint:
                     method: PUT
-                    path: /archived
+                    path: /opportunities/archived
                     group: Opportunities
+                version: 1.0.0
             apply-posting:
                 description: >
                     Submit an application on behalf of a candidate. This endpoint can only
@@ -7083,14 +7700,14 @@ integrations:
                 output: ReturnObjUpdateOpportunity
                 input: UpdateOpportunity
                 endpoint:
-                    method: POST
-                    path: /opportunity/update
+                    method: PATCH
+                    path: /opportunities
                     group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all pipeline opportunities for contacts in Lever
+                    Fetches al opportunities
                 output: LeverOpportunity
                 sync_type: incremental
                 endpoint:
@@ -7107,54 +7724,63 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-applications
+                    path: /applications
+                    group: Applications
                 scopes:
                     - applications:read:admin
+                version: 1.0.0
             opportunities-feedbacks:
                 runs: every 6 hours
                 description: >
-                    Fetches a list of all feedback forms for a candidate for a specific
-                    Opportunity in lever
+                    Fetches a list of all feedback forms for a candidate for every single
+                    opportunity
                 output: LeverOpportunityFeedback
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-feedbacks
+                    path: /opportunities/feedback
+                    group: Opportunities
                 scopes:
                     - feedback:read:admin
             opportunities-interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all interviewers for a specific Opportunity in lever
+                    Fetches a list of all interviews for every single opportunity
                 output: LeverOpportunityInterview
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-interviews
+                    path: /opportunities/interviews
+                    group: Opportunities
                 scopes:
                     - interviews:read:admin
+                version: 1.0.0
             opportunities-notes:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all notes for a specific candidate in lever
+                    Fetches a list of all notes for every single opportunity
                 output: LeverOpportunityNote
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-notes
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:read:admin
+                version: 1.0.0
             opportunities-offers:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all offers for a specific candidate in lever.
+                    Fetches a list of all offers for every single opportunity
                 output: LeverOpportunityOffer
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-offers
+                    path: /offers
+                    group: Offers
                 scopes:
                     - offers:write:admin
+                version: 1.0.0
             postings:
                 runs: every 6 hours
                 description: |
@@ -7163,10 +7789,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings
+                    path: /postings
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            postings-apply:
+                version: 1.0.0
+            postings-questions:
                 runs: every 6 hours
                 description: >
                     Fetches a list of all questions included in a posting’s application
@@ -7175,10 +7803,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings-apply
+                    path: /postings/questions
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            stage:
+                version: 1.0.0
+            stages:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline stages in Lever
@@ -7186,9 +7816,11 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/stage
+                    path: /stages
+                    group: Stages
                 scopes:
                     - stages:read:admin
+                version: 1.0.0
         models:
             LeverOpportunity:
                 id: string
@@ -7567,17 +8199,20 @@ integrations:
         actions:
             create-note:
                 description: |
-                    Action to create a note and add it to a candidate profile in Lever
+                    Action to create a note and add it to an opportunity.
                 output: LeverOpportunityNote
                 input: LeverCreateNoteInput
                 endpoint:
                     method: POST
-                    path: /lever/create-note
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:write:admin
+                version: 1.0.0
             create-opportunity:
-                description: |
-                    Action to create candidates and opportunities in Lever
+                description: >
+                    Create an opportunity and optionally candidates associated with the
+                    opportunity
                 output: LeverOpportunity
                 input: LeverCreateOpportunityInput
                 endpoint:
@@ -7589,16 +8224,19 @@ integrations:
                 version: 1.0.0
             get-stages:
                 description: |
-                    Action to get lists all pipeline stages in your Lever account.
+                    Action to get lists all pipeline stages. Note that this does 
+                    not paginate the response so it is possible that not all stages 
+                    are returned.
                 output: GetStages
                 endpoint:
                     method: GET
-                    path: /stages
-                    group: Opportunities
+                    path: /stages/limited
+                    group: Stages
+                version: 1.0.0
             users:
                 description: >
                     Lists all the users in your Lever account. Only active users are
-                    included by default..
+                    included by default.
                 output: SuccessResponse
                 endpoint:
                     method: GET
@@ -7606,29 +8244,33 @@ integrations:
                     group: Users
             get-postings:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all posts for your account. Note that this does
+                    not paginate the response so it is possible that not all postings 
+                    are returned.
                 output: SuccessResponse
                 endpoint:
                     method: GET
-                    path: /posts/single
+                    path: /posts/limited
                     group: Posts
+                version: 1.0.0
             get-archive-reasons:
                 description: |
-                    Get all Posts for your account in Lever
+                    Get all archived reasons
                 output: SuccessResponse
                 endpoint:
                     method: GET
                     path: /archived/reasons
-                    group: Opportunities
-            posting:
+                    group: Archived
+            get-posting:
                 description: |
-                    Get single posts for your account in Lever
+                    Get single post for your account in Lever
                 output: SuccessResponse
                 input: SinglePost
                 endpoint:
                     method: GET
-                    path: /posts
+                    path: /posts/single
                     group: Posts
+                version: 1.0.0
             update-opportunity-links:
                 description: |
                     Update the links in an opportunity
@@ -7636,8 +8278,9 @@ integrations:
                 input: UpdateLinks
                 endpoint:
                     method: POST
-                    path: /links
+                    path: /opportunities/links
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-sources:
                 description: |
                     Update the sources in an opportunity
@@ -7645,8 +8288,9 @@ integrations:
                 input: UpdateSources
                 endpoint:
                     method: POST
-                    path: /sources
+                    path: /opportunities/sources
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-stage:
                 description: |
                     Update the stage in an opportunity
@@ -7654,8 +8298,9 @@ integrations:
                 input: UpdateOpportunityStage
                 endpoint:
                     method: POST
-                    path: /stages
+                    path: /opportunities/stages
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-tags:
                 description: |
                     Update the tags in an opportunity
@@ -7663,17 +8308,19 @@ integrations:
                 input: UpdateTags
                 endpoint:
                     method: POST
-                    path: /tags
+                    path: /opportunities/tags
                     group: Opportunities
+                version: 1.0.0
             update-opportunity-archived:
                 description: |
-                    Update the tags in an opportunity
+                    Update the archived state of an opportunity
                 output: SuccessResponse
                 input: ArchiveOpportunity
                 endpoint:
                     method: PUT
-                    path: /archived
+                    path: /opportunities/archived
                     group: Opportunities
+                version: 1.0.0
             apply-posting:
                 description: >
                     Submit an application on behalf of a candidate. This endpoint can only
@@ -7690,14 +8337,14 @@ integrations:
                 output: ReturnObjUpdateOpportunity
                 input: UpdateOpportunity
                 endpoint:
-                    method: POST
-                    path: /opportunity/update
+                    method: PATCH
+                    path: /opportunities
                     group: Opportunities
         syncs:
             opportunities:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all pipeline opportunities for contacts in Lever
+                    Fetches al opportunities
                 output: LeverOpportunity
                 sync_type: incremental
                 endpoint:
@@ -7714,54 +8361,63 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-applications
+                    path: /applications
+                    group: Applications
                 scopes:
                     - applications:read:admin
+                version: 1.0.0
             opportunities-feedbacks:
                 runs: every 6 hours
                 description: >
-                    Fetches a list of all feedback forms for a candidate for a specific
-                    Opportunity in lever
+                    Fetches a list of all feedback forms for a candidate for every single
+                    opportunity
                 output: LeverOpportunityFeedback
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-feedbacks
+                    path: /opportunities/feedback
+                    group: Opportunities
                 scopes:
                     - feedback:read:admin
             opportunities-interviews:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all interviewers for a specific Opportunity in lever
+                    Fetches a list of all interviews for every single opportunity
                 output: LeverOpportunityInterview
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-interviews
+                    path: /opportunities/interviews
+                    group: Opportunities
                 scopes:
                     - interviews:read:admin
+                version: 1.0.0
             opportunities-notes:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all notes for a specific candidate in lever
+                    Fetches a list of all notes for every single opportunity
                 output: LeverOpportunityNote
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-notes
+                    path: /notes
+                    group: Notes
                 scopes:
                     - notes:read:admin
+                version: 1.0.0
             opportunities-offers:
                 runs: every 6 hours
                 description: |
-                    Fetches a list of all offers for a specific candidate in lever.
+                    Fetches a list of all offers for every single opportunity
                 output: LeverOpportunityOffer
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/opportunities-offers
+                    path: /offers
+                    group: Offers
                 scopes:
                     - offers:write:admin
+                version: 1.0.0
             postings:
                 runs: every 6 hours
                 description: |
@@ -7770,10 +8426,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings
+                    path: /postings
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            postings-apply:
+                version: 1.0.0
+            postings-questions:
                 runs: every 6 hours
                 description: >
                     Fetches a list of all questions included in a posting’s application
@@ -7782,10 +8440,12 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/postings-apply
+                    path: /postings/questions
+                    group: Postings
                 scopes:
                     - postings:read:admin
-            stage:
+                version: 1.0.0
+            stages:
                 runs: every 6 hours
                 description: |
                     Fetches a list of all pipeline stages in Lever
@@ -7793,9 +8453,11 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /lever/stage
+                    path: /stages
+                    group: Stages
                 scopes:
                     - stages:read:admin
+                version: 1.0.0
         models:
             LeverOpportunity:
                 id: string
@@ -9143,6 +9805,583 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    pennylane:
+        actions:
+            create-customer:
+                description: |
+                    Action to create a customer in pennylane
+                input: PennylaneIndividualCustomer
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /customers
+                    group: Customers
+            create-invoice:
+                description: |
+                    Action to create an invoice in pennylane
+                input: CreateInvoice
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /invoices
+                    group: Invoices
+            create-supplier:
+                description: |
+                    Action to create a supplier in pennylane
+                input: CreateSupplier
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /suppliers
+                    group: Suppliers
+            update-customer:
+                description: |
+                    Action to update a supplier in pennylane
+                input: UpdatePennylaneCustomer
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /customers
+                    group: Customers
+            update-invoice:
+                description: |
+                    Action to update an invoice in pennylane
+                input: UpdateInvoice
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /invoices
+                    group: Invoices
+            update-supplier:
+                description: |
+                    Action to update a supplier in pennylane
+                input: UpdateSupplier
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /suppliers
+                    group: Suppliers
+            create-product:
+                description: |
+                    Action to create a product in pennylane
+                input: CreateProduct
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: POST
+                    path: /products
+                    group: Products
+            update-product:
+                description: |
+                    Action to update a product in pennylane
+                input: UpdateProduct
+                output: PennylaneSuccessResponse
+                version: 1.0.0
+                endpoint:
+                    method: PATCH
+                    path: /products
+                    group: Products
+        syncs:
+            customers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of customers from pennylane
+                output: PennylaneCustomer
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /customers
+                    group: Customers
+                scopes:
+                    - accounting
+                version: 1.0.0
+            suppliers:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of suppliers from pennylane
+                output: PennylaneSupplier
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /suppliers
+                    group: Suppliers
+                scopes:
+                    - supplier_invoices
+                version: 1.0.0
+            invoices:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of customer invoices from pennylane
+                output: PennylaneInvoice
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /invoices
+                    group: Invoices
+                scopes:
+                    - customer_invoices
+                version: 1.0.0
+            products:
+                runs: every 6 hours
+                description: |
+                    Fetches a list products from pennylane
+                output: PennylaneProduct
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /products
+                    group: Products
+                scopes:
+                    - accounting
+                version: 1.0.0
+        models:
+            CreateInvoice:
+                create_customer?: boolean
+                create_products?: boolean
+                update_customer?: boolean
+                date: string
+                deadline: string
+                draft?: boolean
+                customer_source_id: string
+                external_id?: string | null
+                pdf_invoice_free_text?: string | null
+                pdf_invoice_subject?: string | null
+                currency?: string
+                special_mention?: string | null
+                discount?: number
+                language?: string
+                transactions_reference?: TransactionReferenceObject
+                line_items: >-
+                    LineItemWithTax[] | LineItemWithoutTax[] |
+                    LineItemWithExistingProduct[]
+                categories?: CategoryObject[]
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                imputation_dates?:
+                    start_date: string
+                    end_date: string
+            UpdateInvoice:
+                id: string
+                label?: string | null
+                invoice_number?: string | null
+                quote_group_uuid?: string
+                is_draft?: boolean
+                is_estimate?: boolean
+                currency?: string
+                amount?: string
+                currency_amount?: string
+                currency_amount_before_tax?: string
+                exchange_rate?: number
+                date?: string | null
+                deadline?: string | null
+                currency_tax?: string
+                language?: string
+                paid?: boolean
+                fully_paid_at?: string | null
+                status?: string | null
+                discount?: string
+                discount_type?: string
+                public_url?: string
+                file_url?: string | null
+                filename?: string
+                remaining_amount?: string
+                source?: InvoiceSource
+                special_mention?: string | null
+                updated_at?: string
+                imputation_dates?: ImputationDateObject | null
+                customer?: PennylaneIndividualCustomer
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                line_items?: InvoiceLineItem[]
+                categories?: InvoiceCategory[]
+                transactions_reference?: TransactionReferenceObject
+                payments?: PaymentsObject[]
+                matched_transactions?: MatchedTransactionsObject[]
+                pdf_invoice_free_text?: string
+                pdf_invoice_subject?: string
+                billing_subscription?: BillingSubscriptionObject | null
+            UpdateInvoiceResponse:
+                invoice: UpdateInvoice
+            CreateSupplier:
+                name: string
+                reg_no?: string
+                address: string
+                postal_code: string
+                city: string
+                country_alpha2: string
+                recipient?: string
+                vat_number?: string
+                source_id?: string
+                emails: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            UpdateSupplier:
+                source_id: string
+                name?: string
+                reg_no?: string
+                address?: string
+                postal_code?: string
+                city?: string
+                country_alpha2?: string
+                recipient?: string
+                vat_number?: string
+                emails?: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            UpdateSupplierResponse:
+                supplier:
+                    source_id: string
+                    name?: string
+                    reg_no?: string
+                    address?: string
+                    postal_code?: string
+                    city?: string
+                    country_alpha2?: string
+                    recipient?: string
+                    vat_number?: string
+                    emails?: string[]
+                    iban?: string
+                    payment_conditions?: string
+                    phone?: string
+                    reference?: string
+                    notes?: string
+            InvoiceResponse:
+                invoice: PennylaneInvoice
+            PennylaneInvoice:
+                id: string
+                amount: string | null
+                billing_subscription?: BillingSubscriptionObject | null
+                categories?: InvoiceCategory[] | null
+                currency: string | null
+                currency_amount: string | null
+                currency_amount_before_tax?: string | null
+                currency_tax: string | null
+                customer?: PennylaneIndividualCustomer
+                customer_name: string
+                customer_validation_needed: boolean | null
+                date?: date | string
+                deadline: string | null
+                discount: string | null
+                discount_type?: string | null
+                exchange_rate: number | null
+                file_url: string | null
+                filename: string | null
+                fully_paid_at?: date | null
+                imputation_dates: ImputationDateObject | null
+                invoice_number?: string | null
+                is_draft: boolean
+                is_estimate?: boolean
+                label?: string | null
+                language?: string | null
+                line_items?: InvoiceLineItem[]
+                line_items_sections_attributes?: LineItemsSectionsAttributesObject[]
+                matched_transactions?: MatchedTransactionsObject[]
+                paid: boolean
+                payments: object[]
+                pdf_invoice_free_text: string
+                pdf_invoice_subject: string
+                public_url: string | null
+                quote_group_uuid?: string | null
+                remaining_amount: string | null
+                source: string | null
+                special_mention: string | null
+                status: string | null
+                transactions_reference?: TransactionReferenceObject | null
+                updated_at: date | string
+            LineItemWithTax:
+                label: string
+                quantity: number
+                section_rank?: number
+                currency_amount: number
+                plan_item_number?: string
+                unit: string
+                vat_rate: string
+                description?: string
+                discount?: number
+            LineItemWithoutTax:
+                label: string
+                quantity: number
+                section_rank?: number
+                currency_amount_before_tax: number
+                plan_item_number?: string
+                unit: string
+                vat_rate: string
+                description?: string
+                discount?: number
+            LineItemWithExistingProduct:
+                label?: string
+                quantity: number
+                discount?: number
+                section_rank?: number
+                plan_item_number?: string
+                product:
+                    source_id: string
+                    price?: number
+                    vat_rate?: string
+                    unit?: string
+            ImputationDateObject:
+                start_date: string
+                end_date: string
+            CategoryObject:
+                source_id: string
+                weight: number | null
+                amount: number | null
+            LineItemsSectionsAttributesObject:
+                title?: string | null
+                description?: string | null
+                rank: number
+            InvoiceLineItem:
+                id?: number
+                label?: string
+                unit?: string | null
+                quantity?: string
+                amount?: string
+                currency_amount?: string
+                description?: string
+                product_id?: string | null
+                vat_rate?: string
+                currency_price_before_tax?: string
+                currency_tax?: string
+                raw_currency_unit_price?: string
+                discount?: string
+                discount_type?: string
+                section_rank?: number | null
+                v2_id?: number | null
+                product_v2_id?: number | null
+            InvoiceCategory:
+                source_id: string
+                weight: string
+                label: string
+                direction: string | null
+                created_at: date | string
+                updated_at: date | string
+            TransactionReferenceObject:
+                banking_provider: string | null
+                provider_field_name: string | null
+                provider_field_value: string | null
+            PaymentsObject:
+                label: string
+                created_at: date | string
+                currency_amount: string
+            MatchedTransactionsObject:
+                label: string | null
+                amount: string | null
+                group_uuid: string | null
+                date: date | null
+                fee: string | null
+                currency: string
+            BillingSubscriptionObject:
+                id: string | null
+            IndividualCustomer: PennylaneIndividualCustomer
+            UpdateIndividualCustomer:
+                id: string
+                customer: PennylaneIndividualCustomer
+            IndividualCustomerResponse:
+                customer:
+                    first_name?: string
+                    last_name?: string
+                    gender?: string | null
+                    name?: string
+                    updated_at?: string
+                    source_id: string
+                    emails?: string[]
+                    billing_iban?: string | null
+                    customer_type?: string
+                    recipient?: string
+                    billing_address?:
+                        address?: string
+                        postal_code?: string
+                        city?: string
+                        country_alpha2?: string
+                    delivery_address?:
+                        address?: string
+                        postal_code?: string
+                        city?: string
+                        country_alpha2?: string
+                    payment_conditions?: string
+                    phone?: string
+                    reference?: string
+                    notes?: string
+                    plan_item?:
+                        number: string
+                        label: string
+                        enabled: boolean
+                        vat_rate: string
+                        country_alpha2: string
+                        description: string
+                    mandates?: MandateObject[]
+            MandateObject:
+                provider: string
+                source_id: string
+            PennylaneIndividualCustomer:
+                customer_type?: string
+                first_name: string
+                last_name: string
+                country_alpha2: string
+                gender?: string | null
+                address?: string
+                postal_code?: string
+                city?: string
+                source_id?: string
+                emails?: string[]
+                billing_iban?: string
+                delivery_address?: string | DeliveryAddressObject
+                vat_number?: string | null
+                delivery_postal_code?: string
+                delivery_city?: string
+                delivery_country_alpha2?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+                mandate?:
+                    provider?: string
+                    source_id: string
+                plan_item?:
+                    number?: string
+                    label?: string
+                    enabled?: boolean
+                    vat_rate?: string
+                    country_alpha2?: string
+                    description?: string
+            PennylaneSuccessResponse:
+                success: boolean
+                source_id: string
+            UpdatePennylaneCustomer:
+                id: string
+                first_name?: string
+                last_name?: string
+                gender?: string
+                address?: string
+                vat_number?: string | null
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+                recipient?: string | null
+                source_id?: string | null
+                emails?: string[] | null
+                billing_iban?: string | null
+                delivery_address?: DeliveryAddressObject | null
+                delivery_postal_code?: string | null
+                delivery_country?: string | null
+                delivery_country_alpha2?: string | null
+                payment_conditions?: string | null
+                phone?: string | null
+                reference?: string | null
+                notes?: string | null
+            DeliveryAddressObject:
+                address?: string
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+            PennylaneCustomer:
+                id: string
+                first_name?: string
+                last_name?: string
+                gender?: string
+                address?: string
+                vat_number?: string | null
+                postal_code?: string | null
+                city?: string | null
+                country_alpha2?: string | null
+                recipient?: string | null
+                source_id?: string | null
+                emails?: string[] | null
+                billing_iban?: string | null
+                delivery_address?: DeliveryAddressObject | null
+                delivery_postal_code?: string | null
+                delivery_country_alpha2?: string | null
+                payment_conditions?: string | null
+                phone?: string | null
+                reference?: string | null
+                notes?: string | null
+            PennylaneSupplier:
+                name: string
+                id?: string
+                reg_no?: string
+                address: string
+                postal_code: string
+                city: string
+                country_alpha2: string
+                recipient?: string
+                vat_number?: string
+                source_id?: string
+                emails: string[]
+                iban?: string
+                payment_conditions?: string
+                phone?: string
+                reference?: string
+                notes?: string
+            CreateProduct:
+                source_id: string
+                label: string
+                description?: string
+                unit: string
+                price_before_tax?: number
+                price: number
+                vat_rate: string
+                currency: string
+                reference?: string | null
+                substance?: string | null
+            UpdateProduct:
+                source_id: string
+                label?: string
+                description?: string
+                unit?: string
+                price_before_tax?: number
+                price?: number
+                vat_rate?: string
+                currency?: string
+                reference?: string | null
+                substance?: string | null
+            PennylaneProduct:
+                id: string
+                source_id: string
+                label: string
+                description?: string
+                unit: string
+                price_before_tax?: number
+                price: number
+                vat_rate: string
+                currency: string
+                reference?: string | null
+                substance?: string | null
+            InvoiceMapper:
+                create_customer: boolean
+                create_products: boolean
+                update_customer: boolean
+                invoice:
+                    date: string
+                    deadline: string
+                    draft: boolean
+                    customer:
+                        source_id: string
+                    currency: string
+                    line_items: >-
+                        LineItemWithTax[] | LineItemWithoutTax[] |
+                        LineItemWithExistingProduct[]
+                    pdf_invoice_free_text: string
+                    pdf_invoice_subject: string
+                    special_mention: string | null
+                    discount: number
+                    categories: CategoryObject[] | null
+                    transactions_reference?:
+                        banking_provider: string
+                        provider_field_name: string
+                        provider_field_value: string
+                    imputation_dates?:
+                        start_date: string
+                        end_date: string
     perimeter81:
         actions:
             create-user:
