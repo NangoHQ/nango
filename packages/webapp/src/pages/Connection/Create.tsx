@@ -217,16 +217,7 @@ export const ConnectionCreate: React.FC = () => {
                             </div>
                         </div>
 
-                        <SimpleTooltip
-                            className="max-w-[400px]"
-                            align="center"
-                            side="bottom"
-                            tooltipContent={
-                                'The user email is simply the one you used to sign up for Nango and doesn’t need to match the email used for the third-party system. This email is used only for display purposes to help associate the connection with its creator and does not affect the functionality of the connection.'
-                            }
-                        >
-                            <Info>Test user email and name use your Nango account details.</Info>
-                        </SimpleTooltip>
+                        <Info>Test user email and name use your Nango account details.</Info>
 
                         {paramExtended && (
                             <Collapsible>
