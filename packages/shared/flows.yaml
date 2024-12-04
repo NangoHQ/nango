@@ -3456,6 +3456,7 @@ integrations:
                     path: /conversations
                 track_deletes: true
                 sync_type: full
+                version: 1.0.1
         actions:
             conversation:
                 description: >-
