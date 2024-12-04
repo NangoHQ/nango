@@ -814,6 +814,7 @@ bill:
     proxy:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
+    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
 
 bitbucket:
     display_name: Bitbucket
@@ -1146,15 +1147,16 @@ buildium:
             description: Your API Key Client ID
             pattern: '^[a-f0-9-]+$'
             example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
-            doc_section: '#step-1-finding-your-api-key-and-client-id'
+            doc_section: '#step-2-finding-your-client-id-and-secret'
+            order: 1
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API key for your Buildium account
+            title: Secret
+            description: The Secret for your Buildium account
             pattern: '^[A-Za-z0-9+/]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
-            doc_section: '#step-1-finding-your-api-key-and-client-id'
+            doc_section: '#step-2-finding-your-client-id-and-secret'
 
 cal-com-v1:
     display_name: Cal.com (v1)
