@@ -626,7 +626,7 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
-    docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
+    docs_connect: https://docs.nango.dev/integrations/all/aws/connect
     credentials:
         username:
             type: string
@@ -685,7 +685,7 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
-    docs_connect: https://docs.nango.dev/integrations/all/bamboohr-basic/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bamboohr/connect
     connection_config:
         subdomain:
             type: string
@@ -1024,7 +1024,7 @@ brex-api-key:
             Authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
-    docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
+    docs_connect: https://docs.nango.dev/integrations/all/brex/connect
     credentials:
         apiKey:
             type: string
