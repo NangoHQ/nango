@@ -506,7 +506,7 @@ describe('Proxy service Construct URL Tests', () => {
         expect(diff).toBeLessThan(2000);
     });
 
-    it('Should retry based on provider specific config', async () => {
+    it('Should retry based on the header even if the error code is not a 429', async () => {
         const nowInSecs = Date.now() / 1000;
         const mockAxiosError = {
             response: {
@@ -539,9 +539,7 @@ describe('Proxy service Construct URL Tests', () => {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     retry: {
-                        at: 'x-ratelimit-requests-reset',
-                        status_code: '4xx',
-                        body_contains: 'RATELIMITED'
+                        at: 'x-ratelimit-requests-reset'
                     }
                 }
             },
@@ -556,51 +554,7 @@ describe('Proxy service Construct URL Tests', () => {
         expect(willRetry).toBe(true);
     });
 
-    it('Should not retry based on provider specific config if the body does not contain the value', async () => {
-        const nowInSecs = Date.now() / 1000;
-        const mockAxiosError = {
-            response: {
-                status: 400,
-                code: 400,
-                headers: {
-                    'x-ratelimit-requests-reset': nowInSecs + 1
-                },
-                data: {
-                    errors: [
-                        {
-                            extensions: {
-                                userError: true,
-                                code: 'NO',
-                                meta: {},
-                                type: 'something_else',
-                                userPresentableMessage: ''
-                            },
-                            message: 'Nothing'
-                        }
-                    ]
-                },
-                statusText: 'Bad Request',
-                config: {} as InternalAxiosRequestConfig
-            } as AxiosResponse
-        } as AxiosError;
-        const config = {
-            provider: {
-                auth_mode: 'OAUTH2',
-                proxy: {
-                    retry: {
-                        at: 'x-ratelimit-requests-reset',
-                        status_code: '6xx',
-                        body_contains: 'RATELIMITED'
-                    }
-                }
-            },
-            token: 'some-oauth-access-token'
-        } as ApplicationConstructedProxyConfiguration;
-        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
-        expect(willRetry).toBe(false);
-    });
-
-    it('Should not retry based on provider specific config', async () => {
+    it('Should not retry based on the header if it does not match', async () => {
         const nowInSecs = Date.now() / 1000;
         const mockAxiosError = {
             response: {
@@ -633,9 +587,7 @@ describe('Proxy service Construct URL Tests', () => {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     retry: {
-                        at: 'x-ratelimit-requests-reset',
-                        status_code: '6xx',
-                        body_contains: 'RATELIMITED'
+                        at: 'x-ratelimit-requests-resets'
                     }
                 }
             },

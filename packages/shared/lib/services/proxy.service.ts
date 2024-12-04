@@ -260,7 +260,7 @@ class ProxyService {
             error.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
             config.retryOn?.includes(Number(error.response?.status)) ||
-            this.isProviderRetryTriggered(config.provider.proxy?.retry, error)
+            this.isRetryInHeader(config.provider.proxy?.retry, error)
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';
@@ -299,30 +299,22 @@ class ProxyService {
         return false;
     };
 
-    private isProviderRetryTriggered(retryConfig: RetryHeaderConfig | undefined, response: AxiosError): boolean {
+    private isRetryInHeader(retryConfig: RetryHeaderConfig | undefined, error: AxiosError): boolean {
         if (!retryConfig) {
             return false;
         }
 
-        const { status_code, body_contains } = retryConfig;
+        const { at, after } = retryConfig;
 
-        const statusCodeValid =
-            status_code && status_code.includes('x')
-                ? (() => {
-                      const statusCode = response.response?.status?.toString().charAt(0);
-                      return statusCode && status_code.includes(statusCode);
-                  })()
-                : true;
+        if (at) {
+            return Boolean(error.response?.headers[at] || error.response?.headers[at.toLowerCase()]);
+        }
 
-        const bodyContainsValid = body_contains
-            ? (() => {
-                  const body = response.response?.data;
-                  const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
-                  return bodyString.includes(body_contains);
-              })()
-            : true;
+        if (after) {
+            return Boolean(error.response?.headers[after] || error.response?.headers[after.toLowerCase()]);
+        }
 
-        return Boolean(statusCodeValid && bodyContainsValid);
+        return false;
     }
 
     /**

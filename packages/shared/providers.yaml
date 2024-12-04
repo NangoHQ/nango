@@ -3641,8 +3641,6 @@ linear:
         base_url: https://api.linear.app
         retry:
             at: 'X-RateLimit-Requests-Reset'
-            status_code: 4xx
-            body_contains: RATELIMITED
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
