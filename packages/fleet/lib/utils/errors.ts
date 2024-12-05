@@ -1,4 +1,4 @@
-type Jsonable = string | number | boolean | null | undefined | readonly Jsonable[] | { readonly [key: string]: Jsonable } | { toJSON(): Jsonable };
+import type { Jsonable } from '@nangohq/types';
 
 type FleetErrorCode =
     | 'deployment_creation_error'
