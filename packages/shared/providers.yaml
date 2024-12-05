@@ -938,7 +938,7 @@ braze:
     proxy:
         base_url: https://rest.${connectionConfig.instanceUrl}
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/braze
