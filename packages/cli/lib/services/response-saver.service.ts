@@ -128,7 +128,7 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     }
 
     // order is important to the request hash
-    const requestIdentity = {
+    const requestIdentity: RequestIdentity = {
         method,
         endpoint,
         params,
