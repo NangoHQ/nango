@@ -136,7 +136,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             }
         }
 
-        // Enforce that integrations exists `integrations_config_defaults`
+        // Enforce that integrations exists in `integrations_config_defaults`
         if (body.integrations_config_defaults) {
             const errors: ZodIssue[] = [];
             for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
