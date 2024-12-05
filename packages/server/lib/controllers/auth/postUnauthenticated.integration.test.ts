@@ -78,6 +78,7 @@ describe(`GET ${endpoint}`, () => {
     it('should not be allowed to create an integration if disallowed by sessionToken', async () => {
         const env = await seeders.createEnvironmentSeed();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+        await seeders.createConfigSeed(env, 'not_this_one', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',

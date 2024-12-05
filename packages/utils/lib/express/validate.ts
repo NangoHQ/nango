@@ -36,7 +36,7 @@ export const validateRequest =
         }
     };
 
-export function zodErrorToHTTP(error: z.ZodError): ValidationError[] {
+export function zodErrorToHTTP(error: Pick<z.ZodError, 'issues'>): ValidationError[] {
     return error.issues.map(({ code, message, path }) => {
         return { code, message, path };
     });

@@ -34,7 +34,7 @@ export type PostConnectSessions = Endpoint<{
     Success: {
         data: {
             token: string;
-            expires_at: Date;
+            expires_at: string;
         };
     };
 }>;
