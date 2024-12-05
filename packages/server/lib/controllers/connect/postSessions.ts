@@ -1,11 +1,12 @@
 import type { PostConnectSessions } from '@nangohq/types';
+import type { ZodIssue } from 'zod';
 import { z } from 'zod';
 import db from '@nangohq/database';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
-import * as endUserService from '@nangohq/shared';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { configService, createEndUser, getEndUser, updateEndUser } from '@nangohq/shared';
 
 export const bodySchema = z
     .object({
@@ -55,66 +56,98 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     }
 
     const { account, environment } = res.locals;
+    const body: PostConnectSessions['Body'] = val.data;
 
     await db.knex.transaction(async (trx) => {
         // Check if the endUser exists in the database
-        const getEndUser = await endUserService.getEndUser(trx, {
-            endUserId: req.body.end_user.id,
+        const endUserRes = await getEndUser(trx, {
+            endUserId: body.end_user.id,
             accountId: account.id,
             environmentId: environment.id
         });
 
         let endUserInternalId: number;
-        if (getEndUser.isErr()) {
-            if (getEndUser.error.code !== 'not_found') {
+        if (endUserRes.isErr()) {
+            if (endUserRes.error.code !== 'not_found') {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to get end user' } });
                 return;
             }
+
             // create end user if it doesn't exist yet
-            const createEndUser = await endUserService.createEndUser(trx, {
-                endUserId: req.body.end_user.id,
-                email: req.body.end_user.email,
-                displayName: req.body.end_user.display_name || null,
-                organization: req.body.organization?.id
+            const createdEndUser = await createEndUser(trx, {
+                endUserId: body.end_user.id,
+                email: body.end_user.email,
+                displayName: body.end_user.display_name || null,
+                organization: body.organization?.id
                     ? {
-                          organizationId: req.body.organization.id,
-                          displayName: req.body.organization.display_name || null
+                          organizationId: body.organization.id,
+                          displayName: body.organization.display_name || null
                       }
                     : null,
                 accountId: account.id,
                 environmentId: environment.id
             });
-            if (createEndUser.isErr()) {
+            if (createdEndUser.isErr()) {
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to create end user' } });
                 return;
             }
-            endUserInternalId = createEndUser.value.id;
+            endUserInternalId = createdEndUser.value.id;
         } else {
+            const endUser = endUserRes.value;
             const shouldUpdate =
-                getEndUser.value.email !== req.body.end_user.email ||
-                getEndUser.value.displayName !== req.body.end_user.display_name ||
-                getEndUser.value.organization?.organizationId !== req.body.organization?.id ||
-                getEndUser.value.organization?.displayName !== req.body.organization?.display_name;
+                endUser.email !== body.end_user.email ||
+                endUser.displayName !== body.end_user.display_name ||
+                endUser.organization?.organizationId !== body.organization?.id ||
+                endUser.organization?.displayName !== body.organization?.display_name;
             if (shouldUpdate) {
-                const updateEndUser = await endUserService.updateEndUser(trx, {
-                    endUserId: getEndUser.value.endUserId,
+                const updatedEndUser = await updateEndUser(trx, {
+                    endUserId: endUser.endUserId,
                     accountId: account.id,
                     environmentId: environment.id,
-                    email: req.body.end_user.email,
-                    displayName: req.body.end_user.display_name || null,
-                    organization: req.body.organization?.id
+                    email: body.end_user.email,
+                    displayName: body.end_user.display_name || null,
+                    organization: body.organization?.id
                         ? {
-                              organizationId: req.body.organization.id,
-                              displayName: req.body.organization.display_name || null
+                              organizationId: body.organization.id,
+                              displayName: body.organization.display_name || null
                           }
                         : null
                 });
-                if (updateEndUser.isErr()) {
+                if (updatedEndUser.isErr()) {
                     res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                     return;
                 }
             }
-            endUserInternalId = getEndUser.value.id;
+            endUserInternalId = endUser.id;
+        }
+
+        const integrations = await configService.listProviderConfigs(environment.id);
+        // Enforce that integrations exists in `allowed_integrations`
+        if (body.allowed_integrations && body.allowed_integrations.length > 0) {
+            const errors: ZodIssue[] = [];
+            for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
+                if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+                    errors.push({ path: ['allowed_integrations', key], code: 'custom', message: 'Integration does not exist' });
+                }
+            }
+            if (errors.length > 0) {
+                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } });
+                return;
+            }
+        }
+
+        // Enforce that integrations exists in `integrations_config_defaults`
+        if (body.integrations_config_defaults) {
+            const errors: ZodIssue[] = [];
+            for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+                if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+                    errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+                }
+            }
+            if (errors.length > 0) {
+                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } });
+                return;
+            }
         }
 
         // create connect session
@@ -122,10 +155,10 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             endUserId: endUserInternalId,
             accountId: account.id,
             environmentId: environment.id,
-            allowedIntegrations: req.body.allowed_integrations || null,
-            integrationsConfigDefaults: req.body.integrations_config_defaults
+            allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
+            integrationsConfigDefaults: body.integrations_config_defaults
                 ? Object.fromEntries(
-                      Object.entries(req.body.integrations_config_defaults).map(([key, value]) => [
+                      Object.entries(body.integrations_config_defaults).map(([key, value]) => [
                           key,
                           { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
                       ])
@@ -136,6 +169,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create connect session' } });
             return;
         }
+
         // create a private key for the connect session
         const createPrivateKey = await keystore.createPrivateKey(trx, {
             displayName: '',
@@ -149,8 +183,8 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create session token' } });
             return;
         }
+
         const [token, privateKey] = createPrivateKey.value;
-        res.status(201).send({ data: { token, expires_at: privateKey.expiresAt! } });
-        return;
+        res.status(201).send({ data: { token, expires_at: privateKey.expiresAt!.toISOString() } });
     });
 });
