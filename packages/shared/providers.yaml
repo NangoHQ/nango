@@ -2772,12 +2772,12 @@ gong:
     credentials:
         username:
             type: string
-            title: username
+            title: Access Key
             description: Your Gong Access Key
             pattern: '^[a-zA-Z0-9-]+$'
         password:
             type: string
-            title: Password
+            title: Access Key Secret
             description: Your Gong Access Key Secret
             default_value: ''
             doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
