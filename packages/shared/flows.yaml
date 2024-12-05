@@ -13631,6 +13631,15 @@ integrations:
                     path: /items
                     group: Items
                 version: 1.0.1
+            get-tenants:
+                description: |
+                    Fetches all the tenants the connection has access to.
+                    This can be used to set the metadata to the selected tenant.
+                output: TenantResponse
+                endpoint:
+                    method: GET
+                    path: /tenants
+                    group: Tenants
             update-item:
                 description: |
                     Updates one or more items in Xero.
@@ -13898,6 +13907,16 @@ integrations:
             CreditNoteActionResponse:
                 succeededCreditNotes: CreditNote[]
                 failedCreditNotes: FailedCreditNote[]
+            TenantResponse:
+                tenants: Tenant[]
+            Tenant:
+                id: string
+                authEventId: string
+                tenantId: string
+                tenantType: string
+                tenantName: string
+                createdDateUtc: string
+                updatedDateUtc: string
     zendesk:
         syncs:
             tickets:
@@ -14664,7 +14683,24 @@ integrations:
                     group: Meetings
                 scopes:
                     - meeting:read
+            recording-files:
+                runs: every day
+                description: |
+                    Fetches a list of recordings from Zoom
+                output: RecordingFile
+                track_deletes: true
+                input: OptionalBackfillSetting
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /recording-files
+                    group: Cloud Recordings
+                scopes:
+                    - cloud_recording:read:list_user_recordings
+                    - cloud_recording:read:list_recording_files
         models:
+            OptionalBackfillSetting:
+                backfillPeriodDays: number
             IdEntity:
                 id: string
             SuccessResponse:
@@ -14728,3 +14764,28 @@ integrations:
                 start_time?: string
                 template_id?: string
                 timezone?: string
+            RecordingFile:
+                id: string
+                deletedTime?: string
+                downloadUrl: string
+                filePath?: string
+                fileSize: number
+                fileType: >-
+                    MP4 | M4A | CHAT | TRANSCRIPT | CSV | TB | CC | CHAT_MESSAGE | SUMMARY
+                    | TIMELINE
+                fileExtension: MP4 | M4A | TXT | VTT | CSV | JSON | JPG
+                meetingId: string
+                playUrl?: string
+                recordingEnd: string
+                recordingStart: string
+                recordingType: >-
+                    shared_screen_with_speaker_view(CC) | shared_screen_with_speaker_view
+                    | shared_screen_with_gallery_view | active_speaker | gallery_view |
+                    shared_screen | audio_only | audio_transcript | chat_file | poll |
+                    host_video | closed_caption | timeline | thumbnail |
+                    audio_interpretation | summary | summary_next_steps |
+                    summary_smart_chapters | sign_interpretation | production_studio
+                status: completed
+                autoDelete?: boolean
+                autoDeleteDate?: string
+                playPasscode: string
