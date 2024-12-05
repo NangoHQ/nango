@@ -255,12 +255,10 @@ class ProxyService {
     ): Promise<boolean> => {
         if (
             error.response?.status.toString().startsWith('5') ||
-            // Note that Github issues a 403 for both rate limits and improper scopes
-            (error.response?.status === 403 && error.response.headers['x-ratelimit-remaining'] && error.response.headers['x-ratelimit-remaining'] === '0') ||
+            this.isProviderSpecificErrorCode(config.provider.proxy?.retry, error) ||
             error.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
-            config.retryOn?.includes(Number(error.response?.status)) ||
-            this.isRetryInHeader(config.provider.proxy?.retry, error)
+            config.retryOn?.includes(Number(error.response?.status))
         ) {
             if (config.retryHeader) {
                 const type = config.retryHeader.at ? 'at' : 'after';
@@ -299,19 +297,19 @@ class ProxyService {
         return false;
     };
 
-    private isRetryInHeader(retryConfig: RetryHeaderConfig | undefined, error: AxiosError): boolean {
+    private isProviderSpecificErrorCode(retryConfig: RetryHeaderConfig | undefined, error: AxiosError): boolean {
         if (!retryConfig) {
             return false;
         }
 
-        const { at, after } = retryConfig;
+        const { remaining, error_code } = retryConfig;
 
-        if (at) {
-            return Boolean(error.response?.headers[at] || error.response?.headers[at.toLowerCase()]);
+        if (!remaining || !error_code) {
+            return false;
         }
 
-        if (after) {
-            return Boolean(error.response?.headers[after] || error.response?.headers[after.toLowerCase()]);
+        if (Number(error?.response?.status) === Number(error_code) && error.response?.headers[remaining] === '0') {
+            return true;
         }
 
         return false;

@@ -505,41 +505,41 @@ describe('Proxy service Construct URL Tests', () => {
         expect(diff).toBeGreaterThan(1000);
         expect(diff).toBeLessThan(2000);
     });
+});
+
+describe('Proxy service provider specific retries', () => {
+    const nowInSecs = Date.now() / 1000;
+    const mockAxiosError = {
+        response: {
+            status: 400,
+            code: 400,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '0'
+            },
+            data: {},
+            statusText: 'Bad Request',
+            config: {} as InternalAxiosRequestConfig
+        } as AxiosResponse
+    } as AxiosError;
 
     it('Should retry based on the header even if the error code is not a 429', async () => {
         const nowInSecs = Date.now() / 1000;
-        const mockAxiosError = {
-            response: {
-                status: 400,
-                code: 400,
-                headers: {
-                    'x-ratelimit-requests-reset': nowInSecs + 1
-                },
-                data: {
-                    errors: [
-                        {
-                            extensions: {
-                                userError: true,
-                                code: 'RATELIMITED',
-                                meta: {},
-                                type: 'ratelimited',
-                                userPresentableMessage: 'Rate limit exceeded. Only 1200 requests are allowed per 1 hour.'
-                            },
-                            message:
-                                'Rate limit exceeded. Only 1200 requests are allowed per 1 hour. For more information see our developer docs at: https://developers.linear.app/docs/graphql/working-with-the-graphql-api/rate-limiting'
-                        }
-                    ]
-                },
-                statusText: 'Bad Request',
-                config: {} as InternalAxiosRequestConfig
-            } as AxiosResponse
-        } as AxiosError;
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '0'
+            }
+        } as AxiosResponse;
         const config = {
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     retry: {
-                        at: 'x-ratelimit-requests-reset'
+                        at: 'x-ratelimit-requests-reset',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
                     }
                 }
             },
@@ -554,40 +554,67 @@ describe('Proxy service Construct URL Tests', () => {
         expect(willRetry).toBe(true);
     });
 
-    it('Should not retry based on the header if it does not match', async () => {
-        const nowInSecs = Date.now() / 1000;
-        const mockAxiosError = {
-            response: {
-                status: 400,
-                code: 400,
-                headers: {
-                    'x-ratelimit-requests-reset': nowInSecs + 1
-                },
-                data: {
-                    errors: [
-                        {
-                            extensions: {
-                                userError: true,
-                                code: 'RATELIMITED',
-                                meta: {},
-                                type: 'ratelimited',
-                                userPresentableMessage: 'Rate limit exceeded. Only 1200 requests are allowed per 1 hour.'
-                            },
-                            message:
-                                'Rate limit exceeded. Only 1200 requests are allowed per 1 hour. For more information see our developer docs at: https://developers.linear.app/docs/graphql/working-with-the-graphql-api/rate-limiting'
-                        }
-                    ]
-                },
-                statusText: 'Bad Request',
-                config: {} as InternalAxiosRequestConfig
-            } as AxiosResponse
-        } as AxiosError;
+    it('Should not retry based on the error_code if it does not match', async () => {
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            status: 437
+        } as AxiosResponse;
         const config = {
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
                     retry: {
-                        at: 'x-ratelimit-requests-resets'
+                        at: 'x-ratelimit-requests-resets',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        } as ApplicationConstructedProxyConfiguration;
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        expect(willRetry).toBe(false);
+    });
+
+    it('Should not retry based on the error_code if the remaining is not 0', async () => {
+        const nowInSecs = Date.now() / 1000;
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '1'
+            }
+        } as AxiosResponse;
+        const config = {
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    retry: {
+                        at: 'some-random-header',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        } as ApplicationConstructedProxyConfiguration;
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        expect(willRetry).toBe(false);
+    });
+
+    it('Should not retry based on the error_code if the remaining header does not match', async () => {
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            status: 400
+        } as AxiosResponse;
+        const config = {
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    retry: {
+                        at: 'some-random-header',
+                        remaining: 'not-the-same',
+                        error_code: 400
                     }
                 }
             },

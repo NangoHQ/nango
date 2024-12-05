@@ -2654,6 +2654,8 @@ github:
         base_url: https://api.github.com
         retry:
             at: 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+            error_code: 403
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -3676,7 +3678,9 @@ linear:
     proxy:
         base_url: https://api.linear.app
         retry:
-            at: 'X-RateLimit-Requests-Reset'
+            at: 'x-ratelimit-requests-reset'
+            remaining: 'x-ratelimit-requests-remaining'
+            error_code: 400
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
