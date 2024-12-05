@@ -12,7 +12,7 @@ export const wrapperStyles = cva('', {
             empty: 'border-dark-800',
             flat: 'bg-active-gray border-dark-800',
             border: 'bg-active-gray border-border-gray-400',
-            black: 'bg-pure-black border-border-gray-400'
+            black: 'bg-pure-black border-grayscale-600 hover:border-grayscale-500 focus-visible:border-grayscale-500 focus-within:bg-grayscale-900'
         }
     },
     defaultVariants: {
@@ -25,7 +25,7 @@ export const inputStyles = cva('', {
             xs: 'text-sm px-3 py-[4px] placeholder-gray-400',
             sm: 'text-sm px-3 py-[7px] placeholder-gray-400',
             md: 'text-sm px-3 py-[10px] placeholder-gray-400',
-            lg: 'text-sm px-3 py-[13px] placeholder-gray-400'
+            lg: 'text-sm px-3 h-[42px] placeholder-gray-400'
         }
     },
     defaultVariants: {
@@ -42,7 +42,9 @@ const Input = forwardRef<
         VariantProps<typeof wrapperStyles>
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
-        <div className={cn('relative flex items-center bg-transparent w-full rounded border text-sm', wrapperStyles({ variant }), className)}>
+        <div
+            className={cn('transition-colors relative flex items-center bg-transparent w-full rounded border text-sm ', wrapperStyles({ variant }), className)}
+        >
             {before && <div className="absolute text-text-light-gray px-2">{before}</div>}
             <input
                 type={type}

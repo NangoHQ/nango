@@ -75,8 +75,9 @@ module.exports = {
                 'grayscale-500': '#737473',
                 'grayscale-600': '#454545',
                 'grayscale-700': '#333333',
-                'grayscale-800': '#111111',
-                'grayscale-900': '#09090b',
+                'grayscale-800': '#262626',
+                'grayscale-900': '#111111',
+                'grayscale-1000': '#09090b',
 
                 'code-mint': '#6ed6ac',
                 'code-blue': '#90a1f0',

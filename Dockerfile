@@ -36,6 +36,7 @@ COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
 COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/webhooks/package.json ./packages/webhooks/package.json
+COPY packages/fleet/package.json ./packages/fleet/package.json
 COPY package*.json  ./
 
 # Install every dependencies

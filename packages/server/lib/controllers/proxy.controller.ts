@@ -265,13 +265,17 @@ class ProxyController {
             }
         });
 
-        const contentType = responseStream.headers['content-type'];
-        const isJsonResponse = contentType && contentType.includes('application/json');
-        const isChunked = responseStream.headers['transfer-encoding'] === 'chunked';
-        const isEncoded = Boolean(responseStream.headers['content-encoding']);
-        const isAttachment = responseStream.headers['content-disposition'] === 'attachment';
+        const contentType = responseStream.headers['content-type'] || '';
+        const contentDisposition = responseStream.headers['content-disposition'] || '';
+        const transferEncoding = responseStream.headers['transfer-encoding'] || '';
+        const contentEncoding = responseStream.headers['content-encoding'] || '';
 
-        if (isChunked || isEncoded || isAttachment) {
+        const isJsonResponse = contentType.includes('application/json');
+        const isChunked = transferEncoding === 'chunked';
+        const isEncoded = Boolean(contentEncoding);
+        const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
+
+        if (isChunked || isEncoded || isAttachmentOrInline) {
             const passThroughStream = new PassThrough();
             responseStream.data.pipe(passThroughStream);
             passThroughStream.pipe(res);
