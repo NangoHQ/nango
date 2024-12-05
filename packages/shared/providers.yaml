@@ -3296,6 +3296,8 @@ intercom:
     token_url: https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.intercom.io
+        retry:
+            at: 'X-RateLimit-Reset'
     docs: https://docs.nango.dev/integrations/all/intercom
 
 intuit:
