@@ -5,7 +5,7 @@ npx lint-staged --allow-empty
 
 # regenerate providers.mdx and add if needed
 files=`git diff --cached --name-status`
-providers="docs-v2/snippets/providers.yaml"
+providers="packages/shared/providers.yaml"
 
 if [[ $files =~ $providers ]]
 then
