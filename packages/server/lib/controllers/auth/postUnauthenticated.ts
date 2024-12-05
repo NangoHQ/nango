@@ -15,8 +15,7 @@ import { isIntegrationAllowed } from '../../utils/auth.js';
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
 

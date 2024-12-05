@@ -2,7 +2,18 @@ import type { Endpoint } from '../api.js';
 
 export interface ConnectSessionPayload {
     allowed_integrations?: string[] | undefined;
-    integrations_config_defaults?: Record<string, { connection_config: Record<string, unknown> }> | undefined;
+    integrations_config_defaults?:
+        | Record<
+              string,
+              {
+                  user_scopes?: string | undefined;
+                  connection_config: {
+                      [key: string]: unknown;
+                      oauth_scopes_override?: string | undefined;
+                  };
+              }
+          >
+        | undefined;
     end_user: {
         id: string;
         email: string;
@@ -23,7 +34,7 @@ export type PostConnectSessions = Endpoint<{
     Success: {
         data: {
             token: string;
-            expires_at: Date;
+            expires_at: string;
         };
     };
 }>;
@@ -46,5 +57,5 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionPayload, 'allowed_integrations'>;
+    Body: Pick<ConnectSessionPayload, 'allowed_integrations' | 'end_user' | 'organization'>;
 }>;

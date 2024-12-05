@@ -17,3 +17,5 @@ export type NullablePartial<TBase, TNullableKey extends keyof TBase = { [K in ke
     Pick<TBase, TNullableKey>
 > &
     Pick<TBase, Exclude<keyof TBase, TNullableKey>>;
+
+export type Jsonable = string | number | boolean | null | undefined | readonly Jsonable[] | { readonly [key: string]: Jsonable } | { toJSON(): Jsonable };
