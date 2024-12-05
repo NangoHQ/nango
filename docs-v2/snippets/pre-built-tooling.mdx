@@ -1,0 +1,152 @@
+export const PreBuiltTooling = ({ provider }) => {
+    return <>
+        <h2>Pre-built tooling for {provider.display_name}</h2>
+
+        <AccordionGroup>
+            <Accordion title="✅ Authorization">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Tools</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pre-built authorization (OAuth 2)</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Credentials auto-refresh</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Auth parameters validation</td>
+                            <td>Not needed</td>
+                        </tr>
+                        <tr>
+                            <td>Credentials validation</td>
+                            <td>Not needed for OAuth</td>
+                        </tr>
+                        <tr>
+                            <td>Pre-built Connect UI</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Custom authorization UI</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>End-user authorization guide</td>
+                            <td>Not needed for OAuth</td>
+                        </tr>
+                        <tr>
+                            <td>Expired credentials detection</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Accordion>
+            <Accordion title="✅ Read & write data">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Tools</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pre-built use-cases</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>API unification</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>2-way sync</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Webhooks from Nango on data modifications</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Real-time webhooks from 3rd-party API</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Proxy requests</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Accordion>
+            <Accordion title="✅ Observability & data quality">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Tools</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>HTTP request logging</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>End-to-type type safety</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Data runtime validation</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>OpenTelemetry export</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Slack alerts on errors</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Integration status API</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Accordion>
+            <Accordion title="✅ Customization">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Tools</td>
+                            <td>Status</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Create or customize use-cases</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Pre-configured pagination</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Pre-configured rate-limit handling</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td>Per-customer configurations</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Accordion>
+        </AccordionGroup>
+    </>
+}
