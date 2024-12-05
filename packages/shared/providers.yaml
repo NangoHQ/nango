@@ -563,7 +563,7 @@ avalara-sandbox:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
-    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    docs_connect: https://docs.nango.dev/integrations/all/avalara-sandbox/connect
     credentials:
         username:
             type: string
@@ -628,7 +628,7 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
-    docs_connect: https://docs.nango.dev/integrations/all/aws/connect
+    docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
         username:
             type: string
@@ -687,7 +687,7 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
-    docs_connect: https://docs.nango.dev/integrations/all/bamboohr/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bamboohr-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -1075,7 +1075,7 @@ builder-io-private:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
-    docs_connect: https://docs.nango.dev/integrations/all/builder-io/connect
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
         domain:
             type: string
@@ -1106,7 +1106,7 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
-    docs_connect: https://docs.nango.dev/integrations/all/builder-io/connect
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
         domain:
             type: string
@@ -1175,7 +1175,7 @@ cal-com-v1:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
-    docs_connect: https://docs.nango.dev/integrations/all/cal-com/connect
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com-v1/connect
     credentials:
         apiKey:
             type: string
@@ -1204,7 +1204,7 @@ cal-com-v2:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
-    docs_connect: https://docs.nango.dev/integrations/all/cal-com/connect
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
