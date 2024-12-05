@@ -3,35 +3,100 @@ title: Insightly
 sidebarTitle: Insightly
 ---
 
-API configuration: [`insightly`](https://nango.dev/providers.yaml)
+## Overview
 
-## Features
+<CardGroup cols={3}>
+<Card title="Pre-built tooling" icon="screwdriver-wrench" href="#pre-built-tooling"/>
+<Card title="Pre-built use-cases" icon="square-check" href="#pre-built-use-cases"/>
+<Card title="Access requirements" icon="triangle-exclamation" href="#access-requirements"/>
+<Card title="Setup guide" icon="rocket" href="#setup-guide"/>
+<Card title="Useful links" icon="circle-info" href="#useful-links"/>
+<Card title="API gotchas" icon="biohazard" href="#api-gotchas"/>
+</CardGroup>
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Pre-built tooling
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<AccordionGroup>  
+  <Accordion title="✅ Authorization">
+    | Tools | Status | 
+    | - | - | 
+    | Pre-built authorization ([FILL-IN-PROGRAMMATICALLY:OAuth|API Key|Basic]) | ✅ |
+    | Credentials auto-refresh | ✅ |
+    | Auth parameters validation | ✅ |
+    | Credentials validation | ✅ |
+    | Pre-built Connect UI | ✅ |
+    | Custom authorization UI | ✅ |
+    | End-user authorization guide | ✅ |
+    | Expired credentials detection | ✅ |
+  </Accordion>
+  <Accordion title="✅ Read & write data">
+    | Tools | Status | 
+    | - | - | 
+    | Pre-built use-cases | ([FILL-IN-PROGRAMMATICALLY:✅|🚫 (time to contribute: &lt;48h)]) |
+    | API unification | ✅ |
+    | 2-way sync | ✅ |
+    | Webhooks from Nango on data modifications | ✅ |
+    | Real-time webhooks from 3rd-party API | ✅ |
+    | Proxy requests | ✅ |
+  </Accordion>
+  <Accordion title="✅ Observability & data quality">
+    | Tools | Status | 
+    | - | - | 
+    | HTTP request logging | ✅ |
+    | End-to-type type safety | ✅ |
+    | Data runtime validation | ✅ |
+    | OpenTelemetry export | ✅ |
+    | Slack alerts on errors | ✅ |
+    | Integration status API | ✅ |
+  </Accordion>
+  <Accordion title="✅ Customization">
+    | Tools | Status | 
+    | - | - | 
+    | Create or customize use-cases | ✅ |
+    | Pre-configured pagination | ✅ |
+    | Pre-configured rate-limit handling | ✅ |
+    | Per-customer configurations | ✅ |
+  </Accordion>
+</AccordionGroup>  
 
-## Getting started
+## Pre-built use-cases
 
--   [Insightly basic auth related docs](https://api.na1.insightly.com/v3.1/#!/Overview/Introduction)
--   [Insightly API docs](https://api.na1.insightly.com/v3.1)
--   [API Versions](https://api.na1.insightly.com/v3.1/#!/Overview/Introduction)
--   [API rate limits](https://api.na1.insightly.com/v3.1/#!/Overview/Technical_Details)
+[FILL-IN-PROGRAMMATICALLY-SIMILARLY-TO-HUBSPOT]
+
+Empty state: _No pre-built use-cases yet (time to contribute: &lt;48h)._
+
+<Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+
+## Access Requirements
+
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  | 
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+## Setup guide
+
+Empty state: _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/insightly.mdx)</Note>
+
+## Useful links
+
+[FILL-IN-PROGRAMMATICALLY-BASED-ON-EXISTING-LINKS-WITH-A-FORMAT-SIMILAR-TO-HUBSPOT]
+
+Empty state: _No useful links yet._
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/insightly.mdx)</Note>
+
 ## API gotchas
 
-- Insightly uses `Basic` auth mode to access different endpoints. Provide your `api key` as your username and leave the password field empty.
-- Your instances `pod` can be determined by accessing `User Settings` and finding the API URL right under your API Key in the API Section. This connection config will be set when creating a new connection on Nango i.e: If this is your API URL ; `https://api.na1.insightly.com/v3.1/` add `na1` as your pod connection config.
-- Insightly still supports older API versions, but they have fewer endpoints. To use a specific version of the API append it to your `base_url` as follows: `/v3.1/Contacts` or `/v3.0/Contacts`.
-- Depending on the pricing plan, there are various rate limits. Once your limit is reached, you will no longer be able to make requests against that endpoint until next day.
-- You can have a look at the following [Nango](https://docs.nango.dev/guides/customize/handle-rate-limits) resource to see how best you can handle rate limits.
+[FILL-IN-PROGRAMMATICALLY-BASED-ON-EXISTING-GOTCHAS-WITH-A-FORMAT-SIMILAR-TO-HUBSPOT]
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/insightly.mdx)</Note>
+Empty state: _No API gotchas yet._
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>

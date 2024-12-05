@@ -8,7 +8,7 @@ sidebarTitle: HubSpot
 <CardGroup cols={3}>
 <Card title="Pre-built tooling" icon="screwdriver-wrench" href="#pre-built-tooling"/>
 <Card title="Pre-built use-cases" icon="square-check" href="#pre-built-use-cases"/>
-<Card title="Pre-requisites" icon="triangle-exclamation" href="#pre-requisites"/>
+<Card title="Access requirements" icon="triangle-exclamation" href="#access-requirements"/>
 <Card title="Setup guide" icon="rocket" href="#setup-guide"/>
 <Card title="Useful links" icon="circle-info" href="#useful-links"/>
 <Card title="API gotchas" icon="biohazard" href="#api-gotchas"/>
@@ -22,11 +22,12 @@ sidebarTitle: HubSpot
     | - | - | 
     | Pre-built authorization (OAuth 2) | ✅ |
     | Credentials auto-refresh | ✅ |
-    | Authorization input validation | ✅ |
-    | Pre-built authorization UI | ✅ |
+    | Auth parameters validation | Not needed |
+    | Credentials validation | Not needed for OAuth |
+    | Pre-built Connect UI | ✅ |
     | Custom authorization UI | ✅ |
-    | End-user authorization guidelines | ✅ |
-    | Invalid credentials detection | ✅ |
+    | End-user authorization guide | Not needed for OAuth |
+    | Expired credentials detection | ✅ |
   </Accordion>
   <Accordion title="✅ Read & write data">
     | Tools | Status | 
@@ -44,6 +45,9 @@ sidebarTitle: HubSpot
     | HTTP request logging | ✅ |
     | End-to-type type safety | ✅ |
     | Data runtime validation | ✅ |
+    | OpenTelemetry export | ✅ |
+    | Slack alerts on errors | ✅ |
+    | Integration status API | ✅ |
   </Accordion>
   <Accordion title="✅ Customization">
     | Tools | Status | 
@@ -79,14 +83,14 @@ sidebarTitle: HubSpot
 
 <Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
 
-## Pre-requisites
+## Access Requirements
 
 | Pre-Requisites | Status | Comment|
 | - | - | - |
 | Paid dev account | ✅ Not required | Free, self-signup [here](https://developers.hubspot.com/). |
-| Paid test account | ✅ Not required | Free, self-signup [here](https://hubspot.com/). | 
+| Paid test account | ✅ Not required | Create free Enterprise account for testing from your developer account. | 
 | Partnership | ✅ Not required | |
-| App review | ✅ Not required | |
+| App review | ✅ Not required | Only required for marketplace listing, not for integration distribution. |
 | Security audit | ✅ Not required | |
 
 ## Setup guide
@@ -117,32 +121,22 @@ sidebarTitle: HubSpot
 
 ## Useful links
 
-<AccordionGroup>  
-  <Accordion title="General">
-    - [Website](https://www.hubspot.com/)
-  </Accordion>
-  <Accordion title="Documentation">
-    - [API documentation](https://developers.hubspot.com/beta-docs/reference/api/overview)
-  </Accordion>
-  <Accordion title="Registration">
-    - [Create a test account](https://app.hubspot.com/signup-hubspot/crm)
-    - [Create a developer account](https://app.hubspot.com/signup-hubspot/developers)
-  </Accordion>
-  <Accordion title="Developer">
-    - [Developer console](https://app.hubspot.com/)
-  </Accordion>
-  <Accordion title="Authorization">
-    - [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide)
-    - [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
-    - [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes)
-  </Accordion>
-  <Accordion title="Rate Limiting">
-    - [Details on rate limits](https://developers.hubspot.com/beta-docs/guides/apps/api-usage/usage-details)
-  </Accordion>
-</AccordionGroup>  
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.hubspot.com/) |
+| | [Create a test account](https://app.hubspot.com/signup-hubspot/crm) |
+| Developer | [API documentation](https://developers.hubspot.com/beta-docs/reference/api/overview) |
+| | [Create a developer account](https://app.hubspot.com/signup-hubspot/developers) |
+| | [Developer console](https://app.hubspot.com/) |
+| | [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) |
+| | [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0) |
+| | [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) |
+| | [Details on rate limits](https://developers.hubspot.com/beta-docs/guides/apps/api-usage/usage-details) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/insightly.mdx)</Note>
 
 ## API gotchas
 
 _No reported gotchas yet_
 
-<Note>Contribute _Useful Links_ & _API Gotchas_ by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
