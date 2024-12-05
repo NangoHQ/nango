@@ -3210,17 +3210,6 @@ hibob-service-user:
         verification:
             method: GET
             endpoint: /v1/company/named-lists
-    credentials:
-        username:
-            type: string
-            title: Service User ID
-            description: The ID of the service user
-            doc_section: '#step-1-finding-your-hibob-service-user-id'
-        password:
-            type: string
-            title: Token
-            description: Token associated to service user
-            doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
 
