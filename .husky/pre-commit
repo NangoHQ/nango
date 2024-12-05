@@ -2,3 +2,14 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npx lint-staged --allow-empty
+
+# regenerate providers.mdx and add if needed
+files=`git diff --cached --name-status`
+providers="docs-v2/snippets/providers.mdx"
+
+if [[ $files =~ $providers ]]
+then
+  echo "providers.yaml has changed, generating providers.mdx"
+  node ./scripts/docs-providers.mjs
+  git add docs-v2/snippets/providers.mdx
+fi
