@@ -2590,7 +2590,7 @@ front:
     proxy:
         base_url: https://api2.frontapp.com
         retry:
-            after: 'Retry-after'
+            after: 'retry-after'
         paginate:
             type: link
             response_path: _results
