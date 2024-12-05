@@ -5164,11 +5164,13 @@ sage-intacct:
         token_expiration: response.operation.authentication.sessiontimeout
         token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/sage
+    docs_connect: https://docs.nango.dev/integrations/all/sage-intacct/connect
     credentials:
         senderId:
             type: string
             title: Sender ID
             description: Your Sage Intacct Sender ID
+            doc_section: '#step-1-how-to-retrieve-the-sender-id'
         senderPassword:
             type: string
             title: Sender Password
@@ -5178,10 +5180,12 @@ sage-intacct:
             type: string
             title: User ID
             description: Your Sage Intacct User ID
+            doc_section: '#step-2-how-to-retrieve-the-user-id'
         companyId:
             type: string
             title: Company ID
             description: Your Sage Intacct Company ID
+            doc_section: '#step-3-how-to-retrieve-the-company-id'
         userPassword:
             type: string
             title: User Password
