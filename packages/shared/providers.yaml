@@ -938,7 +938,7 @@ braze:
         headers:
             Authorization: Bearer ${apiKey}
         retry:
-            at: 'X-RateLimit-Reset'
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/braze
     docs_connect: https://docs.nango.dev/integrations/all/braze/connect
     connection_config:
