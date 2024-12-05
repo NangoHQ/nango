@@ -241,6 +241,13 @@
                                 "at": {
                                     "type": "string",
                                     "pattern": "^[a-z0-9-]+$"
+                                },
+                                "remaining": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
+                                },
+                                "error_code": {
+                                    "type": "number"
                                 }
                             }
                         },

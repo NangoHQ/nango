@@ -11,7 +11,7 @@ import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvid
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert } from '@nangohq/types';
+import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
 import { getProvider } from './providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
 
@@ -255,8 +255,7 @@ class ProxyService {
     ): Promise<boolean> => {
         if (
             error.response?.status.toString().startsWith('5') ||
-            // Note that Github issues a 403 for both rate limits and improper scopes
-            (error.response?.status === 403 && error.response.headers['x-ratelimit-remaining'] && error.response.headers['x-ratelimit-remaining'] === '0') ||
+            this.isProviderSpecificErrorCode(config.provider.proxy?.retry, error) ||
             error.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
             config.retryOn?.includes(Number(error.response?.status))
@@ -297,6 +296,24 @@ class ProxyService {
 
         return false;
     };
+
+    private isProviderSpecificErrorCode(retryConfig: RetryHeaderConfig | undefined, error: AxiosError): boolean {
+        if (!retryConfig) {
+            return false;
+        }
+
+        const { remaining, error_code } = retryConfig;
+
+        if (!remaining || !error_code) {
+            return false;
+        }
+
+        if (Number(error?.response?.status) === Number(error_code) && error.response?.headers[remaining] === '0') {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Send to http method

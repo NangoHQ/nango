@@ -45,6 +45,8 @@ export interface InternalProxyConfiguration {
 export interface RetryHeaderConfig {
     at?: string;
     after?: string;
+    remaining?: string;
+    error_code?: number;
 }
 
 export enum PaginationType {
