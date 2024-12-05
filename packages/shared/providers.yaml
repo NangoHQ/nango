@@ -3336,7 +3336,7 @@ intercom:
     proxy:
         base_url: https://api.intercom.io
         retry:
-            at: 'X-RateLimit-Reset'
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
 
 intuit:
