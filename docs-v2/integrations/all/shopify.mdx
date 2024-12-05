@@ -7,8 +7,11 @@ provider: shopify
 ---
 
 import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
 
 <Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
 
 
 ## Getting started
