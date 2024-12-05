@@ -19,7 +19,8 @@ type AuthErrors =
     | ApiError<'unknown_provider_template'>
     | ApiError<'invalid_auth_mode'>
     | ApiError<'invalid_credentials'>
-    | ApiError<'integration_not_allowed'>;
+    | ApiError<'integration_not_allowed'>
+    | ApiError<'invalid_connection'>;
 
 export type PostPublicTbaAuthorization = Endpoint<{
     Method: 'POST';

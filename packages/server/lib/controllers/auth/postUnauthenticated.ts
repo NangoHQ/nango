@@ -47,7 +47,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     const { account, environment } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
-    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -65,6 +65,16 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             if (!checked) {
                 return;
             }
+        } else if (res.locals.connectSession.connectionId) {
+            // Reconnect mechanism
+            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+            if (!connection) {
+                await logCtx.error('Invalid connection');
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'invalid_connection' } });
+                return;
+            }
+            connectionId = connection?.connection_id;
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);

@@ -4,6 +4,7 @@ import type { ConnectSession, DBEndUser, EndUser } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { EndUserMapper } from '@nangohq/shared';
+import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
@@ -12,6 +13,7 @@ interface DBConnectSession {
     readonly end_user_id: number;
     readonly account_id: number;
     readonly environment_id: number;
+    readonly connection_id: number | null;
     readonly created_at: Date;
     readonly updated_at: Date | null;
     readonly allowed_integrations: string[] | null;
@@ -26,6 +28,7 @@ const ConnectSessionMapper = {
             end_user_id: session.endUserId,
             account_id: session.accountId,
             environment_id: session.environmentId,
+            connection_id: session.connectionId,
             created_at: session.createdAt,
             updated_at: session.updatedAt,
             allowed_integrations: session.allowedIntegrations || null,
@@ -38,6 +41,7 @@ const ConnectSessionMapper = {
             endUserId: dbSession.end_user_id,
             accountId: dbSession.account_id,
             environmentId: dbSession.environment_id,
+            connectionId: dbSession.connection_id,
             createdAt: dbSession.created_at,
             updatedAt: dbSession.updated_at,
             allowedIntegrations: dbSession.allowed_integrations || null,
@@ -68,16 +72,21 @@ export async function createConnectSession(
         endUserId,
         accountId,
         environmentId,
+        connectionId,
         allowedIntegrations,
         integrationsConfigDefaults
-    }: Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
+    }: SetOptional<
+        Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>,
+        'connectionId'
+    >
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
         end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
-        allowed_integrations: allowedIntegrations || null,
-        integrations_config_defaults: integrationsConfigDefaults || null
+        connection_id: connectionId || null,
+        allowed_integrations: allowedIntegrations,
+        integrations_config_defaults: integrationsConfigDefaults
     };
     const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {

@@ -1670,7 +1670,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ConnectSession'
+                            $ref: '#/components/schemas/ConnectSessionInput'
             responses:
                 '201':
                     description: Successfully created a connect session
@@ -1682,18 +1682,32 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        type: object
-                                        required:
-                                            - token
-                                            - expires_at
-                                        properties:
-                                            token:
-                                                type: string
-                                                description: The connect session token
-                                            expires_at:
-                                                type: string
-                                                description: When the token expires
-                                                format: date
+                                        $ref: '#/components/schemas/ConnectSession'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /connect/sessions/reconnect:
+        post:
+            description: Create a new connect session to reconnect to a specific integration
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ConnectSessionReconnectInput'
+            responses:
+                '201':
+                    description: Successfully created a connect session
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/ConnectSession'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -2122,7 +2136,7 @@ components:
                                         type: string
                                         nullable: true
 
-        ConnectSession:
+        ConnectSessionInput:
             type: object
             required:
                 - end_user
@@ -2170,3 +2184,34 @@ components:
                                     oauth_scopes_override:
                                         type: string
                                         description: Override oauth scopes
+
+        ConnectSessionReconnectInput:
+            type: object
+            required:
+                - connection_id
+                - integration_id
+            properties:
+                connection_id:
+                    type: string
+                integration_id:
+                    type: string
+                end_user:
+                    $ref: '#/components/schemas/ConnectSession/properties/end_user'
+                organization:
+                    $ref: '#/components/schemas/ConnectSession/properties/organization'
+                integrations_config_defaults:
+                    $ref: '#/components/schemas/ConnectSession/properties/integrations_config_defaults'
+
+        ConnectSession:
+            type: object
+            required:
+                - token
+                - expires_at
+            properties:
+                token:
+                    type: string
+                    description: The connect session token
+                expires_at:
+                    type: string
+                    description: When the token expires
+                    format: date

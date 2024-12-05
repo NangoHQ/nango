@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import type Nango from '@nangohq/frontend';
-import type { ConnectSessionPayload, GetPublicIntegration, GetPublicProvider } from '@nangohq/types';
+import type { ConnectSessionOutput, GetPublicIntegration, GetPublicProvider } from '@nangohq/types';
 
 interface State {
     sessionToken: string | null;
@@ -9,12 +9,12 @@ interface State {
     integration: GetPublicIntegration['Success']['data'] | null;
     isDirty: boolean;
     isSingleIntegration: boolean;
-    session: ConnectSessionPayload | null;
+    session: ConnectSessionOutput | null;
     nango: Nango | null;
     apiURL: string;
     setApiURL: (value: string) => void;
     setSessionToken: (value: string) => void;
-    setSession: (value: ConnectSessionPayload) => void;
+    setSession: (value: ConnectSessionOutput) => void;
     setNango: (value: Nango) => void;
     setIsDirty: (value: boolean) => void;
     setIsSingleIntegration: (value: boolean) => void;
@@ -30,7 +30,7 @@ export const useGlobal = create<State>((set) => ({
     isSingleIntegration: false,
     session: null,
     nango: null,
-    apiURL: 'https://api.nango.dev',
+    apiURL: 'http://localhost:3003/',
     setApiURL: (value) => set({ apiURL: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
