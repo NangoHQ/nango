@@ -1,6 +1,22 @@
 export const PreBuiltTooling = ({ provider }) => {
+    const authTypeMap = {
+        OAUTH1: "OAuth",
+        OAUTH2: "OAuth",
+        OAUTH2_CC: "OAuth",
+        BASIC: "Basic",
+        API_KEY: "API Key",
+        APP_STORE: "Custom",
+        BILL: "Bill",
+        SIGNATURE: "Signature",
+        JWT: "JWT",
+        TWO_STEP: "Two Step",
+        TABLEAU: "Tableau",
+    }
+
+    const authMode = authTypeMap[provider.auth_mode] || provider.auth_mode;
+
     return <>
-        <h2>Pre-built tooling for {provider.display_name}</h2>
+        <h2>Pre-built tooling</h2>
 
         <AccordionGroup>
             <Accordion title="✅ Authorization">
@@ -13,7 +29,7 @@ export const PreBuiltTooling = ({ provider }) => {
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Pre-built authorization (OAuth 2)</td>
+                            <td>Pre-built authorization ({authMode})</td>
                             <td>✅</td>
                         </tr>
                         <tr>
