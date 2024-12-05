@@ -13631,6 +13631,15 @@ integrations:
                     path: /items
                     group: Items
                 version: 1.0.1
+            get-tenants:
+                description: |
+                    Fetches all the tenants the connection has access to.
+                    This can be used to set the metadata to the selected tenant.
+                output: TenantResponse
+                endpoint:
+                    method: GET
+                    path: /tenants
+                    group: Tenants
             update-item:
                 description: |
                     Updates one or more items in Xero.
@@ -13898,6 +13907,16 @@ integrations:
             CreditNoteActionResponse:
                 succeededCreditNotes: CreditNote[]
                 failedCreditNotes: FailedCreditNote[]
+            TenantResponse:
+                tenants: Tenant[]
+            Tenant:
+                id: string
+                authEventId: string
+                tenantId: string
+                tenantType: string
+                tenantName: string
+                createdDateUtc: string
+                updatedDateUtc: string
     zendesk:
         syncs:
             tickets:
