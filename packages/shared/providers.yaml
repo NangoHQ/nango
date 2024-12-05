@@ -816,7 +816,6 @@ bill:
     proxy:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
-    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
 
 bitbucket:
     display_name: Bitbucket
