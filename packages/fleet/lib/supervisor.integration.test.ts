@@ -50,6 +50,7 @@ describe('Supervisor', () => {
         const node2After = (await nodes.get(dbClient.db, node2.id)).unwrap();
         expect(node2After.state).toBe('STARTING');
     });
+
     it('should timeout STARTING nodes', async () => {
         const tenMinutesAgo = new Date(Date.now() - STATE_TIMEOUT_MS.STARTING - 1);
         const startingNode = await createNodeWithAttributes(dbClient.db, { state: 'STARTING', deploymentId: activeDeployment.id });
@@ -68,6 +69,7 @@ describe('Supervisor', () => {
         const oldStartingNodeAfter = (await nodes.get(dbClient.db, oldStartingNode.id)).unwrap();
         expect(oldStartingNodeAfter.state).toBe('ERROR');
     });
+
     it('should mark OUTDATED nodes', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: previousDeployment.id });
 
@@ -76,6 +78,7 @@ describe('Supervisor', () => {
         const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
         expect(nodeAfter.state).toBe('OUTDATED');
     });
+
     it('should create new nodes if only OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'OUTDATED', deploymentId: previousDeployment.id });
         await supervisor.tick();
@@ -92,6 +95,7 @@ describe('Supervisor', () => {
             ]
         });
     });
+
     it('should terminate IDLE nodes', async () => {
         const node1 = await createNodeWithAttributes(dbClient.db, { state: 'IDLE', deploymentId: activeDeployment.id });
         const node2 = await createNodeWithAttributes(dbClient.db, { state: 'IDLE', deploymentId: activeDeployment.id });
@@ -108,6 +112,7 @@ describe('Supervisor', () => {
         const node2After = (await nodes.get(dbClient.db, node2.id)).unwrap();
         expect(node2After.state).toBe('TERMINATED');
     });
+
     it('should remove old TERMINATED nodes', async () => {
         const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1);
         const terminatedNode = await createNodeWithAttributes(dbClient.db, { state: 'TERMINATED', deploymentId: activeDeployment.id });
@@ -130,6 +135,7 @@ describe('Supervisor', () => {
             throw new Error('expected old terminated to be removed');
         }
     });
+
     it('should remove old ERROR nodes', async () => {
         const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1);
         const errorNode = await createNodeWithAttributes(dbClient.db, { state: 'ERROR', deploymentId: activeDeployment.id });

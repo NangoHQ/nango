@@ -48,6 +48,7 @@ describe('Nodes', () => {
             lastStateTransitionAt: expect.any(Date)
         });
     });
+
     it('should transition between valid states and error when transitioning between invalid states', async () => {
         const doTransition = async ({ nodeId, newState }: { nodeId: number; newState: NodeState }) => {
             if (newState === 'RUNNING') {
@@ -74,6 +75,7 @@ describe('Nodes', () => {
             }
         }
     });
+
     it('should be searchable', async () => {
         const route1PendingNode = await createNodeWithAttributes(db, { state: 'PENDING', routingId: '1', deploymentId: activeDeployment.id });
         const route1RunningNode = await createNodeWithAttributes(db, {
@@ -116,6 +118,7 @@ describe('Nodes', () => {
         const searchWithWrongRoute = await nodes.search(db, { states: ['PENDING'], routingId: terminatedNode.routingId });
         expect(searchWithWrongRoute.unwrap().nodes).toEqual(new Map());
     });
+
     it('should be searchable (with pagination support)', async () => {
         for (let i = 0; i < 12; i++) {
             await createNodeWithAttributes(db, { state: 'PENDING', routingId: i.toString(), deploymentId: activeDeployment.id });
@@ -132,12 +135,14 @@ describe('Nodes', () => {
         expect(searchThirdPage.nodes.size).toBe(2);
         expect(searchThirdPage.nextCursor).toBe(undefined);
     });
+
     it('should be able to fail a node', async () => {
         const node = await createNodeWithAttributes(db, { state: 'PENDING', deploymentId: activeDeployment.id });
         const failedNode = (await nodes.fail(db, { nodeId: node.id, reason: 'my error' })).unwrap();
         expect(failedNode.state).toBe('ERROR');
         expect(failedNode.error).toBe('my error');
     });
+
     it('should be able to register a node', async () => {
         const node = await createNodeWithAttributes(db, { state: 'STARTING', deploymentId: activeDeployment.id });
         expect(node.url).toBe(null);
@@ -145,6 +150,7 @@ describe('Nodes', () => {
         expect(registeredNode.state).toBe('RUNNING');
         expect(registeredNode.url).toBe('http://my-url');
     });
+
     it('should be able to idle a node', async () => {
         const node = await createNodeWithAttributes(db, { state: 'FINISHING', deploymentId: activeDeployment.id });
         const idledNode = (await nodes.idle(db, { nodeId: node.id })).unwrap();
