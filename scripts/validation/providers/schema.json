@@ -209,6 +209,12 @@
                                 },
                                 "at": {
                                     "type": "string"
+                                },
+                                "remaining": {
+                                    "type": "string"
+                                },
+                                "error_code": {
+                                    "type": "number"
                                 }
                             }
                         },
