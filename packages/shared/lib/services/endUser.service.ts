@@ -158,3 +158,16 @@ export async function linkConnection(db: Knex, { endUserId, connection }: { endU
 export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
     await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: null });
 }
+
+export async function getEndUserByConnectionId(db: Knex, props: { connectionId: number }): Promise<Result<EndUser, EndUserError>> {
+    const endUser = await db(END_USERS_TABLE)
+        .select<DBEndUser>(`${END_USERS_TABLE}.*`)
+        .join('_nango_connections', '_nango_connections.end_user_id', `${END_USERS_TABLE}.id`)
+        .where('_nango_connections.id', '=', props.connectionId)
+        .first();
+    if (!endUser) {
+        return Err(new EndUserError({ code: 'not_found', message: `End user not found`, payload: props }));
+    }
+
+    return Ok(EndUserMapper.from(endUser));
+}

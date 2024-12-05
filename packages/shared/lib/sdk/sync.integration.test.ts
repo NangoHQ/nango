@@ -57,7 +57,8 @@ describe('Connection service integration tests', () => {
                 syncConfig: {} as SyncConfig,
                 debug: false,
                 runnerFlags: {} as any,
-                startedAt: new Date()
+                startedAt: new Date(),
+                endUser: null
             };
 
             const nango = new NangoAction(nangoProps);

@@ -3,7 +3,7 @@ import { runServer, shouldBeProtected, isError, isSuccess } from '../../utils/te
 import { seeders } from '@nangohq/shared';
 import db from '@nangohq/database';
 import type { DBEnvironment } from '@nangohq/types';
-import * as endUserService from '../../services/endUser.service.js';
+import * as endUserService from '@nangohq/shared';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -136,5 +136,58 @@ describe(`POST ${endpoint}`, () => {
         expect(endUser.displayName).toBe(newDisplayName);
         expect(endUser.organization?.organizationId).toBe(newOrgId);
         expect(endUser.organization?.displayName).toBe(newOrgDisplayName);
+    });
+
+    it('should fail if integration does not exist in allowed_integrations', async () => {
+        // first request create an end user
+        const endUserId = 'knownId';
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: seed.env.secret_key,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['random'] }
+        });
+        isError(res.json);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['allowed_integrations', 0] }]
+            }
+        });
+    });
+
+    it('should fail if integration does not exist in integrations_config_defaults', async () => {
+        // first request create an end user
+        const endUserId = 'knownId';
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: seed.env.secret_key,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, integrations_config_defaults: { random: { connection_config: {} } } }
+        });
+        isError(res.json);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'custom', message: 'Integration does not exist', path: ['integrations_config_defaults', 'random'] }]
+            }
+        });
+    });
+
+    it('should succeed if allowed_integrations is passed and exist', async () => {
+        await seeders.createConfigSeed(seed.env, 'github', 'github');
+
+        // first request create an end user
+        const endUserId = 'knownId';
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: seed.env.secret_key,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
+        });
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                expires_at: expect.toBeIsoDate(),
+                token: expect.any(String)
+            }
+        });
     });
 });

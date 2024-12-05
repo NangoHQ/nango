@@ -405,7 +405,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        res.locals['user'] = req.user!;
+        res.locals['user'] = user;
 
         if (ignoreEnvPaths.includes(req.route.path)) {
             next();

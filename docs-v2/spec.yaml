@@ -2158,6 +2158,15 @@ components:
                     additionalProperties:
                         type: object
                         description: the unique name of an integration
+                        additionalProperties: false
                         properties:
+                            user_scopes:
+                                type: string
+                                description: User scopes (for Slack only)
                             connection_config:
                                 type: object
+                                additionalProperties: true
+                                properties:
+                                    oauth_scopes_override:
+                                        type: string
+                                        description: Override oauth scopes

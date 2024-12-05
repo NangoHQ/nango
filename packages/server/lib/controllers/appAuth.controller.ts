@@ -10,7 +10,8 @@ import {
     LogActionEnum,
     telemetry,
     LogTypes,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -19,7 +20,6 @@ import publisher from '../clients/publisher.client.js';
 import { logContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';

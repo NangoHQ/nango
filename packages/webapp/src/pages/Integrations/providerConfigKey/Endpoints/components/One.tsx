@@ -216,7 +216,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                             <div className="text-text-light-gray">Request</div>
                             <div className="flex gap-2 items-center ">
                                 <Select defaultValue={language} onValueChange={(v) => setLanguage(v as any)}>
-                                    <SelectTrigger className="bg-dark-600 uppercase text-text-light-gray text-[11px] px-1.5 py-0.5 h-auto">
+                                    <SelectTrigger className="uppercase text-text-light-gray text-[11px] px-1.5 py-0.5 h-auto">
                                         <SelectValue placeholder="Language" />
                                     </SelectTrigger>
                                     <SelectContent>

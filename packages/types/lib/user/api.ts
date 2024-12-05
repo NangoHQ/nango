@@ -22,4 +22,5 @@ export interface ApiUser {
     accountId: number;
     email: string;
     name: string;
+    uuid: string;
 }

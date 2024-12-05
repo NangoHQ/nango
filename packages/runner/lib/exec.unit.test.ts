@@ -27,7 +27,8 @@ function getNangoProps(): NangoProps {
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,
-        stubbedMetadata: {}
+        stubbedMetadata: {},
+        endUser: null
     };
 }
 

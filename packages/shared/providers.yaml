@@ -70,7 +70,7 @@ adobe-umapi:
         headers:
             x-api-key: ${connectionConfig.clientId}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         base_url: https://usermanagement.adobe.io
     docs: https://docs.nango.dev/integrations/all/adobe
     connection_config:
@@ -151,7 +151,7 @@ aircall-basic:
             link_path_in_response_body: meta.next_page_link
             response_path: results
         retry:
-            at: 'X-AircallApi-Reset'
+            at: 'x-aircallapi-reset'
     docs: https://docs.nango.dev/integrations/all/aircall
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
 
@@ -188,7 +188,7 @@ autodesk:
     proxy:
         base_url: https://developer.api.autodesk.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
 algolia:
@@ -199,8 +199,8 @@ algolia:
     proxy:
         base_url: https://${connectionConfig.APP_ID}.algolia.net
         headers:
-            X-Algolia-Application-Id: ${connectionConfig.APP_ID}
-            X-Algolia-API-Key: ${apiKey}
+            x-algolia-application-id: ${connectionConfig.APP_ID}
+            x-algolia-api-key: ${apiKey}
         verification:
             endpoint: /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
@@ -256,9 +256,9 @@ anrok:
     proxy:
         base_url: https://api.anrok.com
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anrok
     credentials:
         apiKey:
@@ -320,9 +320,9 @@ apaleo:
     proxy:
         base_url: https://api.apaleo.com
         headers:
-            Content-Type: application/json
+            content-type: application/json
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/apaleo
 
 apollo:
@@ -381,12 +381,14 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+    default_scopes:
+        - default
     refresh_params:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -404,14 +406,14 @@ asana-scim:
     proxy:
         base_url: https://app.asana.com/api
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
     docs_connect: https://docs.nango.dev/integrations/all/asana-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your asana scim account
+            description: The API key for your Asana scim account
             doc_section: '#step-1-finding-asana-api-key'
 
 ashby:
@@ -505,8 +507,8 @@ avalara:
     auth_mode: BASIC
     proxy:
         headers:
-            X-Avalara-Client: ${connectionConfig.avalaraClient}
-            Content-Type: application/json
+            x-avalara-client: ${connectionConfig.avalaraClient}
+            content-type: application/json
         base_url: https://rest.avatax.com/api/v2
         verification:
             method: GET
@@ -526,8 +528,8 @@ avalara-sandbox:
     auth_mode: BASIC
     proxy:
         headers:
-            X-Avalara-Client: ${connectionConfig.avalaraClient}
-            Content-Type: application/json
+            x-avalara-client: ${connectionConfig.avalaraClient}
+            content-type: application/json
         base_url: https://sandbox-rest.avatax.com/api/v2
         verification:
             method: GET
@@ -685,7 +687,7 @@ beehiiv:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.beehiiv.com/v2/publications/${connectionConfig.publicationId}
         verification:
             method: GET
@@ -746,7 +748,7 @@ bill-sandbox:
     proxy:
         base_url: https://gateway.stage.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
-    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bill-sandbox/connect
 
 bill:
     display_name: Bill (Connect API)
@@ -777,7 +779,7 @@ bitdefender:
     proxy:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -843,7 +845,7 @@ blandai:
     proxy:
         base_url: https://api.bland.ai
         headers:
-            Authorization: ${apiKey}
+            authorization: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -883,7 +885,7 @@ box:
 booking-com:
     display_name: Booking.com
     categories:
-        - ecommerce
+        - e-commerce
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.environmentType}-xml.booking.com
@@ -963,7 +965,7 @@ brex-api-key:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
     credentials:
@@ -1008,7 +1010,7 @@ builder-io-private:
     proxy:
         base_url: https://${connectionConfig.domain}
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
     connection_config:
         domain:
@@ -1095,7 +1097,7 @@ cal-com-v1:
         query:
             apiKey: ${apiKey}
         retry:
-            at: 'X-RateLimit-Reset'
+            at: 'x-ratelimit-reset'
         verification:
             method: GET
             endpoint: /me
@@ -1115,14 +1117,14 @@ cal-com-v2:
     proxy:
         base_url: https://api.cal.com/v2
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         paginate:
             type: cursor
             cursor_name_in_request: cursor
             cursor_path_in_response: data.data.nextCursor
             limit_name_in_request: limit
         retry:
-            at: 'X-RateLimit-Reset'
+            at: 'x-ratelimit-reset'
         verification:
             method: GET
             endpoint: /me
@@ -1150,7 +1152,7 @@ calendly:
             type: link
             link_path_in_response_body: pagination.next_page
         retry:
-            at: 'X-Ratelimit-Reset'
+            at: 'x-ratelimit-reset'
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
@@ -1183,7 +1185,7 @@ certn:
     proxy:
         base_url: https://api.certn.co
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         paginate:
             type: link
             link_path_in_response_body: next
@@ -1205,7 +1207,7 @@ certn-partner:
     auth_mode: OAUTH2_CC
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.certn.co
         paginate:
             type: offset
@@ -1228,7 +1230,7 @@ chargebee:
             method: GET
             endpoint: /api/v2/business_entities
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
     connection_config:
         subdomain:
@@ -1249,9 +1251,9 @@ chattermill:
     proxy:
         base_url: https://${connectionConfig.subdomain}.chattermill.com
         headers:
-            Authorization: Bearer ${apiKey}
-            Accept: application/json
-            Content-Type: application/json
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -1280,7 +1282,7 @@ checkr-partner:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'X-Ratelimit-Reset'
+            at: 'x-ratelimit-reset'
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
@@ -1305,7 +1307,7 @@ checkr-partner-staging:
         grant_type: authorization_code
     proxy:
         retry:
-            at: 'X-Ratelimit-Reset'
+            at: 'x-ratelimit-reset'
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
@@ -1329,8 +1331,8 @@ checkout-com:
         grant_type: client_credentials
     proxy:
         headers:
-            Content-Type: application/json
-            Accept: application/json
+            content-type: application/json
+            accept: application/json
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
 
@@ -1345,8 +1347,8 @@ checkout-com-sandbox:
         grant_type: client_credentials
     proxy:
         headers:
-            Content-Type: application/json
-            Accept: application/json
+            content-type: application/json
+            accept: application/json
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
 
@@ -1356,7 +1358,7 @@ chorus:
     proxy:
         base_url: https://chorus.ai
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
     credentials:
         apiKey:
@@ -1372,7 +1374,7 @@ circle-so:
     proxy:
         base_url: https://app.circle.so
         headers:
-            Authorization: Token ${apiKey}
+            authorization: Token ${apiKey}
     docs: https://docs.nango.dev/integrations/all/circle-so
     credentials:
         apiKey:
@@ -1387,8 +1389,8 @@ clari-copilot:
     auth_mode: API_KEY
     proxy:
         headers:
-            X-Api-Key: ${apiKey}
-            X-Api-Password: ${connectionConfig.API_PASSWORD}
+            x-api-key: ${apiKey}
+            x-api-password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
@@ -1464,7 +1466,7 @@ coda:
     proxy:
         base_url: https://coda.io/apis/v1
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
     credentials:
         apiKey:
@@ -1481,8 +1483,8 @@ codeclimate:
     proxy:
         base_url: https://${connectionConfig.domain}
         headers:
-            Accept: application/vnd.api+json
-            Authorization: Token token=${apiKey}
+            accept: application/vnd.api+json
+            authorization: Token token=${apiKey}
         verification:
             method: GET
             endpoint: /v1/user
@@ -1527,10 +1529,10 @@ copper-api-key:
     proxy:
         base_url: https://api.copper.com/developer_api
         headers:
-            X-PW-AccessToken: ${apiKey}
-            X-PW-Application: developer_api
-            X-PW-UserEmail: ${connectionConfig.userEmail}
-            Content-Type: application/json
+            x-pw-accesstoken: ${apiKey}
+            x-pw-application: developer_api
+            x-pw-useremail: ${connectionConfig.userEmail}
+            content-type: application/json
         verification:
             method: GET
             endpoint: /v1/account
@@ -1559,8 +1561,8 @@ connectwise-psa:
     proxy:
         base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
-            Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
-            clientId: ${connectionConfig.clientId}
+            accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
+            clientid: ${connectionConfig.clientId}
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
         subdomain:
@@ -1589,8 +1591,8 @@ connectwise-psa-staging:
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
-            Accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
-            clientId: ${connectionConfig.clientId}
+            accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
+            clientid: ${connectionConfig.clientId}
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
         apiVersion:
@@ -1627,7 +1629,7 @@ contentful:
     proxy:
         base_url: https://${connectionConfig.subdomain}.contentful.com
         retry:
-            after: X-Contentful-RateLimit-Reset
+            after: x-contentful-ratelimit-reset
     docs: https://docs.nango.dev/integrations/all/contentful
     connection_config:
         subdomain:
@@ -1764,7 +1766,6 @@ datev:
     display_name: Datev
     categories:
         - legal
-        - payroll
         - hr
     auth_mode: OAUTH2
     authorization_url: https://login.datev.de/openid/authorize
@@ -1794,13 +1795,13 @@ datadog:
     proxy:
         base_url: https://${connectionConfig.siteParameter}/api
         headers:
-            DD-API-KEY: ${apiKey}
-            DD-APPLICATION-KEY: ${connectionConfig.applicationKey}
+            dd-api-key: ${apiKey}
+            dd-application-key: ${connectionConfig.applicationKey}
         verification:
             method: GET
             endpoint: /v1/validate
         retry:
-            after: 'X-RateLimit-Reset'
+            after: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/datadog
     docs_connect: https://docs.nango.dev/integrations/all/datadog/connect
     connection_config:
@@ -1925,7 +1926,7 @@ discord:
     proxy:
         base_url: https://discord.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/discord
 
 discourse:
@@ -1936,11 +1937,11 @@ discourse:
     proxy:
         base_url: https://${connectionConfig.defaultHost}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         headers:
-            Api-Username: ${connectionConfig.apiUsername}
-            Api-Key: ${apiKey}
-            Accept: application/json
+            api-username: ${connectionConfig.apiUsername}
+            api-key: ${apiKey}
+            accept: application/json
     docs: https://docs.nango.dev/integrations/all/discourse
     connection_config:
         defaultHost:
@@ -1967,7 +1968,7 @@ dixa:
     proxy:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
-            Authorization: ${apiKey}
+            authorization: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -2042,16 +2043,52 @@ emarsys:
     proxy:
         base_url: https://api.emarsys.net
         headers:
-            Content-Type: application/json
-            X-WSSE: ${accessToken}
+            content-type: application/json
+            x-wsse: ${accessToken}
         verification:
             method: GET
             endpoint: /api/v2/settings
         retry:
-            at: 'X-RateLimit-Reset'
+            at: 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
+
+ebay:
+    display_name: eBay
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.ebay.com/oauth2/authorize
+    token_url: https://api.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
+
+ebay-sandbox:
+    display_name: eBay (sandbox)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.sandbox.ebay.com/oauth2/authorize
+    token_url: https://api.sandbox.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.sandbox.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
 
 e-conomic:
     display_name: e-conomic
@@ -2061,7 +2098,7 @@ e-conomic:
     proxy:
         base_url: https://restapi.e-conomic.com
         headers:
-            Content-Type: application/json
+            content-type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
 
 egnyte:
@@ -2120,7 +2157,7 @@ elevio:
         base_url: https://api.elev.io
         headers:
             x-api-key: ${apiKey}
-            Authorization: Bearer ${connectionConfig.jwt}
+            authorization: Bearer ${connectionConfig.jwt}
     docs: https://docs.nango.dev/integrations/all/elevio
     credentials:
         apiKey:
@@ -2249,7 +2286,7 @@ exact-online:
     proxy:
         base_url: https://start.exactonline.${connectionConfig.extension}/
         headers:
-            Accept: application/json
+            accept: application/json
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -2290,7 +2327,7 @@ expensify:
     proxy:
         base_url: https://integrations.expensify.com/Integration-Server/
         headers:
-            Content-Type: application/x-www-form-urlencoded
+            content-type: application/x-www-form-urlencoded
     credentials:
         username:
             type: string
@@ -2357,7 +2394,7 @@ falai:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Key ${apiKey}
+            authorization: Key ${apiKey}
         base_url: https://queue.fal.run
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
@@ -2389,7 +2426,7 @@ fireflies:
     proxy:
         base_url: https://api.fireflies.ai
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
@@ -2428,7 +2465,7 @@ fiserv-api-key:
     proxy:
         base_url: https://prod.emea.api.fiservapps.com
         headers:
-            API-Key: ${apiKey}
+            api-key: ${apiKey}
         verification:
             method: GET
             endpoint: /sandbox/exp/v1/authorisations
@@ -2507,9 +2544,9 @@ freshsales:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshsales.io
         headers:
-            Authorization: Token token=${apiKey}
+            authorization: Token token=${apiKey}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
     connection_config:
         subdomain:
@@ -2554,6 +2591,8 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
         base_url: https://api2.frontapp.com
+        retry:
+            after: 'retry-after'
         paginate:
             type: link
             response_path: _results
@@ -2616,6 +2655,8 @@ github:
         base_url: https://api.github.com
         retry:
             at: 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+            error_code: 403
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -2645,6 +2686,7 @@ github-app:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 github-app-oauth:
     display_name: GitHub App (oauth)
@@ -2674,6 +2716,7 @@ github-app-oauth:
             title: Installation ID
             description: The installation ID of your GitHub App
             example: '38631545'
+            automated: true
 
 gitlab:
     display_name: GitLab
@@ -2704,8 +2747,8 @@ ghost-admin:
             aud: /admin/
     proxy:
         headers:
-            Accept: application/json
-            Accept-Version: ${connectionConfig.version}
+            accept: application/json
+            accept-version: ${connectionConfig.version}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
     docs: https://docs.nango.dev/integrations/all/ghost
     connection_config:
@@ -2731,7 +2774,7 @@ ghost-content:
     auth_mode: API_KEY
     proxy:
         headers:
-            Accept-Version: ${connectionConfig.version}
+            accept-version: ${connectionConfig.version}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/content/
         query:
             key: ${apiKey}
@@ -2941,7 +2984,7 @@ gorgias:
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
         retry:
-            after: 'Retry-after'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gorgias
     connection_config:
         subdomain:
@@ -2980,7 +3023,7 @@ grain-api-key:
     proxy:
         base_url: https://api.grain.com
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/grain
     credentials:
         apiKey:
@@ -2998,7 +3041,7 @@ greenhouse:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -3007,10 +3050,10 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
 
@@ -3022,22 +3065,20 @@ greenhouse-basic:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
             order: 1
@@ -3133,9 +3174,9 @@ harvest:
         grant_type: refresh_token
     proxy:
         headers:
-            User-Agent: ${connectionConfig.appDetails}
+            user-agent: ${connectionConfig.appDetails}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
     connection_config:
@@ -3369,7 +3410,7 @@ jira-basic:
     auth_mode: BASIC
     proxy:
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         base_url: https://${connectionConfig.subdomain}.atlassian.net
         verification:
             method: GET
@@ -3427,7 +3468,7 @@ jotform:
     proxy:
         base_url: https://api.jotform.com
         headers:
-            APIKEY: ${apiKey}
+            apikey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/jotform
     credentials:
         apiKey:
@@ -3440,7 +3481,7 @@ helpscout-docs:
     auth_mode: BASIC
     proxy:
         retry:
-            after: 'X-RateLimit-Reset'
+            after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 
@@ -3457,7 +3498,7 @@ helpscout-mailbox:
         grant_type: refresh_token
     proxy:
         retry:
-            after: 'X-RateLimit-Retry-After'
+            after: 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 
@@ -3485,7 +3526,7 @@ keeper-scim:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://keepersecurity.com/api/rest/scim/v2/${connectionConfig.node}
         verification:
             method: GET
@@ -3537,13 +3578,13 @@ klaviyo:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            Authorization: Klaviyo-API-Key ${apiKey}
+            authorization: Klaviyo-API-Key ${apiKey}
             revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
     credentials:
         apiKey:
@@ -3572,7 +3613,7 @@ klaviyo-oauth:
         headers:
             revision: '2024-07-15'
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
 
 kustomer:
@@ -3585,7 +3626,7 @@ kustomer:
         retry:
             after: 'x-ratelimit-reset'
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
     connection_config:
         extension:
@@ -3678,6 +3719,10 @@ linear:
         prompt: consent
     proxy:
         base_url: https://api.linear.app
+        retry:
+            at: 'x-ratelimit-requests-reset'
+            remaining: 'x-ratelimit-requests-remaining'
+            error_code: 400
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
     post_connection_script: linearPostConnection
@@ -3715,8 +3760,8 @@ loops-so:
     proxy:
         base_url: https://app.loops.so/api
         headers:
-            Accept: application/json
-            Authorization: Bearer ${apiKey}
+            accept: application/json
+            authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoint: /v1/api-key
@@ -3759,7 +3804,7 @@ listmonk:
         headers:
             content-type: application/json
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /lists
@@ -3780,7 +3825,7 @@ make:
     proxy:
         base_url: https://${connectionConfig.environmentUrl}/api/v2
         headers:
-            Authorization: Token ${apiKey}
+            authorization: Token ${apiKey}
         verification:
             method: GET
             endpoint: /users/me
@@ -3842,7 +3887,7 @@ manatal:
             method: GET
             endpoint: /users
         headers:
-            Authorization: Token ${apiKey}
+            authorization: Token ${apiKey}
         paginate:
             type: link
             limit_name_in_request: page_size
@@ -3897,7 +3942,7 @@ malwarebytes:
     proxy:
         base_url: https://api.malwarebytes.com
         headers:
-            accountId: ${connectionConfig.accountId}
+            accountid: ${connectionConfig.accountId}
     connection_config:
         accountId:
             type: string
@@ -3920,7 +3965,7 @@ medallia:
         grant_type: client_credentials
     proxy:
         retry:
-            after: 'X-RateLimit-Reset'
+            after: 'x-ratelimit-reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
     connection_config:
@@ -3986,7 +4031,7 @@ microsoft:
     proxy:
         base_url: https://graph.microsoft.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 
@@ -4064,8 +4109,8 @@ mindbody:
     proxy:
         base_url: https://api.mindbodyonline.com
         headers:
-            API-Key: ${apiKey}
-            siteId: ${connectionConfig.siteId}
+            api-key: ${apiKey}
+            siteid: ${connectionConfig.siteId}
             authorization: ${connectionConfig.staffUserToken}
         verification:
             method: GET
@@ -4128,7 +4173,7 @@ miro-scim:
     proxy:
         base_url: https://miro.com/api
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/miro
     docs_connect: https://docs.nango.dev/integrations/all/miro-scim/connect
     credentials:
@@ -4200,7 +4245,7 @@ netsuite:
     proxy:
         base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/netsuite
     connection_config:
         accountId:
@@ -4222,7 +4267,7 @@ next-cloud-ocs:
     proxy:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
-            'OCS-APIRequest': 'true'
+            'ocs-apirequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
     connection_config:
         domain:
@@ -4247,10 +4292,10 @@ notion:
     body_format: json
     proxy:
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         base_url: https://api.notion.com
         headers:
-            'Notion-Version': '2022-06-28'
+            'notion-version': '2022-06-28'
         paginate:
             type: cursor
             cursor_path_in_response: next_cursor
@@ -4268,7 +4313,7 @@ notion-scim:
     proxy:
         base_url: https://api.notion.com/scim
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/notion
     docs_connect: https://docs.nango.dev/integrations/all/notion-scim/connect
     credentials:
@@ -4375,8 +4420,8 @@ openai:
     proxy:
         base_url: https://api.openai.com
         headers:
-            Authorization: Bearer ${apiKey}
-            Content-Type: application/json
+            authorization: Bearer ${apiKey}
+            content-type: application/json
         verification:
             method: GET
             endpoint: /v1/models
@@ -4602,7 +4647,7 @@ perplexity:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.perplexity.ai
     docs: https://docs.nango.dev/integrations/all/perplexity
     credentials:
@@ -4625,7 +4670,7 @@ perimeter81:
         apiKey: ${credential.apiKey}
         grantType: api_key
     token_headers:
-        Content-Type: application/json
+        content-type: application/json
     token_response:
         token: data.accessToken
         token_expiration: data.accessTokenExpire
@@ -4676,6 +4721,21 @@ personio:
             description: The app ID of your Personio account
             doc_section: '#step-2-finding-personio-client-secret'
 
+personio-v2:
+    display_name: Personio (v2)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://api.personio.de/v2
+        headers:
+            content-type: application/x-www-form-urlencoded
+    token_url: https://api.personio.de/v2/auth/token
+    scope_separator: ' '
+    docs: https://docs.nango.dev/integrations/all/personio
+    token_params:
+        grant_type: client_credentials
+
 personio-recruiting:
     display_name: Personio Recruiting
     categories:
@@ -4684,7 +4744,7 @@ personio-recruiting:
     proxy:
         base_url: https://api.personio.de/v1
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
             x-company-id: ${connectionConfig.companyId}
             x-personio-partner-id: ${connectionConfig.partnerId}
             x-personio-app-id: ${connectionConfig.appId}
@@ -4786,7 +4846,7 @@ pivotaltracker:
     auth_mode: API_KEY
     proxy:
         headers:
-            X-TrackerToken: ${apiKey}
+            x-trackertoken: ${apiKey}
         base_url: https://www.pivotaltracker.com/services/v5
         verification:
             method: GET
@@ -4805,7 +4865,7 @@ plain:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://core-api.uk.plain.com/graphql/v1
     docs: https://docs.nango.dev/integrations/all/plain
     credentials:
@@ -4832,8 +4892,8 @@ podium:
         grant_type: refresh_token
     proxy:
         headers:
-            Podium-Version: ${connectionConfig.apiVersion}
-            Content-Type: application/json
+            podium-version: ${connectionConfig.apiVersion}
+            content-type: application/json
         base_url: https://api.podium.com
         retry:
             after: 'x-ratelimit-reset'
@@ -4851,7 +4911,7 @@ posthog:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.posthog.com
         verification:
             method: GET
@@ -4888,7 +4948,7 @@ productboard:
         grant_type: refresh_token
     proxy:
         headers:
-            X-Version: '1'
+            x-version: '1'
         base_url: https://api.productboard.com
     docs: https://docs.nango.dev/integrations/all/productboard
 
@@ -5044,7 +5104,7 @@ refiner:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.refiner.io/v1
     docs: https://docs.nango.dev/integrations/all/refiner
     credentials:
@@ -5058,7 +5118,7 @@ replicate:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.replicate.com
     docs: https://docs.nango.dev/integrations/all/replicate
     credentials:
@@ -5158,7 +5218,7 @@ sage-intacct:
                         $controlid: '{{$guid}}'
                         getAPISession: ''
     token_headers:
-        Content-Type: application/xml
+        content-type: application/xml
     token_response:
         token: response.operation.result.data.api.sessionid
         token_expiration: response.operation.authentication.sessiontimeout
@@ -5217,7 +5277,7 @@ salesforce:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
-            optional: true
+            automated: true
 
 salesforce-sandbox:
     display_name: Salesforce (sandbox)
@@ -5238,6 +5298,7 @@ salesforce-sandbox:
             description: The instance URL of your Salesforce account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
@@ -5266,6 +5327,7 @@ salesforce-experience-cloud:
             description: The instance URL of your Salesforce Experience Cloud account
             format: uri
             pattern: '^https?://.*$'
+            automated: true
 
 salesloft:
     display_name: Salesloft
@@ -5285,7 +5347,7 @@ sendgrid:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
     credentials:
@@ -5418,7 +5480,7 @@ shipstation:
     proxy:
         base_url: https://ssapi.shipstation.com
         retry:
-            after: 'X-Rate-Limit-Reset'
+            after: 'x-rate-limit-reset'
         verification:
             method: GET
             endpoint: /users
@@ -5434,7 +5496,7 @@ shopify:
     proxy:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
-            X-Shopify-Access-Token: ${accessToken}
+            x-shopify-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/shopify
     connection_config:
         subdomain:
@@ -5455,7 +5517,7 @@ shortcut:
     proxy:
         base_url: https://api.app.shortcut.com
         headers:
-            Shortcut-Token: ${apiKey}
+            shortcut-token: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/shortcut
     credentials:
         apiKey:
@@ -5492,7 +5554,7 @@ smartrecruiters-api-key:
     proxy:
         base_url: https://api.smartrecruiters.com
         headers:
-            X-SmartToken: ${apiKey}
+            x-smarttoken: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/smartrecruiters
     credentials:
         apiKey:
@@ -5611,7 +5673,7 @@ squarespace:
     proxy:
         base_url: https://api.squarespace.com
         headers:
-            User-Agent: ${connectionConfig.customappDescription}
+            user-agent: ${connectionConfig.customappDescription}
     docs: https://docs.nango.dev/integrations/all/squarespace
     connection_config:
         customappDescription:
@@ -5800,8 +5862,8 @@ tableau:
     token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
     proxy:
         headers:
-            Accept: application/json
-            Content-Type: application/json
+            accept: application/json
+            content-type: application/json
         base_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}
     docs: https://docs.nango.dev/integrations/all/tableau
     connection_config:
@@ -5824,10 +5886,10 @@ teamtailor:
     proxy:
         base_url: https://${connectionConfig.extension}.teamtailor.com
         retry:
-            after: 'X-Rate-Limit-Reset'
+            after: 'x-rate-limit-reset'
         headers:
-            Authorization: Token token=${apiKey}
-            X-Api-Version: '20210218'
+            authorization: Token token=${apiKey}
+            x-api-version: '20210218'
     docs: https://docs.nango.dev/integrations/all/teamtailor
     connection_config:
         extension:
@@ -5902,7 +5964,7 @@ tiktok-ads:
     proxy:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
         headers:
-            Access-Token: ${accessToken}
+            access-token: ${accessToken}
     token_params:
         grant_type: authorization_code
     authorization_url_replacements:
@@ -5928,7 +5990,7 @@ timely:
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
     categories:
-        - ecommerce
+        - e-commerce
         - payment
     auth_mode: OAUTH2
     authorization_url: https://thrivecart.com/authorization/new
@@ -5941,13 +6003,13 @@ thrivecart-oauth:
 thrivecart-api-key:
     display_name: ThriveCart (api key)
     categories:
-        - ecommerce
+        - e-commerce
         - payment
     auth_mode: API_KEY
     proxy:
         base_url: https://thrivecart.com/api/external
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoint: /ping
@@ -6022,9 +6084,8 @@ trello-scim:
     proxy:
         base_url: https://trello.com/scim/
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/trello
-    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
@@ -6035,7 +6096,6 @@ trello-scim:
 tsheetsteam:
     display_name: TSheets
     categories:
-        - payroll
         - hr
         - productivity
     auth_mode: OAUTH2
@@ -6183,9 +6243,9 @@ twenty-crm:
     proxy:
         base_url: https://api.twenty.com/rest
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /companies
@@ -6206,9 +6266,9 @@ twenty-crm-self-hosted:
     proxy:
         base_url: https://${connectionConfig.domain}/rest
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /companies
@@ -6258,7 +6318,7 @@ typefully:
     proxy:
         base_url: https://api.typefully.com
         headers:
-            X-API-Key: Bearer ${apiKey}
+            x-api-key: Bearer ${apiKey}
         verification:
             method: GET
             endpoint: /v1/notifications/
@@ -6328,7 +6388,6 @@ unipile:
         headers:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/unipile
-    docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
     credentials:
         apiKey:
             type: string
@@ -6444,8 +6503,8 @@ whatsapp-business:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
-            Content-Type: application/json
+            authorization: Bearer ${apiKey}
+            content-type: application/json
         base_url: https://graph.facebook.com
         verification:
             endpoint: /v21.0/me
@@ -6544,10 +6603,10 @@ workable:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'X-Rate-Limit-Reset'
+            at: 'x-rate-limit-reset'
     post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
     docs_connect: https://docs.nango.dev/integrations/all/workable/connect
@@ -6584,7 +6643,7 @@ workable-oauth:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: 'X-Rate-Limit-Reset'
+            at: 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/workable
     connection_config:
         subdomain:
@@ -6653,10 +6712,11 @@ xero:
         response_type: code
     default_scopes:
         - offline_access
+        - openid
     proxy:
         base_url: https://api.xero.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
@@ -6713,7 +6773,7 @@ zendesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:
-            after: 'Retry-After'
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -6865,7 +6925,7 @@ zoominfo:
     auth_mode: OAUTH2_CC
     proxy:
         retry:
-            after: 'X-RateLimit-Reset'
+            after: 'x-ratelimit-reset'
         base_url: https://api.zoominfo.com
     token_url: https://api.zoominfo.com/authenticate
     token_request_auth_method: custom
