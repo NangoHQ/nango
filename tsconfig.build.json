@@ -63,6 +63,9 @@
         },
         {
             "path": "packages/keystore"
+        },
+        {
+            "path": "packages/fleet"
         }
     ]
 }
