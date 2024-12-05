@@ -34,16 +34,6 @@ describe('Supervisor', () => {
         mockNodeProvider.mockClear();
     });
 
-    it('should not have more than one instance processing at a time', async () => {
-        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
-        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
-        supervisor1.start();
-        supervisor2.start();
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        expect(true).toBe(true);
-        await supervisor1.stop();
-        await supervisor2.stop();
-    });
     it('should start PENDING nodes', async () => {
         const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
         const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
