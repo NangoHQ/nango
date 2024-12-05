@@ -381,6 +381,8 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+    default_scopes:
+        - default
     refresh_params:
         grant_type: refresh_token
     proxy:
@@ -6655,6 +6657,7 @@ xero:
         response_type: code
     default_scopes:
         - offline_access
+        - openid
     proxy:
         base_url: https://api.xero.com
         retry:
