@@ -1026,7 +1026,7 @@ brex-api-key:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
-    docs_connect: https://docs.nango.dev/integrations/all/brex/connect
+    docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
     credentials:
         apiKey:
             type: string
