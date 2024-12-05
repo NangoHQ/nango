@@ -928,6 +928,36 @@ braintree-sandbox:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
 
+braze:
+    display_name: Braze
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://rest.${connectionConfig.instanceUrl}
+        headers:
+            Authorization: Bearer ${apiKey}
+        retry:
+            at: 'X-RateLimit-Reset'
+    docs: https://docs.nango.dev/integrations/all/braze
+    docs_connect: https://docs.nango.dev/integrations/all/braze/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The REST API URL of your Braze instance
+            example: iad-02.braze.com
+            format: hostname
+            prefix: https://rest.
+            order: 1
+            doc_section: '#step-1-finding-your-instance-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Braze account
+            doc_section: '#step-2-finding-your-api-key'
+
 brevo-api-key:
     display_name: Brevo (api key)
     categories:
