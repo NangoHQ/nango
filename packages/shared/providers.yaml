@@ -746,7 +746,7 @@ bill-sandbox:
     proxy:
         base_url: https://gateway.stage.bill.com/connect
     docs: https://docs.nango.dev/integrations/all/bill
-    docs_connect: https://docs.nango.dev/integrations/all/bill/connect
+    docs_connect: https://docs.nango.dev/integrations/all/bill-sandbox/connect
 
 bill:
     display_name: Bill (Connect API)
@@ -2053,6 +2053,42 @@ emarsys:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
 
+ebay:
+    display_name: eBay
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.ebay.com/oauth2/authorize
+    token_url: https://api.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
+
+ebay-sandbox:
+    display_name: eBay (sandbox)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://auth.sandbox.ebay.com/oauth2/authorize
+    token_url: https://api.sandbox.ebay.com/identity/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.sandbox.ebay.com/
+    docs: https://docs.nango.dev/integrations/all/ebay
+
 e-conomic:
     display_name: e-conomic
     categories:
@@ -2554,6 +2590,8 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
         base_url: https://api2.frontapp.com
+        retry:
+            after: 'Retry-after'
         paginate:
             type: link
             response_path: _results
@@ -2994,10 +3032,10 @@ greenhouse:
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
 
@@ -3014,16 +3052,14 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/applications
     docs: https://docs.nango.dev/integrations/all/greenhouse
     connection_config:
         resource:
             type: string
-            title: Greenhouse Domain
-            description: The subdomain of your Greenhouse account
+            title: Greenhouse API Domain
+            description: The Greenhouse API Domain you want to connect to
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: harvest
             suffix: .greenhouse.io
             prefix: https://
             order: 1
@@ -5997,7 +6033,6 @@ trello-scim:
         headers:
             Authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/trello
-    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
@@ -6301,7 +6336,6 @@ unipile:
         headers:
             x-api-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/unipile
-    docs_connect: https://docs.nango.dev/integrations/all/unipile/connect
     credentials:
         apiKey:
             type: string
