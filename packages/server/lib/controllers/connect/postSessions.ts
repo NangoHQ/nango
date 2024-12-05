@@ -1,4 +1,4 @@
-import type { PostConnectSessions } from '@nangohq/types';
+import type { PostConnectSessions, ResDefaultErrors } from '@nangohq/types';
 import type { ZodIssue } from 'zod';
 import { z } from 'zod';
 import db from '@nangohq/database';
@@ -42,6 +42,11 @@ export const bodySchema = z
     })
     .strict();
 
+interface Reply {
+    status: number;
+    response: { data: { token: string; expires_at: string } } | ResDefaultErrors;
+}
+
 export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
@@ -58,7 +63,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     const { account, environment } = res.locals;
     const body: PostConnectSessions['Body'] = val.data;
 
-    await db.knex.transaction(async (trx) => {
+    const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         // Check if the endUser exists in the database
         const endUserRes = await getEndUser(trx, {
             endUserId: body.end_user.id,
@@ -69,8 +74,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
         let endUserInternalId: number;
         if (endUserRes.isErr()) {
             if (endUserRes.error.code !== 'not_found') {
-                res.status(500).send({ error: { code: 'server_error', message: 'Failed to get end user' } });
-                return;
+                return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
             }
 
             // create end user if it doesn't exist yet
@@ -88,8 +92,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 environmentId: environment.id
             });
             if (createdEndUser.isErr()) {
-                res.status(500).send({ error: { code: 'server_error', message: 'Failed to create end user' } });
-                return;
+                return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create end user' } } };
             }
             endUserInternalId = createdEndUser.value.id;
         } else {
@@ -114,8 +117,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                         : null
                 });
                 if (updatedEndUser.isErr()) {
-                    res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
-                    return;
+                    return { status: 500, response: { error: { code: 'server_error', message: 'Failed to update end user' } } };
                 }
             }
             endUserInternalId = endUser.id;
@@ -131,8 +133,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 }
             }
             if (errors.length > 0) {
-                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } });
-                return;
+                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
             }
         }
 
@@ -145,8 +146,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 }
             }
             if (errors.length > 0) {
-                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } });
-                return;
+                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
             }
         }
 
@@ -166,8 +166,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 : null
         });
         if (createConnectSession.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create connect session' } });
-            return;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
         }
 
         // create a private key for the connect session
@@ -180,11 +179,12 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             ttlInMs: 30 * 60 * 1000 // 30 minutes
         });
         if (createPrivateKey.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create session token' } });
-            return;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create session token' } } };
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        res.status(201).send({ data: { token, expires_at: privateKey.expiresAt!.toISOString() } });
+        return { status: 201, response: { data: { token, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
+
+    res.status(status).send(response);
 });
