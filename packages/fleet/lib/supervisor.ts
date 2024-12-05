@@ -9,7 +9,7 @@ import type { Deployment, Node } from './types.js';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from './node-providers/node_provider.js';
 
-type Action =
+type Operation =
     | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment }
     | { type: 'START'; node: Node }
     | { type: 'FAIL'; node: Node; reason: 'starting_timeout_reached' }
@@ -20,16 +20,17 @@ type Action =
 
 type SupervisorState = 'stopped' | 'running' | 'stopping';
 
+export const STATE_TIMEOUT_MS = {
+    STARTING: 5 * 60 * 1000,
+    FINISHING: 24 * 60 * 60 * 1000,
+    TERMINATED: 7 * 24 * 60 * 60 * 1000,
+    ERROR: 7 * 24 * 60 * 60 * 1000
+};
+
 export class Supervisor {
     private state: SupervisorState = 'stopped';
     private dbClient: DatabaseClient;
     private nodeProvider: NodeProvider;
-    public STATE_TIMEOUT_MS = {
-        STARTING: 5 * 60 * 1000,
-        FINISHING: 24 * 60 * 60 * 1000,
-        TERMINATED: 7 * 24 * 60 * 60 * 1000,
-        ERROR: 7 * 24 * 60 * 60 * 1000
-    };
 
     constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
         this.dbClient = dbClient;
@@ -82,7 +83,7 @@ export class Supervisor {
         this.state = 'stopped';
     }
 
-    private async plan(cursor?: number): Promise<Result<Action[]>> {
+    private async plan(cursor?: number): Promise<Result<Operation[]>> {
         const getDeployment = await deployments.getActive(this.dbClient.db);
         if (getDeployment.isErr()) {
             return Err(getDeployment.error);
@@ -91,7 +92,7 @@ export class Supervisor {
             return Err(new FleetError('no_active_deployment'));
         }
         const deployment = getDeployment.value;
-        const plan: Action[] = [];
+        const plan: Operation[] = [];
 
         const search = await nodes.search(this.dbClient.db, {
             states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'],
@@ -102,13 +103,13 @@ export class Supervisor {
         }
         for (const [routingId, nodes] of search.value.nodes) {
             // Start pending nodes
-            plan.push(...(nodes.PENDING || []).map((node) => ({ type: 'START' as const, node })));
+            plan.push(...(nodes.PENDING || []).map<Operation>((node) => ({ type: 'START', node })));
 
             // Timeout STARTING nodes if they are taking too long
             plan.push(
-                ...(nodes.STARTING || []).flatMap((node) => {
-                    if (Date.now() - node.lastStateTransitionAt.getTime() > this.STATE_TIMEOUT_MS.STARTING) {
-                        return [{ type: 'FAIL' as const, node, reason: 'starting_timeout_reached' as const }];
+                ...(nodes.STARTING || []).flatMap<Operation>((node) => {
+                    if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.STARTING) {
+                        return [{ type: 'FAIL', node, reason: 'starting_timeout_reached' as const }];
                     }
                     return [];
                 })
@@ -116,9 +117,9 @@ export class Supervisor {
 
             // Mark OUTDATED nodes
             plan.push(
-                ...(nodes.RUNNING || []).flatMap((node) => {
+                ...(nodes.RUNNING || []).flatMap<Operation>((node) => {
                     if (node.deploymentId !== deployment.id) {
-                        return [{ type: 'OUTDATE' as const, node }];
+                        return [{ type: 'OUTDATE', node }];
                     }
                     return [];
                 })
@@ -126,14 +127,14 @@ export class Supervisor {
 
             // if OUTDATED node but no RUNNING or upcoming nodes then create a new one
             if ((nodes.OUTDATED?.length || 0) > 0 && (nodes.RUNNING?.length || 0) + (nodes.STARTING?.length || 0) + (nodes.PENDING?.length || 0) === 0) {
-                plan.push({ type: 'CREATE' as const, routingId, deployment });
+                plan.push({ type: 'CREATE', routingId, deployment });
             }
 
             // Warn about old finishing nodes
             plan.push(
-                ...(nodes.FINISHING || []).flatMap((node) => {
-                    if (Date.now() - node.lastStateTransitionAt.getTime() > this.STATE_TIMEOUT_MS.FINISHING) {
-                        return [{ type: 'WARN' as const, node }];
+                ...(nodes.FINISHING || []).flatMap<Operation>((node) => {
+                    if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.FINISHING) {
+                        return [{ type: 'WARN', node }];
                     }
                     return [];
                 })
@@ -144,9 +145,9 @@ export class Supervisor {
 
             // Remove old terminated nodes
             plan.push(
-                ...(nodes.TERMINATED || []).flatMap((node) => {
-                    if (Date.now() - node.lastStateTransitionAt.getTime() > this.STATE_TIMEOUT_MS.TERMINATED) {
-                        return [{ type: 'REMOVE' as const, node }];
+                ...(nodes.TERMINATED || []).flatMap<Operation>((node) => {
+                    if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.TERMINATED) {
+                        return [{ type: 'REMOVE', node }];
                     }
                     return [];
                 })
@@ -154,9 +155,9 @@ export class Supervisor {
 
             // Remove old error nodes
             plan.push(
-                ...(nodes.ERROR || []).flatMap((node) => {
-                    if (Date.now() - node.lastStateTransitionAt.getTime() > this.STATE_TIMEOUT_MS.ERROR) {
-                        return [{ type: 'REMOVE' as const, node }];
+                ...(nodes.ERROR || []).flatMap<Operation>((node) => {
+                    if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.ERROR) {
+                        return [{ type: 'REMOVE', node }];
                     }
                     return [];
                 })
@@ -176,7 +177,7 @@ export class Supervisor {
         return Ok(plan);
     }
 
-    private async executePlan(plan: Action[]): Promise<void> {
+    private async executePlan(plan: Operation[]): Promise<void> {
         for (const action of plan) {
             const result = await this.execute(action);
             if (result.isErr()) {
@@ -185,7 +186,7 @@ export class Supervisor {
         }
     }
 
-    private async execute(action: Action): Promise<Result<Node>> {
+    private async execute(action: Operation): Promise<Result<Node>> {
         switch (action.type) {
             case 'CREATE':
                 return this.createNode(action);

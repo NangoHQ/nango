@@ -1,6 +1,6 @@
 import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { Ok } from '@nangohq/utils';
-import { Supervisor } from './supervisor.js';
+import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
@@ -51,7 +51,7 @@ describe('Supervisor', () => {
         expect(node2After.state).toBe('STARTING');
     });
     it('should timeout STARTING nodes', async () => {
-        const tenMinutesAgo = new Date(Date.now() - supervisor.STATE_TIMEOUT_MS.STARTING - 1);
+        const tenMinutesAgo = new Date(Date.now() - STATE_TIMEOUT_MS.STARTING - 1);
         const startingNode = await createNodeWithAttributes(dbClient.db, { state: 'STARTING', deploymentId: activeDeployment.id });
         const oldStartingNode = await createNodeWithAttributes(dbClient.db, {
             state: 'STARTING',
@@ -109,7 +109,7 @@ describe('Supervisor', () => {
         expect(node2After.state).toBe('TERMINATED');
     });
     it('should remove old TERMINATED nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - supervisor.STATE_TIMEOUT_MS.TERMINATED - 1);
+        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1);
         const terminatedNode = await createNodeWithAttributes(dbClient.db, { state: 'TERMINATED', deploymentId: activeDeployment.id });
         const oldTerminatedNode = await createNodeWithAttributes(dbClient.db, {
             state: 'TERMINATED',
@@ -131,7 +131,7 @@ describe('Supervisor', () => {
         }
     });
     it('should remove old ERROR nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - supervisor.STATE_TIMEOUT_MS.ERROR - 1);
+        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1);
         const errorNode = await createNodeWithAttributes(dbClient.db, { state: 'ERROR', deploymentId: activeDeployment.id });
         const oldErrorNode = await createNodeWithAttributes(dbClient.db, {
             state: 'ERROR',
