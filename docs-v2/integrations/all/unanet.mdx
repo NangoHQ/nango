@@ -1,31 +1,46 @@
 ---
 title: Unanet
 sidebarTitle: Unanet
+provider: unanet
 ---
 
-API configuration: [`unanet`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
-## Features
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/unanet.mdx)</Note>
+
+
+## Useful links
 
 -   [Unanet basic auth related docs](https://compass.cosential.com/documentation#authentication)
 -   [Unanet API docs](https://compass.cosential.com/documentation)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/unanet.mdx)</Note>
 
 ## API gotchas
 
 - Unanet uses `Basic` auth mode to access different endpoints. Provide your `username` as the Username value and `password` as the Password value. Additionally, Unanet requires an API key and a firm access code when creating a new connection which are provided upon [signup](https://compass.cosential.com/home/start).
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/unanet.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/unanet.mdx)</Note>

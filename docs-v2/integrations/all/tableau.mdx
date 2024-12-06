@@ -1,33 +1,48 @@
 ---
 title: Tableau
 sidebarTitle: Tableau
+provider: tableau
 ---
 
-API configuration: [`tableau`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
-## Features
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Tableau)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tableau.mdx)</Note>
+
+
+## Useful links
 
 -   [How to generate your Personal Access Token](https://help.tableau.com/current/pro/desktop/en-us/useracct.htm#create-and-revoke-personal-access-tokens)
 -   [Auth related docs](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_auth.htm#make-a-sign-in-request-with-a-personal-access-token)
 -   [API endpoints](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api.htm)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tableau.mdx)</Note>
 
 ## API gotchas
 
 - When creating a new Nango connection, please supply your Token name as your PAT NAME, Token secret as your PAT SECRET, and the content URL, which is the value that appears after `/site/` in the browser address bar for Tableau Cloud, i.e `/site/nango1ec257d4d0/user/`, would be `nango1ec257d4d0`. This field is left blank if you are using Tableau Server.
 - You will also need to provide the [version](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_versions.htm) and [server](https://help.tableau.com/current/api/rest_api/en-us/REST/rest_api_concepts_auth.htm#the-sign-in-uri) name.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tableau.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tableau.mdx)</Note>

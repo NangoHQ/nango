@@ -1,32 +1,47 @@
 ---
 title: Auth0
 sidebarTitle: Auth0
+provider: auth0
 ---
 
-API configuration: [`auth0`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
-## Features
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/auth0.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://auth0.com/docs/get-started/auth0-overview/create-applications)
 -   [OAuth-related docs](https://auth0.com/docs/get-started/authentication-and-authorization-flow/call-your-api-using-the-authorization-code-flow)
 -   [List of OAuth scopes](https://auth0.com/docs/get-started/apis/scopes/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/auth0.mdx)</Note>
 
 ## API gotchas
 
 -   To get refresh_token, you will need to add **`offline_access`** to the list of your scopes.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/auth0.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/auth0.mdx)</Note>

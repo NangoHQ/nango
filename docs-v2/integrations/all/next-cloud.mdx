@@ -1,31 +1,46 @@
 ---
 title: NextCloud
 sidebarTitle: NextCloud
+provider: next-cloud
 ---
 
-API configuration: [`next-cloud-ocs`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
-## Features
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/next-cloud.mdx)</Note>
+
+
+## Useful links
 
 -   [NextCloud OCS basic auth related docs](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/ocs-api-overview.html#authentication)
 -   [NextCloud OCS API docs](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/OCS/index.html)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/next-cloud.mdx)</Note>
 
 ## API gotchas
 
 - NextCloud OCS API uses `Basic` auth mode to access different endpoints. Provide your `username` as the Username value and `password` as the Password value. You will also need to provide the domain url when creating a connection.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/next-cloud.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/next-cloud.mdx)</Note>

@@ -1,29 +1,44 @@
 ---
 title: Squarespace
 sidebarTitle: Squarespace
+provider: squarespace
 ---
 
-API configuration: [`squarespace`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+import { providers } from "/snippets/providers.mdx";
+import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
-## Features
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/squarespace.mdx)</Note>
+
+
+## Useful links
 
 -   [Request for developer OAuth credentials](https://partner.squarespace.com/oauth-form)
 -   [OAuth-related docs](https://developers.squarespace.com/oauth)
 -   [Squarespace REST API docs](https://developers.squarespace.com/commerce-apis/overview)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/squarespace.mdx)</Note>
 
 ## API gotchas
 
@@ -31,4 +46,4 @@ API configuration: [`squarespace`](https://nango.dev/providers.yaml)
 -   Different APIs have different versions. Please confirm the latest version and append it to your resource endpoint, i.e `/{api-version}/commerce/inventory`
 -   When creating a connection, you need to add the `customappDescription` configuration parameter, which will be appended to the request as a header: `User-Agent: YOUR_CUSTOM_APP_DESCRIPTION`. Requests without a valid `User-Agent` header are rejected.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/squarespace.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/squarespace.mdx)</Note>
