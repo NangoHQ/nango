@@ -45,6 +45,11 @@ export const bodySchema = z
     })
     .strict();
 
+interface Reply {
+    status: number;
+    response: PostConnectSessions['Reply'];
+}
+
 export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
@@ -61,15 +66,15 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     const { account, environment } = res.locals;
     const body: PostConnectSessions['Body'] = val.data;
 
-    await db.knex.transaction(async (trx) => {
+    const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
         if (endUserRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: endUserRes.error.message } });
-            return;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
         }
 
         if (body.allowed_integrations || body.integrations_config_defaults) {
             const integrations = await configService.listProviderConfigs(environment.id);
+
             // Enforce that integrations exists in `allowed_integrations`
             if (body.allowed_integrations && body.allowed_integrations.length > 0) {
                 const errors: ZodIssue[] = [];
@@ -79,16 +84,14 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                     }
                 }
                 if (errors.length > 0) {
-                    res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } });
-                    return;
+                    return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
                 }
             }
 
             // Enforce that integrations exists in `integrations_config_defaults`
             const check = checkIntegrationsDefault(body, integrations);
             if (check) {
-                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } });
-                return;
+                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } } };
             }
         }
 
@@ -108,8 +111,7 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                 : null
         });
         if (createConnectSession.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create connect session' } });
-            return;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
         }
 
         // create a private key for the connect session
@@ -122,13 +124,14 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             ttlInMs: 30 * 60 * 1000 // 30 minutes
         });
         if (createPrivateKey.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create session token' } });
-            return;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create session token' } } };
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        res.status(201).send({ data: { token, expires_at: privateKey.expiresAt!.toISOString() } });
+        return { status: 201, response: { data: { token, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
+
+    res.status(status).send(response);
 });
 
 /**
