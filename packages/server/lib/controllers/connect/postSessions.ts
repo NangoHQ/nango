@@ -1,4 +1,4 @@
-import type { PostConnectSessions, ResDefaultErrors } from '@nangohq/types';
+import type { PostConnectSessions } from '@nangohq/types';
 import type { ZodIssue } from 'zod';
 import { z } from 'zod';
 import db from '@nangohq/database';
@@ -6,7 +6,9 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as keystore from '@nangohq/keystore';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { configService, createEndUser, getEndUser, updateEndUser } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
+import { configService, upsertEndUser } from '@nangohq/shared';
+import { providerConfigKeySchema } from '../../helpers/validation.js';
 
 export const bodySchema = z
     .object({
@@ -24,9 +26,10 @@ export const bodySchema = z
             })
             .strict()
             .optional(),
-        allowed_integrations: z.array(z.string()).optional(),
+        allowed_integrations: z.array(providerConfigKeySchema).optional(),
         integrations_config_defaults: z
             .record(
+                providerConfigKeySchema,
                 z
                     .object({
                         user_scopes: z.string().optional(),
@@ -44,7 +47,7 @@ export const bodySchema = z
 
 interface Reply {
     status: number;
-    response: { data: { token: string; expires_at: string } } | ResDefaultErrors;
+    response: PostConnectSessions['Reply'];
 }
 
 export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req, res) => {
@@ -64,95 +67,37 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
     const body: PostConnectSessions['Body'] = val.data;
 
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
-        // Check if the endUser exists in the database
-        const endUserRes = await getEndUser(trx, {
-            endUserId: body.end_user.id,
-            accountId: account.id,
-            environmentId: environment.id
-        });
-
-        let endUserInternalId: number;
+        const endUserRes = await upsertEndUser(trx, { account, environment, endUserPayload: body.end_user, organization: body.organization });
         if (endUserRes.isErr()) {
-            if (endUserRes.error.code !== 'not_found') {
-                return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
-            }
-
-            // create end user if it doesn't exist yet
-            const createdEndUser = await createEndUser(trx, {
-                endUserId: body.end_user.id,
-                email: body.end_user.email,
-                displayName: body.end_user.display_name || null,
-                organization: body.organization?.id
-                    ? {
-                          organizationId: body.organization.id,
-                          displayName: body.organization.display_name || null
-                      }
-                    : null,
-                accountId: account.id,
-                environmentId: environment.id
-            });
-            if (createdEndUser.isErr()) {
-                return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create end user' } } };
-            }
-            endUserInternalId = createdEndUser.value.id;
-        } else {
-            const endUser = endUserRes.value;
-            const shouldUpdate =
-                endUser.email !== body.end_user.email ||
-                endUser.displayName !== body.end_user.display_name ||
-                endUser.organization?.organizationId !== body.organization?.id ||
-                endUser.organization?.displayName !== body.organization?.display_name;
-            if (shouldUpdate) {
-                const updatedEndUser = await updateEndUser(trx, {
-                    endUserId: endUser.endUserId,
-                    accountId: account.id,
-                    environmentId: environment.id,
-                    email: body.end_user.email,
-                    displayName: body.end_user.display_name || null,
-                    organization: body.organization?.id
-                        ? {
-                              organizationId: body.organization.id,
-                              displayName: body.organization.display_name || null
-                          }
-                        : null
-                });
-                if (updatedEndUser.isErr()) {
-                    return { status: 500, response: { error: { code: 'server_error', message: 'Failed to update end user' } } };
-                }
-            }
-            endUserInternalId = endUser.id;
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to get end user' } } };
         }
 
-        const integrations = await configService.listProviderConfigs(environment.id);
-        // Enforce that integrations exists in `allowed_integrations`
-        if (body.allowed_integrations && body.allowed_integrations.length > 0) {
-            const errors: ZodIssue[] = [];
-            for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
-                if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-                    errors.push({ path: ['allowed_integrations', key], code: 'custom', message: 'Integration does not exist' });
-                }
-            }
-            if (errors.length > 0) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
-            }
-        }
+        if (body.allowed_integrations || body.integrations_config_defaults) {
+            const integrations = await configService.listProviderConfigs(environment.id);
 
-        // Enforce that integrations exists in `integrations_config_defaults`
-        if (body.integrations_config_defaults) {
-            const errors: ZodIssue[] = [];
-            for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
-                if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-                    errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+            // Enforce that integrations exists in `allowed_integrations`
+            if (body.allowed_integrations && body.allowed_integrations.length > 0) {
+                const errors: ZodIssue[] = [];
+                for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
+                    if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+                        errors.push({ path: ['allowed_integrations', key], code: 'custom', message: 'Integration does not exist' });
+                    }
+                }
+                if (errors.length > 0) {
+                    return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
                 }
             }
-            if (errors.length > 0) {
-                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
+
+            // Enforce that integrations exists in `integrations_config_defaults`
+            const check = checkIntegrationsDefault(body, integrations);
+            if (check) {
+                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: check }) } } };
             }
         }
 
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: endUserInternalId,
+            endUserId: endUserRes.value.id,
             accountId: account.id,
             environmentId: environment.id,
             allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
@@ -188,3 +133,21 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
 
     res.status(status).send(response);
 });
+
+/**
+ * Enforce that integrations exists in `integrations_config_defaults`
+ */
+export function checkIntegrationsDefault(body: Pick<PostConnectSessions['Body'], 'integrations_config_defaults'>, integrations: Config[]): ZodIssue[] | false {
+    if (!body.integrations_config_defaults) {
+        return false;
+    }
+
+    const errors: ZodIssue[] = [];
+    for (const uniqueKey of Object.keys(body.integrations_config_defaults)) {
+        if (!integrations.find((v) => v.unique_key === uniqueKey)) {
+            errors.push({ path: ['integrations_config_defaults', uniqueKey], code: 'custom', message: 'Integration does not exist' });
+        }
+    }
+
+    return errors.length > 0 ? errors : false;
+}

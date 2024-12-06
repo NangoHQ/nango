@@ -356,9 +356,9 @@ class ConnectionService {
     public async getConnectionById(
         id: number
     ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config' | 'metadata'> | null> {
-        const result = await schema()
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata')
+        const result = await db.knex
             .from<StoredConnection>('_nango_connections')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata')
             .where({ id: id, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {

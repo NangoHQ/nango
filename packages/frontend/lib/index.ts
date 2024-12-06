@@ -258,6 +258,14 @@ export default class Nango {
         });
     }
 
+    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult> {
+        if (!this.connectSessionToken) {
+            throw new AuthError('Reconnect is only possible with a session token', 'missing_connect_session_token');
+        }
+
+        return this.auth(providerConfigKey, options);
+    }
+
     /**
      * Clear state of the frontend SDK
      */

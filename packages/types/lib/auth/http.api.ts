@@ -25,6 +25,7 @@ type AuthErrors =
     | ApiError<'invalid_auth_mode'>
     | ApiError<'invalid_credentials'>
     | ApiError<'integration_not_allowed'>
+    | ApiError<'invalid_connection'>
     | ApiError<'connection_test_failed'>;
 
 export type PostPublicApiKeyAuthorization = Endpoint<{
