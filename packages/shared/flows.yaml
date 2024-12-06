@@ -13479,7 +13479,7 @@ integrations:
                     method: GET
                     path: /contacts
                     group: Contacts
-                version: 1.0.1
+                version: 1.0.2
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
@@ -13492,7 +13492,7 @@ integrations:
                     method: GET
                     path: /accounts
                     group: Accounts
-                version: 1.0.1
+                version: 1.0.2
             items:
                 description: >
                     Fetches all items in Xero. Incremental sync, does not detect deletes,
@@ -13507,7 +13507,7 @@ integrations:
                     method: GET
                     path: /items
                     group: Items
-                version: 1.0.1
+                version: 1.0.2
             invoices:
                 description: |
                     Fetches all invoices in Xero. Incremental sync.
@@ -13519,7 +13519,7 @@ integrations:
                     method: GET
                     path: /invoices
                     group: Invoices
-                version: 1.0.1
+                version: 1.0.2
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -13531,7 +13531,7 @@ integrations:
                     method: GET
                     path: /payments
                     group: Payments
-                version: 1.0.1
+                version: 1.0.2
         actions:
             create-contact:
                 description: |
@@ -13544,7 +13544,7 @@ integrations:
                     method: POST
                     path: /contacts
                     group: Contacts
-                version: 1.0.1
+                version: 1.0.2
             update-contact:
                 description: >
                     Updates one or multiple contacts in Xero. Only fields that are passed
@@ -13557,7 +13557,7 @@ integrations:
                     method: PUT
                     path: /contacts
                     group: Contacts
-                version: 1.0.1
+                version: 1.0.2
             create-invoice:
                 description: |
                     Creates one or more invoices in Xero.
@@ -13569,7 +13569,7 @@ integrations:
                     method: POST
                     path: /invoices
                     group: Invoices
-                version: 1.0.2
+                version: 1.0.3
             update-invoice:
                 description: |
                     Updates one or more invoices in Xero. To delete an invoice
@@ -13583,7 +13583,7 @@ integrations:
                     method: PUT
                     path: /invoices
                     group: Invoices
-                version: 1.0.2
+                version: 1.0.3
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
@@ -13595,7 +13595,7 @@ integrations:
                     method: POST
                     path: /credit-notes
                     group: Credit Notes
-                version: 1.0.2
+                version: 1.0.3
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
@@ -13606,7 +13606,7 @@ integrations:
                     method: PUT
                     path: /credit-notes
                     group: Credit Notes
-                version: 1.0.2
+                version: 1.0.3
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
@@ -13618,7 +13618,7 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
-                version: 1.0.1
+                version: 1.0.2
             create-item:
                 description: |
                     Creates one or more items in Xero.
@@ -13630,7 +13630,7 @@ integrations:
                     method: POST
                     path: /items
                     group: Items
-                version: 1.0.1
+                version: 1.0.2
             get-tenants:
                 description: |
                     Fetches all the tenants the connection has access to.
@@ -13650,7 +13650,7 @@ integrations:
                     method: PUT
                     path: /items
                     group: Items
-                version: 1.0.1
+                version: 1.0.2
         models:
             ActionErrorResponse:
                 message: string
