@@ -369,6 +369,7 @@
                 "integrations/all/freshdesk",
                 "integrations/all/freshsales",
                 "integrations/all/freshservice",
+                "integrations/all/freshteam",
                 "integrations/all/front",
                 "integrations/all/garmin",
                 "integrations/all/gainsight-cc",
