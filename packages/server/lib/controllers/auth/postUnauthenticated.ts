@@ -10,7 +10,7 @@ import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import db from '@nangohq/database';
-import { isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
@@ -51,6 +51,11 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 
+    if (isConnectSession && queryString.connection_id) {
+        errorRestrictConnectionId(res);
+        return;
+    }
+
     let logCtx: LogContext | undefined;
 
     try {
@@ -65,8 +70,10 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             if (!checked) {
                 return;
             }
-        } else if (res.locals.connectSession.connectionId) {
-            // Reconnect mechanism
+        }
+
+        // Reconnect mechanism
+        if (isConnectSession && res.locals.connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
             if (!connection) {
                 await logCtx.error('Invalid connection');
