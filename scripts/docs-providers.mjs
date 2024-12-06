@@ -1,20 +1,94 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import yaml from 'js-yaml';
 
+const prettyAuthModes = {
+    OAUTH1: 'OAuth',
+    OAUTH2: 'OAuth',
+    OAUTH2_CC: 'OAuth',
+    BASIC: 'Basic',
+    API_KEY: 'API Key',
+    APP_STORE: 'Custom',
+    BILL: 'Bill',
+    SIGNATURE: 'Signature',
+    JWT: 'JWT',
+    TWO_STEP: 'Two Step',
+    TABLEAU: 'Tableau'
+};
+
 const providersPath = 'packages/shared/providers.yaml';
-const providersMdxPath = 'docs-v2/snippets/providers.mdx';
+const docsPath = 'docs-v2/integrations/all';
+const snippetsPath = 'docs-v2/snippets';
 
-if (!fs.existsSync(providersPath)) {
-    console.error(`Providers file not found: ${providersPath}`);
-    process.exit(1);
+const providers = yaml.load(await fs.readFile(providersPath, 'utf-8'));
+
+const files = await fs.readdir(docsPath);
+for (const file of files) {
+    if (file.endsWith('.mdx')) {
+        const filePath = path.join(docsPath, file);
+        const content = await fs.readFile(filePath, 'utf-8');
+        let lines = content.split('\n');
+
+        // find the integration line
+        const providerLine = lines.find((line) => line.startsWith('provider: '));
+        const provider = providerLine.split('provider: ')[1].trim();
+
+        // write pre-built tooling snippet for the integration
+        const providerConfig = providers[provider];
+        if (!providerConfig) {
+            throw new Error(`Unknown provider ${provider} in ${file}`);
+        }
+        const authMode = providers[provider].auth_mode;
+        const prettyAuthMode = prettyAuthModes[authMode] || authMode;
+
+        const snippet = `
+            ## Pre-built tooling
+
+            <AccordionGroup>  
+                <Accordion title="✅ Authorization">
+                    | Tools | Status | 
+                    | - | - | 
+                    | Pre-built authorization (${prettyAuthMode}) | ✅ |
+                    | Credentials auto-refresh | ✅ |
+                    | Auth parameters validation | Not needed |
+                    | Credentials validation | Not needed for OAuth |
+                    | Pre-built Connect UI | ✅ |
+                    | Custom authorization UI | ✅ |
+                    | End-user authorization guide | Not needed for OAuth |
+                    | Expired credentials detection | ✅ |
+                </Accordion>
+                <Accordion title="✅ Read & write data">
+                    | Tools | Status | 
+                    | - | - | 
+                    | Pre-built use-cases | ✅ |
+                    | API unification | ✅ |
+                    | 2-way sync | ✅ |
+                    | Webhooks from Nango on data modifications | ✅ |
+                    | Real-time webhooks from 3rd-party API | ✅ |
+                    | Proxy requests | ✅ |
+                </Accordion>
+                <Accordion title="✅ Observability & data quality">
+                    | Tools | Status | 
+                    | - | - | 
+                    | HTTP request logging | ✅ |
+                    | End-to-type type safety | ✅ |
+                    | Data runtime validation | ✅ |
+                    | OpenTelemetry export | ✅ |
+                    | Slack alerts on errors | ✅ |
+                    | Integration status API | ✅ |
+                </Accordion>
+                <Accordion title="✅ Customization">
+                    | Tools | Status | 
+                    | - | - | 
+                    | Create or customize use-cases | ✅ |
+                    | Pre-configured pagination | ✅ |
+                    | Pre-configured rate-limit handling | ✅ |
+                    | Per-customer configurations | ✅ |
+                </Accordion>
+            </AccordionGroup>  
+        `;
+
+        await fs.mkdir(`docs-v2/snippets/${path.basename(file, '.mdx')}`, { recursive: true });
+        await fs.writeFile(`docs-v2/snippets/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, snippet, 'utf-8');
+    }
 }
-
-const providers = yaml.load(fs.readFileSync(providersPath, 'utf-8'));
-
-const providersFiltered = Object.fromEntries(
-    Object.entries(providers).map(([key, provider]) => {
-        return [key, { display_name: provider.display_name, auth_mode: provider.auth_mode }];
-    })
-);
-
-fs.writeFileSync(providersMdxPath, `export const providers = ${JSON.stringify(providersFiltered, null, 4)};\n`, 'utf-8');
