@@ -1,54 +1,11 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import yaml from 'js-yaml';
 
-const prettyAuthModes = {
-    OAUTH1: 'OAuth',
-    OAUTH2: 'OAuth',
-    OAUTH2_CC: 'OAuth',
-    BASIC: 'Basic',
-    API_KEY: 'API Key',
-    APP_STORE: 'Custom',
-    BILL: 'Bill',
-    SIGNATURE: 'Signature',
-    JWT: 'JWT',
-    TWO_STEP: 'Two Step',
-    TABLEAU: 'Tableau'
-};
-
-const providersPath = 'packages/shared/providers.yaml';
-const docsPath = 'docs-v2/integrations/all';
-const snippetsPath = 'docs-v2/snippets/generated';
-
-const providers = yaml.load(await fs.readFile(providersPath, 'utf-8'));
-
-const files = await fs.readdir(docsPath);
-for (const file of files) {
-    if (file.endsWith('.mdx')) {
-        const filePath = path.join(docsPath, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-        let lines = content.split('\n');
-
-        // find the integration line
-        const providerLine = lines.find((line) => line.startsWith('provider: '));
-        const provider = providerLine.split('provider: ')[1].trim();
-
-        // write pre-built tooling snippet for the integration
-        const providerConfig = providers[provider];
-        if (!providerConfig) {
-            throw new Error(`Unknown provider ${provider} in ${file}`);
-        }
-        const authMode = providers[provider].auth_mode;
-        const prettyAuthMode = prettyAuthModes[authMode] || authMode;
-
-        const snippet = `
             ## Pre-built tooling
 
             <AccordionGroup>  
                 <Accordion title="✅ Authorization">
                     | Tools | Status | 
                     | - | - | 
-                    | Pre-built authorization (${prettyAuthMode}) | ✅ |
+                    | Pre-built authorization (Tableau) | ✅ |
                     | Credentials auto-refresh | ✅ |
                     | Auth parameters validation | Not needed |
                     | Credentials validation | Not needed for OAuth |
@@ -86,9 +43,4 @@ for (const file of files) {
                     | Per-customer configurations | ✅ |
                 </Accordion>
             </AccordionGroup>  
-        `;
-
-        await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
-        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, snippet, 'utf-8');
-    }
-}
+        
