@@ -11,4 +11,10 @@ if (!fs.existsSync(providersPath)) {
 
 const providers = yaml.load(fs.readFileSync(providersPath, 'utf-8'));
 
-fs.writeFileSync(providersMdxPath, `export const providers = ${JSON.stringify(providers, null, 4)};\n`, 'utf-8');
+const providersFiltered = Object.fromEntries(
+    Object.entries(providers).map(([key, provider]) => {
+        return [key, { display_name: provider.display_name, auth_mode: provider.auth_mode }];
+    })
+);
+
+fs.writeFileSync(providersMdxPath, `export const providers = ${JSON.stringify(providersFiltered, null, 4)};\n`, 'utf-8');
