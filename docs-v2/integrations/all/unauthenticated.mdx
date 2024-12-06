@@ -7,9 +7,11 @@ provider: unauthenticated
 import Overview from "/snippets/overview.mdx";
 import { providers } from "/snippets/providers.mdx";
 import { PreBuiltTooling } from "/snippets/pre-built-tooling.mdx";
+import { PreBuiltUseCases } from "/snippets/pre-built-use-cases.mdx";
 
 <Overview />
 <PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
 
 This provider doesn't require credentials and no authentication flow is performed when creating connections.
