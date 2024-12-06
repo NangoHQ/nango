@@ -25,8 +25,8 @@ import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z
     .object({
-        username: z.string(), // no .min() because some basic auth are wrong
-        password: z.string() // no .min() because some basic auth are wrong
+        username: z.string(), // no .min() because some providers do not require username (affinity)
+        password: z.string() // no .min() because some providers do not require password (ashby, bitdefender)
     })
     .strict();
 
