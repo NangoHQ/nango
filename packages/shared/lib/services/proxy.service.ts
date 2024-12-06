@@ -327,7 +327,7 @@ class ProxyService {
      * @desc route the call to a HTTP request based on HTTP method passed in
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
-    public sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
+    private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
         const options: AxiosRequestConfig = {};
 
         if (configBody.params) {
