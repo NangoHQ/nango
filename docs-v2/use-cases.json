@@ -1,0 +1,3561 @@
+{
+  "aircall-basic": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Aircall.\n",
+      "group": "Users",
+      "script": "aircall-basic/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Aircall.",
+      "group": "Users",
+      "script": "aircall-basic/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Aircall",
+      "group": "Users",
+      "script": "aircall-basic/actions/delete-user"
+    }
+  ],
+  "airtable": [
+    {
+      "method": "GET",
+      "path": "/tables",
+      "description": "Lists all tables with their schema for all bases with a reference to the base id that\nthe table belongs to\n",
+      "script": "airtable/syncs/tables"
+    },
+    {
+      "method": "GET",
+      "path": "/bases",
+      "description": "List all bases",
+      "script": "airtable/syncs/bases"
+    },
+    {
+      "method": "POST",
+      "path": "/webhooks",
+      "description": "Create a webhook for a particular base",
+      "group": "Webhooks",
+      "script": "airtable/actions/create-webhook"
+    },
+    {
+      "method": "GET",
+      "path": "/webhooks",
+      "description": "List all the webhooks available for a base",
+      "group": "Webhooks",
+      "script": "airtable/actions/list-webhooks"
+    },
+    {
+      "method": "DELETE",
+      "path": "/webhooks",
+      "description": "Delete a webhook",
+      "group": "Webhooks",
+      "script": "airtable/actions/delete-webhook"
+    }
+  ],
+  "algolia": [
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Action to add a single record contact to an index\n",
+      "script": "algolia/actions/create-contacts"
+    }
+  ],
+  "anrok": [
+    {
+      "method": "POST",
+      "path": "/ephmeral-transactions",
+      "description": "Creates an ephemeral transaction in Anrok.\n",
+      "script": "anrok/actions/create-ephemeral-transaction"
+    },
+    {
+      "method": "POST",
+      "path": "/transactions",
+      "description": "Creates or updates a transaction in Anrok.\n",
+      "script": "anrok/actions/create-or-update-transaction"
+    },
+    {
+      "method": "POST",
+      "path": "/transactions/void",
+      "description": "Voids a transaction in Anrok.\n",
+      "script": "anrok/actions/void-transaction"
+    },
+    {
+      "method": "POST",
+      "path": "/transactions/negate",
+      "description": "Creates a negation in Anrok.\n",
+      "script": "anrok/actions/negate-transaction"
+    }
+  ],
+  "asana": [
+    {
+      "method": "GET",
+      "path": "/tasks",
+      "description": "Retrieve all tasks that exist in the workspace",
+      "group": "Tasks",
+      "script": "asana/syncs/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Retrieve all users that exist in the workspace",
+      "group": "Users",
+      "script": "asana/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/workspaces",
+      "description": "Retrieve all workspaces for a user",
+      "group": "Workspaces",
+      "script": "asana/syncs/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/projects",
+      "description": "Retrieves all projects for a user",
+      "group": "Projects",
+      "script": "asana/syncs/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/workspaces/limit",
+      "description": "Fetch the workspaces with a limit (default 10) of a user to allow them to selection of projects to sync",
+      "script": "asana/actions/fetch-workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/projects/limit",
+      "description": "Fetch the projects with a limit (default 10) given a workspace of a user to allow selection when choosing the tasks to sync.",
+      "script": "asana/actions/fetch-projects"
+    },
+    {
+      "method": "POST",
+      "path": "/tasks",
+      "description": "Create a task using Asana specific fields and return a unified model task. See https://developers.asana.com/reference/createtask for Asana specific fields\n",
+      "group": "Tasks",
+      "script": "asana/actions/create-task"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tasks",
+      "description": "Update a task and be able to assign the task to a specific user",
+      "group": "Tasks",
+      "script": "asana/actions/update-task"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tasks",
+      "group": "Tasks",
+      "script": "asana/actions/delete-task"
+    }
+  ],
+  "ashby": [
+    {
+      "method": "GET",
+      "path": "/candidates",
+      "description": "Fetches a list of all candidates from your ashby account\n",
+      "group": "Candidates",
+      "script": "ashby/syncs/candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/jobs",
+      "description": "Fetches a list of all jobs from your ashby account\n",
+      "group": "Jobs",
+      "script": "ashby/syncs/jobs"
+    },
+    {
+      "method": "POST",
+      "path": "/applications",
+      "description": "Action to consider a candidate for a job\n",
+      "group": "Applications",
+      "script": "ashby/actions/create-application"
+    },
+    {
+      "method": "POST",
+      "path": "/notes",
+      "description": "Action to create a note on a candidate.\n",
+      "group": "Notes",
+      "script": "ashby/actions/create-note"
+    },
+    {
+      "method": "POST",
+      "path": "/applications/source",
+      "description": "Action to change source of application.\n",
+      "group": "Applications",
+      "script": "ashby/actions/application-change-source"
+    },
+    {
+      "method": "POST",
+      "path": "/applications/stage",
+      "description": "Action to change stage of an application.\n",
+      "group": "Applications",
+      "script": "ashby/actions/application-change-stage"
+    },
+    {
+      "method": "PATCH",
+      "path": "/applications",
+      "description": "Action to update an application.\n",
+      "group": "Applications",
+      "script": "ashby/actions/application-update"
+    },
+    {
+      "method": "POST",
+      "path": "/applications/history",
+      "description": "Action to update history an application stage.\n",
+      "group": "Applications",
+      "script": "ashby/actions/application-update-history"
+    },
+    {
+      "method": "POST",
+      "path": "/candidates",
+      "description": "Action to create a candidate.\n",
+      "group": "Candidates",
+      "script": "ashby/actions/create-candidate"
+    },
+    {
+      "method": "GET",
+      "path": "/interviews/stages",
+      "description": "List all interview stages for an interview plan in order.\n",
+      "group": "Interviews",
+      "script": "ashby/actions/interview-stage"
+    }
+  ],
+  "avalara": [
+    {
+      "method": "GET",
+      "path": "/transactions",
+      "description": "List all transactions with a default backfill date of one year.",
+      "group": "Transactions",
+      "script": "avalara/syncs/transactions"
+    },
+    {
+      "method": "POST",
+      "path": "/transactions",
+      "description": "Creates a new transaction\n",
+      "group": "Transactions",
+      "script": "avalara/actions/create-transaction"
+    },
+    {
+      "method": "PUT",
+      "path": "/transactions",
+      "description": "Marks a transaction by changing its status to Committed\n",
+      "group": "Transactions",
+      "script": "avalara/actions/commit-transaction"
+    },
+    {
+      "method": "DELETE",
+      "path": "/transactions",
+      "description": "Voids the current transaction uniquely identified by the transactionCode\n",
+      "group": "Transactions",
+      "script": "avalara/actions/void-transaction"
+    }
+  ],
+  "avalara-sandbox": [
+    {
+      "method": "GET",
+      "path": "/transactions",
+      "description": "List all transactions with a default backfill date of one year.",
+      "group": "Transactions",
+      "script": "avalara-sandbox/syncs/transactions"
+    },
+    {
+      "method": "POST",
+      "path": "/transactions",
+      "description": "Creates a new transaction\n",
+      "group": "Transactions",
+      "script": "avalara-sandbox/actions/create-transaction"
+    },
+    {
+      "method": "PUT",
+      "path": "/transactions",
+      "description": "Marks a transaction by changing its status to Committed\n",
+      "group": "Transactions",
+      "script": "avalara-sandbox/actions/commit-transaction"
+    },
+    {
+      "method": "DELETE",
+      "path": "/transactions",
+      "description": "Voids the current transaction uniquely identified by the transactionCode\n",
+      "group": "Transactions",
+      "script": "avalara-sandbox/actions/void-transaction"
+    }
+  ],
+  "aws-iam": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from AWS IAM\n",
+      "group": "Users",
+      "script": "aws-iam/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in AWS IAM.",
+      "group": "Users",
+      "script": "aws-iam/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Delete an existing user in AWS IAM. When you delete a user, you must delete the items attached to the user manually, or the deletion fails.\n",
+      "group": "Users",
+      "script": "aws-iam/actions/delete-user"
+    }
+  ],
+  "bamboohr-basic": [
+    {
+      "method": "GET",
+      "path": "/employees",
+      "description": "Fetches a list of current employees from bamboohr\n",
+      "group": "Employees",
+      "script": "bamboohr-basic/syncs/employees"
+    },
+    {
+      "method": "POST",
+      "path": "/employees",
+      "description": "Action to create a new employee\n",
+      "group": "Employees",
+      "script": "bamboohr-basic/actions/create-employee"
+    },
+    {
+      "method": "PUT",
+      "path": "/employees",
+      "description": "Update an existing employee in the system",
+      "group": "Employees",
+      "script": "bamboohr-basic/actions/update-employee"
+    },
+    {
+      "method": "GET",
+      "path": "/fields",
+      "description": "Introspection to retrieve available fields",
+      "script": "bamboohr-basic/actions/fetch-fields"
+    }
+  ],
+  "bill": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Bill sandbox\n",
+      "group": "Users",
+      "script": "bill/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Bill.",
+      "group": "Users",
+      "script": "bill/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Archive an existing user in Bill",
+      "group": "Users",
+      "script": "bill/actions/disable-user"
+    }
+  ],
+  "bill-sandbox": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Bill sandbox\n",
+      "group": "Users",
+      "script": "bill-sandbox/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Bill.",
+      "group": "Users",
+      "script": "bill-sandbox/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Archive an existing user in Bill",
+      "group": "Users",
+      "script": "bill-sandbox/actions/disable-user"
+    }
+  ],
+  "box": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Box. Requires an enterprise account.\n",
+      "group": "Users",
+      "script": "box/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Box. Requires an enterprise account.",
+      "group": "Users",
+      "script": "box/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Box. Requires an enterprise account.",
+      "group": "Users",
+      "script": "box/actions/delete-user"
+    }
+  ],
+  "cal-com-v2": [
+    {
+      "method": "GET",
+      "path": "/events",
+      "description": "Retrieve all upcoming events per a user",
+      "script": "cal-com-v2/syncs/events"
+    },
+    {
+      "method": "GET",
+      "path": "/event/types",
+      "description": "Retrieve all event types per a user",
+      "script": "cal-com-v2/syncs/event-types"
+    }
+  ],
+  "calendly": [
+    {
+      "method": "GET",
+      "path": "/events",
+      "description": "Retrieve all events per a user",
+      "script": "calendly/syncs/events"
+    },
+    {
+      "method": "GET",
+      "path": "/event/types",
+      "description": "Retrieve all event types per a user",
+      "script": "calendly/syncs/event-types"
+    },
+    {
+      "method": "GET",
+      "path": "/event/invitees",
+      "description": "For all events (active and canceled) retrieve the event invitees",
+      "script": "calendly/syncs/event-invitees"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Calendly",
+      "group": "Users",
+      "script": "calendly/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Calendly",
+      "group": "Users",
+      "script": "calendly/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Calendly",
+      "group": "Users",
+      "script": "calendly/actions/delete-user"
+    }
+  ],
+  "checkr-partner": [
+    {
+      "method": "GET",
+      "path": "/background-checks",
+      "description": "Fetch all the background checks",
+      "script": "checkr-partner/syncs/background-checks"
+    },
+    {
+      "method": "GET",
+      "path": "/background-check/service-list",
+      "description": "Fetch the possible services that Checkr offers for a background check",
+      "script": "checkr-partner/actions/background-check-services"
+    },
+    {
+      "method": "GET",
+      "path": "/background-check/service-parameters",
+      "description": "Fetch the parameters required to trigger a background check",
+      "script": "checkr-partner/actions/background-check-parameters"
+    },
+    {
+      "method": "POST",
+      "path": "/background-check/trigger",
+      "description": "Trigger a background check",
+      "script": "checkr-partner/actions/trigger-background-check"
+    },
+    {
+      "method": "POST",
+      "path": "/candidates",
+      "script": "checkr-partner/actions/create-candidate"
+    }
+  ],
+  "checkr-partner-staging": [
+    {
+      "method": "GET",
+      "path": "/checkr-partner-staging/account",
+      "description": "Fetches account details for the authenticated account.\n",
+      "script": "checkr-partner-staging/syncs/account"
+    }
+  ],
+  "clari-copilot": [
+    {
+      "method": "GET",
+      "path": "/calls",
+      "description": "Fetches a list of calls from your account. For the first sync, it will go back to the past one year\n",
+      "script": "clari-copilot/syncs/calls"
+    }
+  ],
+  "confluence": [
+    {
+      "method": "GET",
+      "path": "/spaces",
+      "description": "Fetches a list of spaces from confluence\n",
+      "script": "confluence/syncs/spaces"
+    },
+    {
+      "method": "GET",
+      "path": "/pages",
+      "description": "Fetches a list of pages from confluence\n",
+      "script": "confluence/syncs/pages"
+    }
+  ],
+  "datadog": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Datadog.\n",
+      "group": "Users",
+      "script": "datadog/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Datadog.",
+      "group": "Users",
+      "script": "datadog/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Disables a user in Datadog",
+      "group": "Users",
+      "script": "datadog/actions/disable-user"
+    }
+  ],
+  "discourse": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of active users from Discourse.\n",
+      "script": "discourse/syncs/active-users"
+    },
+    {
+      "method": "GET",
+      "path": "/categories",
+      "description": "List all categories",
+      "group": "Categories",
+      "script": "discourse/syncs/categories"
+    },
+    {
+      "method": "POST",
+      "path": "/categories",
+      "description": "Create a category in discourse",
+      "group": "Categories",
+      "script": "discourse/actions/create-category"
+    },
+    {
+      "method": "POST",
+      "path": "/topics",
+      "description": "Create a new topic in discourse",
+      "script": "discourse/actions/create-topic"
+    },
+    {
+      "method": "PUT",
+      "path": "/topics/status",
+      "description": "Update the status of a topic",
+      "script": "discourse/actions/update-topic-status"
+    }
+  ],
+  "docusign": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from DocuSign\n",
+      "group": "Users",
+      "script": "docusign/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in DocuSign",
+      "group": "Users",
+      "script": "docusign/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in DocuSign",
+      "group": "Users",
+      "script": "docusign/actions/delete-user"
+    }
+  ],
+  "docusign-sandbox": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from DocuSign\n",
+      "group": "Users",
+      "script": "docusign-sandbox/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in DocuSign",
+      "group": "Users",
+      "script": "docusign-sandbox/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in DocuSign",
+      "group": "Users",
+      "script": "docusign-sandbox/actions/delete-user"
+    }
+  ],
+  "dropbox": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Dropbox. Requires Dropbox Business.\n",
+      "group": "Users",
+      "script": "dropbox/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/files",
+      "description": "Sync the metadata of a specified files or folders paths from Dropbox. A file or folder id or path can be used.\n",
+      "script": "dropbox/syncs/files"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Dropbox. Requires Dropbox Business.",
+      "group": "Users",
+      "script": "dropbox/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Dropbox. Requires Dropbox Business.",
+      "group": "Users",
+      "script": "dropbox/actions/delete-user"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-file",
+      "description": "Fetches the content of a file given its ID, processes the data using a response stream, and encodes it into a base64 string. This base64-encoded string can be used to recreate the file in its original format using an external tool.",
+      "script": "dropbox/actions/fetch-file"
+    }
+  ],
+  "evaluagent": [
+    {
+      "method": "GET",
+      "path": "/evaluagent/users",
+      "description": "Fetches a list of users from evaluagent\n",
+      "script": "evaluagent/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/evaluagent/groups",
+      "description": "Fetches a list of groups from evaluagent\n",
+      "script": "evaluagent/syncs/groups"
+    },
+    {
+      "method": "GET",
+      "path": "/evaluagent/roles",
+      "description": "Fetches a list of roles from evaluagent\n",
+      "script": "evaluagent/syncs/roles"
+    }
+  ],
+  "exact-online": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Fetches all customers in Exact Online\n",
+      "group": "Customers",
+      "script": "exact-online/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/payments",
+      "description": "Fetches all payments in Exact Online\n",
+      "script": "exact-online/syncs/payments"
+    },
+    {
+      "method": "POST",
+      "path": "/customers",
+      "description": "Creates a customer in ExactOnline\n",
+      "group": "Customers",
+      "script": "exact-online/actions/create-customer"
+    },
+    {
+      "method": "PUT",
+      "path": "/customers",
+      "description": "Updates a customer in ExactOnline\n",
+      "group": "Customers",
+      "script": "exact-online/actions/update-customer"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Creates an invoice in ExactOnline\n",
+      "group": "Invoices",
+      "script": "exact-online/actions/create-invoice"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices",
+      "description": "Updates an invoice in ExactOnline\n",
+      "group": "Invoices",
+      "script": "exact-online/actions/update-invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/attach-file",
+      "description": "Uploads a file to ExactOnline and link it to an invoice\n",
+      "script": "exact-online/actions/attach-file-invoice"
+    }
+  ],
+  "expensify": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Expensify.\n",
+      "group": "Users",
+      "script": "expensify/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Create a user in the account\n",
+      "group": "Users",
+      "script": "expensify/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Disables a user in Expensify",
+      "group": "Users",
+      "script": "expensify/actions/disable-user"
+    },
+    {
+      "method": "POST",
+      "path": "/policies",
+      "description": "Action to fetch a list of policies with some relevant information about them\n",
+      "script": "expensify/actions/list-policies"
+    }
+  ],
+  "fireflies": [
+    {
+      "method": "POST",
+      "path": "/fireflies/add-to-live",
+      "description": "Action to add the Fireflies.ai bot to an ongoing meeting\n",
+      "script": "fireflies/actions/add-to-live"
+    }
+  ],
+  "freshdesk": [
+    {
+      "method": "GET",
+      "path": "/articles",
+      "description": "Recursively fetches a list of solution articles.\n",
+      "script": "freshdesk/syncs/articles"
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches the list of contacts.\n",
+      "group": "Contacts",
+      "script": "freshdesk/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/tickets",
+      "description": "Fetches the freshdesk tickets\n",
+      "script": "freshdesk/syncs/tickets"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users\n",
+      "group": "Users",
+      "script": "freshdesk/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Creates a user in FreshDesk",
+      "group": "Contacts",
+      "script": "freshdesk/actions/create-contact"
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts",
+      "description": "Deletes a contact in FreshDesk",
+      "group": "Contacts",
+      "script": "freshdesk/actions/delete-contact"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in FreshDesk",
+      "group": "Users",
+      "script": "freshdesk/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in FreshDesk",
+      "group": "Users",
+      "script": "freshdesk/actions/delete-user"
+    }
+  ],
+  "front": [
+    {
+      "method": "GET",
+      "path": "/conversations",
+      "description": "List the conversations in the company in reverse chronological order.",
+      "script": "front/syncs/list-conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/all",
+      "description": "List the messages in a conversation in reverse chronological order (newest first).",
+      "group": "Conversations",
+      "script": "front/actions/conversation"
+    }
+  ],
+  "github": [
+    {
+      "method": "GET",
+      "path": "/github/issues",
+      "description": "Fetches Github issues from all a user's repositories\n",
+      "script": "github/syncs/issues"
+    },
+    {
+      "method": "GET",
+      "path": "/github/issues-lite",
+      "description": "Fetches Github issues but up to a maximum of 15\n",
+      "script": "github/syncs/issues-lite"
+    },
+    {
+      "method": "GET",
+      "path": "/files",
+      "description": "Lists all the files of a Github repo given a specific branch\n",
+      "group": "Files",
+      "script": "github/syncs/list-files"
+    },
+    {
+      "method": "GET",
+      "path": "/github/demo-issues",
+      "description": "Fetches GitHub issues from our showcase repository.\n",
+      "script": "github/syncs/issues-demo"
+    },
+    {
+      "method": "PUT",
+      "path": "/files",
+      "description": "Write content to a particular github file within a repo. If\nthe file doesn't exist it creates and then writes to it\n",
+      "group": "Files",
+      "script": "github/actions/write-file"
+    },
+    {
+      "method": "GET",
+      "path": "/github/list-repos",
+      "description": "List github repos from an organization.\n",
+      "script": "github/actions/list-repos"
+    },
+    {
+      "method": "POST",
+      "path": "/github/create-demo-issue",
+      "description": "Create a GitHub issue in Nango's showcase repository.\n",
+      "script": "github/actions/create-demo-issue"
+    }
+  ],
+  "github-app": [
+    {
+      "method": "GET",
+      "path": "/repositories",
+      "description": "List all repositories accessible to this Github App",
+      "group": "Repositories",
+      "script": "github-app/actions/repositories"
+    }
+  ],
+  "google": [
+    {
+      "method": "GET",
+      "path": "/google/workspace-org-unit",
+      "script": "google/syncs/workspace-org-units"
+    },
+    {
+      "method": "GET",
+      "path": "/google/workspace-users",
+      "script": "google/syncs/workspace-users"
+    },
+    {
+      "method": "GET",
+      "path": "/google/workspace-user-access-tokens",
+      "script": "google/syncs/workspace-user-access-tokens"
+    }
+  ],
+  "google-calendar": [
+    {
+      "method": "GET",
+      "path": "/google-calendar/events",
+      "description": "Sync calendar events on the primary calendar going back one month and\nsave the entire object as specified by the Google API\n",
+      "script": "google-calendar/syncs/events"
+    },
+    {
+      "method": "GET",
+      "path": "/google-calendar/calendars",
+      "description": "Sync the calendars list of the user\n",
+      "script": "google-calendar/syncs/calendars"
+    }
+  ],
+  "google-drive": [
+    {
+      "method": "GET",
+      "path": "/documents",
+      "description": "Sync the metadata of a specified file or folders from Google Drive,\nhandling both individual files and nested folders.\nMetadata required to filter on a particular folder, or file(s). Metadata\nfields should be {\"files\": [\"<some-id>\"]} OR\n{\"folders\": [\"<some-id>\"]}. The ID should be able to be provided\nby using the Google Picker API\n(https://developers.google.com/drive/picker/guides/overview)\nand using the ID field provided by the response\n(https://developers.google.com/drive/picker/reference/results)\n",
+      "script": "google-drive/syncs/documents"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-document",
+      "description": "Fetches the content of a file given its ID, processes the data using\na response stream, and encodes it into a base64 string. This base64-encoded\nstring can be used to recreate the file in its original format using an external tool.\n",
+      "script": "google-drive/actions/fetch-document"
+    }
+  ],
+  "google-mail": [
+    {
+      "method": "GET",
+      "path": "/emails",
+      "description": "Fetches a list of emails from gmail. Goes back default to 1 year\nbut metadata can be set using the `backfillPeriodMs` property\nto change the lookback. The property should be set in milliseconds.\n",
+      "group": "Emails",
+      "script": "google-mail/syncs/emails"
+    },
+    {
+      "method": "POST",
+      "path": "/emails",
+      "description": "Send an Email using Gmail.\n",
+      "group": "Emails",
+      "script": "google-mail/actions/send-email"
+    },
+    {
+      "method": "GET",
+      "path": "/attachment",
+      "description": "An action used to fetch the contents of an attachment.\n",
+      "script": "google-mail/actions/fetch-attachment"
+    }
+  ],
+  "gorgias": [
+    {
+      "method": "GET",
+      "path": "/tickets",
+      "description": "Fetches a list of tickets with their associated messages\n",
+      "script": "gorgias/syncs/tickets"
+    }
+  ],
+  "greenhouse-basic": [
+    {
+      "method": "GET",
+      "path": "/greenhouse-basic/applications",
+      "description": "Fetches a list of all organization's applications from greenhouse\n",
+      "script": "greenhouse-basic/syncs/applications"
+    },
+    {
+      "method": "GET",
+      "path": "/greenhouse-basic/candidates",
+      "description": "Fetches a list of all organization's candidates from greenhouse\n",
+      "script": "greenhouse-basic/syncs/candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/greenhouse-basic/jobs",
+      "description": "Fetches a list of all organization's jobs from greenhouse\n",
+      "script": "greenhouse-basic/syncs/jobs"
+    }
+  ],
+  "gusto": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Gusto.\n",
+      "group": "Users",
+      "script": "gusto/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Gusto.",
+      "group": "Users",
+      "script": "gusto/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Gusto.",
+      "group": "Users",
+      "script": "gusto/actions/delete-user"
+    }
+  ],
+  "gusto-demo": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Gusto.\n",
+      "group": "Users",
+      "script": "gusto-demo/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Gusto.",
+      "group": "Users",
+      "script": "gusto-demo/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Gusto.",
+      "group": "Users",
+      "script": "gusto-demo/actions/delete-user"
+    }
+  ],
+  "hackerrank-work": [
+    {
+      "method": "GET",
+      "path": "/interviews",
+      "description": "Fetches a list of interviews from hackerrank work\n",
+      "group": "Interviews",
+      "script": "hackerrank-work/syncs/interviews"
+    },
+    {
+      "method": "GET",
+      "path": "/teams",
+      "description": "Fetches a list of teams from hackerrank work\n",
+      "script": "hackerrank-work/syncs/teams"
+    },
+    {
+      "method": "GET",
+      "path": "/tests",
+      "description": "Fetches a list of tests from hackerrank work\n",
+      "group": "Tests",
+      "script": "hackerrank-work/syncs/tests"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from hackerrank work\n",
+      "script": "hackerrank-work/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/tests",
+      "description": "Action to create a test on hackerrank work\n",
+      "group": "Tests",
+      "script": "hackerrank-work/actions/create-test"
+    },
+    {
+      "method": "POST",
+      "path": "/interviews",
+      "description": "Action to create an interview on hackerrank work\n",
+      "group": "Interviews",
+      "script": "hackerrank-work/actions/create-interview"
+    }
+  ],
+  "harvest": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users in Harvest\n",
+      "group": "Users",
+      "script": "harvest/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Harvest",
+      "group": "Users",
+      "script": "harvest/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Harvest",
+      "group": "Users",
+      "script": "harvest/actions/delete-user"
+    }
+  ],
+  "hibob-service-user": [
+    {
+      "method": "GET",
+      "path": "/hibob-service-user/hibob-employees",
+      "description": "Fetches a list of all active employees\n",
+      "script": "hibob-service-user/syncs/employees"
+    }
+  ],
+  "hubspot": [
+    {
+      "method": "GET",
+      "path": "/service-tickets",
+      "description": "Fetches a list of service tickets from Hubspot\n",
+      "script": "hubspot/syncs/service-tickets"
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches a list of contacts from Hubspot\n",
+      "group": "Contacts",
+      "script": "hubspot/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/companies",
+      "description": "Fetches a list of companies from Hubspot\n",
+      "group": "Companies",
+      "script": "hubspot/syncs/companies"
+    },
+    {
+      "method": "GET",
+      "path": "/deals",
+      "description": "Fetches a list of deals from Hubspot with their associated companies and contacts\n",
+      "group": "Deals",
+      "script": "hubspot/syncs/deals"
+    },
+    {
+      "method": "GET",
+      "path": "/products",
+      "description": "Fetches a list of products from Hubspot\n",
+      "group": "Products",
+      "script": "hubspot/syncs/products"
+    },
+    {
+      "method": "GET",
+      "path": "/owners",
+      "description": "Fetches a list of owners from Hubspot\n",
+      "group": "Owners",
+      "script": "hubspot/syncs/owners"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Hubspot\n",
+      "group": "Users",
+      "script": "hubspot/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/knowledge-base",
+      "description": "Fetches a list of knowledge base from Hubspot\n",
+      "script": "hubspot/syncs/knowledge-base"
+    },
+    {
+      "method": "GET",
+      "path": "/tasks",
+      "description": "Fetches a list of tasks from Hubspot\n",
+      "group": "Tasks",
+      "script": "hubspot/syncs/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/currency-codes",
+      "description": "Fetch hubspot deals\n",
+      "script": "hubspot/syncs/currency-codes"
+    },
+    {
+      "method": "GET",
+      "path": "/properties",
+      "description": "Fetch the properties of a specified object",
+      "group": "Properties",
+      "script": "hubspot/actions/fetch-properties"
+    },
+    {
+      "method": "POST",
+      "path": "/properties",
+      "description": "Create a property in Hubspot",
+      "group": "Properties",
+      "script": "hubspot/actions/create-property"
+    },
+    {
+      "method": "POST",
+      "path": "/deals",
+      "description": "Creates a single deal in Hubspot",
+      "group": "Deals",
+      "script": "hubspot/actions/create-deal"
+    },
+    {
+      "method": "PATCH",
+      "path": "/deal",
+      "description": "Updates a single deal in Hubspot",
+      "group": "Deals",
+      "script": "hubspot/actions/update-deal"
+    },
+    {
+      "method": "DELETE",
+      "path": "/deal",
+      "description": "Deletes a deal in Hubspot",
+      "group": "Deals",
+      "script": "hubspot/actions/delete-deal"
+    },
+    {
+      "method": "GET",
+      "path": "/pipelines",
+      "description": "Fetch all pipelines for an object type. Defaults to deals",
+      "group": "Pipelines",
+      "script": "hubspot/actions/fetch-pipelines"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a single user in Hubspot",
+      "group": "Users",
+      "script": "hubspot/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Hubspot",
+      "group": "Users",
+      "script": "hubspot/actions/delete-user"
+    },
+    {
+      "method": "GET",
+      "path": "/roles",
+      "description": "Fetch the roles on an account. Requires an enterprise account.",
+      "group": "Roles",
+      "script": "hubspot/actions/fetch-roles"
+    },
+    {
+      "method": "PUT",
+      "path": "/roles",
+      "description": "Change a user role. Requires an enterprise account.",
+      "group": "Roles",
+      "script": "hubspot/actions/change-user-role"
+    },
+    {
+      "method": "GET",
+      "path": "/account-information",
+      "description": "Fetch the account information from Hubspot",
+      "script": "hubspot/actions/fetch-account-information"
+    },
+    {
+      "method": "GET",
+      "path": "/custom-objects",
+      "description": "Fetch custom objects in Hubspot. Requires Hubspot enterprise",
+      "script": "hubspot/actions/fetch-custom-objects"
+    },
+    {
+      "method": "POST",
+      "path": "/contact",
+      "description": "Create a single contact in Hubspot",
+      "group": "Contacts",
+      "script": "hubspot/actions/create-contact"
+    },
+    {
+      "method": "PATCH",
+      "path": "/contact",
+      "description": "Updates a single contact in Hubspot",
+      "group": "Contacts",
+      "script": "hubspot/actions/update-contact"
+    },
+    {
+      "method": "DELETE",
+      "path": "/contact",
+      "description": "Deletes a contact in Hubspot",
+      "group": "Contacts",
+      "script": "hubspot/actions/delete-contact"
+    },
+    {
+      "method": "POST",
+      "path": "/companies",
+      "description": "Create a single company in Hubspot",
+      "group": "Companies",
+      "script": "hubspot/actions/create-company"
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies",
+      "description": "Update a single company in Hubspot",
+      "group": "Companies",
+      "script": "hubspot/actions/update-company"
+    },
+    {
+      "method": "DELETE",
+      "path": "/companies",
+      "description": "Deletes a company in Hubspot",
+      "group": "Companies",
+      "script": "hubspot/actions/delete-company"
+    },
+    {
+      "method": "POST",
+      "path": "/tasks",
+      "description": "Creates a single task in Hubspot",
+      "group": "Tasks",
+      "script": "hubspot/actions/create-task"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tasks",
+      "description": "Updates a single company in Hubspot",
+      "group": "Tasks",
+      "script": "hubspot/actions/update-task"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tasks",
+      "description": "Deletes a task in Hubspot",
+      "group": "Tasks",
+      "script": "hubspot/actions/delete-task"
+    },
+    {
+      "method": "POST",
+      "path": "/note",
+      "description": "Creates a single note in Hubspot",
+      "script": "hubspot/actions/create-note"
+    }
+  ],
+  "instantly": [
+    {
+      "method": "POST",
+      "path": "/instantly/set-campaign-name",
+      "description": "Action to set a campaign name\n",
+      "script": "instantly/actions/set-campaign-name"
+    }
+  ],
+  "intercom": [
+    {
+      "description": "Fetches a list of conversations from Intercom\n",
+      "script": "intercom/syncs/conversations"
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches a list of contacts from Intercom\n",
+      "script": "intercom/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/articles",
+      "description": "Fetches a list of articles from Intercom\n",
+      "script": "intercom/syncs/articles"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of admin users from Intercom\n",
+      "script": "intercom/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/single-article",
+      "description": "Fetch a single article from Intercom",
+      "script": "intercom/actions/fetch-article"
+    },
+    {
+      "method": "POST",
+      "path": "/contact",
+      "description": "Creates a contact in Intercom",
+      "script": "intercom/actions/create-contact"
+    },
+    {
+      "method": "DELETE",
+      "path": "/contact",
+      "description": "Deletes a contact in Intercom",
+      "script": "intercom/actions/delete-contact"
+    }
+  ],
+  "jira": [
+    {
+      "method": "GET",
+      "path": "/issues",
+      "description": "Fetches a list of issues from Jira\n",
+      "group": "Issues",
+      "script": "jira/syncs/issues"
+    },
+    {
+      "method": "GET",
+      "path": "/projects",
+      "description": "Fetches a list of projects from Jira\n",
+      "script": "jira/syncs/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/issue-types",
+      "description": "Fetches a list of issue types for a project",
+      "script": "jira/syncs/issue-types"
+    },
+    {
+      "method": "POST",
+      "path": "/issues",
+      "description": "An action that creates an Issue on Jira\n",
+      "group": "Issues",
+      "script": "jira/actions/create-issue"
+    }
+  ],
+  "jira-basic": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Jira\n",
+      "group": "Users",
+      "script": "jira-basic/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Jira. Note that this endpoint is marked as experimental and could \nbe deprecated in the future. Products are optional and allowed params are\njira-core, jira-servicedesk, jira-product-discovery, jira-software. Defaults to \njira-software. Note that the last name isn't able to be set via the API and \nthe first name defaults to the email address.\n",
+      "group": "Users",
+      "script": "jira-basic/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Jira. Note that this endpoint is marked as experimental and could \nbe deprecated in the future.\n",
+      "group": "Users",
+      "script": "jira-basic/actions/delete-user"
+    }
+  ],
+  "keeper-scim": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users from Keeper\n",
+      "group": "Users",
+      "script": "keeper-scim/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Keeper",
+      "group": "Users",
+      "script": "keeper-scim/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Keeper",
+      "group": "Users",
+      "script": "keeper-scim/actions/delete-user"
+    }
+  ],
+  "kustomer": [
+    {
+      "method": "GET",
+      "path": "/kustomer/conversations",
+      "description": "Retrieves a paginated list of conversations for the organization\n",
+      "script": "kustomer/syncs/conversations"
+    }
+  ],
+  "lever": [
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches all opportunities\n",
+      "group": "Opportunities",
+      "script": "lever/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/applications",
+      "description": "Fetches a list of all applications for a candidate in Lever\n",
+      "group": "Applications",
+      "script": "lever/syncs/opportunities-applications"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/feedback",
+      "description": "Fetches a list of all feedback forms for a candidate for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/syncs/opportunities-feedbacks"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/interviews",
+      "description": "Fetches a list of all interviews for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/syncs/opportunities-interviews"
+    },
+    {
+      "method": "GET",
+      "path": "/notes",
+      "description": "Fetches a list of all notes for every single opportunity\n",
+      "group": "Notes",
+      "script": "lever/syncs/opportunities-notes"
+    },
+    {
+      "method": "GET",
+      "path": "/offers",
+      "description": "Fetches a list of all offers for every single opportunity\n",
+      "group": "Offers",
+      "script": "lever/syncs/opportunities-offers"
+    },
+    {
+      "method": "GET",
+      "path": "/postings",
+      "description": "Fetches a list of all postings in Lever\n",
+      "group": "Postings",
+      "script": "lever/syncs/postings"
+    },
+    {
+      "method": "GET",
+      "path": "/postings/questions",
+      "description": "Fetches a list of all questions included in a posting’s application form in Lever\n",
+      "group": "Postings",
+      "script": "lever/syncs/postings-questions"
+    },
+    {
+      "method": "GET",
+      "path": "/stages",
+      "description": "Fetches a list of all pipeline stages in Lever\n",
+      "group": "Stages",
+      "script": "lever/syncs/stages"
+    },
+    {
+      "method": "POST",
+      "path": "/notes",
+      "description": "Action to create a note and add it to an opportunity.\n",
+      "group": "Notes",
+      "script": "lever/actions/create-note"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create an opportunity and optionally candidates associated with the opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/create-opportunity"
+    },
+    {
+      "method": "GET",
+      "path": "/stages/limited",
+      "description": "Action to get lists all pipeline stages. Note that this does \nnot paginate the response so it is possible that not all stages \nare returned.\n",
+      "group": "Stages",
+      "script": "lever/actions/get-stages"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Lists all the users in your Lever account. Only active users are included by default.\n",
+      "group": "Users",
+      "script": "lever/actions/users"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/limited",
+      "description": "Get all posts for your account. Note that this does\nnot paginate the response so it is possible that not all postings \nare returned.\n",
+      "group": "Posts",
+      "script": "lever/actions/get-postings"
+    },
+    {
+      "method": "GET",
+      "path": "/archived/reasons",
+      "description": "Get all archived reasons\n",
+      "group": "Archived",
+      "script": "lever/actions/get-archive-reasons"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/single",
+      "description": "Get single post for your account in Lever\n",
+      "group": "Posts",
+      "script": "lever/actions/get-posting"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/links",
+      "description": "Update the links in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity-links"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/sources",
+      "description": "Update the sources in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity-sources"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/stages",
+      "description": "Update the stage in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity-stage"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/tags",
+      "description": "Update the tags in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity-tags"
+    },
+    {
+      "method": "PUT",
+      "path": "/opportunities/archived",
+      "description": "Update the archived state of an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity-archived"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/apply",
+      "description": "Submit an application on behalf of a candidate. This endpoint can only be used to submit applications to published or unlisted postings.\n",
+      "group": "Posts",
+      "script": "lever/actions/apply-posting"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever/actions/update-opportunity"
+    }
+  ],
+  "lever-basic": [
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches all opportunities\n",
+      "group": "Opportunities",
+      "script": "lever-basic/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/applications",
+      "description": "Fetches a list of all applications for a candidate in Lever\n",
+      "group": "Applications",
+      "script": "lever-basic/syncs/opportunities-applications"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/feedback",
+      "description": "Fetches a list of all feedback forms for a candidate for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/syncs/opportunities-feedbacks"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/interviews",
+      "description": "Fetches a list of all interviews for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/syncs/opportunities-interviews"
+    },
+    {
+      "method": "GET",
+      "path": "/notes",
+      "description": "Fetches a list of all notes for every single opportunity\n",
+      "group": "Notes",
+      "script": "lever-basic/syncs/opportunities-notes"
+    },
+    {
+      "method": "GET",
+      "path": "/offers",
+      "description": "Fetches a list of all offers for every single opportunity\n",
+      "group": "Offers",
+      "script": "lever-basic/syncs/opportunities-offers"
+    },
+    {
+      "method": "GET",
+      "path": "/postings",
+      "description": "Fetches a list of all postings in Lever\n",
+      "group": "Postings",
+      "script": "lever-basic/syncs/postings"
+    },
+    {
+      "method": "GET",
+      "path": "/postings/questions",
+      "description": "Fetches a list of all questions included in a posting’s application form in Lever\n",
+      "group": "Postings",
+      "script": "lever-basic/syncs/postings-questions"
+    },
+    {
+      "method": "GET",
+      "path": "/stages",
+      "description": "Fetches a list of all pipeline stages in Lever\n",
+      "group": "Stages",
+      "script": "lever-basic/syncs/stages"
+    },
+    {
+      "method": "POST",
+      "path": "/notes",
+      "description": "Action to create a note and add it to an opportunity.\n",
+      "group": "Notes",
+      "script": "lever-basic/actions/create-note"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create an opportunity and optionally candidates associated with the opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/create-opportunity"
+    },
+    {
+      "method": "GET",
+      "path": "/stages/limited",
+      "description": "Action to get lists all pipeline stages. Note that this does \nnot paginate the response so it is possible that not all stages \nare returned.\n",
+      "group": "Stages",
+      "script": "lever-basic/actions/get-stages"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Lists all the users in your Lever account. Only active users are included by default.\n",
+      "group": "Users",
+      "script": "lever-basic/actions/users"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/limited",
+      "description": "Get all posts for your account. Note that this does\nnot paginate the response so it is possible that not all postings \nare returned.\n",
+      "group": "Posts",
+      "script": "lever-basic/actions/get-postings"
+    },
+    {
+      "method": "GET",
+      "path": "/archived/reasons",
+      "description": "Get all archived reasons\n",
+      "group": "Archived",
+      "script": "lever-basic/actions/get-archive-reasons"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/single",
+      "description": "Get single post for your account in Lever\n",
+      "group": "Posts",
+      "script": "lever-basic/actions/get-posting"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/links",
+      "description": "Update the links in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity-links"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/sources",
+      "description": "Update the sources in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity-sources"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/stages",
+      "description": "Update the stage in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity-stage"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/tags",
+      "description": "Update the tags in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity-tags"
+    },
+    {
+      "method": "PUT",
+      "path": "/opportunities/archived",
+      "description": "Update the archived state of an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity-archived"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/apply",
+      "description": "Submit an application on behalf of a candidate. This endpoint can only be used to submit applications to published or unlisted postings.\n",
+      "group": "Posts",
+      "script": "lever-basic/actions/apply-posting"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic/actions/update-opportunity"
+    }
+  ],
+  "lever-basic-sandbox": [
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches all opportunities\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/applications",
+      "description": "Fetches a list of all applications for a candidate in Lever\n",
+      "group": "Applications",
+      "script": "lever-basic-sandbox/syncs/opportunities-applications"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/feedback",
+      "description": "Fetches a list of all feedback forms for a candidate for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/syncs/opportunities-feedbacks"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/interviews",
+      "description": "Fetches a list of all interviews for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/syncs/opportunities-interviews"
+    },
+    {
+      "method": "GET",
+      "path": "/notes",
+      "description": "Fetches a list of all notes for every single opportunity\n",
+      "group": "Notes",
+      "script": "lever-basic-sandbox/syncs/opportunities-notes"
+    },
+    {
+      "method": "GET",
+      "path": "/offers",
+      "description": "Fetches a list of all offers for every single opportunity\n",
+      "group": "Offers",
+      "script": "lever-basic-sandbox/syncs/opportunities-offers"
+    },
+    {
+      "method": "GET",
+      "path": "/postings",
+      "description": "Fetches a list of all postings in Lever\n",
+      "group": "Postings",
+      "script": "lever-basic-sandbox/syncs/postings"
+    },
+    {
+      "method": "GET",
+      "path": "/postings/questions",
+      "description": "Fetches a list of all questions included in a posting’s application form in Lever\n",
+      "group": "Postings",
+      "script": "lever-basic-sandbox/syncs/postings-questions"
+    },
+    {
+      "method": "GET",
+      "path": "/stages",
+      "description": "Fetches a list of all pipeline stages in Lever\n",
+      "group": "Stages",
+      "script": "lever-basic-sandbox/syncs/stages"
+    },
+    {
+      "method": "POST",
+      "path": "/notes",
+      "description": "Action to create a note and add it to an opportunity.\n",
+      "group": "Notes",
+      "script": "lever-basic-sandbox/actions/create-note"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create an opportunity and optionally candidates associated with the opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/create-opportunity"
+    },
+    {
+      "method": "GET",
+      "path": "/stages/limited",
+      "description": "Action to get lists all pipeline stages. Note that this does \nnot paginate the response so it is possible that not all stages \nare returned.\n",
+      "group": "Stages",
+      "script": "lever-basic-sandbox/actions/get-stages"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Lists all the users in your Lever account. Only active users are included by default.\n",
+      "group": "Users",
+      "script": "lever-basic-sandbox/actions/users"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/limited",
+      "description": "Get all posts for your account. Note that this does\nnot paginate the response so it is possible that not all postings \nare returned.\n",
+      "group": "Posts",
+      "script": "lever-basic-sandbox/actions/get-postings"
+    },
+    {
+      "method": "GET",
+      "path": "/archived/reasons",
+      "description": "Get all archived reasons\n",
+      "group": "Archived",
+      "script": "lever-basic-sandbox/actions/get-archive-reasons"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/single",
+      "description": "Get single post for your account in Lever\n",
+      "group": "Posts",
+      "script": "lever-basic-sandbox/actions/get-posting"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/links",
+      "description": "Update the links in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity-links"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/sources",
+      "description": "Update the sources in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity-sources"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/stages",
+      "description": "Update the stage in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity-stage"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/tags",
+      "description": "Update the tags in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity-tags"
+    },
+    {
+      "method": "PUT",
+      "path": "/opportunities/archived",
+      "description": "Update the archived state of an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity-archived"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/apply",
+      "description": "Submit an application on behalf of a candidate. This endpoint can only be used to submit applications to published or unlisted postings.\n",
+      "group": "Posts",
+      "script": "lever-basic-sandbox/actions/apply-posting"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-basic-sandbox/actions/update-opportunity"
+    }
+  ],
+  "lever-sandbox": [
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches all opportunities\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/applications",
+      "description": "Fetches a list of all applications for a candidate in Lever\n",
+      "group": "Applications",
+      "script": "lever-sandbox/syncs/opportunities-applications"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/feedback",
+      "description": "Fetches a list of all feedback forms for a candidate for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/syncs/opportunities-feedbacks"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities/interviews",
+      "description": "Fetches a list of all interviews for every single opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/syncs/opportunities-interviews"
+    },
+    {
+      "method": "GET",
+      "path": "/notes",
+      "description": "Fetches a list of all notes for every single opportunity\n",
+      "group": "Notes",
+      "script": "lever-sandbox/syncs/opportunities-notes"
+    },
+    {
+      "method": "GET",
+      "path": "/offers",
+      "description": "Fetches a list of all offers for every single opportunity\n",
+      "group": "Offers",
+      "script": "lever-sandbox/syncs/opportunities-offers"
+    },
+    {
+      "method": "GET",
+      "path": "/postings",
+      "description": "Fetches a list of all postings in Lever\n",
+      "group": "Postings",
+      "script": "lever-sandbox/syncs/postings"
+    },
+    {
+      "method": "GET",
+      "path": "/postings/questions",
+      "description": "Fetches a list of all questions included in a posting’s application form in Lever\n",
+      "group": "Postings",
+      "script": "lever-sandbox/syncs/postings-questions"
+    },
+    {
+      "method": "GET",
+      "path": "/stages",
+      "description": "Fetches a list of all pipeline stages in Lever\n",
+      "group": "Stages",
+      "script": "lever-sandbox/syncs/stages"
+    },
+    {
+      "method": "POST",
+      "path": "/notes",
+      "description": "Action to create a note and add it to an opportunity.\n",
+      "group": "Notes",
+      "script": "lever-sandbox/actions/create-note"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create an opportunity and optionally candidates associated with the opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/create-opportunity"
+    },
+    {
+      "method": "GET",
+      "path": "/stages/limited",
+      "description": "Action to get lists all pipeline stages. Note that this does \nnot paginate the response so it is possible that not all stages \nare returned.\n",
+      "group": "Stages",
+      "script": "lever-sandbox/actions/get-stages"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Lists all the users in your Lever account. Only active users are included by default.\n",
+      "group": "Users",
+      "script": "lever-sandbox/actions/users"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/limited",
+      "description": "Get all posts for your account. Note that this does\nnot paginate the response so it is possible that not all postings \nare returned.\n",
+      "group": "Posts",
+      "script": "lever-sandbox/actions/get-postings"
+    },
+    {
+      "method": "GET",
+      "path": "/archived/reasons",
+      "description": "Get all archived reasons\n",
+      "group": "Archived",
+      "script": "lever-sandbox/actions/get-archive-reasons"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/single",
+      "description": "Get single post for your account in Lever\n",
+      "group": "Posts",
+      "script": "lever-sandbox/actions/get-posting"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/links",
+      "description": "Update the links in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity-links"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/sources",
+      "description": "Update the sources in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity-sources"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/stages",
+      "description": "Update the stage in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity-stage"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities/tags",
+      "description": "Update the tags in an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity-tags"
+    },
+    {
+      "method": "PUT",
+      "path": "/opportunities/archived",
+      "description": "Update the archived state of an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity-archived"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/apply",
+      "description": "Submit an application on behalf of a candidate. This endpoint can only be used to submit applications to published or unlisted postings.\n",
+      "group": "Posts",
+      "script": "lever-sandbox/actions/apply-posting"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update an opportunity\n",
+      "group": "Opportunities",
+      "script": "lever-sandbox/actions/update-opportunity"
+    }
+  ],
+  "linear": [
+    {
+      "method": "GET",
+      "path": "/linear/issues",
+      "description": "Fetches a list of issues from Linear\n",
+      "script": "linear/syncs/issues"
+    },
+    {
+      "method": "GET",
+      "path": "/linear/projects",
+      "description": "Fetches a list of projects from Linear\n",
+      "script": "linear/syncs/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/linear/teams",
+      "description": "Fetches a list of teams from Linear\n",
+      "script": "linear/syncs/teams"
+    },
+    {
+      "method": "GET",
+      "path": "/linear/roadmaps",
+      "description": "Fetches a list of roadmaps from Linear\n",
+      "script": "linear/syncs/roadmaps"
+    }
+  ],
+  "linkedin": [
+    {
+      "description": "Create a linkedin post with an optional video",
+      "script": "linkedin/actions/post"
+    }
+  ],
+  "luma": [
+    {
+      "method": "GET",
+      "path": "/luma/list-events",
+      "description": "This sync will be used to sync all of the events managed by your Calendar. See https://docs.lu.ma/reference/calendar-list-events for more details.\n",
+      "script": "luma/syncs/list-events"
+    }
+  ],
+  "microsoft-teams": [
+    {
+      "method": "GET",
+      "path": "/microsoft-teams/microsoft-org-unit",
+      "description": "Continuously fetches groups from either Microsoft 365 or Azure Active\nDirectory.\nDetails: full refresh, support deletes, goes back all time, metadata\nis not required.\n",
+      "script": "microsoft-teams/syncs/org-units"
+    },
+    {
+      "method": "GET",
+      "path": "/microsoft-teams/microsoft-users",
+      "description": "Continuously fetches users from either Microsoft 365 or Azure Active\nDirectory given specified\ngroups to sync. Expects an `orgsToSync` metadata property with an\narray of organization ids.\nDetails: full refresh, doesn't support deletes, goes back all time,\nmetadata is required.\n",
+      "script": "microsoft-teams/syncs/users"
+    }
+  ],
+  "netsuite-tba": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Fetches all customers in Netsuite\n",
+      "group": "Customers",
+      "script": "netsuite-tba/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/payments",
+      "description": "Fetches all payments received from customers in Netsuite\n",
+      "group": "Payments",
+      "script": "netsuite-tba/syncs/payments"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "description": "Fetches all invoices in Netsuite\n",
+      "group": "Invoices",
+      "script": "netsuite-tba/syncs/invoices"
+    },
+    {
+      "method": "GET",
+      "path": "/credit-notes",
+      "description": "Fetches all credit notes in Netsuite\n",
+      "group": "Credit Notes",
+      "script": "netsuite-tba/syncs/credit-notes"
+    },
+    {
+      "method": "GET",
+      "path": "/locations",
+      "description": "Fetches all locations in Netsuite\n",
+      "script": "netsuite-tba/syncs/locations"
+    },
+    {
+      "method": "POST",
+      "path": "/customers",
+      "description": "Creates a customer in Netsuite\n",
+      "group": "Customers",
+      "script": "netsuite-tba/actions/customer-create"
+    },
+    {
+      "method": "PUT",
+      "path": "/customers",
+      "description": "Updates a customer in Netsuite",
+      "group": "Customers",
+      "script": "netsuite-tba/actions/customer-update"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Creates an invoice in Netsuite\n",
+      "group": "Invoices",
+      "script": "netsuite-tba/actions/invoice-create"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices",
+      "description": "Updates an invoice in Netsuite\n",
+      "group": "Invoices",
+      "script": "netsuite-tba/actions/invoice-update"
+    },
+    {
+      "method": "POST",
+      "path": "/payments",
+      "description": "Creates a payment in Netsuite\n",
+      "group": "Payments",
+      "script": "netsuite-tba/actions/payment-create"
+    },
+    {
+      "method": "PUT",
+      "path": "/payments",
+      "description": "Updates a payment in Netsuite",
+      "group": "Payments",
+      "script": "netsuite-tba/actions/payment-update"
+    },
+    {
+      "method": "POST",
+      "path": "/credit-notes",
+      "description": "Creates a credit note in Netsuite\n",
+      "group": "Credit Notes",
+      "script": "netsuite-tba/actions/credit-note-create"
+    },
+    {
+      "method": "PUT",
+      "path": "/credit-notes",
+      "description": "Updates a credit note in Netsuite",
+      "group": "Credit Notes",
+      "script": "netsuite-tba/actions/credit-note-update"
+    }
+  ],
+  "next-cloud-ocs": [
+    {
+      "method": "GET",
+      "path": "/next-cloud-ocs/next-cloud-users",
+      "description": "Fetches a list of all users' details from NextCloud account\n",
+      "script": "next-cloud-ocs/syncs/users"
+    }
+  ],
+  "notion": [
+    {
+      "method": "GET",
+      "path": "/metadata",
+      "description": "Sync pages and databases metadata to further fetch the content\nusing a dedicated action\n",
+      "script": "notion/syncs/content-metadata"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Notion\n",
+      "script": "notion/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/notion/database",
+      "description": "Sync a database content with each row as an entry. Store the top level\ndatabase information in the metadata to be able to reconcile the database\n",
+      "script": "notion/syncs/databases"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-rich-page",
+      "description": "Fetch a specific page in Notion by passing a pageId. This action fetches a page,\nand its content and converts it into a full markdown. It transforms images,\ntables, uploaded files, etc., into their markdown counterparts, providing a complete markdown.\n",
+      "script": "notion/actions/fetch-rich-page"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-database",
+      "description": "Fetch a specific Notion database by passing in the database id. This action fetches the database and outputs an object. Note that this should be used for small databases.",
+      "script": "notion/actions/fetch-database"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-content-metadata",
+      "description": "Retrieve the entity type as well as an id for a Notion entity to later call\nfetch-database or fetch-rich-page based on the type.\n",
+      "script": "notion/actions/fetch-content-metadata"
+    }
+  ],
+  "okta": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches lists users in your org",
+      "group": "Users",
+      "script": "okta/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a new user in your Okta org without credentials.",
+      "group": "Users",
+      "script": "okta/actions/create-user"
+    },
+    {
+      "method": "POST",
+      "path": "/group",
+      "description": "Adds a new group with the OKTA_GROUP type to your org",
+      "script": "okta/actions/add-group"
+    },
+    {
+      "method": "PUT",
+      "path": "/user-groups",
+      "description": "Assigns a user to a group with the OKTA_GROUP type",
+      "group": "User Groups",
+      "script": "okta/actions/add-user-group"
+    },
+    {
+      "method": "DELETE",
+      "path": "/user-groups",
+      "description": "Unassigns a user from a group with the OKTA_GROUP type",
+      "group": "User Groups",
+      "script": "okta/actions/remove-user-group"
+    }
+  ],
+  "okta-preview": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches lists users in your org",
+      "group": "Users",
+      "script": "okta-preview/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a new user in your Okta org without credentials.",
+      "group": "Users",
+      "script": "okta-preview/actions/create-user"
+    },
+    {
+      "method": "POST",
+      "path": "/group",
+      "description": "Adds a new group with the OKTA_GROUP type to your org",
+      "script": "okta-preview/actions/add-group"
+    },
+    {
+      "method": "PUT",
+      "path": "/user-groups",
+      "description": "Assigns a user to a group with the OKTA_GROUP type",
+      "group": "User Groups",
+      "script": "okta-preview/actions/add-user-group"
+    },
+    {
+      "method": "DELETE",
+      "path": "/user-groups",
+      "description": "Unassigns a user from a group with the OKTA_GROUP type",
+      "group": "User Groups",
+      "script": "okta-preview/actions/remove-user-group"
+    }
+  ],
+  "outlook": [
+    {
+      "method": "GET",
+      "path": "/emails",
+      "description": "Fetches a list of emails from outlook. Goes back default to 1 year\nbut metadata can be set using the `backfillPeriodMs` property\nto change the lookback. The property should be set in milliseconds.\n",
+      "script": "outlook/syncs/emails"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-attachment",
+      "description": "An action used to fetch the contents of an attachment.\n",
+      "script": "outlook/actions/fetch-attachment"
+    }
+  ],
+  "pennylane": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Fetches a list of customers from pennylane\n",
+      "group": "Customers",
+      "script": "pennylane/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/suppliers",
+      "description": "Fetches a list of suppliers from pennylane\n",
+      "group": "Suppliers",
+      "script": "pennylane/syncs/suppliers"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "description": "Fetches a list of customer invoices from pennylane\n",
+      "group": "Invoices",
+      "script": "pennylane/syncs/invoices"
+    },
+    {
+      "method": "GET",
+      "path": "/products",
+      "description": "Fetches a list products from pennylane\n",
+      "group": "Products",
+      "script": "pennylane/syncs/products"
+    },
+    {
+      "method": "POST",
+      "path": "/customers",
+      "description": "Action to create a customer in pennylane\n",
+      "group": "Customers",
+      "script": "pennylane/actions/create-customer"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Action to create an invoice in pennylane\n",
+      "group": "Invoices",
+      "script": "pennylane/actions/create-invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/suppliers",
+      "description": "Action to create a supplier in pennylane\n",
+      "group": "Suppliers",
+      "script": "pennylane/actions/create-supplier"
+    },
+    {
+      "method": "PATCH",
+      "path": "/customers",
+      "description": "Action to update a supplier in pennylane\n",
+      "group": "Customers",
+      "script": "pennylane/actions/update-customer"
+    },
+    {
+      "method": "PATCH",
+      "path": "/invoices",
+      "description": "Action to update an invoice in pennylane\n",
+      "group": "Invoices",
+      "script": "pennylane/actions/update-invoice"
+    },
+    {
+      "method": "PATCH",
+      "path": "/suppliers",
+      "description": "Action to update a supplier in pennylane\n",
+      "group": "Suppliers",
+      "script": "pennylane/actions/update-supplier"
+    },
+    {
+      "method": "POST",
+      "path": "/products",
+      "description": "Action to create a product in pennylane\n",
+      "group": "Products",
+      "script": "pennylane/actions/create-product"
+    },
+    {
+      "method": "PATCH",
+      "path": "/products",
+      "description": "Action to update a product in pennylane\n",
+      "group": "Products",
+      "script": "pennylane/actions/update-product"
+    }
+  ],
+  "perimeter81": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users from Perimeter81\n",
+      "group": "Users",
+      "script": "perimeter81/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Perimeter81",
+      "group": "Users",
+      "script": "perimeter81/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Perimeter81",
+      "group": "Users",
+      "script": "perimeter81/actions/delete-user"
+    }
+  ],
+  "pipedrive": [
+    {
+      "method": "GET",
+      "path": "/pipedrive/activities",
+      "description": "Fetches a list of activities from pipedrive\n",
+      "script": "pipedrive/syncs/activities"
+    },
+    {
+      "method": "GET",
+      "path": "/pipedrive/deals",
+      "description": "Fetches a list of deals from pipedrive\n",
+      "script": "pipedrive/syncs/deals"
+    },
+    {
+      "method": "GET",
+      "path": "/pipedrive/organizations",
+      "description": "Fetches a list of organizations from pipedrive\n",
+      "script": "pipedrive/syncs/organizations"
+    },
+    {
+      "method": "GET",
+      "path": "/pipedrive/persons",
+      "description": "Fetches persons from pipedrive\n",
+      "script": "pipedrive/syncs/persons"
+    }
+  ],
+  "quickbooks": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Fetches all QuickBooks customers. Handles both active and archived customers, saving or deleting them based on their status.\n",
+      "group": "Customers",
+      "script": "quickbooks/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts",
+      "description": "Fetches all accounts in QuickBooks. Handles both active and archived accounts, saving or deleting them based on their status.\n",
+      "group": "Accounts",
+      "script": "quickbooks/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/payments",
+      "description": "Fetches all payments in QuickBooks. Handles both active and voided payments, saving or deleting them based on their status.\n",
+      "group": "Payments",
+      "script": "quickbooks/syncs/payments"
+    },
+    {
+      "method": "GET",
+      "path": "/items",
+      "description": "Fetches all items in QuickBooks. Handles both active and archived items, saving or deleting them based on their status.\n",
+      "group": "Items",
+      "script": "quickbooks/syncs/items"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "description": "Fetches all invoices in QuickBooks. Handles both active and voided invoices, saving or deleting them based on their status.\n",
+      "group": "Invoices",
+      "script": "quickbooks/syncs/invoices"
+    },
+    {
+      "method": "POST",
+      "path": "/customers",
+      "description": "Creates a single customer in QuickBooks.\n",
+      "group": "Customers",
+      "script": "quickbooks/actions/create-customer"
+    },
+    {
+      "method": "PUT",
+      "path": "/customers",
+      "description": "Update a single customer in QuickBooks.\n",
+      "group": "Customers",
+      "script": "quickbooks/actions/update-customer"
+    },
+    {
+      "method": "POST",
+      "path": "/items",
+      "description": "Creates a single item in QuickBooks.\n",
+      "group": "Items",
+      "script": "quickbooks/actions/create-item"
+    },
+    {
+      "method": "PUT",
+      "path": "/items",
+      "description": "Update a single item in QuickBooks.\n",
+      "group": "Items",
+      "script": "quickbooks/actions/update-item"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts",
+      "description": "Creates a single account in QuickBooks.\n",
+      "group": "Accounts",
+      "script": "quickbooks/actions/create-account"
+    },
+    {
+      "method": "PUT",
+      "path": "/accounts",
+      "description": "Updates a single account in QuickBooks.\n",
+      "group": "Accounts",
+      "script": "quickbooks/actions/update-account"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Creates a single invoice in QuickBooks.\n",
+      "group": "Invoices",
+      "script": "quickbooks/actions/create-invoice"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices",
+      "description": "Updates a single invoice in QuickBooks.\n",
+      "group": "Invoices",
+      "script": "quickbooks/actions/update-invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/credit-memos",
+      "description": "Creates a single credit memo in QuickBooks.\n",
+      "group": "Credit Memos",
+      "script": "quickbooks/actions/create-credit-memo"
+    },
+    {
+      "method": "PUT",
+      "path": "/credit-memos",
+      "description": "Updates a single credit memo in QuickBooks.\n",
+      "group": "Credit Memos",
+      "script": "quickbooks/actions/update-credit-memo"
+    },
+    {
+      "method": "POST",
+      "path": "/payments",
+      "description": "Creates a single payment in QuickBooks.\n",
+      "group": "Payments",
+      "script": "quickbooks/actions/create-payment"
+    }
+  ],
+  "quickbooks-sandbox": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Fetches all QuickBooks customers. Handles both active and archived customers, saving or deleting them based on their status.\n",
+      "group": "Customers",
+      "script": "quickbooks-sandbox/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts",
+      "description": "Fetches all accounts in QuickBooks. Handles both active and archived accounts, saving or deleting them based on their status.\n",
+      "group": "Accounts",
+      "script": "quickbooks-sandbox/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/payments",
+      "description": "Fetches all payments in QuickBooks. Handles both active and voided payments, saving or deleting them based on their status.\n",
+      "group": "Payments",
+      "script": "quickbooks-sandbox/syncs/payments"
+    },
+    {
+      "method": "GET",
+      "path": "/items",
+      "description": "Fetches all items in QuickBooks. Handles both active and archived items, saving or deleting them based on their status.\n",
+      "group": "Items",
+      "script": "quickbooks-sandbox/syncs/items"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "description": "Fetches all invoices in QuickBooks. Handles both active and voided invoices, saving or deleting them based on their status.\n",
+      "group": "Invoices",
+      "script": "quickbooks-sandbox/syncs/invoices"
+    },
+    {
+      "method": "POST",
+      "path": "/customers",
+      "description": "Creates a single customer in QuickBooks.\n",
+      "group": "Customers",
+      "script": "quickbooks-sandbox/actions/create-customer"
+    },
+    {
+      "method": "PUT",
+      "path": "/customers",
+      "description": "Update a single customer in QuickBooks.\n",
+      "group": "Customers",
+      "script": "quickbooks-sandbox/actions/update-customer"
+    },
+    {
+      "method": "POST",
+      "path": "/items",
+      "description": "Creates a single item in QuickBooks.\n",
+      "group": "Items",
+      "script": "quickbooks-sandbox/actions/create-item"
+    },
+    {
+      "method": "PUT",
+      "path": "/items",
+      "description": "Update a single item in QuickBooks.\n",
+      "group": "Items",
+      "script": "quickbooks-sandbox/actions/update-item"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts",
+      "description": "Creates a single account in QuickBooks.\n",
+      "group": "Accounts",
+      "script": "quickbooks-sandbox/actions/create-account"
+    },
+    {
+      "method": "PUT",
+      "path": "/accounts",
+      "description": "Updates a single account in QuickBooks.\n",
+      "group": "Accounts",
+      "script": "quickbooks-sandbox/actions/update-account"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Creates a single invoice in QuickBooks.\n",
+      "group": "Invoices",
+      "script": "quickbooks-sandbox/actions/create-invoice"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices",
+      "description": "Updates a single invoice in QuickBooks.\n",
+      "group": "Invoices",
+      "script": "quickbooks-sandbox/actions/update-invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/credit-memos",
+      "description": "Creates a single credit memo in QuickBooks.\n",
+      "group": "Credit Memos",
+      "script": "quickbooks-sandbox/actions/create-credit-memo"
+    },
+    {
+      "method": "PUT",
+      "path": "/credit-memos",
+      "description": "Updates a single credit memo in QuickBooks.\n",
+      "group": "Credit Memos",
+      "script": "quickbooks-sandbox/actions/update-credit-memo"
+    },
+    {
+      "method": "POST",
+      "path": "/payments",
+      "description": "Creates a single payment in QuickBooks.\n",
+      "group": "Payments",
+      "script": "quickbooks-sandbox/actions/create-payment"
+    }
+  ],
+  "ring-central": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users from RingCentral\n",
+      "group": "Users",
+      "script": "ring-central/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in RingCentral",
+      "group": "Users",
+      "script": "ring-central/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in RingCentral",
+      "group": "Users",
+      "script": "ring-central/actions/delete-user"
+    }
+  ],
+  "ring-central-sandbox": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches the list of users from RingCentral\n",
+      "group": "Users",
+      "script": "ring-central-sandbox/syncs/users"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in RingCentral",
+      "group": "Users",
+      "script": "ring-central-sandbox/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in RingCentral",
+      "group": "Users",
+      "script": "ring-central-sandbox/actions/delete-user"
+    }
+  ],
+  "salesforce": [
+    {
+      "method": "GET",
+      "path": "/accounts",
+      "description": "Fetches a list of accounts from salesforce\n",
+      "group": "Accounts",
+      "script": "salesforce/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches a list of contacts from salesforce\n",
+      "group": "Contacts",
+      "script": "salesforce/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/leads",
+      "description": "Fetches a list of leads from salesforce\n",
+      "group": "Leads",
+      "script": "salesforce/syncs/leads"
+    },
+    {
+      "method": "GET",
+      "path": "/articles",
+      "description": "Fetches a list of articles from salesforce\n",
+      "script": "salesforce/syncs/articles"
+    },
+    {
+      "method": "GET",
+      "path": "/tickets",
+      "description": "Fetches a list of tickets from salesforce\n",
+      "script": "salesforce/syncs/tickets"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches a list of opportunities from salesforce\n",
+      "group": "Opportunities",
+      "script": "salesforce/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/fields",
+      "description": "Fetch available task fields, child relationships and validation rules. If the input is not specified then it defaults back to \"Task\"\nData Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result.\n",
+      "script": "salesforce/actions/fetch-fields"
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Create a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce/actions/create-contact"
+    },
+    {
+      "method": "PATCH",
+      "path": "/contacts",
+      "description": "Update a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce/actions/update-contact"
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts",
+      "description": "Delete a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce/actions/delete-contact"
+    },
+    {
+      "method": "POST",
+      "path": "/leads",
+      "description": "Create a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce/actions/create-lead"
+    },
+    {
+      "method": "PATCH",
+      "path": "/leads",
+      "description": "Update a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce/actions/update-lead"
+    },
+    {
+      "method": "DELETE",
+      "path": "/leads",
+      "description": "Delete a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce/actions/delete-lead"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts",
+      "description": "Create a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce/actions/create-account"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts",
+      "description": "Update a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce/actions/update-account"
+    },
+    {
+      "method": "DELETE",
+      "path": "/accounts",
+      "description": "Delete a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce/actions/delete-account"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce/actions/create-opportunity"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce/actions/update-opportunity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/opportunities",
+      "description": "Delete a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce/actions/delete-opportunity"
+    }
+  ],
+  "salesforce-sandbox": [
+    {
+      "method": "GET",
+      "path": "/accounts",
+      "description": "Fetches a list of accounts from salesforce\n",
+      "group": "Accounts",
+      "script": "salesforce-sandbox/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches a list of contacts from salesforce\n",
+      "group": "Contacts",
+      "script": "salesforce-sandbox/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/leads",
+      "description": "Fetches a list of leads from salesforce\n",
+      "group": "Leads",
+      "script": "salesforce-sandbox/syncs/leads"
+    },
+    {
+      "method": "GET",
+      "path": "/articles",
+      "description": "Fetches a list of articles from salesforce\n",
+      "script": "salesforce-sandbox/syncs/articles"
+    },
+    {
+      "method": "GET",
+      "path": "/tickets",
+      "description": "Fetches a list of tickets from salesforce\n",
+      "script": "salesforce-sandbox/syncs/tickets"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "description": "Fetches a list of opportunities from salesforce\n",
+      "group": "Opportunities",
+      "script": "salesforce-sandbox/syncs/opportunities"
+    },
+    {
+      "method": "GET",
+      "path": "/fields",
+      "description": "Fetch available task fields, child relationships and validation rules. If the input is not specified then it defaults back to \"Task\"\nData Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result.\n",
+      "script": "salesforce-sandbox/actions/fetch-fields"
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Create a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce-sandbox/actions/create-contact"
+    },
+    {
+      "method": "PATCH",
+      "path": "/contacts",
+      "description": "Update a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce-sandbox/actions/update-contact"
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts",
+      "description": "Delete a single contact in salesforce",
+      "group": "Contacts",
+      "script": "salesforce-sandbox/actions/delete-contact"
+    },
+    {
+      "method": "POST",
+      "path": "/leads",
+      "description": "Create a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce-sandbox/actions/create-lead"
+    },
+    {
+      "method": "PATCH",
+      "path": "/leads",
+      "description": "Update a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce-sandbox/actions/update-lead"
+    },
+    {
+      "method": "DELETE",
+      "path": "/leads",
+      "description": "Delete a single lead in salesforce",
+      "group": "Leads",
+      "script": "salesforce-sandbox/actions/delete-lead"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts",
+      "description": "Create a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce-sandbox/actions/create-account"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts",
+      "description": "Update a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce-sandbox/actions/update-account"
+    },
+    {
+      "method": "DELETE",
+      "path": "/accounts",
+      "description": "Delete a single account in salesforce",
+      "group": "Accounts",
+      "script": "salesforce-sandbox/actions/delete-account"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunities",
+      "description": "Create a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce-sandbox/actions/create-opportunity"
+    },
+    {
+      "method": "PATCH",
+      "path": "/opportunities",
+      "description": "Update a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce-sandbox/actions/update-opportunity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/opportunities",
+      "description": "Delete a single opportunity in salesforce",
+      "group": "Opportunities",
+      "script": "salesforce-sandbox/actions/delete-opportunity"
+    }
+  ],
+  "sharepoint-online": [
+    {
+      "method": "GET",
+      "path": "/user-files",
+      "description": "Fetch all files from the user's drive and sync the metadata for each file.",
+      "script": "sharepoint-online/syncs/user-files"
+    },
+    {
+      "method": "GET",
+      "path": "/user-files/selected",
+      "description": "Fetch all selected files from a user's drive",
+      "script": "sharepoint-online/syncs/user-files-selection"
+    },
+    {
+      "method": "GET",
+      "path": "/shared-files/selected",
+      "description": "This sync will be used to sync file metadata from SharePoint site based on the ones the user has picked.\n",
+      "script": "sharepoint-online/syncs/shared-sites-selection"
+    },
+    {
+      "method": "GET",
+      "path": "/list-sites",
+      "description": "This action will be used to display a list of sites to the end-user, who will pick the ones he wants to sync.\nThe connection metadata should be set based on the file selection.\n",
+      "script": "sharepoint-online/actions/list-shared-sites"
+    },
+    {
+      "method": "GET",
+      "path": "/fetch-file",
+      "description": "This action will be used to fetch the latest file download_url which can be used to download the actual file.\n",
+      "script": "sharepoint-online/actions/fetch-file"
+    }
+  ],
+  "slack": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Syncs information about all Users on the Slack workspace\n",
+      "script": "slack/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/channels",
+      "description": "Syncs information about all Slack channels. Which channels get synced\n(public, private, IMs, group DMs) depends on the scopes. If\njoinPublicChannels is set to true, the bot will automatically join all\npublic channels as well. Scopes: At least one of channels:read,\ngroups:read, mpim:read, im:read. To also join public channels:\nchannels:join\n",
+      "script": "slack/syncs/channels"
+    },
+    {
+      "description": "Syncs Slack messages, thread replies and reactions from messages &\nthread replies for all channels, group dms and dms the bot is a part\nof. For every channel it will do an initial full sync on first\ndetection of the channel. For subsequent runs it will sync messages,\nthreads & reactions from the last 10 days. Scopes required:\nchannels:read, and at least one of\nchannels:history, groups:history, mpim:history, im:history\n",
+      "script": "slack/syncs/messages"
+    },
+    {
+      "method": "POST",
+      "path": "/messages",
+      "description": "An action that sends a message to a slack channel.\n",
+      "group": "Messages",
+      "script": "slack/actions/send-message"
+    }
+  ],
+  "teamtailor": [
+    {
+      "method": "GET",
+      "path": "/teamtailor/candidates",
+      "description": "Fetches a list of all candidates from your teamtailor account.\n",
+      "script": "teamtailor/syncs/candidates"
+    }
+  ],
+  "unanet": [
+    {
+      "method": "POST",
+      "path": "/leads",
+      "description": "Create a lead with with information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description.",
+      "group": "Leads",
+      "script": "unanet/actions/create-lead"
+    },
+    {
+      "method": "PUT",
+      "path": "/leads",
+      "description": "Update a lead with any changed information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description.",
+      "group": "Leads",
+      "script": "unanet/actions/update-lead"
+    },
+    {
+      "method": "GET",
+      "path": "/leads",
+      "description": "Fetch all leads",
+      "group": "Leads",
+      "script": "unanet/actions/get-leads"
+    },
+    {
+      "method": "GET",
+      "path": "/schema",
+      "description": "Get the schema of any entity. Useful to know the properties of any object that exists in the system.",
+      "script": "unanet/actions/get-schema"
+    },
+    {
+      "method": "GET",
+      "path": "/company",
+      "description": "Retrieve information about a company",
+      "script": "unanet/actions/get-company"
+    },
+    {
+      "method": "POST",
+      "path": "/company",
+      "description": "Create a company in the system",
+      "script": "unanet/actions/create-company"
+    },
+    {
+      "method": "POST",
+      "path": "/opportunity",
+      "description": "Create an opportunity in the system. Requires a stage that exists\nin the system. Use the list-stages action to find the appropriate stage.\n",
+      "script": "unanet/actions/create-opportunity"
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Create a contact in the system",
+      "group": "Contacts",
+      "script": "unanet/actions/create-contact"
+    },
+    {
+      "method": "GET",
+      "path": "/stages",
+      "description": "List all the stages that exist in the system. Use this action to find\nthe correct stage to be able to create an opportunity.\n",
+      "script": "unanet/actions/list-stages"
+    }
+  ],
+  "wildix-pbx": [
+    {
+      "method": "GET",
+      "path": "/wildix-pbx/colleagues",
+      "description": "Fetches a list of users from PBX\n",
+      "script": "wildix-pbx/syncs/colleagues"
+    }
+  ],
+  "woocommerce": [
+    {
+      "method": "GET",
+      "path": "/customers",
+      "description": "Periodically fetches all the Woo customers.\n",
+      "script": "woocommerce/syncs/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/orders",
+      "description": "Periodically fetches all the Woo orders.\n",
+      "script": "woocommerce/syncs/orders"
+    }
+  ],
+  "workable": [
+    {
+      "method": "GET",
+      "path": "/candidates",
+      "description": "Fetches a list of candidates from workable\n",
+      "group": "Candidates",
+      "script": "workable/syncs/candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/candidates-activities",
+      "description": "Fetches a list of activity streams of the given candidate\n",
+      "script": "workable/syncs/candidates-activities"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/candidates-offer",
+      "description": "Fetches candidate's latest offer from workable\n",
+      "script": "workable/syncs/candidates-offer"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/jobs",
+      "description": "Fetches a list of jobs from workable\n",
+      "script": "workable/syncs/jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/jobs-candidates",
+      "description": "Fetches a list of candidates for the specified job from workable\n",
+      "script": "workable/syncs/jobs-candidates"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/jobs-questions",
+      "description": "Fetches a list of questions for the specified job from workable\n",
+      "script": "workable/syncs/jobs-questions"
+    },
+    {
+      "method": "GET",
+      "path": "/workable/members",
+      "description": "Fetches a list of account members from workable\n",
+      "script": "workable/syncs/members"
+    },
+    {
+      "method": "POST",
+      "path": "/candidates",
+      "description": "Action to create a candidate at the specified job\n",
+      "group": "Candidates",
+      "script": "workable/actions/create-candidate"
+    },
+    {
+      "method": "POST",
+      "path": "/workable/create-comment",
+      "description": "Action to create a comment on the applicant's timeline\n",
+      "script": "workable/actions/create-comment"
+    }
+  ],
+  "xero": [
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "description": "Fetches all Xero contacts.\nDetails: incremental sync, detects deletes, metadata is not required.\n",
+      "group": "Contacts",
+      "script": "xero/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts",
+      "description": "Fetches all accounts in Xero (chart of accounts). Incremental sync, detects deletes, metadata is not required.\n",
+      "group": "Accounts",
+      "script": "xero/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/items",
+      "description": "Fetches all items in Xero. Incremental sync, does not detect deletes, metadata is not\nrequired.\n",
+      "group": "Items",
+      "script": "xero/syncs/items"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "description": "Fetches all invoices in Xero. Incremental sync.\n",
+      "group": "Invoices",
+      "script": "xero/syncs/invoices"
+    },
+    {
+      "method": "GET",
+      "path": "/payments",
+      "description": "Fetches all payments in Xero. Incremental sync.\n",
+      "group": "Payments",
+      "script": "xero/syncs/payments"
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "description": "Creates one or multiple contacts in Xero.\nNote: Does NOT check if these contacts already exist.\n",
+      "group": "Contacts",
+      "script": "xero/actions/create-contact"
+    },
+    {
+      "method": "PUT",
+      "path": "/contacts",
+      "description": "Updates one or multiple contacts in Xero. Only fields that are passed in are modified. If a field should not be changed, omit it in the input. The id field is mandatory.\n",
+      "group": "Contacts",
+      "script": "xero/actions/update-contact"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices",
+      "description": "Creates one or more invoices in Xero.\nNote: Does NOT check if the invoice already exists.\n",
+      "group": "Invoices",
+      "script": "xero/actions/create-invoice"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices",
+      "description": "Updates one or more invoices in Xero. To delete an invoice\nthat is in DRAFT or SUBMITTED set the status to DELETED. If an\ninvoice has been AUTHORISED it can't be deleted but you can set\nthe status to VOIDED.\n",
+      "group": "Invoices",
+      "script": "xero/actions/update-invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/credit-notes",
+      "description": "Creates one or more credit notes in Xero.\nNote: Does NOT check if the credit note already exists.\n",
+      "group": "Credit Notes",
+      "script": "xero/actions/create-credit-note"
+    },
+    {
+      "method": "PUT",
+      "path": "/credit-notes",
+      "description": "Updates one or more credit notes in Xero.\n",
+      "group": "Credit Notes",
+      "script": "xero/actions/update-credit-note"
+    },
+    {
+      "method": "POST",
+      "path": "/payments",
+      "description": "Creates one or more payments in Xero.\nNote: Does NOT check if the payment already exists.\n",
+      "group": "Payments",
+      "script": "xero/actions/create-payment"
+    },
+    {
+      "method": "POST",
+      "path": "/items",
+      "description": "Creates one or more items in Xero.\nNote: Does NOT check if the item already exists.\n",
+      "group": "Items",
+      "script": "xero/actions/create-item"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants",
+      "description": "Fetches all the tenants the connection has access to.\nThis can be used to set the metadata to the selected tenant.\n",
+      "group": "Tenants",
+      "script": "xero/actions/get-tenants"
+    },
+    {
+      "method": "PUT",
+      "path": "/items",
+      "description": "Updates one or more items in Xero.\n",
+      "group": "Items",
+      "script": "xero/actions/update-item"
+    }
+  ],
+  "zendesk": [
+    {
+      "method": "GET",
+      "path": "/tickets",
+      "description": "Fetches a list of tickets from Zendesk\n",
+      "group": "Tickets",
+      "script": "zendesk/syncs/tickets"
+    },
+    {
+      "method": "GET",
+      "path": "/articles",
+      "description": "Fetches a list of articles in Help center from Zendesk\n",
+      "script": "zendesk/syncs/articles"
+    },
+    {
+      "method": "GET",
+      "path": "/categories",
+      "description": "Fetches a list of help center categories\n",
+      "group": "Categories",
+      "script": "zendesk/syncs/categories"
+    },
+    {
+      "method": "GET",
+      "path": "/sections",
+      "description": "Fetches a list of sections in Help center from Zendesk\n",
+      "group": "Sections",
+      "script": "zendesk/syncs/sections"
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of admin or agent users from Zendesk\n",
+      "script": "zendesk/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/all-articles",
+      "description": "Fetch all help center articles metadata",
+      "script": "zendesk/actions/fetch-articles"
+    },
+    {
+      "method": "GET",
+      "path": "/single-article",
+      "description": "Fetch a single full help center article",
+      "script": "zendesk/actions/fetch-article"
+    },
+    {
+      "method": "POST",
+      "path": "/sections",
+      "description": "Create a section within a category in the help center",
+      "group": "Sections",
+      "script": "zendesk/actions/create-section"
+    },
+    {
+      "method": "POST",
+      "path": "/categories",
+      "description": "Create a category within the help center",
+      "group": "Categories",
+      "script": "zendesk/actions/create-category"
+    },
+    {
+      "method": "POST",
+      "path": "/tickets",
+      "description": "Create a Zendesk ticket",
+      "group": "Tickets",
+      "script": "zendesk/actions/create-ticket"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Delete a user in Zendesk",
+      "group": "Users",
+      "script": "zendesk/actions/delete-user"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Create an admin or agent user in Zendesk. Defaults to agent if a role is not provided",
+      "group": "Users",
+      "script": "zendesk/actions/create-user"
+    },
+    {
+      "method": "GET",
+      "path": "/search-tickets",
+      "description": "An action that performs a search for tickets in Zendesk based on the specified filter. It can take up to a few minutes for new tickets and users to be indexed for search. If new resources don't appear in your search results, wait a few minutes and try again.\n",
+      "script": "zendesk/actions/search-tickets"
+    }
+  ],
+  "zoho-crm": [
+    {
+      "method": "GET",
+      "path": "/zoho-crm/accounts",
+      "description": "Fetches a list of accounts from zoho crm\n",
+      "script": "zoho-crm/syncs/accounts"
+    },
+    {
+      "method": "GET",
+      "path": "/zoho-crm/contacts",
+      "description": "Fetches a list of contacts from zoho crm\n",
+      "script": "zoho-crm/syncs/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/zoho-crm/deals",
+      "description": "Fetches a list of deals/opportunities from zoho crm\n",
+      "script": "zoho-crm/syncs/deals"
+    }
+  ],
+  "zoho-mail": [
+    {
+      "method": "GET",
+      "path": "/zoho-mail/tasks",
+      "description": "Fetches a list of all your personal tasks in Zoho mail\n",
+      "script": "zoho-mail/syncs/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/zoho-mail/emails",
+      "description": "Fetches a list of all your account's emails in Zoho mail\n",
+      "script": "zoho-mail/syncs/emails"
+    },
+    {
+      "method": "POST",
+      "path": "/zoho-mail/send-email",
+      "description": "An action to send an email in zoho mail\n",
+      "script": "zoho-mail/actions/send-email"
+    },
+    {
+      "method": "POST",
+      "path": "/zoho-mail/add-user",
+      "description": "An action to add a user to the organization in zoho mail\n",
+      "script": "zoho-mail/actions/add-user"
+    }
+  ],
+  "zoom": [
+    {
+      "method": "GET",
+      "path": "/users",
+      "description": "Fetches a list of users from Zoom\n",
+      "group": "Users",
+      "script": "zoom/syncs/users"
+    },
+    {
+      "method": "GET",
+      "path": "/meetings",
+      "description": "Fetches a list of meetings from Zoom\n",
+      "group": "Meetings",
+      "script": "zoom/syncs/meetings"
+    },
+    {
+      "method": "GET",
+      "path": "/recording-files",
+      "description": "Fetches a list of recordings from Zoom\n",
+      "group": "Cloud Recordings",
+      "script": "zoom/syncs/recording-files"
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "description": "Creates a user in Zoom. Requires Pro account or higher",
+      "group": "Users",
+      "script": "zoom/actions/create-user"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users",
+      "description": "Deletes a user in Zoom. Requires Pro account or higher",
+      "group": "Users",
+      "script": "zoom/actions/delete-user"
+    },
+    {
+      "method": "POST",
+      "path": "/meetings",
+      "description": "Creates a meeting in Zoom.",
+      "group": "Meetings",
+      "script": "zoom/actions/create-meeting"
+    },
+    {
+      "method": "DELETE",
+      "path": "/meetings",
+      "description": "Deletes a meeting in Zoom",
+      "group": "Meetings",
+      "script": "zoom/actions/delete-meeting"
+    }
+  ]
+}
