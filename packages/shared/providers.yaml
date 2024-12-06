@@ -1618,7 +1618,7 @@ copper:
         - crm
     auth_mode: OAUTH2
     proxy:
-        base_url: https://api.copper.com/developer_api/
+        base_url: https://api.copper.com/developer_api
     default_scopes:
         - developer/v1/all
     authorization_url: https://app.copper.com/oauth/authorize
@@ -6846,6 +6846,32 @@ youtube:
     categories:
         - video
     docs: https://docs.nango.dev/integrations/all/youtube
+
+zapier:
+    display_name: Zapier
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://api.zapier.com/v2/authorize
+    token_url: https://zapier.com/oauth/token
+    scope_separator: ' '
+    default_scopes:
+        - authentication
+        - authentication:write
+        - profile
+        - zap
+        - zap:write
+    proxy:
+        base_url: https://api.zapier.com
+    authorization_params:
+        response_type: code
+        response_mode: query
+        state: N@nG0s%rinG
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://docs.nango.dev/integrations/all/zapier
 
 zapier-nla:
     display_name: Zapier NLA
