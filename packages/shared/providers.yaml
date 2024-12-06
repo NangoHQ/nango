@@ -2691,6 +2691,38 @@ freshservice:
             suffix: .freshservice.com
             prefix: https://
 
+freshteam:
+    display_name: Freshteam
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.accountName}.freshteam.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+    docs: https://docs.nango.dev/integrations/all/freshteam
+    docs_connect: https://docs.nango.dev/integrations/all/freshteam/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The account name of your Freshteam account
+            example: nango
+            format: hostname
+            suffix: .freshteam.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-account-name'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Freshteam account
+            doc_section: '#step-2-finding-your-api-key'
+            example: 'XtoF94LMNyKPbd5AvR1QJh'
+            pattern: '^[a-zA-Z0-9]+$'
+
 front:
     display_name: Front
     categories:
