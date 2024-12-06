@@ -21,6 +21,7 @@ const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8'));
+const useCases = JSON.parse(await fs.readFile('docs-v2/use-cases.json', 'utf-8'));
 
 const files = await fs.readdir(docsPath);
 for (const file of files) {
@@ -45,14 +46,13 @@ for (const file of files) {
         await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
         await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
-        const useCasesSnippet = useCasesSnippet(providerConfig);
-        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltUseCases.mdx`, useCasesSnippet, 'utf-8');
+        const casesSnippet = useCasesSnippet({ useCases: useCases[provider] });
+        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
     }
 }
 
 function preBuiltToolingSnippet({ prettyAuthMode }) {
-    return `
-            ## Pre-built tooling
+    return `## Pre-built tooling
 
             <AccordionGroup>  
                 <Accordion title="✅ Authorization">
@@ -96,21 +96,76 @@ function preBuiltToolingSnippet({ prettyAuthMode }) {
                     | Per-customer configurations | ✅ |
                 </Accordion>
             </AccordionGroup>  
-        `;
+        `
+        .split('\n')
+        .map((line) => line.trim())
+        .join('\n');
 }
 
 function useCasesSnippet({ useCases }) {
     if (!useCases || useCases.length === 0) {
         return emptyUseCases();
     }
+
+    const groups = {};
+    for (const useCase of useCases) {
+        const groupName = useCase.group || 'Others';
+        useCase.group = groupName;
+
+        groups[groupName] = groups[groupName] || [];
+        groups[groupName].push(useCase);
+    }
+
+    const sortedGroups = Object.keys(groups)
+        .sort()
+        .reduce((acc, key) => {
+            acc[key] = groups[key];
+            return acc;
+        }, {});
+
+    // make sure Others is last
+    if (sortedGroups['Others']) {
+        const others = sortedGroups['Others'];
+        delete sortedGroups.Others;
+        sortedGroups.Others = others;
+    }
+
+    return `
+        ## Pre-built use cases
+        
+        <AccordionGroup>
+            
+            ${Object.values(sortedGroups)
+                .map(
+                    (group) => `
+                        <Accordion title="${group[0].group || 'Others'}">
+                        | Endpoint | Description | Readme |
+                        | - | - | - |
+                        ${group
+                            .map(
+                                (endpoint) =>
+                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />')} | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
+                            )
+                            .join('\n')}
+                        </Accordion>
+                `
+                )
+                .join('\n')}
+        </AccordionGroup>
+    `
+        .split('\n')
+        .map((line) => line.trim())
+        .join('\n');
 }
 
 function emptyUseCases() {
-    return `
-        ## Pre-built use-cases
+    return `## Pre-built use-cases
 
         _No pre-built use-cases yet (time to contribute: &lt;48h)_
         
         <Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
-    `;
+    `
+        .split('\n')
+        .map((line) => line.trim())
+        .join('\n');
 }
