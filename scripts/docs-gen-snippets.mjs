@@ -40,8 +40,18 @@ for (const file of files) {
         }
         const authMode = providers[provider].auth_mode;
         const prettyAuthMode = prettyAuthModes[authMode] || authMode;
+        const toolingSnippet = preBuiltToolingSnippet({ prettyAuthMode });
 
-        const snippet = `
+        await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
+        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
+
+        const useCasesSnippet = useCasesSnippet(providerConfig);
+        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltUseCases.mdx`, useCasesSnippet, 'utf-8');
+    }
+}
+
+function preBuiltToolingSnippet({ prettyAuthMode }) {
+    return `
             ## Pre-built tooling
 
             <AccordionGroup>  
@@ -87,8 +97,20 @@ for (const file of files) {
                 </Accordion>
             </AccordionGroup>  
         `;
+}
 
-        await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
-        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, snippet, 'utf-8');
+function useCasesSnippet({ useCases }) {
+    if (!useCases || useCases.length === 0) {
+        return emptyUseCases();
     }
+}
+
+function emptyUseCases() {
+    return `
+        ## Pre-built use-cases
+
+        _No pre-built use-cases yet (time to contribute: &lt;48h)_
+        
+        <Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+    `;
 }
