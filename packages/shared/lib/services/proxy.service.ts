@@ -146,7 +146,14 @@ class ProxyService {
             endpoint = endpoint.replace(provider.proxy.base_url, '');
         }
 
-        if (headers && headers['Content-Type'] === 'multipart/form-data') {
+        const headersCleaned: Record<string, string> = {};
+        if (headers) {
+            for (const [key, value] of Object.entries(headers)) {
+                headersCleaned[key.toLocaleLowerCase()] = value;
+            }
+        }
+
+        if (headersCleaned['content-type'] === 'multipart/form-data') {
             const formData = new FormData();
 
             Object.keys(data as any).forEach((key) => {
@@ -170,7 +177,7 @@ class ProxyService {
             providerName,
             providerConfigKey,
             connectionId,
-            headers: headers as Record<string, string>,
+            headers: headersCleaned,
             data,
             retries: retries || 0,
             baseUrlOverride: baseUrlOverride as string,
@@ -320,10 +327,8 @@ class ProxyService {
      * @desc route the call to a HTTP request based on HTTP method passed in
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
-    private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
-        const options: AxiosRequestConfig = {
-            headers: configBody.headers as Record<string, string | number | boolean>
-        };
+    public sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
+        const options: AxiosRequestConfig = {};
 
         if (configBody.params) {
             options.params = configBody.params as Record<string, string>;
@@ -346,8 +351,7 @@ class ProxyService {
         options.url = this.constructUrl(configBody);
         options.method = method;
 
-        const headers = this.constructHeaders(configBody, method, options.url);
-        options.headers = { ...options.headers, ...headers };
+        options.headers = this.constructHeaders(configBody, method, options.url);
 
         return this.request(configBody, options);
     }
@@ -448,9 +452,9 @@ class ProxyService {
         // even if the auth mode isn't api key a header might exist in the proxy
         // so inject it if so
         if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
-            headers = Object.entries(config.provider.proxy.headers).reduce(
-                (acc: Record<string, string>, [key, value]: [string, string]) => {
-                    // allows oauth2 acessToken key to be interpolated and injected
+            headers = Object.entries(config.provider.proxy.headers).reduce<Record<string, string>>(
+                (acc, [key, value]) => {
+                    // allows oauth2 accessToken key to be interpolated and injected
                     // into the header in addition to api key values
                     let tokenPair;
                     switch (config.provider.auth_mode) {
@@ -479,6 +483,7 @@ class ProxyService {
                             tokenPair = config.token;
                             break;
                     }
+
                     acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
@@ -523,8 +528,8 @@ class ProxyService {
         }
 
         if (config.headers) {
-            const { headers: configHeaders } = config;
-            headers = { ...headers, ...configHeaders };
+            // Headers set in scripts should override the default ones
+            headers = { ...headers, ...config.headers };
         }
 
         return headers;
