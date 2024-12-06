@@ -13479,19 +13479,22 @@ integrations:
                     method: GET
                     path: /contacts
                     group: Contacts
+                scopes:
+                    - accounting.contacts
                 version: 1.0.2
             accounts:
                 description: >
                     Fetches all accounts in Xero (chart of accounts). Incremental sync,
                     detects deletes, metadata is not required.
                 runs: every hour
-                scopes: accounting.settings
                 output: Account
                 sync_type: incremental
                 endpoint:
                     method: GET
                     path: /accounts
                     group: Accounts
+                scopes:
+                    - accounting.settings
                 version: 1.0.2
             items:
                 description: >
@@ -13500,37 +13503,40 @@ integrations:
 
                     required.
                 runs: every hour
-                scopes: accounting.settings
                 output: Item
                 sync_type: incremental
                 endpoint:
                     method: GET
                     path: /items
                     group: Items
+                scopes:
+                    - accounting.settings
                 version: 1.0.2
             invoices:
                 description: |
                     Fetches all invoices in Xero. Incremental sync.
                 runs: every hour
-                scopes: accounting.transactions
                 output: Invoice
                 sync_type: incremental
                 endpoint:
                     method: GET
                     path: /invoices
                     group: Invoices
+                scopes:
+                    - accounting.transactions
                 version: 1.0.2
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
                 runs: every hour
-                scopes: accounting.transactions
                 output: Payment
                 sync_type: incremental
                 endpoint:
                     method: GET
                     path: /payments
                     group: Payments
+                scopes:
+                    - accounting.transactions
                 version: 1.0.2
         actions:
             create-contact:
@@ -13538,12 +13544,13 @@ integrations:
                     Creates one or multiple contacts in Xero.
                     Note: Does NOT check if these contacts already exist.
                 input: CreateContact[]
-                scopes: accounting.contacts
                 output: ContactActionResponse
                 endpoint:
                     method: POST
                     path: /contacts
                     group: Contacts
+                scopes:
+                    - accounting.contacts
                 version: 1.0.2
             update-contact:
                 description: >
@@ -13551,24 +13558,26 @@ integrations:
                     in are modified. If a field should not be changed, omit it in the
                     input. The id field is mandatory.
                 input: Contact[]
-                scopes: accounting.contacts
                 output: ContactActionResponse
                 endpoint:
                     method: PUT
                     path: /contacts
                     group: Contacts
+                scopes:
+                    - accounting.contacts
                 version: 1.0.2
             create-invoice:
                 description: |
                     Creates one or more invoices in Xero.
                     Note: Does NOT check if the invoice already exists.
                 input: CreateInvoice[]
-                scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint:
                     method: POST
                     path: /invoices
                     group: Invoices
+                scopes:
+                    - accounting.transactions
                 version: 1.0.3
             update-invoice:
                 description: |
@@ -13577,59 +13586,64 @@ integrations:
                     invoice has been AUTHORISED it can't be deleted but you can set
                     the status to VOIDED.
                 input: UpdateInvoice[]
-                scopes: accounting.transactions
                 output: InvoiceActionResponse
                 endpoint:
                     method: PUT
                     path: /invoices
                     group: Invoices
+                scopes:
+                    - accounting.transactions
                 version: 1.0.3
             create-credit-note:
                 description: |
                     Creates one or more credit notes in Xero.
                     Note: Does NOT check if the credit note already exists.
                 input: CreditNote[]
-                scopes: accounting.transactions
                 output: CreditNoteActionResponse
                 endpoint:
                     method: POST
                     path: /credit-notes
                     group: Credit Notes
                 version: 1.0.3
+                scopes:
+                    - accounting.transactions
             update-credit-note:
                 description: |
                     Updates one or more credit notes in Xero.
                 input: CreditNote[]
-                scopes: accounting.transactions
                 output: CreditNoteActionResponse
                 endpoint:
                     method: PUT
                     path: /credit-notes
                     group: Credit Notes
+                scopes:
+                    - accounting.transactions
                 version: 1.0.3
             create-payment:
                 description: |
                     Creates one or more payments in Xero.
                     Note: Does NOT check if the payment already exists.
-                scopes: accounting.transactions
                 input: CreatePayment[]
                 output: PaymentActionResponse
                 endpoint:
                     method: POST
                     path: /payments
                     group: Payments
+                scopes:
+                    - accounting.transactions
                 version: 1.0.2
             create-item:
                 description: |
                     Creates one or more items in Xero.
                     Note: Does NOT check if the item already exists.
-                scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
                 endpoint:
                     method: POST
                     path: /items
                     group: Items
+                scopes:
+                    - accounting.settings
                 version: 1.0.2
             get-tenants:
                 description: |
@@ -13643,13 +13657,14 @@ integrations:
             update-item:
                 description: |
                     Updates one or more items in Xero.
-                scopes: accounting.settings
                 input: Item[]
                 output: ItemActionResponse
                 endpoint:
                     method: PUT
                     path: /items
                     group: Items
+                scopes:
+                    - accounting.settings
                 version: 1.0.2
         models:
             ActionErrorResponse:
