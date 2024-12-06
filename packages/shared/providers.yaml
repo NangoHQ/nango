@@ -881,6 +881,7 @@ box:
     proxy:
         base_url: https://api.box.com
     docs: https://docs.nango.dev/integrations/all/box
+    docs_connect: https://docs.nango.dev/integrations/all/box/connect
 
 booking-com:
     display_name: Booking.com
