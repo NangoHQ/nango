@@ -2601,7 +2601,7 @@ freshteam:
             example: nango
             format: hostname
             suffix: .freshteam.com
-            prefix: https
+            prefix: https://
             order: 1
             doc_section: '#step-1-finding-your-account-name'
     credentials:
