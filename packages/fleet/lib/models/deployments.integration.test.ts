@@ -22,6 +22,7 @@ describe('Deployments', () => {
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);
         });
+
         it('should supersede any active deployments', async () => {
             const commitId1 = generateCommitHash();
             const commitId2 = generateCommitHash();
