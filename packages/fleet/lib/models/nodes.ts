@@ -13,15 +13,21 @@ interface NodeStateTransition {
 
 export const validNodeStateTransitions = [
     { from: 'PENDING', to: 'STARTING' },
+    { from: 'PENDING', to: 'ERROR' },
     { from: 'STARTING', to: 'RUNNING' },
+    { from: 'STARTING', to: 'ERROR' },
     { from: 'RUNNING', to: 'OUTDATED' },
+    { from: 'RUNNING', to: 'ERROR' },
     { from: 'OUTDATED', to: 'FINISHING' },
+    { from: 'OUTDATED', to: 'ERROR' },
     { from: 'FINISHING', to: 'IDLE' },
-    { from: 'IDLE', to: 'TERMINATED' }
+    { from: 'FINISHING', to: 'ERROR' },
+    { from: 'IDLE', to: 'TERMINATED' },
+    { from: 'IDLE', to: 'ERROR' }
 ] as const;
 export type ValidNodeStateTransitions = (typeof validNodeStateTransitions)[number];
 const NodeStateTransition = {
-    validate({ from, to }: { from: NodeState; to: Omit<NodeState, 'ERROR'> }): Result<ValidNodeStateTransitions> {
+    validate({ from, to }: { from: NodeState; to: NodeState }): Result<ValidNodeStateTransitions> {
         const transition = validNodeStateTransitions.find((t) => t.from === from && t.to === to);
         if (transition) {
             return Ok(transition);
@@ -81,12 +87,14 @@ export const DBNode = {
     }
 };
 
-export async function create(db: knex.Knex, nodeProps: Omit<Node, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'error'>): Promise<Result<Node>> {
+export async function create(
+    db: knex.Knex,
+    nodeProps: Omit<Node, 'id' | 'url' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'error'>
+): Promise<Result<Node>> {
     const now = new Date();
-    const newNode: Omit<DBNode, 'id'> = {
+    const newNode: Omit<DBNode, 'id' | 'url'> = {
         routing_id: nodeProps.routingId,
         deployment_id: nodeProps.deploymentId,
-        url: nodeProps.url,
         state: 'PENDING',
         image: nodeProps.image,
         cpu_milli: nodeProps.cpuMilli,
@@ -132,7 +140,7 @@ export async function search(
     }
 ): Promise<
     Result<{
-        nodes: Map<RoutingId, Node[]>;
+        nodes: Map<RoutingId, Record<NodeState, Node[]>>;
         nextCursor?: number;
     }>
 > {
@@ -156,13 +164,15 @@ export async function search(
 
         const nextCursor = nodes.length > limit ? nodes.pop()?.id : undefined;
 
-        const nodesMap = new Map<RoutingId, Node[]>();
+        const nodesMap = new Map<RoutingId, Record<NodeState, Node[]>>();
 
         for (const node of nodes) {
             const routingId = node.routing_id;
-            const existingNodes = nodesMap.get(routingId) || [];
-            existingNodes.push(DBNode.from(node));
-            nodesMap.set(routingId, existingNodes);
+            const existingNodes = nodesMap.get(routingId) || ({} as Record<NodeState, Node[]>);
+            nodesMap.set(routingId, {
+                ...existingNodes,
+                [node.state]: [...(existingNodes[node.state] || []), DBNode.from(node)]
+            });
         }
 
         return Ok({
@@ -176,10 +186,21 @@ export async function search(
 
 export async function transitionTo(
     db: knex.Knex,
-    props: {
-        nodeId: number;
-        newState: Omit<NodeState, 'ERROR'>;
-    }
+    props:
+        | {
+              nodeId: number;
+              newState: Exclude<NodeState, 'ERROR' | 'RUNNING'>;
+          }
+        | {
+              nodeId: number;
+              newState: 'ERROR';
+              reason: string;
+          }
+        | {
+              nodeId: number;
+              newState: 'RUNNING';
+              url: string;
+          }
 ): Promise<Result<Node>> {
     try {
         return db.transaction(async (trx) => {
@@ -193,14 +214,28 @@ export async function transitionTo(
                 return Err(transition.error);
             }
 
-            const updated = await trx
-                .from<DBNode>(NODES_TABLE)
-                .where('id', props.nodeId)
-                .update({
-                    state: transition.value.to,
-                    last_state_transition_at: new Date()
-                })
-                .returning('*');
+            let newFields: {
+                state: NodeState;
+                last_state_transition_at: Date;
+                url?: string;
+                error?: string;
+            } = {
+                state: transition.value.to,
+                last_state_transition_at: new Date()
+            };
+            if ('url' in props) {
+                newFields = {
+                    ...newFields,
+                    url: props.url
+                };
+            } else if ('reason' in props) {
+                newFields = {
+                    ...newFields,
+                    error: props.reason
+                };
+            }
+            const updated = await trx.from<DBNode>(NODES_TABLE).where('id', props.nodeId).update(newFields).returning('*');
+
             if (!updated?.[0]) {
                 return Err(new FleetError(`node_transition_error`, { context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
             }
@@ -215,20 +250,53 @@ export async function fail(
     db: knex.Knex,
     props: {
         nodeId: number;
-        error: string;
+        reason: string;
+    }
+): Promise<Result<Node>> {
+    return transitionTo(db, { nodeId: props.nodeId, newState: 'ERROR', reason: props.reason });
+}
+
+export async function register(
+    db: knex.Knex,
+    props: {
+        nodeId: number;
+        url: string;
+    }
+): Promise<Result<Node>> {
+    return transitionTo(db, { nodeId: props.nodeId, newState: 'RUNNING', url: props.url });
+}
+
+export async function idle(
+    db: knex.Knex,
+    props: {
+        nodeId: number;
+    }
+): Promise<Result<Node>> {
+    return transitionTo(db, { nodeId: props.nodeId, newState: 'IDLE' });
+}
+
+export async function remove(
+    db: knex.Knex,
+    props: {
+        nodeId: number;
     }
 ): Promise<Result<Node>> {
     try {
-        const updated = await db
-            .from<DBNode>(NODES_TABLE)
-            .where({ id: props.nodeId })
-            .update({ state: 'ERROR', error: props.error, last_state_transition_at: new Date() })
-            .returning('*');
-        if (!updated?.[0]) {
-            return Err(new FleetError(`node_fail_error`, { context: props }));
+        // only TERMINATED and ERROR nodes can be deleted
+        const getNode = await get(db, props.nodeId);
+        if (getNode.isErr()) {
+            return getNode;
         }
-        return Ok(DBNode.from(updated[0]));
+        if (!['TERMINATED', 'ERROR'].includes(getNode.value.state)) {
+            return Err(new FleetError(`node_delete_non_terminated`, { context: { nodeId: props.nodeId } }));
+        }
+
+        const deleted = await db.from<DBNode>(NODES_TABLE).where('id', props.nodeId).del().returning('*');
+        if (!deleted?.[0]) {
+            return Err(new FleetError(`node_delete_error`, { context: props }));
+        }
+        return Ok(DBNode.from(deleted[0]));
     } catch (err) {
-        return Err(new FleetError(`node_fail_error`, { cause: err, context: props }));
+        return Err(new FleetError(`node_delete_error`, { cause: err, context: props }));
     }
 }
