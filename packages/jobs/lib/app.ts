@@ -2,12 +2,14 @@ import './tracer.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger, stringifyError, once } from '@nangohq/utils';
+import { getLogger, stringifyError, once, isLocal } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { otlp } from '@nangohq/logs';
+import { runnersFleet } from './runner/fleet.js';
+import { generateCommitHash } from '@nangohq/fleet';
 
 const logger = getLogger('Jobs');
 
@@ -36,6 +38,7 @@ try {
         clearTimeout(healthCheck);
         processor.stop();
         otlp.stop();
+        await runnersFleet.stop();
         await db.knex.destroy();
         srv.close(() => {
             process.exit();
@@ -70,6 +73,15 @@ try {
     timeoutLogsOperations();
 
     otlp.register(getOtlpRoutes);
+
+    if (envs.RUNNER_TYPE !== 'REMOTE') {
+        if (isLocal) {
+            // when running locally, the runners (running as processes) are being killed when  the main process is killed and the fleet entries are therefore not associated with any running process
+            // we then must fake a new deployment so fleet replace runners with the new ones
+            await runnersFleet.deploy(generateCommitHash());
+        }
+        runnersFleet.start();
+    }
 } catch (err) {
     logger.error(stringifyError(err));
     process.exit(1);

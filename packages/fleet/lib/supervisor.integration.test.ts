@@ -4,7 +4,8 @@ import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
-import { generateCommitHash, createNodeWithAttributes } from './models/helpers.test.js';
+import { generateCommitHash } from './models/helpers.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
 import type { Deployment } from './types.js';
 import { FleetError } from './utils/errors.js';
 

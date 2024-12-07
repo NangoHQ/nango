@@ -3,7 +3,6 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
 import type { NangoProps } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
@@ -11,6 +10,7 @@ import { abort } from './abort.js';
 import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
 import { abortControllers } from './state.js';
+import { runnerId, persistServiceUrl, jobsServiceUrl, heartbeatIntervalMs } from './env.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -29,7 +29,8 @@ interface StartParams {
 const appRouter = router({
     health: healthProcedure(),
     abort: abortProcedure(),
-    start: startProcedure()
+    start: startProcedure(),
+    notifyWhenIdle: notifyWhenIdleProcedure()
 });
 
 export type AppRouter = typeof appRouter;
@@ -40,10 +41,6 @@ function healthProcedure() {
     });
 }
 
-const heartbeatIntervalMs = 30_000;
-const runnerId = process.env['RUNNER_ID'] || '';
-const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '') || getJobsUrl(); // TODO: remove legacy NOTIFY_IDLE_ENDPOINT once all runners are updated with JOBS_SERVICE_URL env var
-const persistServiceUrl = getPersistAPIUrl();
 const usage = new RunnerMonitor({ runnerId, jobsServiceUrl, persistServiceUrl });
 
 function startProcedure() {
@@ -104,6 +101,14 @@ function abortProcedure() {
             logger.info('Received cancel', { input });
             return abort(input.taskId);
         });
+}
+
+function notifyWhenIdleProcedure() {
+    return publicProcedure.mutation(() => {
+        logger.info('Received notifyWhenIdle');
+        usage.resetIdleMaxDurationMs();
+        return true;
+    });
 }
 
 export const server = express();

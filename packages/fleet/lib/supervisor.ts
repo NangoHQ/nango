@@ -39,46 +39,63 @@ export class Supervisor {
 
     public async start(): Promise<void> {
         if (this.state === 'running') {
-            logger.warn('Supervisor is already running');
+            logger.info('Supervisor is already running');
             return;
         }
 
         this.state = 'running';
-        await this.loop();
+        return this.loop();
     }
 
     public async stop(): Promise<void> {
+        if (this.state === 'stopped') {
+            logger.info('Supervisor is already stopped');
+            return;
+        }
         this.state = 'stopping';
-        logger.info('Supervisor stopped');
+        logger.info(`Stopping supervisor ${this.dbClient.schema} ...`);
 
         // wait for the loop to finish or timeout
         const waitForStopped = async () => {
             while (this.state !== 'stopped') {
-                await setTimeout(100);
+                await setTimeout(1000);
             }
         };
         await Promise.race([waitForStopped(), setTimeout(60000)]);
+
+        logger.info('Supervisor stopped');
     }
 
-    public async tick(): Promise<void> {
+    public async tick(): Promise<Result<void>> {
         // TODO: trace
         try {
             const plan = await this.plan();
             if (plan.isOk()) {
                 await this.executePlan(plan.value);
+                return Ok(undefined);
             } else {
-                logger.error('Supervision error:', plan.error);
-                await setTimeout(1000);
+                return Err(plan.error);
             }
         } catch (error) {
-            logger.error('Supervision error:', error);
+            return Err(new FleetError('supervisor_tick_failed', { cause: error }));
         }
     }
 
     private async loop(): Promise<void> {
+        const getDeployment = await deployments.getActive(this.dbClient.db);
+        if (getDeployment.isErr() || !getDeployment.value) {
+            logger.error('Failed starting supervisor: no active deployment');
+            this.state = 'stopped';
+            return;
+        }
+
         while (this.state === 'running') {
             // TODO: Lock to prevent multiple instances from running
-            await this.tick();
+            const res = await this.tick();
+            if (res.isErr()) {
+                await setTimeout(1000);
+                logger.error('Supervisor error:', res.error);
+            }
         }
         this.state = 'stopped';
     }
@@ -245,6 +262,16 @@ export class Supervisor {
     }
 
     private async outdateNode({ node }: { type: 'OUTDATE'; node: Node }): Promise<Result<Node>> {
+        if (!node.url) {
+            return Err(new FleetError('fleet_node_url_not_found', { context: { nodeId: node.id } }));
+        }
+
+        try {
+            await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST' });
+        } catch (error) {
+            logger.warning(`Failed to notify node ${node.id} to become outdated: ${error}`);
+        }
+
         return nodes.transitionTo(this.dbClient.db, {
             nodeId: node.id,
             newState: 'OUTDATED'
@@ -273,7 +300,18 @@ export class Supervisor {
 
     private async warnNode({ node }: { type: 'WARN'; node: Node }): Promise<Result<Node>> {
         // TODO: find a better way to warn and alert
-        logger.warn('Node is taking too long to finish:', node);
+        logger.warning('Node is taking too long to finish:', node);
         return Promise.resolve(Ok(node));
+    }
+
+    public async createNodeForCurrentDeployment(routingId: Node['routingId']): Promise<Result<Node>> {
+        const deployment = await deployments.getActive(this.dbClient.db);
+        if (deployment.isErr()) {
+            return Err(deployment.error);
+        }
+        if (!deployment.value) {
+            return Err(new FleetError('no_active_deployment'));
+        }
+        return this.createNode({ type: 'CREATE', routingId, deployment: deployment.value });
     }
 }

@@ -1,24 +1,7 @@
-import type { CommitHash } from '../types';
-import crypto from 'crypto';
 import type { NodeState, Node, RoutingId } from '../types.js';
 import type { knex } from 'knex';
 import { nanoid } from '@nangohq/utils';
 import * as nodes from './nodes.js';
-
-export function generateCommitHash(): CommitHash {
-    const charset = '0123456789abcdef';
-    const length = 40;
-    const randomBytes = new Uint8Array(length);
-    crypto.getRandomValues(randomBytes);
-
-    const value = Array.from(randomBytes)
-        .map((byte) => charset[byte % charset.length])
-        .join('');
-    if (value.length !== 40) {
-        throw new Error('CommitHash must be exactly 40 characters');
-    }
-    return value as CommitHash;
-}
 
 export async function createNodeWithAttributes(
     db: knex.Knex,

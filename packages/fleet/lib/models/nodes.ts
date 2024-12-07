@@ -107,11 +107,11 @@ export async function create(
     try {
         const inserted = await db.from<DBNode>(NODES_TABLE).insert(newNode).returning('*');
         if (!inserted?.[0]) {
-            return Err(new FleetError(`node_creation_error`, { context: nodeProps }));
+            return Err(new FleetError(`node_creation_failed`, { context: nodeProps }));
         }
         return Ok(DBNode.from(inserted[0]));
     } catch (err) {
-        return Err(new FleetError(`node_creation_error`, { cause: err, context: nodeProps }));
+        return Err(new FleetError(`node_creation_failed`, { cause: err, context: nodeProps }));
     }
 }
 export async function get(db: knex.Knex, nodeId: number, options: { forUpdate: boolean } = { forUpdate: false }): Promise<Result<Node>> {
@@ -180,7 +180,7 @@ export async function search(
             ...(nextCursor ? { nextCursor } : {})
         });
     } catch (err) {
-        return Err(new FleetError(`node_search_error`, { cause: err, context: params }));
+        return Err(new FleetError(`node_search_failed`, { cause: err, context: params }));
     }
 }
 
@@ -237,12 +237,12 @@ export async function transitionTo(
             const updated = await trx.from<DBNode>(NODES_TABLE).where('id', props.nodeId).update(newFields).returning('*');
 
             if (!updated?.[0]) {
-                return Err(new FleetError(`node_transition_error`, { context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
+                return Err(new FleetError(`node_transition_failed`, { context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
             }
             return Ok(DBNode.from(updated[0]));
         });
     } catch (err) {
-        return Err(new FleetError(`node_transition_error`, { cause: err, context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
+        return Err(new FleetError(`node_transition_failed`, { cause: err, context: { nodeId: props.nodeId, newState: props.newState.toString() } }));
     }
 }
 
@@ -275,6 +275,15 @@ export async function idle(
     return transitionTo(db, { nodeId: props.nodeId, newState: 'IDLE' });
 }
 
+export async function terminate(
+    db: knex.Knex,
+    props: {
+        nodeId: number;
+    }
+): Promise<Result<Node>> {
+    return transitionTo(db, { nodeId: props.nodeId, newState: 'TERMINATED' });
+}
+
 export async function remove(
     db: knex.Knex,
     props: {
@@ -293,10 +302,10 @@ export async function remove(
 
         const deleted = await db.from<DBNode>(NODES_TABLE).where('id', props.nodeId).del().returning('*');
         if (!deleted?.[0]) {
-            return Err(new FleetError(`node_delete_error`, { context: props }));
+            return Err(new FleetError(`node_delete_failed`, { context: props }));
         }
         return Ok(DBNode.from(deleted[0]));
     } catch (err) {
-        return Err(new FleetError(`node_delete_error`, { cause: err, context: props }));
+        return Err(new FleetError(`node_delete_failed`, { cause: err, context: props }));
     }
 }
