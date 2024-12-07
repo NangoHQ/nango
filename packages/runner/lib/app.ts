@@ -3,6 +3,7 @@ import { server } from './server.js';
 import { stringifyError } from '@nangohq/utils';
 import { logger } from './utils.js';
 import { monitorProviders } from '@nangohq/shared';
+import { register } from './register.js';
 
 const providersMonitorCleanup = await monitorProviders();
 
@@ -42,6 +43,12 @@ try {
         logger.error('Received uncaughtException...', e);
         // not closing on purpose
     });
+
+    const res = await register({ port });
+    if (res.isErr()) {
+        logger.error(`Unable to register runner: ${res.error}`);
+        // not exiting on purpose because REMOTE runner are not registering
+    }
 } catch (err) {
     logger.error(`Unable to start runner: ${stringifyError(err)}`);
     process.exit(1);

@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as deployments from './deployments.js';
 import { getTestDbClient } from '../db/helpers.test.js';
-import { generateCommitHash } from './helpers.test.js';
+import { generateCommitHash } from './helpers.js';
 
 describe('Deployments', () => {
     const dbClient = getTestDbClient('deployments');

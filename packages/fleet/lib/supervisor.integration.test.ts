@@ -4,7 +4,8 @@ import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
-import { generateCommitHash, createNodeWithAttributes } from './models/helpers.test.js';
+import { generateCommitHash } from './models/helpers.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
 import type { Deployment } from './types.js';
 import { FleetError } from './utils/errors.js';
 
@@ -94,6 +95,23 @@ describe('Supervisor', () => {
                 }
             ]
         });
+    });
+
+    it('should mark nodes as FINISHING if they are OUTDATED and have a new deployment', async () => {
+        const routingId = 'routing-id';
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'OUTDATED', routingId, deploymentId: previousDeployment.id });
+        const newNode = await createNodeWithAttributes(dbClient.db, { state: 'STARTING', routingId, deploymentId: activeDeployment.id });
+        await supervisor.tick();
+
+        // new node is not RUNNING yet, OUTDATED node should still be OUTDATED
+        const nodeStillOutdated = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeStillOutdated.state).toBe('OUTDATED');
+
+        // new node is RUNNING, OUTDATED node should be FINISHING
+        nodes.transitionTo(dbClient.db, { nodeId: newNode.id, newState: 'RUNNING', url: 'http://myurl' });
+        await supervisor.tick();
+        const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeAfter.state).toBe('FINISHING');
     });
 
     it('should terminate IDLE nodes', async () => {

@@ -13,6 +13,7 @@ import migrate from './utils/migrate.js';
 import { migrate as migrateRecords } from '@nangohq/records';
 import { start as migrateLogs, otlp } from '@nangohq/logs';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
+import { runnersFleet } from './fleet.js';
 
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
@@ -53,6 +54,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateKeystore(db.knex);
     await migrateLogs();
     await migrateRecords();
+    await runnersFleet.migrate();
 } else {
     logger.info('Not migrating database');
 }

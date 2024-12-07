@@ -1,6 +1,6 @@
-import { getRunner } from './utils/getRunner.js';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
+import { getRunner } from '../../runner/runner.js';
 
 export async function abortScript({ taskId, teamId }: { taskId: string; teamId: number }): Promise<Result<void>> {
     const runner = await getRunner(teamId);
