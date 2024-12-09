@@ -4054,7 +4054,7 @@ malwarebytes:
             pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
             example: 9256034b-7967-4253-a5d9-260663e4fa4f
             order: 1
-            doc_section: '#step-1-finding-your-accountId'
+            doc_section: '#step-1-finding-your-account-id'
 
     docs: https://docs.nango.dev/integrations/all/malwarebytes
     docs_connect: https://docs.nango.dev/integrations/all/malwarebytes/connect
