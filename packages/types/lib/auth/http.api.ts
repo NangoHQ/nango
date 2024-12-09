@@ -12,6 +12,11 @@ export type ConnectionQueryString = {
     | { connect_session_token: string }
 );
 
+export interface ConnectionResponse {
+    providerConfigKey: string;
+    connectionId: string;
+}
+
 type AuthErrors =
     | ApiError<'invalid_body'>
     | ApiError<'invalid_query_params'>
@@ -19,7 +24,54 @@ type AuthErrors =
     | ApiError<'unknown_provider_template'>
     | ApiError<'invalid_auth_mode'>
     | ApiError<'invalid_credentials'>
-    | ApiError<'integration_not_allowed'>;
+    | ApiError<'integration_not_allowed'>
+    | ApiError<'connection_test_failed'>;
+
+export type PostPublicApiKeyAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        apiKey: string;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/api-auth/api-key/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponse;
+}>;
+
+export type PostPublicAppStoreAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        privateKeyId: string;
+        privateKey: string;
+        issuerId: string;
+        scope?: string | undefined;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/app-store-auth/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponse;
+}>;
+
+export type PostPublicBasicAuthorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        username: string;
+        password: string;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/api-auth/basic/:providerConfigKey';
+    Error: AuthErrors;
+    Success: ConnectionResponse;
+}>;
 
 export type PostPublicTbaAuthorization = Endpoint<{
     Method: 'POST';
@@ -35,10 +87,7 @@ export type PostPublicTbaAuthorization = Endpoint<{
     };
     Path: '/auth/tba/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicTableauAuthorization = Endpoint<{
@@ -54,10 +103,7 @@ export type PostPublicTableauAuthorization = Endpoint<{
     };
     Path: '/auth/tableau/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicJwtAuthorization = Endpoint<{
@@ -78,10 +124,7 @@ export type PostPublicJwtAuthorization = Endpoint<{
     };
     Path: '/auth/jwt/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicUnauthenticatedAuthorization = Endpoint<{
@@ -92,10 +135,7 @@ export type PostPublicUnauthenticatedAuthorization = Endpoint<{
     };
     Path: '/auth/unauthenticated/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicBillAuthorization = Endpoint<{
@@ -112,10 +152,7 @@ export type PostPublicBillAuthorization = Endpoint<{
     };
     Path: '/auth/bill/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicTwoStepAuthorization = Endpoint<{
@@ -127,10 +164,7 @@ export type PostPublicTwoStepAuthorization = Endpoint<{
     };
     Path: '/auth/two-step/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
 
 export type PostPublicSignatureAuthorization = Endpoint<{
@@ -145,8 +179,5 @@ export type PostPublicSignatureAuthorization = Endpoint<{
     };
     Path: '/auth/signature-based/:providerConfigKey';
     Error: AuthErrors;
-    Success: {
-        providerConfigKey: string;
-        connectionId: string;
-    };
+    Success: ConnectionResponse;
 }>;
