@@ -34,6 +34,7 @@ const DBDeployment = {
 
 export async function create(db: knex.Knex, commitId: CommitHash): Promise<Result<Deployment>> {
     try {
+        // TODO: do nothing if commitId is already active deployment
         return db.transaction(async (trx) => {
             const now = new Date();
             // supersede any active deployments
@@ -56,7 +57,7 @@ export async function create(db: knex.Knex, commitId: CommitHash): Promise<Resul
             return Ok(DBDeployment.to(inserted));
         });
     } catch (err) {
-        return Err(new FleetError(`deployment_creation_error`, { cause: err, context: { commitId } }));
+        return Err(new FleetError(`deployment_creation_failed`, { cause: err, context: { commitId } }));
     }
 }
 
@@ -65,7 +66,7 @@ export async function getActive(db: knex.Knex): Promise<Result<Deployment | unde
         const active = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ superseded_at: null }).first();
         return Ok(active ? DBDeployment.to(active) : undefined);
     } catch (err: unknown) {
-        return Err(new FleetError(`deployment_get_active_error`, { cause: err }));
+        return Err(new FleetError(`deployment_get_active_failed`, { cause: err }));
     }
 }
 

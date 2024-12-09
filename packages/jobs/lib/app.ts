@@ -8,6 +8,8 @@ import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { otlp } from '@nangohq/logs';
+import { runnersFleet } from './runner/fleet.js';
+import { generateCommitHash } from '@nangohq/fleet';
 
 const logger = getLogger('Jobs');
 
@@ -36,6 +38,7 @@ try {
         clearTimeout(healthCheck);
         processor.stop();
         otlp.stop();
+        await runnersFleet.stop();
         await db.knex.destroy();
         srv.close(() => {
             process.exit();
@@ -62,6 +65,22 @@ try {
         logger.error('Received uncaughtException...', e);
         // not closing on purpose
     });
+
+    if (envs.RUNNER_TYPE === 'LOCAL') {
+        // when running locally, the runners (running as processes) are being killed
+        // when the main process is killed and the fleet entries are therefore not associated with any running process
+        // we then must fake a new deployment so fleet replaces runners with new ones
+        const commitHash = generateCommitHash();
+        if (commitHash.isErr()) {
+            logger.error(`Unable to generate commit hash: ${commitHash.error}`);
+        } else {
+            await runnersFleet.deploy(commitHash.value);
+        }
+    }
+    // TODO: change to `!== REMOTE` when fleet is ready to be deployed to PROD
+    if (envs.RUNNER_TYPE === 'LOCAL') {
+        runnersFleet.start();
+    }
 
     processor.start();
 

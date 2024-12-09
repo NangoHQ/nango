@@ -26,6 +26,7 @@
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
+        "@nangohq/fleet": "file:../fleet",
         "axios": "^1.7.4",
         "dd-trace": "5.21.0",
         "get-port": "7.1.0",
