@@ -2721,7 +2721,7 @@ freshteam:
             description: The API key to your Freshteam account
             doc_section: '#step-2-finding-your-api-key'
             example: 'XtoF94LMNyKPbd5AvR1QJh'
-            pattern: '^[a-zA-Z0-9]+$'
+            pattern: '^[a-zA-Z0-9_!@#$%^&*()\\-+=]+$'
 
 front:
     display_name: Front
