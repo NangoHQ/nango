@@ -222,7 +222,7 @@ export const ConnectionList: React.FC = () => {
                     <Link to={`/${env}/connections/create`}>
                         <Button>
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
+                            Add Test Connection
                         </Button>
                     </Link>
                 </div>
@@ -367,7 +367,7 @@ export const ConnectionList: React.FC = () => {
                         <Link to={`/${env}/connections/create`}>
                             <Button className="rounded-r-none">
                                 <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                                Add Connection
+                                Add Test sConnection
                             </Button>
                         </Link>
                     </div>
