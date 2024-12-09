@@ -2196,11 +2196,11 @@ components:
                 integration_id:
                     type: string
                 end_user:
-                    $ref: '#/components/schemas/ConnectSession/properties/end_user'
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
                 organization:
-                    $ref: '#/components/schemas/ConnectSession/properties/organization'
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/organization'
                 integrations_config_defaults:
-                    $ref: '#/components/schemas/ConnectSession/properties/integrations_config_defaults'
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/integrations_config_defaults'
 
         ConnectSession:
             type: object
