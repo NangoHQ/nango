@@ -9,6 +9,7 @@ import type { Deployment, Node } from './types.js';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import { envs } from './env.js';
+import { withPgLock } from './utils/locking.js';
 
 type Operation =
     | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment }
@@ -39,6 +40,7 @@ export class Supervisor {
     private state: SupervisorState = 'stopped';
     private dbClient: DatabaseClient;
     private nodeProvider: NodeProvider;
+    private tickCancelled: boolean = false;
 
     constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
         this.dbClient = dbClient;
@@ -77,6 +79,7 @@ export class Supervisor {
     public async tick(): Promise<Result<void>> {
         // TODO: trace
         try {
+            this.tickCancelled = false;
             const plan = await this.plan();
             if (plan.isOk()) {
                 await this.executePlan(plan.value);
@@ -98,8 +101,18 @@ export class Supervisor {
         }
 
         while (this.state === 'running') {
-            // TODO: Lock to prevent multiple instances from running
-            const res = await this.tick();
+            const res = await withPgLock({
+                db: this.dbClient.db,
+                lockKey: `fleet_supervisor`,
+                fn: async () => {
+                    return await this.tick();
+                },
+                timeoutMs: envs.FLEET_TIMEOUT_TICK_MS,
+                onTimeout: () => {
+                    this.tickCancelled = true;
+                    return Promise.resolve();
+                }
+            });
             if (res.isErr()) {
                 await setTimeout(1000);
                 logger.error('Supervisor error:', res.error);
@@ -214,6 +227,9 @@ export class Supervisor {
 
     private async executePlan(plan: Operation[]): Promise<void> {
         for (const action of plan) {
+            if (this.tickCancelled) {
+                return;
+            }
             const result = await this.execute(action);
             if (result.isErr()) {
                 logger.error('Failed to execute action:', result.error);

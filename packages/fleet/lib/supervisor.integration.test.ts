@@ -36,6 +36,26 @@ describe('Supervisor', () => {
         mockNodeProvider.mockClear();
     });
 
+    describe('instances', () => {
+        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+
+        afterEach(async () => {
+            await supervisor1.stop();
+            await supervisor2.stop();
+        });
+
+        it('should have only one processing at a time', async () => {
+            const tickSpy1 = vi.spyOn(supervisor1, 'tick');
+            const tickSpy2 = vi.spyOn(supervisor2, 'tick');
+            supervisor1.start();
+            supervisor2.start();
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            expect(tickSpy1).toHaveBeenCalled();
+            expect(tickSpy2).toHaveBeenCalledTimes(0);
+        });
+    });
+
     it('should start PENDING nodes', async () => {
         const node1 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
         const node2 = await createNodeWithAttributes(dbClient.db, { state: 'PENDING', deploymentId: activeDeployment.id });
