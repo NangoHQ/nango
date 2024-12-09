@@ -1,4 +1,5 @@
-import type { NodeState, Node, RoutingId } from '../types.js';
+import type { NodeState, Node } from '../types.js';
+import type { RoutingId } from '@nangohq/types';
 import type { knex } from 'knex';
 import { nanoid } from '@nangohq/utils';
 import * as nodes from './nodes.js';

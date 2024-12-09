@@ -57,3 +57,6 @@ export type * from './flow/http.api.js';
 
 export type * from './utils.js';
 export type * from './web/env.js';
+
+export type * from './fleet/api.js';
+export type * from './fleet/index.js';
