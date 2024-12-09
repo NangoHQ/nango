@@ -121,6 +121,19 @@ affinity:
     proxy:
         base_url: https://api.affinity.co
     docs: https://docs.nango.dev/integrations/all/affinity
+    docs_connect: https://docs.nango.dev/integrations/all/affinity/connect
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: API Key
+            description: Your Affinity API Key
+            doc_section: '#step-1-finding-your-api-key'
 
 aircall:
     display_name: Aircall
@@ -260,11 +273,13 @@ anrok:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anrok
+    docs_connect: https://docs.nango.dev/integrations/all/anrok/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Anrok account
+            doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
     display_name: Amplitude
@@ -514,12 +529,25 @@ avalara:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    docs_connect: https://docs.nango.dev/integrations/all/avalara/connect
+    credentials:
+        username:
+            type: string
+            title: User Name / Account ID
+            description: Your User Name / Account ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Password / License Key
+            description: Your Password / License Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
             pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
     display_name: Avalara (sandbox)
@@ -535,12 +563,25 @@ avalara-sandbox:
             method: GET
             endpoint: /utilities/subscriptions
     docs: https://docs.nango.dev/integrations/all/avalara
+    docs_connect: https://docs.nango.dev/integrations/all/avalara-sandbox/connect
+    credentials:
+        username:
+            type: string
+            title: User Name / Account ID
+            description: Your User Name / Account ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Password / License Key
+            description: Your Password / License Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
             pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
     display_name: AWS
@@ -587,6 +628,18 @@ aws-iam:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
+    docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
+    credentials:
+        username:
+            type: string
+            title: Access Key ID
+            description: Your Access Key ID
+            doc_section: '#step-1-finding-your-pair-keys'
+        password:
+            type: string
+            title: Secret Access Key
+            description: Your Secret Access Key
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         region:
             type: string
@@ -594,6 +647,7 @@ aws-iam:
             description: The region to where your AWS account is hosted
             example: us-east-1
             pattern: '^[a-z0-9-]+$'
+            doc_section: '#step-2-finding-your-region-host'
 
 bamboohr:
     display_name: BambooHR
@@ -633,6 +687,7 @@ bamboohr-basic:
             method: GET
             endpoint: /v1/meta/fields
     docs: https://docs.nango.dev/integrations/all/bamboohr
+    docs_connect: https://docs.nango.dev/integrations/all/bamboohr-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -643,6 +698,7 @@ bamboohr-basic:
             suffix: .bamboohr.com
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         username:
             type: string
@@ -650,6 +706,7 @@ bamboohr-basic:
             description: The API Key of your BambooHR account
             pattern: '^[a-zA-Z0-9]+$'
             secret: true
+            doc_section: '#step-2-finding-your-api-key'
         password:
             type: string
             title: Password
@@ -930,6 +987,36 @@ braintree-sandbox:
         - merchantId
     docs: https://docs.nango.dev/integrations/all/braintree
 
+braze:
+    display_name: Braze
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://rest.${connectionConfig.instanceUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            at: 'x-ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/braze
+    docs_connect: https://docs.nango.dev/integrations/all/braze/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The REST API URL of your Braze instance
+            example: iad-02.braze.com
+            format: hostname
+            prefix: https://rest.
+            order: 1
+            doc_section: '#step-1-finding-your-instance-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Braze account
+            doc_section: '#step-2-finding-your-api-key'
+
 brevo-api-key:
     display_name: Brevo (api key)
     categories:
@@ -968,11 +1055,15 @@ brex-api-key:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
     docs: https://docs.nango.dev/integrations/all/brex
+    docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API key for your Brex account
+            title: API Token
+            description: The API Token to your Brex account
+            example: bxt_vRUwQT3snBmA1IDVq5iK1kXc4N0bhxr377z4
+            pattern: '^bxt_[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-token'
 
 brex-staging:
     display_name: Brex (staging)
@@ -999,6 +1090,7 @@ brightcrowd:
             cursor_path_in_response: nextPageToken
             cursor_name_in_request: pageToken
     docs: https://docs.nango.dev/integrations/all/brightcrowd
+    docs_connect: https://docs.nango.dev/integrations/all/brightcrowd/connect
 
 builder-io-private:
     display_name: Builder.io (private)
@@ -1012,14 +1104,16 @@ builder-io-private:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
         domain:
             type: string
             title: Domain
-            description: The domain of your Builder.io account
-            example: app.builder.io
+            description: The domain used to access your Builder.io API
+            example: cdn.builder.io
             format: hostname
             prefix: https://
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
@@ -1027,6 +1121,7 @@ builder-io-private:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+            doc_section: '#step-2-finding-your-api-key'
 
 builder-io-public:
     display_name: Builder.io (public)
@@ -1040,14 +1135,16 @@ builder-io-public:
         query:
             apiKey: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builder-io
+    docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
         domain:
             type: string
             title: Domain
-            description: The domain of your Builder.io account
-            example: app.builder.io
+            description: The domain used to access your Builder.io API
+            example: builder.io
             format: hostname
             prefix: https://
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
@@ -1055,6 +1152,7 @@ builder-io-public:
             description: The API key for your Builder.io account
             pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
+            doc_section: '#step-2-finding-your-api-key'
 
 buildium:
     display_name: Buildium
@@ -1072,6 +1170,7 @@ buildium:
             method: GET
             endpoint: /v1/rentals
     docs: https://docs.nango.dev/integrations/all/buildium
+    docs_connect: https://docs.nango.dev/integrations/all/buildium/connect
     connection_config:
         clientId:
             type: string
@@ -1079,13 +1178,16 @@ buildium:
             description: Your API Key Client ID
             pattern: '^[a-f0-9-]+$'
             example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
+            doc_section: '#step-2-finding-your-client-id-and-secret'
+            order: 1
     credentials:
         apiKey:
             type: string
-            title: API Key
-            description: The API key for your Buildium account
+            title: Secret
+            description: The Secret for your Buildium account
             pattern: '^[A-Za-z0-9+/]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
+            doc_section: '#step-2-finding-your-client-id-and-secret'
 
 cal-com-v1:
     display_name: Cal.com (v1)
@@ -1102,6 +1204,7 @@ cal-com-v1:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com-v1/connect
     credentials:
         apiKey:
             type: string
@@ -1109,6 +1212,7 @@ cal-com-v1:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
+            doc_section: '#step-1-finding-your-api-key'
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
@@ -1129,6 +1233,7 @@ cal-com-v2:
             method: GET
             endpoint: /me
     docs: https://docs.nango.dev/integrations/all/cal-com
+    docs_connect: https://docs.nango.dev/integrations/all/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
@@ -1136,6 +1241,7 @@ cal-com-v2:
             description: The API key for your Cal.com account
             pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
+            doc_section: '#step-1-finding-your-api-key'
 
 calendly:
     display_name: Calendly
@@ -1171,11 +1277,15 @@ canny:
             method: POST
             endpoint: /boards/list
     docs: https://docs.nango.dev/integrations/all/canny
+    docs_connect: https://docs.nango.dev/integrations/all/canny/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Canny account
+            example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 certn:
     display_name: Certn
@@ -2581,6 +2691,38 @@ freshservice:
             suffix: .freshservice.com
             prefix: https://
 
+freshteam:
+    display_name: Freshteam
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.accountName}.freshteam.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+    docs: https://docs.nango.dev/integrations/all/freshteam
+    docs_connect: https://docs.nango.dev/integrations/all/freshteam/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: The account name of your Freshteam account
+            example: nango
+            format: hostname
+            suffix: .freshteam.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-account-name'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key to your Freshteam account
+            doc_section: '#step-2-finding-your-api-key'
+            example: 'XtoF94LMNyKPbd5AvR1QJh'
+            pattern: '^[a-zA-Z0-9]+$'
+
 front:
     display_name: Front
     categories:
@@ -3335,6 +3477,8 @@ intercom:
     token_url: https://api.intercom.io/auth/eagle/token
     proxy:
         base_url: https://api.intercom.io
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
 
 intuit:
@@ -5805,6 +5949,7 @@ tapclicks:
     proxy:
         base_url: https://api.tapclicks.com/v2
     docs: https://docs.nango.dev/integrations/all/tapclicks
+    docs_connect: https://docs.nango.dev/integrations/all/tapclicks/connect
 
 tableau:
     display_name: Tableau
