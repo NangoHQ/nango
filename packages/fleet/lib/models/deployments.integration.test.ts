@@ -16,7 +16,7 @@ describe('Deployments', () => {
 
     describe('create', () => {
         it('should create a deployment', async () => {
-            const commitId = generateCommitHash();
+            const commitId = generateCommitHash().unwrap();
             const deployment = (await deployments.create(db, commitId)).unwrap();
             expect(deployment.commitId).toBe(commitId);
             expect(deployment.createdAt).toBeInstanceOf(Date);
@@ -24,8 +24,8 @@ describe('Deployments', () => {
         });
 
         it('should supersede any active deployments', async () => {
-            const commitId1 = generateCommitHash();
-            const commitId2 = generateCommitHash();
+            const commitId1 = generateCommitHash().unwrap();
+            const commitId2 = generateCommitHash().unwrap();
 
             const deployment1 = (await deployments.create(db, commitId1)).unwrap();
             const deployment2 = (await deployments.create(db, commitId2)).unwrap();

@@ -34,6 +34,7 @@ const DBDeployment = {
 
 export async function create(db: knex.Knex, commitId: CommitHash): Promise<Result<Deployment>> {
     try {
+        // TODO: do nothing if commitId is already active deployment
         return db.transaction(async (trx) => {
             const now = new Date();
             // supersede any active deployments

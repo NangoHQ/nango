@@ -15,8 +15,8 @@ describe('Nodes', () => {
     let activeDeployment: Deployment;
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(db, generateCommitHash())).unwrap();
-        activeDeployment = (await deployments.create(db, generateCommitHash())).unwrap();
+        previousDeployment = (await deployments.create(db, generateCommitHash().unwrap())).unwrap();
+        activeDeployment = (await deployments.create(db, generateCommitHash().unwrap())).unwrap();
     });
 
     afterEach(async () => {

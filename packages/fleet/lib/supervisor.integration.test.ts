@@ -26,8 +26,8 @@ describe('Supervisor', () => {
 
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash())).unwrap();
-        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash())).unwrap();
+        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
+        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
     });
 
     afterEach(async () => {

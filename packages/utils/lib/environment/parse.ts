@@ -57,6 +57,24 @@ export const ENVS = z.object({
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().optional(),
 
+    // FLEET
+    FLEET_TIMEOUT_STARTING_MS: z.coerce
+        .number()
+        .optional()
+        .default(5 * 60 * 1000),
+    FLEET_TIMEOUT_FINISHING_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000),
+    FLEET_TIMEOUT_TERMINATED_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000),
+    FLEET_TIMEOUT_ERROR_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000),
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),

@@ -2,12 +2,13 @@ import type { DatabaseClient } from './db/client.js';
 import { logger } from './utils/logger.js';
 import * as nodes from './models/nodes.js';
 import * as deployments from './models/deployments.js';
-import { Err, Ok, isLocal } from '@nangohq/utils';
+import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from './utils/errors.js';
 import type { Deployment, Node } from './types.js';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from './node-providers/node_provider.js';
+import { envs } from './env.js';
 
 type Operation =
     | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment }
@@ -22,11 +23,17 @@ type Operation =
 type SupervisorState = 'stopped' | 'running' | 'stopping';
 
 export const STATE_TIMEOUT_MS = {
-    STARTING: (isLocal ? 30 : 5 * 60) * 1000, // 30 secs locally, 5 minutes otherwise
-    FINISHING: (isLocal ? 30 : 24 * 60 * 60) * 1000, // 30 secs locally, 24 hours otherwise
-    TERMINATED: 7 * 24 * 60 * 60 * 1000,
-    ERROR: 7 * 24 * 60 * 60 * 1000
+    STARTING: envs.FLEET_TIMEOUT_STARTING_MS,
+    FINISHING: envs.FLEET_TIMEOUT_FINISHING_MS,
+    TERMINATED: envs.FLEET_TIMEOUT_TERMINATED_MS,
+    ERROR: envs.FLEET_TIMEOUT_ERROR_MS
 };
+
+// Shorten timeouts when running Nango locally
+if (envs.RUNNER_TYPE === 'LOCAL') {
+    STATE_TIMEOUT_MS.STARTING = 15 * 1000;
+    STATE_TIMEOUT_MS.FINISHING = 15 * 1000;
+}
 
 export class Supervisor {
     private state: SupervisorState = 'stopped';
@@ -287,7 +294,14 @@ export class Supervisor {
         }
 
         try {
-            await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+            await retryWithBackoff(
+                async () => {
+                    return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+                },
+                {
+                    numOfAttempts: 5
+                }
+            );
         } catch (error) {
             logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${error}`);
         }
@@ -322,7 +336,7 @@ export class Supervisor {
         // Locally we assume the node is IDLE
         // since the process is likely already killed
         // and the node is not able to notify back that it is idle
-        if (isLocal) {
+        if (envs.RUNNER_TYPE === 'LOCAL') {
             return nodes.transitionTo(this.dbClient.db, {
                 nodeId: node.id,
                 newState: 'IDLE'

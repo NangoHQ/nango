@@ -2,7 +2,7 @@ import './tracer.js';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger, stringifyError, once, isLocal } from '@nangohq/utils';
+import { getLogger, stringifyError, once } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
@@ -66,13 +66,19 @@ try {
         // not closing on purpose
     });
 
-    if (envs.RUNNER_TYPE !== 'REMOTE') {
-        if (isLocal) {
-            // when running locally, the runners (running as processes) are being killed
-            // when the main process is killed and the fleet entries are therefore not associated with any running process
-            // we then must fake a new deployment so fleet replaces runners with new ones
-            await runnersFleet.deploy(generateCommitHash());
+    if (envs.RUNNER_TYPE === 'LOCAL') {
+        // when running locally, the runners (running as processes) are being killed
+        // when the main process is killed and the fleet entries are therefore not associated with any running process
+        // we then must fake a new deployment so fleet replaces runners with new ones
+        const commitHash = generateCommitHash();
+        if (commitHash.isErr()) {
+            logger.error(`Unable to generate commit hash: ${commitHash.error}`);
+        } else {
+            await runnersFleet.deploy(commitHash.value);
         }
+    }
+    // TODO: change to `!== REMOTE` when fleet is ready to be deployed to PROD
+    if (envs.RUNNER_TYPE === 'LOCAL') {
         runnersFleet.start();
     }
 

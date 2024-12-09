@@ -11,7 +11,7 @@ try {
     const port = parseInt(process.argv[2] || '') || 3006;
     const id = process.argv[3] || process.env['RUNNER_ID'] || 'unknown-id';
     const srv = server.listen(port, () => {
-        logger.info(`🚀 '${id}' ready at http://localhost:${port}`);
+        logger.info(`🏃‍♀️ Runner '${id}' ready at http://localhost:${port}`);
     });
 
     const close = () => {
