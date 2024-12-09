@@ -24,6 +24,7 @@ COPY packages/records/ packages/records/
 COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/
 COPY packages/keystore/ packages/keystore/
+COPY packages/fleet/ packages/fleet/
 
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev
