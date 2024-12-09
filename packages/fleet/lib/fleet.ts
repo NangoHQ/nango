@@ -3,7 +3,8 @@ import type { Result } from '@nangohq/utils';
 import { DatabaseClient } from './db/client.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
-import type { CommitHash, Deployment, Node, RoutingId } from './types.js';
+import type { Node } from './types.js';
+import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
 import { Supervisor } from './supervisor.js';
@@ -17,6 +18,7 @@ const defaultDbUrl =
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}${envs.NANGO_DB_SSL ? '?sslmode=no-verify' : ''}`;
 
 export class Fleet {
+    public fleetId: string;
     private dbClient: DatabaseClient;
     private supervisor: Supervisor;
     private nodeProvider: NodeProvider;
@@ -29,6 +31,7 @@ export class Fleet {
         dbUrl?: string | undefined;
         nodeProvider?: NodeProvider | undefined;
     }) {
+        this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         this.nodeProvider = nodeProvider;
         this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider });
@@ -46,7 +49,7 @@ export class Fleet {
         await this.supervisor.stop();
     }
 
-    public async deploy(commitId: CommitHash): Promise<Result<Deployment>> {
+    public async rollout(commitId: CommitHash): Promise<Result<Deployment>> {
         return deployments.create(this.dbClient.db, commitId);
     }
 

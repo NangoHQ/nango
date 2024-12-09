@@ -1,13 +1,4 @@
-export type CommitHash = string & { readonly length: 40 };
-
-export interface Deployment {
-    readonly id: number;
-    readonly commitId: CommitHash;
-    readonly createdAt: Date;
-    readonly supersededAt: Date | null;
-}
-
-export type RoutingId = string;
+import type { RoutingId } from '@nangohq/types';
 
 export const nodeStates = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'] as const;
 export type NodeState = (typeof nodeStates)[number];

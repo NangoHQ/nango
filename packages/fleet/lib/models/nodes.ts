@@ -1,7 +1,8 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Ok, Err } from '@nangohq/utils';
-import type { NodeState, Node, RoutingId } from '../types.js';
+import type { NodeState, Node } from '../types.js';
+import type { RoutingId } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
 
 export const NODES_TABLE = 'nodes';
