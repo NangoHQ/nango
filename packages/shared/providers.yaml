@@ -4068,7 +4068,6 @@ marketo:
             prefix: https://
             suffix: /
             order: 1
-            doc_section: '#step-3-find-your-domain-and-identity-url'
         identityURL:
             type: string
             title: Identity URL
@@ -4078,7 +4077,6 @@ marketo:
             example: xxx.mktorest.com
             suffix: /identity/oauth/token
             order: 2
-            doc_section: '#step-3-find-your-domain-and-identity-url'
 
 malwarebytes:
     display_name: Malwarebytes
