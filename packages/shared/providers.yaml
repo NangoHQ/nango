@@ -2598,6 +2598,26 @@ fitbit:
         base_url: https://api.fitbit.com
     docs: https://docs.nango.dev/integrations/all/fitbit
 
+fortnox:
+    display_name: Fortnox
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://apps.fortnox.se/oauth-v1/auth
+    token_url: https://apps.fortnox.se/oauth-v1/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        access_type: offline
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.fortnox.se/3
+    docs: https://www.fortnox.se/developer/authorization
+
 freshbooks:
     display_name: FreshBooks
     categories:
