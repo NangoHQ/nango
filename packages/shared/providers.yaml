@@ -5086,14 +5086,16 @@ quickbooks:
             realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    docs_connect: https://docs.nango.dev/integrations/all/quickbooks/connect
     connection_config:
         realmId:
             type: string
             title: Quickbooks Realm ID
             optional: true
-            description: The realmId of your quickbooks account
+            description: The realmId of your quickbooks company
             pattern: '^\d{16}$'
             example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 quickbooks-sandbox:
     alias: quickbooks
@@ -5103,14 +5105,16 @@ quickbooks-sandbox:
             realmId: ${connectionConfig.realmId}
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    docs_connect: https://docs.nango.dev/integrations/all/quickbooks-sandbox/connect
     connection_config:
         realmId:
             type: string
             title: Quickbooks Realm ID
             optional: true
-            description: The realmId of your quickbooks account
+            description: The realmId of your quickbooks sandbox company
             pattern: '^\d{16}$'
             example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 ragieai:
     display_name: Ragie AI
