@@ -256,12 +256,12 @@ router.use(publicAPI);
 
 // -------
 // Internal API routes.
-const internalAPI = express.Router();
+const internalApi = express.Router();
 
-internalAPI.use([rateLimiterMiddleware, authMiddleware.internal.bind(authMiddleware)]);
-internalAPI.route('/internal/fleet/:fleetId/rollout').post(postRollout);
+const interalApiAuth: RequestHandler[] = [rateLimiterMiddleware, authMiddleware.internal.bind(authMiddleware)];
+internalApi.route('/internal/fleet/:fleetId/rollout').post(interalApiAuth, postRollout);
 
-router.use(internalAPI);
+router.use(internalApi);
 
 // -------
 // Webapp routes (session auth).
