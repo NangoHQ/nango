@@ -4050,10 +4050,14 @@ malwarebytes:
         accountId:
             type: string
             title: Account Id
-            description: The Nebula account id
+            description: Your Nebula account id
             pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
             example: 9256034b-7967-4253-a5d9-260663e4fa4f
+            order: 1
+            doc_section: '#step-1-finding-your-accountId'
+
     docs: https://docs.nango.dev/integrations/all/malwarebytes
+    doc_connect: https://docs.nango.dev/integrations/all/malwarebytes/connect
 
 medallia:
     display_name: Medallia
