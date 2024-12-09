@@ -3225,7 +3225,6 @@ greenhouse-basic:
             suffix: .greenhouse.io
             prefix: https://
             order: 1
-            doc_section: '#step-2-finding-your-greenhouse-domain'
     credentials:
         username:
             type: string
