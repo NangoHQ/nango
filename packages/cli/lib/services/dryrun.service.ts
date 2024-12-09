@@ -339,7 +339,10 @@ export class DryRunService {
                 nangoProps.axios = {
                     response: {
                         onFulfilled: (response: AxiosResponse) =>
-                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id, syncName })
+                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id, syncName }),
+                        onRejected: (error: unknown) => {
+                            responseSaver.onAxiosRequestRejected({ error, providerConfigKey, connectionId: nangoConnection.connection_id, syncName });
+                        }
                     }
                 };
             }
