@@ -108,6 +108,7 @@ import { postConnectSessionsReconnect } from './controllers/connect/postReconnec
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postRollout } from './controllers/fleet/postRollout.js';
 
 export const router = express.Router();
 
@@ -252,6 +253,15 @@ publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncCont
 publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 router.use(publicAPI);
+
+// -------
+// Internal API routes.
+const internalAPI = express.Router();
+
+internalAPI.use([rateLimiterMiddleware, authMiddleware.internal.bind(authMiddleware)]);
+internalAPI.route('/internal/fleet/:fleetId/rollout').post(postRollout);
+
+router.use(internalAPI);
 
 // -------
 // Webapp routes (session auth).

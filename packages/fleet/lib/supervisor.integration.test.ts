@@ -6,7 +6,7 @@ import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
 import { generateCommitHash } from './models/helpers.js';
 import { createNodeWithAttributes } from './models/helpers.test.js';
-import type { Deployment } from './types.js';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 
 const mockNodeProvider = {

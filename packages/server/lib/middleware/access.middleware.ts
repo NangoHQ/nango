@@ -392,6 +392,27 @@ export class AccessMiddleware {
 
         next();
     }
+
+    internal(req: Request, res: Response, next: NextFunction) {
+        const key = process.env['NANGO_INTERNAL_API_KEY'];
+
+        if (!key) {
+            return errorManager.errRes(res, 'internal_private_key_configuration');
+        }
+
+        const authorizationHeader = req.get('authorization');
+
+        if (!authorizationHeader) {
+            return errorManager.errRes(res, 'missing_auth_header');
+        }
+
+        const receivedKey = authorizationHeader.split('Bearer ').pop();
+        if (receivedKey !== key) {
+            return errorManager.errRes(res, 'invalid_internal_private_key');
+        }
+
+        next();
+    }
 }
 
 /**

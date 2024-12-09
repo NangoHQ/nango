@@ -1,6 +1,6 @@
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import type { CommitHash } from '../types';
+import type { CommitHash } from '@nangohq/types';
 import crypto from 'crypto';
 
 export function generateCommitHash(): Result<CommitHash> {
