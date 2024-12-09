@@ -3,6 +3,7 @@ import type { NodeProvider } from '@nangohq/fleet';
 import { execSync, spawn } from 'child_process';
 import { logger } from '../logger.js';
 import { envs } from '../env.js';
+import type { Result } from '@nangohq/utils';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { getProvidersUrl } from '@nangohq/shared';
 
@@ -77,5 +78,11 @@ export const localNodeProvider: NodeProvider = {
             }
         }
         return Promise.resolve(Ok(undefined));
+    },
+    verifyUrl: (url) => {
+        const res: Result<void> = url.startsWith('http://localhost:')
+            ? Ok(undefined)
+            : Err(new Error(`Local runner url should start with http://localhost, got ${url}`));
+        return Promise.resolve(res);
     }
 };

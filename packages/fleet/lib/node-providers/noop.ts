@@ -5,7 +5,10 @@ export const noopNodeProvider: NodeProvider = {
     start: () => {
         return Promise.resolve(Ok(undefined));
     },
-    terminate: async () => {
+    terminate: () => {
+        return Promise.resolve(Ok(undefined));
+    },
+    verifyUrl: () => {
         return Promise.resolve(Ok(undefined));
     }
 };

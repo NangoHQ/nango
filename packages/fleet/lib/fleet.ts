@@ -19,6 +19,7 @@ const defaultDbUrl =
 export class Fleet {
     private dbClient: DatabaseClient;
     private supervisor: Supervisor;
+    private nodeProvider: NodeProvider;
     constructor({
         fleetId,
         dbUrl = defaultDbUrl,
@@ -29,6 +30,7 @@ export class Fleet {
         nodeProvider?: NodeProvider | undefined;
     }) {
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
+        this.nodeProvider = nodeProvider;
         this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider });
     }
 
@@ -80,6 +82,10 @@ export class Fleet {
     }
 
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
+        const valid = await this.nodeProvider.verifyUrl(url);
+        if (valid.isErr()) {
+            return Err(valid.error);
+        }
         return await nodes.register(this.dbClient.db, { nodeId, url });
     }
 
