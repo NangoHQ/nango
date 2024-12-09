@@ -18,7 +18,7 @@ describe('fleet', () => {
         await getTestDbClient(fleetId).clearDatabase();
     });
 
-    describe('deploy', () => {
+    describe('rollout', () => {
         it('should create a new deployment', async () => {
             const commitId = generateCommitHash().unwrap();
             const deployment = (await fleet.rollout(commitId)).unwrap();
