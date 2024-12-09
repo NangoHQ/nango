@@ -34,7 +34,10 @@ import type {
     PostPublicJwtAuthorization,
     PostPublicBillAuthorization,
     PostPublicSignatureAuthorization,
-    PostPublicTwoStepAuthorization
+    PostPublicTwoStepAuthorization,
+    PostPublicApiKeyAuthorization,
+    PostPublicBasicAuthorization,
+    PostPublicAppStoreAuthorization
 } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { DeleteConnectSession, GetConnectSession, PostConnectSessions, PostInternalConnectSessions } from './connect/api';
@@ -58,6 +61,9 @@ export type PublicApiEndpoints =
     | PostPublicTableauAuthorization
     | PostPublicJwtAuthorization
     | PostPublicUnauthenticatedAuthorization
+    | PostPublicApiKeyAuthorization
+    | PostPublicBasicAuthorization
+    | PostPublicAppStoreAuthorization
     | GetPublicProviders
     | GetPublicProvider
     | GetPublicListIntegrationsLegacy

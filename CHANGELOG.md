@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.46.1] - 2024-12-06
+
+### Added
+
+- *(providers-yaml)* Add automated for additional salesforce (#3102) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5f28b046494e2ddaaa522bcb75bfaf78fe71db22 by Hassan_Wari. Commit message: fix(front): add cursor in request param for pagination (#135) by @github-actions[bot]
+- *(connect)* Allow passing oauth_scopes (#3104) by @bodinsamuel
+- *(ui)* New create connection page (#3072) by @bodinsamuel
+- *(integrations)* Add API rate limiting to Front (#3101) by @hassan254-prog
+- *(sdk)* Add getIntegration (#3112) by @bodinsamuel
+- *(integrations)* Add support for eBay (#3099) by @cassanelligiovanni
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/17524b41a6acfe231713f26144048818893bdd87 by Khaliq. Commit message: fix(xero): add tenant id logic (#138) by @github-actions[bot]
+- *(scopes)* [nan-2284] Add a few more default scopes (#3117) by @khaliqgant
+- Introducing the fleet package (#3105) by @TBonnin
+- *(fleet)* Add control loop and state management (#3116) by @TBonnin
+- *(cli)* Take request headers, params, and body into account when saving responses (#3098) by @nalanj
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ef8abf3a9f6bd5c1e1afab8dc384036c66566713 by Daniel Roy Lwetabe. Commit message: feat(pennylane): Make penny lane syncs and actions into public templates (#127) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/06bf1271d4b2d7d4226f69a78d0883c51ae7f6f0 by Khaliq. Commit message: feat(avalara): Add avalara syncs and actions (#133) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5fcc1c01fea5ae1d5dccc813b531e23d01eca301 by nalanj. Commit message: feat(zoom): Add support for recordings (#128) by @github-actions[bot]
+- Fix Google drive docs (#3123) by @rguldener
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/cd7fcfb034ccb38b450c3c0b235a01c650bc2585 by Khaliq. Commit message: fix(lever-ashby) yaml cleanup (#131) by @github-actions[bot]
+- *(server)* Load errorLog regardless of credential refresh result (#3103) by @nalanj
+- *(proxy)* Handle more content-disposition edge cases (#3100) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fe1184f19c3f580a309f7135699adf788e76695a by Khaliq. Commit message: fix(lever): more cleanup of endpoints (#134) by @github-actions[bot]
+- *(providers)* Improve validation for connect (#3109) by @bodinsamuel
+- *(providers)* Enforce lowercase headers, enforce categories by @bodinsamuel
+- *(providers)* Greenhouse api domain wording (#3111) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8216083d27fa01d8af5b65a008f8a7375cb6f702 by Khaliq. Commit message: fix(lever): fix typo (#137) by @github-actions[bot]
+- *(logos)* Add white background on white logo, add better version when possible (#3114) by @bodinsamuel
+- *(connect)* Enforce allowedIntegrations and connectionConfig (#3113) by @bodinsamuel
+- *(linear-retries)* [nan-2309] handle linear case (#3108) by @khaliqgant
+- *(providers)* Enforce lowercase headers, enforce categories (#3110) by @bodinsamuel
+- *(tests)* Fix broken integration test that never fails in CI (#3115) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0ac7606862b0d3540c6ae408a5061acf0f76d821 by Khaliq. Commit message: fix(xero): bump versions (#139) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7d5d23cbb387b51cbc17c351c8203492e8a731a2 by Khaliq. Commit message: fix(xero): clean up scopes (#140) by @github-actions[bot]
+
 ## [v0.46.0] - 2024-12-03
 
 ### Added
@@ -2455,6 +2497,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.46.1]: https://github.com/NangoHQ/nango/compare/v0.46.0..v0.46.1
 [v0.46.0]: https://github.com/NangoHQ/nango/compare/v0.45.1..v0.46.0
 [v0.45.1]: https://github.com/NangoHQ/nango/compare/v0.45.0..v0.45.1
 [v0.45.0]: https://github.com/NangoHQ/nango/compare/v0.44.0..v0.45.0
