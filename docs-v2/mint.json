@@ -645,6 +645,7 @@
                             "group": "Connect",
                             "pages": [
                                 "reference/api/connect/sessions/create",
+                                "reference/api/connect/sessions/reconnect",
                                 "reference/api/connect/session/get",
                                 "reference/api/connect/session/delete"
                             ]
