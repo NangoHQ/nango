@@ -65,6 +65,7 @@ export interface AdminAxiosProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected?: (error: unknown) => void;
         };
     };
 }
@@ -123,7 +124,7 @@ export class Nango {
         });
 
         if (interceptors?.response) {
-            this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
+            this.http.interceptors.response.use(interceptors.response.onFulfilled, interceptors.response.onRejected);
         }
     }
 

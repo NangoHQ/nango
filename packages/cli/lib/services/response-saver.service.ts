@@ -111,6 +111,36 @@ export function onAxiosRequestFulfilled({
     return response;
 }
 
+export function onAxiosRequestRejected({
+    error,
+    providerConfigKey,
+    syncName
+}: {
+    error: unknown;
+    providerConfigKey: string | undefined;
+    connectionId: string;
+    syncName: string;
+}) {
+    const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
+
+    const response: AxiosResponse = (error as any)?.response;
+    if (!response) {
+        return;
+    }
+
+    const requestIdentity = computeConfigIdentity(response.config);
+    saveResponse<CachedRequest>({
+        directoryName,
+        data: {
+            ...requestIdentity,
+            response: response.data,
+            status: response.status,
+            headers: response.headers as Record<string, string>
+        },
+        customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+    });
+}
+
 function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
     const params = sortEntries(Object.entries(config.params || {}));
