@@ -118,7 +118,7 @@ export const ConnectionCreate: React.FC = () => {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Helmet>
-                    <title>Create Connection - Nango</title>
+                    <title>Create Test Connection - Nango</title>
                 </Helmet>
                 <div className="grid grid-cols-2 text-white">
                     <div className="pr-10 flex flex-col gap-10">
@@ -137,7 +137,7 @@ export const ConnectionCreate: React.FC = () => {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <Helmet>
-                <title>Create Connection - Nango</title>
+                <title>Create Test Connection - Nango</title>
             </Helmet>
             <div className="grid grid-cols-2 text-white">
                 <div className="pr-10">
