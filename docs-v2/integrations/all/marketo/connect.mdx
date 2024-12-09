@@ -6,9 +6,11 @@ sidebarTitle: Marketo
 
 # Overview
 
-To authenticate with Marketo, you need two key pieces of information:
+To authenticate with Marketo, you need these key pieces of information:
 1. **Client ID** - Your Marketo Access Client ID
 2. **Client Secret** - Your Marketo Client Secret
+3. **Domain** - Your Marketo domain (xxx.mktorest.com)
+4. **Identity URL** - Your Marketo domain (xxx.mktorest.com/identity/oauth/token)
 
 This guide will walk you through finding or creating those credentials within Marketo.
 
@@ -16,7 +18,7 @@ This guide will walk you through finding or creating those credentials within Ma
 
 - You must set up an account with Marketo.
 
-#### Step 1: Finding Marketo API Key and API Key Secret
+#### Step 1: Finding Marketo Client ID
 1. Create an API role (if not already created) and give it the `Read-Only Lead` permission with a descriptive name, then click `Create`.
 
 <img src="/integrations/all/marketo/marketo_a.webp" />
@@ -41,18 +43,23 @@ This guide will walk you through finding or creating those credentials within Ma
 
 <img src="/integrations/all/marketo/marketo_3.webp" />
 
+#### Step 2: Get Your Client Secret
+- From the previous step, also securely store your `Client Secret`.
+
+
+#### Step 3: Connect Your Marketo Account
+
 7. Next, navigate to `Admin` > `Integration` > `Web Services` to get the endpoint and identity URL.
 
 <img src="/integrations/all/marketo/marketo_f.webp" />
 
-#### Step 2: Connect Your Marketo Account
 
 <img src="/integrations/all/gong/nango_connect_ui.png" />
 
 To authenticate using your API credentials, navigate to the Marketo authentication form. Enter your credentials as follows:
 - Client ID: Your Marketo Access Key
 - Client Secret: Your Marketo Access Key Secret
-- Domain: Your Marketo domain (xxx.mktorest.com)
-- Identity URL: Your Marketo domain (xxx.mktorest.com/identity/oauth/token)
+- Domain: Your Marketo domain
+- Identity URL: Your Marketo domain
 
 Click "Connect" to complete the authentication.
