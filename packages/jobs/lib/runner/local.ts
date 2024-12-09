@@ -1,6 +1,6 @@
 import getPort, { portNumbers } from 'get-port';
 import type { NodeProvider } from '@nangohq/fleet';
-import { execSync, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import { logger } from '../logger.js';
 import { envs } from '../env.js';
 import type { Result } from '@nangohq/utils';
@@ -15,17 +15,9 @@ export const localNodeProvider: NodeProvider = {
             // Random port to avoid conflicts with other fleet runners accross local execution
             const rndPort = Math.floor(Math.random() * 10000) + 10000;
             const port = await getPort({ port: portNumbers(rndPort, rndPort + 100) });
-            let nodePath = '';
-            try {
-                nodePath = execSync('which node', { encoding: 'utf-8' }).trim();
-            } catch {
-                throw new Error('Unable to find node');
-            }
 
-            const nangoRunnerPath = process.env['NANGO_RUNNER_PATH'] || '../runner/dist/app.js';
-
-            const cmd = nodePath;
-            const runnerLocation = nangoRunnerPath;
+            const cmd = process.argv[0]!;
+            const runnerLocation = process.env['NANGO_RUNNER_PATH'] || '../runner/dist/app.js';
             const cmdOptions = [runnerLocation, port.toString(), node.id.toString()];
 
             logger.info(`[Runner] Starting runner with command: ${cmd} ${cmdOptions.join(' ')} `);

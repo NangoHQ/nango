@@ -294,7 +294,7 @@ export class Supervisor {
         }
 
         try {
-            await retryWithBackoff(
+            const res = await retryWithBackoff(
                 async () => {
                     return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
                 },
@@ -302,6 +302,9 @@ export class Supervisor {
                     numOfAttempts: 5
                 }
             );
+            if (!res.ok) {
+                throw new Error(`status: ${res.status}. response: ${res.statusText}`);
+            }
         } catch (error) {
             logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${error}`);
         }
