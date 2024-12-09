@@ -51,9 +51,8 @@ export class Fleet {
     }
 
     public async getRunningNode(routingId: RoutingId): Promise<Result<Node>> {
-        const timeout = 1000 * 60; // 1 minute
         const recurse = async (start: Date): Promise<Result<Node>> => {
-            if (new Date().getTime() - start.getTime() > timeout) {
+            if (new Date().getTime() - start.getTime() > envs.FLEET_TIMEOUT_GET_RUNNING_NODE) {
                 return Err(new FleetError('fleet_node_not_ready_timeout', { context: { routingId } }));
             }
             const search = await nodes.search(this.dbClient.db, {

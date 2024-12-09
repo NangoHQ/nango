@@ -61,19 +61,23 @@ export const ENVS = z.object({
     FLEET_TIMEOUT_STARTING_MS: z.coerce
         .number()
         .optional()
-        .default(5 * 60 * 1000),
+        .default(5 * 60 * 1000), // 5 minutes
     FLEET_TIMEOUT_FINISHING_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000),
+        .default(24 * 60 * 60 * 1000), // 24 hours
     FLEET_TIMEOUT_TERMINATED_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000),
+        .default(24 * 60 * 60 * 1000), // 24 hours
     FLEET_TIMEOUT_ERROR_MS: z.coerce
         .number()
         .optional()
-        .default(24 * 60 * 60 * 1000),
+        .default(24 * 60 * 60 * 1000), // 24 hours
+    FLEET_TIMEOUT_GET_RUNNING_NODE: z.coerce
+        .number()
+        .optional()
+        .default(60 * 1000), // 1 minute
 
     // --- Third parties
     // AWS
