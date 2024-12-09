@@ -4057,7 +4057,7 @@ malwarebytes:
             doc_section: '#step-1-finding-your-accountId'
 
     docs: https://docs.nango.dev/integrations/all/malwarebytes
-    doc_connect: https://docs.nango.dev/integrations/all/malwarebytes/connect
+    docs_connect: https://docs.nango.dev/integrations/all/malwarebytes/connect
 
 medallia:
     display_name: Medallia
