@@ -6899,6 +6899,7 @@ zendesk:
             limit_name_in_request: per_page
             link_path_in_response_body: next_page
     docs: https://docs.nango.dev/integrations/all/zendesk
+    docs_connect: https://docs.nango.dev/integrations/all/zendesk/connect
     connection_config:
         subdomain:
             type: string
@@ -6908,6 +6909,7 @@ zendesk:
             example: domain
             suffix: .zendesk.com
             prefix: https://
+            doc_section: '#step-1-finding-your-subdomain'
 
 zenefits:
     display_name: Zenefits
