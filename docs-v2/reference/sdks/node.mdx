@@ -1257,7 +1257,8 @@ const { data } = await nango.createConnectSession({
 
 ### Create a reconnect session
 
-Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those information.
+Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those attributes of the connection.
+Use this method when a user needs to input new credentials or to manually refresh token.
 
 ```js
 const { data } = await nango.createConnectSession({

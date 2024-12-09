@@ -30,7 +30,7 @@ export const useGlobal = create<State>((set) => ({
     isSingleIntegration: false,
     session: null,
     nango: null,
-    apiURL: 'http://localhost:3003/',
+    apiURL: 'https://api.nango.dev',
     setApiURL: (value) => set({ apiURL: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
