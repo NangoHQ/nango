@@ -72,18 +72,6 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             }
         }
 
-        // Reconnect mechanism
-        if (isConnectSession && res.locals.connectSession.connectionId) {
-            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
-            if (!connection) {
-                await logCtx.error('Invalid connection');
-                await logCtx.failed();
-                res.status(400).send({ error: { code: 'invalid_connection' } });
-                return;
-            }
-            connectionId = connection?.connection_id;
-        }
-
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
             await logCtx.error('Unknown provider config');
@@ -109,6 +97,18 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
+        }
+
+        // Reconnect mechanism
+        if (isConnectSession && res.locals.connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+            if (!connection) {
+                await logCtx.error('Invalid connection');
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'invalid_connection' } });
+                return;
+            }
+            connectionId = connection?.connection_id;
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
