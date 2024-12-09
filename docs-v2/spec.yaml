@@ -1689,7 +1689,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
     /connect/sessions/reconnect:
         post:
-            description: Create a new connect session to reconnect to a specific integration
+            description: Create a new connect session to reconnect to a specific integration. The token is used like a standard connect session. Only connections created with a connect session are compatible with this endpoint.
             requestBody:
                 required: true
                 content:
