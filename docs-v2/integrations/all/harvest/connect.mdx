@@ -1,0 +1,38 @@
+---
+title: Harvest - How do I link my account?
+sidebarTitle: Harvest
+---
+
+
+# Overview
+
+To authenticate with Harvest, you need:
+1. **App Details** - A unique identifier for your integration, typically included in the `User-Agent` header when sending API requests. It provides information about your application, such as its name and a point of contact, to enable communication with Harvest if needed.
+
+This guide will walk you through creating **App Details** for Harvest API integration.
+
+### Prerequisites:
+
+- You must have an account with Harvest.
+
+### Instructions:
+
+#### Step 1: Creating App Details
+1. Select a unique and descriptive name that represents your application or integration. For example, **Nango** or **Nango's Harvest Integration**.
+2. Include a way for Harvest to contact you. This can be either:
+- A URL to your application or support page, such as `http://nango.com/contact`.
+- An email address for direct communication, such as `support@nango.com`.
+3. Combine the application name and contact details in the following format:
+- [Application Name] ([Contact URL or Email]): `Nango (http://nango.com/contact)`
+
+#### Step 2: Enter the App Details in the Connect UI
+
+Once you have the **App Details**:
+1. Open the form where you need to authenticate with Harvest.
+2. Enter the **App Details** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/harvest/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Harvest.
