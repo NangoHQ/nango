@@ -1,0 +1,44 @@
+---
+title: Sage Intacct - How do I link my account?
+sidebarTitle: Sage Intacct
+---
+
+
+# Overview
+
+To authenticate with Sage Intacct, you need three key pieces of information:
+1. **Sender ID** - Your unique identifier for your Sage application.
+2. **User ID** - Your Sage Intacct web services user ID.
+3. **Company ID** - Your Sage Intacct company ID.
+
+This guide will walk you through finding or creating those credentials within Sage Intacct.
+
+### Prerequisites:
+
+- You must have an active Sage Intacct Web Services developer license, which includes a Web Services `Sender ID` and `password`.
+
+#### Step 1: How to retrieve the Sender ID
+1. Sign in to your Sage Intacct account.
+2. From the `Applications` dropdown, click `Company`.
+3. Navigate to `Setup` > `Configuration` > `Company` > `Security`.
+4. From the `Web Services Authorizations` section, copy the `Sender ID`.
+
+#### Step 2: How to retrieve the User ID
+1. From the `Applications` dropdown, click `Company`.
+2. Navigate to `Admin` > `Web Services Users`.
+3. From the `Web Services Users` list, copy the required `User ID`.
+
+#### Step 3: How to retrieve the Company ID
+1. From the `Applications` dropdown, click `Company`.
+2. Navigate to `Setup` > `Configuration` > `Company` > `General Information`.
+3. From the `Company Information` section, copy the `ID`.
+
+To authenticate using your API credentials, navigate to the Sage authentication form.
+Enter your credentials as follows:
+- Sender ID: Your Sage Intacct Sender ID
+- Sender Password: Your Sage Intacct sender password
+- User ID: Your Sage Intacct web services user ID
+- User Password: Your Sage Intacct account password
+- Company ID: Your Sage Intacct company ID
+
+Click "Connect" to complete the authentication.
