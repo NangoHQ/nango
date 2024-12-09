@@ -14,7 +14,7 @@ import { envs } from './env.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
-    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}${envs.NANGO_DB_SSL ? '?sslmode=required' : ''}`;
 
 export class Fleet {
     private dbClient: DatabaseClient;
