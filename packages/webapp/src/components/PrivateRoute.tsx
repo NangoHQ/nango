@@ -66,11 +66,11 @@ export const PrivateRoute: React.FC = () => {
     }, [meta, loadingMeta, env, error, setEnv]);
 
     useEffect(() => {
-        if (user && environmentAndAccount) {
+        if (user && environmentAndAccount && meta && !meta.debugMode) {
             identify(user);
             window.ko?.identify(user.email, { name: user.name, $account: { group_id: user.accountId, name: environmentAndAccount.name } });
         }
-    }, [user, environmentAndAccount, identify]);
+    }, [user, environmentAndAccount, meta, identify]);
 
     if (loadingMeta || !ready || loadingUser) {
         return null;
