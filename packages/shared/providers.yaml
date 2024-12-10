@@ -73,11 +73,8 @@ adobe-umapi:
             after: 'retry-after'
         base_url: https://usermanagement.adobe.io
     docs: https://docs.nango.dev/integrations/all/adobe
-    connection_config:
-        clientId:
-            type: string
-            title: Client ID
-            description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
+    post_connection_script: adobeUmapiPostConnection
+    docs_connect: https://docs.nango.dev/integrations/all/adobe-umapi/connect
 
 adyen:
     display_name: Adyen
