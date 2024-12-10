@@ -1,10 +1,10 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig, UserProvidedProxyConfiguration } from '@nangohq/shared';
-import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider, userService } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import type { InternalProxyConfiguration } from '@nangohq/types';
+import type { InternalProxyConfiguration, DBUser } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -13,6 +13,7 @@ type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;
 const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
 export interface InternalNango {
+    getDbUser: () => Promise<DBUser | null>;
     getConnection: () => Promise<Connection>;
     proxy: <T = any>({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
@@ -51,6 +52,13 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 );
 
                 return connection as Connection;
+            },
+            getDbUser: async () => {
+                const users = await userService.getUsersByAccountId(account.id, true);
+                if (users.length === 0) {
+                    return null;
+                }
+                return users[0] as DBUser;
             },
             proxy: async ({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
