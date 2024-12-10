@@ -27,6 +27,7 @@ export const localNodeProvider: NodeProvider = {
                 env: {
                     ...process.env,
                     RUNNER_NODE_ID: node.id.toString(),
+                    RUNNER_URL: `http://localhost:${port}`,
                     IDLE_MAX_DURATION_MS: '0',
                     PROVIDERS_URL: getProvidersUrl(),
                     PROVIDERS_RELOAD_INTERVAL: envs.PROVIDERS_RELOAD_INTERVAL.toString(),

@@ -19,9 +19,16 @@ const mockNodeProvider = {
     }
 };
 
+const defaultNodeConfig = {
+    image: 'image',
+    cpuMilli: 1000,
+    memoryMb: 1000,
+    storageMb: 1000
+};
+
 describe('Supervisor', () => {
     const dbClient = getTestDbClient('supervisor');
-    const supervisor = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+    const supervisor = new Supervisor({ dbClient, defaultNodeConfig, nodeProvider: mockNodeProvider });
     let previousDeployment: Deployment;
     let activeDeployment: Deployment;
 
@@ -37,8 +44,8 @@ describe('Supervisor', () => {
     });
 
     describe('instances', () => {
-        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
-        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+        const supervisor1 = new Supervisor({ dbClient, defaultNodeConfig, nodeProvider: mockNodeProvider });
+        const supervisor2 = new Supervisor({ dbClient, defaultNodeConfig, nodeProvider: mockNodeProvider });
 
         afterEach(async () => {
             await supervisor1.stop();

@@ -17,11 +17,12 @@ type FleetErrorCode =
     | 'supervisor_search_nodes_failed'
     | 'supervisor_unknown_action'
     | 'supervisor_tick_failed'
+    | 'fleet_misconfigured'
     | 'fleet_node_not_ready_timeout'
     | 'fleet_node_url_not_found'
     | 'fleet_node_outdate_failed'
-    | 'fleet_tick_timeout'
     | 'fleet_cannot_acquire_lock'
+    | 'fleet_lock_timeout'
     | 'fleet_lock_error'
     | 'local_runner_start_failed';
 
