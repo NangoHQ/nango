@@ -34,6 +34,11 @@ class ConnectionController {
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
 
+            if (!providerConfigKey) {
+                res.status(400).send({ error: 'Missing providerConfigKey' });
+                return;
+            }
+
             if (!isSync) {
                 metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
             }
