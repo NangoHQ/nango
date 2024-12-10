@@ -62,6 +62,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
             Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [key, { connection_config: value.connectionConfig }])
         );
     }
+    if (connectSession.connectionId) {
+        response.data.isReconnecting = true;
+    }
 
     res.status(200).send(response);
 });

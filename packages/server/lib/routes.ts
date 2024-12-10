@@ -104,9 +104,11 @@ import { getConnectionRefresh } from './controllers/v1/connections/connectionId/
 import { cliMinVersion } from './middleware/cliVersionCheck.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postRollout } from './controllers/fleet/postRollout.js';
 
 export const router = express.Router();
 
@@ -242,6 +244,7 @@ publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bin
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
+publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 
@@ -250,6 +253,15 @@ publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncCont
 publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 router.use(publicAPI);
+
+// -------
+// Internal API routes.
+const internalApi = express.Router();
+
+const interalApiAuth: RequestHandler[] = [rateLimiterMiddleware, authMiddleware.internal.bind(authMiddleware)];
+internalApi.route('/internal/fleet/:fleetId/rollout').post(interalApiAuth, postRollout);
+
+router.use(internalApi);
 
 // -------
 // Webapp routes (session auth).

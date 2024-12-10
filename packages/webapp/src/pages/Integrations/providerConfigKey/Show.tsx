@@ -106,7 +106,7 @@ export const ShowIntegration: React.FC = () => {
                     <Link to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
                         <Button>
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
+                            Add Test Connection
                         </Button>
                     </Link>
                 </div>

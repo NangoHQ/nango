@@ -3,8 +3,9 @@ export interface ConnectSession {
     readonly endUserId: number;
     readonly accountId: number;
     readonly environmentId: number;
-    readonly allowedIntegrations?: string[] | null;
-    readonly integrationsConfigDefaults?: Record<
+    readonly connectionId: number | null;
+    readonly allowedIntegrations: string[] | null;
+    readonly integrationsConfigDefaults: Record<
         string,
         {
             /** Only used by Slack */

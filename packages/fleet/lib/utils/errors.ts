@@ -2,20 +2,28 @@ import type { Jsonable } from '@nangohq/types';
 
 type FleetErrorCode =
     | 'no_active_deployment'
-    | 'deployment_creation_error'
-    | 'deployment_get_active_error'
+    | 'deployment_creation_failed'
+    | 'deployment_get_active_failed'
     | 'deployment_not_found'
     | 'node_invalid_state_transition'
     | 'node_not_found'
-    | 'node_creation_error'
-    | 'node_search_error'
-    | 'node_transition_error'
-    | 'node_fail_error'
-    | 'node_register_error'
-    | 'node_delete_error'
+    | 'node_creation_failed'
+    | 'node_search_failed'
+    | 'node_transition_failed'
+    | 'node_fail_failed'
+    | 'node_register_failed'
+    | 'node_delete_failed'
     | 'node_delete_non_terminated'
-    | 'supervisor_search_nodes_error'
-    | 'supervisor_unknown_action';
+    | 'supervisor_search_nodes_failed'
+    | 'supervisor_unknown_action'
+    | 'supervisor_tick_failed'
+    | 'fleet_node_not_ready_timeout'
+    | 'fleet_node_url_not_found'
+    | 'fleet_node_outdate_failed'
+    | 'fleet_tick_timeout'
+    | 'fleet_cannot_acquire_lock'
+    | 'fleet_lock_error'
+    | 'local_runner_start_failed';
 
 export class FleetError extends Error {
     public readonly context?: Jsonable;
