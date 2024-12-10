@@ -268,7 +268,14 @@ export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined):
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
     if (str.includes('${')) {
-        return interpolateStringFromObject(str, replacers);
+        if (str.includes('||')) {
+            const parts = str.split('||');
+            const firstPart = parts[0] ? interpolateStringFromObject(parts[0].trim(), replacers) : undefined;
+            const secondPart = parts[1] ? interpolateStringFromObject(parts[1].trim(), replacers) : undefined;
+            return (firstPart || secondPart) as string;
+        } else {
+            return interpolateStringFromObject(str, replacers);
+        }
     } else {
         return str;
     }
