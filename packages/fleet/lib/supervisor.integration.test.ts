@@ -6,7 +6,7 @@ import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
 import { generateCommitHash } from './models/helpers.js';
 import { createNodeWithAttributes } from './models/helpers.test.js';
-import type { Deployment } from './types.js';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 
 const mockNodeProvider = {
@@ -34,6 +34,26 @@ describe('Supervisor', () => {
     afterEach(async () => {
         await dbClient.clearDatabase();
         mockNodeProvider.mockClear();
+    });
+
+    describe('instances', () => {
+        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+
+        afterEach(async () => {
+            await supervisor1.stop();
+            await supervisor2.stop();
+        });
+
+        it('should have only one processing at a time', async () => {
+            const tickSpy1 = vi.spyOn(supervisor1, 'tick');
+            const tickSpy2 = vi.spyOn(supervisor2, 'tick');
+            supervisor1.start();
+            supervisor2.start();
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            expect(tickSpy1).toHaveBeenCalled();
+            expect(tickSpy2).toHaveBeenCalledTimes(0);
+        });
     });
 
     it('should start PENDING nodes', async () => {
