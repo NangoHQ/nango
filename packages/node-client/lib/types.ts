@@ -38,7 +38,8 @@ import type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
-    PostConnectSessions
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect
 } from '@nangohq/types';
 
 export type {
@@ -82,7 +83,8 @@ export type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
-    PostConnectSessions
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect
 };
 
 export interface NangoProps {

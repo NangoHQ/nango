@@ -40,7 +40,13 @@ import type {
     PostPublicAppStoreAuthorization
 } from './auth/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
-import type { DeleteConnectSession, GetConnectSession, PostConnectSessions, PostInternalConnectSessions } from './connect/api';
+import type {
+    DeleteConnectSession,
+    GetConnectSession,
+    PostConnectSessions,
+    PostInternalConnectSessions,
+    PostPublicConnectSessionsReconnect
+} from './connect/api';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -71,6 +77,7 @@ export type PublicApiEndpoints =
     | GetPublicIntegration
     | DeletePublicIntegration
     | PostConnectSessions
+    | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetConnectSession
     | DeleteConnectSession

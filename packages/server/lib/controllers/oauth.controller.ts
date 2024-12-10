@@ -52,7 +52,7 @@ import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
-import { isIntegrationAllowed } from '../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -61,9 +61,15 @@ class OAuthController {
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        let connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         let userScope = req.query['user_scope'] as string | undefined;
         const isConnectSession = res.locals['authType'] === 'connectSession';
+
+        if (isConnectSession && receivedConnectionId) {
+            errorRestrictConnectionId(res);
+            return;
+        }
 
         let logCtx: LogContext | undefined;
 
@@ -84,7 +90,7 @@ class OAuthController {
                 environmentId: String(environmentId),
                 accountId: String(accountId),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(receivedConnectionId)
+                connectionId
             });
 
             const callbackUrl = await getOauthCallbackUrl(environmentId);
@@ -120,8 +126,6 @@ class OAuthController {
                 }
             }
 
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-
             await logCtx.info('Authorization URL request from the client');
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -153,12 +157,24 @@ class OAuthController {
                 // Session token always win
                 const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
                 userScope = defaults?.user_scopes || undefined;
+
+                // Reconnect mechanism
+                if (res.locals.connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+                    if (!connection) {
+                        await logCtx.error('Invalid connection');
+                        await logCtx.failed();
+                        res.status(400).send({ error: { code: 'invalid_connection' } });
+                        return;
+                    }
+                    connectionId = connection?.connection_id;
+                }
             }
 
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
-                connectionId: connectionId,
+                connectionId,
                 callbackUrl: callbackUrl,
                 authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
@@ -254,10 +270,7 @@ class OAuthController {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
-                metadata: {
-                    providerConfigKey,
-                    connectionId: receivedConnectionId
-                }
+                metadata: { providerConfigKey, connectionId }
             });
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
@@ -268,6 +281,7 @@ class OAuthController {
         const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        let connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -285,6 +299,11 @@ class OAuthController {
         }
 
         const { client_id, client_secret }: Record<string, string> = body;
+
+        if (isConnectSession && receivedConnectionId) {
+            errorRestrictConnectionId(res);
+            return;
+        }
 
         let logCtx: LogContext | undefined;
 
@@ -304,8 +323,6 @@ class OAuthController {
 
                 return;
             }
-
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -347,6 +364,18 @@ class OAuthController {
 
             if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
+            }
+
+            // Reconnect mechanism
+            if (isConnectSession && res.locals.connectSession.connectionId) {
+                const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+                if (!connection) {
+                    await logCtx.error('Invalid connection');
+                    await logCtx.failed();
+                    res.status(400).send({ error: { code: 'invalid_connection' } });
+                    return;
+                }
+                connectionId = connection?.connection_id;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
