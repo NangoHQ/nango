@@ -2775,6 +2775,25 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gerrit:
+    display_name: Gerrit
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.host}
+    docs: https://docs.nango.dev/integrations/all/gerrit
+    docs_connect: https://docs.nango.dev/integrations/all/gerrit/connect
+    connection_config:
+        host:
+            type: string
+            title: Gerrit Host
+            description: The host to where you Gerrit instance is hosted
+            pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
+            example: http://localhost:8080
+            doc_section: '#step-1-finding-your-host'
+            order: 1
+
 guru:
     display_name: Guru
     categories:
