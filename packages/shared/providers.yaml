@@ -6880,6 +6880,17 @@ zapier:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/zapier
+    connection_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Zapier client ID for zap
+        redirectURI:
+            type: string
+            title: Redirect URI
+            description: The redirect URI for your Zapier applicaition
+            pattern: '^[a-zA-Z0-9:/-]+$'
+            example: https://www.nango.dev
 
 zapier-nla:
     display_name: Zapier NLA
