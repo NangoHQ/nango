@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Result } from '@nangohq/utils';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok } from '@nangohq/utils';
+import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok, stringTimingSafeEqual } from '@nangohq/utils';
 import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
 import db from '@nangohq/database';
 import * as connectSessionService from '../services/connectSession.service.js';
@@ -9,6 +9,7 @@ import tracer from 'dd-trace';
 import type { RequestLocals } from '../utils/express.js';
 import type { ConnectSession, DBEnvironment, DBTeam, EndUser } from '@nangohq/types';
 import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
+import { envs } from '../env.js';
 
 const logger = getLogger('AccessMiddleware');
 
@@ -394,7 +395,7 @@ export class AccessMiddleware {
     }
 
     internal(req: Request, res: Response, next: NextFunction) {
-        const key = process.env['NANGO_INTERNAL_API_KEY'];
+        const key = envs.NANGO_INTERNAL_API_KEY;
 
         if (!key) {
             return errorManager.errRes(res, 'internal_private_key_configuration');
@@ -407,7 +408,7 @@ export class AccessMiddleware {
         }
 
         const receivedKey = authorizationHeader.split('Bearer ').pop();
-        if (receivedKey !== key) {
+        if (!receivedKey || !stringTimingSafeEqual(receivedKey, key)) {
             return errorManager.errRes(res, 'invalid_internal_private_key');
         }
 

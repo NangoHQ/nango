@@ -40,15 +40,19 @@ export const postRollout = asyncWrapper<PostRollout>(async (req, res) => {
         return;
     }
 
-    const { fleetId } = params.data;
-    if (fleetId === runnersFleet.fleetId) {
-        const rollout = await runnersFleet.rollout(body.data.commitHash);
-        if (rollout.isErr()) {
-            res.status(500).send({ error: { code: 'rollout_failed', message: rollout.error.message } });
-        } else {
-            res.status(200).send(rollout.value);
-        }
+    const { fleetId }: PostRollout['Params'] = params.data;
+    const { commitHash }: PostRollout['Body'] = body.data;
+
+    if (fleetId !== runnersFleet.fleetId) {
+        res.status(404).send({ error: { code: 'invalid_uri_params', message: 'Unknown fleet' } });
         return;
     }
-    res.status(400).send({ error: { code: 'unknown_fleet', message: 'Unknown fleet' } });
+
+    const rollout = await runnersFleet.rollout(commitHash);
+    if (rollout.isErr()) {
+        res.status(500).send({ error: { code: 'rollout_failed', message: rollout.error.message } });
+    } else {
+        res.status(200).send(rollout.value);
+    }
+    return;
 });

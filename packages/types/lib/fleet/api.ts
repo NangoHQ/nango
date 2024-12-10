@@ -7,6 +7,9 @@ export type PostRollout = Endpoint<{
     Body: {
         commitHash: CommitHash;
     };
+    Params: {
+        fleetId: string;
+    };
     Success: Deployment;
-    Error: ApiError<'forbidden'> | ApiError<'rollout_failed' | 'unknown_fleet'>;
+    Error: ApiError<'forbidden'> | ApiError<'rollout_failed'>;
 }>;
