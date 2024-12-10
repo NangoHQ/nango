@@ -18,10 +18,10 @@ describe('fleet', () => {
         await getTestDbClient(fleetId).clearDatabase();
     });
 
-    describe('deploy', () => {
+    describe('rollout', () => {
         it('should create a new deployment', async () => {
             const commitId = generateCommitHash().unwrap();
-            const deployment = (await fleet.deploy(commitId)).unwrap();
+            const deployment = (await fleet.rollout(commitId)).unwrap();
             expect(deployment.commitId).toBe(commitId);
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);

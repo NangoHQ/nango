@@ -154,6 +154,9 @@ export const ENVS = z.object({
     // Sentry
     SENTRY_DNS: z.string().url().optional(),
 
+    // Internal API
+    NANGO_INTERNAL_API_KEY: z.string().optional(),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: bool,
