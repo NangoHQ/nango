@@ -75,6 +75,12 @@ adobe-umapi:
     docs: https://docs.nango.dev/integrations/all/adobe
     post_connection_script: adobeUmapiPostConnection
     docs_connect: https://docs.nango.dev/integrations/all/adobe-umapi/connect
+    connection_config:
+        clientId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 adyen:
     display_name: Adyen
