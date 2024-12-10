@@ -2953,10 +2953,26 @@ gong:
     proxy:
         base_url: https://api.gong.io
     docs: https://docs.nango.dev/integrations/all/gong
+    docs_connect: https://docs.nango.dev/integrations/all/gong/connect
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: Your Gong Access Key
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
+        password:
+            type: string
+            title: Access Key Secret
+            description: Your Gong Access Key Secret
+            default_value: ''
+            doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
 
 gong-oauth:
     display_name: Gong (oauth)
     auth_mode: OAUTH2
+    categories:
+        - productivity
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
@@ -3198,6 +3214,7 @@ greenhouse-basic:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
     docs: https://docs.nango.dev/integrations/all/greenhouse
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
         resource:
             type: string
@@ -3215,6 +3232,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
+            doc_section: '#step-1-finding-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -3336,7 +3354,21 @@ hibob-service-user:
         verification:
             method: GET
             endpoint: /v1/company/named-lists
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: Your Hibob ID
+            doc_section: '#step-1-finding-your-hibob-service-user-id'
+        password:
+            type: string
+            title: Password
+            description: Your Hibob Token
+            default_value: ''
+            hidden: true
+            doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob
+    docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
 
 highlevel:
     display_name: HighLevel
@@ -3707,6 +3739,7 @@ klaviyo:
             type: string
             title: API Key
             description: The API key for your Klaviyo account
+            doc_section: '#step-1-finding-klaviyo-api-key'
 
 klaviyo-oauth:
     display_name: Klaviyo (oauth)
@@ -3788,6 +3821,19 @@ lever-basic:
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+    docs_connect: https://docs.nango.dev/integrations/all/lever-basic/connect
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: The API Key of your lever account
+            doc_section: '#step-1-finding-lever-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 lever-sandbox:
     display_name: Lever (sandbox)
@@ -4815,15 +4861,18 @@ personio:
     token_url: https://api.personio.de/v1/auth
     body_format: json
     docs: https://docs.nango.dev/integrations/all/personio
+    docs_connect: https://docs.nango.dev/integrations/all/personio/connect
     connection_config:
         partnerId:
             type: string
             title: Partner ID
             description: The partner ID of your Personio account
+            doc_section: '#step-1-finding-personio-client-id'
         appId:
             type: string
             title: App ID
             description: The app ID of your Personio account
+            doc_section: '#step-2-finding-personio-client-secret'
 
 personio-v2:
     display_name: Personio (v2)
@@ -5090,14 +5139,16 @@ quickbooks:
             realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    docs_connect: https://docs.nango.dev/integrations/all/quickbooks/connect
     connection_config:
         realmId:
             type: string
             title: Quickbooks Realm ID
             optional: true
-            description: The realmId of your quickbooks account
+            description: The realmId of your quickbooks company
             pattern: '^\d{16}$'
             example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 quickbooks-sandbox:
     alias: quickbooks
@@ -5107,14 +5158,16 @@ quickbooks-sandbox:
             realmId: ${connectionConfig.realmId}
         base_url: https://sandbox-quickbooks.api.intuit.com
     docs: https://docs.nango.dev/integrations/all/quickbooks
+    docs_connect: https://docs.nango.dev/integrations/all/quickbooks-sandbox/connect
     connection_config:
         realmId:
             type: string
             title: Quickbooks Realm ID
             optional: true
-            description: The realmId of your quickbooks account
+            description: The realmId of your quickbooks sandbox company
             pattern: '^\d{16}$'
             example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 ragieai:
     display_name: Ragie AI
@@ -5328,11 +5381,13 @@ sage-intacct:
         token_expiration: response.operation.authentication.sessiontimeout
         token_expiration_strategy: expireAt
     docs: https://docs.nango.dev/integrations/all/sage
+    docs_connect: https://docs.nango.dev/integrations/all/sage-intacct/connect
     credentials:
         senderId:
             type: string
             title: Sender ID
             description: Your Sage Intacct Sender ID
+            doc_section: '#step-1-how-to-retrieve-the-sender-id'
         senderPassword:
             type: string
             title: Sender Password
@@ -5342,10 +5397,12 @@ sage-intacct:
             type: string
             title: User ID
             description: Your Sage Intacct User ID
+            doc_section: '#step-2-how-to-retrieve-the-user-id'
         companyId:
             type: string
             title: Company ID
             description: Your Sage Intacct Company ID
+            doc_section: '#step-3-how-to-retrieve-the-company-id'
         userPassword:
             type: string
             title: User Password
@@ -6690,11 +6747,24 @@ woocommerce:
             method: GET
             endpoint: /wp-json/wc/v3/customers
     docs: https://docs.nango.dev/integrations/all/woocommerce
+    docs_connect: https://docs.nango.dev/integrations/all/woocommerce/connect
     connection_config:
         storeURL:
             type: string
             title: Domain
             description: The domain of your WooCommerce store
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: Your woocommerce Consumer Key
+            doc_section: '#step-1-finding-your-woocommerce-consumer-key'
+        password:
+            type: string
+            title: Password
+            description: Your woocommerce Consumer Secret
+            default_value: ''
+            doc_section: '#step-2-finding-your-woocommerce-consumer-secret'
 
 workable:
     display_name: Workable
@@ -6709,6 +6779,7 @@ workable:
             at: 'x-rate-limit-reset'
     post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
+    docs_connect: https://docs.nango.dev/integrations/all/workable/connect
     connection_config:
         subdomain:
             type: string
@@ -6724,6 +6795,7 @@ workable:
             type: string
             title: API Key
             description: The API key for your Workable account
+            doc_section: '#step-1-finding-workable-api-key'
 
 workable-oauth:
     display_name: Workable (OAuth)
@@ -6762,6 +6834,7 @@ workday:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
     docs: https://docs.nango.dev/integrations/all/workday
+    docs_connect: https://docs.nango.dev/integrations/all/workday/connect
     connection_config:
         subdomain:
             type: string
@@ -6771,6 +6844,17 @@ workday:
             example: domain
             suffix: .workday.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: User Name
+            description: Workday Client ID
+            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
+        password:
+            type: string
+            title: Password
+            description: Workday Client Secret
+            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
 
 wrike:
     display_name: Wrike
@@ -7057,3 +7141,4 @@ zoominfo:
     token_request_auth_method: custom
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
+    docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect

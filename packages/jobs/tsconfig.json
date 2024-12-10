@@ -37,6 +37,9 @@
         },
         {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../fleet"
         }
     ],
     "include": ["lib/**/*"]
