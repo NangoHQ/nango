@@ -3305,11 +3305,13 @@ harvest:
             after: 'retry-after'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
+    docs_connect: https://docs.nango.dev/integrations/all/harvest/connect
     connection_config:
         appDetails:
             type: string
             title: App Details
             description: The details of your app
+            doc_section: '#step-1-creating-app-details'
 
 health-gorilla:
     display_name: Health Gorilla
