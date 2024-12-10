@@ -71,7 +71,7 @@ export class Supervisor {
                 await setTimeout(1000);
             }
         };
-        await Promise.race([waitForStopped(), setTimeout(60000)]);
+        await Promise.race([waitForStopped(), setTimeout(envs.FLEET_SUPERVISOR_TIMEOUT_STOP_MS)]);
 
         logger.info('Fleet supervisor stopped');
     }
@@ -107,15 +107,15 @@ export class Supervisor {
                 fn: async () => {
                     return await this.tick();
                 },
-                timeoutMs: envs.FLEET_TIMEOUT_TICK_MS,
+                timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
                 onTimeout: () => {
                     this.tickCancelled = true;
                     return Promise.resolve();
                 }
             });
             if (res.isErr()) {
-                await setTimeout(1000);
-                logger.error('Supervisor error:', res.error);
+                await setTimeout(envs.FLEET_SUPERVISOR_RETRY_DELAY_MS);
+                logger.warning('Fleet supervisor:', res.error);
             }
         }
         this.state = 'stopped';

@@ -78,10 +78,18 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 1000), // 1 minute
-    FLEET_TIMEOUT_TICK_MS: z.coerce
+    FLEET_SUPERVISOR_TIMEOUT_TICK_MS: z.coerce
         .number()
         .optional()
         .default(60 * 1000), // 1 minute
+    FLEET_SUPERVISOR_TIMEOUT_STOP_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 1000), // 1 minute
+    FLEET_SUPERVISOR_RETRY_DELAY_MS: z.coerce
+        .number()
+        .optional()
+        .default(5 * 1000), // 5 seconds
 
     // --- Third parties
     // AWS

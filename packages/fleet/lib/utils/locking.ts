@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { Ok, Err, stringToHash } from '@nangohq/utils';
+import { Err, stringToHash } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from './errors.js';
@@ -24,8 +24,7 @@ export async function withPgLock({
 
         if (!rows?.[0]?.lock) {
             await trx.rollback();
-            await setTimeout(1000);
-            return Ok(undefined);
+            return Err(new FleetError('fleet_cannot_acquire_lock'));
         }
 
         const processingTimeout = async (): Promise<Result<void>> => {
@@ -40,6 +39,6 @@ export async function withPgLock({
         if (trx) {
             await trx.rollback();
         }
-        throw error;
+        return Err(new FleetError('fleet_lock_error', { cause: error }));
     }
 }

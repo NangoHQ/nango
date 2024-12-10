@@ -21,6 +21,8 @@ type FleetErrorCode =
     | 'fleet_node_url_not_found'
     | 'fleet_node_outdate_failed'
     | 'fleet_tick_timeout'
+    | 'fleet_cannot_acquire_lock'
+    | 'fleet_lock_error'
     | 'local_runner_start_failed';
 
 export class FleetError extends Error {
