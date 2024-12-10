@@ -546,7 +546,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, empty_cache } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -580,7 +580,7 @@ class SyncController {
                 await logCtx.error('Unauthorized access to run the command');
                 await logCtx.failed();
 
-                res.sendStatus(401);
+                res.status(401).json({ error: { code: 'forbidden' } });
                 return;
             }
 
@@ -591,7 +591,8 @@ class SyncController {
                 environmentId: environment.id,
                 logCtx,
                 recordsService,
-                initiator: 'UI'
+                initiator: 'UI',
+                empty_cache
             });
 
             if (result.isErr()) {
@@ -629,7 +630,7 @@ class SyncController {
                 schedule_id
             });
 
-            res.sendStatus(200);
+            res.status(200).json({ data: { success: true } });
         } catch (err) {
             if (logCtx) {
                 await logCtx.error('Failed to sync command', { error: err });

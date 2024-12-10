@@ -10,7 +10,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { Info } from '../../components/Info';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { Syncs } from './Syncs';
 import { Authorization } from './Authorization';
@@ -49,7 +49,7 @@ export const ConnectionShow: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
-    const { data: syncs, error: errorSyncs, loading: loadingSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { data: syncs, error: errorSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
     const { mutate: listIntegrationMutate } = useListIntegration(env);
 
     // Modal delete
@@ -121,7 +121,7 @@ export const ConnectionShow: React.FC = () => {
         await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
     };
 
-    if (loading || loadingSyncs) {
+    if (loading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Helmet>
@@ -152,7 +152,7 @@ export const ConnectionShow: React.FC = () => {
         return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.Connections} />;
     }
 
-    if (!connection || !syncs) {
+    if (!connection) {
         return null;
     }
 
@@ -223,17 +223,19 @@ export const ConnectionShow: React.FC = () => {
                 </div>
             </div>
 
-            <section className="mt-14">
-                <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
+            <section className="mt-12">
+                <ul className="flex text-gray-400 text-sm cursor-pointer">
                     <li
-                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center px-4 text-test2 py-2 rounded ${activeTab === Tabs.Syncs ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
-                        {syncs.some((sync) => sync.active_logs?.log_id) && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                        {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
+                            <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
+                        )}
                     </li>
                     <li
-                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center px-4 py-2  rounded ${activeTab === Tabs.Authorization ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Authorization)}
                     >
                         Authorization
@@ -243,7 +245,11 @@ export const ConnectionShow: React.FC = () => {
             </section>
 
             {!slackIsConnected && !isHosted() && showSlackBanner && (
-                <Info className="mt-4" onClose={() => setShowSlackBanner(false)} icon={<IntegrationLogo provider="slack" height={6} width={6} />}>
+                <Info
+                    className="mt-6"
+                    onClose={() => setShowSlackBanner(false)}
+                    icon={<IntegrationLogo provider="slack" height={5} width={5} classNames="mt-0.5" />}
+                >
                     Receive instant monitoring alerts on Slack.{' '}
                     <button
                         disabled={slackIsConnecting}
@@ -255,15 +261,12 @@ export const ConnectionShow: React.FC = () => {
                 </Info>
             )}
 
-            <section className="mt-10">
+            <section className="mt-6">
                 {activeTab === Tabs.Syncs && <Syncs syncs={syncs} connection={connection.connection} provider={connection.provider} />}
                 {activeTab === Tabs.Authorization && (
                     <Authorization endUser={connection.endUser} connection={connection.connection} errorLog={connection.errorLog} />
                 )}
             </section>
-            <Helmet>
-                <style>{'.no-border-modal footer { border-top: none !important; }'}</style>
-            </Helmet>
         </DashboardLayout>
     );
 };

@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { useResetPasswordAPI } from '../../utils/api';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Password } from './components/Password';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { Helmet } from 'react-helmet';
 
 export default function ResetPassword() {

@@ -5,7 +5,7 @@ import { InfoBloc } from '../../../../../components/InfoBloc';
 import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
 import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { DeleteIntegrationButton } from './Delete';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { useState } from 'react';
 import { useStore } from '../../../../../store';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';

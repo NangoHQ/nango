@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { GetIntegration } from '@nangohq/types';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { formatDateToInternationalFormat } from '../../../../../utils/utils';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { Input } from '../../../../../components/ui/input/Input';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';

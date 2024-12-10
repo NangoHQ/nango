@@ -11,7 +11,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { MultiSelect } from '../../components/MultiSelect';
 
 import { useStore } from '../../store';
-import Button from '../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
 import { formatDateToInternationalFormat } from '../../utils/utils';
 import { useDebounce } from 'react-use';
 import { useListIntegration } from '../../hooks/useIntegration';
@@ -219,12 +219,10 @@ export const ConnectionList: React.FC = () => {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    <Link to={`/${env}/connections/create`}>
-                        <Button>
-                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Test Connection
-                        </Button>
-                    </Link>
+                    <ButtonLink to={`/${env}/connections/create`}>
+                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                        Add Test Connection
+                    </ButtonLink>
                 </div>
             </div>
             {connections && (connections.length > 0 || hasFiltered) && (
@@ -364,12 +362,10 @@ export const ConnectionList: React.FC = () => {
                         , or manually here.
                     </div>
                     <div className="flex my-2 items-center bg-white rounded-md">
-                        <Link to={`/${env}/connections/create`}>
-                            <Button className="rounded-r-none">
-                                <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                                Add Test Connection
-                            </Button>
-                        </Link>
+                        <ButtonLink to={`/${env}/connections/create`}>
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                            Add Test Connection
+                        </ButtonLink>
                     </div>
                 </div>
             )}

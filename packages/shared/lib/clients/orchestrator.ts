@@ -559,7 +559,8 @@ export class Orchestrator {
         environmentId,
         logCtx,
         recordsService,
-        initiator
+        initiator,
+        empty_cache
     }: {
         connectionId: number;
         syncId: string;
@@ -568,6 +569,7 @@ export class Orchestrator {
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
+        empty_cache?: boolean;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
@@ -600,10 +602,12 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    const syncConfig = await getSyncConfigBySyncId(syncId);
-                    for (const model of syncConfig?.models || []) {
-                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                        await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                    if (empty_cache) {
+                        const syncConfig = await getSyncConfigBySyncId(syncId);
+                        for (const model of syncConfig?.models || []) {
+                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                        }
                     }
 
                     res = await this.client.executeSync({ scheduleName });

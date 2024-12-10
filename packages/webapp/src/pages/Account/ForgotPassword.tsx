@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useRequestPasswordResetAPI } from '../../utils/api';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Input } from '../../components/ui/input/Input';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { Helmet } from 'react-helmet';
 
 export default function Signin() {
