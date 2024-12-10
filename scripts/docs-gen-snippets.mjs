@@ -41,7 +41,8 @@ for (const file of files) {
         }
         const authMode = providers[provider].auth_mode;
         const prettyAuthMode = prettyAuthModes[authMode] || authMode;
-        const toolingSnippet = preBuiltToolingSnippet({ prettyAuthMode });
+        const hasUseCases = useCases[provider] && useCases[provider].length > 0;
+        const toolingSnippet = preBuiltToolingSnippet({ prettyAuthMode, hasUseCases });
 
         await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
         await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
@@ -51,7 +52,7 @@ for (const file of files) {
     }
 }
 
-function preBuiltToolingSnippet({ prettyAuthMode }) {
+function preBuiltToolingSnippet({ prettyAuthMode, hasUseCases }) {
     return `## Pre-built tooling
 
             <AccordionGroup>  
@@ -70,7 +71,7 @@ function preBuiltToolingSnippet({ prettyAuthMode }) {
                 <Accordion title="✅ Read & write data">
                     | Tools | Status | 
                     | - | - | 
-                    | Pre-built use-cases | ✅ |
+                    | Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)])'} |
                     | API unification | ✅ |
                     | 2-way sync | ✅ |
                     | Webhooks from Nango on data modifications | ✅ |
