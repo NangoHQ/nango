@@ -2620,7 +2620,7 @@ fortnox:
         grant_type: refresh_token
     proxy:
         base_url: https://api.fortnox.se/3
-    docs: https://www.fortnox.se/developer/authorization
+    docs: https://docs.nango.dev/integrations/all/fortnox
 
 freshbooks:
     display_name: FreshBooks
