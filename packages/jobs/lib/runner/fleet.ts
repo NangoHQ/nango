@@ -1,8 +1,16 @@
-import type { NodeProvider } from '@nangohq/fleet';
 import { Fleet } from '@nangohq/fleet';
 import { envs } from '../env.js';
 import { localNodeProvider } from './local.js';
+import { renderNodeProvider } from './render.js';
 
-const nodeProvider: NodeProvider | undefined = envs.RUNNER_TYPE === 'LOCAL' ? localNodeProvider : undefined;
-
-export const runnersFleet = new Fleet({ fleetId: 'nango_runners', nodeProvider });
+const fleetId = 'nango_runners';
+export const runnersFleet = (() => {
+    switch (envs.RUNNER_TYPE) {
+        case 'LOCAL':
+            return new Fleet({ fleetId, nodeProvider: localNodeProvider });
+        case 'RENDER':
+            return new Fleet({ fleetId, nodeProvider: renderNodeProvider });
+        default:
+            return new Fleet({ fleetId });
+    }
+})();

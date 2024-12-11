@@ -6,7 +6,11 @@ import { noopNodeProvider } from './node-providers/noop.js';
 
 describe('fleet', () => {
     const fleetId = 'nango_runners';
-    const fleet = new Fleet({ fleetId, dbUrl: testDbUrl, nodeProvider: noopNodeProvider });
+    const fleet = new Fleet({
+        fleetId,
+        dbUrl: testDbUrl,
+        nodeProvider: noopNodeProvider
+    });
 
     beforeAll(async () => {
         await fleet.migrate();

@@ -35,4 +35,8 @@ export class RenderAPI {
     async resumeService(params: { serviceId: string }): Promise<AxiosResponse> {
         return await this.httpClient.post(`/services/${params.serviceId}/resume`, {});
     }
+
+    async deleteService(params: { serviceId: string }): Promise<AxiosResponse> {
+        return await this.httpClient.delete(`/services/${params.serviceId}`, {});
+    }
 }
