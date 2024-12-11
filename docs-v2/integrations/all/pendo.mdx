@@ -1,32 +1,47 @@
 ---
 title: Pendo
 sidebarTitle: Pendo
+provider: pendo
 ---
 
-API configurations: [`pendo`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/pendo/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/pendo/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pendo.mdx)</Note>
+
+
+## Useful links
 
 -   [Pendo Auth docs](https://engageapi.pendo.io/#getting-started)
 -   [API docs](https://engageapi.pendo.io/#pendo-api-overview)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pendo.mdx)</Note>
 
 ## API gotchas
 
 - Pendo uses `API_KEY` auth mode where `x-pendo-integration-key`: `API key` is passed to the request header for Authentication.
 - The main URL used to access the Pendo API corresponds to the region and web address you use when logging into Pendo's UI. The baseUrl is set to `https://app.pendo.io` but you can override it using `baseUrlOverride`.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pendo.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/pendo.mdx)</Note>

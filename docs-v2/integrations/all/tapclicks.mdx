@@ -1,32 +1,47 @@
 ---
 title: Tapclicks
 sidebarTitle: Tapclicks
+provider: tapclicks
 ---
 
-API configurations: [`tapclicks`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/tapclicks/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/tapclicks/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tapclicks.mdx)</Note>
+
+
+## Useful links
 
 -   [OAuth related docs](https://apidocs.tapclicks.com/v2/6.27/index.html#section/AUTHENTICATION)
 -   [Tapclicks REST API docs](https://apidocs.tapclicks.com/v2/6.27/index.html)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tapclicks.mdx)</Note>
 
 ## API gotchas
 -   To get started, you need to request your API credentials by filling a form found in the [OAuth2 Client Credentials section](https://apidocs.tapclicks.com/v2/6.27/index.html#section/AUTHENTICATION/oAuth2ClientCredentials)
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tapclicks.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/tapclicks.mdx)</Note>
 
 ## Going further
 

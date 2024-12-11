@@ -1,29 +1,44 @@
 ---
 title: Battlenet
 sidebarTitle: Battlenet
+provider: battlenet
 ---
 
-API configuration: [`battlenet`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/battlenet/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/battlenet/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/battlenet.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://develop.battle.net/documentation/guides/getting-started)
 -   [OAuth-related docs](https://develop.battle.net/documentation/guides/using-oauth)
 -   [List of OAuth scopes](https://develop.battle.net/documentation/guides/using-oauth#:~:text=Scopes%20and%20OAuth%20enabled%20APIs)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/battlenet.mdx)</Note>
 
 ## Connection configuration in Nango
 
@@ -41,4 +56,4 @@ For more details, see the [docs here](/guides/getting-started/authorize-an-api-f
 
 -   Tokens cannot be refreshed, hence when the token expires, resource owners will have to go through the authorize flow again.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/battlenet.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/battlenet.mdx)</Note>

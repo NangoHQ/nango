@@ -1,32 +1,47 @@
 ---
 title: Beehiiv
 sidebarTitle: Beehiiv
+provider: beehiiv
 ---
 
-API configuration: [`beehiiv`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/beehiiv/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/beehiiv/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/beehiiv.mdx)</Note>
+
+
+## Useful links
 
 -   [How to create an API Key](https://developers.beehiiv.com/welcome/create-an-api-key)
 -   [Beehiiv API docs](https://developers.beehiiv.com/api-reference/automation-journeys/create)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/beehiiv.mdx)</Note>
 
 ## API gotchas
 
 - Beehiiv uses `API_KEY` auth mode with `Authorization: Bearer ${apiKey}` in the request header to access different endpoints.
 - When creating a new connection in Nango, please add your `publicationId` which will be used to identify your publication when you’re using Beehiiv API, you can obtain this within the API page.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/beehiiv.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/beehiiv.mdx)</Note>
