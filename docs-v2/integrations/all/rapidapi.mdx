@@ -1,31 +1,46 @@
 ---
 title: RapidAPI
 sidebarTitle: RapidAPI
+provider: rapidapi
 ---
 
-API configuration: [`rapidapi`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/rapidapi/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/rapidapi/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/rapidapi.mdx)</Note>
+
+
+## Useful links
 
 -   [RapidAPI docs](https://docs.rapidapi.com)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/rapidapi.mdx)</Note>
 
 ## API gotchas
 
 - RapidAPI needs the host of the API in format e.g `covid-19-data.p.rapidapi.com`.
 - RapidAPI uses API_KEY auth mode with x-rapidapi-key: `api_key` in the request header to access different endpoints.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/rapidapi.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/rapidapi.mdx)</Note>

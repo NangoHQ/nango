@@ -1,28 +1,43 @@
 ---
 title: Databricks
 sidebarTitle: Databricks
+provider: databricks-workspace
 ---
 
-API configurations: [`databricks-account`](https://nango.dev/providers.yaml), [`databricks-workspace`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/databricks/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/databricks/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/databricks.mdx)</Note>
+
+
+## Useful links
 
 -   [OAuth related docs](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html)
 -   [Databricks API docs](https://docs.databricks.com/api/workspace/introduction)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/databricks.mdx)</Note>
 
 ## API gotchas
 
@@ -30,4 +45,4 @@ API configurations: [`databricks-account`](https://nango.dev/providers.yaml), [`
 -   For the account level, the `accountId` can be obtained by clicking on the down arrow next to your username in the upper-right corner.
 -   For the workspace level, `databricksInstance` refers to the workspace URL of your Databricks deployment. For more details, please visit [Get identifiers for workspace objects](https://docs.databricks.com/en/workspace/workspace-details.html#workspace-url)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/databricks.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/databricks.mdx)</Note>

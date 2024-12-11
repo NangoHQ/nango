@@ -1,29 +1,44 @@
 ---
 title: Expensify
 sidebarTitle: Expensify
+provider: expensify
 ---
 
-API configuration: [`expensify`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/expensify/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/expensify/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/expensify.mdx)</Note>
+
+
+## Useful links
 
 -   [Generate API credentials](https://www.expensify.com/tools/integrations)
 -   [API docs](https://integrations.expensify.com/Integration-Server/doc)
 -   [Auth-related docs](https://integrations.expensify.com/Integration-Server/doc/#authentication)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/expensify.mdx)</Note>
 
 
 ## API gotchas
@@ -63,7 +78,7 @@ let credentials: { partnerUserID?: string; partnerUserSecret?: string } = {};
 - Every request has to be made against the same endpoint.
 - Expensify enforces a general rate limit of 50 jobs started per minute.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/expensify.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/expensify.mdx)</Note>
 
 <Card title="Connect to expensify" icon="link" href="/integrations/all/expensify/connect" horizontal>
   Guide to connect to Expensify using Nango Connect.

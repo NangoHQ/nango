@@ -1,30 +1,45 @@
 ---
 title: ThriveCart
 sidebarTitle: ThriveCart
+provider: thrivecart-oauth
 ---
 
-API configurations: [`thrivecart-oauth`](https://nango.dev/providers.yaml), [`thrivecart-api-key`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltTooling from "/snippets/generated/thrivecart/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/thrivecart/PreBuiltUseCases.mdx"
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth + Api Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Overview />
+<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+<PreBuiltUseCases />
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-## Getting started
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/thrivecart.mdx)</Note>
+
+
+## Useful links
 
 -   [Register an Application in your ThriveCart developer account](https://developers.thrivecart.com/apps/create/)
 -   [OAuth-related docs](https://developers.thrivecart.com/documentation/intro/authentication-via-oauth/)
 -   [Authentication via API key](https://developers.thrivecart.com/documentation/intro/authentication-via-api-key/)
 -   [ThriveCart API docs](https://apidocs.thrivecart.com/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/thrivecart.mdx)</Note>
 
 ## API gotchas
 
@@ -32,4 +47,4 @@ API configurations: [`thrivecart-oauth`](https://nango.dev/providers.yaml), [`th
 -   If you want to access your own account, you can create an API key from the settings area inside of ThriveCart, and use this to authenticate your APIs.
 -   ThriveCart enforces a general rate limit of 60 requests per minute for each account that is connected to the service.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/thrivecart.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/thrivecart.mdx)</Note>
