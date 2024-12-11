@@ -14,7 +14,7 @@ import { envs } from './env.js';
 import { withPgLock } from './utils/locking.js';
 
 type Operation =
-    | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment; nodeConfig: NodeConfig }
+    | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment; nodeConfig?: NodeConfig | undefined }
     | { type: 'START'; node: Node }
     | { type: 'FAIL'; node: Node; reason: 'starting_timeout_reached' | 'pending_timeout_reached' | 'idle_timeout_reached' }
     | { type: 'OUTDATE'; node: Node }
@@ -45,12 +45,10 @@ export class Supervisor {
     private dbClient: DatabaseClient;
     private tickCancelled: boolean = false;
     public nodeProvider: NodeProvider;
-    public defaultNodeConfig: NodeConfig;
 
-    constructor({ dbClient, nodeProvider, defaultNodeConfig }: { dbClient: DatabaseClient; nodeProvider: NodeProvider; defaultNodeConfig: NodeConfig }) {
+    constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
         this.dbClient = dbClient;
         this.nodeProvider = nodeProvider;
-        this.defaultNodeConfig = defaultNodeConfig;
     }
 
     public async start(): Promise<void> {
@@ -189,7 +187,7 @@ export class Supervisor {
 
             // if OUTDATED node but no RUNNING or upcoming nodes then create a new one
             if ((nodes.OUTDATED?.length || 0) > 0 && (nodes.RUNNING?.length || 0) + (nodes.STARTING?.length || 0) + (nodes.PENDING?.length || 0) === 0) {
-                plan.push({ type: 'CREATE', routingId, deployment, nodeConfig: this.defaultNodeConfig });
+                plan.push({ type: 'CREATE', routingId, deployment });
             }
 
             // Warn about old finishing nodes
@@ -290,18 +288,14 @@ export class Supervisor {
         db: Knex,
         {
             routingId,
-            deployment,
-            nodeConfig
+            deployment
         }: {
             type: 'CREATE';
             routingId: Node['routingId'];
             deployment: Deployment;
-            nodeConfig?: NodeConfig | undefined;
         }
     ): Promise<Result<Node>> {
-        if (!nodeConfig) {
-            nodeConfig = this.defaultNodeConfig;
-        }
+        const nodeConfig = this.nodeProvider.defaultNodeConfig;
         return nodes.create(db, {
             routingId,
             deploymentId: deployment.id,

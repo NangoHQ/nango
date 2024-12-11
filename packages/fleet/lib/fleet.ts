@@ -4,7 +4,7 @@ import { DatabaseClient } from './db/client.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
 import type { Node } from './types.js';
-import type { CommitHash, Deployment, NodeConfig, RoutingId } from '@nangohq/types';
+import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
 import { Supervisor } from './supervisor.js';
@@ -12,6 +12,7 @@ import type { NodeProvider } from './node-providers/node_provider.js';
 import type { FleetId } from './instances.js';
 import { envs } from './env.js';
 import { withPgLock } from './utils/locking.js';
+import { noopNodeProvider } from './node-providers/noop.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
@@ -24,17 +25,15 @@ export class Fleet {
     constructor({
         fleetId,
         dbUrl = defaultDbUrl,
-        nodeSetup
+        nodeProvider = noopNodeProvider
     }: {
         fleetId: FleetId;
         dbUrl?: string | undefined;
-        nodeSetup?: { nodeProvider: NodeProvider; defaultNodeConfig: NodeConfig } | undefined;
+        nodeProvider?: NodeProvider;
     }) {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
-        if (nodeSetup) {
-            this.supervisor = new Supervisor({ dbClient: this.dbClient, defaultNodeConfig: nodeSetup.defaultNodeConfig, nodeProvider: nodeSetup.nodeProvider });
-        }
+        this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
     }
 
     public async migrate(): Promise<void> {

@@ -10,6 +10,13 @@ import { getProvidersUrl } from '@nangohq/shared';
 const localRunnerPids = new Map<number, number>(); // Mapping Node.id to process PID
 
 export const localNodeProvider: NodeProvider = {
+    defaultNodeConfig: {
+        // irrelevant for local runner
+        image: 'my-image',
+        cpuMilli: 500,
+        memoryMb: 512,
+        storageMb: 20000
+    },
     start: async (node) => {
         try {
             // Random port to avoid conflicts with other fleet runners accross local execution

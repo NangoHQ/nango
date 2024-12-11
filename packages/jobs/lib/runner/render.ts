@@ -10,6 +10,12 @@ import { isAxiosError } from 'axios';
 const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
 
 export const renderNodeProvider: NodeProvider = {
+    defaultNodeConfig: {
+        image: 'nangohq/nango-runner',
+        cpuMilli: 500,
+        memoryMb: 512,
+        storageMb: 20000
+    },
     start: async (node) => {
         if (!envs.RUNNER_OWNER_ID) {
             throw new Error('RUNNER_OWNER_ID is not set');
