@@ -1,5 +1,16 @@
-## Pre-built use-cases
 
-_No pre-built use-cases yet (time to contribute: &lt;48h)_
+## Pre-built use cases
 
-<Tip>Not seeing the use-case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+<AccordionGroup>
+
+
+<Accordion title="Transactions">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /transactions` | Creates a new transaction | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/create-transaction.md) |
+| `PUT /transactions` | Marks a transaction by changing its status to Committed | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/commit-transaction.md) |
+| `DELETE /transactions` | Voids the current transaction uniquely identified by the transactionCode | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/void-transaction.md) |
+| `GET /transactions` | List all transactions with a default backfill date of one year. | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/transactions.md) |
+</Accordion>
+
+</AccordionGroup>

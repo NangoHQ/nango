@@ -38,6 +38,10 @@ for (const file of files) {
 
         // find the integration line
         const providerLine = lines.find((line) => line.startsWith('provider: '));
+        if (!providerLine) {
+            throw new Error(`No provider line found in ${file}`);
+        }
+
         const provider = providerLine.split('provider: ')[1].trim();
 
         // write pre-built tooling snippet for the integration
