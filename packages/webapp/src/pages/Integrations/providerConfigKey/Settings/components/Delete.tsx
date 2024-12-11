@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { apiDeleteIntegration } from '../../../../../hooks/useIntegration';
 import type { ApiIntegration } from '@nangohq/types';
 import { useToast } from '../../../../../hooks/useToast';

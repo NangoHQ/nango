@@ -21,7 +21,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { useStore } from '../../store';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { connectSlack } from '../../utils/slack-connection';
 import WebhookCheckboxes from './WebhookCheckboxes';

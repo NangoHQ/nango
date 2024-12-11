@@ -1,5 +1,5 @@
 import { ArrowLeftIcon, CheckCircledIcon, GearIcon, Pencil1Icon, QuestionMarkCircledIcon } from '@radix-ui/react-icons';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from '../../../../../components/ui/Drawer';
 import { InfoBloc } from '../../../../../components/InfoBloc';
