@@ -22,7 +22,7 @@ export async function apiRunSyncCommand(
         sync_id: string;
         sync_name: string;
         provider: string;
-        empty_cache?: boolean;
+        delete_records?: boolean;
     }
 ) {
     const res = await apiFetch(`/api/v1/sync/command?env=${env}`, {

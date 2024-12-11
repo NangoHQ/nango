@@ -31,7 +31,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
     const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type === 'full' ? 'full' : 'incremental');
-    const [emptyCache, setEmptyCache] = useState(false);
+    const [deleteRecords, setDeleteRecords] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
 
@@ -59,14 +59,14 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                       sync_id: sync.id,
                       sync_name: sync.name,
                       provider,
-                      empty_cache: emptyCache
+                      delete_records: deleteRecords
                   });
 
         if (res.res.status === 200) {
             await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
             toast({ title: `The full resync was successfully triggered`, variant: 'success' });
         } else {
-            const data = await res.json;
+            const data = res.json;
             toast({ title: data.error.message, variant: 'error' });
         }
 
@@ -103,7 +103,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
             const niceCommand = UserFacingSyncCommand[command];
             toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
         } else {
-            const data = await res.json;
+            const data = res.json;
             toast({ title: data.error.message, variant: 'error' });
         }
 
@@ -273,8 +273,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                 </label>
                                                                 <Checkbox
                                                                     id="emptycache"
-                                                                    checked={emptyCache}
-                                                                    onCheckedChange={(e) => setEmptyCache(e === true)}
+                                                                    checked={deleteRecords}
+                                                                    onCheckedChange={(e) => setDeleteRecords(e === true)}
                                                                 />
                                                             </div>
                                                             <DialogDescription>

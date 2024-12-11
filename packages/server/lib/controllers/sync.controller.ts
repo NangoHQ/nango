@@ -546,7 +546,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, empty_cache } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -592,7 +592,7 @@ class SyncController {
                 logCtx,
                 recordsService,
                 initiator: 'UI',
-                empty_cache
+                delete_records
             });
 
             if (result.isErr()) {
