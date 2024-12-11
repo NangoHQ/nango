@@ -8875,7 +8875,8 @@ integrations:
                 id: string
                 assigneeId: string | null
                 creatorId: string | null
-                createdAt: date
+                createdAt: string
+                updatedAt: string
                 description: string | null
                 dueDate: date | null
                 projectId: string | null
