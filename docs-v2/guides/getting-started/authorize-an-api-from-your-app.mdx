@@ -195,6 +195,19 @@ api.post('/sessionToken', (req, res) => {
 
 </Tabs>
 
+<Accordion title="Reconnect using a custom UI">
+When building a custom UI you will still call the same method, without a `connection_id`. For legacy reason it's still mandatory to pass the integrationId.
+
+```ts
+const nango = new Nango({ connectSessionToken });
+await nango.auth('<INTEGRATION-ID>');
+```
+
+<Info>
+This method of reconnecting is only compatible with connections created with a session token.
+</Info>
+</Accordion>
+
 # You are ready
 
 You have successfully set up the authorization flow for your users. Next steps:
