@@ -73,11 +73,14 @@ adobe-umapi:
             after: 'retry-after'
         base_url: https://usermanagement.adobe.io
     docs: https://docs.nango.dev/integrations/all/adobe
+    post_connection_script: adobeUmapiPostConnection
+    docs_connect: https://docs.nango.dev/integrations/all/adobe-umapi/connect
     connection_config:
         clientId:
             type: string
-            title: Client ID
-            description: The Client ID from the OAuth Server-to-Server enabled project on developer portal
+            title: ''
+            description: ''
+            automated: true
 
 adyen:
     display_name: Adyen
@@ -2782,6 +2785,9 @@ gerrit:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.host}
+        verification:
+            method: GET
+            endpoint: /config/server/version
     docs: https://docs.nango.dev/integrations/all/gerrit
     docs_connect: https://docs.nango.dev/integrations/all/gerrit/connect
     connection_config:
