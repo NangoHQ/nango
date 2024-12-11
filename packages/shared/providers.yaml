@@ -2782,6 +2782,9 @@ gerrit:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.host}
+        verification:
+            method: GET
+            endpoint: /config/server/version
     docs: https://docs.nango.dev/integrations/all/gerrit
     docs_connect: https://docs.nango.dev/integrations/all/gerrit/connect
     connection_config:
