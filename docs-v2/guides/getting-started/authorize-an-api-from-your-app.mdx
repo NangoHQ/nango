@@ -147,10 +147,11 @@ For each successful authorization, persist the `connectionId` value alongside it
 
 If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
 
-# Reconnect a Connection ID
+# Reconnect an existing connection
 
-Nango automatically refreshes OAuth tokens. However, other types of credentials can expire, or permissions may change, so you might need to reconnect your users periodically.
-In **your backend**, update the previously created endpoint to call a different method that retrieves a specific token for this purpose. This token is then used in the same way on the frontend.
+When testing or troubleshooting an issue, you may need a user to re-authorize an API. Nango allows you to do this without deleting and recreating the connection. Instead, you can reconnect an existing connection while preserving its metadata and configuration.
+
+In **your backend**, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a session token specifically for reconnecting a user. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
 
 <Tabs>
 
