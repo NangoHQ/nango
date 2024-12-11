@@ -2,35 +2,46 @@ import type { DatabaseClient } from './db/client.js';
 import { logger } from './utils/logger.js';
 import * as nodes from './models/nodes.js';
 import * as deployments from './models/deployments.js';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from './utils/errors.js';
-import type { Deployment, Node } from './types.js';
+import type { Node } from './types.js';
+import type { Deployment } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from './node-providers/node_provider.js';
+import { envs } from './env.js';
+import { withPgLock } from './utils/locking.js';
 
 type Operation =
     | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment }
     | { type: 'START'; node: Node }
     | { type: 'FAIL'; node: Node; reason: 'starting_timeout_reached' }
     | { type: 'OUTDATE'; node: Node }
+    | { type: 'FINISHING'; node: Node }
+    | { type: 'FINISHING_TIMEOUT'; node: Node }
     | { type: 'TERMINATE'; node: Node }
-    | { type: 'REMOVE'; node: Node }
-    | { type: 'WARN'; node: Node };
+    | { type: 'REMOVE'; node: Node };
 
 type SupervisorState = 'stopped' | 'running' | 'stopping';
 
 export const STATE_TIMEOUT_MS = {
-    STARTING: 5 * 60 * 1000,
-    FINISHING: 24 * 60 * 60 * 1000,
-    TERMINATED: 7 * 24 * 60 * 60 * 1000,
-    ERROR: 7 * 24 * 60 * 60 * 1000
+    STARTING: envs.FLEET_TIMEOUT_STARTING_MS,
+    FINISHING: envs.FLEET_TIMEOUT_FINISHING_MS,
+    TERMINATED: envs.FLEET_TIMEOUT_TERMINATED_MS,
+    ERROR: envs.FLEET_TIMEOUT_ERROR_MS
 };
+
+// Shorten timeouts when running Nango locally
+if (envs.RUNNER_TYPE === 'LOCAL') {
+    STATE_TIMEOUT_MS.STARTING = 15 * 1000;
+    STATE_TIMEOUT_MS.FINISHING = 15 * 1000;
+}
 
 export class Supervisor {
     private state: SupervisorState = 'stopped';
     private dbClient: DatabaseClient;
     private nodeProvider: NodeProvider;
+    private tickCancelled: boolean = false;
 
     constructor({ dbClient, nodeProvider }: { dbClient: DatabaseClient; nodeProvider: NodeProvider }) {
         this.dbClient = dbClient;
@@ -39,46 +50,74 @@ export class Supervisor {
 
     public async start(): Promise<void> {
         if (this.state === 'running') {
-            logger.warn('Supervisor is already running');
+            logger.info('Fleet supervisor is already running');
             return;
         }
 
         this.state = 'running';
-        await this.loop();
+        return this.loop();
     }
 
     public async stop(): Promise<void> {
+        if (this.state === 'stopped') {
+            logger.info('Fleet supervisor is already stopped');
+            return;
+        }
         this.state = 'stopping';
-        logger.info('Supervisor stopped');
+        logger.info(`Stopping fleet supervisor...`);
 
         // wait for the loop to finish or timeout
         const waitForStopped = async () => {
             while (this.state !== 'stopped') {
-                await setTimeout(100);
+                await setTimeout(1000);
             }
         };
-        await Promise.race([waitForStopped(), setTimeout(60000)]);
+        await Promise.race([waitForStopped(), setTimeout(envs.FLEET_SUPERVISOR_TIMEOUT_STOP_MS)]);
+
+        logger.info('Fleet supervisor stopped');
     }
 
-    public async tick(): Promise<void> {
+    public async tick(): Promise<Result<void>> {
         // TODO: trace
         try {
+            this.tickCancelled = false;
             const plan = await this.plan();
             if (plan.isOk()) {
                 await this.executePlan(plan.value);
+                return Ok(undefined);
             } else {
-                logger.error('Supervision error:', plan.error);
-                await setTimeout(1000);
+                return Err(plan.error);
             }
         } catch (error) {
-            logger.error('Supervision error:', error);
+            return Err(new FleetError('supervisor_tick_failed', { cause: error }));
         }
     }
 
     private async loop(): Promise<void> {
+        const getDeployment = await deployments.getActive(this.dbClient.db);
+        if (getDeployment.isErr() || !getDeployment.value) {
+            logger.error('Failed starting supervisor: no active deployment');
+            this.state = 'stopped';
+            return;
+        }
+
         while (this.state === 'running') {
-            // TODO: Lock to prevent multiple instances from running
-            await this.tick();
+            const res = await withPgLock({
+                db: this.dbClient.db,
+                lockKey: `fleet_supervisor`,
+                fn: async () => {
+                    return await this.tick();
+                },
+                timeoutMs: envs.FLEET_SUPERVISOR_TIMEOUT_TICK_MS,
+                onTimeout: () => {
+                    this.tickCancelled = true;
+                    return Promise.resolve();
+                }
+            });
+            if (res.isErr()) {
+                await setTimeout(envs.FLEET_SUPERVISOR_RETRY_DELAY_MS);
+                logger.warning('Fleet supervisor:', res.error);
+            }
         }
         this.state = 'stopped';
     }
@@ -125,6 +164,16 @@ export class Supervisor {
                 })
             );
 
+            // Mark OUTDATED nodes to FINISHING once there is RUNNING nodes to replace them
+            plan.push(
+                ...(nodes.OUTDATED || []).flatMap<Operation>((node) => {
+                    if ((nodes.RUNNING?.length || 0) > 0) {
+                        return [{ type: 'FINISHING', node }];
+                    }
+                    return [];
+                })
+            );
+
             // if OUTDATED node but no RUNNING or upcoming nodes then create a new one
             if ((nodes.OUTDATED?.length || 0) > 0 && (nodes.RUNNING?.length || 0) + (nodes.STARTING?.length || 0) + (nodes.PENDING?.length || 0) === 0) {
                 plan.push({ type: 'CREATE', routingId, deployment });
@@ -134,7 +183,7 @@ export class Supervisor {
             plan.push(
                 ...(nodes.FINISHING || []).flatMap<Operation>((node) => {
                     if (Date.now() - node.lastStateTransitionAt.getTime() > STATE_TIMEOUT_MS.FINISHING) {
-                        return [{ type: 'WARN', node }];
+                        return [{ type: 'FINISHING_TIMEOUT', node }];
                     }
                     return [];
                 })
@@ -179,6 +228,9 @@ export class Supervisor {
 
     private async executePlan(plan: Operation[]): Promise<void> {
         for (const action of plan) {
+            if (this.tickCancelled) {
+                return;
+            }
             const result = await this.execute(action);
             if (result.isErr()) {
                 logger.error('Failed to execute action:', result.error);
@@ -194,12 +246,14 @@ export class Supervisor {
                 return this.startNode(action);
             case 'OUTDATE':
                 return this.outdateNode(action);
+            case 'FINISHING':
+                return this.finishingNode(action);
             case 'TERMINATE':
                 return this.terminateNode(action);
             case 'REMOVE':
                 return this.removeNode(action);
-            case 'WARN':
-                return this.warnNode(action);
+            case 'FINISHING_TIMEOUT':
+                return this.finishingTimeout(action);
             case 'FAIL':
                 return this.failNode(action);
         }
@@ -251,6 +305,33 @@ export class Supervisor {
         });
     }
 
+    private async finishingNode({ node }: { type: 'FINISHING'; node: Node }): Promise<Result<Node>> {
+        if (!node.url) {
+            return Err(new FleetError('fleet_node_url_not_found', { context: { nodeId: node.id } }));
+        }
+
+        try {
+            const res = await retryWithBackoff(
+                async () => {
+                    return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+                },
+                {
+                    numOfAttempts: 5
+                }
+            );
+            if (!res.ok) {
+                throw new Error(`status: ${res.status}. response: ${res.statusText}`);
+            }
+        } catch (error) {
+            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${error}`);
+        }
+
+        return nodes.transitionTo(this.dbClient.db, {
+            nodeId: node.id,
+            newState: 'FINISHING'
+        });
+    }
+
     private async terminateNode({ node }: { type: 'TERMINATE'; node: Node }): Promise<Result<Node>> {
         const res = await this.nodeProvider.terminate(node);
         if (res.isErr()) {
@@ -271,9 +352,29 @@ export class Supervisor {
         return nodes.remove(this.dbClient.db, { nodeId: node.id });
     }
 
-    private async warnNode({ node }: { type: 'WARN'; node: Node }): Promise<Result<Node>> {
+    private async finishingTimeout({ node }: { type: 'FINISHING_TIMEOUT'; node: Node }): Promise<Result<Node>> {
+        // Locally we assume the node is IDLE
+        // since the process is likely already killed
+        // and the node is not able to notify back that it is idle
+        if (envs.RUNNER_TYPE === 'LOCAL') {
+            return nodes.transitionTo(this.dbClient.db, {
+                nodeId: node.id,
+                newState: 'IDLE'
+            });
+        }
         // TODO: find a better way to warn and alert
-        logger.warn('Node is taking too long to finish:', node);
+        logger.warning('Node is taking too long to finish:', node);
         return Promise.resolve(Ok(node));
+    }
+
+    public async createNodeForCurrentDeployment(routingId: Node['routingId']): Promise<Result<Node>> {
+        const deployment = await deployments.getActive(this.dbClient.db);
+        if (deployment.isErr()) {
+            return Err(deployment.error);
+        }
+        if (!deployment.value) {
+            return Err(new FleetError('no_active_deployment'));
+        }
+        return this.createNode({ type: 'CREATE', routingId, deployment: deployment.value });
     }
 }

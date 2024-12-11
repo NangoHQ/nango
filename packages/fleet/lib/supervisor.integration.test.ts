@@ -4,13 +4,15 @@ import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
-import { generateCommitHash, createNodeWithAttributes } from './models/helpers.test.js';
-import type { Deployment } from './types.js';
+import { generateCommitHash } from './models/helpers.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 
 const mockNodeProvider = {
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
+    verifyUrl: vi.fn().mockResolvedValue(Ok(undefined)),
     mockClear: () => {
         mockNodeProvider.start.mockClear();
         mockNodeProvider.terminate.mockClear();
@@ -25,13 +27,33 @@ describe('Supervisor', () => {
 
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash())).unwrap();
-        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash())).unwrap();
+        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
+        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
     });
 
     afterEach(async () => {
         await dbClient.clearDatabase();
         mockNodeProvider.mockClear();
+    });
+
+    describe('instances', () => {
+        const supervisor1 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+        const supervisor2 = new Supervisor({ dbClient, nodeProvider: mockNodeProvider });
+
+        afterEach(async () => {
+            await supervisor1.stop();
+            await supervisor2.stop();
+        });
+
+        it('should have only one processing at a time', async () => {
+            const tickSpy1 = vi.spyOn(supervisor1, 'tick');
+            const tickSpy2 = vi.spyOn(supervisor2, 'tick');
+            supervisor1.start();
+            supervisor2.start();
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            expect(tickSpy1).toHaveBeenCalled();
+            expect(tickSpy2).toHaveBeenCalledTimes(0);
+        });
     });
 
     it('should start PENDING nodes', async () => {
@@ -94,6 +116,23 @@ describe('Supervisor', () => {
                 }
             ]
         });
+    });
+
+    it('should mark nodes as FINISHING if they are OUTDATED and have a new deployment', async () => {
+        const routingId = 'routing-id';
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'OUTDATED', routingId, deploymentId: previousDeployment.id });
+        const newNode = await createNodeWithAttributes(dbClient.db, { state: 'STARTING', routingId, deploymentId: activeDeployment.id });
+        await supervisor.tick();
+
+        // new node is not RUNNING yet, OUTDATED node should still be OUTDATED
+        const nodeStillOutdated = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeStillOutdated.state).toBe('OUTDATED');
+
+        // new node is RUNNING, OUTDATED node should be FINISHING
+        nodes.transitionTo(dbClient.db, { nodeId: newNode.id, newState: 'RUNNING', url: 'http://myurl' });
+        await supervisor.tick();
+        const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeAfter.state).toBe('FINISHING');
     });
 
     it('should terminate IDLE nodes', async () => {

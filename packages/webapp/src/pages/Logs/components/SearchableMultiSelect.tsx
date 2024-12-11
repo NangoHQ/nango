@@ -1,4 +1,4 @@
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { useEffect, useMemo, useState } from 'react';
 import { CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useSearchFilters } from '../../../hooks/useLogs';

@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
-import { getRunner } from './utils/getRunner.js';
+import { getRunner } from '../../runner/runner.js';
 import type { JsonValue } from 'type-fest';
 
 export async function startScript({

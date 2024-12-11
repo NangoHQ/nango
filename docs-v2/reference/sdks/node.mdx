@@ -1255,6 +1255,88 @@ const { data } = await nango.createConnectSession({
 </Expandable>
 
 
+### Create a reconnect session
+
+Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those attributes of the connection.
+Use this method when a user needs to input new credentials or to manually refresh token.
+
+```js
+const { data } = await nango.createConnectSession({
+  connection_id: '<CONNECTION-ID>'
+  integration_id: '<INTEGRATION-ID>',
+  end_user: {
+    id: '<END-USER-ID>',
+    email: '<END-USER-EMAIL>',
+    display_name: '<END-USER-NAME>'
+  },
+  organization: {
+    id: '<ORGANIZATION-ID>',
+    display_name: '<ORGANIZATION-NAME>'
+  },
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="connection_id" type="string" required>
+    The unique identifier for the connection.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string" required>
+    The unique identifier for the integration.
+  </ResponseField>
+
+  <ResponseField name="end_user" type="object">
+    <Expandable title="end_user">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string" required>
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
+
 # Webhook
 
 ### Verify Webhook Signature

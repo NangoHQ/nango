@@ -2626,6 +2626,56 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    dialpad:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Dialpad
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Dialpad
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: DialpadCreateUser
+            delete-user:
+                description: Deletes a user in Dialpad by email
+                endpoint:
+                    method: DELETE
+                    path: /users/email
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DialpadCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                license?: string
+                officeId?: string
+                autoAssign?: boolean
     discourse:
         syncs:
             active-users:
@@ -8875,7 +8925,8 @@ integrations:
                 id: string
                 assigneeId: string | null
                 creatorId: string | null
-                createdAt: date
+                createdAt: string
+                updatedAt: string
                 description: string | null
                 dueDate: date | null
                 projectId: string | null

@@ -1,0 +1,57 @@
+---
+title: Workday - How do I link my account?
+sidebarTitle: Workday
+---
+
+
+# Overview
+
+To authenticate with Workday, you need two key pieces of information:
+1. **Client ID** - Your Workday Client ID
+2. **Client Secret** - Your Workday Client Secret
+
+This guide will walk you through finding or creating those credentials within Workday.
+
+### Prerequisites:
+
+- You must set up an account with Workday with administrator access.
+
+#### Step 1: Setting up Your Workday Account
+1. Log into your Workday account.
+2. In the Search field, select the `Task Register API Client`.
+3. Select the `Register API Client` form.
+
+<img src="/integrations/all/workday/workday_1.png" />
+
+4. In the form, enter a name for your application in the `Client Name` field.
+5. In the Scope section, add Staffing and/or Recruiting, depending on your application's needs.
+6. Select `Non-expiring Refresh Tokens`.
+7. Select the `Include Workday Owned Scope` checkbox.
+8. Confirm the details to generate the `Client ID` and `Client Secret`.
+
+<img src="/integrations/all/workday/workday_2.png" />
+
+9. Ensure there’s a Non-Expiring Refresh Token, navigate to `View API Clients`, `API Clients for Integrations`, and click the Client created earlier.
+10. After that, navigate to the `Delete or Regenerate Refresh Token` section and select the `Generate New Refresh Token`.
+
+<img src="/integrations/all/workday/workday_3.png" />
+<img src="/integrations/all/workday/workday_4.png" />
+<img src="/integrations/all/workday/workday_5.png" />
+
+#### Step 2: Find your Workday Client ID and Client Secret
+1. To find your token endpoint URL in Workday, search and select the `View API Clients` report through the search option. Save the URLs listed in the Token Endpoint field.
+2. Remember to save the `Client ID`, `Client Secret`, `Authorization Endpoint`, and Token Endpoint.
+
+<img src="/integrations/all/workday/workday_6.png" />
+
+#### Step 3: Connect Your Workday Account
+
+<img src="/integrations/all/workday/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Workday authentication form.
+Enter your credentials as follows:
+- Username: Your Workday Client ID
+- Password: Your Workday Client Secret
+- Workday Domain: This is available in your browser as http://`domain`.workday.com
+
+Click "Connect" to complete the authentication.
