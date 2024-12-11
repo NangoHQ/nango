@@ -2609,6 +2609,7 @@ fortnox:
     auth_mode: OAUTH2
     authorization_url: https://apps.fortnox.se/oauth-v1/auth
     token_url: https://apps.fortnox.se/oauth-v1/token
+    token_request_auth_method: basic
     scope_separator: ' '
     authorization_params:
         response_type: code
