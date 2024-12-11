@@ -83,31 +83,18 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         onRefreshSuccess: connectionRefreshSuccessHook,
         onRefreshFailed: connectionRefreshFailedHook
     });
-    if (credentialResponse.isErr()) {
-        const errorLog = await errorNotificationService.auth.get(connection.id!);
 
-        // When we failed to refresh we still return a 200 because the connection is used in the UI
-        // Ultimately this could be a second endpoint so the UI displays faster and no confusion between error code
-        res.status(200).send({
-            data: {
-                errorLog,
-                provider: integration.provider,
-                connection: connectionFullToApi(connection as DBConnection),
-                endUser: endUserToApi(endUser)
-            }
-        });
-
-        return;
+    if (credentialResponse.isOk()) {
+        connection = credentialResponse.value;
     }
-
-    connection = credentialResponse.value;
+    const errorLog = await errorNotificationService.auth.get(connection.id!);
 
     res.status(200).send({
         data: {
             provider: integration.provider,
             connection: connectionFullToApi(connection as DBConnection),
             endUser: endUserToApi(endUser),
-            errorLog: null
+            errorLog
         }
     });
 });

@@ -37,7 +37,8 @@ import {
     hmacService,
     ErrorSourceEnum,
     interpolateObjectValues,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -47,7 +48,6 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { errorToObject, stringifyError } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
 import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';
@@ -61,9 +61,15 @@ class OAuthController {
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        let connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const wsClientId = req.query['ws_client_id'] as string | undefined;
-        const userScope = req.query['user_scope'] as string | undefined;
+        let userScope = req.query['user_scope'] as string | undefined;
         const isConnectSession = res.locals['authType'] === 'connectSession';
+
+        // if (isConnectSession && receivedConnectionId) {
+        //     errorRestrictConnectionId(res);
+        //     return;
+        // }
 
         let logCtx: LogContext | undefined;
 
@@ -84,7 +90,7 @@ class OAuthController {
                 environmentId: String(environmentId),
                 accountId: String(accountId),
                 providerConfigKey: String(providerConfigKey),
-                connectionId: String(receivedConnectionId)
+                connectionId
             });
 
             const callbackUrl = await getOauthCallbackUrl(environmentId);
@@ -120,8 +126,6 @@ class OAuthController {
                 }
             }
 
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
-
             await logCtx.info('Authorization URL request from the client');
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
@@ -149,10 +153,28 @@ class OAuthController {
                 return;
             }
 
+            if (isConnectSession) {
+                // Session token always win
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                userScope = defaults?.user_scopes || undefined;
+
+                // Reconnect mechanism
+                if (res.locals.connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+                    if (!connection) {
+                        await logCtx.error('Invalid connection');
+                        await logCtx.failed();
+                        res.status(400).send({ error: { code: 'invalid_connection' } });
+                        return;
+                    }
+                    connectionId = connection?.connection_id;
+                }
+            }
+
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
-                connectionId: connectionId,
+                connectionId,
                 callbackUrl: callbackUrl,
                 authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
@@ -195,7 +217,12 @@ class OAuthController {
                 });
             }
 
-            if (connectionConfig['oauth_scopes_override']) {
+            if (isConnectSession) {
+                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                if (defaults?.connectionConfig.oauth_scopes_override) {
+                    config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override;
+                }
+            } else if (connectionConfig['oauth_scopes_override']) {
                 config.oauth_scopes = connectionConfig['oauth_scopes_override'];
             }
 
@@ -243,10 +270,7 @@ class OAuthController {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
-                metadata: {
-                    providerConfigKey,
-                    connectionId: receivedConnectionId
-                }
+                metadata: { providerConfigKey, connectionId }
             });
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
@@ -257,6 +281,7 @@ class OAuthController {
         const { environment, account } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
+        let connectionId = receivedConnectionId || connectionService.generateConnectionId();
         const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -274,6 +299,11 @@ class OAuthController {
         }
 
         const { client_id, client_secret }: Record<string, string> = body;
+
+        // if (isConnectSession && receivedConnectionId) {
+        //     errorRestrictConnectionId(res);
+        //     return;
+        // }
 
         let logCtx: LogContext | undefined;
 
@@ -293,8 +323,6 @@ class OAuthController {
 
                 return;
             }
-
-            const connectionId = receivedConnectionId || connectionService.generateConnectionId();
 
             if (!isConnectSession) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -336,6 +364,18 @@ class OAuthController {
 
             if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
+            }
+
+            // Reconnect mechanism
+            if (isConnectSession && res.locals.connectSession.connectionId) {
+                const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+                if (!connection) {
+                    await logCtx.error('Invalid connection');
+                    await logCtx.failed();
+                    res.status(400).send({ error: { code: 'invalid_connection' } });
+                    return;
+                }
+                connectionId = connection?.connection_id;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -923,7 +963,7 @@ class OAuthController {
             return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         }
 
-        // check for oauth overrides in the connnection config
+        // check for oauth overrides in the connection config
         if (session.connectionConfig['oauth_client_id_override']) {
             config.oauth_client_id = session.connectionConfig['oauth_client_id_override'];
         }

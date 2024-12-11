@@ -3,7 +3,7 @@ import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { defaultCallback } from '../../../../../utils/utils';
 import type { EnvironmentAndAccount } from '@nangohq/server';
 import SecretInput from '../../../../../components/ui/input/SecretInput';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { InfoBloc } from '../../../../../components/InfoBloc';
 import { Input } from '../../../../../components/ui/input/Input';
 import { useState } from 'react';

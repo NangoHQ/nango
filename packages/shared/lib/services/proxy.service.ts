@@ -11,7 +11,7 @@ import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvid
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert } from '@nangohq/types';
+import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
 import { getProvider } from './providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
 
@@ -146,7 +146,14 @@ class ProxyService {
             endpoint = endpoint.replace(provider.proxy.base_url, '');
         }
 
-        if (headers && headers['Content-Type'] === 'multipart/form-data') {
+        const headersCleaned: Record<string, string> = {};
+        if (headers) {
+            for (const [key, value] of Object.entries(headers)) {
+                headersCleaned[key.toLocaleLowerCase()] = value;
+            }
+        }
+
+        if (headersCleaned['content-type'] === 'multipart/form-data') {
             const formData = new FormData();
 
             Object.keys(data as any).forEach((key) => {
@@ -170,7 +177,7 @@ class ProxyService {
             providerName,
             providerConfigKey,
             connectionId,
-            headers: headers as Record<string, string>,
+            headers: headersCleaned,
             data,
             retries: retries || 0,
             baseUrlOverride: baseUrlOverride as string,
@@ -255,8 +262,7 @@ class ProxyService {
     ): Promise<boolean> => {
         if (
             error.response?.status.toString().startsWith('5') ||
-            // Note that Github issues a 403 for both rate limits and improper scopes
-            (error.response?.status === 403 && error.response.headers['x-ratelimit-remaining'] && error.response.headers['x-ratelimit-remaining'] === '0') ||
+            this.isProviderSpecificErrorCode(config.provider.proxy?.retry, error) ||
             error.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code as string) ||
             config.retryOn?.includes(Number(error.response?.status))
@@ -298,15 +304,31 @@ class ProxyService {
         return false;
     };
 
+    private isProviderSpecificErrorCode(retryConfig: RetryHeaderConfig | undefined, error: AxiosError): boolean {
+        if (!retryConfig) {
+            return false;
+        }
+
+        const { remaining, error_code } = retryConfig;
+
+        if (!remaining || !error_code) {
+            return false;
+        }
+
+        if (Number(error?.response?.status) === Number(error_code) && error.response?.headers[remaining] === '0') {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Send to http method
      * @desc route the call to a HTTP request based on HTTP method passed in
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
-        const options: AxiosRequestConfig = {
-            headers: configBody.headers as Record<string, string | number | boolean>
-        };
+        const options: AxiosRequestConfig = {};
 
         if (configBody.params) {
             options.params = configBody.params as Record<string, string>;
@@ -329,8 +351,7 @@ class ProxyService {
         options.url = this.constructUrl(configBody);
         options.method = method;
 
-        const headers = this.constructHeaders(configBody, method, options.url);
-        options.headers = { ...options.headers, ...headers };
+        options.headers = this.constructHeaders(configBody, method, options.url);
 
         return this.request(configBody, options);
     }
@@ -431,9 +452,9 @@ class ProxyService {
         // even if the auth mode isn't api key a header might exist in the proxy
         // so inject it if so
         if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
-            headers = Object.entries(config.provider.proxy.headers).reduce(
-                (acc: Record<string, string>, [key, value]: [string, string]) => {
-                    // allows oauth2 acessToken key to be interpolated and injected
+            headers = Object.entries(config.provider.proxy.headers).reduce<Record<string, string>>(
+                (acc, [key, value]) => {
+                    // allows oauth2 accessToken key to be interpolated and injected
                     // into the header in addition to api key values
                     let tokenPair;
                     switch (config.provider.auth_mode) {
@@ -462,6 +483,7 @@ class ProxyService {
                             tokenPair = config.token;
                             break;
                     }
+
                     acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
@@ -506,8 +528,8 @@ class ProxyService {
         }
 
         if (config.headers) {
-            const { headers: configHeaders } = config;
-            headers = { ...headers, ...configHeaders };
+            // Headers set in scripts should override the default ones
+            headers = { ...headers, ...config.headers };
         }
 
         return headers;
@@ -539,7 +561,7 @@ class ProxyService {
                     },
                     response: {
                         code: response.status,
-                        headers: response.headers as Record<string, string>
+                        headers: (response.headers || {}) as Record<string, string>
                     }
                 }
             ]
@@ -574,7 +596,7 @@ class ProxyService {
                 },
                 response: {
                     code: error.response?.status || 500,
-                    headers: error.response?.headers as Record<string, string>
+                    headers: (error.response?.headers || {}) as Record<string, string>
                 },
                 error: {
                     name: error.name,

@@ -10,11 +10,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = req.user;
-    if (!sessionUser) {
-        res.status(400).send({ error: { code: 'user_not_found' } });
-        return;
-    }
+    const sessionUser = res.locals['user'];
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     const onboarding = await getOnboarding(sessionUser.id);

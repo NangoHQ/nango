@@ -33,6 +33,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/keystore": "file:../keystore",
+        "@nangohq/fleet": "file:../fleet",
         "@workos-inc/node": "6.2.0",
         "axios": "^1.7.4",
         "body-parser": "1.20.3",

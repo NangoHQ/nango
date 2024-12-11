@@ -1,5 +1,5 @@
 import { Cross1Icon, PlusIcon } from '@radix-ui/react-icons';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import type { ApiTeam } from '@nangohq/types';
 import { useState } from 'react';

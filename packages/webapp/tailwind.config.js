@@ -75,8 +75,9 @@ module.exports = {
                 'grayscale-500': '#737473',
                 'grayscale-600': '#454545',
                 'grayscale-700': '#333333',
-                'grayscale-800': '#111111',
-                'grayscale-900': '#09090b',
+                'grayscale-800': '#262626',
+                'grayscale-900': '#111111',
+                'grayscale-1000': '#09090b',
 
                 'code-mint': '#6ed6ac',
                 'code-blue': '#90a1f0',
@@ -112,14 +113,20 @@ module.exports = {
                 'info-400': '#509af8',
                 'info-500': '#0c2a75'
             },
+            fontSize: {
+                xs: ['11px', '16px'],
+                s: ['12px', '18px'],
+                sm: '14px',
+                base: '16px',
+                xl: '20px',
+                '2xl': '24px',
+                '3xl': '28px',
+                '4xl': '32px',
+                '5xl': '36px'
+            },
             width: {
                 largebox: '1200px',
                 largecell: '480px'
-            },
-            fontSize: {
-                xs: '11px',
-                s: '13px',
-                '3xl': '28px'
             },
             fontFamily: {
                 code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']

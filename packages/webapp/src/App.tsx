@@ -18,7 +18,7 @@ import CreateIntegration from './pages/Integrations/Create';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
-import ConnectionCreate from './pages/Connection/Create';
+import { ConnectionCreate } from './pages/Connection/Create';
 import { EnvironmentSettings } from './pages/Environment/Settings';
 import { PrivateRoute } from './components/PrivateRoute';
 import ForgotPassword from './pages/Account/ForgotPassword';
@@ -35,6 +35,8 @@ import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { Root } from './pages/Root';
 import { globalEnv } from './utils/env';
+import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
+import { Helmet } from 'react-helmet';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -52,6 +54,17 @@ const App = () => {
 
     return (
         <MantineProvider theme={theme}>
+            {globalEnv.publicKoalaKey && (
+                <Helmet
+                    script={[
+                        {
+                            type: 'text/javascript',
+                            innerHTML: `!function (t) { if (window.ko) return; window.ko = [], ["identify", "track", "removeListeners", "on", "off", "qualify", "ready"].forEach(function (t) { ko[t] = function () { var n = [].slice.call(arguments); return n.unshift(t), ko.push(n), ko } }); var n = document.createElement("script"); n.async = !0, n.setAttribute("src", "https://cdn.getkoala.com/v1/${globalEnv.publicKoalaKey}/sdk.js"), (document.body || document.head).appendChild(n) }();`
+                        }
+                    ]}
+                />
+            )}
+
             <TooltipProvider>
                 <SWRConfig
                     value={{
@@ -83,7 +96,7 @@ const App = () => {
                             <Route path="/:env/integrations/:providerConfigKey/*" element={<ShowIntegration />} />
                             <Route path="/:env/connections" element={<ConnectionList />} />
                             <Route path="/:env/connections/create" element={<ConnectionCreate />} />
-                            <Route path="/:env/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                            <Route path="/:env/connections/create-legacy" element={<ConnectionCreateLegacy />} />
                             <Route path="/:env/connections/:providerConfigKey/:connectionId" element={<ConnectionShow />} />
                             <Route path="/:env/activity" element={<Navigate to={`/${env}/logs`} replace={true} />} />
                             <Route path="/:env/logs" element={<LogsSearch />} />

@@ -67,7 +67,7 @@ export type GetConnection = Endpoint<{
     Error: ApiError<'unknown_provider_config'>;
     Success: {
         data: {
-            provider: string | null;
+            provider: string;
             connection: ApiConnectionFull;
             endUser: ApiEndUser | null;
             errorLog: ActiveLog | null;

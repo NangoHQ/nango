@@ -3,6 +3,7 @@ import type { ApiError, IntegrationConfig } from '@nangohq/types';
 
 import type { Response } from 'express';
 import type { RequestLocals } from './express';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
 export async function isIntegrationAllowed({
     config,
@@ -26,4 +27,15 @@ export async function isIntegrationAllowed({
     await logCtx.failed();
     res.status(400).send({ error: { code: 'integration_not_allowed' } });
     return false;
+}
+
+export function errorRestrictConnectionId(res: Response<ApiError<'invalid_query_params'>>): void {
+    res.status(400).send({
+        error: {
+            code: 'invalid_query_params',
+            errors: zodErrorToHTTP({
+                issues: [{ code: 'custom', path: ['connection_id'], message: 'connection_id is forbidden when using session token' }]
+            })
+        }
+    });
 }

@@ -11,8 +11,9 @@ import {
     createSyncJob,
     environmentService,
     externalWebhookService,
+    featureFlags,
     getApiUrl,
-    getRunnerFlags,
+    getEndUserByConnectionId,
     getSyncByIdAndName,
     getSyncConfigRaw,
     updateSyncJobStatus
@@ -22,6 +23,8 @@ import { logContextGetter } from '@nangohq/logs';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
+import db from '@nangohq/database';
+import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let team: DBTeam | undefined;
@@ -30,6 +33,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let sync: Sync | undefined | null;
     let syncJob: Pick<Job, 'id'> | null = null;
     let syncConfig: SyncConfig | null = null;
+    let endUser: NangoProps['endUser'] | null = null;
 
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
@@ -57,6 +61,11 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         });
         if (!syncConfig) {
             throw new Error(`Webhook config not found: ${task.id}`);
+        }
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
@@ -102,8 +111,9 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(),
-            startedAt: new Date()
+            runnerFlags: await getRunnerFlags(featureFlags),
+            startedAt: new Date(),
+            endUser
         };
 
         metrics.increment(metrics.Types.WEBHOOK_EXECUTION, 1, { accountId: team.id });
@@ -139,7 +149,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             models: syncConfig?.models || [],
             runTime: 0,
             error,
-            syncConfig
+            syncConfig,
+            endUser
         });
         return Err(error);
     }
@@ -163,7 +174,8 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
         content,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
-        internalIntegrationId: nangoProps.syncConfig.nango_config_id
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id,
+        endUser: nangoProps.endUser
     });
 
     const syncJob = await updateSyncJobStatus(nangoProps.syncJobId!, SyncStatus.SUCCESS);
@@ -245,7 +257,8 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         models: nangoProps.syncConfig.models,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
-        syncConfig: nangoProps.syncConfig
+        syncConfig: nangoProps.syncConfig,
+        endUser: nangoProps.endUser
     });
 }
 
@@ -261,7 +274,8 @@ async function onFailure({
     models,
     activityLogId,
     runTime,
-    error
+    error,
+    endUser
 }: {
     connection: NangoConnection;
     team: DBTeam | undefined;
@@ -275,6 +289,7 @@ async function onFailure({
     activityLogId: string;
     runTime: number;
     error: NangoError;
+    endUser: NangoProps['endUser'];
 }): Promise<void> {
     if (team && environment) {
         void bigQueryClient.insert({
@@ -293,7 +308,8 @@ async function onFailure({
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
-            internalIntegrationId: syncConfig?.nango_config_id || null
+            internalIntegrationId: syncConfig?.nango_config_id || null,
+            endUser
         });
     }
 

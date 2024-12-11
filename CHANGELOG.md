@@ -2,6 +2,133 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.47.0] - 2024-12-11
+
+### Added
+
+- *(docs)* Add connect-ui docs (#3106) by @hassan254-prog
+- *(integrations)* Add rate limting to intercom (#3122) by @hassan254-prog
+- *(integrations)* Add support for braze (#3121) by @hassan254-prog
+- *(integrations)* Add support for freshteam (#3124) by @hassan254-prog
+- *(integrations)* Add support for Zappier (#3126) by @dannylwe
+- *(docs)* Add zendesk connect-ui docs (#3127) by @hassan254-prog
+- *(docs)* Malwarebytes connect-ui docs (#3131) by @hassan254-prog
+- *(docs)* Add quickbooks connect ui docs (#3133) by @hassan254-prog
+- Fleet into jobs/server (#3129) by @TBonnin
+- *(docs)* Connect UI Documentation  (#3107) by @dannylwe
+- Reconnect (#3119) by @bodinsamuel
+- *(fleet)* Ensure only one fleet supervisor is running (#3141) by @TBonnin
+- *(fleet)* Add /rollout endpoint to server (#3140) by @TBonnin
+- *(integrations)* Add support for Gerrit (#3144) by @hassan254-prog
+- *(integration)* Add verification and remove port from remote site (#3150) by @khaliqgant
+- *(integration)* Add docs and post connection script for adobe umapi (#3147) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/42248878536c13238318eba3d239d9bd3f942b90 by Francis Maina. Commit message: fix(dialpad): addresses the comments made in the last PR review (#147) by @github-actions[bot]
+
+### Changed
+
+- *(deps)* Bump nanoid from 5.0.7 to 5.0.9 (#3142) by @dependabot[bot]
+- Update total APIs count (#3146) by @rguldener
+- Authorize and reconnect (#3151) by @bodinsamuel
+
+### Fixed
+
+- *(proxy)* Lowercase incoming headers (#3128) by @bodinsamuel
+- *(api)* Move more auth endpoints to new format (#3120) by @bodinsamuel
+- Bigquery should be off by default by @bodinsamuel
+- *(regex)* Allow special characters (#3130) by @khaliqgant
+- *(ui)* Do not identify user on debug mode (#3135) by @bodinsamuel
+- *(ui)* Rename add connection  (#3134) by @bodinsamuel
+- Copy fleet package in server dockerfile (#3137) by @TBonnin
+- Fleet connection to main db by @TBonnin
+- Return 400 when /connections/:connetionId missing provider_config_key (#3139) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/06c35efed384a69115c88a78620d850c7287e6ae by Khaliq. Commit message: fix(linear): fix types (#148) by @github-actions[bot]
+
+## [v0.46.1] - 2024-12-06
+
+### Added
+
+- *(providers-yaml)* Add automated for additional salesforce (#3102) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5f28b046494e2ddaaa522bcb75bfaf78fe71db22 by Hassan_Wari. Commit message: fix(front): add cursor in request param for pagination (#135) by @github-actions[bot]
+- *(connect)* Allow passing oauth_scopes (#3104) by @bodinsamuel
+- *(ui)* New create connection page (#3072) by @bodinsamuel
+- *(integrations)* Add API rate limiting to Front (#3101) by @hassan254-prog
+- *(sdk)* Add getIntegration (#3112) by @bodinsamuel
+- *(integrations)* Add support for eBay (#3099) by @cassanelligiovanni
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/17524b41a6acfe231713f26144048818893bdd87 by Khaliq. Commit message: fix(xero): add tenant id logic (#138) by @github-actions[bot]
+- *(scopes)* [nan-2284] Add a few more default scopes (#3117) by @khaliqgant
+- Introducing the fleet package (#3105) by @TBonnin
+- *(fleet)* Add control loop and state management (#3116) by @TBonnin
+- *(cli)* Take request headers, params, and body into account when saving responses (#3098) by @nalanj
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ef8abf3a9f6bd5c1e1afab8dc384036c66566713 by Daniel Roy Lwetabe. Commit message: feat(pennylane): Make penny lane syncs and actions into public templates (#127) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/06bf1271d4b2d7d4226f69a78d0883c51ae7f6f0 by Khaliq. Commit message: feat(avalara): Add avalara syncs and actions (#133) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5fcc1c01fea5ae1d5dccc813b531e23d01eca301 by nalanj. Commit message: feat(zoom): Add support for recordings (#128) by @github-actions[bot]
+- Fix Google drive docs (#3123) by @rguldener
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/cd7fcfb034ccb38b450c3c0b235a01c650bc2585 by Khaliq. Commit message: fix(lever-ashby) yaml cleanup (#131) by @github-actions[bot]
+- *(server)* Load errorLog regardless of credential refresh result (#3103) by @nalanj
+- *(proxy)* Handle more content-disposition edge cases (#3100) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fe1184f19c3f580a309f7135699adf788e76695a by Khaliq. Commit message: fix(lever): more cleanup of endpoints (#134) by @github-actions[bot]
+- *(providers)* Improve validation for connect (#3109) by @bodinsamuel
+- *(providers)* Enforce lowercase headers, enforce categories by @bodinsamuel
+- *(providers)* Greenhouse api domain wording (#3111) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8216083d27fa01d8af5b65a008f8a7375cb6f702 by Khaliq. Commit message: fix(lever): fix typo (#137) by @github-actions[bot]
+- *(logos)* Add white background on white logo, add better version when possible (#3114) by @bodinsamuel
+- *(connect)* Enforce allowedIntegrations and connectionConfig (#3113) by @bodinsamuel
+- *(linear-retries)* [nan-2309] handle linear case (#3108) by @khaliqgant
+- *(providers)* Enforce lowercase headers, enforce categories (#3110) by @bodinsamuel
+- *(tests)* Fix broken integration test that never fails in CI (#3115) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0ac7606862b0d3540c6ae408a5061acf0f76d821 by Khaliq. Commit message: fix(xero): bump versions (#139) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7d5d23cbb387b51cbc17c351c8203492e8a731a2 by Khaliq. Commit message: fix(xero): clean up scopes (#140) by @github-actions[bot]
+
+## [v0.46.0] - 2024-12-03
+
+### Added
+
+- *(server)* Backfill missing_fields on _nango_config (#3050) by @nalanj
+- *(webapp)* Show integration issues in their settings (#3044) by @nalanj
+- *(api)* Expose credentials in GET /integrations/:uniqueKey (#3074) by @bodinsamuel
+- *(integrations)* Add copper integration (#3071) by @dannylwe
+- *(ui)* Add Koala (#3090) by @bodinsamuel
+- Adds personio_v2 provider (#3089) by @tonibardina
+- *(sdk)* Automatically log http calls to API (#3081) by @bodinsamuel
+
+### Changed
+
+- Verify webhook signature helper (#3078) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/c816bbeb786860540d064796ec6f94319da1b5dc by Hassan_Wari. Commit message: feat(zendesk): improve zendesk tickets sync (#120) by @github-actions[bot]
+- Change sample app port (#3079) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/339a89eeb81fc23139213c018b30e420d2b595af by Daniel Roy Lwetabe. Commit message: feat(lever): lever and ashby actions  (#119) by @github-actions[bot]
+- Improvements to What is Nango page (#3085) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a20d56a2f00b286eb18572566b9c5a51424cd681 by Khaliq. Commit message: feat(gh-app): GitHub app sync (#130) by @github-actions[bot]
+- Split CLI/Node tests  (#3096) by @bodinsamuel
+
+### Fixed
+
+- *(cli)* Show on-events scripts in nango deploy output (#3067) by @TBonnin
+- *(webapp)* Invalidate cache on deleting integrations and adding connection from integration page (#3068) by @nalanj
+- *(server)* Actually only update fields that are missing data (#3073) by @nalanj
+- *(CLI)* Show on-events scripts in `nango deploy` confirmation message (#3069) by @TBonnin
+- Do not wait for on-event script to finish when triggering them (#3075) by @TBonnin
+- *(integrations)* Configure Discourse rate limit header (#3077) by @bodinsamuel
+- *(integration)* Update ashby providers.yaml (#3082) by @dannylwe
+- *(integration)* Update docusign docs (#3084) by @dannylwe
+- *(jobs)* Move runner flags outside shared (#3083) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8b5866773a768bedf6ce23a7e99a9fc5d8cf3bc4 by Daniel Roy Lwetabe. Commit message: fix(ashby): update nango.yaml (#129) by @github-actions[bot]
+- *(getting-started)* Revert to top of menu (#3087) by @bodinsamuel
+- *(ui)* Prevent renaming integration with active connections by @bodinsamuel
+- *(deploy)* Description was missing after upgrade (#3091) by @bodinsamuel
+- *(providers)* Change greenhouse api key validation (#3095) by @bodinsamuel
+- *(ui)* Prevent renaming integration with active connections (#3092) by @bodinsamuel
+- *(api)* Improve user model usage (#3076) by @bodinsamuel
+- *(providers)* Allow fields to be marked as automated (#3094) by @bodinsamuel
+- *(sdk)* Expose getIntegration() (#3080) by @bodinsamuel
+- *(data-ingestion)* Log end user (#3086) by @bodinsamuel
+
 ## [v0.45.1] - 2024-11-27
 
 ### Added
@@ -2411,6 +2538,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.47.0]: https://github.com/NangoHQ/nango/compare/v0.46.1..v0.47.0
+[v0.46.1]: https://github.com/NangoHQ/nango/compare/v0.46.0..v0.46.1
+[v0.46.0]: https://github.com/NangoHQ/nango/compare/v0.45.1..v0.46.0
 [v0.45.1]: https://github.com/NangoHQ/nango/compare/v0.45.0..v0.45.1
 [v0.45.0]: https://github.com/NangoHQ/nango/compare/v0.44.0..v0.45.0
 [v0.44.0]: https://github.com/NangoHQ/nango/compare/v0.43.0..v0.44.0

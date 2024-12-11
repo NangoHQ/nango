@@ -24,7 +24,8 @@ import type {
     JwtCredentials,
     TwoStepCredentials,
     GetPublicConnections,
-    SignatureCredentials
+    SignatureCredentials,
+    PostPublicConnectSessionsReconnect
 } from '@nangohq/types';
 import type {
     Connection,
@@ -198,15 +199,17 @@ export class Nango {
         params: string | GetPublicIntegration['Params'],
         queries?: boolean | GetPublicIntegration['Querystring']
     ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
         if (typeof params === 'string') {
             const url = `${this.serverUrl}/config/${params}`;
-            const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: queries } });
+            const response = await this.http.get(url, { headers: this.enrichHeaders(headers), params: { include_creds: queries } });
             return response.data;
         } else {
             const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
             addQueryParams(url, queries as GetPublicIntegration['Querystring']);
 
-            const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+            const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
             return response.data;
         }
     }
@@ -914,6 +917,18 @@ export class Nango {
      */
     public async createConnectSession(sessionProps: PostConnectSessions['Body']): Promise<PostConnectSessions['Success']> {
         const url = `${this.serverUrl}/connect/sessions`;
+
+        const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
+        return response.data;
+    }
+
+    /**
+     * Creates a new connect session dedicated for reconnecting
+     * @param sessionProps - The properties for the new session, including end user information
+     * @returns A promise that resolves with the created session token and expiration date
+     */
+    public async createReconnectSession(sessionProps: PostPublicConnectSessionsReconnect['Body']): Promise<PostPublicConnectSessionsReconnect['Success']> {
+        const url = `${this.serverUrl}/connect/sessions/reconnect`;
 
         const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
         return response.data;

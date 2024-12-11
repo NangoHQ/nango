@@ -1,0 +1,44 @@
+---
+title: Gerrit - How do I link my account?
+sidebarTitle: Gerrit
+---
+
+
+# Overview
+
+To authenticate with Gerrit, you will need:
+1. **Gerrit Host** - The location to where you Gerrit instance is currently hosted.
+2. **User Name** - The User Name associated with your Gerrit account, used to authenticate API requests.
+3. **Password** - The password linked to your Gerrit account, required for secure authentication.
+
+
+This guide will walk you through finding your Gerrit **Host** and **credentials**.
+
+### Prerequisites:
+
+- You must have your Gerrit instance installed and running on your host.
+- Ensure you have valid credentials (username and password) to access the Gerrit API.
+
+### Instructions:
+
+#### Step 1: Finding Your Host
+- Your Host is the URL where your Gerrit instance is running. For example:
+`https://your-gerrit-domain`
+- If you’re hosting Gerrit locally, the host URL might look like:
+`http://localhost:8080`
+- Ensure the Gerrit server is accessible from the network where you’re setting up the connection.
+
+#### Step 2: Obtain Your Credentials
+- Use your **username** and **password** to authenticate. These are the credentials you use to log in to your Gerrit account.
+
+#### Step 3: Enter host and credentials in the Connect UI
+
+Once you have your **Host**, **User name**, and **Password**:
+1. Open the form where you need to authenticate with Gerrit.
+2. Enter the **Host**, **User Name** and **Password** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/gerrit/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Gerrit.

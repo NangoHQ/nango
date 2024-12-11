@@ -10,6 +10,7 @@ import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Utils');
 
+/** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
     const sessionUser = req.user;
     if (!sessionUser) {

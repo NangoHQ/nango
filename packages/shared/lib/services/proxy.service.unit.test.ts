@@ -3,17 +3,49 @@ import proxyService from './proxy.service.js';
 import type { UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { MessageRowInsert } from '@nangohq/types';
+import type { Connection, MessageRowInsert, Provider } from '@nangohq/types';
+
+function getDefaultConnection(): Connection {
+    return {
+        connection_id: 'a',
+        created_at: new Date(),
+        credentials: { type: 'API_KEY', apiKey: 'e' },
+        end_user_id: null,
+        environment_id: 1,
+        provider_config_key: 'foobar',
+        updated_at: new Date(),
+        connection_config: {}
+    };
+}
+function getDefaultProxy(
+    override: Omit<Partial<ApplicationConstructedProxyConfiguration>, 'connection' | 'provider'> &
+        Partial<{
+            connection: Partial<ApplicationConstructedProxyConfiguration['connection']>;
+            provider: Partial<ApplicationConstructedProxyConfiguration['provider']>;
+        }>
+): ApplicationConstructedProxyConfiguration {
+    return {
+        connectionId: 'a',
+        endpoint: '/api/test',
+        method: 'GET',
+        providerConfigKey: 'foobar',
+        providerName: 'github',
+        token: '',
+        ...override,
+        provider: {
+            auth_mode: 'API_KEY',
+            display_name: 'test',
+            docs: '',
+            ...override.provider
+        } as Provider,
+        connection: { ...getDefaultConnection(), ...override.connection }
+    };
+}
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
-        const config = {
-            endpoint: 'https://api.nangostarter.com',
-            providerName: 'test',
-            providerConfigKey: 'test',
-            connectionId: 'test',
+        const config = getDefaultProxy({
             token: { apiKey: 'sweet-secret-token' },
-            method: 'GET',
             provider: {
                 auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
@@ -28,12 +60,12 @@ describe('Proxy service Construct Header Tests', () => {
             },
             connection: {
                 connection_config: {
-                    insance_url: 'bar'
+                    instance_url: 'bar'
                 }
             }
-        };
+        });
 
-        const headers = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(headers).toEqual({
             'My-Token': 'sweet-secret-token',
@@ -42,7 +74,7 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly construct headers for Basic auth', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC'
             },
@@ -50,9 +82,9 @@ describe('Proxy service Construct Header Tests', () => {
                 username: 'testuser',
                 password: 'testpassword'
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64')
@@ -60,16 +92,17 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly construct headers for Basic auth with no password', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC'
             },
             token: {
-                username: 'testuser'
+                username: 'testuser',
+                password: ''
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:').toString('base64')
@@ -77,10 +110,11 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly construct headers for Basic auth + any custom headers', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC',
                 proxy: {
+                    base_url: 'http://example.com',
                     headers: {
                         'X-Test': 'test'
                     }
@@ -90,9 +124,9 @@ describe('Proxy service Construct Header Tests', () => {
                 username: 'testuser',
                 password: 'testpassword'
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
@@ -101,7 +135,7 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly construct headers with an Authorization override', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC'
             },
@@ -112,9 +146,9 @@ describe('Proxy service Construct Header Tests', () => {
             headers: {
                 Authorization: 'Bearer testtoken'
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -122,14 +156,15 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly construct headers for default auth', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
+                // @ts-expect-error expected error
                 auth_mode: 'SomeOtherMode'
             },
             token: 'testtoken'
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer testtoken'
@@ -137,19 +172,20 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly insert headers with dynamic values for oauth', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
+                    base_url: '',
                     headers: {
                         'X-Access-Token': '${accessToken}'
                     }
                 }
             },
             token: 'some-oauth-access-token'
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer some-oauth-access-token',
@@ -158,10 +194,11 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should correctly merge provided headers', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
+                    base_url: '',
                     headers: {
                         'My-Token': '${apiKey}'
                     }
@@ -172,9 +209,9 @@ describe('Proxy service Construct Header Tests', () => {
                 'x-custom-header': 'custom value',
                 'y-custom-header': 'custom values'
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             'My-Token': 'some-abc-token',
@@ -184,10 +221,11 @@ describe('Proxy service Construct Header Tests', () => {
     });
 
     it('Should construct headers for an api key', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
+                    base_url: '',
                     headers: {
                         'X-Api-Key': '${apiKey}',
                         'X-Api-Password': '${connectionConfig.API_PASSWORD}'
@@ -200,9 +238,9 @@ describe('Proxy service Construct Header Tests', () => {
                     API_PASSWORD: 'api-password-value'
                 }
             }
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             'X-Api-Key': 'api-key-value',
@@ -213,75 +251,69 @@ describe('Proxy service Construct Header Tests', () => {
 
 describe('Proxy service Construct URL Tests', () => {
     it('should correctly construct url with no trailing slash and no leading slash', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 proxy: {
                     base_url: 'https://example.com'
                 }
             },
-            endpoint: 'api/test',
-            connection: {}
-        };
+            endpoint: 'api/test'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://example.com/api/test');
     });
 
     it('should correctly construct url with trailing slash in base and leading slash in endpoint', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
-            },
-            endpoint: '/api/test',
-            connection: {}
-        };
+            }
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://example.com/api/test');
     });
 
     it('should correctly construct url with baseUrlOverride', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
             },
             endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
+            baseUrlOverride: 'https://override.com'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
     });
 
     it('should correctly construct url with baseUrlOverride with no leading slash', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 proxy: {
                     base_url: 'https://example.com/'
                 }
             },
-            endpoint: 'api/test',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
+            baseUrlOverride: 'https://override.com'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
     });
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
@@ -292,41 +324,38 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
+            baseUrlOverride: 'https://override.com'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
     });
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
                     base_url: 'https://example.com/',
                     query: {
+                        // @ts-expect-error not sure why
                         key: '${apiKey}'
                     }
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
+            baseUrlOverride: 'https://override.com'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
     });
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
@@ -338,17 +367,16 @@ describe('Proxy service Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
+            baseUrlOverride: 'https://override.com'
+        });
 
-        const result = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
     });
 
     it('Should insert a proxy query and a headers', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
@@ -365,18 +393,13 @@ describe('Proxy service Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
-            baseUrlOverride: 'https://override.com',
-            connection: {}
-        };
-        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+            baseUrlOverride: 'https://override.com'
+        });
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
-        const headers = proxyService.constructHeaders(
-            config as unknown as ApplicationConstructedProxyConfiguration,
-            'GET',
-            'https://override.com/api/test?foo=bar&api_key=sweet-secret-token'
-        );
+        const headers = proxyService.constructHeaders(config, 'GET', 'https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
         expect(headers).toEqual({
             'x-custom-header': 'custom value',
@@ -386,7 +409,7 @@ describe('Proxy service Construct URL Tests', () => {
     });
 
     it('Should handle Proxy base URL interpolation with connection configuration param', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
@@ -394,19 +417,18 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
             connection: {
                 connection_config: { extension: 'eu' }
             }
-        };
+        });
 
-        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://www.zohoapis.eu/api/test');
     });
 
     it('Should handle Proxy base URL interpolation with connection metadata param', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
@@ -414,19 +436,18 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
             connection: {
                 metadata: { instance_url: 'https://myinstanceurl.com' }
             }
-        };
+        });
 
-        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://myinstanceurl.com/api/test');
     });
 
     it('Should handle Proxy base URL interpolation where connection configuration param is present', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
@@ -434,19 +455,18 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
             connection: {
                 connection_config: { api_base_url_for_customer: 'https://company-17.api.gong.io' }
             }
-        };
+        });
 
-        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://company-17.api.gong.io/api/test');
     });
 
     it('Should handle Proxy base URL interpolation where connection configuration param is absent', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
@@ -454,13 +474,12 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test',
             connection: {
                 environment_id: 1
             }
-        };
+        });
 
-        const url = proxyService.constructUrl(config as unknown as ApplicationConstructedProxyConfiguration);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://api.gong.io/api/test');
     });
@@ -504,6 +523,128 @@ describe('Proxy service Construct URL Tests', () => {
         const diff = after - before;
         expect(diff).toBeGreaterThan(1000);
         expect(diff).toBeLessThan(2000);
+    });
+});
+
+describe('Proxy service provider specific retries', () => {
+    const nowInSecs = Date.now() / 1000;
+    const mockAxiosError = {
+        response: {
+            status: 400,
+            code: 400,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '0'
+            },
+            data: {},
+            statusText: 'Bad Request',
+            config: {} as InternalAxiosRequestConfig
+        } as AxiosResponse
+    } as AxiosError;
+
+    it('Should retry based on the header even if the error code is not a 429', async () => {
+        const nowInSecs = Date.now() / 1000;
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '0'
+            }
+        } as AxiosResponse;
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    base_url: 'http://example.com',
+                    retry: {
+                        at: 'x-ratelimit-requests-reset',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        });
+        const before = Date.now();
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        const after = Date.now();
+        const diff = after - before;
+        expect(diff).toBeGreaterThan(1000);
+        expect(diff).toBeLessThan(2000);
+        expect(willRetry).toBe(true);
+    });
+
+    it('Should not retry based on the error_code if it does not match', async () => {
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            status: 437
+        } as AxiosResponse;
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    base_url: 'http://example.com',
+                    retry: {
+                        at: 'x-ratelimit-requests-resets',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        });
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        expect(willRetry).toBe(false);
+    });
+
+    it('Should not retry based on the error_code if the remaining is not 0', async () => {
+        const nowInSecs = Date.now() / 1000;
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            headers: {
+                'x-ratelimit-requests-reset': nowInSecs + 1,
+                'x-ratelimit-requests-remaining': '1'
+            }
+        } as AxiosResponse;
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    base_url: 'http://example.com',
+                    retry: {
+                        at: 'some-random-header',
+                        remaining: 'x-ratelimit-requests-remaining',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        });
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        expect(willRetry).toBe(false);
+    });
+
+    it('Should not retry based on the error_code if the remaining header does not match', async () => {
+        mockAxiosError.response = {
+            ...mockAxiosError.response,
+            status: 400
+        } as AxiosResponse;
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    base_url: 'http://example.com',
+                    retry: {
+                        at: 'some-random-header',
+                        remaining: 'not-the-same',
+                        error_code: 400
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        });
+        const willRetry = await proxyService.retry(config, [], mockAxiosError, 0);
+        expect(willRetry).toBe(false);
     });
 });
 
@@ -717,23 +858,55 @@ describe('Proxy service configure', () => {
     });
 
     it('Should correctly insert headers with dynamic values for signature based', () => {
-        const config = {
+        const config = getDefaultProxy({
             provider: {
                 auth_mode: 'SIGNATURE',
                 proxy: {
+                    base_url: 'http://example.com',
                     headers: {
                         'X-WSSE': '${accessToken}'
                     }
                 }
             },
             token: 'some-oauth-access-token'
-        };
+        });
 
-        const result = proxyService.constructHeaders(config as unknown as ApplicationConstructedProxyConfiguration, 'GET', 'https://api.nangostarter.com');
+        const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             Authorization: 'Bearer some-oauth-access-token',
             'X-WSSE': 'some-oauth-access-token'
+        });
+    });
+
+    it('should correctly override headers with different casing', () => {
+        const config: UserProvidedProxyConfiguration = {
+            connectionId: 'a',
+            endpoint: '/top',
+            method: 'GET',
+            providerConfigKey: 'foobar',
+            headers: {
+                // Authorization can be override by Workable proxy header
+                Authorization: 'my custom auth',
+                foo: 'Bar' // should not change value casing
+            }
+        };
+
+        const internalConfig: InternalProxyConfiguration = {
+            providerName: 'workable',
+            connection: getDefaultConnection()
+        };
+
+        const result = proxyService.configure(config, internalConfig);
+        expect(result.response?.headers).toStrictEqual({
+            authorization: 'my custom auth',
+            foo: 'Bar'
+        });
+
+        const merge = proxyService.constructHeaders(result.response!, result.response!.method, 'http://example.com');
+        expect(merge).toStrictEqual({
+            authorization: 'my custom auth',
+            foo: 'Bar'
         });
     });
 });

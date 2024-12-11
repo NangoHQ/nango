@@ -1,7 +1,7 @@
-import { useParams, Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, Routes, Route, useLocation } from 'react-router-dom';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import Button from '../../../components/ui/button/Button';
+import { ButtonLink } from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { useStore } from '../../../store';
@@ -9,40 +9,21 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import PageNotFound from '../../PageNotFound';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../../components/ui/DropdownMenu';
-import { IconChevronDown } from '@tabler/icons-react';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
-import Nango from '@nangohq/frontend';
-import { baseUrl } from '../../../utils/utils';
-import { globalEnv } from '../../../utils/env';
-import { apiConnectSessions } from '../../../hooks/useConnect';
-import { useToast } from '../../../hooks/useToast';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
-import { useSWRConfig } from 'swr';
-import { clearConnectionsCache } from '../../../hooks/useConnections';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
-    const toast = useToast();
-    const navigate = useNavigate();
     const location = useLocation();
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
 
-    const { environmentAndAccount } = useEnvironment(env);
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
-
-    const connectUI = useRef<ConnectUI>();
-    const hasConnected = useRef<string | undefined>();
-
-    const { mutate, cache } = useSWRConfig();
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -59,50 +40,6 @@ export const ShowIntegration: React.FC = () => {
             ref.current.scrollTo({ top: 150 });
         }
     }, [location]);
-
-    const onEvent: OnConnectEvent = useCallback(
-        (event) => {
-            if (event.type === 'close') {
-                if (hasConnected.current) {
-                    toast.toast({ title: `Connected to ${data?.integration.unique_key}`, variant: 'success' });
-                    navigate(`/${env}/connections/${data?.integration.unique_key}/${hasConnected.current}`);
-                }
-            } else if (event.type === 'connect') {
-                console.log('connected', event);
-
-                clearConnectionsCache(cache, mutate);
-                hasConnected.current = event.payload.connectionId;
-            }
-        },
-        [toast, cache, mutate, env, navigate, data?.integration.unique_key]
-    );
-
-    const onClickConnectUI = () => {
-        if (!environmentAndAccount) {
-            return;
-        }
-
-        const nango = new Nango({
-            host: environmentAndAccount.host || baseUrl(),
-            websocketsPath: environmentAndAccount.environment.websockets_path || ''
-        });
-
-        connectUI.current = nango.openConnectUI({
-            baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
-            onEvent: onEvent
-        });
-
-        // We defer the token creation so the iframe can open and display a loading screen
-        //   instead of blocking the main loop and no visual clue for the end user
-        setTimeout(async () => {
-            const res = await apiConnectSessions(env, { allowed_integrations: [data!.integration.unique_key] });
-            if ('error' in res.json) {
-                return;
-            }
-            connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
-    };
 
     if (loading) {
         return (
@@ -156,49 +93,29 @@ export const ShowIntegration: React.FC = () => {
                         <div className="flex gap-4 items-center">
                             <h2 className="text-left text-3xl font-semibold text-white break-all">{data.integration.unique_key}</h2>
                             {data.template.docs && (
-                                <Link to={data.template.docs} target="_blank">
-                                    <Button variant="icon" size={'xs'}>
-                                        <BookOpenIcon className="h-5 w-5" />
-                                    </Button>
-                                </Link>
+                                <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
+                                    <BookOpenIcon className="h-5 w-5" />
+                                </ButtonLink>
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="shrink-0">
-                    <div className="flex items-center bg-white rounded-md">
-                        <Button onClick={onClickConnectUI} className="rounded-r-none">
-                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
-                                    <IconChevronDown stroke={1} size={18} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/${env}/connections/create`}>
-                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
+                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                        Add Test Connection
+                    </ButtonLink>
                 </div>
             </div>
 
             <nav className="flex gap-2 my-11">
-                <Link to="./">
-                    <Button variant={tab === 'home' ? 'active' : 'zombie'}>Endpoints</Button>
-                </Link>
-                <Link to="./settings">
-                    <Button variant={tab === 'settings' ? 'active' : 'zombie'}>
-                        Settings
-                        {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
-                    </Button>
-                </Link>
+                <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
+                    Endpoints
+                </ButtonLink>
+                <ButtonLink to="./settings" variant={tab === 'settings' ? 'active' : 'zombie'}>
+                    Settings
+                    {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                </ButtonLink>
             </nav>
             <Routes>
                 <Route path="/*" element={<EndpointsShow integration={data} />} />

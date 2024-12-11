@@ -11,7 +11,8 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    getProvider
+    getProvider,
+    linkConnection
 } from '@nangohq/shared';
 import type { PostPublicTableauAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -19,7 +20,6 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
@@ -75,9 +75,14 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
-    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
+
+    // if (isConnectSession && queryString.connection_id) {
+    //     errorRestrictConnectionId(res);
+    //     return;
+    // }
 
     let logCtx: LogContext | undefined;
 
@@ -124,6 +129,18 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
+        }
+
+        // Reconnect mechanism
+        if (isConnectSession && res.locals.connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+            if (!connection) {
+                await logCtx.error('Invalid connection');
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'invalid_connection' } });
+                return;
+            }
+            connectionId = connection?.connection_id;
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });

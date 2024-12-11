@@ -1,7 +1,7 @@
 import type { GetConnectSession } from '@nangohq/types';
 import db from '@nangohq/database';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import * as endUserService from '../../services/endUser.service.js';
+import * as endUserService from '@nangohq/shared';
 import { requireEmptyQuery, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
@@ -61,6 +61,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         response.data.integrations_config_defaults = Object.fromEntries(
             Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [key, { connection_config: value.connectionConfig }])
         );
+    }
+    if (connectSession.connectionId) {
+        response.data.isReconnecting = true;
     }
 
     res.status(200).send(response);

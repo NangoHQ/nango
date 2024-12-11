@@ -4,20 +4,18 @@ import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import { linkConnection } from '../../services/endUser.service.js';
 import db from '@nangohq/database';
 import { isIntegrationAllowed } from '../../utils/auth.js';
 
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.any()).optional(),
-        user_scope: z.string().optional()
+        params: z.record(z.any()).optional()
     })
     .and(connectionCredential);
 
@@ -49,9 +47,14 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     const { account, environment } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
-    const connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
+
+    // if (isConnectSession && queryString.connection_id) {
+    //     errorRestrictConnectionId(res);
+    //     return;
+    // }
 
     let logCtx: LogContext | undefined;
 
@@ -94,6 +97,18 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
             return;
+        }
+
+        // Reconnect mechanism
+        if (isConnectSession && res.locals.connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+            if (!connection) {
+                await logCtx.error('Invalid connection');
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'invalid_connection' } });
+                return;
+            }
+            connectionId = connection?.connection_id;
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });

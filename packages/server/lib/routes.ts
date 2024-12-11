@@ -5,13 +5,11 @@ import configController from './controllers/config.controller.js';
 import providerController from './controllers/provider.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
-import appStoreAuthController from './controllers/appStoreAuth.controller.js';
 import authMiddleware from './middleware/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
-import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -106,6 +104,11 @@ import { getConnectionRefresh } from './controllers/v1/connections/connectionId/
 import { cliMinVersion } from './middleware/cliVersionCheck.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
+import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
+import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
+import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
+import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postRollout } from './controllers/fleet/postRollout.js';
 
 export const router = express.Router();
 
@@ -177,9 +180,9 @@ publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthC
 
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
 publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, apiAuthController.apiKey.bind(apiAuthController));
-publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, apiAuthController.basic.bind(apiAuthController));
-publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, appStoreAuthController.auth.bind(appStoreAuthController));
+publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
+publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
+publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAppStoreAuthorization);
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
 publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
@@ -241,6 +244,7 @@ publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bin
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
+publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 
@@ -249,6 +253,15 @@ publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncCont
 publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
 
 router.use(publicAPI);
+
+// -------
+// Internal API routes.
+const internalApi = express.Router();
+
+const interalApiAuth: RequestHandler[] = [rateLimiterMiddleware, authMiddleware.internal.bind(authMiddleware)];
+internalApi.route('/internal/fleet/:fleetId/rollout').post(interalApiAuth, postRollout);
+
+router.use(internalApi);
 
 // -------
 // Webapp routes (session auth).

@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 import { cn } from '../../utils/utils';
 
-const alertVariants = cva('relative w-full rounded-lg border px-3 py-1.5 text-sm flex gap-2 items-center flex items-center', {
+const alertVariants = cva('relative w-full rounded-lg border px-2 py-2 text-sm flex gap-2.5 items-start min-h-10', {
     variants: {
         variant: {
             default: 'bg-blue-base-35 border-blue-base text-blue-base',
@@ -22,12 +22,12 @@ const Alert = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
 Alert.displayName = 'Alert';
 
 const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(({ className, ...props }, ref) => (
-    <h5 ref={ref} className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />
+    <h5 ref={ref} className={cn('font-semibold', className)} {...props} />
 ));
 AlertTitle.displayName = 'AlertTitle';
 
 const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('text-sm [&_p]:leading-relaxed', className)} {...props} />
+    <div ref={ref} className={cn('text-sm', className)} {...props} />
 ));
 AlertDescription.displayName = 'AlertDescription';
 
