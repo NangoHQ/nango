@@ -1,4 +1,4 @@
-import type { RoutingId } from '@nangohq/types';
+import type { RoutingId, NodeConfig } from '@nangohq/types';
 
 export const nodeStates = ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'] as const;
 export type NodeState = (typeof nodeStates)[number];
@@ -9,10 +9,10 @@ export interface Node {
     readonly deploymentId: number;
     readonly url: string | null;
     readonly state: NodeState;
-    readonly image: string;
-    readonly cpuMilli: number;
-    readonly memoryMb: number;
-    readonly storageMb: number;
+    readonly image: NodeConfig['image'];
+    readonly cpuMilli: NodeConfig['cpuMilli'];
+    readonly memoryMb: NodeConfig['memoryMb'];
+    readonly storageMb: NodeConfig['storageMb'];
     readonly error: string | null;
     readonly createdAt: Date;
     readonly lastStateTransitionAt: Date;

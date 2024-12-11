@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
-import Button from '../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -401,11 +401,14 @@ export const ConnectionCreate: React.FC = () => {
                             </Collapsible>
                         )}
                         <div className="flex gap-4">
-                            <Link to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.uniqueKey}` : ''}`}>
-                                <Button onClick={onClickConnectUI} size="md" variant={'link'}>
-                                    Or use deprecated flow <IconChevronRight stroke={1} size={18} />
-                                </Button>
-                            </Link>
+                            <ButtonLink
+                                to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.uniqueKey}` : ''}`}
+                                onClick={onClickConnectUI}
+                                size="md"
+                                variant={'link'}
+                            >
+                                Or use deprecated flow <IconChevronRight stroke={1} size={18} />
+                            </ButtonLink>
                         </div>
                     </div>
                 </div>

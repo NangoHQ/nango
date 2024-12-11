@@ -3,13 +3,12 @@ import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
 import { envs, jobsServiceUrl } from './env.js';
 import { httpFetch } from './utils.js';
 
-export async function register({ port }: { port: number }): Promise<Result<void>> {
+export async function register(): Promise<Result<void>> {
     if (!envs.RUNNER_NODE_ID) {
         return Err('NODE_ID is not set');
     }
-    const nodeUrl = `http://localhost:${port}`;
-    if (envs.RUNNER_TYPE === 'RENDER') {
-        // TODO
+    if (!envs.RUNNER_URL) {
+        return Err('RUNNER_URL is not set');
     }
     try {
         await retryWithBackoff(
@@ -17,7 +16,7 @@ export async function register({ port }: { port: number }): Promise<Result<void>
                 return await httpFetch({
                     method: 'POST',
                     url: `${jobsServiceUrl}/runners/${envs.RUNNER_NODE_ID}/register`,
-                    data: JSON.stringify({ url: nodeUrl })
+                    data: JSON.stringify({ url: envs.RUNNER_URL })
                 });
             },
             {

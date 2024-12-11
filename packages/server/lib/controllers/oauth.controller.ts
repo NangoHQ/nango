@@ -52,7 +52,7 @@ import db from '@nangohq/database';
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
+import { isIntegrationAllowed } from '../utils/auth.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -66,10 +66,10 @@ class OAuthController {
         let userScope = req.query['user_scope'] as string | undefined;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
-        if (isConnectSession && receivedConnectionId) {
-            errorRestrictConnectionId(res);
-            return;
-        }
+        // if (isConnectSession && receivedConnectionId) {
+        //     errorRestrictConnectionId(res);
+        //     return;
+        // }
 
         let logCtx: LogContext | undefined;
 
@@ -300,10 +300,10 @@ class OAuthController {
 
         const { client_id, client_secret }: Record<string, string> = body;
 
-        if (isConnectSession && receivedConnectionId) {
-            errorRestrictConnectionId(res);
-            return;
-        }
+        // if (isConnectSession && receivedConnectionId) {
+        //     errorRestrictConnectionId(res);
+        //     return;
+        // }
 
         let logCtx: LogContext | undefined;
 

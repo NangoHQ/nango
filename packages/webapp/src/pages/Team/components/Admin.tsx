@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
 

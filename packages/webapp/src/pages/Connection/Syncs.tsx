@@ -8,20 +8,39 @@ import { useStore } from '../../store';
 import { Info } from '../../components/Info';
 import { getLogsUrl } from '../../utils/logs';
 import { Fragment } from 'react/jsx-runtime';
+import { useSyncs } from '../../hooks/useSyncs';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { useInterval } from 'react-use';
 
 interface SyncsProps {
     syncs: SyncResponse[] | undefined;
     connection: ApiConnectionFull;
-    provider: string | null;
+    provider: string;
 }
 
-export const Syncs: React.FC<SyncsProps> = ({ syncs, connection, provider }) => {
+export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
     const env = useStore((state) => state.env);
 
+    const { data: syncs, loading, mutate } = useSyncs({ env, provider_config_key: connection.provider_config_key, connection_id: connection.connection_id });
+
+    useInterval(async () => {
+        await mutate();
+    }, 5000);
+
+    if (loading) {
+        return (
+            <div className="flex gap-2 flex-col">
+                <Skeleton className="w-full"></Skeleton>
+                <Skeleton className="w-full"></Skeleton>
+                <Skeleton className="w-full"></Skeleton>
+            </div>
+        );
+    }
+
     return (
-        <div className="h-fit rounded-md text-white">
+        <div className="flex flex-col gap-6">
             {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
-                <div className="flex my-4">
+                <div className="flex">
                     <Info variant={'destructive'}>
                         <div>
                             Last sync execution failed for the following sync
@@ -66,13 +85,13 @@ export const Syncs: React.FC<SyncsProps> = ({ syncs, connection, provider }) => 
                     <Table.Header>
                         <Table.Row>
                             <Table.Head className="w-[120px]">Sync Name</Table.Head>
-                            <Table.Head className="w-[120px]">Models</Table.Head>
+                            <Table.Head className="w-[115px]">Models</Table.Head>
                             <Table.Head className="w-[120px]">Last Execution</Table.Head>
                             <Table.Head className="w-[80px]">Frequency</Table.Head>
-                            <Table.Head className="w-[80px]">Records</Table.Head>
-                            <Table.Head className="w-[120px]">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[140px]">Next Sync Start</Table.Head>
-                            <Table.Head className="w-[40px]"></Table.Head>
+                            <Table.Head className="w-[75px]">Records</Table.Head>
+                            <Table.Head className="w-[130px]">Last Sync Start</Table.Head>
+                            <Table.Head className="w-[150px]">Next Sync Start</Table.Head>
+                            <Table.Head className="w-[30px]"></Table.Head>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>

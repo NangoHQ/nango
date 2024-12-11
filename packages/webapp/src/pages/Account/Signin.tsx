@@ -6,7 +6,7 @@ import { useSignin } from '../../utils/user';
 import type { ApiUser, PostSignin } from '@nangohq/types';
 import DefaultLayout from '../../layout/DefaultLayout';
 import GoogleButton from '../../components/ui/button/Auth/Google';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { globalEnv } from '../../utils/env';
 import { Helmet } from 'react-helmet';
 
