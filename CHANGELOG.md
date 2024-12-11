@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.47.0] - 2024-12-11
+
+### Added
+
+- *(docs)* Add connect-ui docs (#3106) by @hassan254-prog
+- *(integrations)* Add rate limting to intercom (#3122) by @hassan254-prog
+- *(integrations)* Add support for braze (#3121) by @hassan254-prog
+- *(integrations)* Add support for freshteam (#3124) by @hassan254-prog
+- *(integrations)* Add support for Zappier (#3126) by @dannylwe
+- *(docs)* Add zendesk connect-ui docs (#3127) by @hassan254-prog
+- *(docs)* Malwarebytes connect-ui docs (#3131) by @hassan254-prog
+- *(docs)* Add quickbooks connect ui docs (#3133) by @hassan254-prog
+- Fleet into jobs/server (#3129) by @TBonnin
+- *(docs)* Connect UI Documentation  (#3107) by @dannylwe
+- Reconnect (#3119) by @bodinsamuel
+- *(fleet)* Ensure only one fleet supervisor is running (#3141) by @TBonnin
+- *(fleet)* Add /rollout endpoint to server (#3140) by @TBonnin
+- *(integrations)* Add support for Gerrit (#3144) by @hassan254-prog
+- *(integration)* Add verification and remove port from remote site (#3150) by @khaliqgant
+- *(integration)* Add docs and post connection script for adobe umapi (#3147) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/42248878536c13238318eba3d239d9bd3f942b90 by Francis Maina. Commit message: fix(dialpad): addresses the comments made in the last PR review (#147) by @github-actions[bot]
+
+### Changed
+
+- *(deps)* Bump nanoid from 5.0.7 to 5.0.9 (#3142) by @dependabot[bot]
+- Update total APIs count (#3146) by @rguldener
+- Authorize and reconnect (#3151) by @bodinsamuel
+
+### Fixed
+
+- *(proxy)* Lowercase incoming headers (#3128) by @bodinsamuel
+- *(api)* Move more auth endpoints to new format (#3120) by @bodinsamuel
+- Bigquery should be off by default by @bodinsamuel
+- *(regex)* Allow special characters (#3130) by @khaliqgant
+- *(ui)* Do not identify user on debug mode (#3135) by @bodinsamuel
+- *(ui)* Rename add connection  (#3134) by @bodinsamuel
+- Copy fleet package in server dockerfile (#3137) by @TBonnin
+- Fleet connection to main db by @TBonnin
+- Return 400 when /connections/:connetionId missing provider_config_key (#3139) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/06c35efed384a69115c88a78620d850c7287e6ae by Khaliq. Commit message: fix(linear): fix types (#148) by @github-actions[bot]
+
 ## [v0.46.1] - 2024-12-06
 
 ### Added
@@ -2497,6 +2538,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.47.0]: https://github.com/NangoHQ/nango/compare/v0.46.1..v0.47.0
 [v0.46.1]: https://github.com/NangoHQ/nango/compare/v0.46.0..v0.46.1
 [v0.46.0]: https://github.com/NangoHQ/nango/compare/v0.45.1..v0.46.0
 [v0.45.1]: https://github.com/NangoHQ/nango/compare/v0.45.0..v0.45.1

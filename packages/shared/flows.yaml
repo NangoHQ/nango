@@ -2654,10 +2654,10 @@ integrations:
                     path: /users/email
                     group: Users
                 output: SuccessResponse
-                input: EmailEntity
+                input: IdEntity
         models:
-            EmailEntity:
-                email: string
+            IdEntity:
+                id: string
             SuccessResponse:
                 success: boolean
             User:

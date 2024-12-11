@@ -3,7 +3,7 @@ import type { ApiInvitation, PostSignup } from '@nangohq/types';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch, useSignupAPI } from '../../../utils/api';
 import GoogleButton from '../../../components/ui/button/Auth/Google';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Input } from '../../../components/ui/input/Input';
 import { Password } from './Password';
 import { globalEnv } from '../../../utils/env';

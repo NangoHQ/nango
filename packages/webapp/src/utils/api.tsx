@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
-import type { RunSyncCommand } from '../types';
+
 import type { PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
@@ -432,21 +432,6 @@ export function useGetHmacAPI(env: string) {
         try {
             const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useRunSyncAPI(env: string) {
-    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/sync/command?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id, sync_name, provider })
             });
 
             return res;

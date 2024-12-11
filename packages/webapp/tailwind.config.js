@@ -113,14 +113,20 @@ module.exports = {
                 'info-400': '#509af8',
                 'info-500': '#0c2a75'
             },
+            fontSize: {
+                xs: ['11px', '16px'],
+                s: ['12px', '18px'],
+                sm: '14px',
+                base: '16px',
+                xl: '20px',
+                '2xl': '24px',
+                '3xl': '28px',
+                '4xl': '32px',
+                '5xl': '36px'
+            },
             width: {
                 largebox: '1200px',
                 largecell: '480px'
-            },
-            fontSize: {
-                xs: '11px',
-                s: '13px',
-                '3xl': '28px'
             },
             fontFamily: {
                 code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']

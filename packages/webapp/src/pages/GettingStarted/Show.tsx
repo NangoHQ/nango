@@ -1,6 +1,6 @@
 import { IconChevronRight, IconLockOpen2, IconPencil, IconPlayerPlay, IconRefresh, IconTool } from '@tabler/icons-react';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { Tag } from '../../components/ui/label/Tag';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
@@ -100,9 +100,7 @@ export const GettingStarted: React.FC = () => {
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
-                            <Tag bgClassName="border border-grayscale-700 px-2" textClassName="text-white text-[12px]">
-                                Guide 1
-                            </Tag>
+                            <Tag variant={'neutral'}>Guide 1</Tag>
                             <h2>Authorize</h2>
                         </div>
                         <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
@@ -128,9 +126,7 @@ export const GettingStarted: React.FC = () => {
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
-                            <Tag bgClassName="border border-grayscale-700 px-2" textClassName="text-white text-[12px]">
-                                Guide 2
-                            </Tag>
+                            <Tag variant={'neutral'}>Guide 2</Tag>
                             <h2>Read data</h2>
                         </div>
                         <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
@@ -156,9 +152,7 @@ export const GettingStarted: React.FC = () => {
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
-                            <Tag bgClassName="border border-grayscale-700 px-2" textClassName="text-white text-[12px]">
-                                Guide 3
-                            </Tag>
+                            <Tag variant={'neutral'}>Guide 3</Tag>
                             <h2>Write data</h2>
                         </div>
                         <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
@@ -184,9 +178,7 @@ export const GettingStarted: React.FC = () => {
                 >
                     <header className="flex justify-between">
                         <div className="flex gap-3 items-start">
-                            <Tag bgClassName="border border-grayscale-700 px-2" textClassName="text-white text-[12px]">
-                                Guide 4
-                            </Tag>
+                            <Tag variant={'neutral'}>Guide 4</Tag>
                             <h2>Build custom integrations</h2>
                         </div>
                         <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
