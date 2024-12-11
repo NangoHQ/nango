@@ -464,9 +464,9 @@ atlas:
     auth_mode: API_KEY
     proxy:
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
         base_url: https://api.atlas.so/v1
-    docs: https://developers.atlas.so/reference/getting-started-with-your-api
+    docs: https://docs.nango.dev/integrations/all/atlas
     credentials:
         apiKey:
             type: string
