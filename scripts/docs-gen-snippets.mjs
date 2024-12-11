@@ -17,11 +17,17 @@ const prettyAuthModes = {
 };
 
 const providersPath = 'packages/shared/providers.yaml';
+const flowsPath = 'packages/shared/flows.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8'));
-const useCases = JSON.parse(await fs.readFile('docs-v2/use-cases.json', 'utf-8'));
+const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8'));
+
+const useCases = {};
+for (const [integration, config] of Object.entries(flows.integrations)) {
+    useCases[integration] = buildEndpoints(config.actions, integration).concat(buildEndpoints(config.syncs, integration));
+}
 
 const files = await fs.readdir(docsPath);
 for (const file of files) {
@@ -145,7 +151,7 @@ function useCasesSnippet({ useCases }) {
                         ${group
                             .map(
                                 (endpoint) =>
-                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />')} | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
+                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />')} | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
                             )
                             .join('\n')}
                         </Accordion>
@@ -169,4 +175,24 @@ function emptyUseCases() {
         .split('\n')
         .map((line) => line.trim())
         .join('\n');
+}
+
+function buildEndpoints(syncOrAction, integration) {
+    const endpoints = [];
+    if (syncOrAction) {
+        for (const [key, item] of Object.entries(syncOrAction)) {
+            const syncEndpoints = Array.isArray(item.endpoint) ? item.endpoint : [item.endpoint];
+            for (const endpoint of syncEndpoints) {
+                endpoints.push({
+                    method: endpoint.method,
+                    path: endpoint.path,
+                    description: item.description?.trim(),
+                    group: endpoint.group,
+                    script: `${integration}/actions/${key}`
+                });
+            }
+        }
+    }
+
+    return endpoints;
 }
