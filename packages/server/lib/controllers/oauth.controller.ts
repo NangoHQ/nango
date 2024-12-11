@@ -258,15 +258,15 @@ class OAuthController {
             await logCtx.failed();
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
-        } catch (e) {
-            const prettyError = stringifyError(e, { pretty: true });
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
             const error = WSErrBuilder.UnknownError();
             if (logCtx) {
-                await logCtx.error(error.message, { error: e });
+                await logCtx.error(error.message, { error: err });
                 await logCtx.failed();
             }
 
-            errorManager.report(e, {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
@@ -716,8 +716,8 @@ class OAuthController {
             await logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
 
             res.redirect(authorizationUri);
-        } catch (error) {
-            const prettyError = stringifyError(error, { pretty: true });
+        } catch (err) {
+            const prettyError = stringifyError(err, { pretty: true });
 
             await logCtx.error('Unknown error', { connectionConfig });
             await logCtx.failed();

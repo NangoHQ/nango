@@ -14,7 +14,8 @@
         "node": true
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "unicorn"
     ],
     "extends": [
         "eslint:recommended",
@@ -107,6 +108,14 @@
         "import/consistent-type-specifier-style": [
             "error",
             "prefer-top-level"
+        ],
+        "import/namespace": "off", // very slow
+        // Unicorn
+        "unicorn/catch-error-name": [
+            "error",
+            {
+                "name": "err"
+            }
         ]
     },
     "overrides": [

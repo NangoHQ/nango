@@ -104,19 +104,19 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 await handler(internalNango);
                 await logCtx.info('Success');
                 await logCtx.success();
-            } catch (e) {
+            } catch (err) {
                 const errorDetails =
-                    e instanceof Error
+                    err instanceof Error
                         ? {
-                              message: e.message || 'Unknown error',
-                              name: e.name || 'Error',
-                              stack: e.stack || 'No stack trace'
+                              message: err.message || 'Unknown error',
+                              name: err.name || 'Error',
+                              stack: err.stack || 'No stack trace'
                           }
                         : 'Unknown error';
 
                 const errorString = JSON.stringify(errorDetails);
 
-                await logCtx.error('Post connection script failed', { error: e });
+                await logCtx.error('Post connection script failed', { error: err });
                 await logCtx.failed();
 
                 await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {

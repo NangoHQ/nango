@@ -1581,12 +1581,12 @@ class ConnectionService {
             parsedCreds.client_secret = client_secret;
 
             return { success: true, error: null, response: parsedCreds };
-        } catch (e: any) {
+        } catch (err: any) {
             const errorPayload = {
-                message: e.message || 'Unknown error',
-                name: e.name || 'Error'
+                message: err.message || 'Unknown error',
+                name: err.name || 'Error'
             };
-            logger.error(`Error fetching client credentials ${stringifyError(e)}`);
+            logger.error(`Error fetching client credentials ${stringifyError(err)}`);
             const error = new NangoError('client_credentials_fetch_error', errorPayload);
             return { success: false, error, response: null };
         }
@@ -1633,12 +1633,12 @@ class ConnectionService {
             parsedCreds.content_url = contentUrl ?? '';
 
             return { success: true, error: null, response: parsedCreds };
-        } catch (e: any) {
+        } catch (err: any) {
             const errorPayload = {
-                message: e.message || 'Unknown error',
-                name: e.name || 'Error'
+                message: err.message || 'Unknown error',
+                name: err.name || 'Error'
             };
-            logger.error(`Error fetching Tableau credentials tokens ${stringifyError(e)}`);
+            logger.error(`Error fetching Tableau credentials tokens ${stringifyError(err)}`);
             const error = new NangoError('tableau_tokens_fetch_error', errorPayload);
 
             return { success: false, error, response: null };
@@ -1753,12 +1753,12 @@ class ConnectionService {
             parsedCreds.dev_key = devKey;
 
             return { success: true, error: null, response: parsedCreds };
-        } catch (e: any) {
+        } catch (err: any) {
             const errorPayload = {
-                message: e.message || 'Unknown error',
-                name: e.name || 'Error'
+                message: err.message || 'Unknown error',
+                name: err.name || 'Error'
             };
-            logger.error(`Error fetching Bill credentials ${stringifyError(e)}`);
+            logger.error(`Error fetching Bill credentials ${stringifyError(err)}`);
             const error = new NangoError('bill_credentials_fetch_error', errorPayload);
 
             return { success: false, error, response: null };
@@ -1839,12 +1839,12 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: parsedCreds };
-        } catch (e: any) {
+        } catch (err: any) {
             const errorPayload = {
-                message: e.message || 'Unknown error',
-                name: e.name || 'Error'
+                message: err.message || 'Unknown error',
+                name: err.name || 'Error'
             };
-            logger.error(`Error fetching TwoStep credentials tokens ${stringifyError(e)}`);
+            logger.error(`Error fetching TwoStep credentials tokens ${stringifyError(err)}`);
             const error = new NangoError('two_step_credentials_fetch_error', errorPayload);
 
             return { success: false, error, response: null };

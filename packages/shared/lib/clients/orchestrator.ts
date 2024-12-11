@@ -126,8 +126,8 @@ export class Orchestrator {
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('action_failure', { error: errorMsg });
                 throw error;
             }
@@ -288,8 +288,8 @@ export class Orchestrator {
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('webhook_failure', { error: errorMsg });
                 throw error;
             }

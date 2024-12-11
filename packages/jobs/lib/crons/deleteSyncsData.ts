@@ -22,7 +22,7 @@ export function deleteSyncsData(): void {
             await exec();
 
             logger.info('[deleteSyncs] ✅ done');
-        } catch (err: unknown) {
+        } catch (err) {
             const e = new Error('failed_to_hard_delete_syncs_data', { cause: err instanceof Error ? err.message : err });
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
         }

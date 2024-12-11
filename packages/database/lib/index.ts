@@ -65,7 +65,7 @@ export const multipleMigrations = async (): Promise<void> => {
             });
             console.log('Migrations completed.');
         }
-    } catch (error: any) {
-        console.error(error.message || error);
+    } catch (err: any) {
+        console.error(err.message || err);
     }
 };

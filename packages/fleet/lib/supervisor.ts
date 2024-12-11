@@ -88,8 +88,8 @@ export class Supervisor {
             } else {
                 return Err(plan.error);
             }
-        } catch (error) {
-            return Err(new FleetError('supervisor_tick_failed', { cause: error }));
+        } catch (err) {
+            return Err(new FleetError('supervisor_tick_failed', { cause: err }));
         }
     }
 
@@ -322,8 +322,8 @@ export class Supervisor {
             if (!res.ok) {
                 throw new Error(`status: ${res.status}. response: ${res.statusText}`);
             }
-        } catch (error) {
-            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${error}`);
+        } catch (err) {
+            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${err}`);
         }
 
         return nodes.transitionTo(this.dbClient.db, {

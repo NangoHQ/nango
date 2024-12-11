@@ -315,8 +315,8 @@ export class SlackService {
                 );
                 await logCtx.failed();
             }
-        } catch (error) {
-            await logCtx.error('Failed to trigger slack notification', { error });
+        } catch (err) {
+            await logCtx.error('Failed to trigger slack notification', { error: err });
             await logCtx.failed();
         }
     }
@@ -440,8 +440,8 @@ export class SlackService {
                 await logCtx.error(content, { error: actionResponse.error });
                 await logCtx.failed();
             }
-        } catch (error) {
-            await logCtx.error('Failed to trigger slack notification', { error });
+        } catch (err) {
+            await logCtx.error('Failed to trigger slack notification', { error: err });
             await logCtx.failed();
         }
     }

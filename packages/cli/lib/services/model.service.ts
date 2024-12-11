@@ -55,8 +55,8 @@ export function loadSchemaJson({ fullPath }: { fullPath: string }): JSONSchema7 
     const filePath = path.join(fullPath, '.nango', 'schema.json');
     try {
         return JSON.parse(fs.readFileSync(filePath).toString()) as JSONSchema7;
-    } catch (error) {
-        console.error(chalk.red(`Error loading ${filePath}`), error);
+    } catch (err) {
+        console.error(chalk.red(`Error loading ${filePath}`), err);
         return null;
     }
 }

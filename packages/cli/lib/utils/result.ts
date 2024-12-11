@@ -31,8 +31,8 @@ export function Ok<T, E extends Error>(value: T): Result<T, E> {
         map: <U>(fn: (value: T) => U): Result<U, E> => {
             try {
                 return Ok(fn(value));
-            } catch (error) {
-                return Err(error as E);
+            } catch (err) {
+                return Err(err as E);
             }
         },
         mapError: <U extends Error>(_fn: (error: E) => U): Result<T, U> => {
@@ -55,8 +55,8 @@ export function Err<T, E extends Error>(error: E | string): Result<T, E> {
         mapError: <U extends Error>(fn: (error: E) => U): Result<T, U> => {
             try {
                 return Err(fn(typeof error === 'string' ? (new Error(error) as E) : error));
-            } catch (error) {
-                return Err(error as U);
+            } catch (err) {
+                return Err(err as U);
             }
         }
     };

@@ -23,8 +23,8 @@ class EnvironmentService {
             }
 
             return result;
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 accountId: account_id
@@ -203,8 +203,8 @@ class EnvironmentService {
             }
 
             return encryptionManager.decryptEnvironment(result[0]);
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
@@ -225,8 +225,8 @@ class EnvironmentService {
             }
 
             return result[0];
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,

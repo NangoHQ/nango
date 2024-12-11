@@ -27,7 +27,7 @@ export async function register({ port }: { port: number }): Promise<Result<void>
             }
         );
         return Ok(undefined);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error('failed to register runner', { cause: err }));
     }
 }

@@ -124,7 +124,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Resul
             return Err(new Error(`Error: no task '${taskProps.name}' created`));
         }
         return Ok(DbTask.from(inserted[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error creating task '${taskProps.name}': ${stringifyError(err)}`));
     }
 }
@@ -166,7 +166,7 @@ export async function heartbeat(db: knex.Knex, taskId: string): Promise<Result<T
             return Err(new Error(`Error: Task with id '${taskId}' not updated`));
         }
         return Ok(DbTask.from(updated[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error updating task ${taskId}: ${stringifyError(err)}`));
     }
 }
@@ -256,7 +256,7 @@ export async function dequeue(db: knex.Knex, { groupKey, limit }: { groupKey: st
         // Sort tasks by id (uuidv7) to ensure ordering by creation date
         const sorted = tasks.sort((a, b) => a.id.localeCompare(b.id)).map(DbTask.from);
         return Ok(sorted);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error dequeuing tasks for group key '${groupKey}': ${stringifyError(err)}`));
     }
 }
@@ -302,7 +302,7 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
             return Ok([]);
         }
         return Ok(tasks.map(DbTask.from));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error expiring tasks: ${stringifyError(err)}`));
     }
 }
@@ -335,7 +335,7 @@ export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Pro
             return Ok([]);
         }
         return Ok(tasks.map(DbTask.from));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error hard deleting tasks older than ${days} days: ${stringifyError(err)}`));
     }
 }

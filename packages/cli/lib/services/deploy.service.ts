@@ -91,8 +91,8 @@ class DeployService {
                     console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                     process.exit(1);
                 });
-        } catch (e) {
-            console.error(e);
+        } catch (err) {
+            console.error(err);
         }
     }
 
@@ -539,8 +539,8 @@ function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptN
         const content = fs.readFileSync(realPath, 'utf8');
 
         return content;
-    } catch (error) {
-        console.error(chalk.red(`Error loading file ${filePath}`), error instanceof Error ? error.message : error);
+    } catch (err) {
+        console.error(chalk.red(`Error loading file ${filePath}`), err instanceof Error ? err.message : err);
         return null;
     }
 }
@@ -562,8 +562,8 @@ function loadScriptTsFile({
         const tsIntegrationFileContents = fs.readFileSync(filePath, 'utf8');
 
         return tsIntegrationFileContents;
-    } catch (error) {
-        console.error(chalk.red(`Error loading file ${filePath}`), error);
+    } catch (err) {
+        console.error(chalk.red(`Error loading file ${filePath}`), err);
         return null;
     }
 }

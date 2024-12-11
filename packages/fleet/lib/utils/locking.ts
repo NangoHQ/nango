@@ -35,10 +35,10 @@ export async function withPgLock({
         const res = await Promise.race([fn(), processingTimeout()]);
         await trx.commit();
         return res;
-    } catch (error) {
+    } catch (err) {
         if (trx) {
             await trx.rollback();
         }
-        return Err(new FleetError('fleet_lock_error', { cause: error }));
+        return Err(new FleetError('fleet_lock_error', { cause: err }));
     }
 }
