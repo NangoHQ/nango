@@ -457,6 +457,22 @@ ashby:
             default_value: ''
             hidden: true
 
+atlas:
+    display_name: Atlas
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.atlas.so/v1
+    docs: https://developers.atlas.so/reference/getting-started-with-your-api
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlas account
+
 atlassian:
     display_name: Atlassian
     categories:
