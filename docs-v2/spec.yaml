@@ -254,9 +254,11 @@ paths:
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
+                                                            format: date-time
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
+                                                            format: date-time
                                             syncs:
                                                 type: array
                                                 items:
@@ -268,9 +270,11 @@ paths:
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
+                                                            format: date-time
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
+                                                            format: date-time
                                                         description:
                                                             type: string
                                                             description: Description of what the sync does and details about it
@@ -459,7 +463,7 @@ paths:
                                                     description: |
                                                         List of connection errors. Ex:
                                                         - Connection credentials are invalid (type=auth)
-                                                        - Last sync for the connnection has failed (type=sync)
+                                                        - Last sync for the connection has failed (type=sync)
 
         post:
             description: Adds a connection for which you already have credentials.
@@ -1022,6 +1026,7 @@ paths:
                   required: false
                   schema:
                       type: string
+                      format: date-time
                   description: A timestamp (e.g., 2023-05-31T11:46:13.390Z) used to fetch records modified after this date and time. If not provided, all records are returned. The modified_after parameter is less precise than cursor, as multiple records may share the same modification timestamp.
                 - name: delta
                   in: query
@@ -1067,6 +1072,7 @@ paths:
                                                             type: string
                                                             nullable: true
                                                             description: The timestamp at which Nango detected the record as deleted
+                                                            format: date-time
                                                         last_action:
                                                             type: string
                                                             description: The last action seen on this record
@@ -1075,10 +1081,12 @@ paths:
                                                             type: string
                                                             description: The timestamp at which Nango first saw this record
                                                             example: '2023-09-18T15:20:35.941305+00:00'
+                                                            format: date-time
                                                         last_modified_at:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: '2023-09-18T15:20:35.941305+00:00'
+                                                            format: date-time
                                                         cursor:
                                                             type: string
                                                             description: The current cursor of the record. Use this to fetch records updated after this record
@@ -2088,11 +2096,11 @@ components:
                     description: Absolute path to the logo of this integration (svg)
                 created_at:
                     type: string
-                    format: date
+                    format: date-time
                     description: When it was created
                 updated_at:
                     type: string
-                    format: date
+                    format: date-time
                     description: Last time it was updated
         IntegrationFull:
             allOf:
@@ -2217,4 +2225,4 @@ components:
                 expires_at:
                     type: string
                     description: When the token expires
-                    format: date
+                    format: date-time
