@@ -66,7 +66,7 @@ export interface AdminAxiosProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
-            onRejected?: (error: unknown) => void;
+            onRejected?: (error: unknown) => unknown;
         };
     };
 }

@@ -390,7 +390,7 @@ export interface NangoProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
-            onRejected: (value: unknown) => void;
+            onRejected: (value: unknown) => AxiosError | Promise<AxiosError>;
         };
     };
 }

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Connection } from '@nangohq/shared';
 import type { Metadata } from '@nangohq/types';
 
@@ -123,22 +123,23 @@ export function onAxiosRequestRejected({
 }) {
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
 
-    const response: AxiosResponse = (error as any)?.response;
-    if (!response) {
-        return;
+    const response: AxiosResponse | undefined = (error as AxiosError).response;
+    if (response) {
+        const requestIdentity = computeConfigIdentity(response.config);
+        saveResponse<CachedRequest>({
+            directoryName,
+            data: {
+                ...requestIdentity,
+                response: response.data,
+                status: response.status,
+                headers: response.headers as Record<string, string>
+            },
+            customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+        });
     }
 
-    const requestIdentity = computeConfigIdentity(response.config);
-    saveResponse<CachedRequest>({
-        directoryName,
-        data: {
-            ...requestIdentity,
-            response: response.data,
-            status: response.status,
-            headers: response.headers as Record<string, string>
-        },
-        customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
-    });
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+    return Promise.reject(error);
 }
 
 function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
