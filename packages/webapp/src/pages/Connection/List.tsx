@@ -27,6 +27,7 @@ import { CopyText } from '../../components/CopyText';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { EndUserProfile } from './components/EndUserProfile';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -58,18 +59,11 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
                         email={data.endUser?.email ? data.endUser.email : null}
-                        displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id}
+                        displayName={data.endUser?.displayName || data.endUser?.email || data.connection_id}
                     />
 
                     {data.endUser ? (
-                        <div className="flex flex-col overflow-hidden">
-                            <div className="text-white break-words break-all truncate">{data.endUser.email}</div>
-
-                            <div className="text-dark-500 text-xs font-code flex gap-2">
-                                {data.endUser.displayName && <span>{data.endUser.displayName}</span>}
-                                {data.endUser.organization?.displayName && <span>({data.endUser.organization?.displayName})</span>}
-                            </div>
-                        </div>
+                        <EndUserProfile endUser={data.endUser} connectionId={data.connection_id} />
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
