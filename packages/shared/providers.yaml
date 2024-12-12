@@ -514,7 +514,7 @@ auth0:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
     proxy:
-        base_url: https://${connectionConfig.subdomain}
+        base_url: https://${connectionConfig.subdomain}.auth0.com
     connection_config:
         subdomain:
             type: string
@@ -748,7 +748,7 @@ battlenet:
     token_params:
         grant_type: authorization_code
     proxy:
-        base_url: https://${connectionConfig.apiBaseUrl}
+        base_url: https://${connectionConfig.apiDomain}
     docs: https://docs.nango.dev/integrations/all/battlenet
     connection_config:
         extension:
@@ -758,10 +758,10 @@ battlenet:
             example: com
             pattern: '^[a-z.]+$'
             order: 1
-        apiBaseUrl:
+        apiDomain:
             type: string
-            title: API Base Url
-            description: The base url to where you will access your API
+            title: API Domain
+            description: The domain to where you will access your API
             example: us.api.blizzard.com
             pattern: '^[a-z.]+$'
             prefix: https://
@@ -1794,7 +1794,7 @@ contentstack:
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
     proxy:
-        base_url: https://${connectionConfig.apiBaseUrl}
+        base_url: https://${connectionConfig.apiDomain}
     connection_config:
         subdomain:
             type: string
@@ -1810,10 +1810,10 @@ contentstack:
             title: App ID
             description: The app ID of your Contentstack account
             order: 1
-        apiBaseUrl:
+        apiDomain:
             type: string
-            title: API Base Url
-            description: The base URL to where you will access your API
+            title: API Domain
+            description: The domain to where you will access your API
             pattern: '^[a-z0-9_-]+$'
             example: eu-api.contentstack.com
             prefix: https://
@@ -6911,13 +6911,13 @@ yahoo:
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
     proxy:
-        base_url: https://${connectionConfig.apiBaseUrl}
+        base_url: https://${connectionConfig.apiDomain}
     docs: https://docs.nango.dev/integrations/all/yahoo
     connection_config:
-        apiBaseUrl:
+        apiDomain:
             type: string
-            title: API Base Url
-            description: The base url to the API you want to connect to
+            title: API Domain
+            description: The domain to the API you want to connect to
             format: hostname
             example: fantasysports.yahooapis.com
             prefix: https://
