@@ -6,7 +6,7 @@ import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
-export interface DBDeployment {
+interface DBDeployment {
     readonly id: number;
     readonly commit_id: CommitHash;
     readonly created_at: Date;

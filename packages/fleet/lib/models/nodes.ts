@@ -26,7 +26,7 @@ export const validNodeStateTransitions = [
     { from: 'IDLE', to: 'TERMINATED' },
     { from: 'IDLE', to: 'ERROR' }
 ] as const;
-export type ValidNodeStateTransitions = (typeof validNodeStateTransitions)[number];
+type ValidNodeStateTransitions = (typeof validNodeStateTransitions)[number];
 const NodeStateTransition = {
     validate({ from, to }: { from: NodeState; to: NodeState }): Result<ValidNodeStateTransitions> {
         const transition = validNodeStateTransitions.find((t) => t.from === from && t.to === to);
@@ -38,7 +38,7 @@ const NodeStateTransition = {
     }
 };
 
-export interface DBNode {
+interface DBNode {
     readonly id: number;
     readonly routing_id: RoutingId;
     readonly deployment_id: number;
@@ -53,7 +53,7 @@ export interface DBNode {
     readonly last_state_transition_at: Date;
 }
 
-export const DBNode = {
+const DBNode = {
     to: (node: Node): DBNode => {
         return {
             id: node.id,
