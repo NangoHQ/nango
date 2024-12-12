@@ -2,26 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
-const prettyAuthModes = {
-    OAUTH1: 'OAuth',
-    OAUTH2: 'OAuth',
-    OAUTH2_CC: 'OAuth',
-    BASIC: 'Basic',
-    API_KEY: 'API Key',
-    APP_STORE: 'Custom',
-    BILL: 'Bill',
-    SIGNATURE: 'Signature',
-    JWT: 'JWT',
-    TWO_STEP: 'Two Step',
-    TABLEAU: 'Tableau'
-};
-
-const providersPath = 'packages/shared/providers.yaml';
 const flowsPath = 'packages/shared/flows.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
-const providers = yaml.load(await fs.readFile(providersPath, 'utf-8'));
 const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8'));
 
 const useCases = {};
@@ -44,15 +28,7 @@ for (const file of files) {
 
         const provider = providerLine.split('provider: ')[1].trim();
 
-        // write pre-built tooling snippet for the integration
-        const providerConfig = providers[provider];
-        if (!providerConfig) {
-            throw new Error(`Unknown provider ${provider} in ${file}`);
-        }
-        const authMode = providers[provider].auth_mode;
-        const prettyAuthMode = prettyAuthModes[authMode] || authMode;
         const hasUseCases = useCases[provider] && useCases[provider].length > 0;
-        const toolingSnippet = preBuiltToolingSnippet({ prettyAuthMode, hasUseCases });
         const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
 
         await fs.mkdir(snippetPath, { recursive: true });
