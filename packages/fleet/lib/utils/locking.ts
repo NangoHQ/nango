@@ -4,7 +4,7 @@ import { setTimeout } from 'node:timers/promises';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from './errors.js';
 
-export async function withPgLock({
+export async function withPgLock<T>({
     db,
     lockKey,
     fn,
@@ -13,10 +13,10 @@ export async function withPgLock({
 }: {
     db: Knex;
     lockKey: string;
-    fn: () => Promise<Result<void>>;
+    fn: (db: Knex) => Promise<Result<T>>;
     onTimeout?: () => Promise<void>;
     timeoutMs?: number;
-}): Promise<Result<void>> {
+}): Promise<Result<T>> {
     let trx: Knex.Transaction | undefined = undefined;
     try {
         trx = await db.transaction();
@@ -27,12 +27,12 @@ export async function withPgLock({
             return Err(new FleetError('fleet_cannot_acquire_lock'));
         }
 
-        const processingTimeout = async (): Promise<Result<void>> => {
+        const processingTimeout = async (): Promise<Result<T>> => {
             await setTimeout(timeoutMs);
             await onTimeout();
-            return Err(new FleetError('fleet_tick_timeout'));
+            return Err(new FleetError('fleet_lock_timeout'));
         };
-        const res = await Promise.race([fn(), processingTimeout()]);
+        const res = await Promise.race([fn(trx), processingTimeout()]);
         await trx.commit();
         return res;
     } catch (err) {

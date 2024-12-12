@@ -8,3 +8,10 @@ export interface Deployment {
 }
 
 export type RoutingId = string;
+
+export interface NodeConfig {
+    readonly image: string;
+    readonly cpuMilli: number;
+    readonly memoryMb: number;
+    readonly storageMb: number;
+}
