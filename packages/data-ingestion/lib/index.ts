@@ -87,8 +87,8 @@ class BigQueryClient {
         try {
             await this.createDataSet();
             await this.createTable();
-        } catch (e) {
-            logger.error('Error initializing', e);
+        } catch (err) {
+            logger.error('Error initializing', err);
         }
     }
 

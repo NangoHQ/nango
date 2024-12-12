@@ -84,8 +84,8 @@ class SyncController {
             }
             await trackFetch(connection.id as number);
             res.send(result.value);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -121,8 +121,8 @@ class SyncController {
             const rawSyncs = await getSyncs(connection, orchestrator);
             const syncs = await this.addRecordCount(rawSyncs, connection.id!, environment.id);
             res.send(syncs);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -147,8 +147,8 @@ class SyncController {
             const flows = flowService.getAllAvailableFlows();
 
             res.send({ syncs, flows });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -202,8 +202,8 @@ class SyncController {
             }
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -244,8 +244,8 @@ class SyncController {
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -381,8 +381,8 @@ class SyncController {
             const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
 
             res.send(providerConfigKey);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -423,8 +423,8 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -465,8 +465,8 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -535,8 +535,8 @@ class SyncController {
             }
 
             res.send({ syncs: syncsWithStatus });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -659,8 +659,8 @@ class SyncController {
             const attributes = await getAttributes(provider_config_key as string, sync_name as string);
 
             res.status(200).send(attributes);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -700,8 +700,8 @@ class SyncController {
             await syncManager.softDeleteSync(syncId, environmentId, orchestrator);
 
             res.sendStatus(204);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -785,8 +785,8 @@ class SyncController {
                 return;
             }
             res.status(200).send({ frequency: newFrequency });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 }

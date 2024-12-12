@@ -68,9 +68,9 @@ export async function compileAllFiles({
                     success = false;
                 }
             }
-        } catch (error) {
+        } catch (err) {
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
-            console.error(error);
+            console.error(err);
             success = false;
         }
     }
@@ -108,9 +108,9 @@ export async function compileSingleFile({
         });
 
         return result === true;
-    } catch (error) {
+    } catch (err) {
         console.error(`Error compiling ${file.inputPath}:`);
-        console.error(error);
+        console.error(err);
         return false;
     }
 }

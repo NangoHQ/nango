@@ -189,8 +189,8 @@ export async function getRecords({
             }
         }
         return Ok({ records: results, next_cursor: null });
-    } catch (_error) {
-        const e = new Error(`List records error for model ${model}`);
+    } catch (err) {
+        const e = new Error(`List records error for model ${model}`, { cause: err });
         return Err(e);
     }
 }
@@ -310,13 +310,13 @@ export async function upsert({
         });
 
         return Ok(summary);
-    } catch (error: any) {
+    } catch (err: any) {
         let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
         errorMessage += `Attempted to insert/update/delete: ${recordsWithoutDuplicates.length} records\n`;
 
-        if ('code' in error) {
-            const errorCode = (error as { code: string }).code;
+        if ('code' in err) {
+            const errorCode = (err as { code: string }).code;
             errorMessage += `Error code: ${errorCode}.\n`;
             let errorDetail = '';
             switch (errorCode) {
@@ -328,7 +328,7 @@ export async function upsert({
             if (errorDetail) errorMessage += `Info: ${errorDetail}.\n`;
         }
 
-        logger.error(`${errorMessage}${error}`);
+        logger.error(`${errorMessage}${err}`);
 
         return Err(errorMessage);
     }
@@ -398,14 +398,14 @@ export async function update({
             deletedKeys: [],
             nonUniqueKeys
         });
-    } catch (error: any) {
+    } catch (err: any) {
         let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
         errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
         errorMessage += `Attempted to update: ${recordsWithoutDuplicates.length} records\n`;
 
-        if ('code' in error) errorMessage += `Error code: ${(error as { code: string }).code}.\n`;
-        if ('detail' in error) errorMessage += `Detail: ${(error as { detail: string }).detail}.\n`;
-        if ('message' in error) errorMessage += `Error Message: ${(error as { message: string }).message}`;
+        if ('code' in err) errorMessage += `Error code: ${(err as { code: string }).code}.\n`;
+        if ('detail' in err) errorMessage += `Detail: ${(err as { detail: string }).detail}.\n`;
+        if ('message' in err) errorMessage += `Error Message: ${(err as { message: string }).message}`;
 
         return Err(errorMessage);
     }

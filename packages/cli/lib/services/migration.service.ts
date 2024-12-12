@@ -71,8 +71,8 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
         if (debug) {
             printDebug(`Updated imports in ${filePath}.`);
         }
-    } catch (error) {
-        console.error(chalk.red(`There was an issue updating the imports in ${filePath}.`), error);
+    } catch (err) {
+        console.error(chalk.red(`There was an issue updating the imports in ${filePath}.`), err);
     }
 }
 

@@ -127,7 +127,7 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
             return Err(new Error(`Error: no schedule '${props.name}' created`));
         }
         return Ok(DbSchedule.from(inserted[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error creating schedule '${props.name}': ${stringifyError(err)}`));
     }
 }
@@ -139,7 +139,7 @@ export async function get(db: knex.Knex, scheduleId: string): Promise<Result<Sch
             return Err(new Error(`Error: no schedule '${scheduleId}' found`));
         }
         return Ok(DbSchedule.from(schedule));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error getting schedule '${scheduleId}': ${stringifyError(err)}`));
     }
 }
@@ -165,7 +165,7 @@ export async function transitionState(db: knex.Knex, scheduleId: string, to: Sch
             return Err(new Error(`Error: no schedule '${scheduleId}' updated`));
         }
         return Ok(DbSchedule.from(updated[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error transitioning schedule '${scheduleId}': ${stringifyError(err)}`));
     }
 }
@@ -186,7 +186,7 @@ export async function update(
             return Err(new Error(`Error: no schedule '${props.id}' updated`));
         }
         return Ok(DbSchedule.from(updated[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error updating schedule '${props.id}': ${stringifyError(err)}`));
     }
 }
@@ -203,7 +203,7 @@ export async function remove(db: knex.Knex, id: string): Promise<Result<Schedule
             return Err(new Error(`Error: no schedule '${id}' deleted`));
         }
         return Ok(DbSchedule.from(deleted[0]));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error deleting schedule '${id}': ${stringifyError(err)}`));
     }
 }
@@ -228,7 +228,7 @@ export async function search(
         }
         const schedules = await query;
         return Ok(schedules.map(DbSchedule.from));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error searching schedules: ${stringifyError(err)}`));
     }
 }
@@ -252,7 +252,7 @@ export async function hardDeleteOlderThanNDays(db: knex.Knex, days: number): Pro
             .del()
             .returning('*');
         return Ok(deleted);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error(`Error hard deleting schedules older than ${days} days: ${stringifyError(err)}`));
     }
 }

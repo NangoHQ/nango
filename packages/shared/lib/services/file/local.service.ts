@@ -28,8 +28,8 @@ class LocalFileService {
             const integrationFileContents = fs.readFileSync(realPath, 'utf8');
 
             return integrationFileContents;
-        } catch (error) {
-            console.log(error);
+        } catch (err) {
+            console.log(err);
             return null;
         }
     }
@@ -43,8 +43,8 @@ class LocalFileService {
             fs.writeFileSync(`${realPath}${distPrefix ? '/dist' : ''}/${syncName}`, fileContents, 'utf8');
 
             return true;
-        } catch (error) {
-            console.log(error);
+        } catch (err) {
+            console.log(err);
             return false;
         }
     }

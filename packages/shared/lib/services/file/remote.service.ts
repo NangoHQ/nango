@@ -55,8 +55,8 @@ class RemoteFileService {
             );
 
             return fileName;
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
@@ -103,8 +103,8 @@ class RemoteFileService {
                 }
                 return '_LOCAL_FILE_';
             }
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,

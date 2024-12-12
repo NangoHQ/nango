@@ -131,8 +131,8 @@ async function migrate() {
         try {
             await saveCheckpoint(checkpoint);
             console.log(`${res.length} rows migrated in ${endWrite - startRead}ms. lastCreatedAt: ${checkpoint.lastCreatedAt}.`);
-        } catch (error) {
-            console.error('Error saving checkpoint:', error);
+        } catch (err) {
+            console.error('Error saving checkpoint:', err);
             process.exit(1);
         }
     }
@@ -143,11 +143,11 @@ async function getCheckpoint(): Promise<Checkpoint> {
     try {
         const data = await fs.promises.readFile(checkpointFile, 'utf8');
         return JSON.parse(data) as Checkpoint;
-    } catch (error: unknown) {
-        if (error['code'] == 'ENOENT') {
+    } catch (err) {
+        if (err['code'] == 'ENOENT') {
             return { lastCreatedAt: null, lastId: null };
         }
-        throw error;
+        throw err;
     }
 }
 
@@ -158,8 +158,8 @@ async function saveCheckpoint(checkpoint: Checkpoint) {
 // time execution
 const start = new Date();
 migrate()
-    .catch((error: unknown) => {
-        console.error('Error occurred during data migration:', error);
+    .catch((err: unknown) => {
+        console.error('Error occurred during data migration:', err);
     })
     .finally(async () => {
         await sourceKnex.destroy();
