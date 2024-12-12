@@ -196,7 +196,7 @@ export async function upsertEndUser(
 
         const createdEndUser = await createEndUser(db, {
             endUserId: endUserPayload.id,
-            email: endUserPayload.email,
+            email: endUserPayload.email || null,
             displayName: endUserPayload.display_name || null,
             organization: organization?.id
                 ? {
@@ -229,7 +229,7 @@ export async function upsertEndUser(
         endUserId: endUser.endUserId,
         accountId: account.id,
         environmentId: environment.id,
-        email: endUserPayload.email,
+        email: endUserPayload.email || null,
         displayName: endUserPayload.display_name || null,
         organization: organization?.id
             ? {
