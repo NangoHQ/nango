@@ -30,5 +30,6 @@ API configuration: [`twinfield`](https://nango.dev/providers.yaml)
 
 -   During the OAuth flow, the user can decide to which resources (Bases) the app should have access to. [Read more here](https://airtable.com/developers/web/api/oauth-reference#resources)
 -   Refresh tokens also expire after 60 days of non use. Make sure you call `nango.getConnection()` at least every 60 days to trigger a refresh.
+-   When creating a new connection on Nango, please provide your `cluster`, which determines the specific Twinfield environment (e.g., `accounting`, `accounting2`, or other Twinfield services). 
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twinfield.mdx)</Note>
