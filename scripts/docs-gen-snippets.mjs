@@ -156,7 +156,7 @@ function useCasesSnippet({ useCases }) {
                         ${group
                             .map(
                                 (endpoint) =>
-                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />')} | [github.com](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
+                                    `| \`${endpoint.method} ${endpoint.path}\` | ${endpoint.description?.replaceAll('\n', '<br />')} | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.md) |`
                             )
                             .join('\n')}
                         </Accordion>
