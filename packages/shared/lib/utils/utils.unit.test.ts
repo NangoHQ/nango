@@ -37,3 +37,37 @@ describe('encodeParameters Function Tests', () => {
         expect(utils.encodeParameters(params)).toEqual(expected);
     });
 });
+
+describe('interpolateIfNeeded', () => {
+    it('should interpolate both parts when "||" is present', () => {
+        const input = '${connectionConfig.appDetails} || ${connectionConfig.userEmail}';
+        const result = utils.interpolateIfNeeded(input, {
+            connectionConfig: {
+                appDetails: 'MyAppDetails',
+                userEmail: 'unknown@example.com'
+            }
+        });
+        expect(result).toBe('MyAppDetails');
+    });
+
+    it('should use the fallback if the first part is empty', () => {
+        const input = '${connectionConfig.appDetails} || ${connectionConfig.userEmail}';
+        const result = utils.interpolateIfNeeded(input, {
+            connectionConfig: {
+                appDetails: '',
+                userEmail: 'fallback@example.com'
+            }
+        });
+        expect(result).toBe('fallback@example.com');
+    });
+
+    it('should return only the first part if "||" is not present', () => {
+        const input = '${connectionConfig.appDetails}';
+        const result = utils.interpolateIfNeeded(input, {
+            connectionConfig: {
+                appDetails: 'MyAppDetails'
+            }
+        });
+        expect(result).toBe('MyAppDetails');
+    });
+});
