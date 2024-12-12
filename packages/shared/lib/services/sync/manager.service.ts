@@ -135,8 +135,8 @@ export class SyncManagerService {
             }
 
             return true;
-        } catch (e) {
-            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
+        } catch (err) {
+            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: err });
 
             return false;
         }

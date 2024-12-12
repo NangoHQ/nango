@@ -145,11 +145,11 @@ export async function exec(
                 await scriptExports.default(nango);
                 return { success: true, response: true, error: null };
             }
-        } catch (error) {
-            if (error instanceof ActionError) {
+        } catch (err) {
+            if (err instanceof ActionError) {
                 // It's not a mistake, we don't want to report user generated error
                 // span.setTag('error', error);
-                const { type, payload } = error;
+                const { type, payload } = err;
                 return {
                     success: false,
                     error: {
@@ -163,32 +163,32 @@ export async function exec(
                 };
             }
 
-            if (error instanceof NangoError) {
-                span.setTag('error', error);
+            if (err instanceof NangoError) {
+                span.setTag('error', err);
                 return {
                     success: false,
                     error: {
-                        type: error.type,
-                        payload: truncateJson(error.payload),
-                        status: error.status
+                        type: err.type,
+                        payload: truncateJson(err.payload),
+                        status: err.status
                     },
                     response: null
                 };
-            } else if (error instanceof AxiosError) {
-                span.setTag('error', error);
-                if (error.response?.data) {
-                    const errorResponse = error.response.data.payload || error.response.data;
+            } else if (err instanceof AxiosError) {
+                span.setTag('error', err);
+                if (err.response?.data) {
+                    const errorResponse = err.response.data.payload || err.response.data;
                     return {
                         success: false,
                         error: {
                             type: 'script_http_error',
                             payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
-                            status: error.response.status
+                            status: err.response.status
                         },
                         response: null
                     };
                 } else {
-                    const tmp = errorToObject(error);
+                    const tmp = errorToObject(err);
                     return {
                         success: false,
                         error: {
@@ -199,8 +199,8 @@ export async function exec(
                         response: null
                     };
                 }
-            } else if (error instanceof Error) {
-                const tmp = errorToObject(error);
+            } else if (err instanceof Error) {
+                const tmp = errorToObject(err);
                 span.setTag('error', tmp);
                 return {
                     success: false,
@@ -212,7 +212,7 @@ export async function exec(
                     response: null
                 };
             } else {
-                const tmp = errorToObject(!error || typeof error !== 'object' ? new Error(JSON.stringify(error)) : error);
+                const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
                 return {
                     success: false,

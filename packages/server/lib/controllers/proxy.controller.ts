@@ -313,12 +313,12 @@ class ProxyController {
                 res.json(parsedResponse);
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
                 await logCtx.success();
-            } catch (error) {
-                logger.error(error);
+            } catch (err) {
+                logger.error(err);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
 
-                await logCtx.error('Failed to parse JSON response', { error });
+                await logCtx.error('Failed to parse JSON response', { error: err });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
             }
@@ -447,8 +447,8 @@ class ProxyController {
             await flushLogsBuffer(logs, logCtx);
 
             await this.handleResponse({ res, responseStream, config, requestConfig, logCtx });
-        } catch (error) {
-            await this.handleErrorResponse({ res, e: error, requestConfig, config, logCtx });
+        } catch (err) {
+            await this.handleErrorResponse({ res, e: err, requestConfig, config, logCtx });
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
     }

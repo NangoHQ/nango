@@ -44,8 +44,8 @@ export class Processor {
             onEventWorker.start();
 
             this.workers = [syncWorker, actionWorker, webhookWorker, onEventWorker];
-        } catch (e) {
-            logger.error(e);
+        } catch (err) {
+            logger.error(err);
         }
     }
 

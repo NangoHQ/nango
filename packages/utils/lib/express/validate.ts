@@ -29,9 +29,9 @@ export const validateRequest =
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }
             return next();
-        } catch (error: unknown) {
-            if (error instanceof z.ZodError) {
-                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(error) } });
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
             }
         }
     };

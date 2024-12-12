@@ -105,8 +105,8 @@ class Analytics {
                 this.client.enable();
                 this.packageVersion = NANGO_VERSION;
             }
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.ANALYTICS
             });
@@ -151,8 +151,8 @@ class Analytics {
                 distinctId: userId,
                 properties: eventProperties
             });
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.ANALYTICS,
                 accountId: accountId

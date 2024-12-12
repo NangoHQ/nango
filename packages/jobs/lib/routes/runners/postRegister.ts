@@ -36,7 +36,7 @@ const handler = async (req: EndpointRequest<PostRegister>, res: EndpointResponse
             throw register.error;
         }
         return res.status(200).json({ status: 'ok' });
-    } catch (err: unknown) {
+    } catch (err) {
         return res.status(500).json({ error: { code: 'register_failed', message: err instanceof Error ? err.message : 'failed to register runner' } });
     }
 };

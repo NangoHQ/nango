@@ -44,9 +44,9 @@ export async function createSyncJob({
         if (syncJob && syncJob.length > 0 && syncJob[0]) {
             return syncJob[0];
         }
-    } catch (e) {
+    } catch (err) {
         if (nangoConnection) {
-            errorManager.report(e, {
+            errorManager.report(err, {
                 environmentId: nangoConnection.environment_id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,

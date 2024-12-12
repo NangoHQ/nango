@@ -22,11 +22,11 @@ export async function retry<T>(fn: () => T, { maxAttempts, delayMs, retryIf = ()
             } else {
                 return res;
             }
-        } catch (error) {
-            if (attempt < maxAttempts && retryOnError(error as Error)) {
+        } catch (err) {
+            if (attempt < maxAttempts && retryOnError(err as Error)) {
                 await wait();
             } else {
-                throw error;
+                throw err;
             }
         }
     }
