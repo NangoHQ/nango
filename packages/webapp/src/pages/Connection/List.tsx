@@ -28,6 +28,7 @@ import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { EndUserProfile } from './components/EndUserProfile';
+import { getConnectionDisplayName } from '../../utils/endUser';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -59,7 +60,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
                         email={data.endUser?.email ? data.endUser.email : null}
-                        displayName={data.endUser?.displayName || data.endUser?.email || data.connection_id}
+                        displayName={getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id })}
                     />
 
                     {data.endUser ? (

@@ -48,7 +48,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    it('should fail if no endUserId or email', async () => {
+    it('should fail if no endUserId', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,

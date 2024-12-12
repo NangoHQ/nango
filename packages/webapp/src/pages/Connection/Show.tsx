@@ -28,6 +28,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
 import { useListIntegration } from '../../hooks/useIntegration';
 import { EndUserProfile } from './components/EndUserProfile';
+import { getConnectionDisplayName } from '../../utils/endUser';
 
 export enum Tabs {
     Syncs,
@@ -178,7 +179,7 @@ export const ConnectionShow: React.FC = () => {
                                 <AvatarOrganization
                                     size={'sm'}
                                     email={connection.endUser?.email ? connection.endUser.email : null}
-                                    displayName={connection.endUser?.displayName || connection.endUser?.email || connection.connection.connection_id}
+                                    displayName={getConnectionDisplayName({ endUser: connection.endUser, connectionId: connection.connection.connection_id })}
                                 />
                             </div>
                         </div>
