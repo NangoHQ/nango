@@ -16,7 +16,7 @@ type FleetErrorCode =
     | 'node_delete_non_terminated'
     | 'node_config_override_creation_failed'
     | 'node_config_override_update_failed'
-    | 'node_config_override_setforall_failed'
+    | 'node_config_override_reset_image_failed'
     | 'node_config_override_not_found'
     | 'node_config_override_delete_failed'
     | 'node_config_override_search_failed'

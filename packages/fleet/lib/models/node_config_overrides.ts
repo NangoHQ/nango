@@ -7,7 +7,7 @@ import type { RoutingId } from '@nangohq/types';
 
 export const NODE_CONFIG_OVERRIDES_TABLE = 'node_config_overrides';
 
-export interface DBNodeConfigOverride {
+interface DBNodeConfigOverride {
     readonly id: number;
     readonly routing_id: RoutingId;
     readonly image: string;
@@ -18,7 +18,7 @@ export interface DBNodeConfigOverride {
     readonly updated_at: Date;
 }
 
-export const DBNodeConfigOverride = {
+const DBNodeConfigOverride = {
     to: (nodeConfigOverride: NodeConfigOverride): DBNodeConfigOverride => {
         return {
             id: nodeConfigOverride.id,
@@ -131,23 +131,17 @@ export async function search(
     }
 }
 
-export async function setForAll(
-    db: knex.Knex,
-    props: Partial<Omit<NodeConfigOverride, 'id' | 'createdAt' | 'updatedAt' | 'routingId'>>
-): Promise<Result<NodeConfigOverride[], FleetError>> {
+export async function resetImage(db: knex.Knex, props: Pick<NodeConfigOverride, 'image'>): Promise<Result<NodeConfigOverride[], FleetError>> {
     try {
         const toUpdate: Partial<DBNodeConfigOverride> = {
-            ...(props.image ? { image: props.image } : {}),
-            ...(props.cpuMilli ? { cpu_milli: props.cpuMilli } : {}),
-            ...(props.memoryMb ? { memory_mb: props.memoryMb } : {}),
-            ...(props.storageMb ? { storage_mb: props.storageMb } : {})
+            image: props.image
         };
         const updated = await db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).update(toUpdate).returning('*');
         if (!updated) {
-            return Err(new FleetError('node_config_override_setforall_failed', { context: props }));
+            return Err(new FleetError('node_config_override_reset_image_failed', { context: props }));
         }
         return Ok(updated.map(DBNodeConfigOverride.from));
     } catch (e) {
-        return Err(new FleetError('node_config_override_setforall_failed', { cause: e, context: props }));
+        return Err(new FleetError('node_config_override_reset_image_failed', { cause: e, context: props }));
     }
 }

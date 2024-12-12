@@ -64,7 +64,7 @@ export class Fleet {
             }
 
             // rolling out cancels all nodeConfigOverrides images
-            await nodeConfigOverrides.setForAll(trx, { image: this.nodeProvider.defaultNodeConfig.image });
+            await nodeConfigOverrides.resetImage(trx, { image: this.nodeProvider.defaultNodeConfig.image });
 
             return deployment;
         });
