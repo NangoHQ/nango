@@ -3,10 +3,11 @@ import type { Knex } from 'knex';
 import { logger } from './utils/logger.js';
 import * as nodes from './models/nodes.js';
 import * as deployments from './models/deployments.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from './utils/errors.js';
-import type { Node } from './types.js';
+import type { Node, NodeConfigOverride } from './types.js';
 import type { Deployment, NodeConfig } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from './node-providers/node_provider.js';
@@ -141,6 +142,13 @@ export class Supervisor {
         if (search.isErr()) {
             return Err(search.error);
         }
+
+        const routingIds = Array.from(search.value.nodes.keys());
+        const configOverrides = await nodeConfigOverrides.search(this.dbClient.db, { routingIds });
+        if (configOverrides.isErr()) {
+            return Err(configOverrides.error);
+        }
+
         for (const [routingId, nodes] of search.value.nodes) {
             // Start pending nodes
             plan.push(...(nodes.PENDING || []).map<Operation>((node) => ({ type: 'START', node })));
@@ -166,9 +174,23 @@ export class Supervisor {
             );
 
             // Mark OUTDATED nodes
+            // if new deployment is available
+            // or if config overrides have changed
+            const hasConfigOverride = (node: Node, configOverride: NodeConfigOverride | undefined): boolean => {
+                if (!configOverride) {
+                    return false;
+                }
+                return !(
+                    node.image === `${configOverride.image}:${deployment.commitId}` &&
+                    node.cpuMilli === configOverride.cpuMilli &&
+                    node.memoryMb === configOverride.memoryMb &&
+                    node.storageMb === configOverride.storageMb
+                );
+            };
             plan.push(
                 ...(nodes.RUNNING || []).flatMap<Operation>((node) => {
-                    if (node.deploymentId !== deployment.id) {
+                    const configOverride = configOverrides.value.get(node.routingId);
+                    if (node.deploymentId !== deployment.id || hasConfigOverride(node, configOverride)) {
                         return [{ type: 'OUTDATE', node }];
                     }
                     return [];
@@ -288,21 +310,34 @@ export class Supervisor {
         db: Knex,
         {
             routingId,
-            deployment
+            deployment,
+            nodeConfig
         }: {
             type: 'CREATE';
             routingId: Node['routingId'];
             deployment: Deployment;
+            nodeConfig?: NodeConfig | undefined;
         }
     ): Promise<Result<Node>> {
-        const nodeConfig = this.nodeProvider.defaultNodeConfig;
+        let newNodeConfig = this.nodeProvider.defaultNodeConfig;
+        if (!nodeConfig) {
+            const nodeConfigOverride = await nodeConfigOverrides.search(db, { routingIds: [routingId] });
+            if (nodeConfigOverride.isErr()) {
+                return Err(nodeConfigOverride.error);
+            }
+            const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
+            if (nodeConfigOverrideValue) {
+                newNodeConfig = nodeConfigOverrideValue;
+            }
+        }
+
         return nodes.create(db, {
             routingId,
             deploymentId: deployment.id,
-            image: `${nodeConfig.image}:${deployment.commitId}`,
-            cpuMilli: nodeConfig.cpuMilli,
-            memoryMb: nodeConfig.memoryMb,
-            storageMb: nodeConfig.memoryMb
+            image: `${newNodeConfig.image}:${deployment.commitId}`,
+            cpuMilli: newNodeConfig.cpuMilli,
+            memoryMb: newNodeConfig.memoryMb,
+            storageMb: newNodeConfig.storageMb
         });
     }
 
