@@ -62,10 +62,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] },
-                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'email'] }
-                ]
+                errors: [{ code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] }]
             }
         });
         expect(res.res.status).toBe(400);
