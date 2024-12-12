@@ -457,6 +457,22 @@ ashby:
             default_value: ''
             hidden: true
 
+atlas-so:
+    display_name: Atlas.so
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.atlas.so/v1
+    docs: https://docs.nango.dev/integrations/all/atlas-so
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Atlas.so account
+
 atlassian:
     display_name: Atlassian
     categories:
