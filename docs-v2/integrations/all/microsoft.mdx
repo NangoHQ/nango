@@ -1,30 +1,89 @@
 ---
 title: Microsoft
 sidebarTitle: Microsoft
+provider: microsoft
 ---
 
-API configuration: [`microsoft`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltUseCases from "/snippets/generated/microsoft/PreBuiltUseCases.mdx"
 
-| Features | Status |
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
 | - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| Pre-built authorization (OAuth) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<PreBuiltUseCases />
 
-## Getting started
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
+
+
+## Useful links
 
 -   [Overview of Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview)
 -   [How to register an Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2)
 -   [OAuth related docs](https://learn.microsoft.com/en-us/graph/auth-v2-user?tabs=http)
 -   [Microsoft permissions](https://learn.microsoft.com/en-us/graph/permissions-overview?tabs=http)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
 
 ## API gotchas
 
@@ -33,4 +92,4 @@ API configuration: [`microsoft`](https://nango.dev/providers.yaml)
 -   You can find permissions required for each API call in their corresponding API methods section, i.e, to retrieve a list of notebook objects from Onenote, you can have a look at [List Notebooks permissions](https://learn.microsoft.com/en-us/graph/api/onenote-list-notebooks?view=graph-rest-1.0&tabs=http#permissions).
 -   Please be aware that the Microsoft Graph API implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling).
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft.mdx)</Note>

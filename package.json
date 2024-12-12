@@ -48,7 +48,8 @@
         "test:cli": "vitest --config ./vite.cli.config.ts",
         "test:openapi": "npx @apidevtools/swagger-cli validate docs-v2/spec.yaml",
         "test:providers": "npx tsx scripts/validation/providers/validate.ts",
-        "docs": "cd ./docs-v2 && npx mintlify dev --port 3033",
+        "docs": "tsx scripts/docs-gen-snippets.ts && cd ./docs-v2 && npx mintlify dev --port 3033",
+        "docs:generate": "tsx scripts/docs-gen-snippets.ts",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
     },
@@ -66,6 +67,7 @@
         "eslint-plugin-react-hooks": "4.6.0",
         "eslint-plugin-unicorn": "56.0.1",
         "husky": "8.0.3",
+        "js-yaml": "^4.1.0",
         "lint-staged": "15.2.11",
         "onchange": "7.1.0",
         "prettier": "3.4.2",

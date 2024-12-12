@@ -1,33 +1,92 @@
 ---
 title: Emarsys
 sidebarTitle: Emarsys
+provider: emarsys
 ---
 
-API configuration: [`emarsys`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltUseCases from "/snippets/generated/emarsys/PreBuiltUseCases.mdx"
 
-| Features | Status |
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
 | - | - |
-| [Auth (Signature)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| Pre-built authorization (Signature) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<PreBuiltUseCases />
 
-## Getting started
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys.mdx)</Note>
+
+
+## Useful links
 
 -   [Emarsys Core API Authentication](https://dev.emarsys.com/docs/core-api-reference/b3c3a1eba8515-authentication)
 -   [Emarsys Core API docs](https://dev.emarsys.com/docs/core-api-reference/64bjdnkvt328t-overview-of-endpoint-batches)
 -   [Emarsys Core API rate limiting](https://dev.emarsys.com/docs/core-api-reference/cd1025a4f6b0d-miscellaneous#:~:text=Rate%20Limiting&text=At%201000%20requests%20per%20minute,and%20monitoring%20for%20your%20client.)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys.mdx)</Note>
 
 ## API gotchas
 
 - Emarsys offers different APIs(Emarsys core, Loyalty V4 and SMS), currently Nango support Emarsys core API which offers WSSE over SSL authentication.
 - When creating a new connection in Nango, use a combination of the `username` and `secret` that you received during onboarding. The `username` follows the format `account_name00X`, where X is a digit.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys.mdx).</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys.mdx)</Note>

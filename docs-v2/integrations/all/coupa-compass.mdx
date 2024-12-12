@@ -1,33 +1,92 @@
 ---
 title: Coupa Compass
 sidebarTitle: Coupa Compass
+provider: coupa-compass
 ---
 
-API configurations: [`coupa-compass`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltUseCases from "/snippets/generated/coupa-compass/PreBuiltUseCases.mdx"
 
-| Features | Status |
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
 | - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| Pre-built authorization (OAuth) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<PreBuiltUseCases />
 
-## Getting started
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
+
+
+## Useful links
 
 -   [How to create a client in Coupa](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-2)
 -   [OAuth related docs](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-5)
 -   [Coupa Core API docs](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api)
 -   [List of Oauth scopes](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-3)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
 
 ## API gotchas
 - Each Coupa Compass customer has their own base url, of the form `{instance_name}.coupahost.com`. For example: `companyname.coupahost.com`, which is the `{instanceDomain}`.
 - Coupa Compass offers various API types, each with its own base URL. To determine your endpoint structure, please refer to the specific API type. For example, the CSO API uses `cso.coupahost.com/api/`, while the Coupa Core API uses `{instanceDomain}/api`
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>

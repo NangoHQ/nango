@@ -1,0 +1,20 @@
+
+## Pre-built use cases
+
+<AccordionGroup>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /fetch-rich-page` | Fetch a specific page in Notion by passing a pageId. This action fetches a page,<br />and its content and converts it into a full markdown. It transforms images,<br />tables, uploaded files, etc., into their markdown counterparts, providing a complete markdown. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-rich-page.md) |
+| `GET /fetch-database` | Fetch a specific Notion database by passing in the database id. This action fetches the database and outputs an object. Note that this should be used for small databases. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-database.md) |
+| `GET /fetch-content-metadata` | Retrieve the entity type as well as an id for a Notion entity to later call<br />fetch-database or fetch-rich-page based on the type. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-content-metadata.md) |
+| `GET /metadata` | Sync pages and databases metadata to further fetch the content<br />using a dedicated action | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/content-metadata.md) |
+| `GET /users` | Fetches a list of users from Notion | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/users.md) |
+| `GET /notion/database` | Sync a database content with each row as an entry. Store the top level<br />database information in the metadata to be able to reconcile the database | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/databases.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the use case you need? [Build your own](https://nango.dev/slack) independently.</Tip>

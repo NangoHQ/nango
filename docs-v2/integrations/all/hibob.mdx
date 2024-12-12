@@ -1,35 +1,94 @@
 ---
 title: HiBob
 sidebarTitle: HiBob
+provider: hibob-service-user
 ---
 
-API configuration: [`hibob`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltUseCases from "/snippets/generated/hibob/PreBuiltUseCases.mdx"
 
-| Features | Status |
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
 | - | - |
-| [Auth (API Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| Pre-built authorization (Basic) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | ✅ |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<PreBuiltUseCases />
 
-## Getting started
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
+
+
+## Useful links
 
 -   [How to find API credentials (for service-user)](https://apidocs.hibob.com/docs/api-service-users#how-to-create-a-new-service-user)
 -   [Auth docs](https://apidocs.hibob.com/docs/api-service-users#using-service-users-in-bob)
 -   [Web API docs (their REST API)](https://apidocs.hibob.com/reference)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
 
 ## API gotchas
 
 - For Basic auth, HiBob uses ID as the username and token as the password.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
 
 <Card title="Connect to Hibob" icon="link" href="/integrations/all/hibob-service-user/connect" horizontal>
   Guide to connect to Hibob API using Nango Connect.
