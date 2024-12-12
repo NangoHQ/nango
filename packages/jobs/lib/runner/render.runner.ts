@@ -68,7 +68,7 @@ export class RenderRunner implements Runner {
                     name: runnerId,
                     ownerId: ownerId,
                     image: { ownerId: ownerId, imagePath: `nangohq/nango-runner:${imageTag}` },
-                    serviceDetails: { env: 'image' },
+                    serviceDetails: { env: 'image', plan: 'starter' },
                     envVars: [
                         { key: 'NODE_ENV', value: process.env['NODE_ENV'] || NodeEnv.Dev },
                         { key: 'NANGO_CLOUD', value: process.env['NANGO_CLOUD'] || 'true' },

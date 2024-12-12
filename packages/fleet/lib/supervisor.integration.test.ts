@@ -4,6 +4,7 @@ import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from './db/helpers.test.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import { generateCommitHash } from './models/helpers.js';
 import { createNodeWithAttributes } from './models/helpers.test.js';
 import type { Deployment } from '@nangohq/types';
@@ -98,8 +99,25 @@ describe('Supervisor', () => {
         expect(oldStartingNodeAfter.state).toBe('ERROR');
     });
 
-    it('should mark OUTDATED nodes', async () => {
+    it('should mark nodes from old deployment as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: previousDeployment.id });
+
+        await supervisor.tick();
+
+        const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeAfter.state).toBe('OUTDATED');
+    });
+    it('should mark nodes with config override as OUTDATED', async () => {
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
+        (
+            await nodeConfigOverrides.create(dbClient.db, {
+                routingId: node.routingId,
+                image: 'new-image',
+                cpuMilli: 10000,
+                memoryMb: 1234,
+                storageMb: 567890
+            })
+        ).unwrap();
 
         await supervisor.tick();
 
@@ -135,7 +153,7 @@ describe('Supervisor', () => {
         expect(nodeStillOutdated.state).toBe('OUTDATED');
 
         // new node is RUNNING, OUTDATED node should be FINISHING
-        nodes.transitionTo(dbClient.db, { nodeId: newNode.id, newState: 'RUNNING', url: 'http://myurl' });
+        await nodes.transitionTo(dbClient.db, { nodeId: newNode.id, newState: 'RUNNING', url: 'http://myurl' });
         await supervisor.tick();
         const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
         expect(nodeAfter.state).toBe('FINISHING');

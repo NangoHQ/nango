@@ -28,7 +28,10 @@ export const renderNodeProvider: NodeProvider = {
                 name,
                 ownerId,
                 image: { ownerId, imagePath: node.image },
-                serviceDetails: { env: 'image' },
+                serviceDetails: {
+                    env: 'image',
+                    plan: getPlan(node)
+                },
                 envVars: [
                     { key: 'NODE_ENV', value: envs.NODE_ENV },
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
@@ -122,4 +125,14 @@ async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'r
         }
         return Err(new Error('Request to Render API failed', { cause: err }));
     }
+}
+
+function getPlan(node: Node): 'starter' | 'standard' | 'pro' {
+    if (node.cpuMilli > 2000 || node.memoryMb > 2048) {
+        return 'pro';
+    }
+    if (node.cpuMilli > 1000 || node.memoryMb > 1024) {
+        return 'standard';
+    }
+    return 'starter';
 }
