@@ -209,8 +209,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('tiktok_token_request_error');
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_request_error', err.message);
         }
     }
 
@@ -241,8 +241,8 @@ class ProviderClient {
             }
 
             throw new NangoError('stripe_app_token_request_error');
-        } catch (e: any) {
-            throw new NangoError('stripe_app_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('stripe_app_token_request_error', err.message);
         }
     }
 
@@ -273,8 +273,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
-        } catch (e: any) {
-            throw new NangoError('stripe_app_token_refresh_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('stripe_app_token_refresh_request_error', err.message);
         }
     }
 
@@ -304,8 +304,8 @@ class ProviderClient {
             }
 
             throw new NangoError('tiktok_token_request_error', response.data);
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_request_error', err.message);
         }
     }
 
@@ -333,8 +333,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('tiktok_token_refresh_request_error');
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_refresh_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_refresh_request_error', err.message);
         }
     }
 
@@ -417,8 +417,8 @@ class ProviderClient {
             };
             // Sample failure response: { "result": "5002", "message": "Unauthorized client ID" }
             throw new NangoError('request_token_external_error', payload);
-        } catch (e: any) {
-            throw new NangoError('request_token_external_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('request_token_external_error', err.message);
         }
     }
 

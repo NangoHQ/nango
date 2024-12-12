@@ -164,9 +164,9 @@ function computeDataIdentity(config: AxiosRequestConfig): string | undefined {
     } else {
         try {
             dataString = JSON.stringify(data);
-        } catch (e) {
-            if (e instanceof Error) {
-                throw new Error(`Unable to compute request identity: ${e.message}`);
+        } catch (err) {
+            if (err instanceof Error) {
+                throw new Error(`Unable to compute request identity: ${err.message}`);
             } else {
                 throw new Error('Unable to compute request identity');
             }

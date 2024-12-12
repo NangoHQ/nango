@@ -30,7 +30,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
             }
             next();
         })
-        .catch((error: unknown) => {
-            res.status(401).json({ error: `Unauthorized: ${stringifyError(error)}` });
+        .catch((err: unknown) => {
+            res.status(401).json({ error: `Unauthorized: ${stringifyError(err)}` });
         });
 };

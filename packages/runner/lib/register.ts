@@ -26,7 +26,7 @@ export async function register(): Promise<Result<void>> {
             }
         );
         return Ok(undefined);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error('failed to register runner', { cause: err }));
     }
 }

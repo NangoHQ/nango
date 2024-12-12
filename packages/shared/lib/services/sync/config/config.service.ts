@@ -192,8 +192,8 @@ export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_i
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -300,8 +300,8 @@ export async function getSyncAndActionConfigByParams(environment_id: number, syn
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -347,8 +347,8 @@ export async function getSyncConfigByParams(
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -391,8 +391,8 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
         if (files.length > 0) {
             await remoteFileService.deleteFiles(files);
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
