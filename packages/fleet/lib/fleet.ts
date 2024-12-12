@@ -3,6 +3,7 @@ import type { Result } from '@nangohq/utils';
 import { DatabaseClient } from './db/client.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
+import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import type { Node } from './types.js';
 import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
@@ -22,6 +23,8 @@ export class Fleet {
     public fleetId: string;
     private dbClient: DatabaseClient;
     private supervisor: Supervisor | undefined = undefined;
+    private nodeProvider: NodeProvider;
+
     constructor({
         fleetId,
         dbUrl = defaultDbUrl,
@@ -34,6 +37,7 @@ export class Fleet {
         this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
         this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
+        this.nodeProvider = nodeProvider;
     }
 
     public async migrate(): Promise<void> {
@@ -53,7 +57,17 @@ export class Fleet {
     }
 
     public async rollout(commitId: CommitHash): Promise<Result<Deployment>> {
-        return deployments.create(this.dbClient.db, commitId);
+        return this.dbClient.db.transaction(async (trx) => {
+            const deployment = await deployments.create(trx, commitId);
+            if (deployment.isErr()) {
+                throw deployment.error;
+            }
+
+            // rolling out cancels all nodeConfigOverrides images
+            await nodeConfigOverrides.resetImage(trx, { image: this.nodeProvider.defaultNodeConfig.image });
+
+            return deployment;
+        });
     }
 
     public async getRunningNode(routingId: RoutingId): Promise<Result<Node>> {
@@ -104,10 +118,7 @@ export class Fleet {
     }
 
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
-        if (!this.supervisor) {
-            return Err(new FleetError('fleet_misconfigured', { context: { fleetId: this.fleetId } }));
-        }
-        const valid = await this.supervisor.nodeProvider.verifyUrl(url);
+        const valid = await this.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
             return Err(valid.error);
         }
