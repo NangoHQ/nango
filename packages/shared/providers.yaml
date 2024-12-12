@@ -3364,7 +3364,7 @@ harvest:
         grant_type: refresh_token
     proxy:
         headers:
-            user-agent: ${connectionConfig.appDetails}
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
             after: 'retry-after'
         base_url: https://api.harvestapp.com
@@ -3374,6 +3374,7 @@ harvest:
             type: string
             title: App Details
             description: The details of your app
+            hidden: true
 
 health-gorilla:
     display_name: Health Gorilla
