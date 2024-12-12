@@ -4,7 +4,7 @@ import { NODE_CONFIG_OVERRIDES_TABLE } from '../../models/node_config_overrides.
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`
             CREATE TABLE ${NODE_CONFIG_OVERRIDES_TABLE} (
-                id SERIAL PRIMARY KEY,
+                id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                 routing_id varchar(255) NOT NULL UNIQUE,
                 image varchar(255) NOT NULL,
                 cpu_milli int NOT NULL,
