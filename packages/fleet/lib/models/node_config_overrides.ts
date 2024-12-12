@@ -65,8 +65,8 @@ export async function create(
             return Err(new FleetError(`node_config_override_creation_failed`, { context: props }));
         }
         return Ok(DBNodeConfigOverride.from(created));
-    } catch (e) {
-        return Err(new FleetError('node_config_override_creation_failed', { cause: e, context: props }));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_creation_failed', { cause: err, context: props }));
     }
 }
 
@@ -92,8 +92,8 @@ export async function update(
             return Err(new FleetError('node_config_override_update_failed', { context: props }));
         }
         return Ok(DBNodeConfigOverride.from(updated));
-    } catch (e) {
-        return Err(new FleetError('node_config_override_update_failed', { cause: e, context: props }));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_update_failed', { cause: err, context: props }));
     }
 }
 
@@ -104,8 +104,8 @@ export async function remove(db: knex.Knex, routingId: RoutingId): Promise<Resul
             return Err(new FleetError('node_config_override_not_found', { context: { routingId } }));
         }
         return Ok(DBNodeConfigOverride.from(deleted));
-    } catch (e) {
-        return Err(new FleetError('node_config_override_delete_failed', { cause: e, context: { routingId } }));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_delete_failed', { cause: err, context: { routingId } }));
     }
 }
 
@@ -126,8 +126,8 @@ export async function search(
             nodeConfigOverridesMap.set(nodeConfigOverride.routing_id, DBNodeConfigOverride.from(nodeConfigOverride));
         }
         return Ok(nodeConfigOverridesMap);
-    } catch (e) {
-        return Err(new FleetError('node_config_override_search_failed', { cause: e, context: { params } }));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_search_failed', { cause: err, context: { params } }));
     }
 }
 
@@ -141,7 +141,7 @@ export async function resetImage(db: knex.Knex, props: Pick<NodeConfigOverride, 
             return Err(new FleetError('node_config_override_reset_image_failed', { context: props }));
         }
         return Ok(updated.map(DBNodeConfigOverride.from));
-    } catch (e) {
-        return Err(new FleetError('node_config_override_reset_image_failed', { cause: e, context: props }));
+    } catch (err) {
+        return Err(new FleetError('node_config_override_reset_image_failed', { cause: err, context: props }));
     }
 }
