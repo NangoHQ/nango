@@ -3300,24 +3300,16 @@ harvest:
         grant_type: refresh_token
     proxy:
         headers:
-            user-agent: ${connectionConfig.appDetails} || ${connectionConfig.emailConnection}
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
             after: 'retry-after'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
-    docs_connect: https://docs.nango.dev/integrations/all/harvest/connect
-    post_connection_script: harvestPostConnection
     connection_config:
         appDetails:
             type: string
             title: App Details
             description: The details of your app
-            optional: true
-            doc_section: '#step-1-creating-app-details'
-        emailConnection:
-            type: string
-            title: ''
-            description: ''
             automated: true
 
 health-gorilla:

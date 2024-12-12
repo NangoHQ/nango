@@ -51,16 +51,6 @@ class UserService {
         return result[0] || null;
     }
 
-    async getUsersByAccountId(accountId: number, requireEmail: boolean = false): Promise<DBUser[]> {
-        let query = db.knex.select('*').from<DBUser>(`_nango_users`).where({ account_id: accountId, suspended: false });
-        if (requireEmail) {
-            query = query.orderBy('created_at', 'asc').limit(1);
-        }
-        const result = await query;
-
-        return result;
-    }
-
     async countUsers(accountId: number): Promise<number> {
         const result = await db.knex
             .select(db.knex.raw('COUNT(id) as total'))
