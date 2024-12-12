@@ -1,9 +1,72 @@
 ---
 title: Zendesk (Helpdesk)
 sidebarTitle: Zendesk
+provider: zendesk
 ---
 
-API configuration: [`zendesk`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/zendesk/PreBuiltUseCases.mdx"
+
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (OAuth) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | ✅ |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
 
 <Note>
 Zendesk has two kinds of OAuth apps:
@@ -12,27 +75,23 @@ Zendesk has two kinds of OAuth apps:
 
 Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reach out or contribute it :)
 </Note>
+## Setup guide
 
-## Features
+_No setup guide yet._
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
-## Getting started
+
+## Useful links
 
 -   [How to register an Application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk)
 -   [List of OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210#topic_gql_kbd_gt)
 -   [Setting up a global oAuth client](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/)
 -   [API](https://developer.zendesk.com/api-reference/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
 
 ## Connection configuration in Nango
@@ -52,7 +111,7 @@ For more details, see the [docs here](/guides/getting-started/authorize-an-api-f
 -   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
 -   Zendesk oAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
 ## Going further
 
