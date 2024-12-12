@@ -10,6 +10,12 @@ import type { Deployment } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 
 const mockNodeProvider = {
+    defaultNodeConfig: {
+        image: 'image',
+        cpuMilli: 1000,
+        memoryMb: 1000,
+        storageMb: 1000
+    },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
     verifyUrl: vi.fn().mockResolvedValue(Ok(undefined)),

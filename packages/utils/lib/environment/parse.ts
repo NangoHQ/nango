@@ -43,7 +43,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Jobs
-    JOBS_SERVICE_URL: z.string().url().optional(),
+    JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
@@ -56,8 +56,13 @@ export const ENVS = z.object({
     RUNNER_ID: z.string().optional(), // TODO: remove once fleet is fully released
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_URL: z.string().url().optional(),
 
     // FLEET
+    FLEET_TIMEOUT_PENDING_MS: z.coerce
+        .number()
+        .optional()
+        .default(15 * 60 * 1000), // 15 minutes
     FLEET_TIMEOUT_STARTING_MS: z.coerce
         .number()
         .optional()
@@ -66,6 +71,10 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(24 * 60 * 60 * 1000), // 24 hours
+    FLEET_TIMEOUT_IDLE_MS: z.coerce
+        .number()
+        .optional()
+        .default(15 * 60 * 1000), // 15 minutes
     FLEET_TIMEOUT_TERMINATED_MS: z.coerce
         .number()
         .optional()
@@ -78,6 +87,7 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 1000), // 1 minute
+    FLEET_RETRY_DELAY_GET_RUNNING_NODE_MS: z.coerce.number().optional().default(1000), // 1 sec
     FLEET_SUPERVISOR_TIMEOUT_TICK_MS: z.coerce
         .number()
         .optional()
