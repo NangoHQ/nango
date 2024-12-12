@@ -49,6 +49,7 @@
         "test:openapi": "npx @apidevtools/swagger-cli validate docs-v2/spec.yaml",
         "test:providers": "npx tsx scripts/validation/providers/validate.ts",
         "docs": "tsx scripts/docs-gen-snippets.ts && cd ./docs-v2 && npx mintlify dev --port 3033",
+        "docs:generate": "tsx scripts/docs-gen-snippets.ts",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
     },
