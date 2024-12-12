@@ -6,14 +6,17 @@ const path = require('node:path');
 const fs = require('node:fs');
 const yaml = require('js-yaml');
 
+/**
+ * @param {import('knex').Knex} knex
+ */
 exports.up = async function (knex) {
     let providers;
     const providersPath = path.join(__dirname, '..', '..', '..', 'shared', 'providers.yaml');
     try {
         providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
-    } catch (e) {
+    } catch (err) {
         console.error(
-            `Warning: Failed to load providers.yaml. Skipping migration. Missing fields on existing integrations will not show warnings in the dashboard until they are saved again. Underlying error: ${e.message}. `
+            `Warning: Failed to load providers.yaml. Skipping migration. Missing fields on existing integrations will not show warnings in the dashboard until they are saved again. Underlying error: ${err.message}. `
         );
         return;
     }
@@ -55,6 +58,9 @@ exports.up = async function (knex) {
         .update({ missing_fields: knex.raw("array_append(missing_fields, 'app_link')") });
 };
 
+/**
+ * @param {import('knex').Knex} knex
+ */
 exports.down = function () {
     // do nothing
 };

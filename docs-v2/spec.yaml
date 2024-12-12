@@ -2156,7 +2156,6 @@ components:
                     type: object
                     required:
                         - id
-                        - email
                     properties:
                         id:
                             type: string

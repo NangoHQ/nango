@@ -16,7 +16,7 @@ export interface ConnectSessionInput {
         | undefined;
     end_user: {
         id: string;
-        email: string;
+        email?: string | undefined;
         display_name?: string | undefined;
     };
     organization?:

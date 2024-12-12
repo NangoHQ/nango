@@ -38,13 +38,15 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     const response: GetConnectSession['Success'] = {
         data: {
             end_user: {
-                id: endUser.endUserId,
-                email: endUser.email
+                id: endUser.endUserId
             }
         }
     };
     if (endUser.displayName) {
         response.data.end_user.display_name = endUser.displayName;
+    }
+    if (endUser.email) {
+        response.data.end_user.email = endUser.email;
     }
     if (endUser.organization) {
         response.data.organization = {

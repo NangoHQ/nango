@@ -1212,7 +1212,7 @@ const { data } = await nango.createConnectSession({
       <ResponseField name="id" type="string" required>
         The unique identifier for the end user.
       </ResponseField>
-      <ResponseField name="email" type="string" required>
+      <ResponseField name="email" type="string">
         The email address of the end user.
       </ResponseField>
       <ResponseField name="display_name" type="string">
@@ -1304,7 +1304,7 @@ const { data } = await nango.createReconnectSession({
       <ResponseField name="id" type="string" required>
         The unique identifier for the end user.
       </ResponseField>
-      <ResponseField name="email" type="string" required>
+      <ResponseField name="email" type="string">
         The email address of the end user.
       </ResponseField>
       <ResponseField name="display_name" type="string">

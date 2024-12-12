@@ -27,6 +27,7 @@ import { AvatarOrganization } from '../../components/AvatarCustom';
 import { IconTrash } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
 import { useListIntegration } from '../../hooks/useIntegration';
+import { EndUserProfile } from './components/EndUserProfile';
 
 export enum Tabs {
     Syncs,
@@ -177,9 +178,7 @@ export const ConnectionShow: React.FC = () => {
                                 <AvatarOrganization
                                     size={'sm'}
                                     email={connection.endUser?.email ? connection.endUser.email : null}
-                                    displayName={
-                                        connection.endUser ? connection.endUser.displayName || connection.endUser.email : connection.connection.connection_id
-                                    }
+                                    displayName={connection.endUser?.displayName || connection.endUser?.email || connection.connection.connection_id}
                                 />
                             </div>
                         </div>
@@ -187,14 +186,7 @@ export const ConnectionShow: React.FC = () => {
                         <div className="mt-3">
                             <span className="font-semibold tracking-tight text-gray-400">Connection</span>
                             {connection.endUser ? (
-                                <div className="flex flex-col overflow-hidden">
-                                    <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connection.endUser.email}</h2>
-
-                                    <div className="text-dark-500 text-xs font-code flex gap-2">
-                                        {connection.endUser.displayName && <span>{connection.endUser.displayName}</span>}
-                                        {connection.endUser.organization?.displayName && <span>({connection.endUser.organization?.displayName})</span>}
-                                    </div>
-                                </div>
+                                <EndUserProfile endUser={connection.endUser} connectionId={connection.connection.connection_id} />
                             ) : (
                                 <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connectionId}</h2>
                             )}

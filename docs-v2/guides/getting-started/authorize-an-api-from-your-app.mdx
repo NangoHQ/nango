@@ -54,7 +54,7 @@ api.post('/sessionToken', (req, res) => {
   const res = await nango.createConnectSession({
     end_user: {
       id: '<END-USER-ID>',
-      email: '<END-USER-EMAIL>',
+      email: '<OPTIONAL-END-USER-EMAIL>',
       display_name: '<OPTIONAL-END-USER-DISPLAY-NAME>',
     },
     organization: {
