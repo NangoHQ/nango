@@ -53,12 +53,13 @@ for (const file of files) {
         const prettyAuthMode = prettyAuthModes[authMode] || authMode;
         const hasUseCases = useCases[provider] && useCases[provider].length > 0;
         const toolingSnippet = preBuiltToolingSnippet({ prettyAuthMode, hasUseCases });
+        const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
 
-        await fs.mkdir(`${snippetsPath}/${path.basename(file, '.mdx')}`, { recursive: true });
-        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
+        await fs.mkdir(snippetPath, { recursive: true });
+        await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
         const casesSnippet = useCasesSnippet({ useCases: useCases[provider] });
-        await fs.writeFile(`${snippetsPath}/${path.basename(file, '.mdx')}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
+        await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
     }
 }
 
