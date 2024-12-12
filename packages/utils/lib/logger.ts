@@ -42,12 +42,12 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
-    const instanceId = isCloud ? nanoid(10) : '';
+    const instanceId = isCloud ? ` ${nanoid(6)}` : '';
 
     formatters = [
         winston.format.printf((info) => {
             const splat = info[SPLAT] && info[SPLAT].length > 0 ? JSON.stringify(info[SPLAT]) : '';
-            return `[${info.level.toUpperCase()}] ${instanceId}${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
+            return `[${info.level.toUpperCase()}]${instanceId}${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
         })
     ];
 }
