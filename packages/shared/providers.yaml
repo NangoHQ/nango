@@ -3374,7 +3374,7 @@ harvest:
             type: string
             title: App Details
             description: The details of your app
-            hidden: true
+            automated: true
 
 health-gorilla:
     display_name: Health Gorilla
