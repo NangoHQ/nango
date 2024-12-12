@@ -52,8 +52,8 @@ async function execute(
     let res: WebhookResponse = undefined;
     try {
         res = await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
-    } catch (e) {
-        logger.error(`error processing incoming webhook for ${providerConfigKey} - `, e);
+    } catch (err) {
+        logger.error(`error processing incoming webhook for ${providerConfigKey} - `, err);
 
         await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
             accountId: String(account.id),
@@ -61,7 +61,7 @@ async function execute(
             provider: integration.provider,
             providerConfigKey: integration.unique_key,
             payload: JSON.stringify(body),
-            error: String(e),
+            error: String(err),
             level: 'error'
         });
     }

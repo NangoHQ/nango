@@ -221,8 +221,8 @@ export async function deploy({
         );
 
         return { success: true, error: null, response: { result: deployResults, logCtx } };
-    } catch (e) {
-        await logCtx.error('Failed to deploy scripts', { error: e });
+    } catch (err) {
+        await logCtx.error('Failed to deploy scripts', { error: err });
         await logCtx.failed();
 
         const shortContent = `Failure to deploy the syncs (${flows.map((flow) => flow.syncName).join(', ')}).`;
@@ -362,10 +362,10 @@ export async function upgradePreBuilt({
         );
 
         return Ok(true);
-    } catch (e) {
+    } catch (err) {
         const content = `Failed to deploy the ${flow.type} ${flow.name}.`;
 
-        await logCtx.error('Failed to upgrade', { type: flow.type, name: flow.name, error: e });
+        await logCtx.error('Failed to upgrade', { type: flow.type, name: flow.name, error: err });
         await logCtx.failed();
 
         await telemetry.log(
@@ -656,10 +656,10 @@ export async function deployPreBuilt({
         );
 
         return { success: true, error: null, response: { result: flowReturnData, logCtx } };
-    } catch (e) {
+    } catch (err) {
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
 
-        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: e });
+        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: err });
         await logCtx.failed();
 
         await telemetry.log(

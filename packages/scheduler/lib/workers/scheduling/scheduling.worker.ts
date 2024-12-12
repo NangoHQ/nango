@@ -155,9 +155,9 @@ export class SchedulingChild {
                     await setTimeout(1000); // wait for 1s to prevent retrying too quickly
                 }
                 return Ok(taskIds);
-            } catch (error) {
-                span.setTag('error', error);
-                throw error;
+            } catch (err) {
+                span.setTag('error', err);
+                throw err;
             } finally {
                 span.finish();
             }

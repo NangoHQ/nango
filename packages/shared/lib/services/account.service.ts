@@ -9,8 +9,8 @@ class AccountService {
         try {
             const result = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
             return result || null;
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 accountId: id

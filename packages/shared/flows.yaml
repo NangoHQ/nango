@@ -4168,9 +4168,9 @@ integrations:
                     Metadata required to filter on a particular folder, or file(s).
                     Metadata
 
-                    fields should be {"files": ["<some-id>"]} OR
+                    fields should be `{"files": ["<some-id>"]}` OR
 
-                    {"folders": ["<some-id>"]}. The ID should be able to be provided
+                    `{"folders": ["<some-id>"]}`. The ID should be able to be provided
 
                     by using the Google Picker API
 

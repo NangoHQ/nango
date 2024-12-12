@@ -6,11 +6,55 @@ provider: quickbooks
 
 import Overview from "/snippets/overview.mdx";
 
-import PreBuiltTooling from "/snippets/generated/quickbooks/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/quickbooks/PreBuiltUseCases.mdx"
 
 <Overview />
-<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (OAuth) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | ✅ |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
 <PreBuiltUseCases />
 
 ## Access requirements
@@ -46,7 +90,7 @@ _No setup guide yet._
 - QuickBooks requires a company ID/realmId for each API request. To obtain this when creating a new connection on Nango, go to Settings and select Your Account and Settings. On the Your Account page, your Company ID (found under the Billing & Subscription tab) will be displayed at the top. Nango can automatically retrieve this for you, or you can manually override it by specifying the realmId when creating a new connection.
 - You can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve it, or when you fetch the Connection credentials with the REST API or SDK
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
 
 ## Going further
 

@@ -4,27 +4,84 @@ sidebarTitle: Freshteam
 provider: freshteam
 ---
 
-API configuration: [`freshteam`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx";
 
-## Features
+import PreBuiltUseCases from "/snippets/generated/freshteam/PreBuiltUseCases.mdx"
 
-| Features | Status |
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
 | - | - |
-| [Auth (API Key)](/guides/getting-started/authorize-an-api-from-your-app) | ✅ |
-| [Sync data](/guides/getting-started/read-from-an-api) | ✅ |
-| [Perform workflows](/guides/getting-started/write-to-an-api) | ✅ |
-| [Proxy requests](/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+| Pre-built authorization (API Key) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+<PreBuiltUseCases />
 
-## Getting started
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/acuity-scheduling.mdx)</Note>
+
+## Useful links
 
 -   [How to find your API key in your Freshteam account](https://support.freshteam.com/support/solutions/articles/19000107073)
 -   [Freshteam API docs](https://developers.freshteam.com/api/#introduction)
 -   [Freshteam Authentication](https://developers.freshteam.com/api/#authentication)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/acuity-scheduling.mdx)</Note>
 
 ## API gotchas
 
@@ -33,7 +90,7 @@ API configuration: [`freshteam`](https://nango.dev/providers.yaml)
 - When creating a connection, you need to add the `accountName` as a connection configuration parameter.
 - Freshteam enforces a rate limit per minute based on the organization's plan and the number of subscribed employees, applying to the account regardless of the originating IP address. For more details check [Freshteam rate limit](https://developers.freshteam.com/api/#ratelimit)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshteam.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshteam.mdx)</Note>
 
 
 ## Going further

@@ -6,11 +6,55 @@ provider: hibob-service-user
 
 import Overview from "/snippets/overview.mdx";
 
-import PreBuiltTooling from "/snippets/generated/hibob/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/hibob/PreBuiltUseCases.mdx"
 
 <Overview />
-<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (Basic) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | ✅ |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
 <PreBuiltUseCases />
 
 ## Access requirements
@@ -44,7 +88,7 @@ _No setup guide yet._
 
 - For Basic auth, HiBob uses ID as the username and token as the password.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hibob.mdx)</Note>
 
 <Card title="Connect to Hibob" icon="link" href="/integrations/all/hibob-service-user/connect" horizontal>
   Guide to connect to Hibob API using Nango Connect.

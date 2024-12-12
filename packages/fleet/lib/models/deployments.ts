@@ -6,7 +6,7 @@ import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
-export interface DBDeployment {
+interface DBDeployment {
     readonly id: number;
     readonly commit_id: CommitHash;
     readonly created_at: Date;
@@ -73,7 +73,7 @@ export async function getActive(db: knex.Knex): Promise<Result<Deployment | unde
     try {
         const active = await db.select<DBDeployment>('*').from(DEPLOYMENTS_TABLE).where({ superseded_at: null }).first();
         return Ok(active ? DBDeployment.to(active) : undefined);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new FleetError(`deployment_get_active_failed`, { cause: err }));
     }
 }
@@ -85,7 +85,7 @@ export async function get(db: knex.Knex, id: number): Promise<Result<Deployment>
             return Err(new FleetError(`deployment_not_found`, { context: { id } }));
         }
         return Ok(DBDeployment.to(deployment));
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new FleetError(`deployment_not_found`, { cause: err, context: { id } }));
     }
 }

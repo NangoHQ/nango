@@ -6,11 +6,55 @@ provider: klaviyo
 
 import Overview from "/snippets/overview.mdx";
 
-import PreBuiltTooling from "/snippets/generated/klaviyo/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/klaviyo/PreBuiltUseCases.mdx"
 
 <Overview />
-<PreBuiltTooling provider={providers[pageMetadata.provider]} />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (API Key) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
 <PreBuiltUseCases />
 
 ## Access requirements
@@ -51,7 +95,7 @@ _No setup guide yet._
 - If you want to use a different API version than the default one set in Nango you can override the `revision` by adding in the necessary header. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
 - Rate limiting in `klaviyo-oauth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [klaviyo-oauth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
 
 <Card title="Connect to Klaviyo" icon="link" href="/integrations/all/klaviyo/connect" horizontal>
   Guide to connect to Klaviyo using Nango Connect.
