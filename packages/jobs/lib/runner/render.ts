@@ -33,6 +33,7 @@ export const renderNodeProvider: NodeProvider = {
                     plan: getPlan(node)
                 },
                 envVars: [
+                    { key: 'PORT', value: '80' },
                     { key: 'NODE_ENV', value: envs.NODE_ENV },
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
