@@ -88,7 +88,7 @@ async function handlePayloadTooBigError({ taskId, error, nangoProps }: { taskId:
                 await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_big', { syncId: nangoProps.syncId }) });
             }
         }
-    } catch (err: unknown) {
+    } catch (err) {
         logger.error(`failed to handle payload too big error for task ${taskId}`, err);
     }
 }

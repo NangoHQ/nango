@@ -168,8 +168,8 @@ export async function upgradeAction(debug = false) {
 
             child.on('error', reject);
         });
-    } catch (error: any) {
-        console.error(`An error occurred: ${error.message}`);
+    } catch (err: any) {
+        console.error(`An error occurred: ${err.message}`);
     }
 }
 
@@ -288,8 +288,8 @@ export async function parseSecretKey(environment: string, debug = false): Promis
             } else {
                 return;
             }
-        } catch (error) {
-            console.log('Error occurred while trying to prompt for secret key:', error);
+        } catch (err) {
+            console.log('Error occurred while trying to prompt for secret key:', err);
             process.exit(1);
         }
     }

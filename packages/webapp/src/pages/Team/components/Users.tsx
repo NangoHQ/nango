@@ -37,7 +37,7 @@ export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
                 return null;
             }
 
-            return <Tag bgClassName="bg-yellow-base-35 text-yellow-base">invited</Tag>;
+            return <Tag variant={'info'}>invited</Tag>;
         }
     },
     {

@@ -1,5 +1,5 @@
 import { Cross1Icon } from '@radix-ui/react-icons';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from '../../../components/ui/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import type { ApiInvitation, ApiUser } from '@nangohq/types';

@@ -3,23 +3,25 @@ import type { Result } from '@nangohq/utils';
 import { DatabaseClient } from './db/client.js';
 import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
-import type { CommitHash, Deployment, Node, RoutingId } from './types.js';
+import type { Node } from './types.js';
+import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
 import { Supervisor } from './supervisor.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import type { FleetId } from './instances.js';
-import { noopNodeProvider } from './node-providers/noop.js';
 import { envs } from './env.js';
+import { withPgLock } from './utils/locking.js';
+import { noopNodeProvider } from './node-providers/noop.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
-    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}${envs.NANGO_DB_SSL ? '?sslmode=no-verify' : ''}`;
 
 export class Fleet {
+    public fleetId: string;
     private dbClient: DatabaseClient;
-    private supervisor: Supervisor;
-    private nodeProvider: NodeProvider;
+    private supervisor: Supervisor | undefined = undefined;
     constructor({
         fleetId,
         dbUrl = defaultDbUrl,
@@ -27,11 +29,11 @@ export class Fleet {
     }: {
         fleetId: FleetId;
         dbUrl?: string | undefined;
-        nodeProvider?: NodeProvider | undefined;
+        nodeProvider?: NodeProvider;
     }) {
+        this.fleetId = fleetId;
         this.dbClient = new DatabaseClient({ url: dbUrl, schema: fleetId });
-        this.nodeProvider = nodeProvider;
-        this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider });
+        this.supervisor = new Supervisor({ dbClient: this.dbClient, nodeProvider: nodeProvider });
     }
 
     public async migrate(): Promise<void> {
@@ -39,20 +41,27 @@ export class Fleet {
     }
 
     public start(): void {
-        void this.supervisor.start();
+        if (this.supervisor) {
+            void this.supervisor.start();
+        }
     }
 
     public async stop(): Promise<void> {
-        await this.supervisor.stop();
+        if (this.supervisor) {
+            await this.supervisor.stop();
+        }
     }
 
-    public async deploy(commitId: CommitHash): Promise<Result<Deployment>> {
+    public async rollout(commitId: CommitHash): Promise<Result<Deployment>> {
         return deployments.create(this.dbClient.db, commitId);
     }
 
     public async getRunningNode(routingId: RoutingId): Promise<Result<Node>> {
-        const recurse = async (start: Date): Promise<Result<Node>> => {
-            if (new Date().getTime() - start.getTime() > envs.FLEET_TIMEOUT_GET_RUNNING_NODE) {
+        const recurse = async (supervisor: Supervisor | undefined, start: Date): Promise<Result<Node>> => {
+            if (!supervisor) {
+                return Err(new FleetError('fleet_misconfigured', { context: { fleetId: this.fleetId } }));
+            }
+            if (new Date().getTime() - start.getTime() > envs.FLEET_TIMEOUT_GET_RUNNING_NODE_MS) {
                 return Err(new FleetError('fleet_node_not_ready_timeout', { context: { routingId } }));
             }
             const search = await nodes.search(this.dbClient.db, {
@@ -62,26 +71,43 @@ export class Fleet {
             if (search.isErr()) {
                 return Err(search.error);
             }
-            const running = search.value.nodes.get(routingId)?.RUNNING[0];
-            if (running) {
-                return Ok(running);
+            const running = search.value.nodes.get(routingId)?.RUNNING || [];
+            if (running[0]) {
+                return Ok(running[0]);
             }
-            const starting = search.value.nodes.get(routingId)?.STARTING[0];
-            const pending = search.value.nodes.get(routingId)?.PENDING[0];
+            const starting = search.value.nodes.get(routingId)?.STARTING || [];
+            const pending = search.value.nodes.get(routingId)?.PENDING || [];
 
-            if (!starting && !pending) {
-                await this.supervisor.createNodeForCurrentDeployment(routingId);
+            if (!starting[0] && !pending[0]) {
+                await withPgLock({
+                    db: this.dbClient.db,
+                    lockKey: `create_node_${routingId}`,
+                    fn: async (trx): Promise<Result<Node>> => {
+                        const deployment = await deployments.getActive(trx);
+                        if (deployment.isErr()) {
+                            return Err(deployment.error);
+                        }
+                        if (!deployment.value) {
+                            return Err(new FleetError('no_active_deployment'));
+                        }
+                        return supervisor.createNode(trx, { type: 'CREATE', routingId, deployment: deployment.value });
+                    },
+                    timeoutMs: 10 * 1000
+                });
             }
 
             // wait for node to be ready
-            await setTimeout(1000);
-            return recurse(start);
+            await setTimeout(envs.FLEET_RETRY_DELAY_GET_RUNNING_NODE_MS);
+            return recurse(supervisor, start);
         };
-        return recurse(new Date());
+        return recurse(this.supervisor, new Date());
     }
 
     public async registerNode({ nodeId, url }: { nodeId: number; url: string }): Promise<Result<Node>> {
-        const valid = await this.nodeProvider.verifyUrl(url);
+        if (!this.supervisor) {
+            return Err(new FleetError('fleet_misconfigured', { context: { fleetId: this.fleetId } }));
+        }
+        const valid = await this.supervisor.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
             return Err(valid.error);
         }

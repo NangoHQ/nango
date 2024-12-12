@@ -34,7 +34,7 @@ import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from '
 import { SearchableMultiSelect } from './components/SearchableMultiSelect';
 import { TypesSelect } from './components/TypesSelect';
 import { DatePicker } from './components/DatePicker';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { OperationDrawer } from './components/OperationDrawer';
 import { OperationRow } from './components/OperationRow';

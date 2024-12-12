@@ -222,7 +222,7 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
                     if (res.isErr()) {
                         throw new Error(`Failed to send webhook for webhook: ${nangoProps.syncConfig.sync_name}`);
                     }
-                } catch (err: unknown) {
+                } catch (err) {
                     span?.setTag('error', err);
                 } finally {
                     span.finish();
@@ -350,7 +350,7 @@ async function onFailure({
                     if (res.isErr()) {
                         throw new Error(`Failed to send webhook for webhook: ${syncName}`);
                     }
-                } catch (err: unknown) {
+                } catch (err) {
                     span?.setTag('error', err);
                 } finally {
                     span.finish();

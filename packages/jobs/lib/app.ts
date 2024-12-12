@@ -74,13 +74,10 @@ try {
         if (commitHash.isErr()) {
             logger.error(`Unable to generate commit hash: ${commitHash.error}`);
         } else {
-            await runnersFleet.deploy(commitHash.value);
+            await runnersFleet.rollout(commitHash.value);
         }
     }
-    // TODO: change to `!== REMOTE` when fleet is ready to be deployed to PROD
-    if (envs.RUNNER_TYPE === 'LOCAL') {
-        runnersFleet.start();
-    }
+    runnersFleet.start();
 
     processor.start();
 

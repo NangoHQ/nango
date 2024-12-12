@@ -15,6 +15,6 @@ await nango
     .then((response) => {
         console.log(response);
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
         console.log(err.response?.data || err.message);
     });

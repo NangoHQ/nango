@@ -22,7 +22,7 @@ export async function idle(): Promise<Result<void>> {
             }
         );
         return Ok(undefined);
-    } catch (err: unknown) {
+    } catch (err) {
         return Err(new Error('failed to idle runner', { cause: err }));
     }
 }

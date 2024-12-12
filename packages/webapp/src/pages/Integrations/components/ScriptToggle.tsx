@@ -3,7 +3,7 @@ import ToggleButton from '../../../components/ui/button/ToggleButton';
 import type { GetIntegration } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { useStore } from '../../../store';
 import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
 import { useToast } from '../../../hooks/useToast';
