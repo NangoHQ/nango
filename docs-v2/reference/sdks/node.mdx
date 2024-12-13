@@ -376,7 +376,14 @@ await nango.listConnections();
             "metadata": {
                 "bot_id": "some-uuid"
             },
-            errors: [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}]
+            "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}],
+            "end_user": {
+                "id": "your-internal-id",
+                "email": "user@example.com",
+                "organization": {
+                    "id": "user-organization-id"
+                }
+            }
         }
     ]
 }
