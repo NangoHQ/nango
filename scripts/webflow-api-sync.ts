@@ -4,6 +4,7 @@ import { WebflowClient } from 'webflow-api';
 import yaml from 'js-yaml';
 import { setTimeout } from 'node:timers/promises';
 import util from 'node:util';
+import type { CollectionItem, CollectionItemList } from 'webflow-api/api';
 
 const rateLimitSleep = 1000;
 
@@ -19,14 +20,14 @@ if (!process.env['WEBFLOW_CMS_API_TOKEN']) {
 const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TOKEN'] });
 
 const providersPath = 'packages/shared/providers.yaml';
-// eslint-disable-next-line import/no-named-as-default-member
-const providers = yaml.load(await fs.readFile(providersPath, 'utf8'));
+// eslint-disable-next-line import/no-named-as-default-member, @typescript-eslint/no-explicit-any
+const providers: any = yaml.load(await fs.readFile(providersPath, 'utf8'));
 
 const docsPath = 'docs-v2/integrations/all';
 const files = await fs.readdir(docsPath);
 
 // we only need a subset of providers based on how our docs are written
-const neededProviders = {};
+const neededProviders: Record<string, any> = {};
 
 for (const file of files) {
     if (file.endsWith('.mdx')) {
@@ -39,25 +40,31 @@ for (const file of files) {
         if (!providerLine) {
             throw new Error(`Unable to find provider entry in ${file}`);
         }
-        const provider = providerLine.split('provider: ')[1].trim();
+
+        const provider = providerLine.split('provider: ')[1]?.trim();
+        if (!provider) {
+            throw new Error(`Unable to parse provider in ${file}`);
+        }
         neededProviders[provider] = { ...providers[provider], url: `https://docs.nango.dev/integrations/all/${path.basename(file, '.mdx')}` };
     }
 }
 
-let categoryResp;
+let categoryResp: CollectionItemList;
 let categoryOffset = 0;
-let categories = [];
+let categories: CollectionItem[] = [];
 do {
     categoryResp = await webflow.collections.items.listItems(apiCategoriesId, { offset: categoryOffset });
 
-    categories = categories.concat(categoryResp.items);
-    categoryOffset += categoryResp.items.length;
+    if (categoryResp.items) {
+        categories = categories.concat(categoryResp.items);
+        categoryOffset += categoryResp.items.length;
+    }
 
     // rate limit
     await setTimeout(rateLimitSleep);
-} while (categoryOffset < categoryResp.pagination.total);
+} while (categoryResp.pagination?.total && categoryOffset < categoryResp.pagination.total);
 
-const categoriesBySlug = categories.reduce((acc, item) => {
+const categoriesBySlug = categories.reduce<Record<string, CollectionItem>>((acc, item) => {
     acc[item.fieldData.slug] = item;
     return acc;
 }, {});
@@ -72,45 +79,53 @@ if (missingCategories.length > 0) {
     process.exit(1);
 }
 
-let apiResp;
+let apiResp: CollectionItemList;
 let apiOffset = 0;
-let apiItems = [];
+let apiItems: CollectionItem[] = [];
 do {
     apiResp = await webflow.collections.items.listItems(apiCollectionId, { offset: apiOffset });
 
-    apiItems = apiItems.concat(apiResp.items);
-    apiOffset += apiResp.items.length;
+    if (apiResp.items) {
+        apiItems = apiItems.concat(apiResp.items);
+        apiOffset += apiResp.items.length;
+    }
 
     // rate limit
     await setTimeout(rateLimitSleep);
-} while (apiOffset < apiResp.pagination.total);
+} while (apiResp.pagination?.total && apiOffset < apiResp.pagination.total);
 
-const apiItemsBySlug = apiItems.reduce((acc, item) => {
+const apiItemsBySlug = apiItems.reduce<Record<string, CollectionItem>>((acc, item) => {
     acc[item.fieldData.slug] = item;
 
     return acc;
 }, {});
 
-const seen = [];
+const seen: string[] = [];
 for (const [slug, provider] of Object.entries(neededProviders)) {
     seen.push(slug);
 
     if (apiItemsBySlug[slug]) {
         const item = apiItemsBySlug[slug];
+        if (!item.id) {
+            throw new Error(`Missing item id for ${slug}`);
+        }
 
         const previous = {
             fieldData: {
                 name: item.fieldData.name,
-                documentation: item.fieldData.documentation,
+                documentation: item.fieldData['documentation'],
                 'api-categories': item.fieldData['api-categories']
             }
         };
+
+        const providerCategories: string[] = provider.categories || [];
+        const apiCategories = providerCategories.map((category) => categoriesBySlug[category]?.id);
 
         const update = {
             fieldData: {
                 name: provider.display_name,
                 documentation: provider.url,
-                'api-categories': (provider.categories || []).map((category) => categoriesBySlug[category].id)
+                'api-categories': apiCategories
             }
         };
 
@@ -126,13 +141,15 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
         }
     } else {
         try {
+            const providerCategories: string[] = provider.categories || [];
+
             await webflow.collections.items.createItem(apiCollectionId, {
                 fieldData: {
                     name: provider.display_name,
                     slug: slug,
                     documentation: provider.url,
                     logo: `https://app.nango.dev/images/template-logos/${slug}.svg`,
-                    'api-categories': (provider.categories || []).map((category) => categoriesBySlug[category].id)
+                    'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
                 }
             });
             console.log(`Created ${slug}`);
@@ -147,6 +164,10 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
 const needDeletion = Object.keys(apiItemsBySlug).filter((slug) => !seen.includes(slug));
 for (const toDelete of needDeletion) {
     try {
+        if (!apiItemsBySlug[toDelete]?.id) {
+            throw new Error('Unexpected missing item id');
+        }
+
         await webflow.collections.items.deleteItem(apiCollectionId, apiItemsBySlug[toDelete].id);
         console.log(`Deleted ${toDelete}`);
         await setTimeout(rateLimitSleep);
