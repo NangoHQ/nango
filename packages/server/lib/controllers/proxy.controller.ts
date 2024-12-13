@@ -286,13 +286,19 @@ class ProxyController {
             return;
         }
 
-        let responseData = '';
+        const responseData: Buffer[] = [];
+        let responseLen = 0;
 
         responseStream.data.on('data', (chunk: Buffer) => {
-            responseData += chunk.toString();
+            responseData.push(chunk);
+            responseLen += chunk.length;
         });
 
         responseStream.data.on('end', async () => {
+            if (responseLen > 50_000_000) {
+                logger.info(`Response > 50MB: ${responseLen} bytes`);
+            }
+
             if (responseStream.status === 204) {
                 res.status(204).end();
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
@@ -301,14 +307,14 @@ class ProxyController {
             }
 
             if (!isJsonResponse) {
-                res.send(responseData);
+                res.send(Buffer.concat(responseData));
                 await logCtx.success();
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
                 return;
             }
 
             try {
-                const parsedResponse = JSON.parse(responseData);
+                const parsedResponse = JSON.parse(Buffer.concat(responseData).toString());
 
                 res.json(parsedResponse);
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
