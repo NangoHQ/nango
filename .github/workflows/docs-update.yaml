@@ -1,0 +1,27 @@
+name: Docs Update
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - packages/shared/flows.yaml
+            - docs-v2/**/*.md
+    pull_request:
+
+jobs:
+    update-docs-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - run: npm run docs:generate
