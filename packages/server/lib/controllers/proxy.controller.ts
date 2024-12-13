@@ -295,8 +295,8 @@ class ProxyController {
         });
 
         responseStream.data.on('end', async () => {
-            if (responseLen > 50_000_000) {
-                logger.info(`Response > 50MB: ${responseLen} bytes`);
+            if (responseLen > 5_000_000) {
+                logger.info(`Response > 5MB: ${responseLen} bytes`);
             }
 
             if (responseStream.status === 204) {
