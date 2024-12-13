@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.47.1] - 2024-12-13
+
+### Added
+
+- *(ui)* Connection trigger sync, new components (#3145) by @bodinsamuel
+- *(fleet)* Add Render NodeProvider (#3149) by @TBonnin
+- *(integrations)* Add support for Fortnox (#3136) by @bodinsamuel
+- *(fleet)* Add node config overrides (#3158) by @TBonnin
+- *(integrations)* Add harvest connect ui docs and a post connection script (#3148) by @hassan254-prog
+- *(docs)* New docs format (#3118) by @nalanj
+- *(integrations)* Add Atlas API support (#3157) by @omar-inkeep
+- *(server)* Add instance identifier when logging in cloud (#3166) by @nalanj
+
+### Changed
+
+- More reconnect details (#3152) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a575338d191e8abb5e24f7e39d422b028028a649 by nalanj. Commit message: chore: Fix up google drive sync description (#151) by @github-actions[bot]
+- *(eslint)* Enforce err name, upgrade eslint plugins (#3153) by @bodinsamuel
+- Call /rollout endpoint in deploy github action (#3161) by @TBonnin
+- Keep only 10 days of deleted/terminated schedules/tasks (#3167) by @TBonnin
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/eaf81019dc3531323b24e90d21896532dd423a2f by Khaliq. Commit message: fix(dialpad): minor cleanup (#149) by @github-actions[bot]
+- Temporarly revert connection id safety (#3154) by @bodinsamuel
+- *(endUser)* Make email optional (#3159) by @bodinsamuel
+- *(docs)* Fix undefined in endpoint description (#3162) by @nalanj
+- *(runner)* Set render PORT (#3165) by @TBonnin
+- *(docs)* Fix some edit links (#3164) by @nalanj
+
 ## [v0.47.0] - 2024-12-11
 
 ### Added
@@ -2538,6 +2568,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.47.1]: https://github.com/NangoHQ/nango/compare/v0.47.0..v0.47.1
 [v0.47.0]: https://github.com/NangoHQ/nango/compare/v0.46.1..v0.47.0
 [v0.46.1]: https://github.com/NangoHQ/nango/compare/v0.46.0..v0.46.1
 [v0.46.0]: https://github.com/NangoHQ/nango/compare/v0.45.1..v0.46.0
