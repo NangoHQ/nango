@@ -4,7 +4,6 @@ on:
     push:
         branches:
             - master
-            - alan/docs-update
         paths:
             - packages/shared/flows.yaml
             - docs-v2/integrations/all/*.md
