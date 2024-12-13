@@ -347,8 +347,17 @@ await nango.listConnections();
 **Parameters**
 
 <Expandable>
+    <ResponseField name="connectionId" type="string">
+        Filter the list of connections based on this connection ID.
+    </ResponseField>
+    <ResponseField name="search" type="string">
+        Will partially match connection IDs or end user profiles.
+    </ResponseField>
     <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on this connection ID. If ommitted, returns all connections.
+        Filter the list of connections based on the given end user id.
+    </ResponseField>
+    <ResponseField name="connectionId" type="string" required>
+        Filter the list of connections based on the given end user's organization id.
     </ResponseField>
 </Expandable>
 
