@@ -2,7 +2,7 @@ integrations:
     aircall-basic:
         actions:
             create-user:
-                description: Creates a user in Aircall.
+                description: Creates a user
                 output: User
                 endpoint:
                     method: POST
