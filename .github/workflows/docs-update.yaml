@@ -4,10 +4,7 @@ on:
     push:
         branches:
             - master
-        paths:
-            - packages/shared/flows.yaml
-            - docs-v2/integrations/all/*.md
-    pull_request:
+            - alan/docs-update
         paths:
             - packages/shared/flows.yaml
             - docs-v2/integrations/all/*.md
@@ -18,9 +15,6 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-              with:
-                  repository: ${{ github.event.pull_request.head.repo.full_name }}
-                  ref: ${{ github.event.pull_request.head.ref }}
 
             - uses: actions/setup-node@v4
               with:
