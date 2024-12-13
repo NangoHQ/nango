@@ -25,3 +25,9 @@ jobs:
               run: npm ci
 
             - run: npm run docs:generate
+
+            - name: Commit and push changes
+              uses: devops-infra/action-commit-push@master
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  commit_message: Automated documentation updates
