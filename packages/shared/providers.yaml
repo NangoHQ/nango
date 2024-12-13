@@ -3758,6 +3758,28 @@ kustomer:
             title: API Key
             description: The API key for your Kustomer account
 
+lastpass:
+    display_name: LastPass
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://lastpass.com/enterpriseapi.php
+    docs: https://docs.nango.dev/integrations/all/lastpass
+    docs_connect: https://docs.nango.dev/integrations/all/lastpass/connect
+    credentials:
+        username:
+            type: string
+            title: CID
+            description: Your LastPass Account number
+            doc_section: '#step-1-finding-your-cid'
+        password:
+            type: string
+            title: Provhash
+            description: 'Your LastPass API key'
+            secret: true
+            doc_section: '#step-2-generating-your-provhash'
+
 lessonly:
     display_name: Lessonly
     categories:
