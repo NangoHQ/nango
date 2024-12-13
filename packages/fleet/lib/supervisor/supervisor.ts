@@ -1,62 +1,20 @@
 import tracer from 'dd-trace';
-import type { DatabaseClient } from './db/client.js';
+import type { DatabaseClient } from '../db/client.js';
 import type { Knex } from 'knex';
-import { logger } from './utils/logger.js';
-import * as nodes from './models/nodes.js';
-import * as deployments from './models/deployments.js';
-import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import { logger } from '../utils/logger.js';
+import * as nodes from '../models/nodes.js';
+import * as deployments from '../models/deployments.js';
+import * as nodeConfigOverrides from '../models/node_config_overrides.js';
 import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import { FleetError } from './utils/errors.js';
-import type { Node, NodeConfigOverride } from './types.js';
+import { FleetError } from '../utils/errors.js';
+import type { Node, NodeConfigOverride } from '../types.js';
 import type { Deployment, NodeConfig } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
-import type { NodeProvider } from './node-providers/node_provider.js';
-import { envs } from './env.js';
-import { withPgLock } from './utils/locking.js';
-
-type Operation =
-    | { type: 'CREATE'; routingId: Node['routingId']; deployment: Deployment; nodeConfig?: NodeConfig | undefined }
-    | { type: 'START'; node: Node }
-    | { type: 'FAIL'; node: Node; reason: 'starting_timeout_reached' | 'pending_timeout_reached' | 'idle_timeout_reached' }
-    | { type: 'OUTDATE'; node: Node }
-    | { type: 'FINISHING'; node: Node }
-    | { type: 'FINISHING_TIMEOUT'; node: Node }
-    | { type: 'TERMINATE'; node: Node }
-    | { type: 'REMOVE'; node: Node };
-
-const Operation = {
-    asSpanTags: (o: Operation): Record<string, string | number> => {
-        switch (o.type) {
-            case 'CREATE':
-                return {
-                    operation: o.type,
-                    routingId: o.routingId,
-                    deploymentId: o.deployment.id
-                };
-            case 'FAIL':
-                return {
-                    operation: o.type,
-                    nodeId: o.node.id,
-                    reason: o.reason
-                };
-            case 'START':
-                return {
-                    operation: o.type,
-                    nodeId: o.node.id
-                };
-            case 'OUTDATE':
-            case 'FINISHING':
-            case 'FINISHING_TIMEOUT':
-            case 'TERMINATE':
-            case 'REMOVE':
-                return {
-                    operation: o.type,
-                    nodeId: o.node.id
-                };
-        }
-    }
-};
+import type { NodeProvider } from '../node-providers/node_provider.js';
+import { envs } from '../env.js';
+import { withPgLock } from '../utils/locking.js';
+import { Operation } from './operation.js';
 
 type SupervisorState = 'stopped' | 'running' | 'stopping';
 
