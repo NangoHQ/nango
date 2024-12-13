@@ -390,6 +390,7 @@ export interface NangoProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected: (value: unknown) => AxiosError | Promise<AxiosError>;
         };
     };
 }
@@ -472,7 +473,8 @@ export class NangoAction {
             if (config.axios?.response) {
                 axiosSettings.interceptors = {
                     response: {
-                        onFulfilled: config.axios.response.onFulfilled
+                        onFulfilled: config.axios.response.onFulfilled,
+                        onRejected: config.axios.response.onRejected
                     }
                 };
             }
