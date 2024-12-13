@@ -10,16 +10,16 @@ const rateLimitSleep = 1000;
 const apiCollectionId = '66f2c79a523a1055b3da7339';
 const apiCategoriesId = '6751672fcfb952c066685384';
 const siteId = '63c092e946f9b71ff6874169';
-
 const domainIds = ['63d392e62ba46692fb9e082e', '63d392e62ba4666ba69e082d'];
 
-if (!process.env.WEBFLOW_CMS_API_TOKEN) {
+if (!process.env['WEBFLOW_CMS_API_TOKEN']) {
     throw new Error('Missing WEBFLOW_CMS_API_TOKEN');
 }
 
-const webflow = new WebflowClient({ accessToken: process.env.WEBFLOW_CMS_API_TOKEN });
+const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TOKEN'] });
 
 const providersPath = 'packages/shared/providers.yaml';
+// eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8'));
 
 const docsPath = 'docs-v2/integrations/all';
@@ -32,7 +32,7 @@ for (const file of files) {
     if (file.endsWith('.mdx')) {
         const filePath = path.join(docsPath, file);
         const content = await fs.readFile(filePath, 'utf-8');
-        let lines = content.split('\n');
+        const lines = content.split('\n');
 
         // find the integration line
         const providerLine = lines.find((line) => line.startsWith('provider: '));
@@ -119,8 +119,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                 await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
                 console.log(`Updated ${slug}`);
                 await setTimeout(rateLimitSleep);
-            } catch (e) {
-                console.error(`Failed to update ${slug}`, e);
+            } catch (err) {
+                console.error(`Failed to update ${slug}`, err);
                 process.exit(1);
             }
         }
@@ -137,8 +137,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
             });
             console.log(`Created ${slug}`);
             await setTimeout(rateLimitSleep);
-        } catch (e) {
-            console.error(`Failed to update ${slug}`, e);
+        } catch (err) {
+            console.error(`Failed to update ${slug}`, err);
             process.exit(1);
         }
     }
@@ -150,8 +150,8 @@ for (const toDelete of needDeletion) {
         await webflow.collections.items.deleteItem(apiCollectionId, apiItemsBySlug[toDelete].id);
         console.log(`Deleted ${toDelete}`);
         await setTimeout(rateLimitSleep);
-    } catch (e) {
-        console.error(`Failed to delete ${toDelete}`, e);
+    } catch (err) {
+        console.error(`Failed to delete ${toDelete}`, err);
         process.exit(1);
     }
 }
