@@ -116,8 +116,7 @@ export class Supervisor {
     }
 
     public async tick(): Promise<Result<void>> {
-        const span = tracer.startSpan('fleet.supervisor.tick');
-        return tracer.scope().activate(span, async () => {
+        return tracer.trace('fleet.supervisor.tick', async (span) => {
             try {
                 this.tickCancelled = false;
 
@@ -131,8 +130,6 @@ export class Supervisor {
             } catch (err) {
                 span.setTag('error', err);
                 return Err(new FleetError('supervisor_tick_failed', { cause: err }));
-            } finally {
-                span.finish();
             }
         });
     }
@@ -166,16 +163,15 @@ export class Supervisor {
 
     private async plan(cursor?: number): Promise<Result<Operation[]>> {
         const activeSpan = tracer.scope().active();
-        const span = tracer.startSpan('fleet.supervisor.plan', { ...(activeSpan ? { childOf: activeSpan } : {}) });
-        try {
+        return tracer.trace('fleet.supervisor.plan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (span) => {
             const getDeployment = await deployments.getActive(this.dbClient.db);
             if (getDeployment.isErr()) {
-                span.setTag('error', getDeployment.error);
+                span?.setTag('error', getDeployment.error);
                 return Err(getDeployment.error);
             }
             if (!getDeployment.value) {
                 const err = new FleetError('no_active_deployment');
-                span.setTag('error', err);
+                span?.setTag('error', err);
                 return Err(err);
             }
             const deployment = getDeployment.value;
@@ -186,14 +182,14 @@ export class Supervisor {
                 ...(cursor ? { cursor } : {})
             });
             if (search.isErr()) {
-                span.setTag('error', search.error);
+                span?.setTag('error', search.error);
                 return Err(search.error);
             }
 
             const routingIds = Array.from(search.value.nodes.keys());
             const configOverrides = await nodeConfigOverrides.search(this.dbClient.db, { routingIds });
             if (configOverrides.isErr()) {
-                span.setTag('error', configOverrides.error);
+                span?.setTag('error', configOverrides.error);
                 return Err(configOverrides.error);
             }
 
@@ -315,38 +311,30 @@ export class Supervisor {
             }
 
             return Ok(plan);
-        } finally {
-            span.finish();
-        }
+        });
     }
 
     private async executePlan(plan: Operation[]): Promise<void> {
         const activeSpan = tracer.scope().active();
-        const span = tracer.startSpan('fleet.supervisor.executePlan', { ...(activeSpan ? { childOf: activeSpan } : {}) });
-        try {
+        return tracer.trace('fleet.supervisor.executePlan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (executePlanSpan) => {
             for (const operation of plan) {
                 if (this.tickCancelled) {
-                    span.setTag('error', 'tick_cancelled');
+                    executePlanSpan?.setTag('error', 'tick_cancelled');
                     return;
                 }
-
-                const operationSpan = tracer.startSpan(`fleet.supervisor.operation.${operation.type.toLowerCase()}`, {
-                    childOf: span,
-                    tags: { fleet: Operation.asSpanTags(operation) }
-                });
-                try {
-                    const result = await this.execute(operation);
-                    if (result.isErr()) {
-                        operationSpan.setTag('error', result.error);
-                        logger.error('Failed to execute operation:', result.error, result.error.cause);
+                await tracer.trace(
+                    `fleet.supervisor.operation.${operation.type.toLowerCase()}`,
+                    { tags: Operation.asSpanTags(operation) },
+                    async (operationSpan) => {
+                        const result = await this.execute(operation);
+                        if (result.isErr()) {
+                            operationSpan?.setTag('error', result.error);
+                            logger.error('Failed to execute operation:', result.error, result.error.cause);
+                        }
                     }
-                } finally {
-                    operationSpan.finish();
-                }
+                );
             }
-        } finally {
-            span.finish();
-        }
+        });
     }
 
     private async execute(operation: Operation): Promise<Result<Node>> {
