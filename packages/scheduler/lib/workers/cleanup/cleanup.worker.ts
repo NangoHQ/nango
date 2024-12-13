@@ -93,15 +93,15 @@ export class CleanupChild {
 
     async clean(): Promise<void> {
         await this.db.transaction(async (trx) => {
-            // hard delete schedules where deletedAt is older than 30 days
-            const deletedSchedules = await schedules.hardDeleteOlderThanNDays(trx, 30);
+            // hard delete schedules where deletedAt is older than 10 days
+            const deletedSchedules = await schedules.hardDeleteOlderThanNDays(trx, 10);
             if (deletedSchedules.isErr()) {
                 logger.error(deletedSchedules.error);
             } else if (deletedSchedules.value.length > 0) {
                 logger.info(`Hard deleted ${deletedSchedules.value.length} schedules`);
             }
-            // hard delete terminated tasks older than 60 days unless it is the last task for an active schedule
-            const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, 30);
+            // hard delete terminated tasks older than 10 days unless it is the last task for an active schedule
+            const deletedTasks = await tasks.hardDeleteOlderThanNDays(trx, 10);
             if (deletedTasks.isErr()) {
                 logger.error(deletedTasks.error);
             } else if (deletedTasks.value.length > 0) {

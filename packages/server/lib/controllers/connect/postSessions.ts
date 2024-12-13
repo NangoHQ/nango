@@ -15,7 +15,7 @@ export const bodySchema = z
         end_user: z
             .object({
                 id: z.string().max(255).min(1),
-                email: z.string().email().min(5),
+                email: z.string().email().min(5).optional(),
                 display_name: z.string().max(255).optional()
             })
             .strict(),

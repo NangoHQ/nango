@@ -29,7 +29,7 @@ while true; do
       continue
     fi
     name=$(echo "$item" | jq -r '.service.name' 2>/dev/null)
-    if [[ "$name" != "$ENVIRONMENT-runner-"* ]]; then
+    if [[ ! "$name" =~ ^$ENVIRONMENT-runner-account-(default|[0-9]+)$ ]]; then
       continue
     fi
 
