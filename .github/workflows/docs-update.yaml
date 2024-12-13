@@ -29,3 +29,4 @@ jobs:
               with:
                   default_author: github_actions
                   message: Automated documentation update
+                  add: ./docs-v2/
