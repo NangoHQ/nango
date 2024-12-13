@@ -6,8 +6,11 @@ on:
             - master
         paths:
             - packages/shared/flows.yaml
-            - docs-v2/**/*.md
+            - docs-v2/integrations/all/*.md
     pull_request:
+        paths:
+            - packages/shared/flows.yaml
+            - docs-v2/integrations/all/*.md
 
 jobs:
     update-docs-job:
