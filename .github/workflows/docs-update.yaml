@@ -26,8 +26,6 @@ jobs:
 
             - run: npm run docs:generate
 
-            - name: Commit and push changes
-              uses: devops-infra/action-commit-push@master
+            - uses: EndBug/add-and-commit@v9
               with:
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
-                  commit_message: Automated documentation updates
+                  default_author: github_actions
