@@ -5011,7 +5011,7 @@ integrations:
             service-tickets:
                 runs: every half hour
                 description: |
-                    Fetches a list of service tickets
+                    Fetches a list of service tickets from Hubspot
                 output: HubspotServiceTicket
                 sync_type: incremental
                 endpoint:
