@@ -3909,7 +3909,7 @@ lastpass:
         - productivity
     auth_mode: BASIC
     proxy:
-        base_url: https://lastpass.com/enterpriseapi.php
+        base_url: https://lastpass.com
     docs: https://docs.nango.dev/integrations/all/lastpass
     docs_connect: https://docs.nango.dev/integrations/all/lastpass/connect
     credentials:
