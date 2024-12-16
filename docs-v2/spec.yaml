@@ -412,7 +412,7 @@ paths:
                   schema:
                       type: string
                   description: Filter the list of connections based on the given end user id.
-                - name: endUserId
+                - name: endUserOrganizationId
                   in: query
                   schema:
                       type: string
