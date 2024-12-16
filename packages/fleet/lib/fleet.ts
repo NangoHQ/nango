@@ -8,7 +8,7 @@ import type { Node } from './types.js';
 import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
-import { Supervisor } from './supervisor.js';
+import { Supervisor } from './supervisor/supervisor.js';
 import type { NodeProvider } from './node-providers/node_provider.js';
 import type { FleetId } from './instances.js';
 import { envs } from './env.js';

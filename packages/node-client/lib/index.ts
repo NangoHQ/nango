@@ -273,13 +273,23 @@ export class Nango {
      * @param search - Optional. Search connections. Will search in connection ID or end user profile.
      * @returns A promise that resolves with an array of connection objects
      */
-    public async listConnections(connectionId?: string, search?: string): Promise<GetPublicConnections['Success']> {
+    public async listConnections(
+        connectionId?: string,
+        search?: string,
+        queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
+    ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connection`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
         if (search) {
             url.searchParams.append('search', search);
+        }
+        if (queries?.endUserId) {
+            url.searchParams.append('endUserId', queries.endUserId);
+        }
+        if (queries?.endUserOrganizationId) {
+            url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
         }
 
         const headers = {

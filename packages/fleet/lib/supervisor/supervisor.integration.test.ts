@@ -1,14 +1,14 @@
 import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { Ok } from '@nangohq/utils';
 import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
-import { getTestDbClient } from './db/helpers.test.js';
-import * as deployments from './models/deployments.js';
-import * as nodes from './models/nodes.js';
-import * as nodeConfigOverrides from './models/node_config_overrides.js';
-import { generateCommitHash } from './models/helpers.js';
-import { createNodeWithAttributes } from './models/helpers.test.js';
+import { getTestDbClient } from '../db/helpers.test.js';
+import * as deployments from '../models/deployments.js';
+import * as nodes from '../models/nodes.js';
+import * as nodeConfigOverrides from '../models/node_config_overrides.js';
+import { generateCommitHash } from '../models/helpers.js';
+import { createNodeWithAttributes } from '../models/helpers.test.js';
 import type { Deployment } from '@nangohq/types';
-import { FleetError } from './utils/errors.js';
+import { FleetError } from '../utils/errors.js';
 
 const mockNodeProvider = {
     defaultNodeConfig: {
