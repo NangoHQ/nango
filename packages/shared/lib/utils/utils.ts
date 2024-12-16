@@ -237,7 +237,7 @@ export function extractValueByPath(obj: Record<string, any>, path: string): any 
     return get(obj, path);
 }
 
-export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
+export function connectionCopyWithParsedConnectionConfig(connection: Pick<Connection, 'connection_config'>) {
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;

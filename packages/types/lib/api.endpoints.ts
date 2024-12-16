@@ -52,6 +52,7 @@ import type {
     GetConnection,
     GetConnections,
     GetConnectionsCount,
+    GetPublicConnection,
     GetPublicConnections,
     PostConnectionRefresh
 } from './connection/api/get';
@@ -79,6 +80,7 @@ export type PublicApiEndpoints =
     | PostConnectSessions
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
+    | GetPublicConnection
     | GetConnectSession
     | DeleteConnectSession
     | PostDeployInternal
