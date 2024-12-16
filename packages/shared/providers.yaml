@@ -55,6 +55,8 @@ adobe:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://ims-na1.adobelogin.com/ims
     docs: https://docs.nango.dev/integrations/all/adobe
 
 adobe-umapi:
@@ -150,6 +152,10 @@ aircall:
         scope: public_api
     token_params:
         grant_type: authorization_code
+    proxy:
+        base_url: https://api.aircall.io
+        retry:
+            at: 'x-aircallapi-reset'
     docs: https://docs.nango.dev/integrations/all/aircall
 
 aircall-basic:
@@ -385,6 +391,8 @@ apple-app-store:
     token_url: https://api.appstoreconnect.apple.com/v1/apps
     authorization_params:
         audience: appstoreconnect-v1
+    proxy:
+        base_url: https://api.appstoreconnect.apple.com
     docs: https://docs.nango.dev/integrations/all/apple-app-store
 
 asana:
@@ -524,6 +532,8 @@ auth0:
     refresh_params:
         grant_type: refresh_token
     docs: https://docs.nango.dev/integrations/all/auth0
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.auth0.com
     connection_config:
         subdomain:
             type: string
@@ -618,6 +628,8 @@ aws:
         grant_type: refresh_token
     default_scopes:
         - openid
+    proxy:
+        base_url: https://cognito-${apiSubdomain}.amazonaws.com
     docs: https://docs.nango.dev/integrations/all/aws
     connection_config:
         subdomain:
@@ -634,6 +646,14 @@ aws:
             description: The domain extension of your AWS account
             example: com
             pattern: '^[a-z.]+$'
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain to the API you want to connect to
+            example: idp.us-east-2
+            pattern: '^[a-z.-]+$'
+            suffix: .amazonaws.com
+            prefix: https://cognito-
 
 aws-iam:
     display_name: AWS IAM
@@ -746,6 +766,8 @@ battlenet:
         response_type: code
     token_params:
         grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.apiDomain}
     docs: https://docs.nango.dev/integrations/all/battlenet
     connection_config:
         extension:
@@ -754,6 +776,14 @@ battlenet:
             description: The domain extension of your Battle.net account
             example: com
             pattern: '^[a-z.]+$'
+            order: 1
+        apiDomain:
+            type: string
+            title: API Domain
+            description: The domain to where you will access your API
+            example: us.api.blizzard.com
+            pattern: '^[a-z.]+$'
+            prefix: https://
 
 beehiiv:
     display_name: Beehiiv
@@ -990,6 +1020,8 @@ braintree:
         grant_type: authorization_code
     redirect_uri_metadata:
         - merchantId
+    proxy:
+        base_url: https://api.braintreegateway.com
     docs: https://docs.nango.dev/integrations/all/braintree
 
 braintree-sandbox:
@@ -1004,6 +1036,8 @@ braintree-sandbox:
         grant_type: authorization_code
     redirect_uri_metadata:
         - merchantId
+    proxy:
+        base_url: https://api.sandbox.braintreegateway.com
     docs: https://docs.nango.dev/integrations/all/braintree
 
 braze:
@@ -1778,6 +1812,8 @@ contentstack:
     authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
     token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
+    proxy:
+        base_url: https://${connectionConfig.apiDomain}
     connection_config:
         subdomain:
             type: string
@@ -1787,11 +1823,20 @@ contentstack:
             example: domain
             suffix: .contentstack.com
             prefix: https://
+            order: 2
         appId:
             type: string
             title: App ID
             description: The app ID of your Contentstack account
             order: 1
+        apiDomain:
+            type: string
+            title: API Domain
+            description: The domain to where you will access your API
+            pattern: '^[a-z0-9_-]+$'
+            example: eu-api.contentstack.com
+            prefix: https://
+            order: 3
 
 coros:
     display_name: Coros
@@ -2479,6 +2524,8 @@ factorial:
     authorization_url: https://api.factorialhr.com/oauth/authorize
     token_url: https://api.factorialhr.com/oauth/token
     disable_pkce: true
+    proxy:
+        base_url: https://api.factorialhr.com/api
     docs: https://docs.nango.dev/integrations/all/factorial
 
 facebook:
@@ -3663,6 +3710,8 @@ jira-data-center:
         grant_type: authorization_code
     token_url: https://${connectionConfig.endpointURL}/rest/oauth2/latest/token
     docs: https://docs.nango.dev/integrations/all/jira-data-center
+    proxy:
+        base_url: https://${connectionConfig.endpointURL}/rest/api/latest
     connection_config:
         endpointURL:
             type: string
@@ -4084,7 +4133,16 @@ mailchimp:
     token_url: https://login.mailchimp.com/oauth2/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://${connectionConfig.dc}.api.mailchimp.com
     docs: https://docs.nango.dev/integrations/all/mailchimp
+    connection_config:
+        dc:
+            type: string
+            title: Data Center
+            description: The data center for your account
+            pattern: '^[a-z]+\d*$'
+            example: us6
 
 # Untested configuration. Please reach out if you have a test account that we can use to test it.
 manatal:
@@ -4279,6 +4337,8 @@ microsoft-tenant-specific:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://graph.microsoft.com
     docs: https://docs.nango.dev/integrations/all/microsoft-tenant-specific
     connection_config:
         tenant:
@@ -4407,6 +4467,8 @@ monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+    proxy:
+        base_url: https://api.monday.com
     docs: https://docs.nango.dev/integrations/all/monday
 
 mural:
@@ -4440,6 +4502,8 @@ nationbuilder:
     default_scopes:
         - default
     docs: https://docs.nango.dev/integrations/all/nationbuilder
+    proxy:
+        base_url: https://${connectionConfig.accountId}.nationbuilder.com/api
     connection_config:
         accountId:
             type: string
@@ -4768,6 +4832,8 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+    proxy:
+        base_url: https://partner-api.payfit.com
     docs: https://docs.nango.dev/integrations/all/payfit
 
 paypal:
@@ -4784,6 +4850,8 @@ paypal:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api-m.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal
 
 paypal-sandbox:
@@ -4798,6 +4866,8 @@ paypal-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api-m.sandbox.paypal.com
     docs: https://docs.nango.dev/integrations/all/paypal
 
 pendo:
@@ -5641,6 +5711,8 @@ signnow:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.signnow.com
     docs: https://docs.nango.dev/integrations/all/signnow
 
 signnow-sandbox:
@@ -5658,6 +5730,8 @@ signnow-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api-eval.signnow.com
     docs: https://docs.nango.dev/integrations/all/signnow
 
 servicenow:
@@ -5673,6 +5747,8 @@ servicenow:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.service-now.com
     docs: https://docs.nango.dev/integrations/all/servicenow
     connection_config:
         subdomain:
@@ -5999,6 +6075,8 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+    proxy:
+        base_url: https://api.stripe.com
     docs: https://docs.nango.dev/integrations/all/stripe
 
 stripe-express:
@@ -6454,7 +6532,18 @@ twinfield:
         - twf.organisationUser
         - offline_access
     disable_pkce: true
+    proxy:
+        base_url: https://${connectionConfig.cluster}.twinfield.com
     docs: https://docs.nango.dev/integrations/all/twinfield
+    connection_config:
+        cluster:
+            type: string
+            title: Twinfield Cluster
+            description: The cluster to your Twinfield instance
+            pattern: '^[a-z0-9_-]+$'
+            example: accounting
+            suffix: .twinfield.com
+            prefix: https://
 
 twenty-crm:
     display_name: Twenty CRM
@@ -6972,7 +7061,17 @@ yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+    proxy:
+        base_url: https://${connectionConfig.apiDomain}
     docs: https://docs.nango.dev/integrations/all/yahoo
+    connection_config:
+        apiDomain:
+            type: string
+            title: API Domain
+            description: The domain to the API you want to connect to
+            format: hostname
+            example: fantasysports.yahooapis.com
+            prefix: https://
 
 yandex:
     display_name: Yandex

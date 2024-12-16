@@ -11404,6 +11404,122 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+    ramp:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Ramp
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:read
+        actions:
+            create-user:
+                description: Creates a user in Ramp
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: RampCreateUser
+                scopes:
+                    - users:write
+            disable-user:
+                description: Deletes a user in Ramp by id
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            RampCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: string
+                departmentId?: string
+                directManagerId?: string
+                idempotencyKey?: string
+                locationId?: string
+    ramp-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Ramp
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:read
+        actions:
+            create-user:
+                description: Creates a user in Ramp
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: RampCreateUser
+                scopes:
+                    - users:write
+            disable-user:
+                description: Deletes a user in Ramp by id
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            RampCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: string
+                departmentId?: string
+                directManagerId?: string
+                idempotencyKey?: string
+                locationId?: string
     ring-central:
         actions:
             create-user:

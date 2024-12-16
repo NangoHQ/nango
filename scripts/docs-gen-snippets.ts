@@ -92,7 +92,7 @@ function useCasesSnippet(useCases: any) {
                 .join('\n')}
         </AccordionGroup>
 
-        <Tip>Not seeing the use case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+        <Tip>Not seeing the use case you need? [Build your own](https://docs.nango.dev/guides/customize/setup) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
@@ -104,7 +104,7 @@ function emptyUseCases() {
 
         _No pre-built use cases yet (time to contribute: &lt;48h)_
         
-        <Tip>Not seeing the use case you need? [Build your own](https://nango.dev/slack) independently.</Tip>
+        <Tip>Not seeing the use case you need? [Build your own](https://docs.nango.dev/guides/customize/setup) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
