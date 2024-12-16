@@ -406,7 +406,17 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Search connections. Will search in connection ID or end user profile.
+                  description: Will partially match connection IDs or end user profiles.
+                - name: endUserId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user id.
+                - name: endUserOrganizationId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user's organization id.
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -417,7 +427,7 @@ paths:
                                 required:
                                     - configs
                                 properties:
-                                    configs:
+                                    connections:
                                         type: array
                                         items:
                                             type: object
@@ -429,6 +439,7 @@ paths:
                                                 - created
                                                 - metadata
                                                 - errors
+                                                - end_user
                                             properties:
                                                 id:
                                                     type: integer
@@ -464,6 +475,9 @@ paths:
                                                         List of connection errors. Ex:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
+                                                end_user:
+                                                    nullable: true
+                                                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
 
         post:
             description: Adds a connection for which you already have credentials.

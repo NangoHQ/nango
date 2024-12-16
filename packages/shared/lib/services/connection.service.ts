@@ -788,6 +788,8 @@ class ConnectionService {
         integrationIds,
         withError,
         search,
+        endUserId,
+        endUserOrganizationId,
         limit = 1000,
         page = 0
     }: {
@@ -796,6 +798,8 @@ class ConnectionService {
         integrationIds?: string[] | undefined;
         withError?: boolean | undefined;
         search?: string | undefined;
+        endUserId?: string | undefined;
+        endUserOrganizationId?: string | undefined;
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
@@ -844,6 +848,12 @@ class ConnectionService {
         }
         if (connectionId) {
             query.where('_nango_connections.connection_id', connectionId);
+        }
+        if (endUserId) {
+            query.where('end_users.end_user_id', endUserId);
+        }
+        if (endUserOrganizationId) {
+            query.where('end_users.organization_id', endUserOrganizationId);
         }
 
         if (withError === false) {
