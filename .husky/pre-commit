@@ -4,3 +4,4 @@
 npx lint-staged --allow-empty
 
 npm run docs:generate
+git add ./docs-v2/snippets/generated/
