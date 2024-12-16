@@ -88,7 +88,7 @@ _No setup guide yet._
 ## Connection configuration in Nango
 
 - AWS uses different domain extensions codes for different regions, i.e `us-east-2` for the US East (Ohio) region, `us-east-1` for the US East (N. Virginia) region, or `eu-west-1` for Europe (Ireland) region.It also uses different subdomains for different `user pools`.
-
+- Please provide your `apiSubdomain`, which is the endpoint subdomain to the specific Amazon Cognito API. For example, for the `US East (Ohio)` region (user) pools, the subdomain would be `idp.us-east-2`. You can reference the Amazon Cognito [Service Endpoints](https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html#cognito_identity_region) documentation to find the appropriate endpoint for your specific use case.
 
 ## API gotchas
 - To create a new connection in Nango for AWS IAM, you'll need an Access Key ID and a Secret Access Key. Use these to set up your connection, with the Access Key ID as the username and the Secret Access Key as the password. For more details on generating these keys, visit [Create an access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-key-self-managed.html#Using_CreateAccessKey).

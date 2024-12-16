@@ -43,6 +43,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import type { SyncConfig } from '../models/Sync.js';
 import type { DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
 export declare const oldLevelToNewLevel: {
@@ -321,6 +322,7 @@ export interface NangoProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected: (value: unknown) => AxiosError | Promise<AxiosError>;
         };
     };
 }
