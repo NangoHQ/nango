@@ -35,20 +35,24 @@ function getRunnerId(suffix: string): string {
 }
 
 export async function getRunner(teamId: number): Promise<Result<Runner>> {
-    // a runner per account in prod only
-    const runnerId = isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
+    try {
+        // a runner per account in prod only
+        const runnerId = isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
 
-    const isFleetGloballyEnabled = await featureFlags.isEnabled('fleet', 'global', false);
-    const isFleetEnabledForTeam = await featureFlags.isEnabled('fleet', `${teamId}`, false);
-    const isFleetEnabled = isFleetGloballyEnabled || isFleetEnabledForTeam;
-    if (isFleetEnabled) {
-        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        const isFleetGloballyEnabled = await featureFlags.isEnabled('fleet', 'global', false);
+        const isFleetEnabledForTeam = await featureFlags.isEnabled('fleet', `${teamId}`, false);
+        const isFleetEnabled = isFleetGloballyEnabled || isFleetEnabledForTeam;
+        if (isFleetEnabled) {
+            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+            return Ok(runner);
+        }
+
+        // fallback to default runner if account runner isn't ready yet
+        const runner = await getOrStartRunnerLegacy(runnerId).catch(() => getOrStartRunnerLegacy(getRunnerId('default')));
         return Ok(runner);
+    } catch (err) {
+        return Err(new Error(`Failed to get runner for team ${teamId}`, { cause: err }));
     }
-
-    // fallback to default runner if account runner isn't ready yet
-    const runner = await getOrStartRunnerLegacy(runnerId).catch(() => getOrStartRunnerLegacy(getRunnerId('default')));
-    return Ok(runner);
 }
 
 export async function idle(nodeId: number): Promise<Result<void>> {
