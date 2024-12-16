@@ -20,7 +20,7 @@ import {
     redactHeaders,
     redactURL
 } from '@nangohq/shared';
-import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
+import { metrics, axiosInstance as axios, getHeaders } from '@nangohq/utils';
 import { flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
@@ -28,8 +28,6 @@ import type { RequestLocals } from '../utils/express.js';
 import type { MessageRowInsert } from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
-
-const logger = getLogger('Proxy.Controller');
 
 class ProxyController {
     /**
@@ -265,64 +263,13 @@ class ProxyController {
             }
         });
 
-        const contentType = responseStream.headers['content-type'] || '';
-        const contentDisposition = responseStream.headers['content-disposition'] || '';
-        const transferEncoding = responseStream.headers['transfer-encoding'] || '';
-        const contentEncoding = responseStream.headers['content-encoding'] || '';
+        const passThroughStream = new PassThrough();
+        responseStream.data.pipe(passThroughStream);
+        passThroughStream.pipe(res);
+        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
 
-        const isJsonResponse = contentType.includes('application/json');
-        const isChunked = transferEncoding === 'chunked';
-        const isEncoded = Boolean(contentEncoding);
-        const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
-
-        if (isChunked || isEncoded || isAttachmentOrInline) {
-            const passThroughStream = new PassThrough();
-            responseStream.data.pipe(passThroughStream);
-            passThroughStream.pipe(res);
-            res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
-
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
-            await logCtx.success();
-            return;
-        }
-
-        let responseData = '';
-
-        responseStream.data.on('data', (chunk: Buffer) => {
-            responseData += chunk.toString();
-        });
-
-        responseStream.data.on('end', async () => {
-            if (responseStream.status === 204) {
-                res.status(204).end();
-                metrics.increment(metrics.Types.PROXY_SUCCESS);
-                await logCtx.success();
-                return;
-            }
-
-            if (!isJsonResponse) {
-                res.send(responseData);
-                await logCtx.success();
-                metrics.increment(metrics.Types.PROXY_SUCCESS);
-                return;
-            }
-
-            try {
-                const parsedResponse = JSON.parse(responseData);
-
-                res.json(parsedResponse);
-                metrics.increment(metrics.Types.PROXY_SUCCESS);
-                await logCtx.success();
-            } catch (err) {
-                logger.error(err);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
-
-                await logCtx.error('Failed to parse JSON response', { error: err });
-                await logCtx.failed();
-                metrics.increment(metrics.Types.PROXY_FAILURE);
-            }
-        });
+        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        await logCtx.success();
     }
 
     private async handleErrorResponse({
