@@ -406,7 +406,17 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Search connections. Will search in connection ID or end user profile.
+                  description: Will partially match connection IDs or end user profiles.
+                - name: endUserId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user id.
+                - name: endUserOrganizationId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user's organization id.
             responses:
                 '200':
                     description: Successfully returned a list of connections

@@ -47,6 +47,8 @@ export type GetPublicConnections = Endpoint<{
     Querystring: {
         connectionId?: string | undefined;
         search?: string | undefined;
+        endUserId?: string | undefined;
+        endUserOrganizationId?: string | undefined;
     };
     Path: '/connection';
     Success: {

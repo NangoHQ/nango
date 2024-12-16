@@ -4,11 +4,14 @@ import type { GetPublicConnections } from '@nangohq/types';
 import { AnalyticsTypes, analytics, connectionService } from '@nangohq/shared';
 import { connectionToPublicApi } from '../../formatters/connection.js';
 import { z } from 'zod';
+import { bodySchema } from '../connect/postSessions.js';
 
 const validationQuery = z
     .object({
         connectionId: z.string().min(1).max(255).optional(),
-        search: z.string().min(1).max(255).optional()
+        search: z.string().min(1).max(255).optional(),
+        endUserId: bodySchema.shape.end_user.shape.id.optional(),
+        endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional()
     })
     .strict();
 
@@ -29,6 +32,8 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         environmentId: environment.id,
         connectionId: queryParam.connectionId,
         search: queryParam.search,
+        endUserId: queryParam.endUserId,
+        endUserOrganizationId: queryParam.endUserOrganizationId,
         limit: 10000
     });
 

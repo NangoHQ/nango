@@ -115,4 +115,64 @@ describe(`GET ${endpoint}`, () => {
         });
         expect(res.json.connections).toHaveLength(1);
     });
+
+    it('should filter one connection by non-existing endUserId', async () => {
+        const { env, account } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const endUser = await seeders.createEndUser({ environment: env, account });
+        await seeders.createConnectionSeed(env, 'github', endUser);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                endUserId: 'non-existing'
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual({
+            connections: []
+        });
+    });
+
+    it('should filter one connection by endUserId', async () => {
+        const { env, account } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const endUser = await seeders.createEndUser({ environment: env, account });
+        const conn = await seeders.createConnectionSeed(env, 'github', endUser);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                endUserId: endUser.endUserId
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toMatchObject({
+            connections: [{ connection_id: conn.connection_id, end_user: { id: endUser.endUserId } }]
+        });
+    });
+
+    it('should filter one connection by endUserOrganizationId', async () => {
+        const { env, account } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const endUser = await seeders.createEndUser({ environment: env, account });
+        const conn = await seeders.createConnectionSeed(env, 'github', endUser);
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            query: {
+                endUserOrganizationId: endUser.organization?.organizationId
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toMatchObject({
+            connections: [{ connection_id: conn.connection_id, end_user: { id: endUser.endUserId } }]
+        });
+    });
 });
