@@ -16,7 +16,7 @@ Ship integrations fast. Maintain full control.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">250+ pre-configured APIs</a>
+    <a href="https://nango.dev/integrations">300+ pre-configured APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
