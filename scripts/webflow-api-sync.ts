@@ -28,25 +28,26 @@ const docsPath = 'docs-v2/integrations/all';
 const files = await fs.readdir(docsPath);
 
 // we only need a subset of providers based on how our docs are written
-const neededProviders: Record<string, any> = {};
+const neededProviders: Record<string, Provider> = {};
+
+const providerLineRegex = /^provider: ([^\s]+)$/m;
 
 for (const file of files) {
     if (file.endsWith('.mdx')) {
         const filePath = path.join(docsPath, file);
         const content = await fs.readFile(filePath, 'utf-8');
-        const lines = content.split('\n');
 
-        // find the integration line
-        const providerLine = lines.find((line) => line.startsWith('provider: '));
-        if (!providerLine) {
-            throw new Error(`Unable to find provider entry in ${file}`);
+        const providerMatch = content.match(providerLineRegex);
+        if (!providerMatch?.[1]) {
+            throw new Error(`No provider line found in ${file}`);
+        }
+        const provider = providerMatch[1];
+
+        if (!providers[provider]) {
+            throw new Error(`${file}: invalid provider ${provider}`);
         }
 
-        const provider = providerLine.split('provider: ')[1]?.trim();
-        if (!provider) {
-            throw new Error(`Unable to parse provider in ${file}`);
-        }
-        neededProviders[provider] = { ...providers[provider], url: `https://docs.nango.dev/integrations/all/${path.basename(file, '.mdx')}` };
+        neededProviders[provider] = providers[provider];
     }
 }
 
@@ -125,7 +126,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
         const update = {
             fieldData: {
                 name: provider.display_name,
-                documentation: provider.url,
+                documentation: provider.docs,
                 'api-categories': apiCategories
             }
         };
@@ -148,7 +149,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                 fieldData: {
                     name: provider.display_name,
                     slug: slug,
-                    documentation: provider.url,
+                    documentation: provider.docs,
                     logo: `https://app.nango.dev/images/template-logos/${slug}.svg`,
                     'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
                 }
