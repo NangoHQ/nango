@@ -1340,6 +1340,26 @@ canny:
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+canva-scim:
+    display_name: Canva (SCIM API)
+    categories:
+        - design
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.canva.com/_scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/canva
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Canva scim account
+            doc_section: '#step-1-finding-canva-api-key'
+
 certn:
     display_name: Certn
     categories:
