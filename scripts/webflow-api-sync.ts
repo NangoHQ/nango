@@ -5,6 +5,7 @@ import yaml from 'js-yaml';
 import { setTimeout } from 'node:timers/promises';
 import util from 'node:util';
 import type { CollectionItem, CollectionItemList } from 'webflow-api/api';
+import type { Provider } from '@nangohq/types';
 
 const rateLimitSleep = 1000;
 
@@ -21,7 +22,7 @@ const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TO
 
 const providersPath = 'packages/shared/providers.yaml';
 // eslint-disable-next-line import/no-named-as-default-member, @typescript-eslint/no-explicit-any
-const providers: any = yaml.load(await fs.readFile(providersPath, 'utf8'));
+const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
 
 const docsPath = 'docs-v2/integrations/all';
 const files = await fs.readdir(docsPath);
