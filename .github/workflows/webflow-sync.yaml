@@ -6,7 +6,7 @@ on:
             - master
             - alan/webflow-sync-action
         paths:
-            - packages/shared/flows.yaml
+            - packages/shared/providers.yaml
             - docs-v2/integrations/all/*.md
 
 jobs:
