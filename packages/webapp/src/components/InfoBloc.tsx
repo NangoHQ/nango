@@ -1,5 +1,5 @@
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
-import Button from './ui/button/Button';
+import { Button } from './ui/button/Button';
 import * as Tooltip from './ui/Tooltip';
 import { cn } from '../utils/utils';
 

@@ -40,8 +40,8 @@ export const connectSlack = async ({
             await updateSlackNotifications(env, true);
             onFinish();
         })
-        .catch((error: unknown) => {
-            console.error(error);
+        .catch((err: unknown) => {
+            console.error(err);
             onFailure();
         });
 };

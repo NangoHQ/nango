@@ -38,13 +38,15 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     const response: GetConnectSession['Success'] = {
         data: {
             end_user: {
-                id: endUser.endUserId,
-                email: endUser.email
+                id: endUser.endUserId
             }
         }
     };
     if (endUser.displayName) {
         response.data.end_user.display_name = endUser.displayName;
+    }
+    if (endUser.email) {
+        response.data.end_user.email = endUser.email;
     }
     if (endUser.organization) {
         response.data.organization = {
@@ -61,6 +63,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         response.data.integrations_config_defaults = Object.fromEntries(
             Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [key, { connection_config: value.connectionConfig }])
         );
+    }
+    if (connectSession.connectionId) {
+        response.data.isReconnecting = true;
     }
 
     res.status(200).send(response);

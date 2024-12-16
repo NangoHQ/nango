@@ -22,7 +22,7 @@ export class RenderAPI {
         name: string;
         ownerId: string;
         image: { ownerId: string; imagePath: string };
-        serviceDetails: { env: string };
+        serviceDetails: { env: string; plan: 'starter' | 'standard' | 'pro' };
         envVars: { key: string; value: string }[];
     }): Promise<AxiosResponse> {
         return await this.httpClient.post('/services', data);
@@ -34,5 +34,9 @@ export class RenderAPI {
 
     async resumeService(params: { serviceId: string }): Promise<AxiosResponse> {
         return await this.httpClient.post(`/services/${params.serviceId}/resume`, {});
+    }
+
+    async deleteService(params: { serviceId: string }): Promise<AxiosResponse> {
+        return await this.httpClient.delete(`/services/${params.serviceId}`, {});
     }
 }

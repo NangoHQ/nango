@@ -347,8 +347,17 @@ await nango.listConnections();
 **Parameters**
 
 <Expandable>
+    <ResponseField name="connectionId" type="string">
+        Filter the list of connections based on this connection ID.
+    </ResponseField>
+    <ResponseField name="search" type="string">
+        Will partially match connection IDs or end user profiles.
+    </ResponseField>
     <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on this connection ID. If ommitted, returns all connections.
+        Filter the list of connections based on the given end user id.
+    </ResponseField>
+    <ResponseField name="connectionId" type="string" required>
+        Filter the list of connections based on the given end user's organization id.
     </ResponseField>
 </Expandable>
 
@@ -376,7 +385,14 @@ await nango.listConnections();
             "metadata": {
                 "bot_id": "some-uuid"
             },
-            errors: [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}]
+            "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}],
+            "end_user": {
+                "id": "your-internal-id",
+                "email": "user@example.com",
+                "organization": {
+                    "id": "user-organization-id"
+                }
+            }
         }
     ]
 }
@@ -1212,7 +1228,7 @@ const { data } = await nango.createConnectSession({
       <ResponseField name="id" type="string" required>
         The unique identifier for the end user.
       </ResponseField>
-      <ResponseField name="email" type="string" required>
+      <ResponseField name="email" type="string">
         The email address of the end user.
       </ResponseField>
       <ResponseField name="display_name" type="string">
@@ -1254,6 +1270,93 @@ const { data } = await nango.createConnectSession({
 ```
 </Expandable>
 
+
+### Create a reconnect session
+
+Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those attributes of the connection.
+Use this method when a user needs to input new credentials or to manually refresh token.
+
+<Info>This method is only compatible with `connection_id` created with a session token.</Info>
+
+```js
+const { data } = await nango.createReconnectSession({
+  // Required
+  connection_id: '<CONNECTION-ID>'
+  integration_id: '<INTEGRATION-ID>',
+
+  // Optional
+  end_user: {
+    id: '<END-USER-ID>',
+    email: '<END-USER-EMAIL>',
+    display_name: '<END-USER-NAME>'
+  },
+  organization: {
+    id: '<ORGANIZATION-ID>',
+    display_name: '<ORGANIZATION-NAME>'
+  },
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="connection_id" type="string" required>
+    The unique identifier for the connection.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string" required>
+    The unique identifier for the integration.
+  </ResponseField>
+
+  <ResponseField name="end_user" type="object">
+    <Expandable title="end_user">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string">
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
 
 # Webhook
 

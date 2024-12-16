@@ -2626,6 +2626,56 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    dialpad:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Dialpad
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Dialpad
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: DialpadCreateUser
+            delete-user:
+                description: Deletes a user in Dialpad by email
+                endpoint:
+                    method: DELETE
+                    path: /users/email
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DialpadCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                license?: string
+                officeId?: string
+                autoAssign?: boolean
     discourse:
         syncs:
             active-users:
@@ -4118,9 +4168,9 @@ integrations:
                     Metadata required to filter on a particular folder, or file(s).
                     Metadata
 
-                    fields should be {"files": ["<some-id>"]} OR
+                    fields should be `{"files": ["<some-id>"]}` OR
 
-                    {"folders": ["<some-id>"]}. The ID should be able to be provided
+                    `{"folders": ["<some-id>"]}`. The ID should be able to be provided
 
                     by using the Google Picker API
 
@@ -8875,7 +8925,8 @@ integrations:
                 id: string
                 assigneeId: string | null
                 creatorId: string | null
-                createdAt: date
+                createdAt: string
+                updatedAt: string
                 description: string | null
                 dueDate: date | null
                 projectId: string | null
@@ -11353,6 +11404,122 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+    ramp:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Ramp
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:read
+        actions:
+            create-user:
+                description: Creates a user in Ramp
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: RampCreateUser
+                scopes:
+                    - users:write
+            disable-user:
+                description: Deletes a user in Ramp by id
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            RampCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: string
+                departmentId?: string
+                directManagerId?: string
+                idempotencyKey?: string
+                locationId?: string
+    ramp-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Ramp
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:read
+        actions:
+            create-user:
+                description: Creates a user in Ramp
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: RampCreateUser
+                scopes:
+                    - users:write
+            disable-user:
+                description: Deletes a user in Ramp by id
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            RampCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: string
+                departmentId?: string
+                directManagerId?: string
+                idempotencyKey?: string
+                locationId?: string
     ring-central:
         actions:
             create-user:

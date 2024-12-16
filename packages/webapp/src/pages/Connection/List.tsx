@@ -11,7 +11,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { MultiSelect } from '../../components/MultiSelect';
 
 import { useStore } from '../../store';
-import Button from '../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
 import { formatDateToInternationalFormat } from '../../utils/utils';
 import { useDebounce } from 'react-use';
 import { useListIntegration } from '../../hooks/useIntegration';
@@ -27,6 +27,8 @@ import { CopyText } from '../../components/CopyText';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { EndUserProfile } from './components/EndUserProfile';
+import { getConnectionDisplayName } from '../../utils/endUser';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -58,18 +60,11 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
                         email={data.endUser?.email ? data.endUser.email : null}
-                        displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id}
+                        displayName={getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id })}
                     />
 
                     {data.endUser ? (
-                        <div className="flex flex-col overflow-hidden">
-                            <div className="text-white break-words break-all truncate">{data.endUser.email}</div>
-
-                            <div className="text-dark-500 text-xs font-code flex gap-2">
-                                {data.endUser.displayName && <span>{data.endUser.displayName}</span>}
-                                {data.endUser.organization?.displayName && <span>({data.endUser.organization?.displayName})</span>}
-                            </div>
-                        </div>
+                        <EndUserProfile endUser={data.endUser} connectionId={data.connection_id} />
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
@@ -219,12 +214,10 @@ export const ConnectionList: React.FC = () => {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    <Link to={`/${env}/connections/create`}>
-                        <Button>
-                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
-                        </Button>
-                    </Link>
+                    <ButtonLink to={`/${env}/connections/create`}>
+                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                        Add Test Connection
+                    </ButtonLink>
                 </div>
             </div>
             {connections && (connections.length > 0 || hasFiltered) && (
@@ -364,12 +357,10 @@ export const ConnectionList: React.FC = () => {
                         , or manually here.
                     </div>
                     <div className="flex my-2 items-center bg-white rounded-md">
-                        <Link to={`/${env}/connections/create`}>
-                            <Button className="rounded-r-none">
-                                <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                                Add Connection
-                            </Button>
-                        </Link>
+                        <ButtonLink to={`/${env}/connections/create`}>
+                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                            Add Test Connection
+                        </ButtonLink>
                     </div>
                 </div>
             )}

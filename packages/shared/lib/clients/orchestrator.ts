@@ -126,8 +126,8 @@ export class Orchestrator {
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('action_failure', { error: errorMsg });
                 throw error;
             }
@@ -288,8 +288,8 @@ export class Orchestrator {
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('webhook_failure', { error: errorMsg });
                 throw error;
             }
@@ -559,7 +559,8 @@ export class Orchestrator {
         environmentId,
         logCtx,
         recordsService,
-        initiator
+        initiator,
+        delete_records
     }: {
         connectionId: number;
         syncId: string;
@@ -568,6 +569,7 @@ export class Orchestrator {
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
+        delete_records?: boolean;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
@@ -600,10 +602,12 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    const syncConfig = await getSyncConfigBySyncId(syncId);
-                    for (const model of syncConfig?.models || []) {
-                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                        await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                    if (delete_records) {
+                        const syncConfig = await getSyncConfigBySyncId(syncId);
+                        for (const model of syncConfig?.models || []) {
+                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                        }
                     }
 
                     res = await this.client.executeSync({ scheduleName });

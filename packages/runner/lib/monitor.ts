@@ -2,6 +2,8 @@ import os from 'os';
 import fs from 'fs';
 import type { NangoProps } from '@nangohq/shared';
 import { httpFetch, logger } from './utils.js';
+import { idle } from './idle.js';
+import { envs } from './env.js';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 
@@ -49,6 +51,10 @@ export class RunnerMonitor {
         }
     }
 
+    resetIdleMaxDurationMs(): void {
+        this.idleMaxDurationMs = 1; // 0 is a special value that disables idle tracking
+    }
+
     private checkMemoryUsage(): NodeJS.Timeout {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
@@ -87,21 +93,30 @@ export class RunnerMonitor {
         }
     }
 
-    private checkIdle(): NodeJS.Timeout {
+    private checkIdle(): NodeJS.Timeout | null {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
             if (this.idleMaxDurationMs > 0 && this.tracked.size == 0) {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
-                    await httpFetch({
-                        method: 'post',
-                        url: `${this.jobsServiceUrl}/idle`,
-                        data: JSON.stringify({
-                            runnerId: this.runnerId,
-                            idleTimeMs
-                        })
-                    });
+
+                    if (envs.RUNNER_NODE_ID) {
+                        const res = await idle();
+                        if (res.isErr()) {
+                            logger.error(`Failed to idle runner: ${res.error}`);
+                        }
+                    } else {
+                        // TODO: DEPRECATE legacy /idle endpoint
+                        await httpFetch({
+                            method: 'post',
+                            url: `${this.jobsServiceUrl}/idle`,
+                            data: JSON.stringify({
+                                runnerId: this.runnerId,
+                                idleTimeMs
+                            })
+                        });
+                    }
                     this.lastIdleTrackingDate = Date.now();
                 }
             }

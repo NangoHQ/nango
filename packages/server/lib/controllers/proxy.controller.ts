@@ -286,13 +286,19 @@ class ProxyController {
             return;
         }
 
-        let responseData = '';
+        const responseData: Buffer[] = [];
+        let responseLen = 0;
 
         responseStream.data.on('data', (chunk: Buffer) => {
-            responseData += chunk.toString();
+            responseData.push(chunk);
+            responseLen += chunk.length;
         });
 
         responseStream.data.on('end', async () => {
+            if (responseLen > 5_000_000) {
+                logger.info(`Response > 5MB: ${responseLen} bytes`);
+            }
+
             if (responseStream.status === 204) {
                 res.status(204).end();
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
@@ -301,24 +307,24 @@ class ProxyController {
             }
 
             if (!isJsonResponse) {
-                res.send(responseData);
+                res.send(Buffer.concat(responseData));
                 await logCtx.success();
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
                 return;
             }
 
             try {
-                const parsedResponse = JSON.parse(responseData);
+                const parsedResponse = JSON.parse(Buffer.concat(responseData).toString());
 
                 res.json(parsedResponse);
                 metrics.increment(metrics.Types.PROXY_SUCCESS);
                 await logCtx.success();
-            } catch (error) {
-                logger.error(error);
+            } catch (err) {
+                logger.error(err);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
 
-                await logCtx.error('Failed to parse JSON response', { error });
+                await logCtx.error('Failed to parse JSON response', { error: err });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
             }
@@ -447,8 +453,8 @@ class ProxyController {
             await flushLogsBuffer(logs, logCtx);
 
             await this.handleResponse({ res, responseStream, config, requestConfig, logCtx });
-        } catch (error) {
-            await this.handleErrorResponse({ res, e: error, requestConfig, config, logCtx });
+        } catch (err) {
+            await this.handleErrorResponse({ res, e: err, requestConfig, config, logCtx });
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
     }

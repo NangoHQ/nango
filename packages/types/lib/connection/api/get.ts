@@ -6,7 +6,7 @@ import type { ApiEndUser } from '../../endUser/index.js';
 
 export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
     provider: string;
-    errors: [{ type: string; log_id: string }];
+    errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
 };
 export type GetConnections = Endpoint<{
@@ -39,13 +39,16 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id' | 'p
     created: string;
     metadata: Record<string, unknown> | null;
     provider: string;
-    errors: [{ type: string; log_id: string }];
+    errors: { type: string; log_id: string }[];
+    end_user: ApiEndUser | null;
 };
 export type GetPublicConnections = Endpoint<{
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
         search?: string | undefined;
+        endUserId?: string | undefined;
+        endUserOrganizationId?: string | undefined;
     };
     Path: '/connection';
     Success: {
@@ -67,7 +70,7 @@ export type GetConnection = Endpoint<{
     Error: ApiError<'unknown_provider_config'>;
     Success: {
         data: {
-            provider: string | null;
+            provider: string;
             connection: ApiConnectionFull;
             endUser: ApiEndUser | null;
             errorLog: ActiveLog | null;

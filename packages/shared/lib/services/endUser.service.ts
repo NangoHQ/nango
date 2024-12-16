@@ -1,5 +1,5 @@
 import type { Knex } from '@nangohq/database';
-import type { DBEndUser, DBInsertEndUser, EndUser, StoredConnection } from '@nangohq/types';
+import type { ConnectSessionInput, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser, StoredConnection } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
@@ -170,4 +170,77 @@ export async function getEndUserByConnectionId(db: Knex, props: { connectionId: 
     }
 
     return Ok(EndUserMapper.from(endUser));
+}
+
+export async function upsertEndUser(
+    db: Knex,
+    {
+        account,
+        environment,
+        endUserPayload,
+        organization
+    }: { account: DBTeam; environment: DBEnvironment; endUserPayload: ConnectSessionInput['end_user']; organization?: ConnectSessionInput['organization'] }
+): Promise<Result<EndUser, EndUserError>> {
+    // Check if the endUser exists in the database
+    const endUserRes = await getEndUser(db, {
+        endUserId: endUserPayload.id,
+        accountId: account.id,
+        environmentId: environment.id
+    });
+
+    // --- Create end user if it doesn't exist yet
+    if (endUserRes.isErr()) {
+        if (endUserRes.error.code !== 'not_found') {
+            return endUserRes;
+        }
+
+        const createdEndUser = await createEndUser(db, {
+            endUserId: endUserPayload.id,
+            email: endUserPayload.email || null,
+            displayName: endUserPayload.display_name || null,
+            organization: organization?.id
+                ? {
+                      organizationId: organization.id,
+                      displayName: organization.display_name || null
+                  }
+                : null,
+            accountId: account.id,
+            environmentId: environment.id
+        });
+        if (createdEndUser.isErr()) {
+            return createdEndUser;
+        }
+
+        return Ok(createdEndUser.value);
+    }
+
+    // --- Update
+    const endUser = endUserRes.value;
+    const shouldUpdate =
+        endUser.email !== endUserPayload.email ||
+        endUser.displayName !== endUserPayload.display_name ||
+        endUser.organization?.organizationId !== organization?.id ||
+        endUser.organization?.displayName !== organization?.display_name;
+    if (!shouldUpdate) {
+        return Ok(endUser);
+    }
+
+    const updatedEndUser = await updateEndUser(db, {
+        endUserId: endUser.endUserId,
+        accountId: account.id,
+        environmentId: environment.id,
+        email: endUserPayload.email || null,
+        displayName: endUserPayload.display_name || null,
+        organization: organization?.id
+            ? {
+                  organizationId: organization.id,
+                  displayName: organization.display_name || null
+              }
+            : null
+    });
+    if (updatedEndUser.isErr()) {
+        return updatedEndUser;
+    }
+
+    return Ok(updatedEndUser.value);
 }

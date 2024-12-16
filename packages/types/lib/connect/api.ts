@@ -1,6 +1,6 @@
 import type { Endpoint } from '../api.js';
 
-export interface ConnectSessionPayload {
+export interface ConnectSessionInput {
     allowed_integrations?: string[] | undefined;
     integrations_config_defaults?:
         | Record<
@@ -16,7 +16,7 @@ export interface ConnectSessionPayload {
         | undefined;
     end_user: {
         id: string;
-        email: string;
+        email?: string | undefined;
         display_name?: string | undefined;
     };
     organization?:
@@ -26,11 +26,32 @@ export interface ConnectSessionPayload {
           }
         | undefined;
 }
+export type ConnectSessionOutput = ConnectSessionInput & {
+    isReconnecting?: boolean;
+};
 
 export type PostConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/connect/sessions';
-    Body: ConnectSessionPayload;
+    Body: ConnectSessionInput;
+    Success: {
+        data: {
+            token: string;
+            expires_at: string;
+        };
+    };
+}>;
+
+export type PostPublicConnectSessionsReconnect = Endpoint<{
+    Method: 'POST';
+    Path: '/connect/sessions/reconnect';
+    Body: {
+        connection_id: string;
+        integration_id: string;
+        integrations_config_defaults?: ConnectSessionInput['integrations_config_defaults'];
+        end_user?: ConnectSessionInput['end_user'] | undefined;
+        organization?: ConnectSessionInput['organization'];
+    };
     Success: {
         data: {
             token: string;
@@ -43,7 +64,7 @@ export type GetConnectSession = Endpoint<{
     Method: 'GET';
     Path: '/connect/session';
     Success: {
-        data: ConnectSessionPayload;
+        data: ConnectSessionOutput;
     };
 }>;
 
@@ -57,5 +78,5 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionPayload, 'allowed_integrations' | 'end_user' | 'organization'>;
+    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization'>;
 }>;

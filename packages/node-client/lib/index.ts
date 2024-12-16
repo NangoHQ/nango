@@ -24,7 +24,8 @@ import type {
     JwtCredentials,
     TwoStepCredentials,
     GetPublicConnections,
-    SignatureCredentials
+    SignatureCredentials,
+    PostPublicConnectSessionsReconnect
 } from '@nangohq/types';
 import type {
     Connection,
@@ -65,6 +66,7 @@ export interface AdminAxiosProps {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected?: (error: unknown) => unknown;
         };
     };
 }
@@ -123,7 +125,7 @@ export class Nango {
         });
 
         if (interceptors?.response) {
-            this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
+            this.http.interceptors.response.use(interceptors.response.onFulfilled, interceptors.response.onRejected);
         }
     }
 
@@ -271,13 +273,23 @@ export class Nango {
      * @param search - Optional. Search connections. Will search in connection ID or end user profile.
      * @returns A promise that resolves with an array of connection objects
      */
-    public async listConnections(connectionId?: string, search?: string): Promise<GetPublicConnections['Success']> {
+    public async listConnections(
+        connectionId?: string,
+        search?: string,
+        queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
+    ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connection`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
         if (search) {
             url.searchParams.append('search', search);
+        }
+        if (queries?.endUserId) {
+            url.searchParams.append('endUserId', queries.endUserId);
+        }
+        if (queries?.endUserOrganizationId) {
+            url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
         }
 
         const headers = {
@@ -916,6 +928,18 @@ export class Nango {
      */
     public async createConnectSession(sessionProps: PostConnectSessions['Body']): Promise<PostConnectSessions['Success']> {
         const url = `${this.serverUrl}/connect/sessions`;
+
+        const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
+        return response.data;
+    }
+
+    /**
+     * Creates a new connect session dedicated for reconnecting
+     * @param sessionProps - The properties for the new session, including end user information
+     * @returns A promise that resolves with the created session token and expiration date
+     */
+    public async createReconnectSession(sessionProps: PostPublicConnectSessionsReconnect['Body']): Promise<PostPublicConnectSessionsReconnect['Success']> {
+        const url = `${this.serverUrl}/connect/sessions/reconnect`;
 
         const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
         return response.data;

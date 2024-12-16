@@ -32,7 +32,7 @@ const handler = async (req: EndpointRequest<PostIdle>, res: EndpointResponse<Pos
         logger.info(`[runner ${req.body.runnerId}]: idle for ${req.body.idleTimeMs}ms. Suspending...`);
         await suspendRunner(req.body.runnerId);
         return res.status(200).json({ status: 'ok' });
-    } catch (err: unknown) {
+    } catch (err) {
         return res.status(500).json({ error: { code: 'idle_failed', message: err instanceof Error ? err.message : 'failed to suspend runner' } });
     }
 };

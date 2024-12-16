@@ -121,7 +121,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
                     <div className="text-gray-400 text-xs pt-[1px]">
-                        <OperationTag message={operation.message} operation={operation.operation} highlight />
+                        <OperationTag message={operation.message} operation={operation.operation} />
                     </div>
                 </div>
             </div>

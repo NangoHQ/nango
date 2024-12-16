@@ -48,7 +48,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    it('should fail if no endUserId or email', async () => {
+    it('should fail if no endUserId', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.env.secret_key,
@@ -62,10 +62,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_body',
-                errors: [
-                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] },
-                    { code: 'invalid_type', message: 'Required', path: ['end_user', 'email'] }
-                ]
+                errors: [{ code: 'invalid_type', message: 'Required', path: ['end_user', 'id'] }]
             }
         });
         expect(res.res.status).toBe(400);
@@ -139,7 +136,6 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if integration does not exist in allowed_integrations', async () => {
-        // first request create an end user
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -156,7 +152,6 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if integration does not exist in integrations_config_defaults', async () => {
-        // first request create an end user
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -175,7 +170,6 @@ describe(`POST ${endpoint}`, () => {
     it('should succeed if allowed_integrations is passed and exist', async () => {
         await seeders.createConfigSeed(seed.env, 'github', 'github');
 
-        // first request create an end user
         const endUserId = 'knownId';
         const res = await api.fetch(endpoint, {
             method: 'POST',

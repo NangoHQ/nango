@@ -84,8 +84,8 @@ class SyncController {
             }
             await trackFetch(connection.id as number);
             res.send(result.value);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -121,8 +121,8 @@ class SyncController {
             const rawSyncs = await getSyncs(connection, orchestrator);
             const syncs = await this.addRecordCount(rawSyncs, connection.id!, environment.id);
             res.send(syncs);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -147,8 +147,8 @@ class SyncController {
             const flows = flowService.getAllAvailableFlows();
 
             res.send({ syncs, flows });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -202,8 +202,8 @@ class SyncController {
             }
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -244,8 +244,8 @@ class SyncController {
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -381,8 +381,8 @@ class SyncController {
             const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
 
             res.send(providerConfigKey);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -423,8 +423,8 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -465,8 +465,8 @@ class SyncController {
             });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -535,8 +535,8 @@ class SyncController {
             }
 
             res.send({ syncs: syncsWithStatus });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -546,7 +546,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -580,7 +580,7 @@ class SyncController {
                 await logCtx.error('Unauthorized access to run the command');
                 await logCtx.failed();
 
-                res.sendStatus(401);
+                res.status(401).json({ error: { code: 'forbidden' } });
                 return;
             }
 
@@ -591,7 +591,8 @@ class SyncController {
                 environmentId: environment.id,
                 logCtx,
                 recordsService,
-                initiator: 'UI'
+                initiator: 'UI',
+                delete_records
             });
 
             if (result.isErr()) {
@@ -629,7 +630,7 @@ class SyncController {
                 schedule_id
             });
 
-            res.sendStatus(200);
+            res.status(200).json({ data: { success: true } });
         } catch (err) {
             if (logCtx) {
                 await logCtx.error('Failed to sync command', { error: err });
@@ -658,8 +659,8 @@ class SyncController {
             const attributes = await getAttributes(provider_config_key as string, sync_name as string);
 
             res.status(200).send(attributes);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -699,8 +700,8 @@ class SyncController {
             await syncManager.softDeleteSync(syncId, environmentId, orchestrator);
 
             res.sendStatus(204);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -784,8 +785,8 @@ class SyncController {
                 return;
             }
             res.status(200).send({ frequency: newFrequency });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 }

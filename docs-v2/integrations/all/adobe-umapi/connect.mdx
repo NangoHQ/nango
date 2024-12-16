@@ -1,0 +1,45 @@
+---
+title: UMAPI (Adobe User Management API) - How do I link my account?
+sidebarTitle: UMAPI (Adobe User Management API)
+---
+
+
+# Overview
+
+To authenticate with UMAPI (Adobe User Management API), you need:
+1. **Client ID** - A unique identifier for your client.
+2. **Client Secret** - A confidential key used to authenticate the identity of the application (client).
+
+This guide will walk you through obtaining these credentials within Adobe.
+
+### Prerequisites:
+
+- You must have an [Enterprise Plan](https://community.adobe.com/t5/enterprise-teams-discussions/is-the-user-management-api-available-only-for-enterprise-customers/td-p/12159610) to access UMAPI.
+- You must be a member of the organization with the **SYSTEM ADMIN** role to create the Integration for UMAPI. You can use the Adobe Admin Console to grant the administrative privilege to users.
+
+
+### Instructions:
+
+#### Step 1: Generating Client Credentials
+1. **Log in** to [Adobe Developer Console](https://adminconsole.adobe.com).
+2. Create a new project in the Adobe Developer Console.
+3. Navigate to the **API** tab and choose the appropriate API which is **UMAPI**.
+4. Select the **OAuth Server-to-Server** credential for your project.
+<img src="/integrations/all/adobe-umapi/auth-type.webp" />
+5. Select the product profiles that define the data your application can access.
+<img src="/integrations/all/adobe-umapi/product.webp" />
+6. Click Save to generate your **Client ID** and **Client Secret**.
+<img src="/integrations/all/adobe-umapi/credentials.webp" />
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have both the **Client ID** and **Client Secret**:
+1. Open the form where you need to authenticate with UMAPI (Adobe User Management API).
+2. Enter both **Client ID** and  **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/adobe-umapi/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to UMAPI (Adobe User Management API).
+

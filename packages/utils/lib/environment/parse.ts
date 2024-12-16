@@ -43,7 +43,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
 
     // Jobs
-    JOBS_SERVICE_URL: z.string().url().optional(),
+    JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
@@ -53,8 +53,53 @@ export const ENVS = z.object({
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
-    RUNNER_ID: z.string().optional(),
+    RUNNER_ID: z.string().optional(), // TODO: remove once fleet is fully released
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
+    RUNNER_NODE_ID: z.coerce.number().optional(),
+    RUNNER_URL: z.string().url().optional(),
+
+    // FLEET
+    FLEET_TIMEOUT_PENDING_MS: z.coerce
+        .number()
+        .optional()
+        .default(15 * 60 * 1000), // 15 minutes
+    FLEET_TIMEOUT_STARTING_MS: z.coerce
+        .number()
+        .optional()
+        .default(5 * 60 * 1000), // 5 minutes
+    FLEET_TIMEOUT_FINISHING_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000), // 24 hours
+    FLEET_TIMEOUT_IDLE_MS: z.coerce
+        .number()
+        .optional()
+        .default(15 * 60 * 1000), // 15 minutes
+    FLEET_TIMEOUT_TERMINATED_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000), // 24 hours
+    FLEET_TIMEOUT_ERROR_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000), // 24 hours
+    FLEET_TIMEOUT_GET_RUNNING_NODE_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 1000), // 1 minute
+    FLEET_RETRY_DELAY_GET_RUNNING_NODE_MS: z.coerce.number().optional().default(1000), // 1 sec
+    FLEET_SUPERVISOR_TIMEOUT_TICK_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 1000), // 1 minute
+    FLEET_SUPERVISOR_TIMEOUT_STOP_MS: z.coerce
+        .number()
+        .optional()
+        .default(60 * 1000), // 1 minute
+    FLEET_SUPERVISOR_RETRY_DELAY_MS: z.coerce
+        .number()
+        .optional()
+        .default(5 * 1000), // 5 seconds
 
     // --- Third parties
     // AWS
@@ -118,6 +163,9 @@ export const ENVS = z.object({
 
     // Sentry
     SENTRY_DNS: z.string().url().optional(),
+
+    // Internal API
+    NANGO_INTERNAL_API_KEY: z.string().optional(),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

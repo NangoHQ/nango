@@ -33,7 +33,7 @@ Use this value to sign in to the web app on your sandbox developer account.
 
 Important:
 - Copy and securely store your API Token. It will not be available after registration.
-- To get your **Organization ID** and **Developer Key** you must send an email to bill at [email](developerprogram@hq.bill.com).
+- To get your **Organization ID** and **Developer Key** you must send an email to bill at [email](mailto:developerprogram@hq.bill.com).
 - Your organization ID will begin with `008`.
 - You will have to contact bill to get production credentials.
 
@@ -45,9 +45,9 @@ curl --request POST \
 --url 'https://gateway.stage.bill.com/connect/v3/login' \
 --header 'content-type: application/json' \
 --data '{
-  "username": "{username}", 
+  "username": "{username}",
   "password": "{password}",
-  "organizationId": "{organization_id}", 
+  "organizationId": "{organization_id}",
   "devKey": "{developer_key}"
 }'
 ```
@@ -65,7 +65,7 @@ curl --request POST \
 
 #### Step 2: Connect Your Bill Account
 
-<img src="/integrations/all/bill/nango_connect_ui.png" />
+<img src="/integrations/all/bill-sandbox/nango_connect_ui.png" />
 
 To authenticate using your API credentials, navigate to the Bill authentication form.
 Enter your credentials as follows:

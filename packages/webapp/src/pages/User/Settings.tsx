@@ -7,7 +7,7 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useToast } from '../../hooks/useToast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
 
