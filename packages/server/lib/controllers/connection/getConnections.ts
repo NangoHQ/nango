@@ -38,7 +38,8 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
             return connectionToPublicApi({
                 data: data.connection,
                 activeLog: data.active_logs,
-                provider: data.provider
+                provider: data.provider,
+                endUser: data.end_user
             });
         })
     });

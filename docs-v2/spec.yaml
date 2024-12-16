@@ -417,7 +417,7 @@ paths:
                                 required:
                                     - configs
                                 properties:
-                                    configs:
+                                    connections:
                                         type: array
                                         items:
                                             type: object
@@ -429,6 +429,7 @@ paths:
                                                 - created
                                                 - metadata
                                                 - errors
+                                                - end_user
                                             properties:
                                                 id:
                                                     type: integer
@@ -464,6 +465,9 @@ paths:
                                                         List of connection errors. Ex:
                                                         - Connection credentials are invalid (type=auth)
                                                         - Last sync for the connection has failed (type=sync)
+                                                end_user:
+                                                    nullable: true
+                                                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
 
         post:
             description: Adds a connection for which you already have credentials.
