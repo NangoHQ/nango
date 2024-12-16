@@ -4,7 +4,6 @@ on:
     push:
         branches:
             - master
-            - alan/webflow-sync-action
         paths:
             - packages/shared/providers.yaml
             - docs-v2/integrations/all/*.md
