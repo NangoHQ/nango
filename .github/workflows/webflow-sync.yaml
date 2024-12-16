@@ -9,6 +9,9 @@ on:
             - packages/shared/providers.yaml
             - docs-v2/integrations/all/*.md
 
+concurrency:
+    group: webflow-sync
+
 jobs:
     webflow-sync-job:
         runs-on: ubuntu-latest
@@ -25,3 +28,5 @@ jobs:
               run: npm ci
 
             - run: npx tsx scripts/webflow-api-sync.ts
+              env:
+                  WEBFLOW_CMS_API_TOKEN: ${{ secrets.WEBFLOW_CMS_API_TOKEN }}
