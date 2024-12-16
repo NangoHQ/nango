@@ -817,9 +817,7 @@ describe('Proxy service configure', () => {
             baseUrlOverride: 'https://api.github.com.override',
             decompress: false,
             connection: {
-                environment_id: 1,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {},
                 connection_config: {}
             },
