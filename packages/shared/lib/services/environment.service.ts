@@ -262,21 +262,6 @@ class EnvironmentService {
         return result[0].name;
     }
 
-    /**
-     * Get Environment Id For Account Assuming Prod
-     * @desc legacy function to get the environment id for an account assuming prod
-     * while the transition is being made from account_id to environment_id
-     */
-    async getEnvironmentIdForAccountAssumingProd(accountId: number): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ account_id: accountId, name: 'prod' });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
-    }
-
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
         const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereNotNull('otlp_settings');
         if (result == null) {
