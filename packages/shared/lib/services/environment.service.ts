@@ -6,7 +6,7 @@ import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
-import { externalWebhookService } from '../index.js';
+import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 
 const TABLE = '_nango_environments';
 
@@ -522,6 +522,17 @@ class EnvironmentService {
             });
 
         return true;
+    }
+
+    async getOauthCallbackUrl(environmentId?: number) {
+        const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+        if (environmentId != null) {
+            const environment: DBEnvironment | null = await this.getById(environmentId);
+            return environment?.callback_url || globalCallbackUrl;
+        }
+
+        return globalCallbackUrl;
     }
 }
 
