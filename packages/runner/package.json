@@ -33,6 +33,7 @@
         "zod": "3.23.8"
     },
     "devDependencies": {
+        "@nangohq/types": "file:../types",
         "@types/connect-timeout": "0.0.39",
         "@types/node": "20.12.2",
         "typescript": "5.3.3",
