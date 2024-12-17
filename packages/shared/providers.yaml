@@ -2461,6 +2461,8 @@ exact-online:
         base_url: https://start.exactonline.${connectionConfig.extension}/
         headers:
             accept: application/json
+        retry:
+            at: 'x-ratelimit-reset'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -3902,6 +3904,28 @@ kustomer:
             type: string
             title: API Key
             description: The API key for your Kustomer account
+
+lastpass:
+    display_name: LastPass
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://lastpass.com
+    docs: https://docs.nango.dev/integrations/all/lastpass
+    docs_connect: https://docs.nango.dev/integrations/all/lastpass/connect
+    credentials:
+        username:
+            type: string
+            title: CID
+            description: Your LastPass Account number
+            doc_section: '#step-1-finding-your-cid'
+        password:
+            type: string
+            title: Provhash
+            description: 'Your LastPass API key'
+            secret: true
+            doc_section: '#step-2-generating-your-provhash'
 
 lessonly:
     display_name: Lessonly
