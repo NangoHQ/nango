@@ -398,7 +398,7 @@ export class Supervisor {
                 throw new Error(`status: ${res.status}. response: ${res.statusText}`);
             }
         } catch (err) {
-            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle: ${err}`);
+            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle`, err);
         }
 
         return nodes.transitionTo(this.dbClient.db, {
