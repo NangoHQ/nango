@@ -18,37 +18,18 @@ interface ValidationRule {
 }
 
 class ConfigService {
-    async getById(id: number): Promise<ProviderConfig | null> {
-        const result = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).first();
+    async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
+        const result = await db.knex
+            .select('id')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
 
         if (!result) {
             return null;
         }
 
-        return encryptionManager.decryptProviderConfig(result);
-    }
-
-    async getProviderName(providerConfigKey: string): Promise<string | null> {
-        const result = await db.knex.select('provider').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, deleted: false });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].provider;
-    }
-
-    async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
-        const result = await db.knex
-            .select('id')
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
+        return result.id;
     }
 
     async getProviderConfigByUuid(providerConfigKey: string, environment_uuid: string): Promise<ProviderConfig | null> {
@@ -113,12 +94,6 @@ class ConfigService {
             .orderBy('created_at', 'asc');
 
         return res;
-    }
-
-    async listProviderConfigsByProvider(environment_id: number, provider: string): Promise<ProviderConfig[]> {
-        return (await db.knex.select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, provider, deleted: false }))
-            .map((config) => encryptionManager.decryptProviderConfig(config))
-            .filter((config) => config != null) as ProviderConfig[];
     }
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
@@ -198,13 +173,6 @@ class ConfigService {
             .update(encrypted);
     }
 
-    async editProviderConfigName(providerConfigKey: string, newUniqueKey: string, environment_id: number) {
-        return db.knex
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-            .update({ unique_key: newUniqueKey });
-    }
-
     async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {
         const result = await db.knex
             .select('id', 'unique_key')
@@ -217,20 +185,6 @@ class ConfigService {
         }
 
         return result;
-    }
-
-    async getConfigIdByProviderConfigKey(providerConfigKey: string, environment_id: number): Promise<number | null> {
-        const result = await db.knex
-            .select('id')
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-            .first();
-
-        if (!result) {
-            return null;
-        }
-
-        return result.id;
     }
 
     async copyProviderConfigCreds(

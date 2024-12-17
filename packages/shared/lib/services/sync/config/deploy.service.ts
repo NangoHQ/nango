@@ -428,6 +428,7 @@ export async function deployPreBuilt({
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
+            // TODO: this is a critical bug if there are multiple integration with the same provider
             const providerLookup = await configService.getConfigIdByProvider(config.provider, environment.id);
             if (!providerLookup) {
                 const error = new NangoError('provider_not_on_account');
