@@ -1,12 +1,29 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'js-yaml';
+import type { Provider } from '@nangohq/types';
+
+const prettyAuthModes: Record<string, string> = {
+    OAUTH1: 'OAuth',
+    OAUTH2: 'OAuth',
+    OAUTH2_CC: 'OAuth',
+    BASIC: 'Basic',
+    API_KEY: 'API Key',
+    APP_STORE: 'Custom',
+    BILL: 'Bill',
+    SIGNATURE: 'Signature',
+    JWT: 'JWT',
+    TWO_STEP: 'Two Step',
+    TABLEAU: 'Tableau'
+};
 
 const flowsPath = 'packages/shared/flows.yaml';
+const providersPath = 'packages/shared/providers.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
 const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8')) as any;
+const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};
 for (const [integration, config] of Object.entries<any>(flows.integrations)) {
@@ -34,7 +51,15 @@ for (const file of files) {
 
         await fs.mkdir(snippetPath, { recursive: true });
 
-        const toolingSnippet = preBuiltToolingSnippet();
+        let providerConfig: Provider | undefined = providers[provider];
+        if (providerConfig && (providerConfig as any)['alias']) {
+            providerConfig = providers[(providerConfig as any)['alias']];
+        }
+
+        if (!providerConfig) {
+            throw new Error("Couldn't find provider config for " + provider);
+        }
+        const toolingSnippet = preBuiltToolingSnippet(providerConfig);
         await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
         const casesSnippet = useCasesSnippet(useCases[provider]);
@@ -42,7 +67,11 @@ for (const file of files) {
     }
 }
 
-function preBuiltToolingSnippet() {
+function preBuiltToolingSnippet(providerConfig: Provider) {
+    const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
+    const hasAuthParams = !!providerConfig.authorization_params;
+    const hasAuthGuide = !!providerConfig.docs_connect;
+
     return `
         ## Pre-built tooling
 
@@ -50,13 +79,12 @@ function preBuiltToolingSnippet() {
         <Accordion title="✅ Authorization">
         | Tools | Status |
         | - | - |
-        | Pre-built authorization (OAuth) | ✅ |
-        | Credentials auto-refresh | ✅ |
-        | Auth parameters validation | Not needed |
-        | Credentials validation | Not needed for OAuth |
-        | Pre-built Connect UI | ✅ |
+        | Pre-built authorization (${prettyAuthMode}) | ✅ |
+        ${prettyAuthMode === 'OAuth' ? `| Credentials auto-refresh | ✅ |` : ``}
+        ${hasAuthParams ? `| Auth parameters validation | ✅ |` : ``}
+        | Pre-built authorization UI | ✅ |
         | Custom authorization UI | ✅ |
-        | End-user authorization guide | Not needed for OAuth |
+        ${prettyAuthMode !== 'OAuth' || hasAuthGuide ? `| End-user authorization guide | ${hasAuthGuide ? '✅' : '🚫'} |` : ``}
         | Expired credentials detection | ✅ |
         </Accordion>
         <Accordion title="✅ Read & write data">
