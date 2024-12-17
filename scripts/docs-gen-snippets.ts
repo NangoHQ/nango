@@ -59,7 +59,7 @@ for (const file of files) {
         if (!providerConfig) {
             throw new Error("Couldn't find provider config for " + provider);
         }
-        const toolingSnippet = preBuiltToolingSnippet(providerConfig);
+        const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
         await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
         const casesSnippet = useCasesSnippet(useCases[provider]);
@@ -67,10 +67,13 @@ for (const file of files) {
     }
 }
 
-function preBuiltToolingSnippet(providerConfig: Provider) {
+function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
     const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
     const hasAuthParams = !!providerConfig.authorization_params;
     const hasAuthGuide = !!providerConfig.docs_connect;
+    const hasUseCases = useCases && useCases.length > 0;
+    const hasWebHooks = !!providerConfig.webhook_routing_script;
+    const hasPagination = !!providerConfig.proxy?.paginate;
 
     return `
         ## Pre-built tooling
@@ -90,11 +93,11 @@ function preBuiltToolingSnippet(providerConfig: Provider) {
         <Accordion title="✅ Read & write data">
         | Tools | Status |
         | - | - |
-        | Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+        | Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
         | API unification | ✅ |
         | 2-way sync | ✅ |
         | Webhooks from Nango on data modifications | ✅ |
-        | Real-time webhooks from 3rd-party API | ✅ |
+        | Real-time webhooks from 3rd-party API | ${hasWebHooks ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
         | Proxy requests | ✅ |
         </Accordion>
         <Accordion title="✅ Observability & data quality">
@@ -111,7 +114,7 @@ function preBuiltToolingSnippet(providerConfig: Provider) {
         | Tools | Status |
         | - | - |
         | Create or customize use-cases | ✅ |
-        | Pre-configured pagination | ✅ |
+        | Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
         | Pre-configured rate-limit handling | ✅ |
         | Per-customer configurations | ✅ |
         </Accordion>
