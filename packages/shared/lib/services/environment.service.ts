@@ -5,6 +5,7 @@ import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/type
 import { LogActionEnum } from '../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
+import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 
 const TABLE = '_nango_environments';
 
@@ -248,7 +249,15 @@ class EnvironmentService {
 
     async createDefaultEnvironments(accountId: number): Promise<void> {
         for (const environment of defaultEnvironments) {
-            await this.createEnvironment(accountId, environment);
+            const newEnv = await this.createEnvironment(accountId, environment);
+            if (newEnv) {
+                await externalWebhookService.update(newEnv.id, {
+                    alwaysSendWebhook: true,
+                    sendAuthWebhook: true,
+                    sendRefreshFailedWebhook: true,
+                    sendSyncFailedWebhook: true
+                });
+            }
         }
     }
 
@@ -473,6 +482,17 @@ class EnvironmentService {
             });
 
         return true;
+    }
+
+    async getOauthCallbackUrl(environmentId?: number) {
+        const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+        if (environmentId != null) {
+            const environment: DBEnvironment | null = await this.getById(environmentId);
+            return environment?.callback_url || globalCallbackUrl;
+        }
+
+        return globalCallbackUrl;
     }
 }
 

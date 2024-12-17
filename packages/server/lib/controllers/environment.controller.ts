@@ -8,7 +8,6 @@ import {
     connectionService,
     errorManager,
     getWebsocketsPath,
-    getOauthCallbackUrl,
     getGlobalWebhookReceiveUrl,
     generateSlackConnectionId,
     externalWebhookService
@@ -45,7 +44,7 @@ class EnvironmentController {
                 }
             }
 
-            environment.callback_url = await getOauthCallbackUrl(environment.id);
+            environment.callback_url = await environmentService.getOauthCallbackUrl(environment.id);
             const webhookBaseUrl = getGlobalWebhookReceiveUrl();
             environment.webhook_receive_url = `${webhookBaseUrl}/${environment.uuid}`;
 
