@@ -18,7 +18,7 @@ export class CleanupWorker {
         if (isMainThread) {
             const url = new URL('../../../dist/workers/cleanup/cleanup.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
-                throw new Error(`Cleanup script not found at ${url}`);
+                throw new Error(`Cleanup script not found at ${url.href}`);
             }
 
             this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });

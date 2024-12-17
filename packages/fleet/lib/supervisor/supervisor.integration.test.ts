@@ -55,8 +55,8 @@ describe('Supervisor', () => {
         it('should have only one processing at a time', async () => {
             const tickSpy1 = vi.spyOn(supervisor1, 'tick');
             const tickSpy2 = vi.spyOn(supervisor2, 'tick');
-            supervisor1.start();
-            supervisor2.start();
+            void supervisor1.start();
+            void supervisor2.start();
             await new Promise((resolve) => setTimeout(resolve, 50));
             expect(tickSpy1).toHaveBeenCalled();
             expect(tickSpy2).toHaveBeenCalledTimes(0);

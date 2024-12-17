@@ -3,7 +3,6 @@ import db from '@nangohq/database';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/types';
 import { LogActionEnum } from '../models/Telemetry.js';
-import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
 import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -85,20 +84,6 @@ class EnvironmentService {
             .first();
 
         return result || null;
-    }
-
-    async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
-        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ uuid: environment_uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        const accountId = result[0].account_id;
-
-        const uuid = await accountService.getUUIDFromAccountId(accountId);
-
-        return uuid;
     }
 
     async getAccountAndEnvironmentByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
@@ -183,16 +168,6 @@ class EnvironmentService {
             account: { ...res.account, created_at: new Date(res.account.created_at), updated_at: new Date(res.account.updated_at) },
             environment: encryptionManager.decryptEnvironment(res.environment)
         };
-    }
-
-    async getIdByUuid(uuid: string): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
     }
 
     async getById(id: number): Promise<DBEnvironment | null> {
@@ -294,21 +269,6 @@ class EnvironmentService {
         }
 
         return result[0].name;
-    }
-
-    /**
-     * Get Environment Id For Account Assuming Prod
-     * @desc legacy function to get the environment id for an account assuming prod
-     * while the transition is being made from account_id to environment_id
-     */
-    async getEnvironmentIdForAccountAssumingProd(accountId: number): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ account_id: accountId, name: 'prod' });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {

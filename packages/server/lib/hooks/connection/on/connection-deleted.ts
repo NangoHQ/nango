@@ -26,7 +26,7 @@ export async function preConnectionDeletion({
         return;
     }
 
-    const provider = await configService.getProviderName(connection.provider_config_key);
+    const integration = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
     for (const script of preConnectionDeletionScripts) {
         const { name, file_location: fileLocation, version } = script;
@@ -36,7 +36,7 @@ export async function preConnectionDeletion({
             {
                 account: team,
                 environment: environment,
-                integration: { id: connection.config_id, name: connection.provider_config_key, provider: provider || 'unknown' },
+                integration: { id: connection.config_id, name: connection.provider_config_key, provider: integration?.provider || 'unknown' },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: { id: script.id, name: script.name },
                 meta: { event }

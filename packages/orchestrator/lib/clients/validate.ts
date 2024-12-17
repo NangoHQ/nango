@@ -221,5 +221,5 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
         };
         return Ok(schedule);
     }
-    return Err(`Cannot validate task ${JSON.stringify(schedule)}: ${validation.error}`);
+    return Err(new Error('Cannot validate task', { cause: { err: validation.error, context: schedule } }));
 }

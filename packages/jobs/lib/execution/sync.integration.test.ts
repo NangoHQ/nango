@@ -205,7 +205,7 @@ const runJob = async (
     // check that sync job is running
     const syncJob = await isSyncJobRunning(task.syncId);
     if (!syncJob || syncJob.run_id !== 'task-id' || !syncJob.log_id) {
-        throw new Error(`Incorrect sync job detected: ${syncJob}`);
+        throw new Error(`Incorrect sync job detected: ${syncJob?.id}`);
     }
 
     const model = syncConfig.models[0]!;
