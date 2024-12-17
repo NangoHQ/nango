@@ -107,9 +107,9 @@
                         "guides/customize/create-a-custom-integration",
                         "guides/customize/extend-an-integration-template",
                         "guides/customize/contribute-an-api",
+                        "guides/customize/unify-apis",
                         "guides/customize/handle-rate-limits",
                         "guides/customize/handle-large-datasets",
-                        "guides/customize/migrate-integration-configuration",
                         "guides/customize/validate-input-and-output"
                     ]
                 },
