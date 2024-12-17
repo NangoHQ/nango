@@ -2461,6 +2461,8 @@ exact-online:
         base_url: https://start.exactonline.${connectionConfig.extension}/
         headers:
             accept: application/json
+        retry:
+            at: 'x-ratelimit-reset'
         paginate:
             type: link
             link_path_in_response_body: d.__next
