@@ -74,6 +74,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
     const hasUseCases = useCases && useCases.length > 0;
     const hasWebHooks = !!providerConfig.webhook_routing_script;
     const hasPagination = !!providerConfig.proxy?.paginate;
+    const hasRateLimit = !!providerConfig.proxy?.retry?.at;
 
     return `
         ## Pre-built tooling
@@ -115,7 +116,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         | - | - |
         | Create or customize use-cases | ✅ |
         | Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
-        | Pre-configured rate-limit handling | ✅ |
+        | Pre-configured rate-limit handling | ${hasRateLimit ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
         | Per-customer configurations | ✅ |
         </Accordion>
         </AccordionGroup>
