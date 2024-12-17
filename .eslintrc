@@ -48,10 +48,11 @@
         "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-unsafe-enum-comparison": "warn",
         "@typescript-eslint/restrict-template-expressions": [
-            "warn",
+            "error",
             {
                 "allowNumber": true,
-                "allowBoolean": true
+                "allowBoolean": true,
+                "allowNever": true
             }
         ],
         "@typescript-eslint/await-thenable": "error",
@@ -279,6 +280,13 @@
                         ]
                     }
                 ]
+            }
+        },
+        {
+            "files": "**.test.ts",
+            "rules": {
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-non-null-assertion": "off"
             }
         }
     ]

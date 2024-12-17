@@ -17,7 +17,7 @@ export class MonitorWorker {
         if (isMainThread) {
             const url = new URL('../../../dist/workers/monitor/monitor.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
-                throw new Error(`Monitor script not found at ${url}`);
+                throw new Error(`Monitor script not found at ${url.href}`);
             }
 
             this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });
