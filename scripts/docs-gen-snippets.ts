@@ -76,51 +76,52 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
     const hasPagination = !!providerConfig.proxy?.paginate;
     const hasRateLimit = !!providerConfig.proxy?.retry?.at;
 
-    return `
-        ## Pre-built tooling
-
-        <AccordionGroup>
-        <Accordion title="✅ Authorization">
-        | Tools | Status |
-        | - | - |
-        | Pre-built authorization (${prettyAuthMode}) | ✅ |
-        ${prettyAuthMode === 'OAuth' ? `| Credentials auto-refresh | ✅ |` : ``}
-        ${hasAuthParams ? `| Auth parameters validation | ✅ |` : ``}
-        | Pre-built authorization UI | ✅ |
-        | Custom authorization UI | ✅ |
-        ${prettyAuthMode !== 'OAuth' || hasAuthGuide ? `| End-user authorization guide | ${hasAuthGuide ? '✅' : '🚫'} |` : ``}
-        | Expired credentials detection | ✅ |
-        </Accordion>
-        <Accordion title="✅ Read & write data">
-        | Tools | Status |
-        | - | - |
-        | Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
-        | API unification | ✅ |
-        | 2-way sync | ✅ |
-        | Webhooks from Nango on data modifications | ✅ |
-        | Real-time webhooks from 3rd-party API | ${hasWebHooks ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
-        | Proxy requests | ✅ |
-        </Accordion>
-        <Accordion title="✅ Observability & data quality">
-        | Tools | Status |
-        | - | - |
-        | HTTP request logging | ✅ |
-        | End-to-type type safety | ✅ |
-        | Data runtime validation | ✅ |
-        | OpenTelemetry export | ✅ |
-        | Slack alerts on errors | ✅ |
-        | Integration status API | ✅ |
-        </Accordion>
-        <Accordion title="✅ Customization">
-        | Tools | Status |
-        | - | - |
-        | Create or customize use-cases | ✅ |
-        | Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
-        | Pre-configured rate-limit handling | ${hasRateLimit ? '✅' : '🚫 (time to contribute: &lt;48h)'} |
-        | Per-customer configurations | ✅ |
-        </Accordion>
-        </AccordionGroup>
-    `;
+    return [
+        `## Pre-built tooling`,
+        `<AccordionGroup>`,
+        `<Accordion title="✅ Authorization">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Pre-built authorization (${prettyAuthMode}) | ✅ |`,
+        prettyAuthMode === 'OAuth' ? `| Credentials auto-refresh | ✅ |` : ``,
+        hasAuthParams ? `| Auth parameters validation | ✅ |` : ``,
+        `| Pre-built authorization UI | ✅ |`,
+        `| Custom authorization UI | ✅ |`,
+        prettyAuthMode !== 'OAuth' || hasAuthGuide ? `| End-user authorization guide | ${hasAuthGuide ? '✅' : '🚫'} |` : ``,
+        `| Expired credentials detection | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Read & write data">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| API unification | ✅ |`,
+        `| 2-way sync | ✅ |`,
+        `| Webhooks from Nango on data modifications | ✅ |`,
+        `| Real-time webhooks from 3rd-party API | ${hasWebHooks ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Proxy requests | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Observability & data quality">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| HTTP request logging | ✅ |`,
+        `| End-to-type type safety | ✅ |`,
+        `| Data runtime validation | ✅ |`,
+        `| OpenTelemetry export | ✅ |`,
+        `| Slack alerts on errors | ✅ |`,
+        `| Integration status API | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Customization">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Create or customize use-cases | ✅ |`,
+        `| Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Pre-configured rate-limit handling | ${hasRateLimit ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Per-customer configurations | ✅ |`,
+        `</Accordion>`,
+        `</AccordionGroup>`
+    ]
+        .filter((line) => line !== '')
+        .join('\n');
 }
 
 function useCasesSnippet(useCases: any) {
