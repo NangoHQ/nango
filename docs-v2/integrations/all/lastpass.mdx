@@ -1,0 +1,118 @@
+---
+title: LastPass
+sidebarTitle: LastPass
+provider: lastpass
+---
+import Overview from "/snippets/overview.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/lastpass/PreBuiltUseCases.mdx"
+
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (Basic) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
+<PreBuiltUseCases />
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lastpass.mdx)</Note>
+
+## Useful links
+
+-   [Generating your LastPass credentials](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/t_cid_and_hash_locate.html&_LANG=enus)
+-   [LastPass API docs](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/use-provisioning-api.html&_LANG=enus)
+-   [LastPass Enterprise API Postman collection﻿](https://support.lastpass.com/s/document-item?language=en_US&bundleId=lastpass&topicId=LastPass/use_lastpass_enterprise_api_postman_collection.html&_LANG=enus)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lastpass.mdx)</Note>
+
+## API gotchas
+
+- LastPass in Nango uses `Basic` auth mode to access different endpoints. Please provide your `cid` as your username and `provhash` as your password values.
+- After creating a connection, you can use the Basic credentials as follows;
+```js
+const connection = await nango.getConnection();
+let credentials: { cid?: string; provhash?: string } = {};
+if ('username' in connection.credentials && 'password' in connection.credentials) {
+  credentials = {
+    cid: connection.credentials.username,
+    provhash: connection.credentials.password,
+  };
+} else {
+  throw new nango.ActionError({
+    message: `Basic API credentials are incomplete`
+  });
+}
+const postData = {
+  cid: credentials.cid,
+  provhash: credentials.provhash,
+  cmd: "batchadd",
+  "data": [
+    {
+      "username": "user4@lastpass.com",
+      "fullname": "Jane Smith",
+      "password": "DefaultPassword",
+      "password_reset_required": false
+    }
+  ]
+};
+
+const resp = await nango.post({
+  data: postData,
+});
+```
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lastpass.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to LastPass" icon="link" href="/integrations/all/lastpass/connect" horizontal>
+  Guide to connect to LastPass using Connect UI
+</Card>
+
