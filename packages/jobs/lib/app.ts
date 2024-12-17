@@ -72,7 +72,7 @@ try {
         // we then must fake a new deployment so fleet replaces runners with new ones
         const commitHash = generateCommitHash();
         if (commitHash.isErr()) {
-            logger.error(`Unable to generate commit hash: ${commitHash.error}`);
+            logger.error(`Unable to generate commit hash`, commitHash.error);
         } else {
             await runnersFleet.rollout(commitHash.value);
         }

@@ -92,7 +92,7 @@ export async function persistRecords({
 
     const syncConfig = await getSyncConfigByJobId(syncJobId);
     if (syncConfig && !syncConfig?.models.includes(model)) {
-        const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models}.`);
+        const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models.join(', ')}.`);
         await logCtx.error(`The model '${model}' is not included in the declared sync models`);
 
         span.setTag('error', err).finish();

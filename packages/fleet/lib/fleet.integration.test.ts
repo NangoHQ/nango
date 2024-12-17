@@ -1,4 +1,4 @@
-import { expect, describe, it, beforeAll, afterAll, afterEach } from 'vitest';
+import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import { Fleet } from './fleet.js';
 import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
 import { generateCommitHash } from './models/helpers.js';
@@ -18,8 +18,6 @@ describe('fleet', () => {
     beforeAll(async () => {
         await fleet.migrate();
     });
-
-    afterEach(() => {});
 
     afterAll(async () => {
         await dbClient.clearDatabase();

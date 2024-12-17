@@ -42,8 +42,8 @@ export const routeFetch = <E extends Endpoint<any>>(
         timeoutMs?: number | undefined;
     }
 ) => {
-    return async function f({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
-        const search = query ? `?${new URLSearchParams(query)}` : '';
+    return async function _fetch({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
+        const search = query ? `?${new URLSearchParams(query).toString()}` : '';
         let path = route.path;
         if (params) {
             for (const [key, value] of Object.entries(params)) {
@@ -79,7 +79,7 @@ export const routeFetch = <E extends Endpoint<any>>(
             }
             return json;
         } catch (err) {
-            return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed: ${err}`, payload: err } };
+            return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed`, payload: err } };
         }
     };
 };

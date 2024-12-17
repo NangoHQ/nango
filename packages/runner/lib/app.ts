@@ -46,7 +46,7 @@ try {
 
     const res = await register();
     if (res.isErr()) {
-        logger.error(`${id} Unable to register: ${res.error}`);
+        logger.error(`${id} Unable to register`, res.error);
         // not exiting on purpose because REMOTE runner are not registering
     }
 } catch (err) {

@@ -821,8 +821,7 @@ class OAuthController {
         const session = await oAuthSessionService.findById(state as string);
 
         if (session == null) {
-            const errorMessage = `No session found for state: ${state}`;
-            const e = new Error(errorMessage);
+            const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,

@@ -444,7 +444,7 @@ class ProxyService {
                 break;
             default:
                 headers = {
-                    Authorization: `Bearer ${config.token}`
+                    Authorization: `Bearer ${config.token as string}`
                 };
                 break;
         }

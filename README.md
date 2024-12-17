@@ -59,9 +59,9 @@ Nango's flexibility ensures it supports any API integration:
 2. **Custom integrations**: Build your own integrations in code with limitless customization capabilities.
 3. **Managed integrations**: Leverage Nango experts to create and maintain your integrations end-to-end.
 
-# 🔌 250+ pre-built APIs & integrations, or build your own!
+# 🔌 300+ pre-built APIs & integrations, or build your own!
 
-[Over 250 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+[Over 300 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
 
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...

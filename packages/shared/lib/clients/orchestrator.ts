@@ -755,7 +755,7 @@ export class Orchestrator {
                 await logCtx.error('Failed to init sync', { error: err });
                 await logCtx.failed();
             }
-            return Err(`Failed to schedule sync: ${err}`);
+            return Err(new Error('Failed to schedule sync', { cause: err }));
         }
     }
 
