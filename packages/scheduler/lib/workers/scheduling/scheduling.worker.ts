@@ -21,7 +21,7 @@ export class SchedulingWorker {
         if (isMainThread) {
             const url = new URL('../../../dist/workers/scheduling/scheduling.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
-                throw new Error(`Scheduling script not found at ${url}`);
+                throw new Error(`Scheduling script not found at ${url.href}`);
             }
 
             this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });

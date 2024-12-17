@@ -15,6 +15,7 @@ import https from 'node:https';
 import type { NangoConnection } from '@nangohq/types';
 import { NANGO_VERSION } from './version.js';
 import { cloudHost } from './constants.js';
+import type { PackageJson } from 'type-fest';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,7 +53,7 @@ export function isLocallyInstalled(packageName: string, debug = false) {
                     printDebug(`Ignoring npx cache directory: ${dir} while trying to find if nango is locally installed.`);
                 }
             } else if (fs.existsSync(packageJsonPath)) {
-                const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+                const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) as PackageJson;
 
                 const dependencies = packageJson.dependencies || {};
                 const devDependencies = packageJson.devDependencies || {};
@@ -67,7 +68,7 @@ export function isLocallyInstalled(packageName: string, debug = false) {
 
         return false;
     } catch (err) {
-        console.error(`Error checking if package is installed: ${err}`);
+        console.error(`Error checking if package is installed`, err);
         return false;
     }
 }

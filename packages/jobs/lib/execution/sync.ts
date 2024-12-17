@@ -54,7 +54,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         lastSyncDate = await getLastSyncDate(task.syncId);
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
-            throw new Error(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
+            throw new Error(`Provider config not found for connection: ${task.connection.connection_id}. TaskId: ${task.id}`);
         }
 
         syncConfig = await getSyncConfigRaw({
@@ -147,7 +147,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         };
 
         if (task.debug) {
-            await logCtx.debug(`Last sync date is ${lastSyncDate}`);
+            await logCtx.debug(`Last sync date is`, lastSyncDate);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
@@ -473,7 +473,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
 
         const abortedScript = await abortScript({ taskId: task.abortedTask.id, teamId: team.id });
         if (abortedScript.isErr()) {
-            logger.error(`failed to abort script for task ${task.abortedTask.id}: ${abortedScript.error}`);
+            logger.error(`failed to abort script for task ${task.abortedTask.id}`, abortedScript.error);
         }
 
         const syncJob = await getSyncJobByRunId(task.abortedTask.id);
@@ -483,7 +483,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
 
         const providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
-            throw new Error(`Provider config not found for connection: ${task.connection}. TaskId: ${task.id}`);
+            throw new Error(`Provider config not found for connection: ${task.connection.connection_id}. TaskId: ${task.id}`);
         }
 
         const syncConfig = await getSyncConfigRaw({
@@ -532,7 +532,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         }
         return Ok(undefined);
     } catch (err) {
-        const error = new Error(`Failed to cancel: ${err}`);
+        const error = new Error(`Failed to cancel`, { cause: err });
         const setFailed = await orchestratorClient.failed({ taskId: task.id, error });
         if (setFailed.isErr()) {
             logger.error(`failed to set cancel task ${task.id} as failed`, setFailed.error);

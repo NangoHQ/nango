@@ -15,6 +15,6 @@ try {
 
     otlp.register(getOtlpRoutes);
 } catch (err) {
-    console.error(`Persist API error: ${err}`);
+    console.error(`Persist API error`, err);
     process.exit(1);
 }

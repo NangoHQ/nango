@@ -104,7 +104,7 @@ export class RunnerMonitor {
                     if (envs.RUNNER_NODE_ID) {
                         const res = await idle();
                         if (res.isErr()) {
-                            logger.error(`Failed to idle runner: ${res.error}`);
+                            logger.error(`Failed to idle runner`, res.error);
                         }
                     } else {
                         // TODO: DEPRECATE legacy /idle endpoint

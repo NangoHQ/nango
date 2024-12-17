@@ -1,3 +1,5 @@
+import { stringifyError } from '@nangohq/utils';
+
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
@@ -361,7 +363,7 @@ export class NangoError extends Error {
                 break;
 
             case 'sync_script_failure':
-                this.message = `The sync script failed with an error: ${this.payload}`;
+                this.message = `The sync script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'two_step_credentials_fetch_error':
@@ -400,20 +402,20 @@ export class NangoError extends Error {
                 break;
 
             case 'action_script_failure':
-                this.message = `The action script failed with an error: ${this.payload}`;
+                this.message = `The action script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'webhook_script_failure':
-                this.message = `The webhook script failed with an error: ${this.payload}`;
+                this.message = `The webhook script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'on_event_script_failure':
-                this.message = `The on-event script failed with an error: ${this.payload}`;
+                this.message = `The on-event script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'pass_through_error':
                 this.status = 400;
-                this.message = `${this.payload}`;
+                this.message = JSON.stringify(this.payload);
                 break;
 
             case 'action_script_runtime_error':
@@ -427,7 +429,7 @@ export class NangoError extends Error {
 
             case 'incorrect_param':
                 this.status = 400;
-                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
+                this.message = `The parameter ${this.payload['incorrect'] as string} is invalid. Did you mean ${this.payload['correct'] as string}?`;
                 break;
 
             case 'workos_not_configured':
@@ -474,7 +476,7 @@ export class NangoError extends Error {
 
             case 'sync_job_update_failure':
                 this.status = 500;
-                this.message = `The sync job results could not be updated: ${this.payload}`;
+                this.message = `The sync job results could not be updated: ${JSON.stringify(this.payload)}`;
                 break;
 
             case 'script_invalid_error':
