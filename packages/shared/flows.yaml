@@ -9570,7 +9570,9 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /metadata
+                    path: /contents
+                    group: Contents
+                version: 1.0.0
             users:
                 runs: every day
                 description: |
@@ -9581,6 +9583,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
             databases:
                 runs: every 1h
                 track_deletes: true
@@ -9593,7 +9596,9 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /notion/database
+                    path: /databases
+                    group: Databases
+                version: 1.0.0
         actions:
             fetch-rich-page:
                 description: >
@@ -9609,7 +9614,9 @@ integrations:
                 output: RichPage
                 endpoint:
                     method: GET
-                    path: /fetch-rich-page
+                    path: /pages/single
+                    group: Pages
+                version: 1.0.0
             fetch-database:
                 description: >-
                     Fetch a specific Notion database by passing in the database id. This
@@ -9619,8 +9626,9 @@ integrations:
                 output: Database
                 endpoint:
                     method: GET
-                    path: /fetch-database
-                version: 1.0.0
+                    path: /databases/single
+                    group: Databases
+                version: 1.0.1
             fetch-content-metadata:
                 description: >
                     Retrieve the entity type as well as an id for a Notion entity to later
@@ -9631,7 +9639,9 @@ integrations:
                 output: ContentMetadata
                 endpoint:
                     method: GET
-                    path: /fetch-content-metadata
+                    path: /contents/single
+                    group: Contents
+                version: 1.0.0
         models:
             RichPageInput:
                 pageId: string
