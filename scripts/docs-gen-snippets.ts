@@ -10,7 +10,7 @@ const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8')) as any;
 
 const useCases: Record<string, any> = {};
 for (const [integration, config] of Object.entries<any>(flows.integrations)) {
-    useCases[integration] = buildEndpoints(config.actions, integration).concat(buildEndpoints(config.syncs, integration));
+    useCases[integration] = buildEndpoints('action', config.actions, integration).concat(buildEndpoints('sync', config.syncs, integration));
 }
 
 const files = await fs.readdir(docsPath);
@@ -119,7 +119,7 @@ interface Endpoint {
     script: string;
 }
 
-function buildEndpoints(syncOrAction: any, integration: string) {
+function buildEndpoints(type: string, syncOrAction: any, integration: string) {
     const endpoints: Endpoint[] = [];
     if (syncOrAction) {
         for (const [key, item] of Object.entries<any>(syncOrAction)) {
@@ -134,7 +134,7 @@ function buildEndpoints(syncOrAction: any, integration: string) {
                     path: endpoint?.path,
                     description: item?.description?.trim(),
                     group: endpoint?.group,
-                    script: `${integration}/actions/${key}`
+                    script: `${integration}/${type}s/${key}`
                 });
             }
         }
