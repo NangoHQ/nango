@@ -2227,7 +2227,7 @@ dropbox:
     docs: https://docs.nango.dev/integrations/all/dropbox
 
 emarsys:
-    display_name: Emarsys Core API
+    display_name: Emarsys Core API (WSSE)
     categories:
         - marketing
     auth_mode: SIGNATURE
@@ -2245,6 +2245,21 @@ emarsys:
             at: 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
+
+emarsys-oauth:
+    display_name: Emarsys (Ouath)
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.emarsys.net/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.emarsys.net
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys
 
 ebay:
