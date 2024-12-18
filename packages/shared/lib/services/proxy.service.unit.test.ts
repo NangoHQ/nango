@@ -474,9 +474,7 @@ describe('Proxy service Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            connection: {
-                environment_id: 1
-            }
+            connection: {}
         });
 
         const url = proxyService.constructUrl(config);
@@ -659,14 +657,9 @@ describe('Proxy service configure', () => {
         const internalConfig: InternalProxyConfiguration = {
             providerName: 'provider-1',
             connection: {
-                environment_id: 1,
-                end_user_id: null,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {},
-                created_at: new Date(),
-                updated_at: new Date()
+                connection_config: {}
             },
             existingActivityLogId: '1'
         };
@@ -694,14 +687,9 @@ describe('Proxy service configure', () => {
         const internalConfig: InternalProxyConfiguration = {
             providerName: 'provider-1',
             connection: {
-                environment_id: 1,
-                end_user_id: null,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {},
-                created_at: new Date(),
-                updated_at: new Date()
+                connection_config: {}
             },
             existingActivityLogId: '1'
         };
@@ -730,14 +718,9 @@ describe('Proxy service configure', () => {
         const internalConfig: InternalProxyConfiguration = {
             providerName: 'provider-1',
             connection: {
-                environment_id: 1,
-                end_user_id: null,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {},
-                created_at: new Date(),
-                updated_at: new Date()
+                connection_config: {}
             },
             existingActivityLogId: '1'
         };
@@ -766,14 +749,9 @@ describe('Proxy service configure', () => {
         const internalConfig: InternalProxyConfiguration = {
             providerName: 'unknown',
             connection: {
-                environment_id: 1,
-                end_user_id: null,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {},
-                created_at: new Date(),
-                updated_at: new Date()
+                connection_config: {}
             },
             existingActivityLogId: '1'
         };
@@ -808,14 +786,9 @@ describe('Proxy service configure', () => {
         const internalConfig: InternalProxyConfiguration = {
             providerName: 'github',
             connection: {
-                environment_id: 1,
-                end_user_id: null,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {},
-                created_at: new Date(),
-                updated_at: new Date()
+                connection_config: {}
             },
             existingActivityLogId: '1'
         };
@@ -844,9 +817,7 @@ describe('Proxy service configure', () => {
             baseUrlOverride: 'https://api.github.com.override',
             decompress: false,
             connection: {
-                environment_id: 1,
                 connection_id: 'connection-1',
-                provider_config_key: 'provider-config-key-1',
                 credentials: {},
                 connection_config: {}
             },
