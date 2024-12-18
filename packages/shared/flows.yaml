@@ -6367,6 +6367,61 @@ integrations:
                 attributes: object
                 relationships: object
                 links: object
+    lastpass:
+        actions:
+            create-user:
+                description: Creates a user in Lastpass.
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: LastPassCreateUser
+            delete-user:
+                description: Deletes a user in Lastpass.
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: EmailEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Lastpass.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            EmailEntity:
+                email: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            LastPassCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                groups?: string[]
+                duousername?: string
+                securidusername?: string
+                password?: string
+                password_reset_required?: boolean
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     lever:
         actions:
             create-note:
