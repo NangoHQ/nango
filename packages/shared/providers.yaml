@@ -2246,6 +2246,17 @@ emarsys:
     token:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: The ID of your Emarsys WSSE API Credentials
+            pattern: '^[a-zA-Z0-9_-]+$'
+        password:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Emarsys WSSE API Credentials
+            pattern: '^[a-zA-Z0-9-]+$'
 
 ebay:
     display_name: eBay

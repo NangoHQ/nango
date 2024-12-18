@@ -70,8 +70,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
     }),
     SIGNATURE: z.object({
         username: z.string().min(1),
-        password: z.string().min(1),
-        type: z.string().min(1)
+        password: z.string().min(1)
     }),
     CUSTOM: z.object({})
 };
