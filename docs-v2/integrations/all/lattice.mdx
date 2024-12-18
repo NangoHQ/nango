@@ -1,0 +1,101 @@
+---
+title: Lattice
+sidebarTitle: Lattice
+provider: lattice
+---
+
+
+import Overview from "/snippets/overview.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/lattice/PreBuiltUseCases.mdx"
+
+<Overview />
+
+## Pre-built tooling
+
+<AccordionGroup>
+<Accordion title="✅ Authorization">
+| Tools | Status |
+| - | - |
+| Pre-built authorization (API Key) | ✅ |
+| Credentials auto-refresh | ✅ |
+| Auth parameters validation | Not needed |
+| Credentials validation | Not needed for OAuth |
+| Pre-built Connect UI | ✅ |
+| Custom authorization UI | ✅ |
+| End-user authorization guide | Not needed for OAuth |
+| Expired credentials detection | ✅ |
+</Accordion>
+<Accordion title="✅ Read & write data">
+| Tools | Status |
+| - | - |
+| Pre-built use-cases | 🚫 (time to contribute: &lt;48h)]) |
+| API unification | ✅ |
+| 2-way sync | ✅ |
+| Webhooks from Nango on data modifications | ✅ |
+| Real-time webhooks from 3rd-party API | ✅ |
+| Proxy requests | ✅ |
+</Accordion>
+<Accordion title="✅ Observability & data quality">
+| Tools | Status |
+| - | - |
+| HTTP request logging | ✅ |
+| End-to-type type safety | ✅ |
+| Data runtime validation | ✅ |
+| OpenTelemetry export | ✅ |
+| Slack alerts on errors | ✅ |
+| Integration status API | ✅ |
+</Accordion>
+<Accordion title="✅ Customization">
+| Tools | Status |
+| - | - |
+| Create or customize use-cases | ✅ |
+| Pre-configured pagination | ✅ |
+| Pre-configured rate-limit handling | ✅ |
+| Per-customer configurations | ✅ |
+</Accordion>
+</AccordionGroup>
+
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate a Lattice API keys](https://developers.lattice.com/reference/authentication)
+-   [Lattice API docs](https://developers.lattice.com/reference/introduction)
+-   [Lattice SCIM API docs](https://help.lattice.com/hc/en-us/articles/4404294040983-The-SCIM-API)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+## API gotchas
+
+- Lattice API endpoints and fields are subject to change at any time without notice.
+- The API has a rate limit of 240 requests per minute.
+- All API requests must be made over HTTPS. Calls made over plain HTTP will fail. 
+- The Lattice API was designed to only be called from a server and thus does not provide any CORS ability. This is to protect you and your user's data. By calling this API from a browser would expose your bearer tokens and allow a malicious actor to access data they should not be exposed to.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Lattice" icon="link" href="/integrations/all/lattice-scim/connect" horizontal>
+  Guide to connect to Lattice using Connect UI
+</Card>
