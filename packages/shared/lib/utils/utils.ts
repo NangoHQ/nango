@@ -1,9 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
-import type { DBEnvironment } from '@nangohq/types';
 import get from 'lodash-es/get.js';
 
 export enum UserType {
@@ -145,17 +143,6 @@ export function getGlobalOAuthCallbackUrl() {
 export function getGlobalWebhookReceiveUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
-}
-
-export async function getOauthCallbackUrl(environmentId?: number) {
-    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
-
-    if (environmentId != null) {
-        const environment: DBEnvironment | null = await environmentService.getById(environmentId);
-        return environment?.callback_url || globalCallbackUrl;
-    }
-
-    return globalCallbackUrl;
 }
 
 /**

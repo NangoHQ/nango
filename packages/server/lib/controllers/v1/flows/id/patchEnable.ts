@@ -39,7 +39,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    const config = await configService.getConfigIdByProviderConfigKey(body.providerConfigKey, environment.id);
+    const config = await configService.getIdByProviderConfigKey(environment.id, body.providerConfigKey);
     if (!config) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
         return;
