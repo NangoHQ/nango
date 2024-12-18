@@ -108,7 +108,6 @@ import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js'
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
 import { postRollout } from './controllers/fleet/postRollout.js';
-import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 
 export const router = express.Router();
@@ -219,7 +218,7 @@ publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegr
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
-publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
+publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));
