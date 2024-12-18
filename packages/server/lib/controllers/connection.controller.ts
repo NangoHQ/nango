@@ -147,12 +147,14 @@ class ConnectionController {
                 return;
             }
 
-            const providerName = await configService.getProviderName(provider_config_key);
-            if (!providerName) {
+            const integration = await configService.getProviderConfig(provider_config_key, environment.id);
+            if (!integration) {
                 const error = new NangoError('unknown_provider_config', { providerConfigKey: provider_config_key, environmentName: environment.name });
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
+
+            const providerName = integration.provider;
 
             if (account.is_capped && provider_config_key) {
                 const isCapped = await connectionCreationStartCapCheckHook({

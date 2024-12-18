@@ -1339,6 +1339,25 @@ canny:
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
             pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-finding-your-api-key'
+canva-scim:
+    display_name: Canva (SCIM API)
+    categories:
+        - design
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.canva.com/_scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/canva
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Canva scim account
+            doc_section: '#step-1-finding-canva-api-key'
 
 certn:
     display_name: Certn
@@ -2208,7 +2227,7 @@ dropbox:
     docs: https://docs.nango.dev/integrations/all/dropbox
 
 emarsys:
-    display_name: Emarsys Core API
+    display_name: Emarsys Core API (WSSE)
     categories:
         - marketing
     auth_mode: SIGNATURE
@@ -2226,6 +2245,32 @@ emarsys:
             at: 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
+    docs: https://docs.nango.dev/integrations/all/emarsys
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: The ID of your Emarsys WSSE API Credentials
+            pattern: '^[a-zA-Z0-9_-]+$'
+        password:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Emarsys WSSE API Credentials
+            pattern: '^[a-zA-Z0-9-]+$'
+
+emarsys-oauth:
+    display_name: Emarsys (Ouath)
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.emarsys.net/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.emarsys.net
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys
 
 ebay:
@@ -2461,6 +2506,8 @@ exact-online:
         base_url: https://start.exactonline.${connectionConfig.extension}/
         headers:
             accept: application/json
+        retry:
+            at: 'x-ratelimit-reset'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -2767,6 +2814,8 @@ freshservice:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
     connection_config:
         subdomain:
@@ -2777,6 +2826,20 @@ freshservice:
             example: domain
             suffix: .freshservice.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Freshservice account
+            secret: true
+        password:
+            type: string
+            title: ''
+            description: ''
+            # https://api.freshservice.com/#authentication
+            # FreshService is using basic auth with an api key, the basic username/password was deprecated
+            default_value: 'X'
+            hidden: true
 
 freshteam:
     display_name: Freshteam
@@ -2892,6 +2955,16 @@ guru:
     proxy:
         base_url: https://api.getguru.com/api/v1
     docs: https://docs.nango.dev/integrations/all/guru
+    credentials:
+        username:
+            type: string
+            title: User/Collection ID
+            description: The user or collection ID of your Guru account
+        password:
+            type: string
+            title: User/Collection Token
+            description: The user or collection token of your Guru account
+            secret: true
 
 github:
     display_name: GitHub
@@ -3061,6 +3134,8 @@ gong:
     auth_mode: BASIC
     proxy:
         base_url: https://api.gong.io
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     docs_connect: https://docs.nango.dev/integrations/all/gong/connect
     credentials:
@@ -3097,6 +3172,8 @@ gong-oauth:
     token_request_auth_method: basic
     proxy:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     connection_config:
         api_base_url_for_customer:
@@ -3410,6 +3487,17 @@ hackerrank-work:
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your HackerRank Work API Key
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 harvest:
     display_name: Harvest
@@ -3464,6 +3552,8 @@ hibob-service-user:
         verification:
             method: GET
             endpoint: /v1/company/named-lists
+        retry:
+            at: 'x-ratelimit-reset'
     credentials:
         username:
             type: string
@@ -3579,6 +3669,17 @@ insightly:
             example: domain
             suffix: .insightly.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Insightly API key
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
 
 instantly:
     display_name: Instantly
@@ -3744,6 +3845,18 @@ helpscout-docs:
             after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Help Scout Docs API Key
+            secret: true
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'X'
+            hidden: true
 
 helpscout-mailbox:
     display_name: Help Scout Mailbox
@@ -3933,6 +4046,16 @@ lessonly:
     proxy:
         base_url: https://api.lessonly.com/api
     docs: https://docs.nango.dev/integrations/all/lessonly
+    credentials:
+        username:
+            type: string
+            title: Subdomain
+            description: Your Lessonly Subdomain
+        password:
+            type: string
+            title: API Key
+            description: Your Lessonly API key
+            secret: true
 
 lever:
     display_name: Lever
@@ -3988,6 +4111,17 @@ lever-basic-sandbox:
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: The API Key of your Lever sandbox account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 linear:
     display_name: Linear
@@ -4099,6 +4233,16 @@ listmonk:
             description: The domain of your Listmonk account
             format: hostname
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API user to your Listmonk account
+        password:
+            type: string
+            title: Token
+            description: The token to your Listmonk account
+            secret: true
 
 make:
     display_name: Make

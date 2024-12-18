@@ -15,7 +15,7 @@ export class ProcessorWorker {
         if (isMainThread) {
             const url = new URL('../../dist/processor/processor.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
-                throw new Error(`Processor worker boot script not found at ${url}`);
+                throw new Error(`Processor worker boot script not found at ${url.href}`);
             }
             this.worker = new Worker(url, { workerData: { orchestratorUrl, groupKey, maxConcurrency } });
             this.worker.on('error', (err) => {

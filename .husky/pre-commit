@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
+set -e
+
 . "$(dirname -- "$0")/_/husky.sh"
 
 npx lint-staged --allow-empty
+
+if [ $(git diff --cached --numstat -- ./docs-v2/integrations/all/ ./packages/shared/flows.yaml | wc -l) -gt "0" ]; then
+    npm run docs:generate
+    git add ./docs-v2/snippets/generated/
+fi

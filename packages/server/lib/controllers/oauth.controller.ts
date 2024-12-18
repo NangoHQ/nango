@@ -22,7 +22,6 @@ import type {
 import {
     getConnectionConfig,
     interpolateStringFromObject,
-    getOauthCallbackUrl,
     LogActionEnum,
     configService,
     connectionService,
@@ -93,7 +92,7 @@ class OAuthController {
                 connectionId
             });
 
-            const callbackUrl = await getOauthCallbackUrl(environmentId);
+            const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
             const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
@@ -821,8 +820,7 @@ class OAuthController {
         const session = await oAuthSessionService.findById(state as string);
 
         if (session == null) {
-            const errorMessage = `No session found for state: ${state}`;
-            const e = new Error(errorMessage);
+            const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
             errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,

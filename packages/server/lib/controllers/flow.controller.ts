@@ -135,10 +135,10 @@ class FlowController {
             }
 
             const flow = flowService.getSingleFlowAsStandardConfig(flowName);
-            const provider = await configService.getProviderName(providerConfigKey);
+            const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             const flowConfig = await getSyncConfigsAsStandardConfig(environment.id, providerConfigKey, flowName);
 
-            res.send({ flowConfig, unEnabledFlow: flow, provider });
+            res.send({ flowConfig, unEnabledFlow: flow, provider: integration?.provider });
         } catch (err) {
             next(err);
         }

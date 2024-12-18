@@ -10,7 +10,7 @@
 | `POST /companies` | Create a single company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md) |
 | `PATCH /companies` | Update a single company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-company.md) |
 | `DELETE /companies` | Deletes a company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-company.md) |
-| `GET /companies` | Fetches a list of companies from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/companies.md) |
+| `GET /companies` | Fetches a list of companies from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/companies.md) |
 </Accordion>
 
 
@@ -20,7 +20,7 @@
 | `POST /contact` | Create a single contact in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-contact.md) |
 | `PATCH /contact` | Updates a single contact in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-contact.md) |
 | `DELETE /contact` | Deletes a contact in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-contact.md) |
-| `GET /contacts` | Fetches a list of contacts from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/contacts.md) |
+| `GET /contacts` | Fetches a list of contacts from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/contacts.md) |
 </Accordion>
 
 
@@ -30,14 +30,14 @@
 | `POST /deals` | Creates a single deal in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-deal.md) |
 | `PATCH /deal` | Updates a single deal in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-deal.md) |
 | `DELETE /deal` | Deletes a deal in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-deal.md) |
-| `GET /deals` | Fetches a list of deals from Hubspot with their associated companies and contacts | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/deals.md) |
+| `GET /deals` | Fetches a list of deals from Hubspot with their associated companies and contacts | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/deals.md) |
 </Accordion>
 
 
 <Accordion title="Owners">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `GET /owners` | Fetches a list of owners from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/owners.md) |
+| `GET /owners` | Fetches a list of owners from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/owners.md) |
 </Accordion>
 
 
@@ -51,7 +51,7 @@
 <Accordion title="Products">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `GET /products` | Fetches a list of products from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/products.md) |
+| `GET /products` | Fetches a list of products from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/products.md) |
 </Accordion>
 
 
@@ -77,7 +77,7 @@
 | `POST /tasks` | Creates a single task in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-task.md) |
 | `PATCH /tasks` | Updates a single company in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/update-task.md) |
 | `DELETE /tasks` | Deletes a task in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-task.md) |
-| `GET /tasks` | Fetches a list of tasks from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/tasks.md) |
+| `GET /tasks` | Fetches a list of tasks from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/tasks.md) |
 </Accordion>
 
 
@@ -86,7 +86,7 @@
 | - | - | - |
 | `POST /users` | Creates a single user in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-user.md) |
 | `DELETE /users` | Deletes a user in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/delete-user.md) |
-| `GET /users` | Fetches a list of users from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/users.md) |
+| `GET /users` | Fetches a list of users from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/users.md) |
 </Accordion>
 
 
@@ -96,9 +96,9 @@
 | `GET /account-information` | Fetch the account information from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-account-information.md) |
 | `GET /custom-objects` | Fetch custom objects in Hubspot. Requires Hubspot enterprise | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/fetch-custom-objects.md) |
 | `POST /note` | Creates a single note in Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-note.md) |
-| `GET /service-tickets` | Fetches a list of service tickets from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/service-tickets.md) |
-| `GET /knowledge-base` | Fetches a list of knowledge base from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/knowledge-base.md) |
-| `GET /currency-codes` | Fetch hubspot deals | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/currency-codes.md) |
+| `GET /service-tickets` | Fetches a list of service tickets from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/service-tickets.md) |
+| `GET /knowledge-base` | Fetches a list of knowledge base from Hubspot | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/knowledge-base.md) |
+| `GET /currency-codes` | Fetch hubspot deals | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/syncs/currency-codes.md) |
 </Accordion>
 
 </AccordionGroup>

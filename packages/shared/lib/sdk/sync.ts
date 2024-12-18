@@ -868,7 +868,9 @@ export class NangoAction {
                     this.proxy.bind(this)
                 );
             default:
-                throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
+                throw Error(
+                    `'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType).join(', ')}`
+                );
         }
     }
 

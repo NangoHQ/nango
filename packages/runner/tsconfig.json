@@ -9,6 +9,9 @@
             "path": "../shared"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         }
     ],
