@@ -37,7 +37,7 @@ export function connectionSimpleToApi({
         updated_at: String(data.updated_at)
     };
 }
-export function dbConnectionToApi(connection: DBConnection): ApiConnectionFull {
+export function connectionFullToApi(connection: DBConnection): ApiConnectionFull {
     return {
         ...connection,
         id: connection.id,
