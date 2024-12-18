@@ -86,8 +86,9 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
             const rawCreds = { ...connection.credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete rawCreds['refresh_token'];
-            connection.credentials.raw = rawCreds;
+
+            const { refresh_token, ...rest } = rawCreds;
+            connection.credentials.raw = rest;
         }
     }
 
