@@ -4302,6 +4302,23 @@ integrations:
                 endpoint:
                     method: GET
                     path: /tickets
+                    group: Tickets
+                version: 1.0.1
+        actions:
+            create-ticket:
+                description: |
+                    Creates a new ticket
+                input: CreateTicketInput
+                scopes:
+                    - tickets:write
+                    - account:read
+                    - customers:write
+                    - customers:read
+                endpoint:
+                    method: POST
+                    path: /ticket
+                    group: Tickets
+                output: Ticket
         models:
             Ticket:
                 id: number
@@ -4314,15 +4331,15 @@ integrations:
                     sms | twitter | twitter-direct-message | whatsapp | yotpo-review
                 closed_datetime: string | null
                 created_datetime: string | null
-                excerpt: string
+                excerpt?: string | undefined
                 external_id: string | null
                 from_agent: boolean
-                integrations: array | null
+                integrations?: array | null | undefined
                 is_unread: boolean
                 language: string | null
                 last_message_datetime: string | null
                 last_received_message_datetime: string | null
-                messages_count: number
+                messages_count?: number | undefined
                 messages: Message[]
                 meta: object | null
                 opened_datetime: string | null
@@ -4335,7 +4352,7 @@ integrations:
                       uri: string | null
                       decoration: object | null
                       created_datetime: string | null
-                      deleted_datetime: string | null
+                      deleted_datetime?: string | null | undefined
                 spam: boolean | null
                 trashed_datetime: string | null
                 updated_datetime: string | null
@@ -4379,8 +4396,8 @@ integrations:
                 public: boolean
                 from_agent: boolean
                 sender: RecieverSender
-                receiver: RecieverSender
-                attachments: Attachment[]
+                receiver: RecieverSender | null
+                attachments: Attachment[] | null
                 meta: object | null
                 headers: object | null
                 actions: array | null
@@ -4390,8 +4407,8 @@ integrations:
                 failed_datetime: string | null
                 last_sending_error: object | null
                 deleted_datetime: string | null
-                replied_by: string | null
-                replied_to: string | null
+                replied_by?: string | null | undefined
+                replied_to?: string | null | undefined
             AssigneeUser:
                 id: number
                 firstname: string
@@ -4419,6 +4436,21 @@ integrations:
                 content_type: string
                 public: boolean
                 extra: string | null
+            CreateTicketInput:
+                customer:
+                    phone_number: string
+                    email?: string | undefined
+                ticket:
+                    messages: CreateTicketMessage[]
+            CreateTicketMessage:
+                attachments:
+                    - url: string
+                      name: string
+                      size: number
+                      content_type: string
+                body_html: string
+                body_text: string
+                id: string
     greenhouse-basic:
         syncs:
             applications:
