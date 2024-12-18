@@ -3497,16 +3497,17 @@ integrations:
                 is_escalated: boolean
     front:
         syncs:
-            list-conversations:
+            conversations:
                 runs: every day
                 description: List the conversations in the company in reverse chronological order.
                 output: Conversation
                 endpoint:
                     method: GET
                     path: /conversations
+                    group: Conversations
                 track_deletes: true
                 sync_type: full
-                version: 1.0.1
+                version: 1.0.2
         actions:
             conversation:
                 description: >-
