@@ -4089,7 +4089,7 @@ lever-basic-sandbox:
         username:
             type: string
             title: User name
-            description: The API Key of your lever sandbox account
+            description: The API Key of your Lever sandbox account
         password:
             type: string
             title: ''
