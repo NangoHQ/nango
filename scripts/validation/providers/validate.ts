@@ -198,7 +198,7 @@ function validateProvider(providerKey: string, provider: Provider) {
         if (!provider.proxy?.verification) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
-    } else if (provider.auth_mode === 'BASIC') {
+    } else if (provider.auth_mode === 'BASIC' || provider.auth_mode === 'SIGNATURE') {
         if (!provider.credentials?.['username']) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "username" is not defined`);
         }
