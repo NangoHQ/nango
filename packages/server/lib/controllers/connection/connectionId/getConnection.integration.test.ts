@@ -100,4 +100,56 @@ describe(`GET ${endpoint}`, () => {
             updated_at: expect.toBeIsoDateTimezone()
         });
     });
+
+    it('should get a connection despite another connection with same name on a different provider', async () => {
+        const { env, account } = await seeders.seedAccountEnvAndUser();
+
+        await seeders.createConfigSeed(env, 'algolia', 'algolia');
+        const endUser = await seeders.createEndUser({ environment: env, account });
+        const conn = await seeders.createConnectionSeed(env, 'algolia', endUser, {
+            rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
+            connectionConfig: { APP_ID: 'TEST' }
+        });
+
+        await seeders.createConfigSeed(env, 'google', 'google');
+        await seeders.createConnectionSeed(env, 'google', endUser, {
+            connectionId: conn.connection_id,
+            rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
+            connectionConfig: { APP_ID: 'TEST' }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: env.secret_key,
+            params: { connectionId: conn.connection_id },
+            query: { provider_config_key: 'algolia' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            connection_id: conn.connection_id,
+            created_at: expect.toBeIsoDateTimezone(),
+            credentials: {
+                apiKey: 'test_api_key',
+                type: 'API_KEY'
+            },
+            connection_config: { APP_ID: 'TEST' },
+            end_user: {
+                displayName: null,
+                email: endUser.email,
+                id: endUser.endUserId,
+                organization: {
+                    displayName: null,
+                    id: endUser.organization!.organizationId
+                }
+            },
+            errors: [],
+            id: expect.any(Number),
+            last_fetched_at: expect.toBeIsoDateTimezone(),
+            metadata: null,
+            provider: 'algolia',
+            provider_config_key: 'algolia',
+            updated_at: expect.toBeIsoDateTimezone()
+        });
+    });
 });

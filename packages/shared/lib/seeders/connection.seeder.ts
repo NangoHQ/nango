@@ -29,11 +29,12 @@ export const createConnectionSeed = async (
     provider: string,
     endUser?: EndUser,
     rest?: {
+        connectionId?: string;
         rawCredentials?: AuthCredentials;
         connectionConfig?: any;
     }
 ): Promise<NangoConnection> => {
-    const name = Math.random().toString(36).substring(7);
+    const name = rest?.connectionId ? rest.connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
