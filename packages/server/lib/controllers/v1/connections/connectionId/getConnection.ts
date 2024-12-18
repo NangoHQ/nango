@@ -7,7 +7,7 @@ import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefre
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
-import { connectionFullToApi } from '../../../../formatters/connection.js';
+import { dbConnectionToApi } from '../../../../formatters/connection.js';
 
 const queryStringValidation = z
     .object({
@@ -92,7 +92,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     res.status(200).send({
         data: {
             provider: integration.provider,
-            connection: connectionFullToApi(connection as DBConnection),
+            connection: dbConnectionToApi(connection as DBConnection),
             endUser: endUserToApi(endUser),
             errorLog
         }
