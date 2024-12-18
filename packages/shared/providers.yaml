@@ -2788,6 +2788,8 @@ freshservice:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
     connection_config:
         subdomain:
@@ -2798,6 +2800,20 @@ freshservice:
             example: domain
             suffix: .freshservice.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Freshservice account
+            secret: true
+        password:
+            type: string
+            title: ''
+            description: ''
+            # https://api.freshservice.com/#authentication
+            # FreshService is using basic auth with an api key, the basic username/password was deprecated
+            default_value: 'X'
+            hidden: true
 
 freshteam:
     display_name: Freshteam
@@ -2913,6 +2929,16 @@ guru:
     proxy:
         base_url: https://api.getguru.com/api/v1
     docs: https://docs.nango.dev/integrations/all/guru
+    credentials:
+        username:
+            type: string
+            title: User/Collection ID
+            description: The user or collection ID of your Guru account
+        password:
+            type: string
+            title: User/Collection Token
+            description: The user or collection token of your Guru account
+            secret: true
 
 github:
     display_name: GitHub
@@ -3082,6 +3108,8 @@ gong:
     auth_mode: BASIC
     proxy:
         base_url: https://api.gong.io
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     docs_connect: https://docs.nango.dev/integrations/all/gong/connect
     credentials:
@@ -3118,6 +3146,8 @@ gong-oauth:
     token_request_auth_method: basic
     proxy:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     connection_config:
         api_base_url_for_customer:
@@ -3431,6 +3461,17 @@ hackerrank-work:
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your HackerRank Work API Key
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 harvest:
     display_name: Harvest
@@ -3485,6 +3526,8 @@ hibob-service-user:
         verification:
             method: GET
             endpoint: /v1/company/named-lists
+        retry:
+            at: 'x-ratelimit-reset'
     credentials:
         username:
             type: string
@@ -3600,6 +3643,17 @@ insightly:
             example: domain
             suffix: .insightly.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Insightly API key
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
 
 instantly:
     display_name: Instantly
@@ -3765,6 +3819,18 @@ helpscout-docs:
             after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Help Scout Docs API Key
+            secret: true
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'X'
+            hidden: true
 
 helpscout-mailbox:
     display_name: Help Scout Mailbox
@@ -3954,6 +4020,16 @@ lessonly:
     proxy:
         base_url: https://api.lessonly.com/api
     docs: https://docs.nango.dev/integrations/all/lessonly
+    credentials:
+        username:
+            type: string
+            title: Subdomain
+            description: Your Lessonly Subdomain
+        password:
+            type: string
+            title: API Key
+            description: Your Lessonly API key
+            secret: true
 
 lever:
     display_name: Lever
@@ -4009,6 +4085,17 @@ lever-basic-sandbox:
     proxy:
         base_url: https://api.sandbox.lever.co
     docs: https://docs.nango.dev/integrations/all/lever
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: The API Key of your Lever sandbox account
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 linear:
     display_name: Linear
@@ -4120,6 +4207,16 @@ listmonk:
             description: The domain of your Listmonk account
             format: hostname
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API User
+            description: The API user to your Listmonk account
+        password:
+            type: string
+            title: Token
+            description: The token to your Listmonk account
+            secret: true
 
 make:
     display_name: Make
