@@ -38,6 +38,7 @@ import type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
+    GetPublicConnection,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect
 } from '@nangohq/types';
@@ -83,6 +84,7 @@ export type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
+    GetPublicConnection,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect
 };
@@ -154,21 +156,6 @@ export interface MetadataChangeResponse {
     metadata: Metadata;
     provider_config_key: string;
     connection_id: string | string[];
-}
-
-export interface Connection {
-    id?: number;
-    end_user_id: number | null;
-    created_at: Date;
-    updated_at: Date;
-    provider_config_key: string;
-    connection_id: string;
-    connection_config: Record<string, string>;
-    environment_id: number;
-    metadata?: Metadata | null;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
-    credentials: AllAuthCredentials;
 }
 
 export interface IntegrationWithCreds extends Integration {
