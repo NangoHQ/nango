@@ -25,10 +25,10 @@ import type {
     TwoStepCredentials,
     GetPublicConnections,
     SignatureCredentials,
-    PostPublicConnectSessionsReconnect,
-    GetPublicConnection
+    PostPublicConnectSessionsReconnect
 } from '@nangohq/types';
 import type {
+    Connection,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
     Integration,
@@ -308,12 +308,7 @@ export class Nango {
      * @param refreshToken - Optional. When set to true, this returns the refresh token as part of the response
      * @returns A promise that resolves with a connection object
      */
-    public async getConnection(
-        providerConfigKey: string,
-        connectionId: string,
-        forceRefresh?: boolean,
-        refreshToken?: boolean
-    ): Promise<GetPublicConnection['Success']> {
+    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean): Promise<Connection> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
         return response.data;
     }
@@ -965,7 +960,7 @@ export class Nango {
         forceRefresh: boolean = false,
         refreshToken: boolean = false,
         additionalHeader: Record<string, any> = {}
-    ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
+    ): Promise<AxiosResponse<Connection>> {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {

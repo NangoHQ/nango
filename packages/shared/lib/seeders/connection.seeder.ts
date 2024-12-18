@@ -24,23 +24,14 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
     return connectionIds;
 };
 
-export const createConnectionSeed = async (
-    env: DBEnvironment,
-    provider: string,
-    endUser?: EndUser,
-    rest?: {
-        connectionId?: string;
-        rawCredentials?: AuthCredentials;
-        connectionConfig?: any;
-    }
-): Promise<NangoConnection> => {
-    const name = rest?.connectionId ? rest.connectionId : Math.random().toString(36).substring(7);
+export const createConnectionSeed = async (env: DBEnvironment, provider: string, endUser?: EndUser): Promise<NangoConnection> => {
+    const name = Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
         provider: provider,
-        parsedRawCredentials: rest?.rawCredentials || ({} as AuthCredentials),
-        connectionConfig: rest?.connectionConfig || {},
+        parsedRawCredentials: {} as AuthCredentials,
+        connectionConfig: {},
         environmentId: env.id,
         accountId: 0
     });

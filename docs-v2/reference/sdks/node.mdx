@@ -463,6 +463,7 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
         "realmId": "XXXXX",
         "instance_id": "YYYYYYY"
     },
+    "account_id": 0,
     "metadata": {
         "myProperty": "yes",
         "filter": "closed=true"
@@ -938,7 +939,7 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
         The name of the syncs that should be triggered.
     </ResponseField>
     <ResponseField name="connectionId" type="string">
-        The connection ID. If omitted, the sync will trigger for all relevant connections.
+        The connection ID. If ommitted, the sync will trigger for all relevant connections.
     </ResponseField>
 </Expandable>
 
@@ -964,7 +965,7 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
         The name of the syncs that should be paused.
     </ResponseField>
     <ResponseField name="connectionId" type="string">
-        The connection ID. If omitted, the sync will pause for all relevant connections.
+        The connection ID. If ommitted, the sync will pause for all relevant connections.
     </ResponseField>
 </Expandable>
 
@@ -1107,7 +1108,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
     <ResponseField name="actionName" type="string" required>
         The name of the action to trigger.
     </ResponseField>
-    <ResponseField name="input" type="unknown" required>
+    <ResponseField name="input" type="unkown" required>
         The necessary input for your action's `runAction` function.
     </ResponseField>
 </Expandable>
@@ -1170,7 +1171,7 @@ await nango.delete(config); // DELETE request
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
+                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>
             <ResponseField name="decompress" type="boolean">
                 Override the decompress option when making requests. Optional, defaults to false

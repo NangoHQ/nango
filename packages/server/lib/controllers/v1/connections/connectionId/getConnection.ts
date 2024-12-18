@@ -47,8 +47,8 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     const { environment, account } = res.locals;
 
-    const queryParams: GetConnection['Querystring'] = queryParamValues.data;
-    const params: GetConnection['Params'] = paramValue.data;
+    const queryParams = queryParamValues.data;
+    const params = paramValue.data;
 
     const { provider_config_key: providerConfigKey } = queryParams;
     const { connectionId } = params;

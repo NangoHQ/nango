@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import type { Knex } from '@nangohq/database';
-import db, { dbNamespace } from '@nangohq/database';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Config } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -384,15 +384,14 @@ class ConnectionService {
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {
-        const rawConnection = await db.knex
-            .from(`_nango_connections`)
-            .select<StoredConnection[]>('*')
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id, deleted: false })
-            .limit(1)
-            .first();
+        if (!environment_id) {
+            const error = new NangoError('missing_environment');
 
-        if (!rawConnection) {
-            const error = new NangoError('unknown_connection', { connectionId, providerConfigKey });
+            return { success: false, error, response: null };
+        }
+
+        if (!connectionId) {
+            const error = new NangoError('missing_connection');
 
             await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
@@ -404,14 +403,102 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection)!;
+        if (!providerConfigKey) {
+            const error = new NangoError('missing_provider_config');
+
+            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                level: 'error'
+            });
+
+            return { success: false, error, response: null };
+        }
+
+        const result: StoredConnection[] | null = (await schema()
+            .select('*')
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id, deleted: false })) as unknown as StoredConnection[];
+
+        const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
+
+        if (!storedConnection) {
+            const environmentName = await environmentService.getEnvironmentName(environment_id);
+
+            const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+
+            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                level: 'error'
+            });
+
+            return { success: false, error, response: null };
+        }
+
+        const connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
-        const credentials = connection.credentials;
-        if (credentials.type && 'expires_at' in credentials) {
-            const creds = credentials;
-            creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
-            connection.credentials = creds;
+        if (connection != null) {
+            const credentials = connection.credentials as
+                | OAuth1Credentials
+                | OAuth2Credentials
+                | AppCredentials
+                | OAuth2ClientCredentials
+                | TableauCredentials
+                | JwtCredentials
+                | TwoStepCredentials
+                | BillCredentials
+                | SignatureCredentials;
+            if (credentials.type && credentials.type === 'OAUTH2') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'APP') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'OAUTH2_CC') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'TABLEAU') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'JWT') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'BILL') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'SIGNATURE') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === 'TWO_STEP') {
+                const creds = credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
         }
 
         return { success: true, error: null, response: connection };

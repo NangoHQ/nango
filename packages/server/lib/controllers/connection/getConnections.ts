@@ -2,7 +2,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import type { GetPublicConnections } from '@nangohq/types';
 import { AnalyticsTypes, analytics, connectionService } from '@nangohq/shared';
-import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
+import { connectionToPublicApi } from '../../formatters/connection.js';
 import { z } from 'zod';
 import { bodySchema } from '../connect/postSessions.js';
 
@@ -40,7 +40,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
     res.status(200).send({
         connections: connections.map((data) => {
             // TODO: return end_user
-            return connectionSimpleToPublicApi({
+            return connectionToPublicApi({
                 data: data.connection,
                 activeLog: data.active_logs,
                 provider: data.provider,
