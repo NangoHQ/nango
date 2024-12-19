@@ -167,7 +167,7 @@ export class Orchestrator {
                 action: actionName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key,
-                truncated_response: JSON.stringify(res.value, null, 2)?.slice(0, 100)
+                truncated_response: JSON.stringify(res.value)?.slice(0, 100)
             });
 
             await telemetry.log(
@@ -175,7 +175,7 @@ export class Orchestrator {
                 content,
                 LogActionEnum.ACTION,
                 {
-                    input: JSON.stringify(input, null, 2),
+                    input: JSON.stringify(input),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
                     providerConfigKey: connection.provider_config_key,
@@ -220,7 +220,7 @@ export class Orchestrator {
                 LogActionEnum.ACTION,
                 {
                     error: stringifyError(err),
-                    input: JSON.stringify(input, null, 2),
+                    input: JSON.stringify(input),
                     environmentId: String(connection.environment_id),
                     connectionId: connection.connection_id,
                     providerConfigKey: connection.provider_config_key,

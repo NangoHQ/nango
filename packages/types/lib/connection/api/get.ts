@@ -3,6 +3,7 @@ import type { DBConnection } from '../db.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { Merge } from 'type-fest';
 import type { ApiEndUser } from '../../endUser/index.js';
+import type { AllAuthCredentials } from '../../auth/api.js';
 
 export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
     provider: string;
@@ -77,6 +78,32 @@ export type GetConnection = Endpoint<{
         };
     };
 }>;
+
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'connection_config'> & {
+    created_at: string;
+    updated_at: string;
+    last_fetched_at: string;
+    metadata: Record<string, unknown> | null;
+    provider: string;
+    errors: { type: string; log_id: string }[];
+    end_user: ApiEndUser | null;
+    credentials: AllAuthCredentials;
+};
+export type GetPublicConnection = Endpoint<{
+    Method: 'GET';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+        refresh_token?: boolean | undefined;
+        force_refresh?: boolean | undefined;
+    };
+    Path: '/connection/:connectionId';
+    Error: ApiError<'unknown_provider_config'>;
+    Success: ApiPublicConnectionFull;
+}>;
+
 export type PostConnectionRefresh = Endpoint<{
     Method: 'POST';
     Params: {
