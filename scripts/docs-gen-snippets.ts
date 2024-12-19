@@ -51,14 +51,11 @@ for (const file of files) {
 
         await fs.mkdir(snippetPath, { recursive: true });
 
-        let providerConfig: Provider | undefined = providers[provider];
-        if (providerConfig && (providerConfig as any)['alias']) {
-            providerConfig = providers[(providerConfig as any)['alias']];
-        }
-
+        const providerConfig: Provider | undefined = providers[(providers[provider] as any)?.['alias']] || providers[provider];
         if (!providerConfig) {
             throw new Error("Couldn't find provider config for " + provider);
         }
+
         const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
         await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
