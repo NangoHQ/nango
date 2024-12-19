@@ -167,6 +167,7 @@ aircall-basic:
     display_name: Aircall (basic auth)
     auth_mode: BASIC
     proxy:
+        base_url: https://api.aircall.io
         verification:
             method: GET
             endpoint: /v1/ping
