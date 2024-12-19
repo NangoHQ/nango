@@ -4038,8 +4038,8 @@ lastpass:
             secret: true
             doc_section: '#step-2-generating-your-provhash'
 
-lattice-scim:
-    display_name: Lattice (SCIM API)
+lattice:
+    display_name: Lattice
     categories:
         - hr
     auth_mode: API_KEY
@@ -4049,8 +4049,10 @@ lattice-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/lattice
-    docs_connect: https://docs.nango.dev/integrations/all/lattice-scim/connect
+    docs_connect: https://docs.nango.dev/integrations/all/lattice/connect
     credentials:
         apiKey:
             type: string
