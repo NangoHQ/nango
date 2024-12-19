@@ -172,6 +172,7 @@ aircall-basic:
             method: GET
             endpoint: /v1/ping
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
+    docs: https://docs.nango.dev/integrations/all/aircall
 
 airtable:
     display_name: Airtable
