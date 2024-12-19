@@ -156,25 +156,20 @@ aircall:
         base_url: https://api.aircall.io
         retry:
             at: 'x-aircallapi-reset'
-    docs: https://docs.nango.dev/integrations/all/aircall
-
-aircall-basic:
-    display_name: Aircall (basic auth)
-    categories:
-        - support
-    auth_mode: BASIC
-    proxy:
-        base_url: https://api.aircall.io
-        verification:
-            method: GET
-            endpoint: /v1/ping
         paginate:
             type: link
             link_path_in_response_body: meta.next_page_link
             response_path: results
-        retry:
-            at: 'x-aircallapi-reset'
     docs: https://docs.nango.dev/integrations/all/aircall
+
+aircall-basic:
+    alias: aircall
+    display_name: Aircall (basic auth)
+    auth_mode: BASIC
+    proxy:
+        verification:
+            method: GET
+            endpoint: /v1/ping
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
 
 airtable:
