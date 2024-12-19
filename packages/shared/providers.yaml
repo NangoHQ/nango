@@ -5661,6 +5661,60 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+sap-success-factors:
+    display_name: SAP SuccessFactors
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.apiServer}/oauth/token
+    token_params:
+        company_id: ${connectionConfig.companyId}
+        client_id: ${credential.apiKey}
+        grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
+        assertion: ${credential.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.apiServer}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/sap-success-factors
+    docs_connect: https://docs.nango.dev/integrations/all/sap-success-factors/connect
+    connection_config:
+        apiServer:
+            type: string
+            title: API Server
+            description: The API Server to connect to your SAP SuccessFactors account
+            pattern: '^[a-z0-9.-]+$'
+            example: api41preview.sapsf.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-api-server'
+            order: 1
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your SAP SuccessFactors account
+            example: SFSALES012345
+            pattern: '^[A-Z0-9]+$'
+            doc_section: '#step-2-finding-your-company-id'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-3-generating-your-api-key'
+            order: 3
+        assertion:
+            type: string
+            title: SAML Assertion
+            description: The SAML Assertion generated for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-4-generating-your-saml-assertion'
+            order: 4
 
 salesloft:
     display_name: Salesloft
