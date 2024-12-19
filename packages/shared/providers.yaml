@@ -5707,14 +5707,12 @@ sap-success-factors:
             description: The API key for your SAP SuccessFactors account
             secret: true
             doc_section: '#step-3-generating-your-api-key'
-            order: 3
         assertion:
             type: string
             title: SAML Assertion
             description: The SAML Assertion generated for your SAP SuccessFactors account
             secret: true
             doc_section: '#step-4-generating-your-saml-assertion'
-            order: 4
 
 salesloft:
     display_name: Salesloft
