@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.48.0] - 2024-12-18
+
+### Added
+
+- *(cli)* Support saving error responses in dryrun (#3138) by @nalanj
+- *(integration)* Back fill missing base url (#3155) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/652ac8560ed492acc840d5337ef53450aa8b12d6 by Francis Maina. Commit message: feat(integration): adds ramp user-provision integration (#152) by @github-actions[bot]
+- *(api)* GET /connection returns end_user (#3169) by @bodinsamuel
+- *(api)* GET /connection search in end user (#3170) by @bodinsamuel
+- *(fleet)* Add tracing around supervisor plan/execute (#3163) by @TBonnin
+- *(docs)* Webflow sync (#3156) by @nalanj
+- *(integrations)* Add support for lastpass (#3171) by @hassan254-prog
+- *(exact-online)* Add reset headers for exact online (#3185) by @khaliqgant
+- *(website)* Add webflow sync action (#3178) by @nalanj
+- *(integration)* Adds support for Canva SCIM (#3184) by @Maina-Francis
+- *(webhooks)* Enable all types by default (#3189) by @bodinsamuel
+- *(integrations)* Update basic auth configuration field names (#3190) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f7a51d95fb67185db9bfb016979802196dca9c53 by Hassan_Wari. Commit message: feat(lastpass): add integrations for lastpass (#159) by @github-actions[bot]
+- *(integrations)* Add support for emarsys oauth (#3192) by @hassan254-prog
+
+### Changed
+
+- Remove old templates + polish (#3175) by @bastienbeurier
+- *(eslint)* Restrict-template-expressions (#3186) by @bodinsamuel
+- Api unification (#3188) by @bastienbeurier
+- *(ci)* Generate docs dynamically in pre-commit hook (#3183) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/70080800c8ad09181a643f4f20f85c4e5634dbbe by Khaliq. Commit message: feat(gorgias): [ext-251] gorgias ticket (#162) by @github-actions[bot]
+
+### Fixed
+
+- *(docs)* Update 'Build your own' link in use cases in docs (#3168) by @nalanj
+- *(server)* Drastically reduce memory usage in proxy (#3172) by @nalanj
+- Fix broken links (#3176) by @khaliqgant
+- *(base-url)* Fix lastpass base url (#3181) by @hassan254-prog
+- *(docs)* Update lastpass to new doc structure (#3182) by @nalanj
+- *(api)* POST /webhook new format (#3179) by @bodinsamuel
+- *(config)* Various bug fixes (#3187) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/cfeeae65e2a95eda24c3bf6a8d444a07debe57f9 by Khaliq. Commit message: fix(pagination): rename and update action param (#161) by @github-actions[bot]
+- *(docs)* Fix up use case urls (#3194) by @nalanj
+- *(ui)* Remove sync ui Learn More link under empty cache (#3195) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a4b5439d8a74f2d28a0c63e0958de8838b46de4f by Khaliq. Commit message: fix(notion): tweak yaml (#165) by @github-actions[bot]
+- *(integrations)* Fix emarsys wsse auth (#3193) by @hassan254-prog
+- *(docs)* Update read-from-an-api.mdx (#3196) by @nalanj
+- *(api)* GET /connection/:id new format (#3177) by @bodinsamuel
+
 ## [v0.47.1] - 2024-12-13
 
 ### Added
@@ -2568,6 +2613,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.48.0]: https://github.com/NangoHQ/nango/compare/v0.47.1..v0.48.0
 [v0.47.1]: https://github.com/NangoHQ/nango/compare/v0.47.0..v0.47.1
 [v0.47.0]: https://github.com/NangoHQ/nango/compare/v0.46.1..v0.47.0
 [v0.46.1]: https://github.com/NangoHQ/nango/compare/v0.46.0..v0.46.1

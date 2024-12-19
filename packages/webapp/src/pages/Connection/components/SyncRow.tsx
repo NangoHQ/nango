@@ -279,13 +279,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                             </div>
                                                             <DialogDescription>
                                                                 All records will be considered new. Cursors will be invalidated. Your backend should reprocess
-                                                                all records.{' '}
-                                                                <Link
-                                                                    to="https://docs.nango.dev/guides/customize/handle-large-datasets#incremental-syncing"
-                                                                    className="underline"
-                                                                >
-                                                                    Learn more
-                                                                </Link>
+                                                                all records.
                                                             </DialogDescription>
                                                         </div>
                                                     )}

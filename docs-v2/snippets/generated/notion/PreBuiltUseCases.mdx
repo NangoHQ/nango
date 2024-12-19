@@ -4,15 +4,33 @@
 <AccordionGroup>
 
 
-<Accordion title="Others">
+<Accordion title="Contents">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `GET /fetch-rich-page` | Fetch a specific page in Notion by passing a pageId. This action fetches a page,<br />and its content and converts it into a full markdown. It transforms images,<br />tables, uploaded files, etc., into their markdown counterparts, providing a complete markdown. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-rich-page.md) |
-| `GET /fetch-database` | Fetch a specific Notion database by passing in the database id. This action fetches the database and outputs an object. Note that this should be used for small databases. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-database.md) |
-| `GET /fetch-content-metadata` | Retrieve the entity type as well as an id for a Notion entity to later call<br />fetch-database or fetch-rich-page based on the type. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-content-metadata.md) |
-| `GET /metadata` | Sync pages and databases metadata to further fetch the content<br />using a dedicated action | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/content-metadata.md) |
+| `GET /contents/single` | Retrieve the entity type as well as an id for a Notion entity to later call<br />fetch-database or fetch-rich-page based on the type. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-content-metadata.md) |
+| `GET /contents` | Sync pages and databases metadata to further fetch the content<br />using a dedicated action | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/content-metadata.md) |
+</Accordion>
+
+
+<Accordion title="Databases">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /databases/single` | Fetch a specific Notion database by passing in the database id. This action fetches the database and outputs an object. Note that this should be used for small databases. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-database.md) |
+| `GET /databases` | Sync a database content with each row as an entry. Store the top level<br />database information in the metadata to be able to reconcile the database | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/databases.md) |
+</Accordion>
+
+
+<Accordion title="Pages">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /pages/single` | Fetch a specific page in Notion by passing a pageId. This action fetches a page,<br />and its content and converts it into a full markdown. It transforms images,<br />tables, uploaded files, etc., into their markdown counterparts, providing a complete markdown. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-rich-page.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
 | `GET /users` | Fetches a list of users from Notion | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/users.md) |
-| `GET /notion/database` | Sync a database content with each row as an entry. Store the top level<br />database information in the metadata to be able to reconcile the database | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/databases.md) |
 </Accordion>
 
 </AccordionGroup>
