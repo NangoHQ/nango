@@ -7,7 +7,6 @@ import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefre
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
-import { serverError } from '../../../utils/response-error.js';
 
 const queryStringValidation = z
     .object({
@@ -99,7 +98,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
     // This is very unoptimized unfortunately
     const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
     if (finalConnections.length !== 1 || !finalConnections[0]) {
-        serverError(res, { code: 'server_error', message: 'Failed to get connection' });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get connection' } });
         return;
     }
 
