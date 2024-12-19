@@ -72,7 +72,9 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         onRefreshFailed: connectionRefreshFailedHook
     });
     if (credentialResponse.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to refresh or test credentials' } });
+        res.status(credentialResponse.error.status).send({
+            error: { code: 'server_error', message: credentialResponse.error.message || 'Failed to refresh or test credentials' }
+        });
         return;
     }
 
