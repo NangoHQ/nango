@@ -801,10 +801,6 @@ export class NangoAction {
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
-        if (!this.environmentId) {
-            throw new Error('There is no current environment to get variables from');
-        }
-
         return await this.nango.getEnvironmentVariables();
     }
 
