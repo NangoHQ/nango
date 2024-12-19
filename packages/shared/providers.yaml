@@ -356,6 +356,9 @@ apollo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
+        verification:
+            method: GET
+            endpoint: /v1/contact_stages
         query:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
@@ -431,6 +434,9 @@ asana-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.asana.com/api
+        verification:
+            method: POST
+            endpoint: /1.0/teams
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
@@ -1107,6 +1113,9 @@ brex-api-key:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
+        verification:
+            method: GET
+            endpoint: /v1/trips
     docs: https://docs.nango.dev/integrations/all/brex
     docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
     credentials:
@@ -1539,6 +1548,9 @@ chorus:
     auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        verification:
+            method: GET
+            endpoint: /api/v1/users/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
@@ -2787,6 +2799,9 @@ freshsales:
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshsales.io
+        verification:
+            method: GET
+            endpoint: /api/settings/leads/fields
         headers:
             authorization: Token token=${apiKey}
         retry:
@@ -3351,6 +3366,9 @@ grain-api-key:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.grain.com
+        verification:
+            method: GET
+            endpoint: /_/public-api/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/grain
@@ -4614,6 +4632,9 @@ miro-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://miro.com/api
+        verification:
+            method: GET
+            endpoint: /v1/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/miro
@@ -4758,6 +4779,9 @@ notion-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.notion.com/scim
+        verification:
+            method: GET
+            endpoint: /v2/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/notion
@@ -5043,6 +5067,9 @@ pendo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.pendo.io
+        verification:
+            method: GET
+            endpoint: /api/v1/page
         headers:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
