@@ -1,12 +1,29 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import yaml from 'js-yaml';
+import type { Provider } from '@nangohq/types';
+
+const prettyAuthModes: Record<string, string> = {
+    OAUTH1: 'OAuth',
+    OAUTH2: 'OAuth',
+    OAUTH2_CC: 'OAuth',
+    BASIC: 'Basic',
+    API_KEY: 'API Key',
+    APP_STORE: 'Custom',
+    BILL: 'Bill',
+    SIGNATURE: 'Signature',
+    JWT: 'JWT',
+    TWO_STEP: 'Two Step',
+    TABLEAU: 'Tableau'
+};
 
 const flowsPath = 'packages/shared/flows.yaml';
+const providersPath = 'packages/shared/providers.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 
 const flows = yaml.load(await fs.readFile(flowsPath, 'utf-8')) as any;
+const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};
 for (const [integration, config] of Object.entries<any>(flows.integrations)) {
@@ -34,9 +51,74 @@ for (const file of files) {
 
         await fs.mkdir(snippetPath, { recursive: true });
 
+        const providerConfig: Provider | undefined = providers[(providers[provider] as any)?.['alias']] || providers[provider];
+        if (!providerConfig) {
+            throw new Error("Couldn't find provider config for " + provider);
+        }
+
+        const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
+        await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
+
         const casesSnippet = useCasesSnippet(useCases[provider]);
         await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
     }
+}
+
+function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
+    const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
+    const hasAuthParams = !!providerConfig.authorization_params;
+    const hasAuthGuide = !!providerConfig.docs_connect;
+    const hasUseCases = useCases && useCases.length > 0;
+    const hasWebHooks = !!providerConfig.webhook_routing_script;
+    const hasPagination = !!providerConfig.proxy?.paginate;
+    const hasRateLimit = !!providerConfig.proxy?.retry?.at;
+
+    return [
+        `## Pre-built tooling`,
+        `<AccordionGroup>`,
+        `<Accordion title="✅ Authorization">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Pre-built authorization (${prettyAuthMode}) | ✅ |`,
+        prettyAuthMode === 'OAuth' ? `| Credentials auto-refresh | ✅ |` : ``,
+        hasAuthParams ? `| Auth parameters validation | ✅ |` : ``,
+        `| Pre-built authorization UI | ✅ |`,
+        `| Custom authorization UI | ✅ |`,
+        prettyAuthMode !== 'OAuth' || hasAuthGuide ? `| End-user authorization guide | ${hasAuthGuide ? '✅' : '🚫'} |` : ``,
+        `| Expired credentials detection | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Read & write data">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| API unification | ✅ |`,
+        `| 2-way sync | ✅ |`,
+        `| Webhooks from Nango on data modifications | ✅ |`,
+        `| Real-time webhooks from 3rd-party API | ${hasWebHooks ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Proxy requests | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Observability & data quality">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| HTTP request logging | ✅ |`,
+        `| End-to-type type safety | ✅ |`,
+        `| Data runtime validation | ✅ |`,
+        `| OpenTelemetry export | ✅ |`,
+        `| Slack alerts on errors | ✅ |`,
+        `| Integration status API | ✅ |`,
+        `</Accordion>`,
+        `<Accordion title="✅ Customization">`,
+        `| Tools | Status |`,
+        `| - | - |`,
+        `| Create or customize use-cases | ✅ |`,
+        `| Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Pre-configured rate-limit handling | ${hasRateLimit ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Per-customer configurations | ✅ |`,
+        `</Accordion>`,
+        `</AccordionGroup>`
+    ]
+        .filter((line) => line !== '')
+        .join('\n');
 }
 
 function useCasesSnippet(useCases: any) {
