@@ -11,6 +11,9 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 FROM node:20.18.1-bookworm-slim AS build
 
+# Install a more recent npm
+RUN npm install -g npm@10.9.2
+
 # Setup the app WORKDIR
 WORKDIR /app/tmp
 
