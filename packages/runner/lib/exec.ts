@@ -41,6 +41,10 @@ export async function exec(
         })();
     `;
 
+    const scriptPosition = wrappedCode.indexOf(code);
+    const substringUpToScript = wrappedCode.slice(0, scriptPosition);
+    const lineBreakCount = (substringUpToScript.match(/\n/g) || []).length;
+
     return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
@@ -48,8 +52,14 @@ export async function exec(
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
             .setTag('syncId', nangoProps.syncId);
 
+        const scriptName = nangoProps.syncConfig.sync_name;
+        const compiledJsName = `${scriptName}-${nangoProps.providerConfigKey}.js`;
         try {
-            const script = new vm.Script(wrappedCode);
+            const script = new vm.Script(wrappedCode, {
+                filename: compiledJsName,
+                lineOffset: -lineBreakCount,
+                columnOffset: 0
+            });
             const sandbox: vm.Context = {
                 console,
                 require: (moduleName: string) => {
@@ -202,6 +212,7 @@ export async function exec(
             } else if (err instanceof Error) {
                 const tmp = errorToObject(err);
                 span.setTag('error', tmp);
+
                 return {
                     success: false,
                     error: {
@@ -214,11 +225,24 @@ export async function exec(
             } else {
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
+
+                let stack: string | null = null;
+
+                if (typeof err === 'object' && err !== null && 'stack' in err && typeof (err as { stack: unknown }).stack === 'string') {
+                    // find the next line break after the script name and delete everything after that line break
+                    const stackTrace = (err as { stack: string }).stack;
+                    const lastScriptNameIndex = stackTrace.lastIndexOf(scriptName);
+                    const nextLineBreakIndex = stackTrace.indexOf('\n', lastScriptNameIndex);
+
+                    const truncatedStackTrace = nextLineBreakIndex !== -1 ? stackTrace.substring(0, nextLineBreakIndex) : stackTrace;
+                    stack = truncatedStackTrace.replace(/(\r\n|\n|\r)/gm, '').trim();
+                }
+
                 return {
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
+                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: `${tmp.message} ${stack ?? ''}` }),
                         status: 500
                     },
                     response: null

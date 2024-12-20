@@ -2,6 +2,7 @@ export interface RunnerOutputError {
     type: string;
     payload: Record<string, unknown>;
     status: number;
+    stack?: string;
 }
 export interface RunnerOutput {
     success: boolean;

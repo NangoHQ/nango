@@ -486,8 +486,15 @@ export class DryRunService {
                         return module.exports;
                     })();
                 `;
+                const scriptPosition = wrappedScript.indexOf(script);
+                const substringUpToScript = wrappedScript.slice(0, scriptPosition);
+                const lineBreakCount = (substringUpToScript.match(/\n/g) || []).length;
 
-                const scriptObj = new vm.Script(wrappedScript);
+                const scriptObj = new vm.Script(wrappedScript, {
+                    filename: `${syncName}-${nangoProps.providerConfigKey}.js`,
+                    lineOffset: -lineBreakCount,
+                    columnOffset: 0
+                });
                 const sandbox = {
                     console,
                     require: (moduleName: string) => {
@@ -604,11 +611,24 @@ export class DryRunService {
                     }
                 } else {
                     const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
+                    const scriptName = `${syncName}-${nangoProps.providerConfigKey}.js`;
+                    let stack = 'No stack trace available';
+
+                    if (err instanceof Error && err.stack && err.stack.includes(scriptName)) {
+                        // find the next line break after the script name and delete everything after that line break
+                        const stackTrace = err.stack;
+                        const scriptNameIndex = stackTrace.indexOf(scriptName);
+                        const nextLineBreakIndex = stackTrace.indexOf('\n', scriptNameIndex);
+
+                        const truncatedStackTrace = nextLineBreakIndex !== -1 ? stackTrace.substring(0, nextLineBreakIndex) : stackTrace;
+                        stack = truncatedStackTrace;
+                    }
                     return {
                         success: false,
                         error: {
                             type: 'script_internal_error',
                             payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            stack,
                             status: 500
                         },
                         response: null
