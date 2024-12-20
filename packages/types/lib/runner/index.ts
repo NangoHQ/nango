@@ -1,8 +1,8 @@
 export interface RunnerOutputError {
     type: string;
     payload: Record<string, unknown>;
-    status: number;
     stack?: string;
+    status: number;
 }
 export interface RunnerOutput {
     success: boolean;

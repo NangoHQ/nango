@@ -612,23 +612,24 @@ export class DryRunService {
                 } else {
                     const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                     const scriptName = `${syncName}-${nangoProps.providerConfigKey}.js`;
-                    let stack = 'No stack trace available';
 
-                    if (err instanceof Error && err.stack && err.stack.includes(scriptName)) {
+                    let stack: string | null = null;
+
+                    if (typeof err === 'object' && err !== null && 'stack' in err && typeof (err as { stack: unknown }).stack === 'string') {
                         // find the next line break after the script name and delete everything after that line break
-                        const stackTrace = err.stack;
-                        const scriptNameIndex = stackTrace.indexOf(scriptName);
-                        const nextLineBreakIndex = stackTrace.indexOf('\n', scriptNameIndex);
+                        const stackTrace = (err as { stack: string }).stack;
+                        const lastScriptNameIndex = stackTrace.lastIndexOf(scriptName);
+                        const nextLineBreakIndex = stackTrace.indexOf('\n', lastScriptNameIndex);
 
                         const truncatedStackTrace = nextLineBreakIndex !== -1 ? stackTrace.substring(0, nextLineBreakIndex) : stackTrace;
-                        stack = truncatedStackTrace;
+                        stack = truncatedStackTrace.replace(/(\r\n|\n|\r)/gm, '').trim();
                     }
                     return {
                         success: false,
                         error: {
                             type: 'script_internal_error',
                             payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
-                            stack,
+                            stack: stack || '',
                             status: 500
                         },
                         response: null
