@@ -21,7 +21,7 @@ import type { SyncConfig } from '../models/Sync.js';
 import type { ValidateDataError } from './dataValidation.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import type { DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
+import type { ApiEndUser, DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
 
@@ -312,18 +312,18 @@ interface MetadataChangeResponse {
 }
 
 interface Connection {
-    id?: number;
-    created_at: Date;
-    updated_at: Date;
+    id: number;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
-    environment_id: number;
-    metadata?: Metadata | null;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
+    created_at: string;
+    updated_at: string;
+    last_fetched_at: string;
+    metadata: Record<string, unknown> | null;
+    provider: string;
+    errors: { type: string; log_id: string }[];
+    end_user: ApiEndUser | null;
     credentials: AuthCredentials;
-    end_user_id: number | null;
 }
 
 export class ActionError<T = Record<string, unknown>> extends Error {
@@ -801,10 +801,6 @@ export class NangoAction {
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
-        if (!this.environmentId) {
-            throw new Error('There is no current environment to get variables from');
-        }
-
         return await this.nango.getEnvironmentVariables();
     }
 

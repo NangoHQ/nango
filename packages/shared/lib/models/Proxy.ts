@@ -61,14 +61,14 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
         | TwoStepCredentials
         | SignatureCredentials;
     provider: Provider;
-    connection: Connection;
+    connection: Pick<Connection, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
     providerName: string;
-    connection: Connection;
+    connection: Pick<Connection, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
     existingActivityLogId?: string | null | undefined;
 }
 
