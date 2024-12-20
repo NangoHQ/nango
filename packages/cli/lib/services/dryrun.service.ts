@@ -477,17 +477,16 @@ export class DryRunService {
                 return { success: false, error: new NangoError(content, 500), response: null };
             }
 
+            const filename = `${syncName}-${nangoProps.providerConfigKey}.js`;
             try {
-                const wrappedScript = `
-                    (function() {
-                        var module = { exports: {} };
-                        var exports = module.exports;
-                        ${script}
-                        return module.exports;
-                    })();
+                const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${script}
+                    return module.exports;
+                })();
                 `;
 
-                const scriptObj = new vm.Script(wrappedScript);
+                const scriptObj = new vm.Script(wrappedCode, {
+                    filename
+                });
                 const sandbox = {
                     console,
                     require: (moduleName: string) => {
@@ -604,11 +603,21 @@ export class DryRunService {
                     }
                 } else {
                     const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
+
+                    const stacktrace = tmp.stack
+                        ? tmp.stack
+                              .split('\n')
+                              .filter((s, i) => i === 0 || s.includes(filename))
+                              .map((s) => s.trim())
+                              .slice(0, 5) // max 5 lines
+                        : [];
+
                     return {
                         success: false,
                         error: {
                             type: 'script_internal_error',
                             payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            ...(stacktrace.length > 0 ? { stacktrace } : {}),
                             status: 500
                         },
                         response: null
