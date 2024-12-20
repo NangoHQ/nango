@@ -60,12 +60,12 @@ export default async function onEvent(nango: NangoAction): Promise<void> {
 To enable the above script, you need to configure your `nango.yaml` integration configuration as follows: 
 ```yaml nango.yaml
 integrations:
-    airtable: 
-        on-events:
-            post-connection-creation:
-                - setup # Name of your event-based script (without the .ts extension)
-            pre-connection-deletion:
-                - cleanup # Name of your event-based script (without the .ts extension)
+  airtable: 
+    on-events:
+      post-connection-creation:
+        - setup # Name of your event-based script (without the .ts extension)
+      pre-connection-deletion:
+        - cleanup # Name of your event-based script (without the .ts extension)
 ```
 
 The `onEvent` function kicks off when the event the script is associated to occurs.
