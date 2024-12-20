@@ -7,6 +7,7 @@ on:
         paths:
             - packages/shared/providers.yaml
             - docs-v2/integrations/all/*.md
+    workflow_dispatch:
 
 concurrency:
     group: webflow-sync
