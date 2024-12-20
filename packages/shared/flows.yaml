@@ -6422,6 +6422,56 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
+    lattice:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Lattice
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+    lattice-scim:
+        actions:
+            create-user:
+                description: Creates a user in Lattice
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: CreateUser
+            disable-user:
+                description: Disables a user in Lattice
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     lever:
         actions:
             create-note:
