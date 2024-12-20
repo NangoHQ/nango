@@ -3,7 +3,10 @@
     "compilerOptions": {
         "lib": ["es2015", "dom"],
         "rootDir": "lib",
-        "outDir": "dist"
+        "outDir": "dist",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true
     },
     "references": [
         {
