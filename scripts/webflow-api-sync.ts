@@ -150,7 +150,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                     name: provider.display_name,
                     slug: slug,
                     documentation: provider.docs,
-                    logo: `https://app.nango.dev/images/template-logos/${slug}.svg`,
+                    logo: `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/packages/webapp/public/images/template-logos/${slug}.svg`,
                     'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
                 }
             });

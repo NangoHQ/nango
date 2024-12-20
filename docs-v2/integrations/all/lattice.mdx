@@ -1,0 +1,57 @@
+---
+title: Lattice
+sidebarTitle: Lattice
+provider: lattice
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/lattice/PreBuiltTooling.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/lattice/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+
+## Useful links
+
+-   [How to request API access if it's your first time.](https://help.lattice.com/hc/en-us/articles/360059449534-Lattice-s-Public-API)
+-   [Generate a Lattice API keys](https://developers.lattice.com/reference/authentication)
+-   [Lattice API docs](https://developers.lattice.com/reference/introduction)
+-   [Lattice SCIM API docs](https://help.lattice.com/hc/en-us/articles/4404294040983-The-SCIM-API)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+## API gotchas
+
+- Lattice API endpoints and fields are subject to change at any time without notice.
+- The API has a rate limit of 240 requests per minute.
+- All API requests must be made over HTTPS. Calls made over plain HTTP will fail. 
+- The Lattice API was designed to only be called from a server and thus does not provide any CORS ability. This is to protect you and your user's data. By calling this API from a browser would expose your bearer tokens and allow a malicious actor to access data they should not be exposed to.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/lattice.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Lattice" icon="link" href="/integrations/all/lattice/connect" horizontal>
+  Guide to connect to Lattice using Connect UI
+</Card>
