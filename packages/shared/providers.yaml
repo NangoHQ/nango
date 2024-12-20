@@ -125,6 +125,9 @@ affinity:
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
+        verification:
+            method: GET
+            endpoint: /lists
     docs: https://docs.nango.dev/integrations/all/affinity
     docs_connect: https://docs.nango.dev/integrations/all/affinity/connect
     credentials:
@@ -294,6 +297,9 @@ amplitude:
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+        verification:
+            method: GET
+            endpoint: /api/2/events/list
     docs: https://docs.nango.dev/integrations/all/amplitude
 
 anthropic:
@@ -659,6 +665,9 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
+        verification:
+            method: GET
+            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
@@ -2811,6 +2820,9 @@ freshservice:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
+        verification:
+            method: GET
+            endpoint: /api/v2/tickets
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
@@ -2951,6 +2963,9 @@ guru:
     auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/v1
+        verification:
+            method: GET
+            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/guru
     credentials:
         username:
@@ -3483,6 +3498,9 @@ hackerrank-work:
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
+        verification:
+            method: GET
+            endpoint: /x/api/v3/users?limit=10&offset=10
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
     credentials:
         username:
@@ -3841,6 +3859,9 @@ helpscout-docs:
         retry:
             after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
+        verification:
+            method: GET
+            endpoint: /v1/search/articles?page=2
     docs: https://docs.nango.dev/integrations/all/helpscout
     credentials:
         username:
@@ -5802,6 +5823,9 @@ sendgrid:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
+        verification:
+            method: GET
+            endpoint: /v3/validations/email/jobs
     docs: https://docs.nango.dev/integrations/all/sendgrid
     credentials:
         apiKey:
