@@ -5346,6 +5346,9 @@ plain:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://core-api.uk.plain.com/graphql/v1
+        verification:
+            method: GET
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     credentials:
         apiKey:
