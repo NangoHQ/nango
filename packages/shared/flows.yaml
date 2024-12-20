@@ -13937,6 +13937,18 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.2
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in Xero
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: GeneralLedger
+                scopes:
+                    - accounting.journals.read
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -14344,6 +14356,24 @@ integrations:
                 tenantName: string
                 createdDateUtc: string
                 updatedDateUtc: string
+            GeneralLedger:
+                id: string
+                date: string | null
+                number: number
+                createdDate: string | null
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                accountId: string
+                accountCode: string
+                accountName: string
+                description: string
+                netAmount: number
+                grossAmount: number
+                taxAmount: number
+                taxType: string
+                taxName: string
+                trackingCategories: string[]
     zendesk:
         syncs:
             tickets:
