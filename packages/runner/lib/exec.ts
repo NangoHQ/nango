@@ -32,18 +32,12 @@ export async function exec(
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
 
-    const wrappedCode = `
-        (function() {
-            var module = { exports: {} };
-            var exports = module.exports;
-            ${code}
-            return module.exports;
-        })();
+    const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}
+        return module.exports;
+    })();
     `;
 
-    const scriptPosition = wrappedCode.indexOf(code);
-    const substringUpToScript = wrappedCode.slice(0, scriptPosition);
-    const lineBreakCount = (substringUpToScript.match(/\n/g) || []).length;
+    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.js`;
 
     return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
@@ -52,13 +46,9 @@ export async function exec(
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
             .setTag('syncId', nangoProps.syncId);
 
-        const scriptName = nangoProps.syncConfig.sync_name;
-        const compiledJsName = `${scriptName}-${nangoProps.providerConfigKey}.js`;
         try {
             const script = new vm.Script(wrappedCode, {
-                filename: compiledJsName,
-                lineOffset: -lineBreakCount,
-                columnOffset: 0
+                filename
             });
             const sandbox: vm.Context = {
                 console,
@@ -226,23 +216,24 @@ export async function exec(
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
 
-                let stack: string | null = null;
-
-                if (typeof err === 'object' && err !== null && 'stack' in err && typeof (err as { stack: unknown }).stack === 'string') {
-                    // find the next line break after the script name and delete everything after that line break
-                    const stackTrace = (err as { stack: string }).stack;
-                    const lastScriptNameIndex = stackTrace.lastIndexOf(scriptName);
-                    const nextLineBreakIndex = stackTrace.indexOf('\n', lastScriptNameIndex);
-
-                    const truncatedStackTrace = nextLineBreakIndex !== -1 ? stackTrace.substring(0, nextLineBreakIndex) : stackTrace;
-                    stack = truncatedStackTrace.replace(/(\r\n|\n|\r)/gm, '').trim();
-                }
+                const stacktrace = tmp.stack
+                    ? tmp.stack
+                          .split('\n')
+                          .filter((s, i) => i === 0 || s.includes(filename))
+                          .map((s) => s.trim())
+                          .slice(0, 5) // max 5 lines
+                    : [];
 
                 return {
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: `${tmp.message} ${stack ?? ''}` }),
+                        payload: truncateJson({
+                            name: tmp.name || 'Error',
+                            code: tmp.code,
+                            message: tmp.message,
+                            ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        }),
                         status: 500
                     },
                     response: null

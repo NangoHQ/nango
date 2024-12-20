@@ -477,23 +477,15 @@ export class DryRunService {
                 return { success: false, error: new NangoError(content, 500), response: null };
             }
 
+            const filename = `${syncName}-${nangoProps.providerConfigKey}.js`;
             try {
-                const wrappedScript = `
-                    (function() {
-                        var module = { exports: {} };
-                        var exports = module.exports;
-                        ${script}
-                        return module.exports;
-                    })();
+                const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${script}
+                    return module.exports;
+                })();
                 `;
-                const scriptPosition = wrappedScript.indexOf(script);
-                const substringUpToScript = wrappedScript.slice(0, scriptPosition);
-                const lineBreakCount = (substringUpToScript.match(/\n/g) || []).length;
 
-                const scriptObj = new vm.Script(wrappedScript, {
-                    filename: `${syncName}-${nangoProps.providerConfigKey}.js`,
-                    lineOffset: -lineBreakCount,
-                    columnOffset: 0
+                const scriptObj = new vm.Script(wrappedCode, {
+                    filename
                 });
                 const sandbox = {
                     console,
@@ -611,25 +603,21 @@ export class DryRunService {
                     }
                 } else {
                     const tmp = serializeError(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
-                    const scriptName = `${syncName}-${nangoProps.providerConfigKey}.js`;
 
-                    let stack: string | null = null;
+                    const stacktrace = tmp.stack
+                        ? tmp.stack
+                              .split('\n')
+                              .filter((s, i) => i === 0 || s.includes(filename))
+                              .map((s) => s.trim())
+                              .slice(0, 5) // max 5 lines
+                        : [];
 
-                    if (typeof err === 'object' && err !== null && 'stack' in err && typeof (err as { stack: unknown }).stack === 'string') {
-                        // find the next line break after the script name and delete everything after that line break
-                        const stackTrace = (err as { stack: string }).stack;
-                        const lastScriptNameIndex = stackTrace.lastIndexOf(scriptName);
-                        const nextLineBreakIndex = stackTrace.indexOf('\n', lastScriptNameIndex);
-
-                        const truncatedStackTrace = nextLineBreakIndex !== -1 ? stackTrace.substring(0, nextLineBreakIndex) : stackTrace;
-                        stack = truncatedStackTrace.replace(/(\r\n|\n|\r)/gm, '').trim();
-                    }
                     return {
                         success: false,
                         error: {
                             type: 'script_internal_error',
                             payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
-                            stack: stack || '',
+                            ...(stacktrace.length > 0 ? { stacktrace } : {}),
                             status: 500
                         },
                         response: null
