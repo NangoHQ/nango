@@ -57,8 +57,7 @@ try {
 
     process.on('unhandledRejection', (reason) => {
         logger.error('Received unhandledRejection...', reason);
-        process.exitCode = 1;
-        void close();
+        // not closing on purpose
     });
 
     process.on('uncaughtException', (e) => {
