@@ -300,8 +300,8 @@ amplitude:
     credentials:
         username:
             type: string
-            title: Amplitude API Key
-            description: Amplitude API Key
+            title: API Key
+            description: Your Amplitude API Key
             default_value: ''
         password:
             type: string
