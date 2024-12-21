@@ -138,6 +138,8 @@ affinity:
             type: string
             title: API Key
             description: Your Affinity API Key
+            # https://api-docs.affinity.co/#introduction
+            # Affinity is using basic auth with an api key
             doc_section: '#step-1-finding-your-api-key'
 
 aircall:
@@ -295,6 +297,19 @@ amplitude:
     proxy:
         base_url: https://amplitude.com
     docs: https://docs.nango.dev/integrations/all/amplitude
+    credentials:
+        username:
+            type: string
+            title: Amplitude API Key
+            description: Amplitude API Key
+            default_value: ''
+        password:
+            type: string
+            title: Secret Key
+            description: Your Amplitude secret key
+            # https://amplitude.com/docs/apis/authentication
+            # Amplitude is using basic auth with an api key
+            hidden: true
 
 anthropic:
     display_name: Anthropic
@@ -560,12 +575,15 @@ avalara:
         username:
             type: string
             title: User Name / Account ID
-            description: Your User Name / Account ID
+            description: Avalara User Name / Account ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
-            title: Password / License Key
+            title: Avalara Password / License Key
             description: Your Password / License Key
+            # https://developer.avalara.com/avatax/authentication-in-rest/
+            # Avalara is using basic auth with combination of (username and password)
+            # or (Account ID and License Key)
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
@@ -594,12 +612,15 @@ avalara-sandbox:
         username:
             type: string
             title: User Name / Account ID
-            description: Your User Name / Account ID
+            description: Avalara User Name / Account ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
             title: Password / License Key
-            description: Your Password / License Key
+            description: Avalara Password / License Key
+            # https://developer.avalara.com/avatax/authentication-in-rest/
+            # Avalara is using basic auth with combination of (username and password)
+            # or (Account ID and License Key)
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
@@ -668,13 +689,15 @@ aws-iam:
     credentials:
         username:
             type: string
-            title: Access Key ID
+            title: AWS Access Key ID
             description: Your Access Key ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
-            title: Secret Access Key
+            title: AWS Secret Access Key
             description: Your Secret Access Key
+            # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html
+            # aws-iam is using basic auth with AWS Access Key ID and Secret Access Key
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         region:
@@ -4606,6 +4629,18 @@ mixpanel:
     proxy:
         base_url: https://mixpanel.com
     docs: https://docs.nango.dev/integrations/all/mixpanel
+    credentials:
+        username:
+            type: string
+            title: service account Username
+            description: Mixpanel service account Username
+        password:
+            type: string
+            title: service account secret
+            description: Mixpanel service account secret
+            # https://developer.mixpanel.com/reference/service-accounts
+            # Mixpanel is using basic auth with service account username and secret
+            hidden: true
 
 miro:
     display_name: Miro
@@ -5966,6 +6001,17 @@ shipstation:
             method: GET
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your shipstation API key
+        password:
+            type: string
+            title: API Secret
+            description: Your Shipstation API secret
+            # https://www.shipstation.com/docs/api/requirements/#authentication
+            # Shipstation is using basic auth with API key and secret
 
 shopify:
     display_name: Shopify
@@ -7192,6 +7238,8 @@ workday:
             title: Password
             description: Workday Client Secret
             doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
+            # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
+            # Workday is using basic auth with client ID and client secret as username and password
 
 wrike:
     display_name: Wrike
