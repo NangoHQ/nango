@@ -6008,7 +6008,7 @@ shortcut:
         base_url: https://api.app.shortcut.com
         headers:
             shortcut-token: ${apiKey}
-        verificaiton:
+        verification:
             method: GET
             endpoint: /v3/member
     docs: https://docs.nango.dev/integrations/all/shortcut
@@ -6048,7 +6048,7 @@ smartrecruiters-api-key:
         base_url: https://api.smartrecruiters.com
         headers:
             x-smarttoken: ${apiKey}
-        verififcation:
+        verification:
             method: GET
             endpoint: /feed/publications
     docs: https://docs.nango.dev/integrations/all/smartrecruiters
