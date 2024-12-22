@@ -2442,6 +2442,9 @@ evaluagent:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.region}.evaluagent.com
+        verification:
+            method: GET
+            endpoint: /v1/ping
     docs: https://docs.nango.dev/integrations/all/evaluagent
     connection_config:
         region:
@@ -5581,6 +5584,9 @@ refiner:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://api.refiner.io/v1
+        verification:
+            method: GET
+            endpoint: /account
     docs: https://docs.nango.dev/integrations/all/refiner
     credentials:
         apiKey:
@@ -5595,6 +5601,9 @@ replicate:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://api.replicate.com
+        verification:
+            method: GET
+            endpoint: /v1/account
     docs: https://docs.nango.dev/integrations/all/replicate
     credentials:
         apiKey:
@@ -5999,6 +6008,9 @@ shortcut:
         base_url: https://api.app.shortcut.com
         headers:
             shortcut-token: ${apiKey}
+        verificaiton:
+            method: GET
+            endpoint: /v3/member
     docs: https://docs.nango.dev/integrations/all/shortcut
     credentials:
         apiKey:
@@ -6036,6 +6048,9 @@ smartrecruiters-api-key:
         base_url: https://api.smartrecruiters.com
         headers:
             x-smarttoken: ${apiKey}
+        verififcation:
+            method: GET
+            endpoint: /feed/publications
     docs: https://docs.nango.dev/integrations/all/smartrecruiters
     credentials:
         apiKey:
@@ -6374,6 +6389,9 @@ teamtailor:
         headers:
             authorization: Token token=${apiKey}
             x-api-version: '20210218'
+        verification:
+            method: GET
+            endpoint: /v1/users
     docs: https://docs.nango.dev/integrations/all/teamtailor
     connection_config:
         extension:
@@ -6566,9 +6584,12 @@ trello-scim:
         - ticketing
     auth_mode: API_KEY
     proxy:
-        base_url: https://trello.com/scim/
+        base_url: https://trello.com/scim
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v2/users?sortBy=displayName&count=10
     docs: https://docs.nango.dev/integrations/all/trello
     credentials:
         apiKey:
@@ -6882,6 +6903,9 @@ unipile:
         base_url: https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
         headers:
             x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/v1/contacts
     docs: https://docs.nango.dev/integrations/all/unipile
     credentials:
         apiKey:
