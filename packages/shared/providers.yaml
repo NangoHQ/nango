@@ -5407,6 +5407,7 @@ posthog:
             method: GET
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
+    docs_connect: https://docs.nango.dev/integrations/all/posthog/connect
     connection_config:
         subdomain:
             type: string
@@ -5421,6 +5422,7 @@ posthog:
             type: string
             title: API Key
             description: The API key for your PostHog account
+            doc_section: '#step-1-finding-your-posthog-api-key'
 
 productboard:
     display_name: Productboard
