@@ -3484,11 +3484,13 @@ hackerrank-work:
     proxy:
         base_url: https://www.hackerrank.com
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+    docs_connect: https://docs.nango.dev/integrations/all/hackerrank-work/connect
     credentials:
         username:
             type: string
             title: API Key
             description: Your HackerRank Work API Key
+            doc_section: '#step-1-finding-hackerrank-api-key'
         password:
             type: string
             title: ''
