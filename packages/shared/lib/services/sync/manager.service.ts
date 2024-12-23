@@ -334,8 +334,13 @@ export class SyncManagerService {
                     continue;
                 }
 
+                const syncWithConnectionId: SyncWithConnectionId = {
+                    ...sync,
+                    connection_id: connection.connection_id
+                };
+
                 const reportedStatus = await this.syncStatus({
-                    sync: { ...sync, connection_id: connection.connection_id },
+                    sync: syncWithConnectionId,
                     environmentId,
                     providerConfigKey,
                     includeJobStatus,
@@ -346,7 +351,7 @@ export class SyncManagerService {
                 syncsWithStatus.push(reportedStatus);
             }
         } else {
-            const syncs =
+            const syncs: SyncWithConnectionId[] =
                 syncNames.length > 0
                     ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
                     : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
