@@ -13,7 +13,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    publish-and-verify:
+    publish:
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -29,6 +29,7 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
+                  cache: 'npm'
             - name: Build
               run: |
                   npm ci
@@ -77,6 +78,7 @@ jobs:
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GIT_HASH: ${{ needs.publish.outputs.GIT_HASH }}
               run: |
                   mkdir /tmp/nango-cli-verify
                   cd /tmp/nango-cli-verify
