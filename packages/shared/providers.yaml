@@ -3844,12 +3844,14 @@ helpscout-docs:
             after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
+    docs_connect: https://docs.nango.dev/integrations/all/helpscout-docs/connect
     credentials:
         username:
             type: string
             title: API Key
             description: Your Help Scout Docs API Key
             secret: true
+            doc_section: '#step-1-finding-help-scout-api-key'
         password:
             type: string
             title: ''
