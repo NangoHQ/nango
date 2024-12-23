@@ -5987,6 +5987,19 @@ shipstation:
             method: GET
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
+    docs_connect: https://docs.nango.dev/integrations/all/shipstation/connect
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: Your ShipStation API Key
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
+        password:
+            type: string
+            title: Password
+            description: Your ShipStation API Secret
+            default_value: ''
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
 
 shopify:
     display_name: Shopify
