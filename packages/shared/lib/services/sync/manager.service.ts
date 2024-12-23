@@ -13,7 +13,7 @@ import {
 import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { Sync, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
+import type { SyncWithConnectionId, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
 import { SyncType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -334,7 +334,14 @@ export class SyncManagerService {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator, recordsService });
+                const reportedStatus = await this.syncStatus({
+                    sync: { ...sync, connection_id: connection.connection_id },
+                    environmentId,
+                    providerConfigKey,
+                    includeJobStatus,
+                    orchestrator,
+                    recordsService
+                });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -421,7 +428,7 @@ export class SyncManagerService {
         orchestrator,
         recordsService
     }: {
-        sync: Sync;
+        sync: SyncWithConnectionId;
         environmentId: number;
         providerConfigKey: string;
         includeJobStatus: boolean;
@@ -458,6 +465,7 @@ export class SyncManagerService {
 
         return {
             id: sync.id,
+            connection_id: sync.connection_id,
             type: latestJob?.type === SyncType.INCREMENTAL ? latestJob.type : 'INITIAL',
             finishedAt: latestJob?.updated_at,
             nextScheduledSyncAt: schedule.nextDueDate,
