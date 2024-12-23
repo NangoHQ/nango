@@ -4609,7 +4609,20 @@ mixpanel:
     auth_mode: BASIC
     proxy:
         base_url: https://mixpanel.com
+    credentials:
+        username:
+            type: string
+            title: usernname
+            description: Your Mixpanel service account
+            doc_section: '#step-1-finding-mixpanel-api-key'
+        password:
+            type: string
+            title: password
+            description: Your Mixpanel service account secret
+            secret: true
+            doc_section: '#step-1-finding-mixpanel-api-key'
     docs: https://docs.nango.dev/integrations/all/mixpanel
+    docs_connect: https://docs.nango.dev/integrations/all/mixpanel/connect
 
 miro:
     display_name: Miro
