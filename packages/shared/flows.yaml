@@ -13946,7 +13946,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /general-ledger
-                    group: GeneralLedger
+                    group: General Ledger
                 scopes:
                     - accounting.journals.read
             payments:
@@ -14367,13 +14367,19 @@ integrations:
                 accountId: string
                 accountCode: string
                 accountName: string
-                description: string
+                description?: string | undefined
                 netAmount: number
                 grossAmount: number
                 taxAmount: number
-                taxType: string
-                taxName: string
-                trackingCategories: string[]
+                taxType?: string | undefined
+                taxName?: string | undefined
+                trackingCategories: TrackingCategory[]
+            TrackingCategory:
+                name: string
+                option: string
+                trackingCategoryId: string
+                trackingOptionId: string
+                options: string[]
     zendesk:
         syncs:
             tickets:
