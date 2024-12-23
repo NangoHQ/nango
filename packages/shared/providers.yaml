@@ -1239,6 +1239,28 @@ buildium:
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
             doc_section: '#step-2-finding-your-client-id-and-secret'
 
+builtwith:
+    display_name: BuiltWith
+    categories:
+        - dev-tools
+        - analytics
+        - marketing
+        - sales
+        - cms
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.builtwith.com
+        query:
+            KEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builtwith
+    credentials: 
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your BuiltWith account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c   
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
