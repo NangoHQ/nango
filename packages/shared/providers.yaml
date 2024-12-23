@@ -6889,16 +6889,31 @@ unanet:
             method: GET
             endpoint: /api/projects
     docs: https://docs.nango.dev/integrations/all/unanet
+    docs_connect: https://docs.nango.dev/integrations/all/unanet/connect
     connection_config:
         firmId:
             type: string
             title: Firm ID
             description: The firm ID of your Unanet instance
+            doc_section: '#step-2-finding-the-firm-id'
         apiKey:
             type: string
             title: API Key
             description: The API key of your Unanet instance
             secret: true
+            doc_section: '#step-3-finding-the-api-key'
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: Your Unanet username
+            doc_section: '#step-1-finding-username-and-password'
+        password:
+            type: string
+            title: Password
+            description: Your Unanet password
+            default_value: ''
+            doc_section: '#step-1-finding-username-and-password'
 
 unauthenticated:
     display_name: Unauthenticated
