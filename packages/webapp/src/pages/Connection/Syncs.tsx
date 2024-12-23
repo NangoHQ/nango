@@ -50,7 +50,15 @@ export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
                                 .map((sync, index) => (
                                     <Fragment key={sync.name}>
                                         {sync.name} (
-                                        <Link className="underline" to={getLogsUrl({ env, operationId: sync.active_logs?.log_id, syncs: sync.name })}>
+                                        <Link
+                                            className="underline"
+                                            to={getLogsUrl({
+                                                env,
+                                                connections: connection.connection_id,
+                                                operationId: sync.active_logs?.log_id,
+                                                syncs: sync.name
+                                            })}
+                                        >
                                             logs
                                         </Link>
                                         ){index < syncs.filter((sync) => sync.active_logs?.log_id).length - 1 && ', '}
