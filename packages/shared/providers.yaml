@@ -359,6 +359,9 @@ apollo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
+        verification:
+            method: GET
+            endpoint: /v1/contact_stages
         query:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
@@ -434,6 +437,9 @@ asana-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.asana.com/api
+        verification:
+            method: GET
+            endpoint: /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
@@ -1545,6 +1551,9 @@ chorus:
     auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        verification:
+            method: GET
+            endpoint: /api/v1/users/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
@@ -2793,6 +2802,9 @@ freshsales:
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshsales.io
+        verification:
+            method: GET
+            endpoint: /api/settings/leads/fields
         headers:
             authorization: Token token=${apiKey}
         retry:
@@ -3363,6 +3375,9 @@ grain-api-key:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.grain.com
+        verification:
+            method: GET
+            endpoint: /_/public-api/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/grain
@@ -4056,6 +4071,28 @@ lastpass:
             secret: true
             doc_section: '#step-2-generating-your-provhash'
 
+lattice:
+    display_name: Lattice
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.latticehq.com/
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/lattice
+    docs_connect: https://docs.nango.dev/integrations/all/lattice/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Lattice account
+            doc_section: '#step-1-finding-lattice-api-key'
+
 lessonly:
     display_name: Lessonly
     categories:
@@ -4632,6 +4669,9 @@ miro-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://miro.com/api
+        verification:
+            method: GET
+            endpoint: /v1/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/miro
@@ -4776,6 +4816,9 @@ notion-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.notion.com/scim
+        verification:
+            method: GET
+            endpoint: /v2/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/notion
@@ -5061,6 +5104,9 @@ pendo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.pendo.io
+        verification:
+            method: GET
+            endpoint: /api/v1/page
         headers:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
@@ -5337,6 +5383,9 @@ plain:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://core-api.uk.plain.com/graphql/v1
+        verification:
+            method: GET
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     credentials:
         apiKey:
@@ -5802,6 +5851,58 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+sap-success-factors:
+    display_name: SAP SuccessFactors
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.apiServer}/oauth/token
+    token_params:
+        company_id: ${connectionConfig.companyId}
+        client_id: ${credential.apiKey}
+        grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
+        assertion: ${credential.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.apiServer}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/sap-success-factors
+    docs_connect: https://docs.nango.dev/integrations/all/sap-success-factors/connect
+    connection_config:
+        apiServer:
+            type: string
+            title: API Server
+            description: The API Server to connect to your SAP SuccessFactors account
+            pattern: '^[a-z0-9.-]+$'
+            example: api41preview.sapsf.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-api-server'
+            order: 1
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your SAP SuccessFactors account
+            example: SFSALES012345
+            pattern: '^[A-Z0-9]+$'
+            doc_section: '#step-2-finding-your-company-id'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-3-generating-your-api-key'
+        assertion:
+            type: string
+            title: SAML Assertion
+            description: The SAML Assertion generated for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-4-generating-your-saml-assertion'
 
 salesloft:
     display_name: Salesloft

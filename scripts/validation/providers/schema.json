@@ -359,7 +359,7 @@
                     "properties": {
                         "grant_type": {
                             "type": "string",
-                            "enum": ["authorization_code", "client_credentials"]
+                            "enum": ["authorization_code", "client_credentials", "urn:ietf:params:oauth:grant-type:saml2-bearer"]
                         },
                         "request": {
                             "anyOf": [
