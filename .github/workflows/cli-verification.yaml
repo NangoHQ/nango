@@ -18,8 +18,6 @@ jobs:
         permissions:
             contents: read
             packages: write
-        outputs:
-            GIT_HASH: ${{ steps.publish_step.outputs.hash }}
         steps:
             - uses: actions/checkout@v4
 
@@ -78,7 +76,7 @@ jobs:
             - name: Install the cli from the github package registry
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  GIT_HASH: ${{ needs.publish.outputs.GIT_HASH }}
+                  GIT_HASH: ${{ steps.publish_step.outputs.hash }}
               run: |
                   mkdir /tmp/nango-cli-verify
                   cd /tmp/nango-cli-verify
