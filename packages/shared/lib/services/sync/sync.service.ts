@@ -197,7 +197,8 @@ export const getSyncs = async (
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
                 .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
                 .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
-                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'));
+                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'))
+                .andOn(`${SYNC_CONFIG_TABLE}.enabled`, '=', db.knex.raw('?', 'TRUE'));
         })
         .where({
             nango_connection_id: nangoConnection.id,
