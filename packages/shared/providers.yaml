@@ -293,7 +293,7 @@ anrok:
             doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
-    display_name: Amplitude
+    display_name: Amplitude (Event Streaming API)
     categories:
         - analytics
     auth_mode: BASIC
@@ -308,14 +308,12 @@ amplitude:
             type: string
             title: API Key
             description: Your Amplitude API Key
-            default_value: ''
         password:
             type: string
             title: Secret Key
             description: Your Amplitude secret key
             # https://amplitude.com/docs/apis/authentication
             # Amplitude is using basic auth with an api key
-            hidden: true
 
 anthropic:
     display_name: Anthropic
