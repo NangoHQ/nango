@@ -7327,12 +7327,12 @@ workday:
     credentials:
         username:
             type: string
-            title: User Name
+            title: Client ID
             description: Workday Client ID
             doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
         password:
             type: string
-            title: Password
+            title: Client Secret
             description: Workday Client Secret
             doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
             # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
