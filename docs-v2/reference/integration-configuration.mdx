@@ -228,7 +228,7 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Defaults to no scope.
 </ResponseField>
 
-### On-Events fields
+### On-events fields
 
 `on-events` configuration fields are under `integrations.<INTEGRATION-ID>.on-events.<EVENT-NAME>`.
 
@@ -236,6 +236,8 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Nango currently supports the following events:
     - post-connection-creation
     - pre-connection-deletion
+
+    Read the [Execute scripts based on events](/guides/execute-scripts-based-on-events) guide.
 </Tip>
 
 <ResponseField name="post-connection-creation" type="string[]">
@@ -243,10 +245,12 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
 
     Example:
     ```yaml
-    on-events:
-      post-connection-creation:
-        - setup
-        - initialize-webhooks
+    integrations:
+      airtable:
+        on-events:
+          post-connection-creation:
+            - setup # Name of your event-based script (without the .ts extension)
+            - initialize-webhooks
     ```
 </ResponseField>
 
@@ -255,10 +259,12 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
 
     Example:
     ```yaml
-    on-events:
-      pre-connection-deletion:
-        - cleanup
-        - remove-webhooks
+    integrations:
+      airtable:
+        on-events:
+          pre-connection-deletion:
+            - cleanup # Name of your event-based script (without the .ts extension)
+            - remove-webhooks
     ```
 </ResponseField>
 

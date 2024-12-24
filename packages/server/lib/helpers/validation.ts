@@ -31,3 +31,9 @@ export const connectionCredential = z.union([
     z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),
     z.object({ connect_session_token: connectSessionTokenSchema })
 ]);
+
+export const stringBool = z
+    .enum(['true', 'false', ''])
+    .optional()
+    .default('false')
+    .transform((value) => value === 'true');

@@ -119,6 +119,7 @@
                         "guides/proxy-requests-to-an-api",
                         "guides/receive-webhooks-from-an-api",
                         "guides/authorize-an-api-from-your-app-with-custom-ui",
+                        "guides/execute-scripts-based-on-events",
                         "guides/otlp-export",
                         "guides/whitelabel-oauth",
                         "guides/store-customer-specific-data",
@@ -143,7 +144,6 @@
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
                         "understand/concepts/webhooks",
-                        "understand/concepts/events",
                         "understand/concepts/proxy",
                         "understand/concepts/environments"
                     ]
@@ -320,6 +320,7 @@
                 "integrations/all/klipfolio",
                 "integrations/all/kustomer",
                 "integrations/all/lastpass",
+                "integrations/all/lattice",
                 "integrations/all/lessonly",
                 "integrations/all/lever",
                 "integrations/all/linkedin",
@@ -390,6 +391,7 @@
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
                 "integrations/all/salesloft",
+                "integrations/all/sap-success-factors",
                 "integrations/all/segment",
                 "integrations/all/sendgrid",
                 "integrations/all/servicem8",

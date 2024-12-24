@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.48.1] - 2024-12-19
+
+### Added
+
+- *(docs)* Generate pre-built tooling table (#3191) by @nalanj
+
+### Fixed
+
+- *(server)* Fix case of duplicate connectionId with different providers for /connections/:id (#3198) by @nalanj
+- *(server)* /connections/:connectionId New Format (#3200) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7eda6278e02e663067843ec98b9fd5ee830aa175 by nalanj. Commit message: fix(linkedin): Fix endpoint for linkedin (#167) by @github-actions[bot]
+- *(logs)* Correctly truncate logs based on bytes size (#3203) by @TBonnin
+- *(environment-id)* EnvironmentId not required for getEnvironmentVariables call (#3204) by @khaliqgant
+- *(aircall)* Aircall basic extends aircall (#3202) by @khaliqgant
+
 ## [v0.48.0] - 2024-12-18
 
 ### Added
@@ -2613,6 +2628,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.48.1]: https://github.com/NangoHQ/nango/compare/v0.48.0..v0.48.1
 [v0.48.0]: https://github.com/NangoHQ/nango/compare/v0.47.1..v0.48.0
 [v0.47.1]: https://github.com/NangoHQ/nango/compare/v0.47.0..v0.47.1
 [v0.47.0]: https://github.com/NangoHQ/nango/compare/v0.46.1..v0.47.0
