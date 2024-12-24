@@ -435,8 +435,8 @@ asana-scim:
     proxy:
         base_url: https://app.asana.com/api
         verification:
-            method: POST
-            endpoint: /1.0/teams
+            method: GET
+            endpoint: /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
@@ -1113,9 +1113,6 @@ brex-api-key:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://platform.brexapis.com
-        verification:
-            method: GET
-            endpoint: /v1/trips
     docs: https://docs.nango.dev/integrations/all/brex
     docs_connect: https://docs.nango.dev/integrations/all/brex-api-key/connect
     credentials:
