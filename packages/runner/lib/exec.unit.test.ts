@@ -253,7 +253,8 @@ describe('Exec', () => {
                         xsrfHeaderName: 'X-XSRF-TOKEN'
                     },
                     message: expect.any(String),
-                    name: expect.any(String)
+                    name: expect.any(String),
+                    status: null
                 }
             },
             status: 500,
