@@ -4668,15 +4668,14 @@ mixpanel:
     credentials:
         username:
             type: string
-            title: service account Username
-            description: Mixpanel service account Username
+            title: Service Account username
+            description: Mixpanel Service Account Username
         password:
             type: string
-            title: service account secret
-            description: Mixpanel service account secret
+            title: Service Account Secret
+            description: Mixpanel Service Account secret
             # https://developer.mixpanel.com/reference/service-accounts
             # Mixpanel is using basic auth with service account username and secret
-            hidden: true
 
 miro:
     display_name: Miro
