@@ -1244,9 +1244,8 @@ builtwith:
     categories:
         - dev-tools
         - analytics
+        - crm
         - marketing
-        - sales
-        - cms
         - e-commerce
     auth_mode: API_KEY
     proxy:
@@ -1254,12 +1253,12 @@ builtwith:
         query:
             KEY: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builtwith
-    credentials: 
+    credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your BuiltWith account
-            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c   
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
 
 cal-com-v1:
     display_name: Cal.com (v1)
