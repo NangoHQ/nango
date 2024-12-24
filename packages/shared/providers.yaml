@@ -125,6 +125,9 @@ affinity:
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
+        verification:
+            method: GET
+            endpoint: /lists
     docs: https://docs.nango.dev/integrations/all/affinity
     docs_connect: https://docs.nango.dev/integrations/all/affinity/connect
     credentials:
@@ -138,6 +141,8 @@ affinity:
             type: string
             title: API Key
             description: Your Affinity API Key
+            # https://api-docs.affinity.co/#introduction
+            # Affinity is using basic auth with an api key
             doc_section: '#step-1-finding-your-api-key'
 
 aircall:
@@ -288,13 +293,27 @@ anrok:
             doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
-    display_name: Amplitude
+    display_name: Amplitude (Event Streaming API)
     categories:
         - analytics
     auth_mode: BASIC
     proxy:
         base_url: https://amplitude.com
+        verification:
+            method: GET
+            endpoint: /api/2/events/list
     docs: https://docs.nango.dev/integrations/all/amplitude
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Amplitude API Key
+        password:
+            type: string
+            title: Secret Key
+            description: Your Amplitude secret key
+            # https://amplitude.com/docs/apis/authentication
+            # Amplitude is using basic auth with an api key
 
 anthropic:
     display_name: Anthropic
@@ -353,6 +372,9 @@ apollo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
+        verification:
+            method: GET
+            endpoint: /v1/contact_stages
         query:
             api_key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/apollo
@@ -428,6 +450,9 @@ asana-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.asana.com/api
+        verification:
+            method: GET
+            endpoint: /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/asana
@@ -560,12 +585,15 @@ avalara:
         username:
             type: string
             title: User Name / Account ID
-            description: Your User Name / Account ID
+            description: Avalara User Name / Account ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
-            title: Password / License Key
+            title: Avalara Password / License Key
             description: Your Password / License Key
+            # https://developer.avalara.com/avatax/authentication-in-rest/
+            # Avalara is using basic auth with combination of (username and password)
+            # or (Account ID and License Key)
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
@@ -594,12 +622,15 @@ avalara-sandbox:
         username:
             type: string
             title: User Name / Account ID
-            description: Your User Name / Account ID
+            description: Avalara User Name / Account ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
             title: Password / License Key
-            description: Your Password / License Key
+            description: Avalara Password / License Key
+            # https://developer.avalara.com/avatax/authentication-in-rest/
+            # Avalara is using basic auth with combination of (username and password)
+            # or (Account ID and License Key)
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
@@ -659,6 +690,9 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
+        verification:
+            method: GET
+            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
@@ -668,13 +702,15 @@ aws-iam:
     credentials:
         username:
             type: string
-            title: Access Key ID
+            title: AWS Access Key ID
             description: Your Access Key ID
             doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
-            title: Secret Access Key
+            title: AWS Secret Access Key
             description: Your Secret Access Key
+            # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html
+            # aws-iam is using basic auth with AWS Access Key ID and Secret Access Key
             doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         region:
@@ -1536,6 +1572,9 @@ chorus:
     auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
+        verification:
+            method: GET
+            endpoint: /api/v1/users/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
@@ -2787,6 +2826,9 @@ freshsales:
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshsales.io
+        verification:
+            method: GET
+            endpoint: /api/settings/leads/fields
         headers:
             authorization: Token token=${apiKey}
         retry:
@@ -2814,6 +2856,9 @@ freshservice:
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
+        verification:
+            method: GET
+            endpoint: /api/v2/tickets
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
@@ -2954,6 +2999,9 @@ guru:
     auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/v1
+        verification:
+            method: GET
+            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/guru
     credentials:
         username:
@@ -3351,6 +3399,9 @@ grain-api-key:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.grain.com
+        verification:
+            method: GET
+            endpoint: /_/public-api/me
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/grain
@@ -3486,6 +3537,9 @@ hackerrank-work:
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
+        verification:
+            method: GET
+            endpoint: /x/api/v3/users?limit=10&offset=10
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
     credentials:
         username:
@@ -3844,6 +3898,9 @@ helpscout-docs:
         retry:
             after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
+        verification:
+            method: GET
+            endpoint: /v1/sites
     docs: https://docs.nango.dev/integrations/all/helpscout
     credentials:
         username:
@@ -4609,6 +4666,17 @@ mixpanel:
     proxy:
         base_url: https://mixpanel.com
     docs: https://docs.nango.dev/integrations/all/mixpanel
+    credentials:
+        username:
+            type: string
+            title: Service Account username
+            description: Mixpanel Service Account Username
+        password:
+            type: string
+            title: Service Account Secret
+            description: Mixpanel Service Account secret
+            # https://developer.mixpanel.com/reference/service-accounts
+            # Mixpanel is using basic auth with service account username and secret
 
 miro:
     display_name: Miro
@@ -4636,6 +4704,9 @@ miro-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://miro.com/api
+        verification:
+            method: GET
+            endpoint: /v1/scim/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/miro
@@ -4780,6 +4851,9 @@ notion-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.notion.com/scim
+        verification:
+            method: GET
+            endpoint: /v2/Users
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/notion
@@ -5065,6 +5139,9 @@ pendo:
     auth_mode: API_KEY
     proxy:
         base_url: https://app.pendo.io
+        verification:
+            method: GET
+            endpoint: /api/v1/page
         headers:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
@@ -5341,6 +5418,9 @@ plain:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://core-api.uk.plain.com/graphql/v1
+        verification:
+            method: GET
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
     credentials:
         apiKey:
@@ -5812,6 +5892,58 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+sap-success-factors:
+    display_name: SAP SuccessFactors
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.apiServer}/oauth/token
+    token_params:
+        company_id: ${connectionConfig.companyId}
+        client_id: ${credential.apiKey}
+        grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
+        assertion: ${credential.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.apiServer}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/sap-success-factors
+    docs_connect: https://docs.nango.dev/integrations/all/sap-success-factors/connect
+    connection_config:
+        apiServer:
+            type: string
+            title: API Server
+            description: The API Server to connect to your SAP SuccessFactors account
+            pattern: '^[a-z0-9.-]+$'
+            example: api41preview.sapsf.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-api-server'
+            order: 1
+        companyId:
+            type: string
+            title: Company ID
+            description: The company ID of your SAP SuccessFactors account
+            example: SFSALES012345
+            pattern: '^[A-Z0-9]+$'
+            doc_section: '#step-2-finding-your-company-id'
+            order: 2
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-3-generating-your-api-key'
+        assertion:
+            type: string
+            title: SAML Assertion
+            description: The SAML Assertion generated for your SAP SuccessFactors account
+            secret: true
+            doc_section: '#step-4-generating-your-saml-assertion'
 
 salesloft:
     display_name: Salesloft
@@ -5975,6 +6107,17 @@ shipstation:
             method: GET
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your shipstation API key
+        password:
+            type: string
+            title: API Secret
+            description: Your Shipstation API secret
+            # https://www.shipstation.com/docs/api/requirements/#authentication
+            # Shipstation is using basic auth with API key and secret
 
 shopify:
     display_name: Shopify
@@ -7208,14 +7351,16 @@ workday:
     credentials:
         username:
             type: string
-            title: User Name
+            title: Client ID
             description: Workday Client ID
             doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
         password:
             type: string
-            title: Password
+            title: Client Secret
             description: Workday Client Secret
             doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
+            # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
+            # Workday is using basic auth with client ID and client secret as username and password
 
 wrike:
     display_name: Wrike

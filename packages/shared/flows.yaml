@@ -2720,6 +2720,56 @@ integrations:
                 license?: string
                 officeId?: string
                 autoAssign?: boolean
+    dialpad-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Dialpad
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Dialpad
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: DialpadCreateUser
+            delete-user:
+                description: Deletes a user in Dialpad by email
+                endpoint:
+                    method: DELETE
+                    path: /users/email
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DialpadCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                license?: string
+                officeId?: string
+                autoAssign?: boolean
     discourse:
         syncs:
             active-users:
@@ -13205,6 +13255,260 @@ integrations:
                 warning?: string | undefined
                 error?: string | undefined
                 raw_json: string
+    stripe-app:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
+    stripe-app-sandbox:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
     teamtailor:
         syncs:
             candidates:
