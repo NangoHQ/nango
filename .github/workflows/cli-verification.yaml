@@ -18,6 +18,8 @@ jobs:
         permissions:
             contents: read
             packages: write
+        env:
+            HUSKY: 0
         steps:
             - uses: actions/checkout@v4
 
