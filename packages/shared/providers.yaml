@@ -3541,11 +3541,13 @@ hackerrank-work:
             method: GET
             endpoint: /x/api/v3/users?limit=10&offset=10
     docs: https://docs.nango.dev/integrations/all/hackerrank-work
+    docs_connect: https://docs.nango.dev/integrations/all/hackerrank-work/connect
     credentials:
         username:
             type: string
             title: API Key
             description: Your HackerRank Work API Key
+            doc_section: '#step-1-finding-hackerrank-api-key'
         password:
             type: string
             title: ''
@@ -3902,12 +3904,14 @@ helpscout-docs:
             method: GET
             endpoint: /v1/sites
     docs: https://docs.nango.dev/integrations/all/helpscout
+    docs_connect: https://docs.nango.dev/integrations/all/helpscout-docs/connect
     credentials:
         username:
             type: string
             title: API Key
             description: Your Help Scout Docs API Key
             secret: true
+            doc_section: '#step-1-finding-help-scout-api-key'
         password:
             type: string
             title: ''
@@ -4665,18 +4669,20 @@ mixpanel:
     auth_mode: BASIC
     proxy:
         base_url: https://mixpanel.com
-    docs: https://docs.nango.dev/integrations/all/mixpanel
     credentials:
+        # https://developer.mixpanel.com/reference/service-accounts
         username:
             type: string
-            title: Service Account username
+            title: Service Account Username
             description: Mixpanel Service Account Username
+            doc_section: '#step-1-finding-mixpanel-api-key'
         password:
             type: string
             title: Service Account Secret
-            description: Mixpanel Service Account secret
-            # https://developer.mixpanel.com/reference/service-accounts
-            # Mixpanel is using basic auth with service account username and secret
+            description: Mixpanel Service Account Secret
+            doc_section: '#step-1-finding-mixpanel-api-key'
+    docs: https://docs.nango.dev/integrations/all/mixpanel
+    docs_connect: https://docs.nango.dev/integrations/all/mixpanel/connect
 
 miro:
     display_name: Miro
@@ -5145,11 +5151,13 @@ pendo:
         headers:
             x-pendo-integration-key: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pendo
+    docs_connect: https://docs.nango.dev/integrations/all/pendo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Pendo account
+            doc_section: '#step-1-finding-pendo-api-key'
 
 pennylane:
     display_name: Pennylane
@@ -5471,6 +5479,7 @@ posthog:
             method: GET
             endpoint: /api/users/@me
     docs: https://docs.nango.dev/integrations/all/posthog
+    docs_connect: https://docs.nango.dev/integrations/all/posthog/connect
     connection_config:
         subdomain:
             type: string
@@ -5485,6 +5494,7 @@ posthog:
             type: string
             title: API Key
             description: The API key for your PostHog account
+            doc_section: '#step-1-finding-your-posthog-api-key'
 
 productboard:
     display_name: Productboard
@@ -6107,17 +6117,20 @@ shipstation:
             method: GET
             endpoint: /users
     docs: https://docs.nango.dev/integrations/all/shipstation
+    docs_connect: https://docs.nango.dev/integrations/all/shipstation/connect
     credentials:
         username:
             type: string
             title: API Key
-            description: Your shipstation API key
+            description: Your ShipStation API key
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Shipstation API secret
             # https://www.shipstation.com/docs/api/requirements/#authentication
             # Shipstation is using basic auth with API key and secret
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
 
 shopify:
     display_name: Shopify
@@ -7019,16 +7032,31 @@ unanet:
             method: GET
             endpoint: /api/projects
     docs: https://docs.nango.dev/integrations/all/unanet
+    docs_connect: https://docs.nango.dev/integrations/all/unanet/connect
     connection_config:
         firmId:
             type: string
             title: Firm ID
             description: The firm ID of your Unanet instance
+            doc_section: '#step-2-finding-the-firm-id'
         apiKey:
             type: string
             title: API Key
             description: The API key of your Unanet instance
             secret: true
+            doc_section: '#step-3-finding-the-api-key'
+    credentials:
+        username:
+            type: string
+            title: User name
+            description: Your Unanet username
+            doc_section: '#step-1-finding-username-and-password'
+        password:
+            type: string
+            title: Password
+            description: Your Unanet password
+            default_value: ''
+            doc_section: '#step-1-finding-username-and-password'
 
 unauthenticated:
     display_name: Unauthenticated
