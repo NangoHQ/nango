@@ -3861,7 +3861,7 @@ helpscout-docs:
         base_url: https://docsapi.helpscout.net
         verification:
             method: GET
-            endpoint: /v1/search/articles?page=2
+            endpoint: /v1/sites
     docs: https://docs.nango.dev/integrations/all/helpscout
     credentials:
         username:
@@ -5823,9 +5823,6 @@ sendgrid:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
-        verification:
-            method: GET
-            endpoint: /v3/validations/email/jobs
     docs: https://docs.nango.dev/integrations/all/sendgrid
     credentials:
         apiKey:
