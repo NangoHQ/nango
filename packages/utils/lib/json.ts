@@ -1,5 +1,6 @@
 import safeStringify from 'fast-safe-stringify';
 import truncateJsonPkg from 'truncate-json';
+import { truncateBytes } from './string.js';
 
 export const MAX_LOG_PAYLOAD = 99_000; // in  bytes
 
@@ -37,10 +38,11 @@ export function stringifyAndTruncateValue(value: any, maxSize: number = MAX_LOG_
         return 'undefined';
     }
 
-    let msg = typeof value === 'string' ? value : truncateJsonString(stringifyObject(value), maxSize);
+    const msg = typeof value === 'string' ? value : truncateJsonString(stringifyObject(value), maxSize);
 
-    if (msg && msg.length > maxSize) {
-        msg = `${msg.substring(0, maxSize)}... (truncated)`;
+    const truncated = truncateBytes(msg, maxSize);
+    if (truncated !== msg) {
+        return `${truncated}... (truncated)`;
     }
 
     return msg;

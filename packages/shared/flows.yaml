@@ -1,4 +1,48 @@
 integrations:
+    aircall:
+        actions:
+            create-user:
+                description: Creates a user in Aircall.
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: CreateUser
+            delete-user:
+                description: Deletes a user in Aircall
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Aircall.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: string
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     aircall-basic:
         actions:
             create-user:
@@ -2676,6 +2720,56 @@ integrations:
                 license?: string
                 officeId?: string
                 autoAssign?: boolean
+    dialpad-sandbox:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Dialpad
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Dialpad
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: DialpadCreateUser
+            delete-user:
+                description: Deletes a user in Dialpad by email
+                endpoint:
+                    method: DELETE
+                    path: /users/email
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DialpadCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                license?: string
+                officeId?: string
+                autoAssign?: boolean
     discourse:
         syncs:
             active-users:
@@ -3497,16 +3591,17 @@ integrations:
                 is_escalated: boolean
     front:
         syncs:
-            list-conversations:
+            conversations:
                 runs: every day
                 description: List the conversations in the company in reverse chronological order.
                 output: Conversation
                 endpoint:
                     method: GET
                     path: /conversations
+                    group: Conversations
                 track_deletes: true
                 sync_type: full
-                version: 1.0.1
+                version: 1.0.2
         actions:
             conversation:
                 description: >-
@@ -4301,6 +4396,23 @@ integrations:
                 endpoint:
                     method: GET
                     path: /tickets
+                    group: Tickets
+                version: 1.0.1
+        actions:
+            create-ticket:
+                description: |
+                    Creates a new ticket
+                input: CreateTicketInput
+                scopes:
+                    - tickets:write
+                    - account:read
+                    - customers:write
+                    - customers:read
+                endpoint:
+                    method: POST
+                    path: /ticket
+                    group: Tickets
+                output: Ticket
         models:
             Ticket:
                 id: number
@@ -4313,15 +4425,15 @@ integrations:
                     sms | twitter | twitter-direct-message | whatsapp | yotpo-review
                 closed_datetime: string | null
                 created_datetime: string | null
-                excerpt: string
+                excerpt?: string | undefined
                 external_id: string | null
                 from_agent: boolean
-                integrations: array | null
+                integrations?: array | null | undefined
                 is_unread: boolean
                 language: string | null
                 last_message_datetime: string | null
                 last_received_message_datetime: string | null
-                messages_count: number
+                messages_count?: number | undefined
                 messages: Message[]
                 meta: object | null
                 opened_datetime: string | null
@@ -4334,7 +4446,7 @@ integrations:
                       uri: string | null
                       decoration: object | null
                       created_datetime: string | null
-                      deleted_datetime: string | null
+                      deleted_datetime?: string | null | undefined
                 spam: boolean | null
                 trashed_datetime: string | null
                 updated_datetime: string | null
@@ -4378,8 +4490,8 @@ integrations:
                 public: boolean
                 from_agent: boolean
                 sender: RecieverSender
-                receiver: RecieverSender
-                attachments: Attachment[]
+                receiver: RecieverSender | null
+                attachments: Attachment[] | null
                 meta: object | null
                 headers: object | null
                 actions: array | null
@@ -4389,8 +4501,8 @@ integrations:
                 failed_datetime: string | null
                 last_sending_error: object | null
                 deleted_datetime: string | null
-                replied_by: string | null
-                replied_to: string | null
+                replied_by?: string | null | undefined
+                replied_to?: string | null | undefined
             AssigneeUser:
                 id: number
                 firstname: string
@@ -4418,6 +4530,21 @@ integrations:
                 content_type: string
                 public: boolean
                 extra: string | null
+            CreateTicketInput:
+                customer:
+                    phone_number: string
+                    email?: string | undefined
+                ticket:
+                    messages: CreateTicketMessage[]
+            CreateTicketMessage:
+                attachments:
+                    - url: string
+                      name: string
+                      size: number
+                      content_type: string
+                body_html: string
+                body_text: string
+                id: string
     greenhouse-basic:
         syncs:
             applications:
@@ -6334,6 +6461,111 @@ integrations:
                 attributes: object
                 relationships: object
                 links: object
+    lastpass:
+        actions:
+            create-user:
+                description: Creates a user in Lastpass.
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: LastPassCreateUser
+            delete-user:
+                description: Deletes a user in Lastpass.
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: EmailEntity
+        syncs:
+            users:
+                runs: every day
+                description: |
+                    Fetches a list of users from Lastpass.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            EmailEntity:
+                email: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            LastPassCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                groups?: string[]
+                duousername?: string
+                securidusername?: string
+                password?: string
+                password_reset_required?: boolean
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    lattice:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Lattice
+                output: User
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+    lattice-scim:
+        actions:
+            create-user:
+                description: Creates a user in Lattice
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: CreateUser
+            disable-user:
+                description: Disables a user in Lattice
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
     lever:
         actions:
             create-note:
@@ -8883,6 +9115,17 @@ integrations:
                     isAnonymized?: boolean
                     opportunityLocation?: string
     linear:
+        actions:
+            create-issue:
+                description: Create an issue in Linear
+                input: CreateIssue
+                output: LinearIssue
+                endpoint:
+                    method: POST
+                    path: /issues
+                    group: Issues
+                scopes:
+                    - issues:create
         syncs:
             issues:
                 runs: every 5min
@@ -8892,7 +9135,9 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /linear/issues
+                    path: /issues
+                    group: Issues
+                version: 1.0.0
             projects:
                 runs: every 5min
                 description: |
@@ -8901,7 +9146,9 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /linear/projects
+                    path: /projects
+                    group: Projects
+                version: 1.0.0
             teams:
                 runs: every 5min
                 description: |
@@ -8910,7 +9157,9 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /linear/teams
+                    path: /teams
+                    group: Teams
+                version: 1.0.0
             roadmaps:
                 runs: every 5min
                 description: |
@@ -8919,7 +9168,19 @@ integrations:
                 sync_type: incremental
                 endpoint:
                     method: GET
-                    path: /linear/roadmaps
+                    path: /roadmaps
+                    group: Roadmaps
+                version: 1.0.0
+            milestones:
+                runs: every 6min
+                description: |
+                    Fetches a list of milesontes from Linear
+                output: LinearMilestone
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /milestones
+                    group: Milestones
         models:
             LinearIssue:
                 id: string
@@ -8928,40 +9189,64 @@ integrations:
                 createdAt: string
                 updatedAt: string
                 description: string | null
-                dueDate: date | null
+                dueDate: string | null
                 projectId: string | null
                 teamId: string
                 title: string
                 status: string
+            CreateIssue:
+                teamId: string
+                title: string
+                description?: string
+                projectId?: string
+                milestoneId?: string
+                assigneeId?: string
+                priority?: number
+                parentId?: string
+                estimate?: number
+                dueDate?: string
             LinearTeam:
                 id: string
                 name: string
                 description: string | null
-                createdAt: date
-                updatedAt: date
+                createdAt: string
+                updatedAt: string
             LinearProject:
                 id: string
                 url: string
                 name: string
                 description: string | null
-                createdAt: date
-                updatedAt: date
+                createdAt: string
+                updatedAt: string
                 teamId: string
             LinearRoadmap:
                 id: string
                 name: string
                 description: string | null
-                createdAt: date
-                updatedAt: date
+                createdAt: string
+                updatedAt: string
                 teamId: string
                 projectIds: string
+            LinearMilestone:
+                id: string
+                name: string
+                progress: number
+                description: string | null
+                createdAt: string
+                updatedAt: string
+                status: string
+                project:
+                    id: string
+                    name: string
     linkedin:
         actions:
             post:
                 description: Create a linkedin post with an optional video
                 input: LinkedinVideoPost
                 output: CreateLinkedInPostWithVideoResponse
-                endpoint: POST /videos
+                endpoint:
+                    method: POST
+                    path: /videos
                 scopes:
                     - openid
                     - profile
@@ -9482,7 +9767,9 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /metadata
+                    path: /contents
+                    group: Contents
+                version: 1.0.0
             users:
                 runs: every day
                 description: |
@@ -9493,6 +9780,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /users
+                    group: Users
             databases:
                 runs: every 1h
                 track_deletes: true
@@ -9505,7 +9793,9 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /notion/database
+                    path: /databases
+                    group: Databases
+                version: 1.0.0
         actions:
             fetch-rich-page:
                 description: >
@@ -9521,7 +9811,9 @@ integrations:
                 output: RichPage
                 endpoint:
                     method: GET
-                    path: /fetch-rich-page
+                    path: /pages/single
+                    group: Pages
+                version: 1.0.0
             fetch-database:
                 description: >-
                     Fetch a specific Notion database by passing in the database id. This
@@ -9531,8 +9823,9 @@ integrations:
                 output: Database
                 endpoint:
                     method: GET
-                    path: /fetch-database
-                version: 1.0.0
+                    path: /databases/single
+                    group: Databases
+                version: 1.0.1
             fetch-content-metadata:
                 description: >
                     Retrieve the entity type as well as an id for a Notion entity to later
@@ -9543,7 +9836,9 @@ integrations:
                 output: ContentMetadata
                 endpoint:
                     method: GET
-                    path: /fetch-content-metadata
+                    path: /contents/single
+                    group: Contents
+                version: 1.0.0
         models:
             RichPageInput:
                 pageId: string
@@ -12960,6 +13255,260 @@ integrations:
                 warning?: string | undefined
                 error?: string | undefined
                 raw_json: string
+    stripe-app:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
+    stripe-app-sandbox:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
     teamtailor:
         syncs:
             candidates:
@@ -13692,6 +14241,18 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.2
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in Xero
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: General Ledger
+                scopes:
+                    - accounting.journals.read
             payments:
                 description: |
                     Fetches all payments in Xero. Incremental sync.
@@ -14099,6 +14660,30 @@ integrations:
                 tenantName: string
                 createdDateUtc: string
                 updatedDateUtc: string
+            GeneralLedger:
+                id: string
+                date: string | null
+                number: number
+                createdDate: string | null
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                accountId: string
+                accountCode: string
+                accountName: string
+                description?: string | undefined
+                netAmount: number
+                grossAmount: number
+                taxAmount: number
+                taxType?: string | undefined
+                taxName?: string | undefined
+                trackingCategories: TrackingCategory[]
+            TrackingCategory:
+                name: string
+                option: string
+                trackingCategoryId: string
+                trackingOptionId: string
+                options: string[]
     zendesk:
         syncs:
             tickets:

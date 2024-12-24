@@ -11,7 +11,6 @@ import proxyController from './controllers/proxy.controller.js';
 import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
-import webhookController from './controllers/webhook.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
@@ -109,6 +108,8 @@ import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js'
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
 import { postRollout } from './controllers/fleet/postRollout.js';
+import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
+import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 
 export const router = express.Router();
 
@@ -194,7 +195,7 @@ publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionO
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookController.receive.bind(proxyController));
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
 
 // API Admin routes
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
@@ -218,7 +219,7 @@ publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegr
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
-publicAPI.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
+publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
 publicAPI.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadataLegacy.bind(connectionController));

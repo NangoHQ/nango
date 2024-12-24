@@ -1,9 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import environmentService from '../services/environment.service.js';
 import type { Connection } from '../models/Connection.js';
-import type { DBEnvironment } from '@nangohq/types';
 import get from 'lodash-es/get.js';
 
 export enum UserType {
@@ -147,17 +145,6 @@ export function getGlobalWebhookReceiveUrl() {
     return baseUrl + '/webhook';
 }
 
-export async function getOauthCallbackUrl(environmentId?: number) {
-    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
-
-    if (environmentId != null) {
-        const environment: DBEnvironment | null = await environmentService.getById(environmentId);
-        return environment?.callback_url || globalCallbackUrl;
-    }
-
-    return globalCallbackUrl;
-}
-
 /**
  * Get any custom path for the websockets server.
  * Defaults to '/' for backwards compatibility
@@ -237,7 +224,7 @@ export function extractValueByPath(obj: Record<string, any>, path: string): any 
     return get(obj, path);
 }
 
-export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
+export function connectionCopyWithParsedConnectionConfig(connection: Pick<Connection, 'connection_config'>) {
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;

@@ -39,7 +39,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     const { environment, account } = res.locals;
     const environmentId = environment.id;
 
-    const config = await configService.getConfigIdByProviderConfigKey(body.providerConfigKey, environmentId);
+    const config = await configService.getIdByProviderConfigKey(environmentId, body.providerConfigKey);
     if (!config) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
         return;

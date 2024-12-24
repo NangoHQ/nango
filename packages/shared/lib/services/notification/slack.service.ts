@@ -596,7 +596,7 @@ export class SlackService {
         environment_id: number;
         provider: string;
     }): Promise<void> {
-        await db.knex.transaction(async (trx) => {
+        const update = await db.knex.transaction(async (trx) => {
             const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
             if (!slackNotificationsEnabled) {
                 return;
@@ -638,7 +638,15 @@ export class SlackService {
                     connection_list,
                     updated_at: new Date()
                 });
+            return {
+                id,
+                slackTimestamp: slack_timestamp,
+                adminSlackTimestamp: admin_slack_timestamp,
+                connectionCount: connection_list.length
+            };
+        });
 
+        if (update) {
             // we report resolution to the slack channel which could be either
             // 1) The slack notification is resolved, connection_list === 0
             // 2) The list of failing connections has been decremented
@@ -649,11 +657,11 @@ export class SlackService {
                 originalActivityLogId,
                 environment_id,
                 provider,
-                slack_timestamp as string,
-                admin_slack_timestamp as string,
-                connection_list.length
+                update.slackTimestamp as string,
+                update.adminSlackTimestamp as string,
+                update.connectionCount
             );
-        });
+        }
     }
 
     async closeAllOpenNotificationsForEnv(environment_id: number): Promise<void> {

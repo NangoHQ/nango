@@ -12,7 +12,7 @@ export function generateWsseSignature(username: string, password: string): strin
             .update(nonce + timestamp + password)
             .digest('hex');
 
-        const passwordDigest = Buffer.from(sha1Hash, 'hex').toString('base64');
+        const passwordDigest = Buffer.from(sha1Hash).toString('base64');
 
         const token = `UsernameToken Username="${username}", PasswordDigest="${passwordDigest}", Nonce="${nonce}", Created="${timestamp}"`;
 

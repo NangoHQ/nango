@@ -3,9 +3,9 @@ import db from '@nangohq/database';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/types';
 import { LogActionEnum } from '../models/Telemetry.js';
-import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
+import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 
 const TABLE = '_nango_environments';
 
@@ -84,20 +84,6 @@ class EnvironmentService {
             .first();
 
         return result || null;
-    }
-
-    async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
-        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ uuid: environment_uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        const accountId = result[0].account_id;
-
-        const uuid = await accountService.getUUIDFromAccountId(accountId);
-
-        return uuid;
     }
 
     async getAccountAndEnvironmentByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
@@ -184,16 +170,6 @@ class EnvironmentService {
         };
     }
 
-    async getIdByUuid(uuid: string): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
-    }
-
     async getById(id: number): Promise<DBEnvironment | null> {
         try {
             const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id });
@@ -273,7 +249,15 @@ class EnvironmentService {
 
     async createDefaultEnvironments(accountId: number): Promise<void> {
         for (const environment of defaultEnvironments) {
-            await this.createEnvironment(accountId, environment);
+            const newEnv = await this.createEnvironment(accountId, environment);
+            if (newEnv) {
+                await externalWebhookService.update(newEnv.id, {
+                    alwaysSendWebhook: true,
+                    sendAuthWebhook: true,
+                    sendRefreshFailedWebhook: true,
+                    sendSyncFailedWebhook: true
+                });
+            }
         }
     }
 
@@ -285,21 +269,6 @@ class EnvironmentService {
         }
 
         return result[0].name;
-    }
-
-    /**
-     * Get Environment Id For Account Assuming Prod
-     * @desc legacy function to get the environment id for an account assuming prod
-     * while the transition is being made from account_id to environment_id
-     */
-    async getEnvironmentIdForAccountAssumingProd(accountId: number): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ account_id: accountId, name: 'prod' });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
@@ -513,6 +482,17 @@ class EnvironmentService {
             });
 
         return true;
+    }
+
+    async getOauthCallbackUrl(environmentId?: number) {
+        const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+        if (environmentId != null) {
+            const environment: DBEnvironment | null = await this.getById(environmentId);
+            return environment?.callback_url || globalCallbackUrl;
+        }
+
+        return globalCallbackUrl;
     }
 }
 

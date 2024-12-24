@@ -107,9 +107,9 @@
                         "guides/customize/create-a-custom-integration",
                         "guides/customize/extend-an-integration-template",
                         "guides/customize/contribute-an-api",
+                        "guides/customize/unify-apis",
                         "guides/customize/handle-rate-limits",
                         "guides/customize/handle-large-datasets",
-                        "guides/customize/migrate-integration-configuration",
                         "guides/customize/validate-input-and-output"
                     ]
                 },
@@ -119,6 +119,7 @@
                         "guides/proxy-requests-to-an-api",
                         "guides/receive-webhooks-from-an-api",
                         "guides/authorize-an-api-from-your-app-with-custom-ui",
+                        "guides/execute-scripts-based-on-events",
                         "guides/otlp-export",
                         "guides/whitelabel-oauth",
                         "guides/store-customer-specific-data",
@@ -143,7 +144,6 @@
                         "understand/concepts/syncs",
                         "understand/concepts/actions",
                         "understand/concepts/webhooks",
-                        "understand/concepts/events",
                         "understand/concepts/proxy",
                         "understand/concepts/environments"
                     ]
@@ -320,6 +320,7 @@
                 "integrations/all/klipfolio",
                 "integrations/all/kustomer",
                 "integrations/all/lastpass",
+                "integrations/all/lattice",
                 "integrations/all/lessonly",
                 "integrations/all/lever",
                 "integrations/all/linkedin",
