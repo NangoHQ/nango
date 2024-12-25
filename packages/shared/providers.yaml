@@ -1253,6 +1253,7 @@ builtwith:
         query:
             KEY: ${apiKey}
     docs: https://docs.nango.dev/integrations/all/builtwith
+    docs_connect: https://docs.nango.dev/integrations/all/builtwith/connect
     credentials:
         apiKey:
             type: string
