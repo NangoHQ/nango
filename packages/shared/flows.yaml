@@ -116,6 +116,14 @@ integrations:
                 scopes:
                     - schema.bases:read
         actions:
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes: user.email:read
             create-webhook:
                 description: Create a webhook for a particular base
                 input: CreateWebhook
@@ -220,6 +228,9 @@ integrations:
             DeleteWebhook:
                 baseId: string
                 webhookId: string
+            UserInformation:
+                id: string
+                email: string | null
     algolia:
         actions:
             create-contacts:
@@ -5269,6 +5280,13 @@ integrations:
                     - oauth
                     - settings.currencies.read
         actions:
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
             fetch-properties:
                 description: Fetch the properties of a specified object
                 input: InputProperty
@@ -5694,6 +5712,9 @@ integrations:
                 roleIds: string[]
                 secondaryTeamIds: string[]
                 superAdmin: boolean
+            UserInformation:
+                id: number
+                email: string
             HubspotKnowledgeBase:
                 id: string
                 title: string
