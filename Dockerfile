@@ -9,7 +9,8 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:20.12.2-bullseye-slim AS build
+FROM node:20.18.1-bookworm-slim AS build
+
 
 # Setup the app WORKDIR
 WORKDIR /app/tmp
@@ -80,8 +81,10 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:20.12.2-bullseye-slim as web
+FROM node:20.18.1-bookworm-slim as web
 
+# Install a more recent npm
+RUN npm install -g npm@10.9.2
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
