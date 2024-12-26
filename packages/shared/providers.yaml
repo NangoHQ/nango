@@ -1261,6 +1261,7 @@ builtwith:
             description: The API key for your BuiltWith account
             example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
             format: uuid
+            doc_section: '#step-1-finding-your-api-key'
 
 cal-com-v1:
     display_name: Cal.com (v1)
