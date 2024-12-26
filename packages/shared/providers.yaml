@@ -5955,6 +5955,26 @@ sap-success-factors:
             secret: true
             doc_section: '#step-4-generating-your-saml-assertion'
 
+scrapedo:
+    display_name: Scrape.do
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.scrape.do
+        query:
+            token: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/scrapedo
+    docs_connect: https://docs.nango.dev/integrations/all/scrapedo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Scrape.do account
+            example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 salesloft:
     display_name: Salesloft
     categories:
