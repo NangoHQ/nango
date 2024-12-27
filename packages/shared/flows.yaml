@@ -2175,6 +2175,13 @@ integrations:
                 input: IdEntity
                 scopes:
                     - admin
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         models:
             IdEntity:
                 id: string
@@ -2186,6 +2193,9 @@ integrations:
                 firstName: string
                 lastName: string
             CreateUser:
+                email: string
+            UserInformation:
+                id: string
                 email: string
             Event:
                 id: string
@@ -12149,6 +12159,13 @@ integrations:
                     path: /opportunities
                     group: Opportunities
                 version: 1.0.0
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         syncs:
             accounts:
                 runs: every hour
@@ -12248,6 +12265,9 @@ integrations:
                 salutation: string | null
                 title: string | null
                 last_modified_date: string
+            UserInformation:
+                id: string
+                email: string
             CommonContactInput:
                 first_name?: string | undefined
                 account_id?: string | undefined
@@ -12635,6 +12655,13 @@ integrations:
                     path: /opportunities
                     group: Opportunities
                 version: 1.0.0
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         syncs:
             accounts:
                 runs: every hour
@@ -12734,6 +12761,9 @@ integrations:
                 salutation: string | null
                 title: string | null
                 last_modified_date: string
+            UserInformation:
+                id: string
+                email: string
             CommonContactInput:
                 first_name?: string | undefined
                 account_id?: string | undefined
@@ -15413,6 +15443,15 @@ integrations:
                 scopes:
                     - user:write
                     - user:write:admin
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes:
+                    - user:read:user
             delete-user:
                 description: Deletes a user in Zoom. Requires Pro account or higher
                 endpoint:
@@ -15511,6 +15550,9 @@ integrations:
                 id: string
                 firstName: string
                 lastName: string
+                email: string
+            UserInformation:
+                id: string
                 email: string
             Meeting:
                 id: string
