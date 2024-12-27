@@ -3274,21 +3274,13 @@ gong-scim:
     disable_pkce: true
     token_request_auth_method: basic
     proxy:
-        base_url: ${connectionConfig.api_base_url_for_customer} || https://provisioning.gong.io/scim
+        base_url: https://provisioning.gong.io/scim
         retry:
             after: 'retry-after'
         headers:
             accept: application/json
             content-type: application/json
     docs: https://docs.nango.dev/integrations/all/gong
-    connection_config:
-        api_base_url_for_customer:
-            type: string
-            title: API Base URL
-            description: The base URL of your Gong account
-            format: uri
-            pattern: '^https?://.*$'
-            example: https://provisioning.gong.io/scim
 
 google:
     display_name: Google
