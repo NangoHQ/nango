@@ -14234,6 +14234,73 @@ integrations:
             Attachment:
                 name: string
                 data: string
+    workday:
+        syncs:
+            employees:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Employee
+                description: Fetches Employees
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Employees
+            groups:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Group
+                description: Fetches Company groups
+                endpoint:
+                    method: GET
+                    path: /groups
+                    group: Groups
+            locations:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Location
+                description: Fetches Company locations
+                endpoint:
+                    method: GET
+                    path: /locations
+                    group: Locations
+        models:
+            Employee:
+                id: string
+                user_name: string | null
+                first_name?: string
+                last_name?: string
+                email: string
+                role: string
+                department: string
+                site: string
+                country?: string | null
+                external_id?: string
+                employment_relationship?: string
+                phone_number: string | null
+            Group:
+                id: string
+                active: boolean
+                created_at: string | null
+                name: string
+            Location:
+                id: string
+                name: string
+                description: string | null
+                city: string | null
+                state: CompanyLocationState | null
+                country:
+                    name: string
+                    iso_code: string
+                zip_code: string
+                address: string
+                phone_number: string | null
+            CompanyLocationState:
+                name: string
+                abbrev: string
+                iso_code: string
     xero:
         syncs:
             contacts:
