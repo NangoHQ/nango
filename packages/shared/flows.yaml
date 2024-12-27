@@ -9147,6 +9147,7 @@ integrations:
                     group: Issues
                 scopes:
                     - issues:create
+                version: 1.0.0
         syncs:
             issues:
                 runs: every 5min
