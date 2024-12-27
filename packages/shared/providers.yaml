@@ -3255,6 +3255,25 @@ gong-oauth:
             format: uri
             pattern: '^https?://.*$'
 
+gong-scim:
+    display_name: Gong (SCIM API)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://provisioning.gong.io/scim/v2
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+            User-Agent: custom-scim
+    docs: https://docs.nango.dev/integrations/all/gong
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Gong scim account
+
 google:
     display_name: Google
     auth_mode: OAUTH2
