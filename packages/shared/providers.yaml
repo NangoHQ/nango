@@ -3261,7 +3261,7 @@ gong-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://provisioning.gong.io/scim/v2
+        base_url: https://provisioning.gong.io/scim
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
