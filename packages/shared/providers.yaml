@@ -3280,6 +3280,7 @@ gong-scim:
         headers:
             accept: application/json
             content-type: application/json
+            user-agent: custom-scim
     docs: https://docs.nango.dev/integrations/all/gong
 
 google:
