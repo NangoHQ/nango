@@ -3259,28 +3259,17 @@ gong-scim:
     display_name: Gong (SCIM API)
     categories:
         - productivity
-    auth_mode: OAUTH2
-    authorization_url: https://app.gong.io/oauth2/authorize
-    token_url: https://app.gong.io/oauth2/generate-customer-token
-    token_response_metadata:
-        - api_base_url_for_customer
-    authorization_params:
-        response_type: code
-        access_type: offline
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
-    disable_pkce: true
-    token_request_auth_method: basic
+    auth_mode: API_KEY
     proxy:
         base_url: https://provisioning.gong.io/scim
-        retry:
-            after: 'retry-after'
         headers:
-            accept: application/json
-            content-type: application/json
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/gong
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Gong scim account
 
 google:
     display_name: Google
