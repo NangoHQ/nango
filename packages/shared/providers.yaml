@@ -5683,7 +5683,7 @@ readwise:
     proxy:
         base_url: https://readwise.io/api/v2
         headers:
-            Authorization: Token ${apiKey}
+            authorization: Token ${apiKey}
         verification:
             method: GET
             endpoint: /auth
@@ -5704,7 +5704,7 @@ readwise-reader:
     proxy:
         base_url: https://readwise.io/api/v3
         headers:
-            Authorization: Token ${apiKey}
+            authorization: Token ${apiKey}
         verification:
             method: GET
             endpoint: https://readwise.io/api/v2/auth
