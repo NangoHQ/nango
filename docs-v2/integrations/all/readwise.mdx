@@ -1,0 +1,77 @@
+---
+title: Readwise
+sidebarTitle: Readwise
+provider: readwise
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/readwise/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/readwise/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Free trial available |
+| Paid test account | ✅ | Same as dev account |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+## Setup guide
+
+1. Go to [readwise.io/access_token](https://readwise.io/access_token)
+2. Copy your API token
+3. Use this token as your API key in Nango
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/readwise.mdx)</Note>
+
+## Available APIs
+
+Readwise offers two distinct APIs:
+
+### Readwise API (v2)
+- **Provider name**: `readwise`
+- **Base URL**: `https://readwise.io/api/v2`
+- **Use case**: Access highlights, books, and reading data
+- [API Reference](https://readwise.io/api/v2/docs)
+
+### Reader API (v3)
+- **Provider name**: `readwise-reader`
+- **Base URL**: `https://readwise.io/api/v3`
+- **Use case**: Save and fetch documents in Readwise Reader
+- [API Reference](https://readwise.io/reader_api)
+
+## Useful links
+
+- [Readwise API docs](https://readwise.io/api_deets)
+- [Readwise API reference (v2)](https://readwise.io/api/v2/docs)
+- [Reader API reference (v3)](https://readwise.io/reader_api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/readwise.mdx)</Note>
+
+## API gotchas
+
+### Readwise API (v2)
+- The default base rate is 240 requests per minute (per access token)
+- The `Highlight LIST` and `Book LIST` endpoints are restricted to 20 per minute (per access token)
+- Highlights are de-duped by title/author/text/source_url (including nulls)
+
+### Reader API (v3)
+- The API supports saving new documents to Reader and fetching your documents
+- When creating documents:
+  - The `url` parameter is required but can be a made-up value if you don't have a real URL
+  - If `html` is not provided, the API will attempt to scrape the provided URL
+  - The `should_clean_html` parameter (when `html` is provided) will auto-clean HTML and parse metadata
+  - Document locations can be: new, later, archive or feed
+  - Categories can be: article, email, rss, highlight, note, pdf, epub, tweet or video
+
+### Common
+- Rate limiting information is provided in the `Retry-After` header for 429 responses
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/readwise.mdx)</Note> 
