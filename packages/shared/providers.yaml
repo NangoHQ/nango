@@ -5686,14 +5686,13 @@ readwise:
             Authorization: Token ${apiKey}
         verification:
             method: GET
-            endpoint: /auth/
+            endpoint: /auth
     docs: https://docs.nango.dev/integrations/all/readwise
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Readwise account
-            doc_section: '#step-1-finding-your-api-key'
             
 readwise-reader:
     display_name: Readwise Reader
@@ -5706,16 +5705,15 @@ readwise-reader:
             Authorization: Token ${apiKey}
         verification:
             method: GET
-            endpoint: /auth/
+            endpoint: https://readwise.io/api/v2/auth
         retry:
             after: 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/readwise-reader
+    docs: https://docs.nango.dev/integrations/all/readwise
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Readwise Reader account
-            doc_section: '#step-1-finding-your-api-key'
 
 
 reddit:
