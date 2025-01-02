@@ -53,9 +53,7 @@ async function setupPostgres() {
 }
 
 export async function setup() {
-    console.time('testcontainers');
     await Promise.all([setupPostgres(), setupElasticsearch()]);
-    console.timeEnd('testcontainers');
 }
 
 export const teardown = async () => {
