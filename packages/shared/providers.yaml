@@ -4101,6 +4101,26 @@ kustomer:
             title: API Key
             description: The API key for your Kustomer account
 
+lagrowthmachine:
+    display_name: La Growth Machine
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://apiv2.lagrowthmachine.com
+        query:
+            KEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/lagrowthmachine
+    docs_connect: https://docs.nango.dev/integrations/all/lagrowthmachine/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your La Growth Machine account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-finding-your-api-key'
+
 lastpass:
     display_name: LastPass
     categories:
