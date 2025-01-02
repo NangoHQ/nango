@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import connectionService from '../services/connection.service.js';
 import type { NangoConnection } from '../models/Connection.js';
 import type { AuthCredentials } from '../models/Auth.js';
-import type { DBEnvironment, EndUser } from '@nangohq/types';
+import type { ConnectionConfig, DBEnvironment, EndUser } from '@nangohq/types';
 import { linkConnection } from '../services/endUser.service.js';
 
 export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
@@ -31,23 +31,28 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
     return connectionIds;
 };
 
-export const createConnectionSeed = async (
-    env: DBEnvironment,
-    provider: string,
-    endUser?: EndUser,
-    rest?: {
-        connectionId?: string;
-        rawCredentials?: AuthCredentials;
-        connectionConfig?: any;
-    }
-): Promise<NangoConnection> => {
-    const name = rest?.connectionId ? rest.connectionId : Math.random().toString(36).substring(7);
+export const createConnectionSeed = async ({
+    env,
+    provider,
+    endUser,
+    connectionId,
+    rawCredentials,
+    connectionConfig
+}: {
+    env: DBEnvironment;
+    provider: string;
+    endUser?: EndUser;
+    connectionId?: string;
+    rawCredentials?: AuthCredentials;
+    connectionConfig?: ConnectionConfig;
+}): Promise<NangoConnection> => {
+    const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
         provider: provider,
-        parsedRawCredentials: rest?.rawCredentials || ({} as AuthCredentials),
-        connectionConfig: rest?.connectionConfig || {},
+        parsedRawCredentials: rawCredentials || ({} as AuthCredentials),
+        connectionConfig: connectionConfig || {},
         environmentId: env.id,
         accountId: 0
     });
