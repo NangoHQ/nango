@@ -19,7 +19,14 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
             environmentId: env.id,
             accountId: 0
         });
-        connectionIds.push(...result.map((res) => res.connection.id!));
+
+        for (const res of result) {
+            if (!res.connection.id) {
+                throw new Error('Could not create connection seed');
+            }
+
+            connectionIds.push(res.connection.id);
+        }
     }
     return connectionIds;
 };
@@ -45,14 +52,14 @@ export const createConnectionSeed = async (
         accountId: 0
     });
 
-    if (!result || result[0] === undefined) {
+    if (!result || result[0] === undefined || !result[0].connection.id) {
         throw new Error('Could not create connection seed');
     }
     if (endUser) {
         await linkConnection(db.knex, { endUserId: endUser.id, connection: result[0].connection });
     }
 
-    return { id: result[0].connection.id!, connection_id: name, provider_config_key: provider, environment_id: env.id };
+    return { id: result[0].connection.id, connection_id: name, provider_config_key: provider, environment_id: env.id };
 };
 
 export const deleteAllConnectionSeeds = async (): Promise<void> => {
