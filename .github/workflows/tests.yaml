@@ -31,4 +31,7 @@ jobs:
             - run: npm ci
             - run: npm run ts-build
             - run: npm run test:unit -- --exclude packages/cli/
+
+            - run: docker pull elasticsearch:8.13.0
+            - run: docker pull postgres:15.5-alpine
             - run: npm run test:integration
