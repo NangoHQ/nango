@@ -37,6 +37,7 @@ jobs:
                   push: false
                   context: ./tests/testcontainers
                   file: ./tests/testcontainers/Dockerfile-postgres
+                  load: true
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
@@ -46,6 +47,7 @@ jobs:
                   push: false
                   context: ./tests/testcontainers
                   file: ./tests/testcontainers/Dockerfile-elasticsearch
+                  load: true
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
