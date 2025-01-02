@@ -28,8 +28,28 @@ jobs:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build postgres for cache benefit
+              uses: docker/build-push-action@v6
+              with:
+                  push: false
+                  context: ./tests/testcontainers
+                  file: ./tests/testcontainers/Dockerfile-postgres
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Build elasticsearch for cache benefit
+              uses: docker/build-push-action@v6
+              with:
+                  push: false
+                  context: ./tests/testcontainers
+                  file: ./tests/testcontainers/Dockerfile-elasticsearch
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
             - run: npm ci
             - run: npm run ts-build
             - run: npm run test:unit -- --exclude packages/cli/
-
             - run: npm run test:integration
