@@ -136,7 +136,7 @@ describe(`PATCH ${endpoint}`, () => {
         const env = await seeders.createEnvironmentSeed();
         const unique_key = 'test-update';
         await seeders.createConfigSeed(env, unique_key, 'google');
-        const connections = await seeders.createConnectionSeed(env, unique_key);
+        const connections = await seeders.createConnectionSeed({ env, provider: unique_key });
 
         const { connection_id, provider_config_key } = connections;
 

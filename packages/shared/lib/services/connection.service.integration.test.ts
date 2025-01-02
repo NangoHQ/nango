@@ -79,8 +79,8 @@ describe('Connection service integration tests', () => {
             await createConfigSeed(env, 'google', 'google');
             await createConfigSeed(env, 'notion', 'notion');
 
-            const google = await createConnectionSeed(env, 'google');
-            const notion = await createConnectionSeed(env, 'notion');
+            const google = await createConnectionSeed({ env, provider: 'google' });
+            const notion = await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id
@@ -96,10 +96,10 @@ describe('Connection service integration tests', () => {
             await createConfigSeed(env, 'google', 'google');
             await createConfigSeed(env, 'notion', 'notion');
 
-            const google = await createConnectionSeed(env, 'google');
-            const notion = await createConnectionSeed(env, 'notion');
-            await createConnectionSeed(env, 'notion');
-            await createConnectionSeed(env, 'notion');
+            const google = await createConnectionSeed({ env, provider: 'google' });
+            const notion = await createConnectionSeed({ env, provider: 'notion' });
+            await createConnectionSeed({ env, provider: 'notion' });
+            await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -116,8 +116,8 @@ describe('Connection service integration tests', () => {
 
             await createConfigSeed(env, 'google', 'google');
             await createConfigSeed(env, 'notion', 'notion');
-            const google = await createConnectionSeed(env, 'google');
-            await createConnectionSeed(env, 'notion');
+            const google = await createConnectionSeed({ env, provider: 'google' });
+            await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -133,8 +133,8 @@ describe('Connection service integration tests', () => {
 
             await createConfigSeed(env, 'notion', 'notion');
 
-            const notion = await createConnectionSeed(env, 'notion');
-            await createConnectionSeed(env, 'notion');
+            const notion = await createConnectionSeed({ env, provider: 'notion' });
+            await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -150,8 +150,8 @@ describe('Connection service integration tests', () => {
 
             await createConfigSeed(env, 'notion', 'notion');
 
-            const notion = await createConnectionSeed(env, 'notion');
-            await createConnectionSeed(env, 'notion');
+            const notion = await createConnectionSeed({ env, provider: 'notion' });
+            await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -167,7 +167,7 @@ describe('Connection service integration tests', () => {
 
             await createConfigSeed(env, 'notion', 'notion');
 
-            const notionError = await createConnectionSeed(env, 'notion');
+            const notionError = await createConnectionSeed({ env, provider: 'notion' });
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
@@ -175,7 +175,7 @@ describe('Connection service integration tests', () => {
                 log_id: Math.random().toString(36).substring(7),
                 active: true
             });
-            await createConnectionSeed(env, 'notion');
+            await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -191,7 +191,7 @@ describe('Connection service integration tests', () => {
 
             await createConfigSeed(env, 'notion', 'notion');
 
-            const notionError = await createConnectionSeed(env, 'notion');
+            const notionError = await createConnectionSeed({ env, provider: 'notion' });
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
@@ -199,7 +199,7 @@ describe('Connection service integration tests', () => {
                 log_id: Math.random().toString(36).substring(7),
                 active: true
             });
-            const notionOK = await createConnectionSeed(env, 'notion');
+            const notionOK = await createConnectionSeed({ env, provider: 'notion' });
 
             const dbConnections = await connectionService.listConnections({
                 environmentId: env.id,
@@ -217,9 +217,9 @@ describe('Connection service integration tests', () => {
 
             const config = await createConfigSeed(env, 'notion', 'notion');
 
-            await createConnectionSeed(env, 'notion');
+            await createConnectionSeed({ env, provider: 'notion' });
 
-            const notionAuthError = await createConnectionSeed(env, 'notion');
+            const notionAuthError = await createConnectionSeed({ env, provider: 'notion' });
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
@@ -228,7 +228,7 @@ describe('Connection service integration tests', () => {
                 active: true
             });
 
-            const notionSyncError = await createConnectionSeed(env, 'notion');
+            const notionSyncError = await createConnectionSeed({ env, provider: 'notion' });
             const sync = await createSyncSeeds({
                 connectionId: notionSyncError.id!,
                 environment_id: env.id,

@@ -61,7 +61,10 @@ describe(`GET ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'algolia', 'algolia');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        const conn = await seeders.createConnectionSeed(env, 'algolia', endUser, {
+        const conn = await seeders.createConnectionSeed({
+            env,
+            provider: 'algolia',
+            endUser,
             rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
             connectionConfig: { APP_ID: 'TEST' }
         });
@@ -106,13 +109,19 @@ describe(`GET ${endpoint}`, () => {
 
         await seeders.createConfigSeed(env, 'algolia', 'algolia');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        const conn = await seeders.createConnectionSeed(env, 'algolia', endUser, {
+        const conn = await seeders.createConnectionSeed({
+            env,
+            provider: 'algolia',
+            endUser,
             rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
             connectionConfig: { APP_ID: 'TEST' }
         });
 
         await seeders.createConfigSeed(env, 'google', 'google');
-        await seeders.createConnectionSeed(env, 'google', endUser, {
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'google',
+            endUser,
             connectionId: conn.connection_id,
             rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' },
             connectionConfig: { APP_ID: 'TEST' }

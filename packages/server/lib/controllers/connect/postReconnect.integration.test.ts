@@ -55,7 +55,7 @@ describe(`POST ${endpoint}`, () => {
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
-        const connection = await seeders.createConnectionSeed(env, 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
         await linkConnection(db.knex, { endUserId: endUser.id, connection });
 
         const res = await api.fetch(endpoint, {
@@ -84,7 +84,7 @@ describe(`POST ${endpoint}`, () => {
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
-        const connection = await seeders.createConnectionSeed(env, 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -108,7 +108,7 @@ describe(`POST ${endpoint}`, () => {
 
         // Create an initial connection
         await seeders.createConfigSeed(env, 'github', 'github');
-        const connection = await seeders.createConnectionSeed(env, 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
