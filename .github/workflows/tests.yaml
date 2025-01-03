@@ -23,13 +23,26 @@ jobs:
                     POSTGRES_USER: postgres
                     POSTGRES_PASSWORD: postgres
                     POSTGRES_DB: nango_test
+                ports:
+                    - 5432:5432
                 options: >-
                     --health-cmd pg_isready
                     --health-interval 2s
                     --health-timeout 2s
                     --health-retries 5
+
+            elasticsearch:
+                image: elasticsearch:8.13.0
+                env:
+                    discovery.type: single-node
+                    xpack.security.enabled: false
+                options: >-
+                    --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
+                    --health-interval 2s
+                    --health-timeout 2s
+                    --health-retries 5
                 ports:
-                    - 5432:5432
+                    - 9200:9200
 
         steps:
             - name: Checkout
@@ -46,4 +59,17 @@ jobs:
             - run: npm ci
             - run: npm run ts-build
             - run: npm run test:unit -- --exclude packages/cli/
+
             - run: npm run test:integration
+              env:
+                  NANGO_DB_PASSWORD: postgres
+                  NANGO_DB_HOST: localhost
+                  NANGO_DB_USER: postgres
+                  NANGO_DB_PORT: 5432
+                  NANGO_DB_NAME: nango_test
+                  TELEMETRY: false
+                  RECORDS_DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/nango_test'
+                  NANGO_LOGS_ES_URL: 'http://localhost:9200'
+                  NANGO_LOGS_ES_USER: ''
+                  NANGO_LOGS_ES_PWD: ''
+                  NANGO_LOGS_ENABLED: true
