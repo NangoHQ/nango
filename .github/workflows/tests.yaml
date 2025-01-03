@@ -25,8 +25,8 @@ jobs:
                     POSTGRES_DB: nango_test
                 options: >-
                     --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
+                    --health-interval 2s
+                    --health-timeout 2s
                     --health-retries 5
                 ports:
                     - 5432:5432
