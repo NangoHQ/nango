@@ -37,7 +37,7 @@ jobs:
                     discovery.type: single-node
                     xpack.security.enabled: false
                 options: >-
-                    --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
+                    --health-cmd "curl http://localhost:9200/_cluster/health"
                     --health-interval 2s
                     --health-timeout 2s
                     --health-retries 5
