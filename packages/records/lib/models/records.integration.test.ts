@@ -1,4 +1,4 @@
-import { expect, describe, it, beforeAll, afterEach } from 'vitest';
+import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { migrate } from '../db/migrate.js';
@@ -13,13 +13,13 @@ describe('Records service', () => {
         await migrate();
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
     });
 
     it('Should write records', async () => {
-        const connectionId = 1;
-        const environmentId = 2;
+        const connectionId = Math.floor(Math.random() * 1000000);
+        const environmentId = Math.floor(Math.random() * 1000000);
         const model = 'my-model';
         const syncId = '00000000-0000-0000-0000-000000000000';
         const records = [
@@ -50,8 +50,8 @@ describe('Records service', () => {
     });
 
     it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
-        const connectionId = 1;
-        const environmentId = 2;
+        const connectionId = Math.floor(Math.random() * 1000000);
+        const environmentId = Math.floor(Math.random() * 1000000);
         const model = 'my-model';
         const syncId = '00000000-0000-0000-0000-000000000000';
         const records = Array.from({ length: 2000 }, (_, i) => ({
@@ -76,8 +76,8 @@ describe('Records service', () => {
     });
 
     it('Should delete records', async () => {
-        const connectionId = 1;
-        const environmentId = 2;
+        const connectionId = Math.floor(Math.random() * 1000000);
+        const environmentId = Math.floor(Math.random() * 1000000);
         const model = 'my-model';
         const syncId = '00000000-0000-0000-0000-000000000000';
         const records = [
@@ -196,8 +196,8 @@ describe('Records service', () => {
     });
 
     it('Should return correct added records count when upserting concurrently', async () => {
-        const connectionId = 1;
-        const environmentId = 2;
+        const connectionId = Math.floor(Math.random() * 1000000);
+        const environmentId = Math.floor(Math.random() * 1000000);
         const model = 'my-model';
         const syncId = '00000000-0000-0000-0000-000000000000';
         const syncJobId = 1;
