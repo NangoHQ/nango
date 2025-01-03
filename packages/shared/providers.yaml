@@ -5675,6 +5675,49 @@ rapidapi:
             suffix: .p.rapidapi.com
             prefix: https://
 
+readwise:
+    display_name: Readwise
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://readwise.io/api/v2
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            endpoint: /auth
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/readwise
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Readwise account
+            
+readwise-reader:
+    display_name: Readwise Reader
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://readwise.io/api/v3
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            endpoint: https://readwise.io/api/v2/auth
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/readwise
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Readwise Reader account
+
+
 reddit:
     display_name: Reddit
     categories:
