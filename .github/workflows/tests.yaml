@@ -28,7 +28,6 @@ jobs:
                   cache: 'npm'
                   node-version-file: '.nvmrc'
 
-            - run: npm ci --prefer-offline --no-audit
-            - run: npm run ts-build
+            - run: npm ci
             - run: npm run test:unit -- --exclude packages/cli/
             - run: npm run test:integration
