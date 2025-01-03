@@ -29,5 +29,6 @@ jobs:
                   node-version-file: '.nvmrc'
 
             - run: npm ci
+            - run: npm run ts-build
             - run: npm run test:unit -- --exclude packages/cli/
             - run: npm run test:integration
