@@ -17,6 +17,13 @@ export default defineConfig({
             ORCHESTRATOR_SERVICE_URL: 'http://orchestrator'
         },
         fileParallelism: false,
-        pool: 'forks'
+        pool: 'forks',
+        watch: false,
+
+        poolOptions: {
+            forks: {
+                singleFork: true
+            }
+        }
     }
 });
