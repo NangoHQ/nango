@@ -38,6 +38,6 @@
     "devDependencies": {
         "@nangohq/types": "0.48.1",
         "tsup": "^8.2.4",
-        "vitest": "1.6.0"
+        "vitest": "2.1.8"
     }
 }
