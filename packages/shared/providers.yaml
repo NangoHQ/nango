@@ -5991,7 +5991,7 @@ salesloft:
     docs: https://docs.nango.dev/integrations/all/salesloft
 
 sendgrid:
-    display_name: Sendgrid
+    display_name: SendGrid
     categories:
         - marketing
     auth_mode: API_KEY
