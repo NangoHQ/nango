@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
+import type { Sync, SyncWithConnectionId, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { ActiveLog, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
@@ -197,7 +197,8 @@ export const getSyncs = async (
             this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
                 .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
                 .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
-                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'));
+                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'))
+                .andOn(`${SYNC_CONFIG_TABLE}.enabled`, '=', db.knex.raw('?', 'TRUE'));
         })
         .where({
             nango_connection_id: nangoConnection.id,
@@ -241,8 +242,6 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     return null;
 };
 
-type SyncWithConnectionId = Sync & { connection_id: string };
-
 export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<SyncWithConnectionId[]> => {
     const results = await db.knex
         .select(`${TABLE}.*`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
@@ -284,9 +283,13 @@ export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Pro
     return [];
 };
 
-export const getSyncsByProviderConfigAndSyncNames = async (environment_id: number, providerConfigKey: string, syncNames: string[]): Promise<Sync[]> => {
+export const getSyncsByProviderConfigAndSyncNames = async (
+    environment_id: number,
+    providerConfigKey: string,
+    syncNames: string[]
+): Promise<SyncWithConnectionId[]> => {
     const results = await db.knex
-        .select(`${TABLE}.*`)
+        .select(`${TABLE}.*`, '_nango_connections.connection_id')
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({

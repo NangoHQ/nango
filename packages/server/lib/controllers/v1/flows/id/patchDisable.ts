@@ -3,7 +3,7 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { PatchFlowDisable } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { flowConfig } from '../../../sync/deploy/validation.js';
-import { configService, disableScriptConfig } from '@nangohq/shared';
+import { configService, disableScriptConfig, errorNotificationService } from '@nangohq/shared';
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
 export const validationBody = z
@@ -53,6 +53,7 @@ export const patchFlowDisable = asyncWrapper<PatchFlowDisable>(async (req, res) 
     }
 
     const updated = await disableScriptConfig({ id: valParams.data.id, environmentId: environment.id });
+    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id });
 
     if (updated > 0) {
         res.status(200).send({ data: { success: true } });

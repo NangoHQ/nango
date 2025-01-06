@@ -26,6 +26,8 @@ export interface SyncResult {
 
 export type SyncResultByModel = Record<string, SyncResult>;
 
+export type SyncWithConnectionId = Sync & { connection_id: string };
+
 export interface Sync extends TimestampsAndDeleted {
     id: string;
     nango_connection_id: number;
@@ -60,6 +62,7 @@ export interface ReportedSyncJobStatus {
     id?: string;
     type: SyncType | 'INITIAL';
     name?: string;
+    connection_id?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel | undefined;
     jobStatus?: SyncStatus;
