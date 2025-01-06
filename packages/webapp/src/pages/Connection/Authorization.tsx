@@ -71,10 +71,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         <span className="text-white">{endUser.id}</span>
                     </div>
                 )}
-                {endUser?.displayName && (
+                {endUser?.display_name && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">User Display Name</span>
-                        <span className="text-white">{endUser.displayName}</span>
+                        <span className="text-white">{endUser.display_name}</span>
                     </div>
                 )}
                 {endUser?.email && (
@@ -89,10 +89,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         <span className="text-white">{endUser.organization.id}</span>
                     </div>
                 )}
-                {endUser?.organization?.displayName && (
+                {endUser?.organization?.display_name && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Organization Name</span>
-                        <span className="text-white">{endUser.organization.displayName}</span>
+                        <span className="text-white">{endUser.organization.display_name}</span>
                     </div>
                 )}
                 {connection.created_at && (

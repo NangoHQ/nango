@@ -86,11 +86,11 @@ describe(`GET ${endpoint}`, () => {
             },
             connection_config: { APP_ID: 'TEST' },
             end_user: {
-                displayName: null,
+                display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
                 organization: {
-                    displayName: null,
+                    display_name: null,
                     id: endUser.organization!.organizationId
                 }
             },
@@ -144,11 +144,11 @@ describe(`GET ${endpoint}`, () => {
             },
             connection_config: { APP_ID: 'TEST' },
             end_user: {
-                displayName: null,
+                display_name: null,
                 email: endUser.email,
                 id: endUser.endUserId,
                 organization: {
-                    displayName: null,
+                    display_name: null,
                     id: endUser.organization!.organizationId
                 }
             },
