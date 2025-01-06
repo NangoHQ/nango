@@ -201,7 +201,7 @@ class SyncController {
                 return;
             }
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
@@ -422,7 +422,7 @@ class SyncController {
                 initiator: 'API call'
             });
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
@@ -464,7 +464,7 @@ class SyncController {
                 initiator: 'API call'
             });
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
