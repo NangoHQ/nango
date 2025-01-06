@@ -324,7 +324,7 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
     const { env } = await seeders.seedAccountEnvAndUser();
     const model = 'GithubIssue';
 
-    const connection = await seeders.createConnectionSeed(env, 'github');
+    const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
     if (!connection.id) {
         throw new Error('Failed to create connection');
