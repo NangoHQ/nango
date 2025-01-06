@@ -6,6 +6,7 @@ import type { Result } from '@nangohq/utils';
 import db from '@nangohq/database';
 
 const DB_TABLE = '_nango_active_logs';
+const SYNC_TABLE = '_nango_syncs';
 
 type ErrorNotification = Required<Pick<ActiveLog, 'type' | 'action' | 'connection_id' | 'log_id' | 'active'>>;
 type SyncErrorNotification = ErrorNotification & Required<Pick<ActiveLog, 'sync_id'>>;
@@ -76,6 +77,21 @@ export const errorNotificationService = {
         },
         clearBySyncId: async ({ sync_id }: Pick<SyncErrorNotification, 'sync_id'>): Promise<void> => {
             await db.knex.from<ActiveLog>(DB_TABLE).where({ type: 'sync', sync_id }).delete();
+        },
+        /**
+         * Clear By Sync Config Id
+         * @description Clear all sync notifications by sync config id. This is used
+         * when disabling a sync at the integration level. Any active logs are
+         * no longer relevant because the sync is disabled.
+         */
+        clearBySyncConfig: async ({ sync_config_id }: { sync_config_id: number }): Promise<void> => {
+            const query = db.knex
+                .from<ActiveLog>(DB_TABLE)
+                .join(SYNC_TABLE, `${SYNC_TABLE}.id`, '=', `${DB_TABLE}.sync_id`)
+                .where({ type: 'sync', active: true })
+                .andWhere({ [`${SYNC_TABLE}.sync_config_id`]: sync_config_id, [`${SYNC_TABLE}.deleted`]: false });
+
+            await query.delete();
         }
     }
 };
