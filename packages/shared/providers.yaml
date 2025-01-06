@@ -1275,6 +1275,30 @@ buildium:
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
             doc_section: '#step-2-finding-your-client-id-and-secret'
 
+builtwith:
+    display_name: BuiltWith
+    categories:
+        - dev-tools
+        - analytics
+        - crm
+        - marketing
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.builtwith.com
+        query:
+            KEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/builtwith
+    docs_connect: https://docs.nango.dev/integrations/all/builtwith/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your BuiltWith account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-finding-your-api-key'
+
 cal-com-v1:
     display_name: Cal.com (v1)
     categories:
@@ -1578,11 +1602,13 @@ chorus:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    docs_connect: https://docs.nango.dev/integrations/all/chorus/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Chorus account
+            doc_section: '#step-1-generating-your-chorus-api-key'
 
 circle-so:
     display_name: Circle.so
@@ -2820,7 +2846,7 @@ freshdesk:
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
-    display_name: FreshSales
+    display_name: Freshsales
     categories:
         - crm
     auth_mode: API_KEY
@@ -2834,20 +2860,25 @@ freshsales:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
+    docs_connect: https://docs.nango.dev/integrations/all/freshsales/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshSales Domain
-            description: The subdomain of your FreshSales account
+            title: Freshsales subdomain
+            description: The subdomain of your Freshsales account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshsales.io
             prefix: https://
+            doc_section: '#step-2-finding-your-freshsales-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your FreshSales account
+            description: The API key for your Freshsales account
+            example: 4oBqA_AzM_G3xbW3TJGvrA
+            pattern: '[A-Za-z0-9_]{22}'
+            doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
     display_name: FreshService
@@ -2937,7 +2968,7 @@ front:
     docs: https://docs.nango.dev/integrations/all/front
 
 gainsight-cc:
-    display_name: Gainsight
+    display_name: Gainsight CC
     categories:
         - support
         - crm
@@ -2949,13 +2980,15 @@ gainsight-cc:
     proxy:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
+    docs_connect: https://docs.nango.dev/integrations/all/gainsight-cc/connect
     connection_config:
         region:
             type: string
             title: Region
             description: The region of your Gainsight account
-            example: eu
-            pattern: '^[a-z]+$'
+            example: eu-west-1
+            pattern: '^[a-z]{2}-[a-z]+-[1-9]$'
+            doc_section: '#step-2-finding-your-region'
 
 garmin:
     display_name: Garmin
@@ -3230,6 +3263,34 @@ gong-oauth:
             description: The base URL of your Gong account
             format: uri
             pattern: '^https?://.*$'
+
+gong-scim:
+    display_name: Gong (SCIM API)
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.gong.io/oauth2/authorize
+    token_url: https://app.gong.io/oauth2/generate-customer-token
+    token_response_metadata:
+        - api_base_url_for_customer
+    authorization_params:
+        response_type: code
+        access_type: offline
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://provisioning.gong.io/scim
+        retry:
+            after: 'retry-after'
+        headers:
+            accept: application/json
+            content-type: application/json
+            user-agent: custom-scim
+    docs: https://docs.nango.dev/integrations/all/gong
 
 google:
     display_name: Google
@@ -5987,7 +6048,7 @@ salesloft:
     docs: https://docs.nango.dev/integrations/all/salesloft
 
 sendgrid:
-    display_name: Sendgrid
+    display_name: SendGrid
     categories:
         - marketing
     auth_mode: API_KEY
@@ -5996,11 +6057,13 @@ sendgrid:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
+    docs_connect: https://docs.nango.dev/integrations/all/sendgrid/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+            doc_section: '#step-1-generating-your-sendgrid-api-key'
 
 sedna:
     display_name: Sedna (Oauth2)
