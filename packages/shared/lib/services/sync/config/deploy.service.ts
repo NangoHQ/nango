@@ -416,6 +416,8 @@ export async function deployPreBuilt({
     let provider_config_key: string;
 
     // this is a public template so copy it from the public location
+    // We might not want to do this as it just overrides the root nango.yaml
+    // which means we overwrite any custom nango.yaml that the user has
     await remoteFileService.copy(
         firstConfig.public_route,
         nangoConfigFile,
@@ -522,6 +524,12 @@ export async function deployPreBuilt({
             throw new NangoError('file_upload_error');
         }
 
+        const flowJsonSchema: JSONSchema7 = {
+            definitions: {}
+        };
+
+        const flowModels = Array.isArray(models) ? models : [models];
+
         if (is_public) {
             await remoteFileService.copy(
                 config.public_route,
@@ -530,6 +538,21 @@ export async function deployPreBuilt({
                 environment.id,
                 `${sync_name}.ts`
             );
+            // fetch the json schema so we have type checking
+            const jsonSchema = await remoteFileService.getPublicTemplateJsonSchemaFile(firstConfig.public_route, environment.id);
+
+            if (jsonSchema) {
+                const parsedJsonSchema = JSON.parse(jsonSchema);
+                for (const model of flowModels) {
+                    const schema = parsedJsonSchema.definitions![model];
+                    if (!schema) {
+                        const error = new NangoError('deploy_missing_json_schema_model', `json_schema doesn't contain model "${model}"`);
+
+                        return { success: false, error, response: null };
+                    }
+                    flowJsonSchema.definitions![model] = schema;
+                }
+            }
         } else {
             if (typeof config.fileBody === 'object' && config.fileBody.ts) {
                 await remoteFileService.upload(
@@ -565,7 +588,7 @@ export async function deployPreBuilt({
             nango_config_id,
             file_location,
             version,
-            models: Array.isArray(models) ? models : [models],
+            models: flowModels,
             active: true,
             runs,
             input: input && typeof input !== 'string' ? String(input.name) : input,
@@ -581,6 +604,7 @@ export async function deployPreBuilt({
             is_public,
             enabled: true,
             webhook_subscriptions: null,
+            models_json_schema: flowJsonSchema,
             updated_at: new Date()
         };
 

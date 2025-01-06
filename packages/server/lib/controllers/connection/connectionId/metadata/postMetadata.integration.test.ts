@@ -136,7 +136,7 @@ describe(`POST ${endpoint}`, () => {
     it('Should replace existing metadata, overwriting anything existing', async () => {
         const env = await seeders.createEnvironmentSeed();
         await seeders.createConfigSeed(env, 'test-replace', 'google');
-        const connections = await seeders.createConnectionSeed(env, 'test-replace');
+        const connections = await seeders.createConnectionSeed({ env, provider: 'test-replace' });
 
         const { connection_id, provider_config_key } = connections;
 

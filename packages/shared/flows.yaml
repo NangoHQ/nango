@@ -116,6 +116,14 @@ integrations:
                 scopes:
                     - schema.bases:read
         actions:
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes: user.email:read
             create-webhook:
                 description: Create a webhook for a particular base
                 input: CreateWebhook
@@ -220,6 +228,9 @@ integrations:
             DeleteWebhook:
                 baseId: string
                 webhookId: string
+            UserInformation:
+                id: string
+                email: string | null
     algolia:
         actions:
             create-contacts:
@@ -2164,6 +2175,13 @@ integrations:
                 input: IdEntity
                 scopes:
                     - admin
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         models:
             IdEntity:
                 id: string
@@ -2175,6 +2193,9 @@ integrations:
                 firstName: string
                 lastName: string
             CreateUser:
+                email: string
+            UserInformation:
+                id: string
                 email: string
             Event:
                 id: string
@@ -2671,6 +2692,56 @@ integrations:
                 lastName: string
                 email: string
     dialpad:
+        syncs:
+            users:
+                runs: every day
+                description: Fetches a list of users from Dialpad
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Dialpad
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: DialpadCreateUser
+            delete-user:
+                description: Deletes a user in Dialpad by email
+                endpoint:
+                    method: DELETE
+                    path: /users/email
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            DialpadCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                license?: string
+                officeId?: string
+                autoAssign?: boolean
+    dialpad-sandbox:
         syncs:
             users:
                 runs: every day
@@ -5219,6 +5290,13 @@ integrations:
                     - oauth
                     - settings.currencies.read
         actions:
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
             fetch-properties:
                 description: Fetch the properties of a specified object
                 input: InputProperty
@@ -5644,6 +5722,9 @@ integrations:
                 roleIds: string[]
                 secondaryTeamIds: string[]
                 superAdmin: boolean
+            UserInformation:
+                id: number
+                email: string
             HubspotKnowledgeBase:
                 id: string
                 title: string
@@ -9076,6 +9157,7 @@ integrations:
                     group: Issues
                 scopes:
                     - issues:create
+                version: 1.0.0
         syncs:
             issues:
                 runs: every 5min
@@ -12077,6 +12159,13 @@ integrations:
                     path: /opportunities
                     group: Opportunities
                 version: 1.0.0
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         syncs:
             accounts:
                 runs: every hour
@@ -12176,6 +12265,9 @@ integrations:
                 salutation: string | null
                 title: string | null
                 last_modified_date: string
+            UserInformation:
+                id: string
+                email: string
             CommonContactInput:
                 first_name?: string | undefined
                 account_id?: string | undefined
@@ -12563,6 +12655,13 @@ integrations:
                     path: /opportunities
                     group: Opportunities
                 version: 1.0.0
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         syncs:
             accounts:
                 runs: every hour
@@ -12662,6 +12761,9 @@ integrations:
                 salutation: string | null
                 title: string | null
                 last_modified_date: string
+            UserInformation:
+                id: string
+                email: string
             CommonContactInput:
                 first_name?: string | undefined
                 account_id?: string | undefined
@@ -13205,6 +13307,260 @@ integrations:
                 warning?: string | undefined
                 error?: string | undefined
                 raw_json: string
+    stripe-app:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
+    stripe-app-sandbox:
+        syncs:
+            subscriptions:
+                description: Fetches a list of subscriptions
+                runs: every 2h
+                endpoint:
+                    method: GET
+                    path: /subscriptions
+                    group: Subscriptions
+                output: Subscription
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - subscription_read
+        models:
+            Subscription:
+                id: string
+                automatic_tax:
+                    enabled: boolean
+                    liability: boolean | string | null
+                    disabled_reason: string | null
+                billing_cycle_anchor: number
+                billing_thresholds: string | null
+                cancel_at: string | null
+                cancel_at_period_end: boolean
+                canceled_at: string | null
+                cancellation_details: CancellationDetails
+                collection_method: string
+                created: number
+                currency: string
+                current_period_end: number
+                current_period_start: number
+                customer: string
+                days_until_due: number | null
+                default_payment_method: string | null
+                description: string | null
+                discount: string | null
+                discounts: string[] | null
+                ended_at: string | null
+                invoice_settings: InvoiceSettings
+                items: Item[]
+                latest_invoice: string
+                livemode: boolean
+                next_pending_invoice_item_invoice: string | null
+                on_behalf_of: string | null
+                pause_collection: string | null
+                payment_settings: PaymentSettings
+                pending_invoice_item_interval: string | null
+                pending_setup_intent: string | null
+                schedule: string | null
+                start_date: number
+                status: string
+                transfer_data: string | null
+                trial_end: string | null
+                trial_settings: TrialSettings
+                trial_start: string | null
+            Item:
+                id: string
+                billing_thresholds: string | null
+                created: number
+                plan: Plan
+                price: Price
+                quantity: number
+                subscription: string
+                tax_rates: string[]
+            Plan:
+                id: string
+                object: string
+                active: boolean
+                aggregate_usage: any
+                amount: number
+                amount_decimal: string
+                billing_scheme: string
+                created: number
+                currency: string
+                discounts: any
+                interval: string
+                interval_count: number
+                livemode: boolean
+                nickname: any
+                product: string
+                tiers_mode: any
+                transform_usage: any
+                trial_period_days: any
+                usage_type: string
+            Recurring:
+                aggregate_usage: any
+                interval: string
+                interval_count: number
+                trial_period_days: any
+                usage_type: string
+            Price:
+                id: string
+                object: string
+                active: boolean
+                billing_scheme: string
+                created: number
+                currency: string
+                custom_unit_amount: any
+                livemode: boolean
+                lookup_key: any
+                nickname: any
+                product: string
+                recurring: Recurring
+                tax_behavior: string
+                tiers_mode: any
+                transform_quantity: any
+                type: string
+                unit_amount: number
+                unit_amount_decimal: string
+            CancellationDetails:
+                comment: string | null
+                feedback: string | null
+                reason: string | null
+            InvoiceSettings:
+                issuer: Issuer
+                account_tax_ids: null | string | string[]
+            Issuer:
+                type: string
+            PaymentSettings:
+                payment_method_options: string | null
+                payment_method_types: string | null
+                save_default_payment_method: string
+            TrialSettings:
+                end_behavior: EndBehavior
+            EndBehavior:
+                missing_payment_method: string
     teamtailor:
         syncs:
             candidates:
@@ -13878,6 +14234,73 @@ integrations:
             Attachment:
                 name: string
                 data: string
+    workday:
+        syncs:
+            employees:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Employee
+                description: Fetches Employees
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Employees
+            groups:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Group
+                description: Fetches Company groups
+                endpoint:
+                    method: GET
+                    path: /groups
+                    group: Groups
+            locations:
+                runs: every hour
+                track_deletes: true
+                sync_type: full
+                output: Location
+                description: Fetches Company locations
+                endpoint:
+                    method: GET
+                    path: /locations
+                    group: Locations
+        models:
+            Employee:
+                id: string
+                user_name: string | null
+                first_name?: string
+                last_name?: string
+                email: string
+                role: string
+                department: string
+                site: string
+                country?: string | null
+                external_id?: string
+                employment_relationship?: string
+                phone_number: string | null
+            Group:
+                id: string
+                active: boolean
+                created_at: string | null
+                name: string
+            Location:
+                id: string
+                name: string
+                description: string | null
+                city: string | null
+                state: CompanyLocationState | null
+                country:
+                    name: string
+                    iso_code: string
+                zip_code: string
+                address: string
+                phone_number: string | null
+            CompanyLocationState:
+                name: string
+                abbrev: string
+                iso_code: string
     xero:
         syncs:
             contacts:
@@ -13946,7 +14369,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /general-ledger
-                    group: GeneralLedger
+                    group: General Ledger
                 scopes:
                     - accounting.journals.read
             payments:
@@ -14367,13 +14790,19 @@ integrations:
                 accountId: string
                 accountCode: string
                 accountName: string
-                description: string
+                description?: string | undefined
                 netAmount: number
                 grossAmount: number
                 taxAmount: number
-                taxType: string
-                taxName: string
-                trackingCategories: string[]
+                taxType?: string | undefined
+                taxName?: string | undefined
+                trackingCategories: TrackingCategory[]
+            TrackingCategory:
+                name: string
+                option: string
+                trackingCategoryId: string
+                trackingOptionId: string
+                options: string[]
     zendesk:
         syncs:
             tickets:
@@ -15081,6 +15510,15 @@ integrations:
                 scopes:
                     - user:write
                     - user:write:admin
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes:
+                    - user:read:user
             delete-user:
                 description: Deletes a user in Zoom. Requires Pro account or higher
                 endpoint:
@@ -15179,6 +15617,9 @@ integrations:
                 id: string
                 firstName: string
                 lastName: string
+                email: string
+            UserInformation:
+                id: string
                 email: string
             Meeting:
                 id: string
