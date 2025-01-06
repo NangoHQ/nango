@@ -61,7 +61,7 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string, createDefaultEnvironments = true): Promise<DBTeam> {
+    async getOrCreateAccount(name: string): Promise<DBTeam> {
         const account: DBTeam[] = await db.knex.select('id').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
@@ -71,9 +71,7 @@ class AccountService {
                 throw new Error('Failed to create account');
             }
 
-            if (createDefaultEnvironments) {
-                await environmentService.createDefaultEnvironments(newAccount[0]['id']);
-            }
+            await environmentService.createDefaultEnvironments(newAccount[0]['id']);
 
             return newAccount[0];
         }
@@ -95,6 +93,15 @@ class AccountService {
         }
 
         return null;
+    }
+
+    /**
+     * Create Account without default environments
+     * @desc create a new account and assign to the default environments
+     */
+    async createAccountWithoutEnvironments(name: string): Promise<DBTeam | null> {
+        const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
+        return result[0] || null;
     }
 
     async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
