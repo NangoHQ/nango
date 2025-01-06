@@ -103,12 +103,14 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json).toMatchObject({
             connections: [
                 {
+                    id: conn.id!,
+                    provider_config_key: 'github',
                     connection_id: conn.connection_id,
                     end_user: {
                         id: endUser.endUserId,
-                        displayName: null,
+                        display_name: null,
                         email: endUser.email,
-                        organization: { id: endUser.organization!.organizationId, displayName: endUser.organization!.displayName! }
+                        organization: { id: endUser.organization!.organizationId, display_name: endUser.organization!.displayName! }
                     }
                 }
             ]
