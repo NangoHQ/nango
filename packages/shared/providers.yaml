@@ -2963,7 +2963,7 @@ front:
     docs: https://docs.nango.dev/integrations/all/front
 
 gainsight-cc:
-    display_name: Gainsight
+    display_name: Gainsight CC
     categories:
         - support
         - crm
@@ -2975,13 +2975,15 @@ gainsight-cc:
     proxy:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
+    docs_connect: https://docs.nango.dev/integrations/all/gainsight-cc/connect
     connection_config:
         region:
             type: string
             title: Region
             description: The region of your Gainsight account
-            example: eu
-            pattern: '^[a-z]+$'
+            example: eu-west-1
+            pattern: '^[a-z]{2}-[a-z]+-[1-9]$'
+            doc_section: '#step-2-finding-your-region'
 
 garmin:
     display_name: Garmin
