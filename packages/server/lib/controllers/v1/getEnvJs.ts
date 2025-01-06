@@ -13,6 +13,8 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicPosthogHost: process.env['PUBLIC_POSTHOG_HOST'] || '',
         publicLogoDevKey: process.env['PUBLIC_LOGODEV_KEY'] || '',
         publicKoalaKey: process.env['PUBLIC_KOALA_KEY'] || '',
+        publicKoalaApiUrl: process.env['PUBLIC_KOALA_API_URL'] || '',
+        publicKoalaCdnUrl: process.env['PUBLIC_KOALA_CDN_URL'] || '',
         isCloud,
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
