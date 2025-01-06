@@ -1602,11 +1602,13 @@ chorus:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    docs_connect: https://docs.nango.dev/integrations/all/chorus/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Chorus account
+            doc_section: '#step-1-generating-your-chorus-api-key'
 
 circle-so:
     display_name: Circle.so
