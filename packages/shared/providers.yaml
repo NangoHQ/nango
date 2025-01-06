@@ -2048,7 +2048,7 @@ datadog:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.siteParameter}/api
+        base_url: https://api.${connectionConfig.siteParameter}/api
         headers:
             dd-api-key: ${apiKey}
             dd-application-key: ${connectionConfig.applicationKey}
