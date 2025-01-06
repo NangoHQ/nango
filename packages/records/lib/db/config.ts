@@ -5,7 +5,7 @@ export const schema = envs.RECORDS_DATABASE_SCHEMA;
 const databaseUrl =
     envs.RECORDS_DATABASE_URL ||
     envs.NANGO_DATABASE_URL ||
-    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+    `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}?application_name=${envs.NANGO_DB_APPLICATION_NAME}`;
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
 

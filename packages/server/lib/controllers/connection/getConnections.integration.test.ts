@@ -41,7 +41,7 @@ describe(`GET ${endpoint}`, () => {
     it('should list one connection', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
-        const conn = await seeders.createConnectionSeed(env, 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -69,8 +69,8 @@ describe(`GET ${endpoint}`, () => {
     it('should search connections', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
-        await seeders.createConnectionSeed(env, 'github');
-        const conn2 = await seeders.createConnectionSeed(env, 'github');
+        await seeders.createConnectionSeed({ env, provider: 'github' });
+        const conn2 = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -91,7 +91,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        const conn = await seeders.createConnectionSeed(env, 'github', endUser);
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github', endUser });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -103,12 +103,14 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json).toMatchObject({
             connections: [
                 {
+                    id: conn.id!,
+                    provider_config_key: 'github',
                     connection_id: conn.connection_id,
                     end_user: {
                         id: endUser.endUserId,
-                        displayName: null,
+                        display_name: null,
                         email: endUser.email,
-                        organization: { id: endUser.organization!.organizationId, displayName: endUser.organization!.displayName! }
+                        organization: { id: endUser.organization!.organizationId, display_name: endUser.organization!.displayName! }
                     }
                 }
             ]
@@ -120,7 +122,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        await seeders.createConnectionSeed(env, 'github', endUser);
+        await seeders.createConnectionSeed({ env, provider: 'github', endUser });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -140,7 +142,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        const conn = await seeders.createConnectionSeed(env, 'github', endUser);
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github', endUser });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -160,7 +162,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const endUser = await seeders.createEndUser({ environment: env, account });
-        const conn = await seeders.createConnectionSeed(env, 'github', endUser);
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github', endUser });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',

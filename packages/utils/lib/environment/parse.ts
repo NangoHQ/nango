@@ -144,6 +144,7 @@ export const ENVS = z.object({
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
+    NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
 
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional(),
