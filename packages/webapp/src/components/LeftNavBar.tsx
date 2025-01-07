@@ -15,13 +15,13 @@ import { useStore } from '../store';
 import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
-import { useEnvironment } from '../hooks/useEnvironment';
 import { useConnectionsCount } from '../hooks/useConnections';
 import { useUser } from '../hooks/useUser';
 import { globalEnv } from '../utils/env';
 import { IconX } from '@tabler/icons-react';
 import type { MaybePromise } from '@nangohq/types';
 import { apiPatchOnboarding } from '../hooks/useOnboarding';
+import { EnvironmentPicker } from './EnvironmentPicker';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -58,8 +58,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
     const { data } = useConnectionsCount(env);
-    const setEnv = useStore((state) => state.setEnv);
-    const { mutate } = useEnvironment(env);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
@@ -105,63 +103,25 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         return list;
     }, [env, showGettingStarted, meta]);
 
-    const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newEnv = e.target.value;
-        setEnv(newEnv);
-        void mutate();
-
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-
-        pathSegments[0] = newEnv;
-
-        let newPath = `/${pathSegments.join('/')}`;
-
-        // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
-        if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
-            newPath = `/${newEnv}/integrations`;
-        } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
-            newPath = `/${newEnv}/connections`;
-        }
-
-        navigate(newPath);
-    };
-
     if (!meta || !me) {
         return null;
     }
 
     return (
         <div className="bg-pure-black h-screen w-full">
-            <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
+            <div className="flex-1 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
                 <div className="mt-4">
-                    <div className="flex items-center mb-8">
+                    <div className="flex items-center mx-4">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />
                         <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
                         <span className="ml-3 text-xs text-black mono">{meta.version}</span>
                     </div>
-                    {meta.environments.length === 0 && (
-                        <div className="mb-8">
-                            <select className="border-border-gray bg-active-gray text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
-                        </div>
-                    )}
-                    {meta.environments.length > 0 && (
-                        <div className="mb-6">
-                            <select
-                                id="environment"
-                                name="env"
-                                className="border-border-gray bg-active-gray text-sm text-white block w-full appearance-none rounded-md border px-3 py-1 shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                onChange={handleEnvChange}
-                                value={env}
-                            >
-                                {meta.environments.map((env) => (
-                                    <option key={env.name} value={env.name}>
-                                        {env.name.slice(0, 1).toUpperCase() + env.name.slice(1)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-                    <div className="flex flex-col gap-1">
+
+                    <div className="pt-8 pb-8 border-b border-b-grayscale-700 mx-4">
+                        <EnvironmentPicker />
+                    </div>
+
+                    <div className="flex flex-col gap-1 mt-8 mx-4">
                         {items.map((item) => {
                             const Icon = item.icon;
                             return (
@@ -189,7 +149,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         })}
                     </div>
                 </div>
-                <div>
+                <div className="mx-4">
                     <div
                         className="flex mb-5 py-2 w-full user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer"
                         onClick={() => setShowUserSettings(!showUserSettings)}

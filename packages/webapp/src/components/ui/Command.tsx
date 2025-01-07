@@ -38,7 +38,7 @@ const CommandInput = React.forwardRef<React.ElementRef<typeof CommandPrimitive.I
             <CommandPrimitive.Input
                 ref={ref}
                 className={cn(
-                    'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+                    'flex h-9 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
                     className
                 )}
                 {...props}
@@ -58,7 +58,7 @@ const CommandList = React.forwardRef<React.ElementRef<typeof CommandPrimitive.Li
 CommandList.displayName = CommandPrimitive.List.displayName;
 
 const CommandEmpty = React.forwardRef<React.ElementRef<typeof CommandPrimitive.Empty>, React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>>(
-    (props, ref) => <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props} />
+    (props, ref) => <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm text-white" {...props} />
 );
 
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
@@ -89,7 +89,7 @@ const CommandItem = React.forwardRef<React.ElementRef<typeof CommandPrimitive.It
         <CommandPrimitive.Item
             ref={ref}
             className={cn(
-                'px-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-8 pr-2 text-sm outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white',
+                'px-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 text-gray-400 relative flex cursor-pointer rounded select-none items-center py-1.5 pl-2 pr-2 text-sm outline-none transition-colors aria-selected:bg-pure-black aria-selected:text-white',
                 className
             )}
             {...props}
