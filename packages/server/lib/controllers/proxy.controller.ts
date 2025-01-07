@@ -45,8 +45,8 @@ class ProxyController {
 
         let logCtx: LogContext | undefined;
         try {
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const connectionId = req.get('Connection-Id') || '';
+            const providerConfigKey = req.get('Provider-Config-Key') || '';
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
