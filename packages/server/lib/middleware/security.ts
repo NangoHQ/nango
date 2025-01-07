@@ -9,6 +9,9 @@ export function securityMiddlewares(): RequestHandler[] {
     hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
+    const additionalConnectSources = [process.env['PUBLIC_KOALA_API_URL'] ? new URL(process.env['PUBLIC_KOALA_API_URL']).origin : ''];
+    const additionalScriptSources = [process.env['PUBLIC_KOALA_CDN_URL'] ? new URL(process.env['PUBLIC_KOALA_CDN_URL']).origin : ''];
+
     return [
         helmet.xssFilter(),
         helmet.noSniff(),
@@ -32,7 +35,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostApi,
                     hostWs.href,
                     'https://*.posthog.com',
-                    'https://bluegrass.nango.dev'
+                    ...additionalConnectSources
                 ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com'],
@@ -61,7 +64,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://apis.google.com',
                     'https://*.posthog.com',
                     'https://www.youtube.com',
-                    'https://shoegaze.nango.dev'
+                    ...additionalScriptSources
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']
