@@ -24,7 +24,16 @@ export function securityMiddlewares(): RequestHandler[] {
             directives: {
                 defaultSrc: ["'self'", hostPublic, hostApi],
                 childSrc: "'self'",
-                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
+                connectSrc: [
+                    "'self'",
+                    'https://*.google-analytics.com',
+                    'https://*.sentry.io',
+                    hostPublic,
+                    hostApi,
+                    hostWs.href,
+                    'https://*.posthog.com',
+                    'https://bluegrass.nango.dev'
+                ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com'],
                 imgSrc: [
@@ -51,7 +60,8 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.googleapis.com',
                     'https://apis.google.com',
                     'https://*.posthog.com',
-                    'https://www.youtube.com'
+                    'https://www.youtube.com',
+                    'https://shoegaze.nango.dev'
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']
