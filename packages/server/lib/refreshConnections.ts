@@ -24,7 +24,7 @@ export function refreshConnectionsCron(): void {
                 const e = new Error('failed_to_refresh_connections', {
                     cause: err instanceof Error ? err.message : String(err)
                 });
-                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
+                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
             } finally {
                 metrics.duration(metrics.Types.REFRESH_CONNECTIONS, Date.now() - start);
             }

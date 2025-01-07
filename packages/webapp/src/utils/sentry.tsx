@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
 import { Routes, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+import { globalEnv } from './env';
 
 Sentry.init({
-    dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
+    dsn: globalEnv.publicSentryKey,
     integrations: [
         Sentry.reactRouterV6BrowserTracingIntegration({
             useEffect,
@@ -14,7 +15,7 @@ Sentry.init({
         }),
         Sentry.replayIntegration()
     ],
-    tracePropagationTargets: [/^https:\/\/app.nango\.dev\/api/],
+    tracePropagationTargets: [/^https:\/\/api.nango\.dev/],
     tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 0.3,

@@ -11,12 +11,6 @@ on:
             name:
                 required: true
                 type: string
-            key_for_sentry_secret:
-                required: false
-                type: string
-            key_for_posthog_secret:
-                required: false
-                type: string
 
 jobs:
     build-container:
@@ -50,8 +44,6 @@ jobs:
 
             - name: Build image (${{ inputs.name }})
               run: |
-                  export SENTRY_KEY=${{ secrets[inputs.key_for_sentry_secret] }}
-                  export POSTHOG_KEY=${{ secrets[inputs.key_for_posthog_secret] }}
                   ./scripts/build_docker.sh build ${{ inputs.name }} ${{ env.SHA }}
 
             - name: Push image

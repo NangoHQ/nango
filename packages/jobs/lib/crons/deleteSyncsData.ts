@@ -3,7 +3,6 @@ import db from '@nangohq/database';
 import { errorManager, ErrorSourceEnum, hardDeleteJobs, findRecentlyDeletedSync, Orchestrator } from '@nangohq/shared';
 import { records } from '@nangohq/records';
 import { getLogger, metrics } from '@nangohq/utils';
-import tracer from 'dd-trace';
 import { orchestratorClient } from '../clients.js';
 
 const logger = getLogger('Jobs');
@@ -24,7 +23,7 @@ export function deleteSyncsData(): void {
             logger.info('[deleteSyncs] ✅ done');
         } catch (err) {
             const e = new Error('failed_to_hard_delete_syncs_data', { cause: err instanceof Error ? err.message : err });
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM }, tracer);
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
         }
         metrics.duration(metrics.Types.JOBS_DELETE_SYNCS_DATA, Date.now() - start);
     });

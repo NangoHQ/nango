@@ -162,8 +162,8 @@ export const ENVS = z.object({
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
-    // Sentry
-    SENTRY_DNS: z.string().url().optional(),
+    // Posthog
+    PUBLIC_POSTHOG_KEY: z.string().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
