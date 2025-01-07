@@ -45,6 +45,7 @@ interface SourceSchedule {
     environment_id: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 type JsonObject = { [Key in string]: JsonValue } & { [Key in string]?: JsonValue | undefined };
 type JsonArray = JsonValue[] | readonly JsonValue[];
 type JsonPrimitive = string | number | boolean | null;

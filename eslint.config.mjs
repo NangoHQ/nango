@@ -19,7 +19,8 @@ export default tseslint.config(
             '**/bin/',
             'packages/server/nango-integrations/',
             'packages/node-client/tests',
-            'packages/cli/fixtures/'
+            'packages/cli/fixtures/',
+            'docs-v2/script.js'
         ]
     },
 
