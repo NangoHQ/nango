@@ -81,87 +81,173 @@
     ],
     "navigation": [
         {
-            "group": "Get Started",
-            "pages": [
-                "home",
-                "what-is-nango",
-                "sample-app"
-            ]
-        },
-        {
             "group": "Getting Started",
-            "pages": [
-                "guides/getting-started/configure-an-integration",
-                "guides/getting-started/authorize-an-api-from-your-app",
-                "guides/getting-started/read-from-an-api",
-                "guides/getting-started/write-to-an-api"
-            ]
+            "pages": ["getting-started/intro-to-nango", "getting-started/quickstart"]
         },
         {
-            "group": "Advanced Guides",
+            "group": "Guides",
             "pages": [
                 {
-                    "group": "Customize integrations",
+                    "group": "API authorization (free)",
+                    "pages": ["api-authorization/main"]
+                },
+                {
+                    "group": "Pre-built integrations",
+                    "pages": ["pre-built-integrations/main"]
+                },
+                {
+                    "group": "Custom integrations",
+                    "pages": ["custom-integrations/main"]
+                },
+                {
+                    "group": "Syncs",
+                    "pages": ["syncs/main"]
+                },
+                {
+                    "group": "Actions",
+                    "pages": ["actions/main"]
+                },
+                {
+                    "group": "Individual requests (free)",
+                    "pages": ["individual-requests/main"]
+                },
+                {
+                    "group": "Webhooks",
+                    "pages": ["webhooks/main"]
+                },
+                {
+                    "group": "Customer configuration",
+                    "pages": ["customer-configuration/main"]
+                },
+                {
+                    "group": "API unification",
+                    "pages": ["api-unification/main"]
+                },
+                {
+                    "group": "Metrics",
+                    "pages": ["metrics/main"]
+                },
+                {
+                    "group": "Logs",
+                    "pages": ["logs/main"]
+                },
+                {
+                    "group": "Alerts",
+                    "pages": ["alerts/main"]
+                },
+                {
+                    "group": "Data validation",
+                    "pages": ["data-validation/main"]
+                },
+                {
+                    "group": "Nango API",
+                    "pages": ["nango-api/main"]
+                },
+                {
+                    "group": "Environments",
+                    "pages": ["environments/main"]
+                },
+                {
+                    "group": "Infrastructure",
+                    "pages": ["infrastructure/main"]
+                },
+                {
+                    "group": "Services",
+                    "pages": ["services/main"]
+                },
+                {
+                    "group": "Self-hosting",
+                    "pages": ["self-hosting/main"]
+                }
+            ]
+        },
+        {
+            "group": "Old",
+            "pages": [
+                {
+                    "group": "Overview",
                     "pages": [
-                        "guides/customize/setup",
-                        "guides/customize/create-a-custom-integration",
-                        "guides/customize/extend-an-integration-template",
-                        "guides/customize/contribute-an-api",
-                        "guides/customize/unify-apis",
-                        "guides/customize/handle-rate-limits",
-                        "guides/customize/handle-large-datasets",
-                        "guides/customize/validate-input-and-output"
+                        "old/home",
+                        "old/what-is-nango",
+                        "old/sample-app"
                     ]
                 },
                 {
-                    "group": "Other advanced guides",
+                    "group": "Getting Started",
                     "pages": [
-                        "guides/proxy-requests-to-an-api",
-                        "guides/receive-webhooks-from-an-api",
-                        "guides/authorize-an-api-from-your-app-with-custom-ui",
-                        "guides/execute-scripts-based-on-events",
-                        "guides/otlp-export",
-                        "guides/whitelabel-oauth",
-                        "guides/store-customer-specific-data",
-                        "guides/use-custom-field-mappings",
-                        "guides/verify-webhooks-from-nango"
+                        "old/guides/getting-started/configure-an-integration",
+                        "old/guides/getting-started/authorize-an-api-from-your-app",
+                        "old/guides/getting-started/read-from-an-api",
+                        "old/guides/getting-started/write-to-an-api"
                     ]
-                }
-            ]
-        },
-        {
-            "group": "Understand Nango",
-            "pages": [
-                "understand/core-concepts",
+                },
                 {
-                    "group": "All concepts",
+                    "group": "Advanced Guides",
                     "pages": [
-                        "understand/concepts/architecture",
-                        "understand/concepts/integrations",
-                        "understand/concepts/connections",
-                        "understand/concepts/scripts",
-                        "understand/concepts/templates",
-                        "understand/concepts/syncs",
-                        "understand/concepts/actions",
-                        "understand/concepts/webhooks",
-                        "understand/concepts/proxy",
-                        "understand/concepts/environments"
+                        {
+                            "group": "Customize integrations",
+                            "pages": [
+                                "old/guides/customize/setup",
+                                "old/guides/customize/create-a-custom-integration",
+                                "old/guides/customize/extend-an-integration-template",
+                                "old/guides/customize/contribute-an-api",
+                                "old/guides/customize/unify-apis",
+                                "old/guides/customize/handle-rate-limits",
+                                "old/guides/customize/handle-large-datasets",
+                                "old/guides/customize/validate-input-and-output"
+                            ]
+                        },
+                        {
+                            "group": "Other advanced guides",
+                            "pages": [
+                                "old/guides/proxy-requests-to-an-api",
+                                "old/guides/receive-webhooks-from-an-api",
+                                "old/guides/authorize-an-api-from-your-app-with-custom-ui",
+                                "old/guides/execute-scripts-based-on-events",
+                                "old/guides/otlp-export",
+                                "old/guides/whitelabel-oauth",
+                                "old/guides/store-customer-specific-data",
+                                "old/guides/use-custom-field-mappings",
+                                "old/guides/verify-webhooks-from-nango"
+                            ]
+                        }
                     ]
-                }
-            ]
-        },
-        {
-            "group": "Host Nango",
-            "pages": [
-                "host/cloud",
+                },
                 {
-                    "group": "Self-hosting instructions",
+                    "group": "Understand Nango",
                     "pages": [
-                        "host/self-host/self-hosting-instructions",
-                        "host/self-host/local",
-                        "host/self-host/aws",
-                        "host/self-host/gcp",
-                        "host/self-host/digital-ocean"
+                        "old/understand/core-concepts",
+                        {
+                            "group": "All concepts",
+                            "pages": [
+                                "old/understand/concepts/architecture",
+                                "old/understand/concepts/integrations",
+                                "old/understand/concepts/connections",
+                                "old/understand/concepts/scripts",
+                                "old/understand/concepts/templates",
+                                "old/understand/concepts/syncs",
+                                "old/understand/concepts/actions",
+                                "old/understand/concepts/webhooks",
+                                "old/understand/concepts/proxy",
+                                "old/understand/concepts/environments"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "group": "Host Nango",
+                    "pages": [
+                        "old/host/cloud",
+                        {
+                            "group": "Self-hosting instructions",
+                            "pages": [
+                                "old/host/self-host/self-hosting-instructions",
+                                "old/host/self-host/local",
+                                "old/host/self-host/aws",
+                                "old/host/self-host/gcp",
+                                "old/host/self-host/digital-ocean"
+                            ]
+                        }
                     ]
                 }
             ]
