@@ -30,6 +30,7 @@ export interface Task {
 export type ImmediateProps = Omit<TaskProps, 'startsAfter' | 'scheduleId'>;
 export type { ScheduleProps };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;
 export type ScheduleState = (typeof scheduleStates)[number];
 

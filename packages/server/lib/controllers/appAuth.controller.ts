@@ -127,7 +127,8 @@ class AppAuthController {
                 await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (!installation_id) {
@@ -171,7 +172,8 @@ class AppAuthController {
                     logCtx
                 );
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                return;
             }
 
             const [updatedConnection] = await connectionService.upsertConnection({
@@ -186,7 +188,8 @@ class AppAuthController {
             if (!updatedConnection) {
                 await logCtx.error('Failed to create connection');
                 await logCtx.failed();
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
             }
 
             let connectSession: ConnectSessionAndEndUser | undefined;
@@ -199,7 +202,8 @@ class AppAuthController {
                 if (connectSessionRes.isErr()) {
                     await logCtx.error('Failed to get session');
                     await logCtx.failed();
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    return;
                 }
 
                 connectSession = connectSessionRes.value;
@@ -233,7 +237,8 @@ class AppAuthController {
                 authMode: String(provider.auth_mode)
             });
 
-            return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            await publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 

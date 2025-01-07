@@ -25,7 +25,7 @@ export const NON_FORWARDABLE_HEADERS = [
     'server'
 ];
 
-export const retry = async (logCtx?: LogContext | null | undefined, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
+export const retry = async (logCtx?: LogContext | null, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
     if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
         const content = `Webhook response received an ${
             error?.response?.status || error?.code

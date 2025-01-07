@@ -1,6 +1,6 @@
 const DB_TABLE = '_nango_slack_notifications';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     return knex.schema.createTable(DB_TABLE, function (table) {
         table.increments('id').primary();
         table.boolean('open').defaultTo(true).index();
@@ -14,6 +14,6 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     return knex.schema.dropTable(DB_TABLE);
 };

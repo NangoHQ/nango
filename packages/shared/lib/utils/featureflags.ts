@@ -23,7 +23,7 @@ export class FeatureFlags {
             (r) => {
                 return isExcludingFlag ? !r : r;
             },
-            (_) => {
+            () => {
                 return fallback;
             }
         );

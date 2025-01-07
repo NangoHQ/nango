@@ -2,7 +2,7 @@ const JOBS_TABLE = '_nango_sync_jobs';
 const RECORDS_TABLE = '_nango_sync_data_records';
 const CONFIGS_TABLE = '_nango_sync_configs';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(RECORDS_TABLE, function (table) {
         table.integer('sync_job_id').references('id').inTable(JOBS_TABLE).onDelete('CASCADE').index();
     });
@@ -12,7 +12,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(RECORDS_TABLE, function (table) {
         table.dropColumn('sync_job_id');
     });

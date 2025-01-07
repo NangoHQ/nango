@@ -204,7 +204,7 @@ export async function transitionTo(
           }
 ): Promise<Result<Node>> {
     try {
-        return db.transaction(async (trx) => {
+        return await db.transaction(async (trx) => {
             const getNode = await get(trx, props.nodeId, { forUpdate: true });
             if (getNode.isErr()) {
                 return getNode;

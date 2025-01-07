@@ -1,9 +1,9 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
 
-import type { PostSignup } from '@nangohq/types';
+import type { ApiError, PostSignup } from '@nangohq/types';
 
-export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
+export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
     return await fetch(input, {
         ...init,
         headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
@@ -23,7 +23,7 @@ export interface SWRError<TError> {
 /**
  * Default SWR fetcher does not throw on HTTP error
  */
-export async function swrFetcher<TBody>(url: string, req?: RequestInit | undefined): Promise<TBody> {
+export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise<TBody> {
     const res = await apiFetch(url, req);
 
     if (!res.ok) {
@@ -59,7 +59,7 @@ export function useSignupAPI() {
                 body: JSON.stringify(body)
             };
 
-            return apiFetch('/api/v1/account/signup', options);
+            return await apiFetch('/api/v1/account/signup', options);
         } catch {
             requestErrorToast();
         }
@@ -77,7 +77,8 @@ export function useSigninAPI() {
             const res = await apiFetch('/api/v1/account/signin', options);
 
             if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -93,7 +94,8 @@ export function useHostedSigninAPI() {
             const res = await apiFetch('/api/v1/basic');
 
             if (res.status !== 200 && res.status !== 401) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -116,11 +118,13 @@ export function useEditCallbackUrlAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/callback?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -143,11 +147,13 @@ export function useEditHmacEnabledAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/hmac-enabled?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -170,11 +176,13 @@ export function useEditAlwaysSendWebhookAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/webhook-send?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -197,11 +205,13 @@ export function useEditSendAuthWebhookAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/webhook-auth-send?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -224,11 +234,13 @@ export function useEditHmacKeyAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/hmac-key?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -251,11 +263,13 @@ export function useEditEnvVariablesAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/environment-variables?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -278,11 +292,13 @@ export function useEditWebhookUrlAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/webhook/primary-url?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -305,11 +321,13 @@ export function useEditWebhookSecondaryUrlAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/webhook/secondary-url?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -332,18 +350,20 @@ export function useEditOtlpSettingsAPI(env: string) {
             const res = await apiFetch(`/api/v1/environment/otlp/settings?env=${env}`, options);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status === 403) {
                 const { error } = await res.json();
-                const msg = 'message' in error ? error.message : 'Forbidden';
+                const msg = 'message' in error ? (error as ApiError<any>['error']).message : 'Forbidden';
                 toast.error(msg, { position: toast.POSITION.BOTTOM_CENTER });
                 return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -361,11 +381,13 @@ export function useGetIntegrationListAPI(env: string) {
             const res = await apiFetch(`/api/v1/integrations?env=${env}`);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -383,11 +405,12 @@ export function useGetProvidersAPI(env: string) {
             const res = await apiFetch(`/api/v1/provider?env=${env}`);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
             }
 
             return res;
