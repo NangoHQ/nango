@@ -7,7 +7,7 @@ import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { useMemo } from 'react';
 import { formatQuantity } from '../../../utils/utils';
-import { addDays, format } from 'date-fns';
+import { addDays, addMinutes, format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { getLogsUrl } from '../../../utils/logs';
 
@@ -84,8 +84,14 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
         for (const date of dates) {
             const entry = map.get(date);
             total += entry?.total || 0;
+
+            // JS always transform date to local time but we receive UTC from the backend
+            // Ideally we would get the raw data points and display dates based on local TZ but we group by day so it's too late to change the timezone
+            // It fixes a display issues when you are a day in the past or in the future
+            const utc = addMinutes(new Date(date), endDate.getTimezoneOffset());
+
             tmp.push({
-                date: new Date(date),
+                date: utc,
                 total: entry?.total || 0,
                 success: entry?.success || 0,
                 failure: entry?.failure || 0
@@ -137,6 +143,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                         <XAxis
                             dataKey="date"
                             type="category"
+                            // scale="utc"
                             axisLine={false}
                             tickLine={false}
                             interval="preserveStartEnd"

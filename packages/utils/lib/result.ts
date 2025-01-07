@@ -26,8 +26,8 @@ export function Ok<T, E extends Error>(value: T): Result<T, E> {
     return {
         value,
         unwrap: () => value,
-        isErr: () => false,
-        isOk: () => true,
+        isErr: (): this is Left<T, E> => false,
+        isOk: (): this is Right<T, E> => true,
         map: <U>(fn: (value: T) => U): Result<U, E> => {
             try {
                 return Ok(fn(value));
@@ -47,8 +47,8 @@ export function Err<T, E extends Error>(error: E | string): Result<T, E> {
         unwrap: () => {
             throw error as Error;
         },
-        isErr: () => true,
-        isOk: () => false,
+        isErr: (): this is Left<T, E> => true,
+        isOk: (): this is Right<T, E> => false,
         map: <U>(_fn: (value: T) => U): Result<T, E> => {
             return Err(error);
         },
