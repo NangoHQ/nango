@@ -13,9 +13,9 @@
     },
     "devDependencies": {
         "@types/json-schema": "7.0.15",
-        "axios": "^1.7.4",
+        "axios": "^1.7.9",
         "json-schema": "0.4.0",
-        "type-fest": "4.26.1"
+        "type-fest": "4.31.0"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "files": [
