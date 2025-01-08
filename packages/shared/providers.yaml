@@ -2695,6 +2695,24 @@ falai:
             title: API Key
             description: The API key for your fal.ai account
 
+findymail:
+    display_name: FindyMail
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.findymail.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/findymail
+    docs_connect: https://docs.nango.dev/integrations/all/findymail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your FindyMail account
+
 firefish:
     display_name: Firefish
     scope_separator: ' '
