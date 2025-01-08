@@ -13318,6 +13318,8 @@ integrations:
                     method: GET
                     path: /users
                     group: Users
+                scopes:
+                    - READ_USERS
         actions:
             create-user:
                 description: Creates a user in Smartsheet
@@ -13327,6 +13329,8 @@ integrations:
                     path: /users
                     group: Users
                 input: CreateUser
+                scopes:
+                    - ADMIN_USERS
             delete-user:
                 description: >
                     Deletes a user from Smartsheet. User is transitioned to a free
@@ -13339,6 +13343,8 @@ integrations:
                     group: Users
                 output: SuccessResponse
                 input: IdEntity
+                scopes:
+                    - ADMIN_USERS
             disable-user:
                 description: >
                     Disables a user in an organization account. User will no longer be
@@ -13350,6 +13356,8 @@ integrations:
                     group: Users
                 output: SuccessResponse
                 input: IdEntity
+                scopes:
+                    - ADMIN_USERS
         models:
             IdEntity:
                 id: string
