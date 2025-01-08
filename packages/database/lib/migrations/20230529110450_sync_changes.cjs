@@ -3,7 +3,7 @@ const syncJobs = '_nango_sync_jobs';
 const syncSchedules = '_nango_sync_schedules';
 const syncDataRecords = '_nango_sync_data_records';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.createTable(syncs, function (table) {
         table.uuid('id').primary().notNullable();
         table.integer('nango_connection_id').unsigned().notNullable();
@@ -36,7 +36,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(syncJobs, function (table) {
         table.dropColumn('sync_id');
         table.integer('nango_connection_id').unsigned().notNullable();

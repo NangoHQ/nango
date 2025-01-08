@@ -34,7 +34,7 @@ const DBDeployment = {
 
 export async function create(db: knex.Knex, commitId: CommitHash): Promise<Result<Deployment>> {
     try {
-        return db.transaction(async (trx) => {
+        return await db.transaction(async (trx) => {
             // do nothing if commitId is already active deployment
             const active = await getActive(db);
             if (active.isErr()) {

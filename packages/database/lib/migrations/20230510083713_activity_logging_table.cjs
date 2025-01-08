@@ -1,7 +1,7 @@
 const tableName = '_nango_activity_logs';
 const messagesTableName = '_nango_activity_log_messages';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema
         .createTable(tableName, function (table) {
             table.increments('id').primary();
@@ -40,7 +40,7 @@ exports.up = function (knex, _) {
         });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(messagesTableName).then(() => {
         return knex.schema.dropTable(tableName);
     });

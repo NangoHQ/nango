@@ -1,6 +1,5 @@
 import * as cron from 'node-cron';
 import { errorManager, ErrorSourceEnum } from '@nangohq/shared';
-import tracer from 'dd-trace';
 import { envs, model } from '@nangohq/logs';
 import { getLogger } from '@nangohq/utils';
 
@@ -20,7 +19,7 @@ export function timeoutLogsOperations(): void {
                 await model.setTimeoutForAll();
                 logger.info(`✅ Timeouted`);
             } catch (err) {
-                errorManager.report(err, { source: ErrorSourceEnum.PLATFORM }, tracer);
+                errorManager.report(err, { source: ErrorSourceEnum.PLATFORM });
             }
         }
     );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 /*
 By convention Left represents a failed computation
 And Right represents a successful one

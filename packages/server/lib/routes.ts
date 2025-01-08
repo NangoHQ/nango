@@ -24,7 +24,6 @@ import accountController from './controllers/account.controller.js';
 import type { Response, Request, RequestHandler } from 'express';
 import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
-import tracer from 'dd-trace';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
@@ -404,5 +403,5 @@ router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'>>, _: 
         return;
     }
 
-    errorManager.handleGenericError(err, req, res, tracer);
+    errorManager.handleGenericError(err, req, res);
 });

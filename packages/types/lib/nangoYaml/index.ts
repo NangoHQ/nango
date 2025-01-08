@@ -72,7 +72,7 @@ export interface NangoYamlV2IntegrationAction {
 export interface NangoYamlModel {
     [key: string]: NangoYamlModelFields;
 }
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+
 export interface NangoYamlModelFields {
     [key: string]: NangoYamlModelField;
 }
@@ -144,9 +144,7 @@ export interface NangoModelField {
     optional?: boolean | undefined;
 }
 
-export type NangoSyncEndpointOld = {
-    [key in HTTP_METHOD]?: string | undefined;
-};
+export type NangoSyncEndpointOld = Partial<Record<HTTP_METHOD, string | undefined>>;
 
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const utils = require('node:util');
 const crypto = require('node:crypto');
 
