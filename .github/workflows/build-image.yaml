@@ -10,6 +10,16 @@ on:
 
 jobs:
     build-image:
+        # TODO: remove this, it's only needed for the frontend
+        strategy:
+            matrix:
+                group:
+                    - name: 'staging'
+                      if: true
+
+                    - name: 'prod'
+                      if: ${{ github.ref == 'refs/heads/master' }}
+
         runs-on: ubuntu-latest
         env:
             CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != ' && secrets.DOCKER_USERNAME != ' }}"

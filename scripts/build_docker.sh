@@ -3,7 +3,7 @@
 set -e
 
 ACTION=$1
-ENV=$2 # enterprise | hosted | prod | staging
+ENV=$2 # enterprise | hosted | prod | staging \\ TODO: remove this, it's only needed for the frontend
 GIT_HASH=$3
 
 USAGE="./build_docker.sh <build|push> <enterprise | hosted | prod | staging> GIT_HASH"
