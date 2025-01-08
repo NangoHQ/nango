@@ -1,5 +1,5 @@
 import type { NangoProps } from '@nangohq/shared';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
@@ -12,6 +12,11 @@ import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { RunnerOutput } from '@nangohq/types';
+
+interface ScriptExports {
+    onWebhookPayloadReceived?: (nango: NangoAction, payload?: object) => Promise<unknown>;
+    default: (nango: NangoAction, payload?: object) => Promise<unknown>;
+}
 
 export async function exec(
     nangoProps: NangoProps,
@@ -76,7 +81,7 @@ export async function exec(
             };
 
             const context = vm.createContext(sandbox);
-            const scriptExports = script.runInContext(context);
+            const scriptExports = script.runInContext(context) as ScriptExports;
 
             if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
@@ -174,7 +179,7 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (err instanceof AxiosError) {
+            } else if (isAxiosError(err)) {
                 span.setTag('error', err);
                 if (err.response?.data) {
                     const errorResponse = err.response.data.payload || err.response.data;
