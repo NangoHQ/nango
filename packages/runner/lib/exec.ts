@@ -189,7 +189,7 @@ export async function exec(
                                 headers: Object.fromEntries(
                                     Object.entries(err.response.headers)
                                         .map(([k, v]) => [k.toLowerCase(), v])
-                                        .filter(([k]) => k === 'content-type' || k.startsWith('x-ratelimit'))
+                                        .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
                                 ),
                                 body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
                             }
