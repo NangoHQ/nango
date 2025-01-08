@@ -1,5 +1,5 @@
 import type { NangoProps } from '@nangohq/shared';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
@@ -174,7 +174,7 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (err instanceof AxiosError) {
+            } else if (isAxiosError(err)) {
                 span.setTag('error', err);
                 if (err.response?.data) {
                     const errorResponse = err.response.data.payload || err.response.data;
@@ -183,7 +183,16 @@ export async function exec(
                         error: {
                             type: 'script_http_error',
                             payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
-                            status: err.response.status
+                            status: err.response.status,
+                            upstream_response: {
+                                status: err.response.status,
+                                headers: Object.fromEntries(
+                                    Object.entries(err.response.headers)
+                                        .map(([k, v]) => [k.toLowerCase(), v])
+                                        .filter(([k]) => k === 'content-type' || k.startsWith('x-ratelimit'))
+                                ),
+                                body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
+                            }
                         },
                         response: null
                     };
@@ -192,7 +201,7 @@ export async function exec(
                     return {
                         success: false,
                         error: {
-                            type: 'script_http_error',
+                            type: 'script_network_error',
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500
                         },
