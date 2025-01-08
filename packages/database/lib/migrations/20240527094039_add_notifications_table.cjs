@@ -1,6 +1,6 @@
 const DB_TABLE = '_nango_active_logs';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     return knex.schema.createTable(DB_TABLE, function (table) {
         table.increments('id').primary();
         table.string('type', 'varchar(255)').notNullable();
@@ -17,6 +17,6 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     return knex.schema.dropTable(DB_TABLE);
 };

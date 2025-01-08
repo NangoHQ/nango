@@ -123,7 +123,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
         if (invitation) {
             // If we came from an invitation we need to accept it and transfer the team
             await acceptInvitation(invitation.token);
-            const updated = await userService.update({ id: user!.id, account_id: invitation.account_id });
+            const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
             if (!updated) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
                 return;

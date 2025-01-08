@@ -1,9 +1,9 @@
 export * from './Telemetry.js';
-export * from './Connection.js';
-export * from './Generic.js';
-export * from './Provider.js';
+export type * from './Connection.js';
+export type * from './Generic.js';
+export type * from './Provider.js';
 export * from './Auth.js';
 export * from './Sync.js';
-export * from './Flow.js';
-export * from './NangoConfig.js';
+export type * from './Flow.js';
+export type * from './NangoConfig.js';
 export * from './Proxy.js';

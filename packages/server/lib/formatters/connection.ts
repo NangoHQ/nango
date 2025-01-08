@@ -7,6 +7,7 @@ import type {
     DBConnection,
     DBEndUser
 } from '@nangohq/types';
+import { endUserToApi } from './endUser.js';
 
 export function connectionSimpleToApi({
     data,
@@ -25,14 +26,7 @@ export function connectionSimpleToApi({
         provider_config_key: data.provider_config_key,
         provider,
         errors: activeLog,
-        endUser: endUser
-            ? {
-                  id: endUser.end_user_id,
-                  displayName: endUser.display_name || null,
-                  email: endUser.email,
-                  organization: endUser.organization_id ? { id: endUser.organization_id, displayName: endUser.organization_display_name || null } : null
-              }
-            : null,
+        endUser: endUser ? endUserToApi(endUser) : null,
         created_at: String(data.created_at),
         updated_at: String(data.updated_at)
     };
@@ -64,14 +58,7 @@ export function connectionSimpleToPublicApi({
         provider_config_key: data.provider_config_key,
         provider,
         errors: activeLog,
-        end_user: endUser
-            ? {
-                  id: endUser.end_user_id,
-                  displayName: endUser.display_name || null,
-                  email: endUser.email,
-                  organization: endUser.organization_id ? { id: endUser.organization_id, displayName: endUser.organization_display_name || null } : null
-              }
-            : null,
+        end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
         created: String(data.created_at)
     };
@@ -94,14 +81,7 @@ export function connectionFullToPublicApi({
         provider_config_key: data.provider_config_key,
         provider,
         errors: activeLog,
-        end_user: endUser
-            ? {
-                  id: endUser.end_user_id,
-                  displayName: endUser.display_name || null,
-                  email: endUser.email,
-                  organization: endUser.organization_id ? { id: endUser.organization_id, displayName: endUser.organization_display_name || null } : null
-              }
-            : null,
+        end_user: endUser ? endUserToApi(endUser) : null,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
         created_at: String(data.created_at),

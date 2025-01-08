@@ -13307,6 +13307,68 @@ integrations:
                 warning?: string | undefined
                 error?: string | undefined
                 raw_json: string
+    smartsheet:
+        syncs:
+            users:
+                runs: every 6 hours
+                description: Fetches a list of users from Smartsheet
+                output: User
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        actions:
+            create-user:
+                description: Creates a user in Smartsheet
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: CreateUser
+            delete-user:
+                description: >
+                    Deletes a user from Smartsheet. User is transitioned to a free
+                    collaborator with read-only access to owned reports, sheets, Sights,
+                    workspaces, and any shared templates (unless those are optionally
+                    transferred to another user).
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+            disable-user:
+                description: >
+                    Disables a user in an organization account. User will no longer be
+                    able to access Smartsheet in any way. User's assets will continue to
+                    be owned by this user until they are transferred to another user.
+                endpoint:
+                    method: POST
+                    path: /users/disable
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            SmartsheetCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                status?: string
     stripe-app:
         syncs:
             subscriptions:

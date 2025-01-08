@@ -70,7 +70,7 @@ export class ModelsParser {
 
         // At this point we are sure it's a Model
         stack.add(name);
-        this.parseOne({ name, fields: this.raw[name]!, stack });
+        this.parseOne({ name, fields: this.raw[name], stack });
         return true;
     }
 

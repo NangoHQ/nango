@@ -1,6 +1,6 @@
 const tableName = '_nango_sync_schedules';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(tableName, function (table) {
         table.increments('id').primary();
         table.integer('nango_connection_id').references('id').inTable('_nango_connections').defaultTo(0).notNullable().onDelete('CASCADE');
@@ -11,6 +11,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(tableName);
 };

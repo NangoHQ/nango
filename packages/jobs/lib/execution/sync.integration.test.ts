@@ -3,7 +3,7 @@ import { multipleMigrations } from '@nangohq/database';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
-import type { TaskSync } from '@nangohq/nango-orchestrator';
+import type { TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
@@ -191,11 +191,11 @@ const runJob = async (
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
         },
-        isSync: () => true,
-        isAction: () => false,
-        isOnEvent: () => false,
-        isSyncAbort: () => false,
-        isWebhook: () => false
+        isSync: (): this is TaskSync => true,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false
     };
     const nangoProps = await startSync(task, mockStartScript);
     if (nangoProps.isErr()) {
@@ -324,7 +324,7 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
     const { env } = await seeders.seedAccountEnvAndUser();
     const model = 'GithubIssue';
 
-    const connection = await seeders.createConnectionSeed(env, 'github');
+    const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
     if (!connection.id) {
         throw new Error('Failed to create connection');
