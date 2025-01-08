@@ -56,7 +56,7 @@ RUN true \
 # ENV NODE_ENV=production
 ARG image_env
 
-# TODO: remove the need for this
+# TODO: remove this, it's only needed for the frontend
 ENV REACT_APP_ENV $image_env
 
 # Build the frontend
