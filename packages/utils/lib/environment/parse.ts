@@ -144,6 +144,11 @@ export const ENVS = z.object({
         .optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
+    NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
+
+    // PostHog
+    PUBLIC_POSTHOG_KEY: z.string().optional(),
+    PUBLIC_POSTHOG_HOST: z.string().optional(),
 
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional(),
@@ -156,13 +161,13 @@ export const ENVS = z.object({
     RENDER_API_KEY: z.string().optional(),
     IS_RENDER: bool,
 
+    // Sentry
+    PUBLIC_SENTRY_KEY: z.string().optional(),
+
     // Slack
     NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
-
-    // Sentry
-    SENTRY_DNS: z.string().url().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),

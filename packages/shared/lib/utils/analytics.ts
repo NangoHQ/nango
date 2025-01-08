@@ -1,5 +1,5 @@
 import { PostHog } from 'posthog-node';
-import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
+import { localhostUrl, isCloud, isStaging, baseUrl, getLogger } from '@nangohq/utils';
 import { UserType } from '../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
@@ -7,6 +7,8 @@ import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { NANGO_VERSION } from '../version.js';
+
+const logger = getLogger('analytics');
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
@@ -99,12 +101,22 @@ class Analytics {
     packageVersion: string | undefined;
 
     constructor() {
+        const hasTelemetry = process.env['TELEMETRY'] !== 'false' && !isStaging;
+        if (!hasTelemetry) {
+            return;
+        }
+
+        // hardcoded for OSS telemetry
+        const key = process.env['PUBLIC_POSTHOG_KEY'] || 'phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl';
+        if (!key) {
+            logger.error('No PostHog key');
+            return;
+        }
+
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
-                this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
-                this.client.enable();
-                this.packageVersion = NANGO_VERSION;
-            }
+            this.client = new PostHog(key);
+            this.client.enable();
+            this.packageVersion = NANGO_VERSION;
         } catch (err) {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,

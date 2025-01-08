@@ -41,13 +41,7 @@ export const OperationTag: React.FC<{ message: string; operation: Exclude<Search
                 </div>
             </Tooltip.TooltipTrigger>
             <Tooltip.TooltipContent align="start">
-                <p>
-                    {message}{' '}
-                    <code className="text-xs">
-                        ({operation.type}
-                        {'action' in operation && <>:{operation.action}</>})
-                    </code>
-                </p>
+                <p>{message}</p>
             </Tooltip.TooltipContent>
         </Tooltip.Tooltip>
     );
