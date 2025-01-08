@@ -224,7 +224,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
         for (const model of nangoProps.syncConfig.models) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
-                deletedKeys = await records.markNonCurrentGenerationRecordsAsDeleted({
+                deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
                     connectionId: nangoProps.nangoConnectionId,
                     model,
                     syncId: nangoProps.syncId,
