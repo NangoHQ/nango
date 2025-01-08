@@ -2,6 +2,11 @@ export interface RunnerOutputError {
     type: string;
     payload: Record<string, unknown>;
     status: number;
+    upstream_response?: {
+        status: number;
+        headers: Record<string, string>;
+        body: Record<string, unknown>;
+    };
 }
 export interface RunnerOutput {
     success: boolean;
