@@ -201,7 +201,7 @@ class SyncController {
                 return;
             }
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
@@ -422,7 +422,7 @@ class SyncController {
                 initiator: 'API call'
             });
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
@@ -464,7 +464,7 @@ class SyncController {
                 initiator: 'API call'
             });
 
-            res.sendStatus(200);
+            res.status(200).send({ success: true });
         } catch (err) {
             next(err);
         }
@@ -596,7 +596,7 @@ class SyncController {
             });
 
             if (result.isErr()) {
-                errorManager.handleGenericError(result.error, req, res, tracer);
+                errorManager.handleGenericError(result.error, req, res);
                 await logCtx.failed();
                 return;
             }

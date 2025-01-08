@@ -55,14 +55,9 @@ RUN true \
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
 ARG image_env
-ARG posthog_key
-ARG sentry_key
 
 # TODO: remove the need for this
 ENV REACT_APP_ENV $image_env
-ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
-ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
-ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
 
 # Build the frontend
 RUN true \

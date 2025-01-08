@@ -6,7 +6,8 @@ export interface WindowEnv {
     publicPosthogKey: string;
     publicPosthogHost: string;
     publicLogoDevKey: string;
-    publicKoalaKey: string;
+    publicKoalaApiUrl: string;
+    publicKoalaCdnUrl: string;
     isCloud: boolean;
     features: {
         logs: boolean;

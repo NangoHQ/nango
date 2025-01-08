@@ -100,7 +100,7 @@ describe('Webhook route unit tests', () => {
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 
-        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0][1];
+        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0]?.[1];
         expect(firstCallFirstArgument.eventId).toBe(4023112300);
     });
 
@@ -153,9 +153,9 @@ describe('Webhook route unit tests', () => {
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 
-        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0][1];
+        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0]?.[1];
         expect(firstCallFirstArgument.eventId).toBe(1234);
-        const secondCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[1][1];
+        const secondCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[1]?.[1];
         expect(secondCallFirstArgument.eventId).toBe(123);
     });
 });

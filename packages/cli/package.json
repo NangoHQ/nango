@@ -48,7 +48,7 @@
         "ts-json-schema-generator": "^2.3.0",
         "ts-node": "^10.9.1",
         "tsup": "^8.1.0",
-        "typescript": "^5.3.3",
+        "typescript": "5.7.2",
         "zod": "3.23.8"
     },
     "devDependencies": {
@@ -70,7 +70,7 @@
         "esbuild": "^0.17.19",
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
-        "vitest": "1.6.0"
+        "vitest": "2.1.8"
     },
     "engines": {
         "node": ">=18.0"

@@ -176,6 +176,10 @@ aircall-basic:
         verification:
             method: GET
             endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall
 
@@ -1602,11 +1606,13 @@ chorus:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    docs_connect: https://docs.nango.dev/integrations/all/chorus/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Chorus account
+            doc_section: '#step-1-generating-your-chorus-api-key'
 
 circle-so:
     display_name: Circle.so
@@ -2046,7 +2052,7 @@ datadog:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.siteParameter}/api
+        base_url: https://api.${connectionConfig.siteParameter}/api
         headers:
             dd-api-key: ${apiKey}
             dd-application-key: ${connectionConfig.applicationKey}
@@ -2844,7 +2850,7 @@ freshdesk:
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
-    display_name: FreshSales
+    display_name: Freshsales
     categories:
         - crm
     auth_mode: API_KEY
@@ -2858,23 +2864,28 @@ freshsales:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
+    docs_connect: https://docs.nango.dev/integrations/all/freshsales/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshSales Domain
-            description: The subdomain of your FreshSales account
+            title: Freshsales subdomain
+            description: The subdomain of your Freshsales account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshsales.io
             prefix: https://
+            doc_section: '#step-2-finding-your-freshsales-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your FreshSales account
+            description: The API key for your Freshsales account
+            example: 4oBqA_AzM_G3xbW3TJGvrA
+            pattern: '[A-Za-z0-9_]{22}'
+            doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
-    display_name: FreshService
+    display_name: Freshservice
     categories:
         - support
     auth_mode: BASIC
@@ -2886,21 +2897,24 @@ freshservice:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
+    docs_connect: https://docs.nango.dev/integrations/all/freshservice/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshService Domain
-            description: The subdomain of your FreshService account
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshservice.com
             prefix: https://
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
     credentials:
         username:
             type: string
             title: API key
             description: The API Key of your Freshservice account
             secret: true
+            doc_section: '#step-1-finding-your-freshservice-api-key'
         password:
             type: string
             title: ''
@@ -2961,7 +2975,7 @@ front:
     docs: https://docs.nango.dev/integrations/all/front
 
 gainsight-cc:
-    display_name: Gainsight
+    display_name: Gainsight CC
     categories:
         - support
         - crm
@@ -2973,13 +2987,15 @@ gainsight-cc:
     proxy:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
+    docs_connect: https://docs.nango.dev/integrations/all/gainsight-cc/connect
     connection_config:
         region:
             type: string
             title: Region
             description: The region of your Gainsight account
-            example: eu
-            pattern: '^[a-z]+$'
+            example: eu-west-1
+            pattern: '^[a-z]{2}-[a-z]+-[1-9]$'
+            doc_section: '#step-2-finding-your-region'
 
 garmin:
     display_name: Garmin
@@ -3254,6 +3270,34 @@ gong-oauth:
             description: The base URL of your Gong account
             format: uri
             pattern: '^https?://.*$'
+
+gong-scim:
+    display_name: Gong (SCIM API)
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.gong.io/oauth2/authorize
+    token_url: https://app.gong.io/oauth2/generate-customer-token
+    token_response_metadata:
+        - api_base_url_for_customer
+    authorization_params:
+        response_type: code
+        access_type: offline
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://provisioning.gong.io/scim
+        retry:
+            after: 'retry-after'
+        headers:
+            accept: application/json
+            content-type: application/json
+            user-agent: custom-scim
+    docs: https://docs.nango.dev/integrations/all/gong
 
 google:
     display_name: Google
@@ -5999,6 +6043,26 @@ sap-success-factors:
             secret: true
             doc_section: '#step-4-generating-your-saml-assertion'
 
+scrapedo:
+    display_name: Scrape.do
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.scrape.do
+        query:
+            token: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/scrapedo
+    docs_connect: https://docs.nango.dev/integrations/all/scrapedo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Scrape.do account
+            example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 salesloft:
     display_name: Salesloft
     categories:
@@ -6011,7 +6075,7 @@ salesloft:
     docs: https://docs.nango.dev/integrations/all/salesloft
 
 sendgrid:
-    display_name: Sendgrid
+    display_name: SendGrid
     categories:
         - marketing
     auth_mode: API_KEY
@@ -6020,11 +6084,13 @@ sendgrid:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
+    docs_connect: https://docs.nango.dev/integrations/all/sendgrid/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+            doc_section: '#step-1-generating-your-sendgrid-api-key'
 
 sedna:
     display_name: Sedna (Oauth2)

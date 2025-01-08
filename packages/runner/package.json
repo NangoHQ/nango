@@ -36,7 +36,7 @@
         "@nangohq/types": "file:../types",
         "@types/connect-timeout": "0.0.39",
         "@types/node": "20.12.2",
-        "typescript": "5.3.3",
-        "vitest": "1.6.0"
+        "typescript": "5.7.2",
+        "vitest": "2.1.8"
     }
 }
