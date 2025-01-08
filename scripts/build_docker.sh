@@ -28,13 +28,6 @@ if [ -z $GIT_HASH ]; then
   exit
 fi
 
-if [ -z $SENTRY_KEY ]; then
-  echo -e "${YELLOW}SENTRY_KEY is empty${NC}"
-fi
-if [ -z $POSTHOG_KEY ]; then
-  echo -e "${YELLOW}POSTHOG_KEY is empty${NC}"
-fi
-
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
@@ -53,8 +46,6 @@ docker buildx build \
   --platform linux/amd64 \
   --build-arg image_env="$ENV" \
   --build-arg git_hash="$GIT_HASH" \
-  --build-arg posthog_key="$SENTRY_KEY" \
-  --build-arg sentry_key="$POSTHOG_KEY" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
   --file ../Dockerfile \

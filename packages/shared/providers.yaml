@@ -176,6 +176,10 @@ aircall-basic:
         verification:
             method: GET
             endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall
 
@@ -2881,7 +2885,7 @@ freshsales:
             doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
-    display_name: FreshService
+    display_name: Freshservice
     categories:
         - support
     auth_mode: BASIC
@@ -2893,21 +2897,24 @@ freshservice:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
+    docs_connect: https://docs.nango.dev/integrations/all/freshservice/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshService Domain
-            description: The subdomain of your FreshService account
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshservice.com
             prefix: https://
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
     credentials:
         username:
             type: string
             title: API key
             description: The API Key of your Freshservice account
             secret: true
+            doc_section: '#step-1-finding-your-freshservice-api-key'
         password:
             type: string
             title: ''
@@ -4137,6 +4144,26 @@ kustomer:
             type: string
             title: API Key
             description: The API key for your Kustomer account
+
+lagrowthmachine:
+    display_name: La Growth Machine
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://apiv2.lagrowthmachine.com
+        query:
+            KEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/lagrowthmachine
+    docs_connect: https://docs.nango.dev/integrations/all/lagrowthmachine/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your La Growth Machine account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-finding-your-api-key'
 
 lastpass:
     display_name: LastPass

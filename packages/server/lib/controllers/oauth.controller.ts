@@ -825,11 +825,7 @@ class OAuthController {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
 
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             return;
         }
 
@@ -838,11 +834,7 @@ class OAuthController {
         if (session == null) {
             const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
@@ -898,12 +890,7 @@ class OAuthController {
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                environmentId: session.environmentId,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH, environmentId: session.environmentId });
 
             await logCtx.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx.failed();
