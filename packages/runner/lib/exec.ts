@@ -1,5 +1,5 @@
 import type { NangoProps } from '@nangohq/shared';
-import { isAxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
@@ -174,13 +174,14 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (isAxiosError(err)) {
+            } else if (err instanceof AxiosError) {
                 span.setTag('error', err);
                 if (err.response?.data) {
                     const errorResponse = err.response.data.payload || err.response.data;
+
                     const headers = Object.fromEntries(
                         Object.entries(err.response.headers)
-                            .map(([k, v]) => [k.toLowerCase(), v])
+                            .map(([k, v]) => [k.toLowerCase(), v.toString()])
                             .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
                     );
 
