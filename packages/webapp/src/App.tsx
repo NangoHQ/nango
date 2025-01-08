@@ -109,7 +109,7 @@ const App = () => {
                             <Route path="/:env/team-settings" element={<TeamSettings />} />
                             <Route path="/:env/user-settings" element={<UserSettings />} />
                         </Route>
-                        {true && <Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
+                        {<Route path="/hn-demo" element={<Navigate to={'/signup'} />} />}
                         {globalEnv.features.auth && (
                             <>
                                 <Route path="/signin" element={<Signin />} />

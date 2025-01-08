@@ -97,7 +97,7 @@ export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: T
                         computeDuration(start);
                         return v;
                     },
-                    (err) => {
+                    (err: unknown) => {
                         computeDuration(start);
                         throw err;
                     }

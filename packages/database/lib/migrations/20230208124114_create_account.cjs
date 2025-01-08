@@ -1,4 +1,4 @@
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     return knex.schema.createTable('_nango_accounts', function (table) {
         table.increments('id').primary();
@@ -12,6 +12,6 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable('_nango_accounts');
 };

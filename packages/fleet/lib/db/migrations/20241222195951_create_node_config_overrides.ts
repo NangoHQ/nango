@@ -16,4 +16,6 @@ export async function up(knex: Knex): Promise<void> {
         `);
 }
 
-export async function down(_knex: Knex): Promise<void> {}
+export async function down(): Promise<void> {
+    //
+}

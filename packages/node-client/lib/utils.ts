@@ -41,7 +41,7 @@ export function getUserAgent(userAgent?: string): string {
     return `nango-node-client/${NANGO_VERSION} (${osName}/${osVersion}; node.js/${nodeVersion})${userAgent ? `; ${userAgent}` : ''}`;
 }
 
-export function addQueryParams(url: URL, queries?: Record<string, any> | undefined) {
+export function addQueryParams(url: URL, queries?: Record<string, any>) {
     if (!queries) {
         return;
     }

@@ -1,6 +1,6 @@
 const DB_TABLE = '_nango_external_webhooks';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     return knex.schema.createTable(DB_TABLE, function (table) {
         table.increments('id').primary();
         table.integer('environment_id').unsigned().notNullable();
@@ -15,6 +15,6 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     return knex.schema.dropTable(DB_TABLE);
 };

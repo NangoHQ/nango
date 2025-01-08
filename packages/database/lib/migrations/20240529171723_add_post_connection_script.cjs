@@ -1,6 +1,6 @@
 const TABLE_NAME = '_nango_post_connection_scripts';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(TABLE_NAME, function (table) {
         table.increments('id').primary();
         table.integer('config_id').unsigned().notNullable();
@@ -13,6 +13,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(TABLE_NAME);
 };
