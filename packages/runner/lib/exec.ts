@@ -178,6 +178,12 @@ export async function exec(
                 span.setTag('error', err);
                 if (err.response?.data) {
                     const errorResponse = err.response.data.payload || err.response.data;
+                    const headers = Object.fromEntries(
+                        Object.entries(err.response.headers)
+                            .map(([k, v]) => [k.toLowerCase(), v])
+                            .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
+                    );
+
                     return {
                         success: false,
                         error: {
@@ -186,11 +192,7 @@ export async function exec(
                             status: err.response.status,
                             upstream_response: {
                                 status: err.response.status,
-                                headers: Object.fromEntries(
-                                    Object.entries(err.response.headers)
-                                        .map(([k, v]) => [k.toLowerCase(), v])
-                                        .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
-                                ),
+                                headers,
                                 body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
                             }
                         },

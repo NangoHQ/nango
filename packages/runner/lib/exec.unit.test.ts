@@ -26,7 +26,12 @@ function getNangoProps(): NangoProps {
         syncConfig: {} as SyncConfig,
         debug: false,
         startedAt: new Date(),
-        runnerFlags: {} as any,
+        runnerFlags: {
+            validateActionInput: false,
+            validateActionOutput: false,
+            validateSyncMetadata: false,
+            validateSyncRecords: false
+        },
         stubbedMetadata: {},
         endUser: null
     };
