@@ -4,6 +4,7 @@ import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { Result } from '@nangohq/utils';
 import type { ScheduleState, TaskState } from '@nangohq/scheduler';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
+import type { RunnerUpstreamResponse } from '@nangohq/types';
 
 export type ImmediateProps = PostImmediate['Body'];
 export type RecurringProps = PostRecurring['Body'];
@@ -203,4 +204,5 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
 export interface ClientError extends Error {
     name: string;
     payload: JsonValue;
+    upstream_response?: RunnerUpstreamResponse;
 }

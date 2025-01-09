@@ -1,16 +1,19 @@
 import { stringifyError } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
     public payload: Record<string, unknown>;
+    public additionalProperties: JsonValue = {};
     public override readonly message: string;
 
-    constructor(type: string, payload = {}, status?: number) {
+    constructor(type: string, payload = {}, status?: number, additionalProperties: JsonValue = {}) {
         super();
 
         this.type = type;
         this.payload = payload;
+        this.additionalProperties = additionalProperties;
 
         if (status) {
             this.status = status;
