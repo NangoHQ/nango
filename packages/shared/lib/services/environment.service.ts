@@ -225,13 +225,12 @@ class EnvironmentService {
     }
 
     async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
-        const result = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
+        const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
-        if (result.length <= 0 || !result[0]) {
+        if (!environment) {
             return null;
         }
 
-        const environment = result[0];
         const encryptedEnvironment = await encryptionManager.encryptEnvironment({
             ...environment,
             secret_key_hashed: await hashSecretKey(environment.secret_key)

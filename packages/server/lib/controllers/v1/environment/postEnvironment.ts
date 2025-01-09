@@ -30,7 +30,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const exists = await environmentService.getAccountAndEnvironment({ accountId, envName: body.name });
     if (exists) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Environment already exists' } });
+        res.status(409).send({ error: { code: 'invalid_body', message: 'Environment already exists' } });
         return;
     }
 
