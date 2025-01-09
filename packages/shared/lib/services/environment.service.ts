@@ -224,27 +224,21 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async createEnvironment(accountId: number, environment: string): Promise<DBEnvironment | null> {
-        const result = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name: environment }).returning('id');
+    async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
+        const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
-        if (Array.isArray(result) && result.length === 1 && result[0] && 'id' in result[0]) {
-            const environmentId = result[0]['id'];
-            const environment = await this.getById(environmentId);
-            if (!environment) {
-                return null;
-            }
-
-            const encryptedEnvironment = await encryptionManager.encryptEnvironment({
-                ...environment,
-                secret_key_hashed: await hashSecretKey(environment.secret_key)
-            });
-            await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
-
-            const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
-            return env;
+        if (!environment) {
+            return null;
         }
 
-        return null;
+        const encryptedEnvironment = await encryptionManager.encryptEnvironment({
+            ...environment,
+            secret_key_hashed: await hashSecretKey(environment.secret_key)
+        });
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+
+        const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
+        return env;
     }
 
     async createDefaultEnvironments(accountId: number): Promise<void> {
