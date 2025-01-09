@@ -177,7 +177,7 @@ export const ConnectionCreate: React.FC = () => {
                                                 className="text-white ring-0 focus:ring-0 focus-visible:outline-none"
                                             ></CommandInput>
                                             <CommandList className="max-h-[400px]">
-                                                <CommandEmpty>No framework found.</CommandEmpty>
+                                                <CommandEmpty>No integrations found.</CommandEmpty>
                                                 <CommandGroup className="px-0">
                                                     {listIntegration?.integrations.map((item) => {
                                                         const checked = integration && item.uniqueKey === integration.uniqueKey;

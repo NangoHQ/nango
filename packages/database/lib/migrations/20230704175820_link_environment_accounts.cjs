@@ -6,7 +6,7 @@
 const ENVIRONMENTS_TABLE = '_nango_environments';
 const ACCOUNTS_TABLE = '_nango_accounts';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     const existingAccounts = await knex.table(ACCOUNTS_TABLE).select('*');
 
     for (const account of existingAccounts) {
@@ -37,7 +37,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.table('_nango_environments').truncate();
 
     return knex.schema.alterTable(ACCOUNTS_TABLE, function (table) {

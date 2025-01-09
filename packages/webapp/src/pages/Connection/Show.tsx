@@ -94,7 +94,7 @@ export const ConnectionShow: React.FC = () => {
                 undefined,
                 { revalidate: false }
             );
-            for await (const key of cache.keys()) {
+            for (const key of cache.keys()) {
                 if (key.startsWith('/api/v1/connections')) {
                     cache.delete(key);
                 }

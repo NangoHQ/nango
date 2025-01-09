@@ -170,7 +170,11 @@ class PaginationService {
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: UserProvidedProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
-        passPaginationParamsInBody ? (config.data = updatedBodyOrParams) : (config.params = updatedBodyOrParams);
+        if (passPaginationParamsInBody) {
+            config.data = updatedBodyOrParams;
+        } else {
+            config.params = updatedBodyOrParams;
+        }
     }
 
     private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse, paginationConfig: Pagination) {

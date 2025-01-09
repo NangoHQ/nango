@@ -60,7 +60,11 @@ export const forwardWebhook = async ({
             incomingHeaders: webhookOriginalHeaders
         });
 
-        result.isOk() ? await logCtx.success() : await logCtx.failed();
+        if (result.isOk()) {
+            await logCtx.success();
+        } else {
+            await logCtx.failed();
+        }
 
         return;
     }
@@ -84,5 +88,9 @@ export const forwardWebhook = async ({
         }
     }
 
-    success ? await logCtx.success() : await logCtx.failed();
+    if (success) {
+        await logCtx.success();
+    } else {
+        await logCtx.failed();
+    }
 };

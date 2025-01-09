@@ -1,4 +1,4 @@
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex
         .from(`_nango_users`)
         .insert({ id: 0, name: 'unknown', email: 'unknown@example.com', hashed_password: 'unkown', salt: 'unknown', account_id: 0 })
@@ -11,7 +11,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.alterTable('_nango_accounts', function (table) {
         table.dropColumn('owner_id');
         table.dropColumn('name');

@@ -2,7 +2,7 @@ const tableName = '_nango_sync_data_records_deletes';
 const JOBS_TABLE = '_nango_sync_jobs';
 const SYNC_TABLE = '_nango_syncs';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(tableName, function (table) {
         table.uuid('id').notNullable();
         table.string('external_id').notNullable().index();
@@ -46,6 +46,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(tableName);
 };

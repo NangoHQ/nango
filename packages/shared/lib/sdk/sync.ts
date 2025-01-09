@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 import https from 'node:https';
 import { Nango, getUserAgent } from '@nangohq/node';
 import type { AdminAxiosProps } from '@nangohq/node';
@@ -1290,7 +1291,6 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSync)[] = [
     'triggerSync'
 ];
 
-/* eslint-disable no-inner-declarations */
 /**
  * @internal
  *
@@ -1309,5 +1309,3 @@ export function instrumentSDK(rawNango: NangoAction | NangoSync) {
         }
     });
 }
-
-/* eslint-enable no-inner-declarations */

@@ -745,6 +745,7 @@ export class Nango {
      * @param input - An optional input data for the action
      * @returns A promise that resolves with an object containing the response data from the triggered action
      */
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         const url = `${this.serverUrl}/action/trigger`;
 

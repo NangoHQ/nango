@@ -447,9 +447,9 @@ export async function deleteRecordCount({ connectionId, environmentId, model }: 
     await db.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
 }
 
-// Mark all non-deleted records that don't belong to currentGeneration as deleted
+// Mark all non-deleted records from previous generations as deleted
 // returns the ids of records being deleted
-export async function markNonCurrentGenerationRecordsAsDeleted({
+export async function markPreviousGenerationRecordsAsDeleted({
     connectionId,
     model,
     syncId,
@@ -471,9 +471,7 @@ export async function markNonCurrentGenerationRecordsAsDeleted({
                 sync_id: syncId,
                 deleted_at: null
             })
-            .whereNot({
-                sync_job_id: generation
-            })
+            .where('sync_job_id', '<', generation)
             .update({
                 deleted_at: now,
                 updated_at: now,

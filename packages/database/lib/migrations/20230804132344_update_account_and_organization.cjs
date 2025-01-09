@@ -1,7 +1,7 @@
 const ACCOUNTS_TABLE = '_nango_accounts';
 const USERS_TABLE = '_nango_users';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(USERS_TABLE, function (table) {
         table.boolean('suspended').defaultTo(false).notNullable();
         table.dateTime('suspended_at').defaultTo(null);
@@ -11,7 +11,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(USERS_TABLE, function (table) {
         table.dropColumn('suspended');
         table.dropColumn('suspended_at');
