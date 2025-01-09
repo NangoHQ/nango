@@ -180,6 +180,9 @@ export async function exec(
                     response: null
                 };
             } else if (isAxiosError(err)) {
+                // isAxiosError lets us use something the shape of an axios error in
+                // testing, which is handy with how strongly typed everything is
+
                 span.setTag('error', err);
                 if (err.response?.data) {
                     const errorResponse = err.response.data.payload || err.response.data;
