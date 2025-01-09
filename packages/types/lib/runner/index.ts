@@ -2,13 +2,13 @@ export interface RunnerOutputError {
     type: string;
     payload: Record<string, unknown> | unknown[];
     status: number;
-    upstream_response?: RunnerUpstreamResponse;
+    upstream_response?: RunnerUpstreamResponse | undefined;
 }
 
 export interface RunnerUpstreamResponse {
     status: number;
     headers: Record<string, string>;
-    body: unknown;
+    body?: unknown;
 }
 
 export interface RunnerOutput {

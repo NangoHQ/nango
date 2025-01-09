@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, Endpoint, RunnerOutputError } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { handleError, handleSuccess } from '../../execution/operations/output.js';
@@ -17,13 +17,7 @@ type PutTask = Endpoint<{
     };
     Body: {
         nangoProps?: NangoProps;
-        error?:
-            | {
-                  type: string;
-                  payload: Record<string, unknown>;
-                  status: number;
-              }
-            | undefined;
+        error?: RunnerOutputError | undefined;
         output: JsonValue;
     };
     Error: ApiError<'put_task_failed'>;
@@ -93,7 +87,14 @@ const validate = validateRequest<PutTask>({
                     .object({
                         type: z.string(),
                         payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
-                        status: z.number()
+                        status: z.number(),
+                        upstream_response: z
+                            .object({
+                                status: z.number(),
+                                headers: z.record(z.string(), z.string()),
+                                body: z.unknown()
+                            })
+                            .optional()
                     })
                     .optional(),
                 output: jsonSchema.default(null)
