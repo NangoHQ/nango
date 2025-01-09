@@ -59,6 +59,7 @@ import type {
 import type { GetMeta } from './meta/api';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
 import type { PostPublicWebhook } from './webhooks/http.api';
+import type { PostEnvironment } from './environment/api';
 
 export type PublicApiEndpoints =
     | SetMetadata
@@ -128,7 +129,8 @@ export type PrivateApiEndpoints =
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
     | PostManagedSignup
-    | PostPreBuiltDeploy;
+    | PostPreBuiltDeploy
+    | PostEnvironment;
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
 /**

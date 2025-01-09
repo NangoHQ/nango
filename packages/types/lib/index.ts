@@ -25,7 +25,6 @@ export type * from './team/db.js';
 export type * from './providers/api.js';
 export type * from './proxy/api.js';
 
-export type * from './environment/db.js';
 export type * from './scripts/on-events/db.js';
 export type * from './scripts/on-events/api.js';
 export type * from './scripts/syncs/api.js';
@@ -50,6 +49,7 @@ export type * from './runner/index.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
+export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
 export type * from './webhooks/api.js';
