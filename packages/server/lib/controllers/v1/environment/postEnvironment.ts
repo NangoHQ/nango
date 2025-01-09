@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { PostEnvironment } from '@nangohq/types';
-import { environmentService, externalWebhookService } from '@nangohq/shared';
+import { accountService, environmentService, externalWebhookService } from '@nangohq/shared';
 import { envSchema } from '../../../helpers/validation.js';
 
 const validationBody = z
@@ -28,9 +28,21 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const accountId = res.locals.user.account_id;
 
-    const exists = await environmentService.getAccountAndEnvironment({ accountId, envName: body.name });
+    const account = await accountService.getAccountById(accountId);
+    if (account?.is_capped) {
+        res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating environment is only available for paying customer' } });
+        return;
+    }
+
+    const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+    if (environments.length >= 10) {
+        res.status(400).send({ error: { code: 'resource_capped', message: "Can't create more environment" } });
+        return;
+    }
+
+    const exists = environments.some((env) => env.name === body.name);
     if (exists) {
-        res.status(409).send({ error: { code: 'invalid_body', message: 'Environment already exists' } });
+        res.status(409).send({ error: { code: 'conflict', message: 'Environment already exists' } });
         return;
     }
 
