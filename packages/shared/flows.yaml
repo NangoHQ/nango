@@ -13372,11 +13372,6 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
-            SmartsheetCreateUser:
-                firstName: string
-                lastName: string
-                email: string
-                status?: string
     stripe-app:
         syncs:
             subscriptions:
