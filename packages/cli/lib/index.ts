@@ -11,7 +11,7 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
+import { init, generate, tscWatch, configWatch, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
@@ -243,30 +243,6 @@ program
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exitCode = 1;
         }
-    });
-
-program
-    .command('sync:dev', { hidden: true })
-    .description('Work locally to develop integration code')
-    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
-    .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm, debug } = this.opts();
-        const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        if (compileInterfaces) {
-            configWatch({ fullPath, debug });
-        }
-
-        tscWatch({ fullPath, debug });
-        await dockerRun(debug);
-    });
-
-program
-    .command('sync:docker.run', { hidden: true })
-    .description('Run the docker container locally')
-    .action(async function (this: Command) {
-        const { debug } = this.opts();
-        await dockerRun(debug);
     });
 
 program
