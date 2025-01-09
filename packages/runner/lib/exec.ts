@@ -179,17 +179,18 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (isAxiosError(err)) {
+            } else if (isAxiosError<unknown, unknown>(err)) {
                 // isAxiosError lets us use something the shape of an axios error in
                 // testing, which is handy with how strongly typed everything is
 
                 span.setTag('error', err);
                 if (err.response?.data) {
-                    const errorResponse = err.response.data.payload || err.response.data;
+                    const data = err.response.data as Record<string, unknown>;
+                    const errorResponse = (data['payload'] || data) as Record<string, unknown>;
 
                     const headers = Object.fromEntries(
                         Object.entries(err.response.headers)
-                            .map(([k, v]) => [k.toLowerCase(), v.toString()])
+                            .map<[string, string]>(([k, v]) => [k.toLowerCase(), String(v)])
                             .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
                     );
 
