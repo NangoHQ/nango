@@ -6353,6 +6353,28 @@ shopify-api-key:
             pattern: '^shpat_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
 
+shopify-scim:
+    display_name: Shopify (SCIM API)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://shopifyscim.com/scim/v2
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+    docs: https://help.shopify.com/en/manual/organization-settings/users/security/scim
+    docs_connect: https://help.shopify.com/en/manual/organization-settings/users/security/scim
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Shopify organization settings.
+            doc_section: '#step-1-generate-scim-api-token'
+
 shortcut:
     display_name: Shortcut
     categories:
