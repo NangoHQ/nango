@@ -198,6 +198,13 @@ airtable:
     webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
+airtable-scim:
+    display_name: Airtable (SCIM API)
+    alias: airtable
+    proxy:
+        base_url: https://airtable.com/scim/
+    docs: https://docs.nango.dev/integrations/all/airtable
+
 autodesk:
     display_name: Autodesk
     categories:
