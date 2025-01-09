@@ -6287,14 +6287,12 @@ sharepoint-online-v1:
             description: Your application Client ID
             secret: true
             doc_section: '#step-3-finding-your-client-id'
-            order: 3
         assertion:
             type: string
             title: Client Assertion
             description: Your generated client assertion
             secret: true
             doc_section: '#step-4-generating-your-client-assertion'
-            order: 4
 
 shipstation:
     display_name: Shipstation
