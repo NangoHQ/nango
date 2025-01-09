@@ -12,7 +12,7 @@ export interface Route<E extends Endpoint<any>> {
 
 export interface RouteHandler<E extends Endpoint<any>> extends Route<E> {
     validate: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void;
-    handler: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void;
+    handler: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void | Promise<void>;
 }
 
 export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteHandler<E>): void => {
