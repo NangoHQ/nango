@@ -3061,16 +3061,21 @@ guru:
             method: GET
             endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/guru
+    docs_connect: https://docs.nango.dev/integrations/all/guru/connect
     credentials:
         username:
             type: string
             title: User/Collection ID
             description: The user or collection ID of your Guru account
+            doc_section: '#step-1-finding-your-user-collection-id'
         password:
             type: string
             title: User/Collection Token
             description: The user or collection token of your Guru account
             secret: true
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-2-generating-your-user-collection-token'
 
 github:
     display_name: GitHub

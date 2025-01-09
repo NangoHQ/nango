@@ -27,8 +27,8 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/fleet": "file:../fleet",
-        "axios": "^1.7.9",
-        "dd-trace": "5.30.0",
+        "axios": "^1.7.4",
+        "dd-trace": "5.31.0",
         "get-port": "7.1.0",
         "express": "4.20.0",
         "node-cron": "3.0.3",
@@ -37,8 +37,8 @@
     "devDependencies": {
         "@types/node": "^20.12.2",
         "nodemon": "3.1.9",
-        "typescript": "5.7.2",
-        "type-fest": "4.31.0",
+        "typescript": "5.7.3",
+        "type-fest": "4.32.0",
         "vitest": "2.1.8"
     }
 }

@@ -35,12 +35,12 @@
         "@nangohq/keystore": "file:../keystore",
         "@nangohq/fleet": "file:../fleet",
         "@workos-inc/node": "6.2.0",
-        "axios": "^1.7.9",
+        "axios": "^1.7.4",
         "body-parser": "1.20.3",
         "connect-session-knex": "4.0.0",
-        "cookie-parser": "1.4.7",
+        "cookie-parser": "1.4.6",
         "cors": "2.8.5",
-        "dd-trace": "5.30.0",
+        "dd-trace": "5.21.0",
         "dotenv": "16.4.7",
         "exponential-backoff": "3.1.1",
         "express": "4.20.0",
@@ -65,12 +65,12 @@
         "zod": "3.24.1"
     },
     "devDependencies": {
-        "@types/cookie-parser": "1.4.8",
+        "@types/cookie-parser": "1.4.3",
         "@types/cors": "2.8.12",
         "@types/express": "4.17.13",
         "@types/express-session": "1.17.6",
         "@types/jsonwebtoken": "9.0.1",
-        "@types/lodash-es": "4.17.12",
+        "@types/lodash-es": "4.17.10",
         "@types/multer": "1.4.11",
         "@types/node": "20.12.2",
         "@types/node-cron": "3.0.7",
@@ -83,8 +83,8 @@
         "@types/ws": "8.5.4",
         "get-port": "7.1.0",
         "nodemon": "3.1.9",
-        "type-fest": "4.31.0",
-        "typescript": "5.7.2",
+        "type-fest": "4.32.0",
+        "typescript": "5.7.3",
         "vitest": "2.1.8"
     }
 }
