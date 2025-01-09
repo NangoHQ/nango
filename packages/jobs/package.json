@@ -36,9 +36,9 @@
     },
     "devDependencies": {
         "@types/node": "^20.12.2",
-        "nodemon": "3.1.9",
+        "nodemon": "3.1.7",
         "typescript": "5.7.3",
-        "type-fest": "4.32.0",
+        "type-fest": "4.26.1",
         "vitest": "2.1.8"
     }
 }
