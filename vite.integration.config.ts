@@ -18,7 +18,6 @@ export default defineConfig({
         },
         fileParallelism: false,
         pool: 'forks',
-        watch: false,
 
         poolOptions: {
             forks: {
