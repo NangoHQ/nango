@@ -44,7 +44,6 @@ echo -e "Building nangohq/nango:$ENV\n"
 
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg image_env="$ENV" \
   --build-arg git_hash="$GIT_HASH" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
