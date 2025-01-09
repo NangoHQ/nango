@@ -24,9 +24,8 @@ jobs:
         secrets: inherit
         with:
             package: server
-            run-cmd: build:staging
+            run-cmd: build:prod
             tags: -t nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
-
     nango-server-prod:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -49,5 +48,5 @@ jobs:
         secrets: inherit
         with:
             package: server
-            run-cmd: build:enterprise
+            run-cmd: build:prod
             tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.event.pull_request.head.sha || github.sha }}

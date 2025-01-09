@@ -6,16 +6,7 @@
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
         "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
         "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
-        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
-        "start:hosted": "env-cmd -f .env.hosted npm run start",
-        "start:local": "env-cmd -f .env.local npm run start",
-        "start:staging": "env-cmd -f .env.staging npm run start",
-        "start:prod": "env-cmd -f .env.prod npm run start",
-        "build:hosted": "env-cmd -f .env.hosted npm run build",
-        "build:local": "env-cmd -f .env.local npm run build",
-        "build:enterprise": "env-cmd -f .env.enterprise npm run build",
-        "build:staging": "env-cmd -f .env.staging npm run build",
-        "build:prod": "env-cmd -f .env.prod npm run build"
+        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject"
     },
     "browserslist": {
         "production": [
