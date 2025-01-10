@@ -3294,34 +3294,6 @@ gong-oauth:
             format: uri
             pattern: '^https?://.*$'
 
-gong-scim:
-    display_name: Gong (SCIM API)
-    categories:
-        - productivity
-    auth_mode: OAUTH2
-    authorization_url: https://app.gong.io/oauth2/authorize
-    token_url: https://app.gong.io/oauth2/generate-customer-token
-    token_response_metadata:
-        - api_base_url_for_customer
-    authorization_params:
-        response_type: code
-        access_type: offline
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
-    disable_pkce: true
-    token_request_auth_method: basic
-    proxy:
-        base_url: https://provisioning.gong.io/scim
-        retry:
-            after: 'retry-after'
-        headers:
-            accept: application/json
-            content-type: application/json
-            user-agent: custom-scim
-    docs: https://docs.nango.dev/integrations/all/gong
-
 google:
     display_name: Google
     auth_mode: OAUTH2
@@ -6236,6 +6208,63 @@ sharepoint-online:
         - communication
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
+
+sharepoint-online-v1:
+    display_name: SharePoint Online (v1)
+    categories:
+        - storage
+        - communication
+    auth_mode: TWO_STEP
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
+    body_format: form
+    token_params:
+        client_id: ${credential.clientId}
+        grant_type: client_credentials
+        resource: https://${connectionConfig.tenantId}.sharepoint.com
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credential.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.tenantName}.sharepoint.com
+        headers:
+            accept: application/json;odata=verbose
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online
+    docs_connect: https://docs.nango.dev/integrations/all/sharepoint-online-v1/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The initial domain name for your Microsoft services tenant
+            example: mycompany
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-tenant-name'
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your application Client ID
+            secret: true
+            doc_section: '#step-3-finding-your-client-id'
+        assertion:
+            type: string
+            title: Client Assertion
+            description: Your generated client assertion
+            secret: true
+            doc_section: '#step-4-generating-your-client-assertion'
 
 shipstation:
     display_name: Shipstation
