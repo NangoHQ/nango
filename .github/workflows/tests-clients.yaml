@@ -22,11 +22,6 @@ jobs:
                   else
                     echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
                   fi
-    debug-matrix:
-        needs: compute-matrix
-        runs-on: ubuntu-latest
-        steps:
-            - run: echo ${{ needs.compute-matrix.outputs.os-matrix }}
     tests:
         needs: compute-matrix
         strategy:
