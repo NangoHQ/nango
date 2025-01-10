@@ -40,9 +40,11 @@ const handler = (scheduler: Scheduler) => {
             ...(limit ? { limit } : {})
         });
         if (getTasks.isErr()) {
-            return res.status(500).json({ error: { code: 'search_failed', message: getTasks.error.message } });
+            res.status(500).json({ error: { code: 'search_failed', message: getTasks.error.message } });
+            return;
         }
-        return res.status(200).json(getTasks.value);
+        res.status(200).json(getTasks.value);
+        return;
     };
 };
 

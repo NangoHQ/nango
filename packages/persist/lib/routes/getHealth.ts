@@ -14,5 +14,7 @@ export const routeHandler: RouteHandler<Health> = {
     path,
     method,
     validate: (_req, _res, next) => next(),
-    handler: (_req, res) => res.status(200).json({ status: 'ok' })
+    handler: (_req, res) => {
+        res.status(200).json({ status: 'ok' });
+    }
 };

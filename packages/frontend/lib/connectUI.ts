@@ -125,6 +125,8 @@ export class ConnectUI {
         if (this.iframe) {
             document.body.removeChild(this.iframe);
             this.iframe = null;
+
+            document.body.style.overflow = '';
         }
     }
 

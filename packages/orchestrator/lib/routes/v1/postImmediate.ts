@@ -88,9 +88,11 @@ const handler = (scheduler: Scheduler) => {
             heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
-            return res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
+            res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
+            return;
         }
-        return res.status(200).json({ taskId: task.value.id });
+        res.status(200).json({ taskId: task.value.id });
+        return;
     };
 };
 

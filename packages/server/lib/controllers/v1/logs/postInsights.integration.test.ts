@@ -69,7 +69,7 @@ describe('POST /logs/insights', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: env.secret_key,
-            body: { type: 'sync' }
+            body: { type: 'sync:run' }
         });
 
         isSuccess(res.json);
