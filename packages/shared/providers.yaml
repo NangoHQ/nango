@@ -6359,7 +6359,7 @@ shopify-scim:
         - e-commerce
     auth_mode: API_KEY
     proxy:
-        base_url: https://shopifyscim.com/scim/v2
+        base_url: https://shopifyscim.com/scim
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
