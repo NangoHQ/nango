@@ -5,10 +5,10 @@ export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
     public payload: Record<string, unknown>;
-    public additional_properties: JsonValue = {};
+    public additional_properties: Record<string, JsonValue> = {};
     public override readonly message: string;
 
-    constructor(type: string, payload = {}, status?: number, additional_properties: JsonValue = {}) {
+    constructor(type: string, payload = {}, status?: number, additional_properties: Record<string, JsonValue> = {}) {
         super();
 
         this.type = type;
@@ -487,8 +487,13 @@ export class NangoError extends Error {
                 this.message = `An invalid error of type: ${typeof this.payload}`;
                 break;
 
-            case 'script_http_error':
+            case 'script_network_error':
                 this.status = 500;
+                this.message = 'A network error occurred during an HTTP call';
+                break;
+
+            case 'script_http_error':
+                this.status = 424;
                 this.message = `An error occurred during an HTTP call`;
                 break;
 

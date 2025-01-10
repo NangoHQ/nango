@@ -88,13 +88,7 @@ const validate = validateRequest<PutTask>({
                         type: z.string(),
                         payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
                         status: z.number(),
-                        upstream_response: z
-                            .object({
-                                status: z.number(),
-                                headers: z.record(z.string(), z.string()),
-                                body: z.unknown()
-                            })
-                            .optional()
+                        additional_properties: z.record(z.string(), z.unknown()).optional()
                     })
                     .optional(),
                 output: jsonSchema.default(null)

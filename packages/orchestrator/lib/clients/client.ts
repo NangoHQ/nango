@@ -181,6 +181,7 @@ export class OrchestratorClient {
                 retryIf: (res) => 'error' in res && Date.now() < retryUntil
             }
         })({ params: { taskId }, query: { longPolling: 30_000 } });
+
         if ('error' in getOutput) {
             return Err({
                 name: getOutput.error.code,
@@ -408,7 +409,8 @@ export class OrchestratorClient {
             name: error.name,
             type: 'type' in error ? (error.type as string) : 'unknown_error',
             message: error.message,
-            payload: 'payload' in error ? (error.payload as any) : null
+            payload: 'payload' in error ? (error.payload as any) : null,
+            additional_properties: 'additional_properties' in error ? (error.additional_properties as any) : null
         };
         const res = await this.routeFetch(putTaskRoute)({
             params: { taskId },
