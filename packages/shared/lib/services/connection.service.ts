@@ -57,7 +57,8 @@ import {
     parseTableauTokenExpirationDate,
     interpolateObject,
     extractValueByPath,
-    stripCredential
+    stripCredential,
+    interpolateObjectValues
 } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
@@ -1698,7 +1699,7 @@ class ConnectionService {
 
         const bodyFormat = provider.body_format || 'json';
 
-        const postBody: Record<string, any> | string = {};
+        let postBody: Record<string, any> | string = {};
 
         if (provider.token_params) {
             for (const [key, value] of Object.entries(provider.token_params)) {
@@ -1712,6 +1713,7 @@ class ConnectionService {
                     postBody[key] = strippedValue;
                 }
             }
+            postBody = interpolateObjectValues(postBody, connectionConfig);
         }
 
         const headers: Record<string, string> = {};
@@ -1733,7 +1735,9 @@ class ConnectionService {
                           attributeNamePrefix: '$',
                           ignoreAttributes: false
                       }).build(postBody)
-                    : JSON.stringify(postBody);
+                    : bodyFormat === 'form'
+                      ? new URLSearchParams(postBody).toString()
+                      : JSON.stringify(postBody);
 
             const response = await axios.post(url.toString(), bodyContent, requestOptions);
 

@@ -60,7 +60,7 @@ export const Homepage: React.FC = () => {
                 {globalEnv.features.scripts && (
                     <InsightChart
                         title="Sync Executions"
-                        type="sync"
+                        type="sync:run"
                         desc=""
                         help={
                             <div>
