@@ -12,7 +12,7 @@ jobs:
     compute-matrix:
         runs-on: ubuntu-latest
         outputs:
-            os_matrix: ${{ steps.set-matrix.outputs.matrix }}
+            os-matrix: ${{ steps.set-matrix.outputs.matrix }}
         steps:
             - name: Set Matrix
               id: set-os-matrix
