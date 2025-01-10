@@ -5,10 +5,10 @@ export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
     public payload: Record<string, unknown>;
-    public additional_properties: Record<string, JsonValue> = {};
+    public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
 
-    constructor(type: string, payload = {}, status?: number, additional_properties: Record<string, JsonValue> = {}) {
+    constructor(type: string, payload = {}, status?: number, additional_properties?: Record<string, JsonValue>) {
         super();
 
         this.type = type;
