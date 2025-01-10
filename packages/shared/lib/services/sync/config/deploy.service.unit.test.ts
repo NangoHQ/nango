@@ -11,6 +11,7 @@ import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { DBTeam, DBEnvironment, CleanedIncomingFlowConfig } from '@nangohq/types';
 import type { SyncConfig } from '../../../models/Sync.js';
+import db from '@nangohq/database';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -206,6 +207,8 @@ describe('Sync config create', () => {
         vi.spyOn(SyncService, 'getSyncsByProviderConfigAndSyncName').mockImplementation(() => {
             return Promise.resolve([]);
         });
+
+        vi.spyOn(db.knex, 'from').mockRejectedValue(new Error());
 
         await expect(
             DeployConfigService.deploy({
