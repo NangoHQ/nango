@@ -22,7 +22,7 @@ export const connectionIdSchema = z
     .max(255);
 export const envSchema = z
     .string()
-    .regex(/^[a-zA-Z0-9_-]+$/)
+    .regex(/^[a-z0-9_-]+$/)
     .max(255);
 export const connectSessionTokenPrefix = 'nango_connect_session_';
 export const connectSessionTokenSchema = z.string().regex(new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`));
