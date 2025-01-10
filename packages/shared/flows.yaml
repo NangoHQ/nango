@@ -4023,6 +4023,46 @@ integrations:
                 watchers: number
                 watchers_count: number
                 web_commit_signoff_required: boolean
+    gong:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    gong-oauth:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     google:
         syncs:
             workspace-org-units:
