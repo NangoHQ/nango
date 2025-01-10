@@ -5,8 +5,6 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
-import { spawn } from 'child_process';
-import type { ChildProcess } from 'node:child_process';
 
 import { getNangoRootPath, printDebug } from './utils.js';
 import { loadYamlAndGenerate } from './services/model.service.js';
@@ -292,50 +290,3 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
         loadYamlAndGenerate({ fullPath, debug });
     });
 }
-
-let child: ChildProcess | undefined;
-process.on('SIGINT', () => {
-    if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'down'], {
-            stdio: 'inherit'
-        });
-        dockerDown.on('exit', () => {
-            process.exit();
-        });
-    } else {
-        process.exit();
-    }
-});
-
-/**
- * Docker Run
- * @desc spawn a child process to run the docker compose located in the cli
- * Look into https://www.npmjs.com/package/docker-compose to avoid dependency maybe?
- */
-export const dockerRun = async (debug = false) => {
-    const cwd = process.cwd();
-
-    const args = ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'up', '--build'];
-
-    if (debug) {
-        printDebug(`Running docker with args: ${args.join(' ')}`);
-    }
-
-    child = spawn('docker', args, {
-        cwd,
-        detached: false,
-        stdio: 'inherit'
-    });
-
-    await new Promise((resolve, reject) => {
-        child?.on('exit', (code) => {
-            if (code !== 0) {
-                reject(new Error(`Error with the nango docker containers, please check your containers using 'docker ps''`));
-                return;
-            }
-            resolve(true);
-        });
-
-        child?.on('error', reject);
-    });
-};
