@@ -4023,6 +4023,46 @@ integrations:
                 watchers: number
                 watchers_count: number
                 web_commit_signoff_required: boolean
+    gong:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    gong-oauth:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     google:
         syncs:
             workspace-org-units:
@@ -6371,6 +6411,15 @@ integrations:
                     group: Users
                 output: SuccessResponse
                 input: IdEntity
+            fetch-teams:
+                description: |
+                    Fetch teams in an organisation in Jira
+                output: Teams
+                input: IdEntity
+                endpoint:
+                    method: GET
+                    path: /teams-list
+                    group: Teams
         syncs:
             users:
                 runs: every day
@@ -6404,6 +6453,11 @@ integrations:
                 lastName: string
                 email: string
                 products?: string[]
+            Teams:
+                teams: Team[]
+            Team:
+                id: string
+                name: string
     keeper-scim:
         actions:
             create-user:
