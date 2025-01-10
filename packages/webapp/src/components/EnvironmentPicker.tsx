@@ -85,9 +85,9 @@ export const EnvironmentPicker: React.FC = () => {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button role="combobox" variant={'select'} className="justify-between grow w-full capitalize border-grayscale-600 px-2.5">
-                    {env}
-                    <IconChevronDown stroke={1} size={18} />
+                <Button role="combobox" variant={'select'} className="justify-between grow w-full capitalize border-grayscale-600 px-2.5 whitespace-pre">
+                    <div className="text-ellipsis overflow-hidden">{env}</div>
+                    <IconChevronDown stroke={1} size={18} className="w-20" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -105,10 +105,15 @@ export const EnvironmentPicker: React.FC = () => {
                     )}
                     <CommandList className="max-h-[400px]">
                         <CommandEmpty>No environment found.</CommandEmpty>
-                        <CommandGroup className="px-0">
+                        <CommandGroup className="px-0 max-h-[340px] overflow-y-scroll">
                             {meta.environments.map((item) => (
-                                <CommandItem key={item.name} value={item.name} className={cn('capitalize px-2.5 text-grayscale-100')} onSelect={onSelect}>
-                                    {item.name}
+                                <CommandItem
+                                    key={item.name}
+                                    value={item.name}
+                                    className={cn('capitalize px-2.5 text-grayscale-100 overflow-hidden whitespace-pre')}
+                                    onSelect={onSelect}
+                                >
+                                    <div className="text-ellipsis overflow-hidden">{item.name}</div>
                                     <IconCheck className={cn('ml-auto', env === item.name ? 'opacity-100' : 'opacity-0')} size={18} />
                                 </CommandItem>
                             ))}
