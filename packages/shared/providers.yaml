@@ -6367,11 +6367,13 @@ shopify-scim:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify
+    docs_connect: https://docs.nango.dev/integrations/all/shopify-scim/connect
     credentials:
         apiKey:
             type: string
             title: SCIM API Token
             description: The SCIM API token generated from your Shopify organization settings.
+            doc_section: '#step-1-generating-your-scim-api-token'
 
 shortcut:
     display_name: Shortcut
