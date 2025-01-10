@@ -12,9 +12,9 @@ jobs:
     compute-matrix:
         runs-on: ubuntu-latest
         outputs:
-            os-matrix: ${{ steps.set-matrix.outputs.matrix }}
+            os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
         steps:
-            - name: Set Matrix
+            - name: Set OS Matrix
               id: set-os-matrix
               run: |
                   echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
