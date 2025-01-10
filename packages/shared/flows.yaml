@@ -11049,6 +11049,18 @@ integrations:
                     method: GET
                     path: /invoices
                     group: Invoices
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in QuickBooks
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: General Ledger
+                scopes:
+                    - com.intuit.quickbooks.accounting
         actions:
             create-customer:
                 description: |
@@ -11372,6 +11384,22 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+            GeneralLedger:
+                id: string
+                date: string
+                createdDate: string
+                updatedDate: string
+                currency: string
+                note: string
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                type: string
+                accountId: string
+                accountName: string
+                netAmount: number
+                postingType: Debit | Credit
+                description: string
     quickbooks-sandbox:
         syncs:
             customers:
@@ -11434,6 +11462,18 @@ integrations:
                     method: GET
                     path: /invoices
                     group: Invoices
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in QuickBooks
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: General Ledger
+                scopes:
+                    - com.intuit.quickbooks.accounting
         actions:
             create-customer:
                 description: |
@@ -11757,6 +11797,22 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+            GeneralLedger:
+                id: string
+                date: string
+                createdDate: string
+                updatedDate: string
+                currency: string
+                note: string
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                type: string
+                accountId: string
+                accountName: string
+                netAmount: number
+                postingType: Debit | Credit
+                description: string
     ramp:
         syncs:
             users:
