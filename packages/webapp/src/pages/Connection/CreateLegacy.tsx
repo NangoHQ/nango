@@ -9,7 +9,7 @@ import { Tooltip } from '@geist-ui/core';
 import type { Integration } from '@nangohq/server';
 
 import useSet from '../../hooks/useSet';
-import { isHosted, isStaging, baseUrl } from '../../utils/utils';
+import { isCloudProd } from '../../utils/utils';
 import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -22,6 +22,7 @@ import type { AuthModeType } from '@nangohq/types';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { Helmet } from 'react-helmet';
 import { useSearchParam } from 'react-use';
+import { globalEnv } from '../../utils/env';
 
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
@@ -108,7 +109,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         if (environmentAndAccount) {
             const { environment, host } = environmentAndAccount;
             setPublicKey(environment.public_key);
-            setHostUrl(host || baseUrl());
+            setHostUrl(host || globalEnv.apiUrl);
             setWebsocketsPath(environment.websockets_path || '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }
@@ -336,7 +337,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const snippet = () => {
         const args = [];
 
-        if (isStaging() || isHosted()) {
+        if (!isCloudProd()) {
             args.push(`host: '${hostUrl}'`);
             if (websocketsPath && websocketsPath !== '/') {
                 args.push(`websocketsPath: '${websocketsPath}'`);

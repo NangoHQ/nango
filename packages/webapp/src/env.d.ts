@@ -6,7 +6,6 @@ declare global {
     namespace NodeJS {
         interface ProcessEnv {
             PORT: string;
-            REACT_APP_ENV: 'development' | 'staging' | 'production' | 'hosted' | 'enterprise';
         }
     }
 }

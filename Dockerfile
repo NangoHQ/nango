@@ -54,10 +54,6 @@ RUN true \
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
-ARG image_env
-
-# TODO: remove this, it's only needed for the frontend
-ENV REACT_APP_ENV $image_env
 
 # Build the frontend
 RUN true \
@@ -99,12 +95,10 @@ WORKDIR /app/nango
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp /app/nango
 
-ARG image_env
 ARG git_hash
 
 ENV PORT=8080
 ENV NODE_ENV=production
-ENV IMAGE_ENV $image_env
 ENV GIT_HASH $git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 

@@ -109,6 +109,7 @@ import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore
 import { postRollout } from './controllers/fleet/postRollout.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 
 export const router = express.Router();
 
@@ -310,6 +311,7 @@ web.route('/api/v1/invite/:id').delete(webAuth, declineInvite);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
+web.route('/api/v1/environments').post(webAuth, postEnvironment);
 web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 web.route('/api/v1/environment/webhook/primary-url').patch(webAuth, updatePrimaryUrl);
 web.route('/api/v1/environment/webhook/secondary-url').patch(webAuth, updateSecondaryUrl);
