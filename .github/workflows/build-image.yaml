@@ -12,7 +12,7 @@ jobs:
     build-image:
         runs-on: ubuntu-latest
         env:
-            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != ' && secrets.DOCKER_USERNAME != ' }}"
+            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}"
             SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
         steps:
