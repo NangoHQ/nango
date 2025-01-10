@@ -6299,6 +6299,9 @@ shopify-api-key:
         headers:
             x-shopify-access-token: ${apiKey}
             content-type: application/json
+        verification:
+            method: POST
+            endpoint: /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/shopify
     docs_connect: https://docs.nango.dev/integrations/all/shopify-api-key/connect
     connection_config:
