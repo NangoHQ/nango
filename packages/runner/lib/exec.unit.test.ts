@@ -186,15 +186,17 @@ describe('Exec', () => {
                 error: 'Not found'
             },
             status: 404,
-            upstream_response: {
-                body: {
-                    error: 'Not found'
-                },
-                headers: {
-                    'content-type': 'application/json',
-                    'x-ratelimit-limit': '100'
-                },
-                status: 404
+            additional_properties: {
+                upstream_response: {
+                    body: {
+                        error: 'Not found'
+                    },
+                    headers: {
+                        'content-type': 'application/json',
+                        'x-ratelimit-limit': '100'
+                    },
+                    status: 404
+                }
             },
             type: 'script_http_error'
         });

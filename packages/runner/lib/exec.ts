@@ -200,10 +200,12 @@ export async function exec(
                             type: 'script_http_error',
                             payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
                             status: err.response.status,
-                            upstream_response: {
-                                status: err.response.status,
-                                headers,
-                                body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
+                            additional_properties: {
+                                upstream_response: {
+                                    status: err.response.status,
+                                    headers,
+                                    body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
+                                }
                             }
                         },
                         response: null
