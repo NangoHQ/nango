@@ -3,42 +3,17 @@ import type { ClassValue } from 'clsx';
 import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import type { SyncResult } from '../types';
+import { globalEnv } from './env';
 
-export const localhostUrl: string = 'http://localhost:3003';
-export const stagingUrl: string = 'https://api-staging.nango.dev';
-export const prodUrl: string = 'https://api.nango.dev';
-
-export const syncDocs = 'https://docs.nango.dev/guides/getting-started/read-from-an-api';
 export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
 export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
 
-export function isHosted() {
-    return process.env.REACT_APP_ENV === 'hosted';
-}
-
-export function isStaging() {
-    return process.env.REACT_APP_ENV === 'staging';
-}
-
-export function isProd() {
-    return process.env.REACT_APP_ENV === 'production';
-}
-
-export function baseUrl() {
-    switch (process.env.REACT_APP_ENV) {
-        case 'hosted':
-            return localhostUrl;
-        case 'staging':
-            return stagingUrl;
-        case 'production':
-            return prodUrl;
-        default:
-            return localhostUrl;
-    }
+export function isCloudProd() {
+    return window.location.origin === 'https://app.nango.dev';
 }
 
 export function defaultCallback() {
-    return baseUrl() + '/oauth/callback';
+    return globalEnv.apiUrl + '/oauth/callback';
 }
 
 export function elapsedTime(start: Date | number, end: Date | number): string {

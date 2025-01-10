@@ -16,7 +16,7 @@ import {
     apiFetch
 } from '../../utils/api';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { isHosted, defaultCallback } from '../../utils/utils';
+import { defaultCallback } from '../../utils/utils';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
@@ -691,10 +691,10 @@ export const EnvironmentSettings: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                        {!isHosted() && (
+                        {globalEnv.features.slack && (
                             <div className="flex items-center justify-between mx-8 mt-8">
                                 <div>
-                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
+                                    <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center text-sm font-semibold mb-2">
                                         Slack Alerts
                                         <Tooltip
                                             text={
