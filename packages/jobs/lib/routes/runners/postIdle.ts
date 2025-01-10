@@ -27,9 +27,11 @@ const handler = async (req: EndpointRequest<PostIdle>, res: EndpointResponse<Pos
         if (idle.isErr()) {
             throw idle.error;
         }
-        return res.status(200).json({ status: 'ok' });
+        res.status(200).json({ status: 'ok' });
+        return;
     } catch (err) {
-        return res.status(500).json({ error: { code: 'idle_failed', message: err instanceof Error ? err.message : 'failed to idle runner' } });
+        res.status(500).json({ error: { code: 'idle_failed', message: err instanceof Error ? err.message : 'failed to idle runner' } });
+        return;
     }
 };
 
