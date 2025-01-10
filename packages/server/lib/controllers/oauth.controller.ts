@@ -829,7 +829,14 @@ class OAuthController {
             return;
         }
 
-        const session = await oAuthSessionService.findById(state as string);
+        let session;
+        try {
+            session = await oAuthSessionService.findById(state as string);
+        } catch (err) {
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            errorManager.errRes(res, 'invalid_oauth_state');
+            return;
+        }
 
         if (session == null) {
             const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
