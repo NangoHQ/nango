@@ -108,11 +108,11 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
-        isSync: () => true,
-        isWebhook: () => false,
-        isAction: () => false,
-        isOnEvent: () => false,
-        isSyncAbort: () => false
+        isSync: (): this is TaskSync => true,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false
     };
 }
 
@@ -130,11 +130,11 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         connection: props.connection,
         groupKey: props.groupKey,
         reason: props.reason,
-        isSync: () => false,
-        isWebhook: () => false,
-        isAction: () => false,
-        isOnEvent: () => false,
-        isSyncAbort: () => true
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => true
     };
 }
 
@@ -150,11 +150,11 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
-        isSync: () => false,
-        isWebhook: () => false,
-        isAction: () => true,
-        isOnEvent: () => false,
-        isSyncAbort: () => false
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => true,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false
     };
 }
 
@@ -171,11 +171,11 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         activityLogId: props.activityLogId,
         input: props.input,
         groupKey: props.groupKey,
-        isSync: () => false,
-        isWebhook: () => true,
-        isAction: () => false,
-        isOnEvent: () => false,
-        isSyncAbort: () => false
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => true,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false
     };
 }
 
@@ -192,11 +192,11 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         fileLocation: props.fileLocation,
         activityLogId: props.activityLogId,
         groupKey: props.groupKey,
-        isSync: () => false,
-        isWebhook: () => false,
-        isAction: () => false,
-        isOnEvent: () => true,
-        isSyncAbort: () => false
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => true,
+        isSyncAbort: (): this is TaskSyncAbort => false
     };
 }
 

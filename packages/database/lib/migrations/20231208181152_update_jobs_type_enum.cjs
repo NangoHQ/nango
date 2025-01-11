@@ -1,6 +1,6 @@
 const tableName = '_nango_sync_jobs';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema
         .alterTable(tableName, function (table) {
             table.string('type_new').defaultsTo('initial').notNullable();
@@ -22,7 +22,7 @@ exports.up = function (knex, _) {
         );
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema
         .alterTable(tableName, function (table) {
             table.enu('type', ['INITIAL', 'INCREMENTAL']).defaultTo('initial').notNullable();

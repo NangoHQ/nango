@@ -8,7 +8,7 @@ const ACCOUNTS_TABLE = '_nango_accounts';
 
 const TABLE_PREFIX = '_nango_';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     const tablesToReplace = [
         { name: `${TABLE_PREFIX}activity_logs`, dropForeign: true, truncate: true },
         { name: `${TABLE_PREFIX}configs`, dropForeign: true, truncate: false },
@@ -50,7 +50,7 @@ exports.up = async function (knex, _) {
     }
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     return knex.schema.alterTable(ACCOUNTS_TABLE, function (table) {
         table.uuid('secret_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.uuid('public_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();

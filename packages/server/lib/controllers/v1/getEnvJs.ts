@@ -1,4 +1,4 @@
-import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, isCloud } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, flagHasAuth, flagHasManagedAuth, flagHasScripts, flagHasSlack, isCloud } from '@nangohq/utils';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import type { WindowEnv } from '@nangohq/types';
 import { envs } from '@nangohq/logs';
@@ -12,14 +12,16 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicPosthogKey: process.env['PUBLIC_POSTHOG_KEY'] || '',
         publicPosthogHost: process.env['PUBLIC_POSTHOG_HOST'] || '',
         publicLogoDevKey: process.env['PUBLIC_LOGODEV_KEY'] || '',
-        publicKoalaKey: process.env['PUBLIC_KOALA_KEY'] || '',
+        publicKoalaApiUrl: process.env['PUBLIC_KOALA_API_URL'] || '',
+        publicKoalaCdnUrl: process.env['PUBLIC_KOALA_CDN_URL'] || '',
         isCloud,
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,
             auth: flagHasAuth,
             managedAuth: flagHasManagedAuth,
-            gettingStarted: true
+            gettingStarted: true,
+            slack: flagHasSlack
         }
     };
     res.setHeader('content-type', 'text/javascript');

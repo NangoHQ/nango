@@ -102,7 +102,8 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                return;
             }
 
             if (environment.hmac_enabled && !isConnectSession) {
@@ -112,7 +113,8 @@ class OAuthController {
                     await logCtx.error(error.message);
                     await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                    await publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                    return;
                 }
 
                 const verified = hmacService.verify({ receivedDigest: hmac, environment, values: [providerConfigKey, receivedConnectionId] });
@@ -121,7 +123,8 @@ class OAuthController {
                     await logCtx.error(error.message);
                     await logCtx.failed();
 
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                    await publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, error);
+                    return;
                 }
             }
 
@@ -134,7 +137,8 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return;
             }
 
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -145,7 +149,8 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
@@ -230,11 +235,12 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (provider.auth_mode === 'OAUTH2') {
-                return this.oauth2Request({
+                await this.oauth2Request({
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
@@ -246,17 +252,21 @@ class OAuthController {
                     userScope,
                     logCtx
                 });
+                return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
-                return this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                return;
             } else if (provider.auth_mode === 'OAUTH1') {
-                return this.oauth1Request(provider, config, session, res, callbackUrl, environmentId, logCtx);
+                await this.oauth1Request(provider, config, session, res, callbackUrl, environmentId, logCtx);
+                return;
             }
 
             const error = WSErrBuilder.UnknownAuthMode(provider.auth_mode);
             await logCtx.error(error.message);
             await logCtx.failed();
 
-            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+            await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+            return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
             const error = WSErrBuilder.UnknownError();
@@ -515,7 +525,8 @@ class OAuthController {
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -523,7 +534,8 @@ class OAuthController {
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (provider.authorization_params && missesInterpolationParamInObject(provider.authorization_params, connectionConfig)) {
@@ -531,7 +543,8 @@ class OAuthController {
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (provider.token_params && missesInterpolationParamInObject(provider.token_params, connectionConfig)) {
@@ -539,7 +552,8 @@ class OAuthController {
                 await logCtx.error(error.message, { connectionConfig });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
             if (
                 provider.token_params == undefined ||
@@ -648,7 +662,8 @@ class OAuthController {
                 });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -697,7 +712,8 @@ class OAuthController {
                 await logCtx.error(error.message, { ...connectionConfig });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             await oAuthSessionService.create(session);
@@ -809,24 +825,23 @@ class OAuthController {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
 
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             return;
         }
 
-        const session = await oAuthSessionService.findById(state as string);
+        let session;
+        try {
+            session = await oAuthSessionService.findById(state as string);
+        } catch (err) {
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            errorManager.errRes(res, 'invalid_oauth_state');
+            return;
+        }
 
         if (session == null) {
             const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
-            errorManager.report(e, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
@@ -846,7 +861,8 @@ class OAuthController {
                 const error = WSErrBuilder.UnknownProviderTemplate(session.provider);
                 await logCtx.error(error.message);
                 await logCtx.failed();
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
@@ -860,29 +876,28 @@ class OAuthController {
                 await logCtx.error(error.message);
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
-                return this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
+                await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
+                return;
             } else if (session.authMode === 'OAUTH1') {
-                return this.oauth1Callback(provider, config, session, req, res, environment, account, logCtx);
+                await this.oauth1Callback(provider, config, session, req, res, environment, account, logCtx);
+                return;
             }
 
             const error = WSErrBuilder.UnknownAuthMode(session.authMode);
             await logCtx.error(error.message, { url: req.originalUrl });
             await logCtx.failed();
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                environmentId: session.environmentId,
-                metadata: errorManager.getExpressRequestContext(req)
-            });
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH, environmentId: session.environmentId });
 
             await logCtx.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx.failed();
@@ -958,7 +973,8 @@ class OAuthController {
             await logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
             await logCtx.success();
 
-            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+            await publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
+            return;
         }
 
         // check for oauth overrides in the connection config
@@ -1069,7 +1085,8 @@ class OAuthController {
                     logCtx
                 );
 
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
+                return;
             }
 
             let connectionConfig = {
@@ -1159,7 +1176,8 @@ class OAuthController {
             if (!updatedConnection) {
                 await logCtx.error('Failed to create connection');
                 await logCtx.failed();
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
             }
 
             let connectSession: ConnectSessionAndEndUser | undefined;
@@ -1172,7 +1190,8 @@ class OAuthController {
                 if (connectSessionRes.isErr()) {
                     await logCtx.error('Failed to get session');
                     await logCtx.failed();
-                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    return;
                 }
 
                 connectSession = connectSessionRes.value;
@@ -1247,7 +1266,8 @@ class OAuthController {
 
             await logCtx.success();
 
-            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+            await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
+            return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {

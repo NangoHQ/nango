@@ -6,16 +6,7 @@
         "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
         "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
         "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
-        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject",
-        "start:hosted": "env-cmd -f .env.hosted npm run start",
-        "start:local": "env-cmd -f .env.local npm run start",
-        "start:staging": "env-cmd -f .env.staging npm run start",
-        "start:prod": "env-cmd -f .env.prod npm run start",
-        "build:hosted": "env-cmd -f .env.hosted npm run build",
-        "build:local": "env-cmd -f .env.local npm run build",
-        "build:enterprise": "env-cmd -f .env.enterprise npm run build",
-        "build:staging": "env-cmd -f .env.staging npm run build",
-        "build:prod": "env-cmd -f .env.prod npm run build"
+        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject"
     },
     "browserslist": {
         "production": [
@@ -85,7 +76,7 @@
         "swr": "2.2.5",
         "tailwind-merge": "2.5.4",
         "tailwindcss": "3.4.14",
-        "typescript": "5.3.3",
+        "typescript": "5.7.3",
         "vaul": "0.9.1",
         "web-vitals": "2.1.4",
         "webpack": "5.94.0",

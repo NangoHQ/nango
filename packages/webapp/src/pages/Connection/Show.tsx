@@ -14,7 +14,6 @@ import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { Syncs } from './Syncs';
 import { Authorization } from './Authorization';
-import { isHosted } from '../../utils/utils';
 import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
@@ -29,6 +28,7 @@ import { useToast } from '../../hooks/useToast';
 import { useListIntegration } from '../../hooks/useIntegration';
 import { EndUserProfile } from './components/EndUserProfile';
 import { getConnectionDisplayName } from '../../utils/endUser';
+import { globalEnv } from '../../utils/env';
 
 export enum Tabs {
     Syncs,
@@ -68,7 +68,7 @@ export const ConnectionShow: React.FC = () => {
         if (location.hash === '#models' || location.hash === '#syncs') {
             setActiveTab(Tabs.Syncs);
         }
-        if (location.hash === '#authorization' || isHosted()) {
+        if (location.hash === '#authorization' || !globalEnv.features.scripts) {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
@@ -94,7 +94,7 @@ export const ConnectionShow: React.FC = () => {
                 undefined,
                 { revalidate: false }
             );
-            for await (const key of cache.keys()) {
+            for (const key of cache.keys()) {
                 if (key.startsWith('/api/v1/connections')) {
                     cache.delete(key);
                 }
@@ -237,7 +237,7 @@ export const ConnectionShow: React.FC = () => {
                 </ul>
             </section>
 
-            {!slackIsConnected && !isHosted() && showSlackBanner && (
+            {!slackIsConnected && globalEnv.features.slack && showSlackBanner && (
                 <Info
                     className="mt-6"
                     onClose={() => setShowSlackBanner(false)}

@@ -6,7 +6,8 @@ export interface WindowEnv {
     publicPosthogKey: string;
     publicPosthogHost: string;
     publicLogoDevKey: string;
-    publicKoalaKey: string;
+    publicKoalaApiUrl: string;
+    publicKoalaCdnUrl: string;
     isCloud: boolean;
     features: {
         logs: boolean;
@@ -14,5 +15,6 @@ export interface WindowEnv {
         auth: boolean;
         managedAuth: boolean;
         gettingStarted: boolean;
+        slack: boolean;
     };
 }

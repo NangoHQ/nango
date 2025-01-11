@@ -10,26 +10,18 @@ on:
 
 jobs:
     build-image:
+        # TODO: remove this, it's only needed for the frontend
         strategy:
             matrix:
                 group:
                     - name: 'staging'
                       if: true
-                      sentry_key: SENTRY_KEY_staging
 
                     - name: 'prod'
                       if: ${{ github.ref == 'refs/heads/master' }}
-                      sentry_key: SENTRY_KEY_prod
-                      posthog_key: POSTHOG_KEY_prod
-
-                    # Commented for now
-                    # - name: 'enterprise'
-                    #   if: ${{ github.ref == 'refs/heads/master' }}
 
         secrets: inherit
         uses: ./.github/workflows/build-image-reusable.yaml
         with:
             if: ${{ matrix.group.if }}
             name: ${{ matrix.group.name }}
-            key_for_sentry_secret: ${{ matrix.group.sentry_key }}
-            key_for_posthog_secret: ${{ matrix.group.posthog_key }}

@@ -22,8 +22,8 @@
         "tarn": "3.0.2"
     },
     "devDependencies": {
-        "typescript": "5.3.3",
-        "vitest": "1.6.0"
+        "typescript": "5.7.3",
+        "vitest": "2.1.8"
     },
     "files": [
         "dist/**/*"

@@ -29,10 +29,10 @@ export type DBInsertEndUser = Omit<DBEndUser, 'id' | 'created_at' | 'updated_at'
 
 export interface ApiEndUser {
     id: string;
-    displayName: string | null;
+    display_name: string | null;
     email: string | null;
     organization: {
         id: string;
-        displayName: string | null;
+        display_name: string | null;
     } | null;
 }

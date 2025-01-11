@@ -1,6 +1,6 @@
 import { SentryErrorBoundary } from './utils/sentry';
 
-import './utils/env';
+import { globalEnv } from './utils/env';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -11,7 +11,7 @@ import { PostHogProvider } from 'posthog-js/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const options = {
-    api_host: process.env.REACT_APP_PUBLIC_POSTHOG_HOST,
+    api_host: globalEnv.publicPosthogHost,
     maskAllInputs: true
 };
 
@@ -19,7 +19,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
     <React.StrictMode>
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
-            <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
+            <PostHogProvider apiKey={globalEnv.publicPosthogKey} options={options}>
                 <BrowserRouter>
                     <App />
                 </BrowserRouter>

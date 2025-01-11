@@ -218,7 +218,8 @@ export function parseCredentialParamsFromTemplate(provider: ProviderTwoStep): st
  * This can be used to convert the keys of a Json to snake case
  * @param payload This the json we want to convert from a camelCase a snake_case
  */
-export function convertJsonKeysToSnakeCase<R>(payload: Record<string, any>): R | null {
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+export function convertJsonKeysToSnakeCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;
     }
@@ -234,7 +235,8 @@ export function convertJsonKeysToSnakeCase<R>(payload: Record<string, any>): R |
  *
  * @param payload The json we want to convert its keys to camelCase
  */
-export function convertJsonKeysToCamelCase<R>(payload: Record<string, any>): R | null {
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+export function convertJsonKeysToCamelCase<TReturn>(payload: Record<string, any>): TReturn | null {
     if (payload == null) {
         return null;
     }

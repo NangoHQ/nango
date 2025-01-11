@@ -176,6 +176,10 @@ aircall-basic:
         verification:
             method: GET
             endpoint: /v1/ping
+        paginate:
+            type: link
+            link_path_in_response_body: meta.next_page_link
+            response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall
 
@@ -1602,11 +1606,13 @@ chorus:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/chorus
+    docs_connect: https://docs.nango.dev/integrations/all/chorus/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Chorus account
+            doc_section: '#step-1-generating-your-chorus-api-key'
 
 circle-so:
     display_name: Circle.so
@@ -2046,7 +2052,7 @@ datadog:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.siteParameter}/api
+        base_url: https://api.${connectionConfig.siteParameter}/api
         headers:
             dd-api-key: ${apiKey}
             dd-application-key: ${connectionConfig.applicationKey}
@@ -2689,6 +2695,24 @@ falai:
             title: API Key
             description: The API key for your fal.ai account
 
+findymail:
+    display_name: FindyMail
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.findymail.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/findymail
+    docs_connect: https://docs.nango.dev/integrations/all/findymail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your FindyMail account
+
 firefish:
     display_name: Firefish
     scope_separator: ' '
@@ -2844,7 +2868,7 @@ freshdesk:
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
-    display_name: FreshSales
+    display_name: Freshsales
     categories:
         - crm
     auth_mode: API_KEY
@@ -2858,23 +2882,28 @@ freshsales:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
+    docs_connect: https://docs.nango.dev/integrations/all/freshsales/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshSales Domain
-            description: The subdomain of your FreshSales account
+            title: Freshsales subdomain
+            description: The subdomain of your Freshsales account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshsales.io
             prefix: https://
+            doc_section: '#step-2-finding-your-freshsales-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your FreshSales account
+            description: The API key for your Freshsales account
+            example: 4oBqA_AzM_G3xbW3TJGvrA
+            pattern: '[A-Za-z0-9_]{22}'
+            doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
-    display_name: FreshService
+    display_name: Freshservice
     categories:
         - support
     auth_mode: BASIC
@@ -2886,21 +2915,24 @@ freshservice:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
+    docs_connect: https://docs.nango.dev/integrations/all/freshservice/connect
     connection_config:
         subdomain:
             type: string
-            title: FreshService Domain
-            description: The subdomain of your FreshService account
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account
             pattern: '^[a-z0-9_-]+$'
-            example: domain
+            example: subdomain
             suffix: .freshservice.com
             prefix: https://
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
     credentials:
         username:
             type: string
             title: API key
             description: The API Key of your Freshservice account
             secret: true
+            doc_section: '#step-1-finding-your-freshservice-api-key'
         password:
             type: string
             title: ''
@@ -2961,7 +2993,7 @@ front:
     docs: https://docs.nango.dev/integrations/all/front
 
 gainsight-cc:
-    display_name: Gainsight
+    display_name: Gainsight CC
     categories:
         - support
         - crm
@@ -2973,13 +3005,15 @@ gainsight-cc:
     proxy:
         base_url: https://api2-${connectionConfig.region}.insided.com
     docs: https://docs.nango.dev/integrations/all/gainsight-cc
+    docs_connect: https://docs.nango.dev/integrations/all/gainsight-cc/connect
     connection_config:
         region:
             type: string
             title: Region
             description: The region of your Gainsight account
-            example: eu
-            pattern: '^[a-z]+$'
+            example: eu-west-1
+            pattern: '^[a-z]{2}-[a-z]+-[1-9]$'
+            doc_section: '#step-2-finding-your-region'
 
 garmin:
     display_name: Garmin
@@ -3027,16 +3061,21 @@ guru:
             method: GET
             endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/guru
+    docs_connect: https://docs.nango.dev/integrations/all/guru/connect
     credentials:
         username:
             type: string
             title: User/Collection ID
             description: The user or collection ID of your Guru account
+            doc_section: '#step-1-finding-your-user-collection-id'
         password:
             type: string
             title: User/Collection Token
             description: The user or collection token of your Guru account
             secret: true
+            format: uuid
+            example: 123e4567-e89b-12d3-a456-426614174000
+            doc_section: '#step-2-generating-your-user-collection-token'
 
 github:
     display_name: GitHub
@@ -4100,6 +4139,26 @@ kustomer:
             type: string
             title: API Key
             description: The API key for your Kustomer account
+
+lagrowthmachine:
+    display_name: La Growth Machine
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://apiv2.lagrowthmachine.com
+        query:
+            KEY: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/lagrowthmachine
+    docs_connect: https://docs.nango.dev/integrations/all/lagrowthmachine/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your La Growth Machine account
+            example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
+            format: uuid
+            doc_section: '#step-1-finding-your-api-key'
 
 lastpass:
     display_name: LastPass
@@ -6022,6 +6081,26 @@ sap-success-factors:
             secret: true
             doc_section: '#step-4-generating-your-saml-assertion'
 
+scrapedo:
+    display_name: Scrape.do
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.scrape.do
+        query:
+            token: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/scrapedo
+    docs_connect: https://docs.nango.dev/integrations/all/scrapedo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Scrape.do account
+            example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 salesloft:
     display_name: Salesloft
     categories:
@@ -6034,7 +6113,7 @@ salesloft:
     docs: https://docs.nango.dev/integrations/all/salesloft
 
 sendgrid:
-    display_name: Sendgrid
+    display_name: SendGrid
     categories:
         - marketing
     auth_mode: API_KEY
@@ -6043,11 +6122,13 @@ sendgrid:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
     docs: https://docs.nango.dev/integrations/all/sendgrid
+    docs_connect: https://docs.nango.dev/integrations/all/sendgrid/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
+            doc_section: '#step-1-generating-your-sendgrid-api-key'
 
 sedna:
     display_name: Sedna (Oauth2)
@@ -6171,6 +6252,63 @@ sharepoint-online:
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 
+sharepoint-online-v1:
+    display_name: SharePoint Online (v1)
+    categories:
+        - storage
+        - communication
+    auth_mode: TWO_STEP
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
+    body_format: form
+    token_params:
+        client_id: ${credential.clientId}
+        grant_type: client_credentials
+        resource: https://${connectionConfig.tenantId}.sharepoint.com
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credential.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    proxy:
+        base_url: https://${connectionConfig.tenantName}.sharepoint.com
+        headers:
+            accept: application/json;odata=verbose
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online
+    docs_connect: https://docs.nango.dev/integrations/all/sharepoint-online-v1/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        tenantName:
+            type: string
+            title: Tenant Name
+            description: The initial domain name for your Microsoft services tenant
+            example: mycompany
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-tenant-name'
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your application Client ID
+            secret: true
+            doc_section: '#step-3-finding-your-client-id'
+        assertion:
+            type: string
+            title: Client Assertion
+            description: Your generated client assertion
+            secret: true
+            doc_section: '#step-4-generating-your-client-assertion'
+
 shipstation:
     display_name: Shipstation
     categories:
@@ -6211,6 +6349,7 @@ shopify:
         headers:
             x-shopify-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/shopify
+    docs_connect: https://docs.nango.dev/integrations/all/shopify/connect
     connection_config:
         subdomain:
             type: string
@@ -6220,6 +6359,42 @@ shopify:
             example: domain
             suffix: .myshopify.com
             prefix: https://
+            doc_section: '#step-1-finding-your-shopify-domain'
+
+shopify-api-key:
+    display_name: Shopify (api key)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            x-shopify-access-token: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            endpoint: /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
+    docs: https://docs.nango.dev/integrations/all/shopify
+    docs_connect: https://docs.nango.dev/integrations/all/shopify-api-key/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Shopify Domain
+            description: The subdomain of your Shopify account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .myshopify.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-shopify-domain'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: The API access token generated
+            example: shpat_***************c03266f
+            pattern: '^shpat_[a-f0-9]{32}$'
+            doc_section: '#step-2-generating-your-api-access-token'
 
 shortcut:
     display_name: Shortcut

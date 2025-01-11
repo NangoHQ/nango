@@ -25,7 +25,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "axios": "^1.7.4"
+        "axios": "^1.7.9"
     },
     "engines": {
         "node": ">=18.0"
@@ -38,6 +38,6 @@
     "devDependencies": {
         "@nangohq/types": "0.48.1",
         "tsup": "^8.2.4",
-        "vitest": "1.6.0"
+        "vitest": "2.1.8"
     }
 }

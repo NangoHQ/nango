@@ -52,13 +52,15 @@ export const Homepage: React.FC = () => {
 
                     <div className="text-text-light-gray text-sm">Here’s your recent activity on Nango.</div>
                 </div>
-                <div className="text-white text-sm">Last 14 days</div>
+                <div className="text-white text-sm">
+                    Last 14 days <code className="font-code text-xs text-dark-500">(UTC)</code>
+                </div>
             </div>
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">
                 {globalEnv.features.scripts && (
                     <InsightChart
                         title="Sync Executions"
-                        type="sync"
+                        type="sync:run"
                         desc=""
                         help={
                             <div>

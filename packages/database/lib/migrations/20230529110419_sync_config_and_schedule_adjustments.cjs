@@ -1,7 +1,7 @@
 const syncJobs = '_nango_sync_jobs';
 const syncSchedules = '_nango_sync_schedules';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(syncJobs, function (table) {
         table.specificType('models', 'text ARRAY');
         table.string('frequency');
@@ -13,7 +13,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(syncJobs, function (table) {
         table.dropColumn('models');
         table.dropColumn('frequency');

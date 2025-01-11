@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('node:path');
 const fs = require('node:fs');
 const yaml = require('js-yaml');
@@ -23,7 +19,7 @@ exports.up = async function (knex) {
 
     const needsClientId = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
     const clientIdProviders = Object.entries(providers)
-        .filter(([_, config]) => needsClientId.includes(config.auth_mode))
+        .filter(([, config]) => needsClientId.includes(config.auth_mode))
         .map(([name]) => name);
     await knex
         .queryBuilder()
@@ -35,7 +31,7 @@ exports.up = async function (knex) {
 
     const needsClientSecret = ['OAUTH1', 'OAUTH2', 'TBA', 'APP'];
     const clientSecretProviders = Object.entries(providers)
-        .filter(([_, config]) => needsClientSecret.includes(config.auth_mode))
+        .filter(([, config]) => needsClientSecret.includes(config.auth_mode))
         .map(([name]) => name);
     await knex
         .queryBuilder()
@@ -47,7 +43,7 @@ exports.up = async function (knex) {
 
     const needsAppLink = ['APP'];
     const appLinkProviders = Object.entries(providers)
-        .filter(([_, config]) => needsAppLink.includes(config.auth_mode))
+        .filter(([, config]) => needsAppLink.includes(config.auth_mode))
         .map(([name]) => name);
     await knex
         .queryBuilder()

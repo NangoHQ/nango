@@ -82,7 +82,7 @@ export type PostInsights = Endpoint<{
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };
     Body: {
-        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync' | 'proxy' | 'webhook:incoming'>;
+        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync:run' | 'proxy' | 'webhook:incoming'>;
     };
     Success: {
         data: {

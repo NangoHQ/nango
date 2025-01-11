@@ -84,7 +84,7 @@ describe(`GET ${route}`, () => {
     it('should create same template and deduplicate correctly', async () => {
         const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
-        const connection = await seeders.createConnectionSeed(env, 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
             connectionId: connection.id!,

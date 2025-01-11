@@ -1,4 +1,4 @@
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable('_nango_connections', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
@@ -9,6 +9,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable('_nango_connections');
 };

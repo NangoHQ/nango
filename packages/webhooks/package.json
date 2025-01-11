@@ -17,14 +17,14 @@
     "dependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/utils": "file:../utils",
-        "axios": "^1.7.4",
+        "axios": "^1.7.9",
         "dayjs": "1.11.7",
         "dayjs-plugin-utc": "0.1.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "typescript": "5.3.3",
-        "vitest": "1.6.0"
+        "typescript": "5.7.3",
+        "vitest": "2.1.8"
     },
     "files": [
         "dist/**/*"

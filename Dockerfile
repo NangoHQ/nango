@@ -54,15 +54,6 @@ RUN true \
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
-ARG image_env
-ARG posthog_key
-ARG sentry_key
-
-# TODO: remove the need for this
-ENV REACT_APP_ENV $image_env
-ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
-ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
-ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
 
 # Build the frontend
 RUN true \
@@ -104,12 +95,10 @@ WORKDIR /app/nango
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp /app/nango
 
-ARG image_env
 ARG git_hash
 
 ENV PORT=8080
 ENV NODE_ENV=production
-ENV IMAGE_ENV $image_env
 ENV GIT_HASH $git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 
