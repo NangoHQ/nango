@@ -89,75 +89,97 @@
             "pages": [
                 {
                     "group": "API authorization (free)",
-                    "pages": ["api-authorization/main"]
+                    "pages": [
+                        "guides/api-authorization/overview",
+                        "guides/api-authorization/configuration",
+                        "guides/api-authorization/authorize-in-your-app-default-ui",
+                        "guides/api-authorization/authorize-in-your-app-custom-ui",
+                        "guides/api-authorization/whitelabel-the-oauth-flow"
+                    ]
                 },
+                "guides/new-api-support",
                 {
                     "group": "Pre-built integrations",
-                    "pages": ["pre-built-integrations/main"]
+                    "pages": [
+                        "guides/pre-built-integrations/overview",
+                        "guides/pre-built-integrations/use-a-pre-built-integration"
+                    ]
                 },
                 {
-                    "group": "Custom integrations",
-                    "pages": ["custom-integrations/main"]
+                    "group": "Custom integration builder",
+                    "pages": [
+                        "guides/custom-integration-builder/overview",
+                        "guides/custom-integration-builder/build-a-custom-integration",
+                        "guides/custom-integration-builder/extend-a-pre-built-integration",
+                        "guides/custom-integration-builder/event-based-scripts"
+                    ]
                 },
                 {
                     "group": "Syncs",
-                    "pages": ["syncs/main"]
+                    "pages": [
+                        "guides/syncs/overview",
+                        "guides/syncs/use-a-sync"
+                    ]
                 },
                 {
                     "group": "Actions",
-                    "pages": ["actions/main"]
+                    "pages": [
+                        "guides/actions/overview",
+                        "guides/syncs/use-an-action"
+                    ]
                 },
                 {
                     "group": "Individual requests (free)",
-                    "pages": ["individual-requests/main"]
+                    "pages": ["guides/individual-requests/main"]
                 },
                 {
                     "group": "Webhooks",
-                    "pages": ["webhooks/main"]
+                    "pages": ["guides/webhooks/main"]
                 },
                 {
                     "group": "Customer configuration",
-                    "pages": ["customer-configuration/main"]
+                    "pages": ["guides/customer-configuration/main"]
                 },
                 {
                     "group": "API unification",
-                    "pages": ["api-unification/main"]
+                    "pages": ["guides/api-unification/main"]
                 },
                 {
                     "group": "Metrics",
-                    "pages": ["metrics/main"]
+                    "pages": ["guides/metrics/main"]
                 },
                 {
                     "group": "Logs",
-                    "pages": ["logs/main"]
+                    "pages": ["guides/logs/main"]
                 },
                 {
                     "group": "Alerts",
-                    "pages": ["alerts/main"]
+                    "pages": ["guides/alerts/main"]
                 },
                 {
                     "group": "Data validation",
-                    "pages": ["data-validation/main"]
+                    "pages": ["guides/data-validation/main"]
                 },
+                "guides/rate-limits",
                 {
                     "group": "Nango API",
-                    "pages": ["nango-api/main"]
+                    "pages": ["guides/nango-api/main"]
                 },
                 {
                     "group": "Environments",
-                    "pages": ["environments/main"]
+                    "pages": ["guides/environments/main"]
                 },
                 {
                     "group": "Infrastructure",
-                    "pages": ["infrastructure/main"]
+                    "pages": ["guides/infrastructure/main"]
                 },
                 {
                     "group": "Services",
-                    "pages": ["services/main"]
+                    "pages": ["guides/services/custom-integration-service"]
                 },
                 {
                     "group": "Self-hosting",
-                    "pages": ["self-hosting/main"]
+                    "pages": ["guides/self-hosting/main"]
                 }
             ]
         },
