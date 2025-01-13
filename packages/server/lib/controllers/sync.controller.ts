@@ -337,7 +337,20 @@ class SyncController {
                 span.setTag('nango.error', actionResponse.error);
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, actionResponse.error);
+                if (actionResponse.error.type === 'script_http_error') {
+                    res.status(424).json({
+                        error: {
+                            payload: actionResponse.error.payload,
+                            code: actionResponse.error.type,
+                            ...(actionResponse.error.additional_properties && 'upstream_response' in actionResponse.error.additional_properties
+                                ? { upstream: actionResponse.error.additional_properties['upstream_response'] }
+                                : {})
+                        }
+                    });
+                } else {
+                    errorManager.errResFromNangoErr(res, actionResponse.error);
+                }
+
                 span.finish();
                 return;
             }

@@ -1450,25 +1450,22 @@ paths:
                                                 type: string
                                             payload:
                                                 type: object
-                                            additional_properties:
+                                            upstream:
                                                 type: object
                                                 properties:
-                                                    upstream_response:
+                                                    status_code:
+                                                        type: integer
+                                                    headers:
                                                         type: object
                                                         properties:
-                                                            status_code:
-                                                                type: integer
-                                                            headers:
-                                                                type: object
-                                                                properties:
-                                                                    content-type:
-                                                                        type: string
-                                                                patternProperties:
-                                                                    '^x-rate':
-                                                                        type: string
-                                                            body:
-                                                                type: object
-                                                                additionalProperties: true
+                                                            content-type:
+                                                                type: string
+                                                        patternProperties:
+                                                            '^x-rate':
+                                                                type: string
+                                                    body:
+                                                        type: object
+                                                        additionalProperties: true
                                         required:
                                             - message
                                             - code
