@@ -68,15 +68,43 @@
     "redirects": [
         {
             "source": "/introduction",
-            "destination": "/home"
+            "destination": "/"
         },
         {
             "source": "/integrate/guides/authorize-an-api",
-            "destination": "/guides/getting-started/authorize-an-api-from-your-app"
+            "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
         },
         {
             "source": "/customize/guides/create-a-custom-integration",
-            "destination": "/guides/customize/create-a-custom-integration"
+            "destination": "/guides/custom-integration-builder/overview"
+        },
+        {
+            "source": "/guides/customize/extend-an-integration-template",
+            "destination": "/guides/custom-integration-builder/extend-a-pre-built-integration"
+        },
+        {
+            "source": "/guides/customize/contribute-an-api",
+            "destination": "/guides/new-api-support"
+        },
+        {
+            "source": "/guides/getting-started/authorize-an-api-from-your-app",
+            "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
+        },
+        {
+            "source": "/guides/getting-started/write-to-an-api",
+            "destination": "/guides/actions/use-an-action"
+        },
+        {
+            "source": "/guides/getting-started/read-from-an-api",
+            "destination": "/guides/syncs/use-a-sync"
+        },
+        {
+            "source": "/what-is-nango",
+            "destination": "/getting-started/intro-to-nango"
+        },
+        {
+            "source": "/home",
+            "destination": "/"
         }
     ],
     "navigation": [

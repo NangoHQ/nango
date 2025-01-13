@@ -22,7 +22,7 @@ Your use case is not covered by the available pre-built integrations? Use the [c
 
 # Listen for webhooks from Nango
 
-Nango sends [webhook](/understand/concepts/webhooks) notifications to your backend whenever new data is available for a connection & sync combination.
+Nango sends [webhook](/guides/webhooks/webhooks-from-nango) notifications to your backend whenever new data is available for a connection & sync combination.
 
 To set this up, go to the _Environment Settings_ tab and configure a _Webhook URL_ to which Nango will send notifications.
 
@@ -44,7 +44,7 @@ Webhooks with non-2xx responses are retried with exponential backoff.
 </Tip>
 
 <Warning>
-Before using webhooks in production, verify their origin ([step-by-step guide](/guides/verify-webhooks-from-nango)).
+Before using webhooks in production, verify their origin ([step-by-step guide](/guides/webhooks/webhooks-from-nango#nango-webhook-verification)).
 </Warning>
 
 # Fetch the latest data
@@ -168,7 +168,7 @@ So, the overall logic for cursor-based synchronization should be:
 
 # Write back to APIs (2-way syncing)
 
-Write back to APIs with actions ([step-by-step guide](/guides/getting-started/write-to-an-api)) or proxy requests ([step-by-step guide](/guides/proxy-requests-to-an-api)).
+Write back to APIs with actions ([step-by-step guide](/guides/actions/use-an-action)) or proxy requests ([step-by-step guide](/guides/individual-requests)).
 
 # Troubleshoot errors & monitor
 

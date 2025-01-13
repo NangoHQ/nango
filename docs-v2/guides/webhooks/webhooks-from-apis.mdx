@@ -42,9 +42,9 @@ Nango webhook forwards are POST requests with the following JSON body:
 
 # Handle external webhooks in syncs
 
-Additionally, [syncs](/understand/concepts/syncs) can be designed to process webhooks from external APIs.
+Additionally, [syncs](/guides/syncs/overview) can be designed to process webhooks from external APIs.
 
-Webhook-enabled syncs process relevant webhooks, resulting in the creation, update and deleting of the corresponding [records](/understand/concepts/syncs) in real-time.
+Webhook-enabled syncs process relevant webhooks, resulting in the creation, update and deleting of the corresponding [records](/guides/syncs/overview) in real-time.
 
 Each modified record (following an external webhook) will trigger a separate webhook from Nango to your app. The POST request has the following body:
 ```json
