@@ -145,8 +145,6 @@ describe('Exec', () => {
         `;
         const res = await exec(nangoProps, jsCode);
 
-        // NB: it will fail because Nango is not running not because the website is not reachable
-        // NB2: the message is different depending on the system running Node
         expect(res.error).toMatchObject({
             payload: {
                 code: 'ECONNREFUSED'
