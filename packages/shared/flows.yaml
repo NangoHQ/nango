@@ -3804,17 +3804,6 @@ integrations:
                     group: Files
                 scopes: repo
                 version: 1.0.0
-            issues-demo:
-                runs: every 5 minutes
-                auto_start: false
-                sync_type: full
-                output: GithubIssueDemo
-                scopes: public_repo
-                description: |
-                    Fetches GitHub issues from our showcase repository.
-                endpoint:
-                    method: GET
-                    path: /github/demo-issues
         actions:
             write-file:
                 scopes: repo
@@ -3836,14 +3825,6 @@ integrations:
                 output: GithubRepo
                 description: |
                     List github repos from an organization.
-            create-demo-issue:
-                endpoint:
-                    method: POST
-                    path: /github/create-demo-issue
-                input: GithubCreateIssueInput
-                output: GithubCreateIssueResult
-                description: |
-                    Create a GitHub issue in Nango's showcase repository.
         models:
             Issue:
                 id: integer
@@ -3898,15 +3879,6 @@ integrations:
                 url: string
                 status: string
                 sha: string
-            GithubIssueDemo:
-                id: integer
-                title: string
-                url: string
-            GithubCreateIssueInput:
-                title: string
-            GithubCreateIssueResult:
-                url: string | undefined
-                status: number
     github-app:
         actions:
             repositories:
@@ -4023,6 +3995,46 @@ integrations:
                 watchers: number
                 watchers_count: number
                 web_commit_signoff_required: boolean
+    gong:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    gong-oauth:
+        syncs:
+            users:
+                description: |
+                    Fetches the list of gong users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: incremental
+                runs: every day
+                output: User
+                scopes:
+                    - api:users:read
+        models:
+            User:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     google:
         syncs:
             workspace-org-units:
@@ -11037,6 +11049,18 @@ integrations:
                     method: GET
                     path: /invoices
                     group: Invoices
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in QuickBooks
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: General Ledger
+                scopes:
+                    - com.intuit.quickbooks.accounting
         actions:
             create-customer:
                 description: |
@@ -11360,6 +11384,22 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+            GeneralLedger:
+                id: string
+                date: string
+                createdDate: string
+                updatedDate: string
+                currency: string
+                note: string
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                type: string
+                accountId: string
+                accountName: string
+                netAmount: number
+                postingType: Debit | Credit
+                description: string
     quickbooks-sandbox:
         syncs:
             customers:
@@ -11422,6 +11462,18 @@ integrations:
                     method: GET
                     path: /invoices
                     group: Invoices
+            general-ledger:
+                description: |
+                    Fetch all general ledger entries in QuickBooks
+                runs: every hour
+                output: GeneralLedger
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                    group: General Ledger
+                scopes:
+                    - com.intuit.quickbooks.accounting
         actions:
             create-customer:
                 description: |
@@ -11745,6 +11797,22 @@ integrations:
                 customer_ref: Reference
                 currency_ref?: Reference
                 project_ref?: Reference
+            GeneralLedger:
+                id: string
+                date: string
+                createdDate: string
+                updatedDate: string
+                currency: string
+                note: string
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                type: string
+                accountId: string
+                accountName: string
+                netAmount: number
+                postingType: Debit | Credit
+                description: string
     ramp:
         syncs:
             users:

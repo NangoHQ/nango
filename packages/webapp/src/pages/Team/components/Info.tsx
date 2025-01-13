@@ -19,7 +19,7 @@ export const TeamInfo: React.FC = () => {
     const onSave = async () => {
         const updated = await apiPutTeam(env, { name });
 
-        if ('error' in updated) {
+        if ('error' in updated.json) {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         } else {
             toast({ title: 'Team updated successfully', variant: 'success' });

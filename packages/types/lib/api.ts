@@ -14,6 +14,7 @@ export interface ValidationError {
 
 export type ResDefaultErrors =
     | ApiError<'not_found'>
+    | ApiError<'conflict'>
     | ApiError<'invalid_query_params', ValidationError[]>
     | ApiError<'invalid_body', ValidationError[]>
     | ApiError<'invalid_uri_params', ValidationError[]>

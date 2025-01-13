@@ -13,7 +13,7 @@ export class DatabaseClient {
     public url: string;
     private config: knex.Knex.Config;
 
-    constructor({ url, schema, poolMax = 50 }: { url: string; schema: string; poolMax?: number }) {
+    constructor({ url, schema, poolMax = 15 }: { url: string; schema: string; poolMax?: number }) {
         this.url = url;
         this.schema = schema;
         this.config = {
