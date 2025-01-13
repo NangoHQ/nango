@@ -38,7 +38,7 @@ jobs:
                   password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Push tag
               run: |
-                  docker buildx imagetools create nangohq/nango-server:${{ inputs.stage }}-${{ github.sha }} --tag nangohq/nango-server:${{ inputs.stage }}
+                  docker buildx imagetools create nangohq/nango-server:${{ github.sha }} --tag nangohq/nango-server:${{ inputs.stage }}
             - name: Deploy server
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-cfifsvha6gdq1k7u46a0", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
@@ -58,8 +58,7 @@ jobs:
             - name: Deploy jobs
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-clvvtdug1b2c73cklps0", staging: "srv-clthttda73kc73ejflg0" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
@@ -108,8 +107,7 @@ jobs:
             - name: Deploy persist
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cmt150ol6cac73apstq0", "staging": "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
@@ -130,8 +128,7 @@ jobs:
             - name: Deploy orchestrator
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cp6bhl0l6cac738i3dm0", "staging": "srv-cp5qedsf7o1s739kjqtg" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 

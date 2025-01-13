@@ -18,22 +18,14 @@ jobs:
         with:
             package: runner
             run-cmd: ts-build
-            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }} ${{ github.ref == 'refs/heads/master' && format('-t nangohq/nango-runner:enterprise-{0} -t nangohq/nango-runner:enterprise -t nangohq/nango-runner:hosted-{1} -t nangohq/nango-runner:hosted', github.event.pull_request.head.sha || github.sha, github.event.pull_request.head.sha || github.sha) || '' }}
-    nango-server-staging:
+            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }}
+    nango-server:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit
         with:
             package: server
             run-cmd: build:prod
-            tags: -t nangohq/nango-server:staging-${{ github.event.pull_request.head.sha || github.sha }}
-    nango-server-prod:
-        if: github.ref == 'refs/heads/master'
-        uses: ./.github/workflows/push-container.yaml
-        secrets: inherit
-        with:
-            package: server
-            run-cmd: build:prod
-            tags: -t nangohq/nango-server:production-${{ github.event.pull_request.head.sha || github.sha }}
+            tags: -t nangohq/nango-server:${{ github.event.pull_request.head.sha || github.sha }}
     nango-server-self-hosted:
         if: github.ref == 'refs/heads/master'
         uses: ./.github/workflows/push-container.yaml
@@ -42,11 +34,3 @@ jobs:
             package: server
             run-cmd: build:hosted
             tags: -t nangohq/nango-server:hosted -t nangohq/nango-server:hosted-${{ github.event.pull_request.head.sha || github.sha }}
-    nango-server-enterprise:
-        if: github.ref == 'refs/heads/master'
-        uses: ./.github/workflows/push-container.yaml
-        secrets: inherit
-        with:
-            package: server
-            run-cmd: build:prod
-            tags: -t nangohq/nango-server:enterprise -t nangohq/nango-server:enterprise-${{ github.event.pull_request.head.sha || github.sha }}
