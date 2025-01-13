@@ -158,7 +158,6 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
             .map<[string, string]>(([key, value]) => (key.toLowerCase().startsWith('nango-proxy-') ? [key.slice(12), String(value)] : [key, String(value)]));
         sortEntries(filteredHeaders);
         headers = filteredHeaders;
-        console.log(JSON.stringify(headers));
     }
 
     // order is important to the request hash
