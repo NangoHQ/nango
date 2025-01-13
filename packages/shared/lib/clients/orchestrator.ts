@@ -118,15 +118,17 @@ export class Orchestrator {
             'connection.provider_config_key': connection.provider_config_key,
             'connection.environment_id': connection.environment_id
         };
-        if (!connection.id) {
-            throw new NangoError('invalid_input', { connection });
-        }
+
         const span = tracer.startSpan('execute.action', {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
         try {
+            if (!connection.id) {
+                throw new NangoError('invalid_input', { connection });
+            }
+
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
