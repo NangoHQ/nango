@@ -6,6 +6,7 @@ import { envs } from '../env.js';
 import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import type { AxiosResponse } from 'axios';
 import { isAxiosError } from 'axios';
+import { logger } from '../logger.js';
 
 const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
 
@@ -52,7 +53,9 @@ export const renderNodeProvider: NodeProvider = {
             })
         );
         if (res.isErr()) {
-            return Err(new Error('Failed to create service', { cause: res.error }));
+            const err = new Error('Failed to create service', { cause: res.error });
+            logger.warning('!!!!!!!!!!!DEBUGGING: ', res.error, err.message, err.cause);
+            return Err(err);
         }
         if (!res.value.service) {
             return Err('Failed to create service, no service in response');
@@ -108,14 +111,28 @@ const rateLimitResetTimestamps = new Map<string, Date>();
 async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'resume' | 'get', fn: () => Promise<AxiosResponse>): Promise<Result<T>> {
     const rateLimitReset = rateLimitResetTimestamps.get(rateLimitGroup);
     if (rateLimitReset && rateLimitReset > new Date()) {
+        logger.warning(`DEBUGGING: Render rate limit exceeded. Resetting at ${rateLimitReset.toISOString()}`);
         return Err(`Render rate limit exceeded. Resetting at ${rateLimitReset.toISOString()}`);
     }
     try {
         const res = await fn();
+        if (res.headers) {
+            const rateLimitHeaders = Object.entries(res.headers).filter(([k]) => k.startsWith('ratelimit-'));
+            if (rateLimitHeaders.length) {
+                logger.info(`DEBUGGING: Rate limit headers: ${JSON.stringify(rateLimitHeaders)}`);
+            }
+        }
         return Ok(res.data);
     } catch (err) {
+        logger.warning('DEBUGGING: Request to Render API failed', err);
         if (isAxiosError(err)) {
             if (err.response?.status === 429) {
+                if (err.response.headers) {
+                    const rateLimitHeaders = Object.entries(err.response.headers).filter(([k]) => k.startsWith('ratelimit-'));
+                    if (rateLimitHeaders.length) {
+                        logger.info(`DEBUGGING: Rate limit headers: ${JSON.stringify(rateLimitHeaders)}`);
+                    }
+                }
                 let resetInMs = parseInt(err.response?.headers['ratelimit-reset']) * 1000;
                 if (resetInMs <= 0) {
                     resetInMs = 10_000;
