@@ -2,8 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { Connection } from '@nangohq/shared';
-import type { Metadata } from '@nangohq/types';
+import type { GetPublicConnection, Metadata } from '@nangohq/types';
 
 const FILTER_HEADERS = [
     'authorization',
@@ -77,10 +76,10 @@ export function onAxiosRequestFulfilled({
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
 
     if (response.request.path.includes(`/connection/${connectionId}?provider_config_key=${providerConfigKey}`)) {
-        const connection = response.data as Connection;
+        const connection = response.data as GetPublicConnection['Success'];
 
         // getConnection could be getMetadata as well which would be cached
-        saveResponse<Pick<Connection, 'metadata' | 'connection_config'>>({
+        saveResponse<Pick<GetPublicConnection['Success'], 'metadata' | 'connection_config'>>({
             directoryName,
             data: { metadata: connection.metadata as Metadata, connection_config: connection.connection_config },
             customFilePath: 'mocks/nango/getConnection.json'

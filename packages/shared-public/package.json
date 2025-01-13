@@ -1,0 +1,20 @@
+{
+    "name": "@nangohq/shared-public",
+    "version": "0.48.1",
+    "description": "Nango's shared components.",
+    "type": "module",
+    "main": "./dist/index.js",
+    "typings": "./dist/index.d.ts",
+    "private": false,
+    "scripts": {},
+    "dependencies": {
+        "js-yaml": "4.1.0"
+    },
+    "devDependencies": {
+        "@nangohq/types": "0.48.1",
+        "vitest": "2.1.8"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

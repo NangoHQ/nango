@@ -14,6 +14,8 @@ COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
+COPY packages/runner-sdk/ packages/runner-sdk/
+COPY packages/shared-public/ packages/runner-public/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare

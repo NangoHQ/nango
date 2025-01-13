@@ -57,6 +57,11 @@ export interface CredentialsCommon<T = Record<string, any>> {
     raw: T;
 }
 
+export interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
+}
+
 export interface BasicApiCredentials {
     type: AuthModes['Basic'];
     username: string;

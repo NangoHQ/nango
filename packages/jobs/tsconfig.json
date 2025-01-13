@@ -24,6 +24,9 @@
             "path": "../runner"
         },
         {
+            "path": "../runner-sdk"
+        },
+        {
             "path": "../types"
         },
         {

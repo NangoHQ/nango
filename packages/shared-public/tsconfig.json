@@ -4,16 +4,10 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
+    "include": ["lib/**/*"],
     "references": [
         {
-            "path": "../runner-sdk"
-        },
-        {
             "path": "../types"
-        },
-        {
-            "path": "../nango-yaml"
         }
-    ],
-    "include": ["lib/**/*"]
+    ]
 }
