@@ -9501,6 +9501,18 @@ integrations:
                     method: GET
                     path: /locations
                 track_deletes: true
+            general-ledger:
+                version: 1.0.0
+                description: |
+                    Fetches all JournalEntries in Netsuite
+                runs: every hour
+                output: GeneralLedger
+                sync_type: full
+                auto_start: true
+                endpoint:
+                    method: GET
+                    path: /general-ledger
+                track_deletes: true
         actions:
             customer-create:
                 version: 1.0.0
@@ -9753,6 +9765,28 @@ integrations:
                     country: string
                 timeZone: string
                 useBins: boolean
+            GeneralLedger:
+                id: string
+                date: string
+                transactionId: string
+                void: boolean
+                approved: boolean
+                currency: string
+                createdDate: string
+                updatedDate: string
+                isReversal: boolean
+                subsidiary:
+                    id: string
+                    name: string
+                lines: LedgerLine[]
+            LedgerLine:
+                journalLineId: string
+                accountId: string
+                accountName: string
+                cleared: boolean
+                credit?: number
+                debit?: number
+                description: string
     next-cloud-ocs:
         syncs:
             users:
