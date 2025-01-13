@@ -330,6 +330,12 @@ export class Orchestrator {
                 throw res.error;
             }
 
+            await logCtx.info('The webhook was successfully run', {
+                action: webhookName,
+                connection: connection.connection_id,
+                integration: connection.provider_config_key
+            });
+
             await logCtx.success();
 
             metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
