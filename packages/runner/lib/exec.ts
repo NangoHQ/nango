@@ -184,9 +184,15 @@ export async function exec(
                 // testing, which is handy with how strongly typed everything is
 
                 span.setTag('error', err);
-                if (err.response?.data) {
-                    const data = err.response.data as Record<string, unknown>;
-                    const errorResponse = (data['payload'] || data) as Record<string, unknown>;
+                if (err.response) {
+                    const maybeData = err.response.data;
+
+                    let errorResponse: unknown = {};
+                    if (maybeData && typeof maybeData === 'object' && 'payload' in maybeData) {
+                        errorResponse = maybeData.payload as Record<string, unknown>;
+                    } else {
+                        errorResponse = maybeData;
+                    }
 
                     const headers = Object.fromEntries(
                         Object.entries(err.response.headers)
@@ -194,17 +200,21 @@ export async function exec(
                             .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
                     );
 
+                    const responseBody: Record<string, unknown> = truncateJson(
+                        errorResponse && typeof errorResponse === 'object' ? (errorResponse as Record<string, unknown>) : { message: errorResponse }
+                    );
+
                     return {
                         success: false,
                         error: {
                             type: 'script_http_error',
-                            payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
+                            payload: responseBody,
                             status: err.response.status,
                             additional_properties: {
                                 upstream_response: {
                                     status: err.response.status,
                                     headers,
-                                    body: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse)
+                                    body: responseBody
                                 }
                             }
                         },
