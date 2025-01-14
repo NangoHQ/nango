@@ -85,8 +85,8 @@ export abstract class NangoActionBase {
 
     public ActionError = ActionError;
 
-    private memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
-    private memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
+    protected memoizedConnections = new Map<string, { connection: ApiPublicConnectionFull; timestamp: number }>();
+    protected memoizedIntegration = new Map<string, { integration: GetPublicIntegration['Success']['data']; timestamp: number }>();
 
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
@@ -140,7 +140,7 @@ export abstract class NangoActionBase {
         });
     }
 
-    private proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
+    protected proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
@@ -400,6 +400,13 @@ export abstract class NangoSyncBase extends NangoActionBase {
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
         }
+    }
+
+    /**
+     * @deprecated please use batchSave
+     */
+    public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        return this.batchSave(results, model);
     }
 
     public abstract batchSave<T = any>(results: T[], model: string): MaybePromise<boolean>;

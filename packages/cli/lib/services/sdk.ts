@@ -38,7 +38,7 @@ export class NangoActionCLI extends NangoActionBase {
             };
         }
 
-        this.nango = new Nango({ isSync: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, axiosSettings);
     }
 
     public override proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -122,9 +122,10 @@ export class NangoSyncCLI extends NangoSyncBase {
             };
         }
 
-        this.nango = new Nango({ isSync: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, axiosSettings);
     }
 
+    // Can't double extends
     proxy = NangoActionCLI['prototype']['proxy'];
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];

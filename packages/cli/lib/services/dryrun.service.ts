@@ -469,7 +469,7 @@ export class DryRunService {
     > {
         const drs = new DryRunService({ environment: nangoProps.environmentName!, returnOutput: true, fullPath: this.fullPath, validation: this.validation });
         const nango =
-            nangoProps.scriptType === 'sync'
+            nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
                 ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })
                 : new NangoActionCLI(nangoProps, { dryRunService: drs });
 

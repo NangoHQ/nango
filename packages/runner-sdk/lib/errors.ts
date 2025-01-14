@@ -1,10 +1,10 @@
 export abstract class SDKError extends Error {
     abstract code: string;
-    payload?: Record<string, unknown> | undefined;
+    payload: Record<string, unknown>;
 
     constructor(payload?: Record<string, unknown>) {
         super();
-        this.payload = payload;
+        this.payload = payload || {};
     }
 }
 
