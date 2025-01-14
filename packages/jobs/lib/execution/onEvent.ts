@@ -85,7 +85,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             activityLogId: logCtx.id,
             secretKey: environment.secret_key,
             nangoConnectionId: task.connection.id,
-            syncConfig: syncConfig,
+            syncConfig,
             debug: false,
             runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),

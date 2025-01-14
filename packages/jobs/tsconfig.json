@@ -12,6 +12,9 @@
             "path": "../kvstore"
         },
         {
+            "path": "../orchestrator"
+        },
+        {
             "path": "../logs"
         },
         {
