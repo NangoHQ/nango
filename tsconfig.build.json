@@ -66,6 +66,9 @@
         },
         {
             "path": "packages/fleet"
+        },
+        {
+            "path": "packages/types"
         }
     ]
 }

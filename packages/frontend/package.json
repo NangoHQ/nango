@@ -15,7 +15,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {},
     "devDependencies": {
-        "@nangohq/types": "0.48.1"
+        "@nangohq/types": "0.48.2"
     },
     "files": [
         "dist/**/*.js",
