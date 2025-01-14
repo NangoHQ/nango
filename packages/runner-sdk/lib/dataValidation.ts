@@ -6,7 +6,7 @@ import type { JSONSchema7 } from 'json-schema';
 export interface ValidateProps {
     version: string;
     input: unknown;
-    modelName: string | undefined;
+    modelName: string | null | undefined;
     jsonSchema: JSONSchema7 | undefined | null;
 }
 

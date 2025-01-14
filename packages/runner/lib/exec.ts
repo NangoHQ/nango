@@ -1,4 +1,3 @@
-import type { NangoProps } from '@nangohq/shared';
 import { AxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
@@ -11,7 +10,7 @@ import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
-import type { RunnerOutput } from '@nangohq/types';
+import type { NangoProps, RunnerOutput } from '@nangohq/types';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -122,7 +121,7 @@ export async function exec(
                 const valOutput = validateData({
                     version: nangoProps.syncConfig.version || '1',
                     input: output,
-                    modelName: nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
+                    modelName: nangoProps.syncConfig.models!.length > 0 ? nangoProps.syncConfig.models![0] : undefined,
                     jsonSchema: nangoProps.syncConfig.models_json_schema
                 });
                 if (Array.isArray(valOutput)) {

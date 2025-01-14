@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, Endpoint, NangoProps } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { handleError, handleSuccess } from '../../execution/operations/output.js';
 import type { JsonValue } from 'type-fest';
-import type { NangoProps } from '@nangohq/shared';
 
 const path = '/tasks/:taskId';
 const method = 'PUT';
@@ -46,6 +45,7 @@ const nangoPropsSchema = z
         }),
         syncConfig: z
             .object({
+                id: z.number(),
                 sync_name: z.string().min(1),
                 type: z.enum(['sync', 'action']),
                 environment_id: z.number(),
@@ -59,9 +59,16 @@ const nangoPropsSchema = z
                 enabled: z.boolean(),
                 webhook_subscriptions: z.array(z.string()).or(z.null()),
                 model_schema: z.array(z.any()),
-                models_json_schema: z.any(),
+                models_json_schema: z.object({}).nullable(),
                 created_at: z.coerce.date(),
-                updated_at: z.coerce.date()
+                updated_at: z.coerce.date(),
+                version: z.string(),
+                attributes: z.record(z.string(), z.any()),
+                pre_built: z.boolean(),
+                is_public: z.boolean(),
+                input: z.string().nullable(),
+                sync_type: z.enum(['full', 'incremental']).nullable(),
+                metadata: z.record(z.string(), z.any())
             })
             .passthrough(),
         syncId: z.string().uuid().optional(),

@@ -1,10 +1,10 @@
 import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
-import type { Config, SyncConfig, NangoConnection, NangoProps } from '@nangohq/shared';
+import type { Config, NangoConnection } from '@nangohq/shared';
 import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
@@ -14,7 +14,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
-    let syncConfig: SyncConfig | null = null;
+    let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
@@ -44,6 +44,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         });
 
         syncConfig = {
+            id: -1,
             sync_name: task.onEventName,
             file_location: task.fileLocation,
             models: [],
@@ -58,6 +59,13 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             nango_config_id: -1,
             runs: '',
             webhook_subscriptions: [],
+            attributes: {},
+            input: null,
+            is_public: false,
+            metadata: {},
+            models_json_schema: null,
+            pre_built: false,
+            sync_type: null,
             created_at: new Date(),
             updated_at: new Date()
         };
@@ -112,7 +120,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             runTime: 0,
             error,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
-            syncConfig,
+            syncConfig: syncConfig,
             ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {}),
             endUser
         });
@@ -183,7 +191,7 @@ async function onFailure({
     syncName: string;
     providerConfigKey: string;
     activityLogId: string;
-    syncConfig: SyncConfig | null;
+    syncConfig: DBSyncConfig | null;
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];

@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { exec } from './exec.js';
-import type { NangoProps, SyncConfig } from '@nangohq/shared';
+import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
 function getNangoProps(): NangoProps {
     return {
@@ -16,18 +16,12 @@ function getNangoProps(): NangoProps {
         syncId: 'sync-id',
         syncJobId: 1,
         lastSyncDate: new Date(),
-        dryRun: true,
         attributes: {},
         track_deletes: false,
-        logMessages: {
-            counts: { updated: 0, added: 0, deleted: 0 },
-            messages: []
-        },
-        syncConfig: {} as SyncConfig,
+        syncConfig: {} as DBSyncConfig,
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,
-        stubbedMetadata: {},
         endUser: null
     };
 }
