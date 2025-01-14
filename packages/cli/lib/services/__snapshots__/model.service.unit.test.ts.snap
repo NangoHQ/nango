@@ -44,8 +44,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 import { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AxiosError } from 'axios';
-import type { SyncConfig } from '../models/Sync.js';
-import type { ApiEndUser, DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
 export declare const oldLevelToNewLevel: {
     readonly debug: "debug";
     readonly info: "info";
@@ -312,7 +311,7 @@ export interface NangoProps {
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
@@ -347,7 +346,7 @@ export declare class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
-    syncConfig?: SyncConfig;
+    syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
     connectionId: string;
     providerConfigKey: string;

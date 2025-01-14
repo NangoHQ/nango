@@ -18,11 +18,10 @@ import {
     stringifyObject,
     truncateJson
 } from '@nangohq/utils';
-import type { SyncConfig } from '../models/Sync.js';
 import type { ValidateDataError } from './dataValidation.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
-import type { ApiEndUser, DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
 
@@ -381,7 +380,7 @@ export interface NangoProps {
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
@@ -429,7 +428,7 @@ export class NangoAction {
     dryRun?: boolean;
     abortSignal?: AbortSignal;
     dryRunService?: DryRunServiceInterface;
-    syncConfig?: SyncConfig;
+    syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
 
     public connectionId: string;

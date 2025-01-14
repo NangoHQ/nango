@@ -9,7 +9,7 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     nango_config_id: number;
     file_location: string;
     version: string;
-    models: string[] | null;
+    models: string[] | null; // TODO: remove nullable NAN-2527
     active: boolean;
     runs: string | null;
     model_schema: LegacySyncModelSchema[] | NangoModel[] | null;
@@ -21,8 +21,8 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     pre_built: boolean;
     is_public: boolean;
     metadata: NangoConfigMetadata;
-    input: string | undefined;
-    sync_type: SyncTypeLiteral | undefined;
+    input: string | null;
+    sync_type: SyncTypeLiteral | null;
     webhook_subscriptions: string[] | null;
     enabled: boolean;
     models_json_schema: JSONSchema7 | null;

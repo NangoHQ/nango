@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, NangoConnection, NangoProps, Sync, SyncConfig } from '@nangohq/shared';
+import type { Config, Job, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
@@ -20,7 +20,7 @@ import {
 } from '@nangohq/shared';
 import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import db from '@nangohq/database';
@@ -32,7 +32,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let providerConfig: Config | undefined | null;
     let sync: Sync | undefined | null;
     let syncJob: Pick<Job, 'id'> | null = null;
-    let syncConfig: SyncConfig | null = null;
+    let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
@@ -83,7 +83,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
-            sync_config_id: syncConfig.id!,
+            sync_config_id: syncConfig.id,
             run_id: task.id,
             log_id: logCtx.id
         });
@@ -188,7 +188,7 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const environment = await environmentService.getById(nangoProps.environmentId);
     if (environment) {
-        for (const model of nangoProps.syncConfig.models) {
+        for (const model of nangoProps.syncConfig.models!) {
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
                     environmentId: nangoProps.environmentId,
@@ -254,7 +254,7 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         syncJobId: nangoProps.syncJobId!,
         providerConfigKey: nangoProps.providerConfigKey,
         activityLogId: nangoProps.activityLogId || 'unknown',
-        models: nangoProps.syncConfig.models,
+        models: nangoProps.syncConfig.models!,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         syncConfig: nangoProps.syncConfig,
@@ -283,7 +283,7 @@ async function onFailure({
     syncId: string;
     syncJobId?: number | undefined;
     syncName: string;
-    syncConfig: SyncConfig | null;
+    syncConfig: DBSyncConfig | null;
     providerConfigKey: string;
     models: string[];
     activityLogId: string;

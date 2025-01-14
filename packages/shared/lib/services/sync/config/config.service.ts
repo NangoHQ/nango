@@ -740,9 +740,9 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
     return result;
 }
 
-export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<SyncConfig | null> {
+export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<DBSyncConfig | null> {
     const query = db.knex
-        .select<SyncConfig>('*')
+        .select<DBSyncConfig>('*')
         .where({
             environment_id: opts.environmentId,
             sync_name: opts.name,
@@ -752,7 +752,7 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
             type: opts.isAction ? 'action' : 'sync',
             deleted: false
         })
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .first();
 
     const res = await query;
