@@ -1,0 +1,40 @@
+---
+title: 'Configuration'
+sidebarTitle: 'Configuration'
+description: 'Guide to configure an integration in Nango.'
+---
+
+# 1. Create an account
+
+Sign up for a Nango account (free, no credit card):
+[![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
+
+# 2. Create an integration
+
+Go to the [Integrations](https://app.nango.dev/dev/integrations) tab, click  _Configure New Integration_ and select the API to integrate with.
+
+<Tip>
+    Each API has a dedicated Nango documentation page with useful links, gotchas, etc.
+</Tip>
+
+APIs have different ways to authorize requests: OAuth, API key, Basic, custom. Nango abstracts away the difficulties of working with each one.
+
+<Accordion title="⚠️ Required for OAuth APIs">
+    OAuth APIs require you to register your OAuth application on their developer portal.
+
+    When registering, the API provider will prompt you for the `Callback URL`. Use the URL displayed in the Nango integration settings. Remember to register the required scopes in the Nango integration settings and, if necessary, with the API provider.
+
+    Collect your OAuth app's `Client ID` and `Client Secret` from the API portal and input them in your Nango integration settings.
+</Accordion>
+
+# 3. Test the authorization
+
+If you don't have one already, create a test account for the external API you want to integrate with.
+
+On the Nango [Connections](https://app.nango.dev/dev/connections) tab, click _Add Test Connection_ to test the authorization flow. Pick an integration, click _Authorize_ and enter your test account credentials to authorize the API.
+
+Once authorized, go to the [Connections](https://app.nango.dev/dev/connections) tab to see the newly created connection. The "Authorization" tab contains the credentials necessary to consume the external API. These credentials are securely stored and automatically refreshed by Nango.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
