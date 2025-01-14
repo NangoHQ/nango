@@ -33,7 +33,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                         There is no{' '}
                         <a
                             className="text-text-blue hover:text-text-light-blue"
-                            href="https://docs.nango.dev/understand/concepts/templates"
+                            href="https://docs.nango.dev/guides/pre-built-integrations/overview"
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -155,7 +155,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
             <div className="text-text-light-gray flex gap-2 items-center">
                 <QuestionMarkCircledIcon />
                 Can&apos;t find the endpoint you need?{' '}
-                <a href="https://docs.nango.dev/guides/customize/create-a-custom-integration" className="underline">
+                <a href="https://docs.nango.dev/guides/custom-integration-builder/overview" className="underline">
                     Add your own
                 </a>
             </div>
