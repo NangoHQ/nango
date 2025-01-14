@@ -674,7 +674,7 @@ export class Orchestrator {
                     environment,
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
-                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                    syncConfig: { id: syncConfig!.id, name: syncConfig!.sync_name }
                 }
             );
 
