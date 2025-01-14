@@ -90,7 +90,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
         `<Accordion title="✅ Read & write data">`,
         `| Tools | Status |`,
         `| - | - |`,
-        `| Pre-built use-cases | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Pre-built integrations | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
         `| API unification | ✅ |`,
         `| 2-way sync | ✅ |`,
         `| Webhooks from Nango on data modifications | ✅ |`,
@@ -152,7 +152,7 @@ function useCasesSnippet(useCases: any) {
     }
 
     return `
-        ## Pre-built use cases
+        ## Pre-built integrations
         
         <AccordionGroup>
             
@@ -174,7 +174,7 @@ function useCasesSnippet(useCases: any) {
                 .join('\n')}
         </AccordionGroup>
 
-        <Tip>Not seeing the use case you need? [Build your own](https://docs.nango.dev/guides/customize/setup) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integration-builder/overview) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
@@ -182,11 +182,11 @@ function useCasesSnippet(useCases: any) {
 }
 
 function emptyUseCases() {
-    return `## Pre-built use-cases
+    return `## Pre-built integrations
 
-        _No pre-built use cases yet (time to contribute: &lt;48h)_
+        _No pre-built integration yet (time to contribute: &lt;48h)_
         
-        <Tip>Not seeing the use case you need? [Build your own](https://docs.nango.dev/guides/customize/setup) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integration-builder/overview) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())

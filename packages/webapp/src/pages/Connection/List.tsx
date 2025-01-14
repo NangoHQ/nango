@@ -349,7 +349,7 @@ export const ConnectionList: React.FC = () => {
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
                         <Link
-                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
                             className="text-blue-500"
                         >
                             Nango Connect

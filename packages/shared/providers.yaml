@@ -6353,6 +6353,28 @@ shopify-api-key:
             pattern: '^shpat_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
 
+shopify-scim:
+    display_name: Shopify (SCIM API)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://shopifyscim.com/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/shopify
+    docs_connect: https://docs.nango.dev/integrations/all/shopify-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Shopify organization settings.
+            doc_section: '#step-1-generating-your-scim-api-token'
+
 shortcut:
     display_name: Shortcut
     categories:

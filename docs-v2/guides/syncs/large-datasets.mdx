@@ -1,0 +1,126 @@
+---
+title: 'Large datasets'
+sidebarTitle: 'Large datasets'
+description: 'Guide on how to handle the synchronization of large amounts of data from APIs.'
+---
+
+A common type of integration is to let users view & interact with data from external systems. If they only view the data, you need to maintain a 1-way sync of the data (from the external system to your app); if they can edit it, you need to maintain a 2-way sync.
+
+In both cases, you need to transfer data from the external system to your app, either on a schedule or in real-time. In Nango, this is achieved with a [sync](/guides/syncs/overview). For a 2-way sync, you can write back to the external system using [actions](/guides/actions/overview).
+
+# Context
+
+When syncing data in Nango, there are actually two syncing processes happening:
+- Nango syncing with the external system, managed by integration scripts
+- Your app syncing with Nango, managed by your app's code using the Nango API
+
+Your app syncs with Nango in the same way regardless of the volume of the dataset ([guide](/guides/syncs/use-a-sync)). Nango maintains a cache of the synced data, and the Nango API allows you to fetch only the incremental changes for your convenience.
+
+Below, we explore various approaches on how to sync data from the external system to Nango, even for large datasets.
+
+# Full refresh syncing (small datasets only)
+
+For small datasets (e.g., a list of Slack users for organizations with less than 100 employees), you can instruct Nango to periodically poll for the entire dataset. This method is known as a ["full refresh" sync](/guides/syncs/overview#full-refresh-syncs).
+
+Although the dataset is overridden with each sync execution, this is abstracted away from your app's logic, allowing it to still benefit from fetching only incremental changes from the Nango API.
+
+As datasets increase in size, full refresh syncs become unscalable, taking longer to run, triggering rate limiting from external APIs, and consuming more computing and memory resources.
+
+Here is an example of a sync script which refreshes the entire list of Slack user on each execution:
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    // ...
+    // Paginate API requests.
+    while (nextPage) {
+        const res = getUsersFromSlackAPI(nextPage);
+        // ...
+        // Save Slack users.
+        await nango.batchSave(mapUsers(res.data.members), 'User');
+    }
+}
+```
+
+# Incremental syncing
+
+The preferred method for syncing larger datasets is to fetch only the incremental changes from the external API. This method is known as an ["incremental" sync](https://docs.nango.dev/guides/syncs/overview#incremental-syncs).
+
+Sync scripts expose the timestamp of the last sync execution start under `nango.lastSyncDate`. You can use this timestamp to instruct the external API to send only the changes since that date. That way, you only receive and persist the modified records in the Nango cache.
+
+For example, if you are syncing tens of thousands of contacts from a Salesforce account on an hourly basis, only a small portion of the contacts will be updated or created in any given hour. If you were doing a full refresh sync, you would need to fetch the entire contact list every hour, which is inefficient. With an incremental sync, you can fetch only the modified contacts from the past hour, as allowed by Salesforce.
+
+Here is an example of a sync script that updates the list of Salesforce contact incrementally on each execution, leveraging `nango.lastSyncDate`:
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    // ...
+    // Paginate API requests.
+    while (nextPage) {
+        // Pass in a timestamp to Salesforce to fetch only the recently modified data.
+        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        // ...
+        // Save Salesforce contacts.
+        await nango.batchSave(mapContacts(res.data.records), 'Contact');
+    }
+}
+```
+
+### Initial sync execution
+
+Even with incremental syncing, the very first sync execution must be a full refresh since there is no previous data. This initial sync fetches all historical data and is more resource-intensive than subsequent executions.
+
+One strategy to manage this is to limit the period you are backfilling. For example, if you are syncing a Notion workspace, you can inform users that you will only sync Notion pages modified in the last three months, assuming these are most relevant.
+
+# Avoiding memory overuse
+
+Nango integration scripts, which manage data syncing between external systems and Nango, run on customer-specific VMs with fixed resources. Consequently, integration scripts can lead to sync failures (e.g., VM crash) when memory resources are overused.
+
+The most common cause of excessive memory use is fetching a large number of records before saving them to the Nango cache, as shown below:
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    // ...
+    const responses: any[] = [];
+    // Paginate API requests.
+    while (nextPage) {
+        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        // ...
+        // Save all dataset in memory (memory intensive).
+        responses.push(...response.data.records);
+    }
+    // Save all Salesforce contacts at once.
+    await nango.batchSave(mapContacts(responses), 'Contact');
+}
+```
+
+A simple fix is to store records as you fetch them, allowing them to be released from memory:
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    // ...
+    // Paginate API requests.
+    while (nextPage) {
+        // Releases the previous page results from memory.
+        const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
+        // ...
+        // Save Salesforce contacts after each page.
+        await nango.batchSave(mapContacts(res.data.records), 'Contact');
+    }
+}
+```
+
+Combining a large dataset with a full refresh sync while storing the entire dataset in memory will likely cause periodic VM crashes.
+
+You can monitor the memory consumption of your script executions in the Logs tab within the Nango UI.
+
+# Avoiding syncing unnecessary data
+
+Another strategy for handling large datasets successfully is to filter the data you need as early as possible, either using filters available from the external API or by discarding data in the scripts, i.e., not saving it to the Nango cache.
+
+This approach uses the external system as a source of truth, allowing you to sync additional data in the future by editing your Nango script and triggering a full refresh to backfill any missing historical data.
+
+Because of the flexibility of integration scripts, Nango allows you to perform transformations early in the data sync process, optimizing resource use and enabling faster syncing.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
