@@ -21,4 +21,5 @@ packages/cli/
 scripts/
 cliff.toml
 .DS_Store
-**/*.test.ts
+**/*.unit.test.ts
+**/*.integration.test.ts

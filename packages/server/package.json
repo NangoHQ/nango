@@ -29,7 +29,6 @@
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/keystore": "file:../keystore",
@@ -65,6 +64,7 @@
         "zod": "3.24.1"
     },
     "devDependencies": {
+        "@nangohq/types": "file:../types",
         "@types/cookie-parser": "1.4.3",
         "@types/cors": "2.8.12",
         "@types/express": "4.17.13",
