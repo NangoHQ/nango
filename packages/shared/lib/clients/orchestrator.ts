@@ -547,7 +547,7 @@ export class Orchestrator {
                 }
             });
         } else {
-            await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
+            await logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
     }
