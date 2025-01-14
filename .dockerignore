@@ -21,3 +21,4 @@ packages/cli/
 scripts/
 cliff.toml
 .DS_Store
+**/*.test.ts
