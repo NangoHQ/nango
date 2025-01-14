@@ -71,6 +71,10 @@ bump_and_npm_publish "@nangohq/node" "$VERSION"
 bump_other_pkg "runner-sdk" "node"
 bump_other_pkg "cli" "node"
 
+# Runner SDK
+bump_and_npm_publish "@nangohq/runner-sdk" "$VERSION"
+bump_other_pkg "cli" "runner-sdk"
+
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
 
