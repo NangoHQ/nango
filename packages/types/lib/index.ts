@@ -45,6 +45,7 @@ export type * from './connect/api.js';
 export type * from './connect/session.js';
 export type * from './endUser/index.js';
 export type * from './runner/index.js';
+export type * from './runner/sdk.js';
 
 export type * from './nangoYaml/index.js';
 
@@ -52,6 +53,7 @@ export type * from './environment/db.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
+export type * from './environment/variable/index.js';
 export type * from './webhooks/api.js';
 export type * from './webhooks/http.api.js';
 export type * from './flow/http.api.js';
