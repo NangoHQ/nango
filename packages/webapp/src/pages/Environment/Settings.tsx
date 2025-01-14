@@ -575,7 +575,7 @@ export const EnvironmentSettings: React.FC = () => {
                                         Public Key is deprecated, please use{' '}
                                         <Link
                                             className="underline"
-                                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
                                         >
                                             Nango Connect
                                         </Link>
@@ -735,7 +735,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                     <div className="flex text-black text-sm">
                                                         {`To register with external OAuth apps (cf. `}
                                                         <a
-                                                            href="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#use-a-custom-callback-url"
+                                                            href="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#use-a-custom-callback-url"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue ml-1"
@@ -812,7 +812,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                 <div className="flex text-black text-sm">
                                                     {`Be notified when new data is available from Nango (cf. `}
                                                     <a
-                                                        href="https://docs.nango.dev/guides/getting-started/read-from-an-api#listen-for-webhooks-from-nango"
+                                                        href="https://docs.nango.dev/guides/syncs/use-a-sync#listen-for-webhooks-from-nango"
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="text-text-blue ml-1"
@@ -885,7 +885,7 @@ export const EnvironmentSettings: React.FC = () => {
                                                         <div className="flex text-black text-sm">
                                                             {`Be notified when new data is available from Nango (cf. `}
                                                             <a
-                                                                href="https://docs.nango.dev/guides/getting-started/read-from-an-api#listen-for-webhooks-from-nango"
+                                                                href="https://docs.nango.dev/guides/syncs/use-a-sync#listen-for-webhooks-from-nango"
                                                                 target="_blank"
                                                                 rel="noreferrer"
                                                                 className="text-text-blue ml-1"
@@ -949,7 +949,7 @@ export const EnvironmentSettings: React.FC = () => {
                                         HMAC is deprecated, please use{' '}
                                         <Link
                                             className="underline"
-                                            to="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app#authorize-users-from-your-app"
+                                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
                                         >
                                             Nango Connect
                                         </Link>
