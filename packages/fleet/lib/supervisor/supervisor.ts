@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.js';
 import * as nodes from '../models/nodes.js';
 import * as deployments from '../models/deployments.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
+import { Err, errorToObject, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from '../utils/errors.js';
 import type { Node, NodeConfigOverride } from '../types.js';
@@ -290,7 +290,7 @@ export class Supervisor {
                         const result = await this.execute(operation);
                         if (result.isErr()) {
                             operationSpan?.setTag('error', result.error);
-                            logger.error('Failed to execute operation:', result.error, result.error.cause);
+                            logger.error('Failed to execute operation:', result.error, errorToObject(result.error.cause));
                         }
                     }
                 );
