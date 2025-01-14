@@ -152,7 +152,9 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
 
     let headers: [string, string][] = [];
     if (config.headers !== undefined) {
-        const filteredHeaders = Object.entries(config.headers).filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()));
+        const filteredHeaders = Object.entries(config.headers)
+            .filter(([key]) => !FILTER_HEADERS.includes(key.toLowerCase()))
+            .map<[string, string]>(([key, value]) => (key.toLowerCase().startsWith('nango-proxy-') ? [key.slice(12), String(value)] : [key, String(value)]));
         sortEntries(filteredHeaders);
         headers = filteredHeaders;
     }
