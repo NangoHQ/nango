@@ -8,8 +8,7 @@ import environmentService from '../services/environment.service.js';
 import { createConnectionSeeds } from '../seeders/connection.seeder.js';
 import { createConfigSeeds } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import type { SyncConfig } from '../models/Sync.js';
-import type { DBEnvironment } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
@@ -54,7 +53,7 @@ describe('Connection service integration tests', () => {
                 syncId: 'aaa-bbb-ccc',
                 syncJobId: 2,
                 lastSyncDate: new Date(),
-                syncConfig: {} as SyncConfig,
+                syncConfig: {} as DBSyncConfig,
                 debug: false,
                 runnerFlags: {} as any,
                 startedAt: new Date(),

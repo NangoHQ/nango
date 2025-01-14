@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { exec } from './exec.js';
-import type { NangoProps, SyncConfig } from '@nangohq/shared';
+import type { NangoProps } from '@nangohq/shared';
+import type { DBSyncConfig } from '@nangohq/types';
 
 function getNangoProps(): NangoProps {
     return {
@@ -23,7 +24,7 @@ function getNangoProps(): NangoProps {
             counts: { updated: 0, added: 0, deleted: 0 },
             messages: []
         },
-        syncConfig: {} as SyncConfig,
+        syncConfig: {} as DBSyncConfig,
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,
