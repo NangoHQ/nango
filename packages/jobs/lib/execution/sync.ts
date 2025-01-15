@@ -216,6 +216,11 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             provider_config_key: nangoProps.providerConfigKey
         };
 
+        const providerConfig = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
+        if (providerConfig === null) {
+            throw new Error(`Provider config not found for connection: ${connection.connection_id} in handleSyncSuccess`);
+        }
+
         const syncPayload = {
             records: {} as Record<string, SyncResult>,
             runTimeSecs: runTime
@@ -295,6 +300,16 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 });
                 void tracer.scope().activate(span, async () => {
                     try {
+                        const webhookLogCtx = await logContextGetter.create(
+                            { operation: { type: 'nango-webhook', action: 'deliver' } },
+                            {
+                                account: team!,
+                                environment,
+                                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                                connection: { id: connection.id!, name: connection.connection_id }
+                            }
+                        );
+
                         const res = await sendSyncWebhook({
                             connection: connection,
                             environment: environment!,
@@ -309,11 +324,14 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 deleted
                             },
                             operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
-                            logCtx
+                            logCtx: webhookLogCtx
                         });
 
                         if (res.isErr()) {
+                            await webhookLogCtx.failed();
                             throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
+                        } else {
+                            await webhookLogCtx.success();
                         }
                     } catch (err) {
                         span?.setTag('error', err);

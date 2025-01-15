@@ -58,10 +58,16 @@ export interface OperationAdmin {
     type: 'admin';
     action: 'impersonation';
 }
-export interface OperationWebhook {
+export interface OperationExternalWebhook {
     type: 'webhook';
     action: 'incoming' | 'forward';
 }
+
+export interface OperationNangoWebhook {
+    type: 'nango-webhook';
+    action: 'deliver';
+}
+
 export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
@@ -70,7 +76,8 @@ export type OperationList =
     | OperationSync
     | OperationProxy
     | OperationAction
-    | OperationWebhook
+    | OperationExternalWebhook
+    | OperationNangoWebhook
     | OperationOnEvents
     | OperationDeploy
     | OperationAuth
