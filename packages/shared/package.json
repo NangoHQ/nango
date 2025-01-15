@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.48.2",
+    "version": "0.48.3",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
@@ -23,7 +23,7 @@
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
         "@nangohq/nango-yaml": "0.48.2",
-        "@nangohq/node": "^0.48.2",
+        "@nangohq/node": "^0.48.3",
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",

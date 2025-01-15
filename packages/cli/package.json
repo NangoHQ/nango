@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.48.2",
+    "version": "0.48.3",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -25,7 +25,7 @@
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
         "@nangohq/nango-yaml": "0.48.2",
-        "@nangohq/shared": "^0.48.2",
+        "@nangohq/shared": "^0.48.3",
         "@swc/core": "^1.5.25",
         "ajv": "^8.17.1",
         "ajv-errors": "^3.0.0",

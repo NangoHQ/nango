@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.48.3] - 2025-01-15
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d9e724026f9b2d353f889358e8adba6d862576b6 by Andrew Karanja. Commit message: feat(metabase): Implement Metabase user provisioning with create, delete, and list functionality (#184) by @github-actions[bot]
+
+### Fixed
+
+- *(build)* Missing version upgrade and types (#3305) by @bodinsamuel
+- *(fleet)* Render error cause is swallowed by the logger  (#3303) by @TBonnin
+- *(types)* NangoProps use DBSyncConfig (#3304) by @bodinsamuel
+- *(cli)* Fix order of cleaning up headers (#3306) by @nalanj
+
 ## [v0.48.2] - 2025-01-14
 
 ### Added
@@ -2740,6 +2753,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.48.3]: https://github.com/NangoHQ/nango/compare/v0.48.2..v0.48.3
 [v0.48.2]: https://github.com/NangoHQ/nango/compare/v0.48.1..v0.48.2
 [v0.48.1]: https://github.com/NangoHQ/nango/compare/v0.48.0..v0.48.1
 [v0.48.0]: https://github.com/NangoHQ/nango/compare/v0.47.1..v0.48.0
