@@ -34,7 +34,7 @@ try {
             healthCheckFailures += 1;
             logger.error(`HealthCheck failed (${healthCheckFailures} times)...`, err);
             if (healthCheckFailures > MAX_FAILURES) {
-                void close();
+                close();
             } else {
                 healthCheck = setTimeout(check, TIMEOUT);
             }
@@ -42,13 +42,13 @@ try {
     };
     void check();
 
-    const close = once(async () => {
+    const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
-        processor.stop();
-        otlp.stop();
-        await runnersFleet.stop();
         srv.close(async () => {
+            processor.stop();
+            otlp.stop();
+            await runnersFleet.stop();
             await db.knex.destroy();
             process.exit();
         });
@@ -56,12 +56,12 @@ try {
 
     process.on('SIGINT', () => {
         logger.info('Received SIGINT...');
-        void close();
+        close();
     });
 
     process.on('SIGTERM', () => {
         logger.info('Received SIGTERM...');
-        void close();
+        close();
     });
 
     process.on('unhandledRejection', (reason) => {
