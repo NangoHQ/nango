@@ -30,7 +30,7 @@ import type {
     UserLogParameters,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
-import { getProvider } from '@nangohq/shared-public';
+import { getProvider } from '@nangohq/providers';
 import { AbortedSDKError, UnknownProviderSDKError } from './errors.js';
 import { validateData } from './dataValidation.js';
 import type { ValidateDataError } from './dataValidation.js';

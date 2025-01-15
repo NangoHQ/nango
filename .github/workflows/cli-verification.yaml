@@ -53,7 +53,7 @@ jobs:
 
                   check_and_publish packages/types
                   check_and_publish packages/nango-yaml
-                  check_and_publish packages/shared-public
+                  check_and_publish packages/providers
                   check_and_publish packages/node-client
                   check_and_publish packages/runner-sdk
                   check_and_publish packages/frontend

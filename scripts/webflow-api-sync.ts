@@ -20,7 +20,7 @@ if (!process.env['WEBFLOW_CMS_API_TOKEN']) {
 
 const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TOKEN'] });
 
-const providersPath = 'packages/shared-public/providers.yaml';
+const providersPath = 'packages/providers/providers.yaml';
 // eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
 

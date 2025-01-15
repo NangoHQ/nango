@@ -2,7 +2,15 @@ import type { AxiosResponse } from 'axios';
 import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
 import type { CursorPagination, LinkPagination, OffsetCalculationMethod, OffsetPagination, Pagination, UserProvidedProxyConfiguration } from '@nangohq/types';
-import { isValidURL } from '@nangohq/shared-public';
+
+function isValidURL(str: string): boolean {
+    try {
+        new URL(str); // TODO: replace with canParse after we drop node v18
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 class PaginationService {
     public validateConfiguration(paginationConfig: Pagination): void {

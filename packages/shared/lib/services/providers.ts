@@ -3,10 +3,10 @@ import { NangoError } from '../utils/error.js';
 import { getLogger, ENVS, parseEnvs } from '@nangohq/utils';
 import { createHash } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { updateProviderCache } from '@nangohq/shared-public';
+import { updateProviderCache } from '@nangohq/providers';
 
 // Just to avoid changing hundreds of refs
-export { getProviders, getProvider } from '@nangohq/shared-public';
+export { getProviders, getProvider } from '@nangohq/providers';
 
 const logger = getLogger('providers');
 const envs = parseEnvs(ENVS);

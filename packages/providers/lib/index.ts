@@ -1,8 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
 import yaml from 'js-yaml';
 import type { Provider, ProviderAlias } from '@nangohq/types';
-import { projectRoot } from './path.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const pkgRoot = path.join(__filename, '../../');
 
 let providers: Record<string, Provider> | undefined = undefined;
 
@@ -25,7 +28,7 @@ export function getProvider(providerName: string): Provider | null {
 
 function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
-        const providersYamlPath = path.join(projectRoot, 'packages', 'shared-public', 'providers.yaml');
+        const providersYamlPath = path.join(pkgRoot, 'providers.yaml');
         const fileEntries = yaml.load(fs.readFileSync(providersYamlPath).toString()) as Record<string, Provider | ProviderAlias>;
 
         if (fileEntries == null) {

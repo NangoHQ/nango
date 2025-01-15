@@ -23,7 +23,7 @@
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
         "@nangohq/nango-yaml": "file:../nango-yaml",
-        "@nangohq/shared-public": "file:../shared-public",
+        "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",

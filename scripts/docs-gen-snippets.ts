@@ -18,7 +18,7 @@ const prettyAuthModes: Record<string, string> = {
 };
 
 const flowsPath = 'packages/shared/flows.yaml';
-const providersPath = 'packages/shared-public/providers.yaml';
+const providersPath = 'packages/providers/providers.yaml';
 const docsPath = 'docs-v2/integrations/all';
 const snippetsPath = 'docs-v2/snippets/generated';
 

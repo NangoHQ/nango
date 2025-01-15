@@ -53,7 +53,7 @@
             "path": "packages/shared"
         },
         {
-            "path": "packages/shared-public"
+            "path": "packages/providers"
         },
         {
             "path": "packages/connect-ui"

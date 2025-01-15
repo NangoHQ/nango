@@ -30,7 +30,7 @@
             "path": "../orchestrator"
         },
         {
-            "path": "../shared-public"
+            "path": "../providers"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

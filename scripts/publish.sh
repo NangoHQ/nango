@@ -58,15 +58,15 @@ bump_other_pkg "frontend" "types"
 bump_other_pkg "nango-yaml" "types"
 bump_other_pkg "node-client" "types"
 bump_other_pkg "runner-sdk" "types"
-bump_other_pkg "shared-public" "types"
+bump_other_pkg "providers" "types"
 
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 
 # Shared Public
-bump_and_npm_publish "@nangohq/shared-public" "$VERSION"
-bump_other_pkg "runner-sdk" "shared-public"
+bump_and_npm_publish "@nangohq/providers" "$VERSION"
+bump_other_pkg "runner-sdk" "providers"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"

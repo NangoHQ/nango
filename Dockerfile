@@ -33,7 +33,7 @@ COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
-COPY packages/shared-public/package.json ./packages/shared-public/package.json
+COPY packages/providers/package.json ./packages/providers/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
 COPY packages/utils/package.json ./packages/utils/package.json

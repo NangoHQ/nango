@@ -145,7 +145,7 @@ describe('Pagination', () => {
             token_url: '',
             docs: ''
         };
-        vi.spyOn(await import('@nangohq/shared-public'), 'getProvider').mockImplementation(() => provider);
+        vi.spyOn(await import('@nangohq/providers'), 'getProvider').mockImplementation(() => provider);
 
         const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
@@ -399,7 +399,7 @@ describe('Pagination', () => {
     const stubProviderTemplate = async (paginationConfig: Pagination) => {
         const provider: Provider = buildTemplate(paginationConfig);
 
-        vi.spyOn(await import('@nangohq/shared-public'), 'getProvider').mockImplementation(() => provider);
+        vi.spyOn(await import('@nangohq/providers'), 'getProvider').mockImplementation(() => provider);
     };
 
     const buildTemplate = (paginationConfig: Pagination): Provider => {
