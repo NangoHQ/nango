@@ -125,6 +125,7 @@ rm packages/database/package-lock.json
 pushd "$GIT_ROOT_DIR/packages/shared"
 npm install "@nangohq/utils@file:../utils"
 npm install "@nangohq/database@file:../database"
+popd
 pushd "$GIT_ROOT_DIR/packages/database"
 npm install "@nangohq/utils@file:../utils"
 popd
