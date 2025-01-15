@@ -9372,6 +9372,84 @@ integrations:
                 city_state: string
                 description: string
                 full_address: string
+    metabase:
+        actions:
+            create-user:
+                description: Creates a user in Metabase.
+                output: User
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                input: CreateUser
+            disable-user:
+                description: Disables a user in Metabase by id.
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+            update-user:
+                description: Updates an existing, active user in Metabase.
+                endpoint:
+                    method: PUT
+                    path: /users
+                    group: Users
+                input: UpdateUserInput
+                output: SuccessResponse
+            fetch-user:
+                description: Fetches details of a specific user by ID.
+                output: User
+                endpoint:
+                    method: GET
+                    path: /users/single
+                    group: Users
+                input: IdEntity
+            enable-user:
+                description: Enables a disabled user.
+                endpoint:
+                    method: PUT
+                    path: /users/enable
+                    group: Users
+                output: SuccessResponse
+                input: IdEntity
+        syncs:
+            users:
+                runs: every day
+                description: >
+                    Fetches a list of users from Metabase, including active and inactive
+                    users.
+                output: User
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            SuccessResponse:
+                success: boolean
+            IdEntity:
+                id: integer
+            User:
+                id: integer
+                firstName: string
+                lastName: string
+                email: string
+                active?: boolean
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            UpdateUserInput:
+                id: integer
+                email: string | null
+                first_name: string | null
+                last_name: string | null
+                is_group_manager: boolean | null
+                locale: string | null
+                is_superuser: boolean | null
     microsoft-teams:
         syncs:
             org-units:
