@@ -23,26 +23,10 @@ export function getProvider(providerName: string): Provider | null {
     return providers?.[providerName] ?? null;
 }
 
-function getProvidersPath() {
-    // find the providers.yaml file
-    // recursively searching in parent directories
-    const findProvidersYaml = (dir: string): string => {
-        const providersYamlPath = path.join(dir, 'providers.yaml');
-        if (fs.existsSync(providersYamlPath)) {
-            return providersYamlPath;
-        }
-        const parentDir = path.dirname(dir);
-        if (parentDir === dir) {
-            throw new Error('providers_yaml_not_found');
-        }
-        return findProvidersYaml(parentDir);
-    };
-    return findProvidersYaml(projectRoot);
-}
-
 function loadProvidersYaml(): Record<string, Provider> | undefined {
     try {
-        const fileEntries = yaml.load(fs.readFileSync(getProvidersPath()).toString()) as Record<string, Provider | ProviderAlias>;
+        const providersYamlPath = path.join(projectRoot, 'packages', 'shared-public', 'providers.yaml');
+        const fileEntries = yaml.load(fs.readFileSync(providersYamlPath).toString()) as Record<string, Provider | ProviderAlias>;
 
         if (fileEntries == null) {
             throw new Error('provider_template_loading_failed');

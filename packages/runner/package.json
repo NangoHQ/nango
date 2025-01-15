@@ -36,6 +36,8 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
+        "@nangohq/database": "file:../database",
+        "@nangohq/shared-public": "file:../shared-public",
         "@types/connect-timeout": "0.0.39",
         "@types/node": "20.12.2",
         "typescript": "5.7.3",

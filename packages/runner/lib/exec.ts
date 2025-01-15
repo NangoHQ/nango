@@ -11,7 +11,7 @@ import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
-import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk.js';
+import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
 
 export async function exec(

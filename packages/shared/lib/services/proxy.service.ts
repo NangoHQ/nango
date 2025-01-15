@@ -12,8 +12,8 @@ import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvid
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
+import { getProvider } from './providers.js';
 import { redactHeaders, redactURL } from '../utils/http.js';
-import { getProvider } from '@nangohq/shared-public';
 
 interface Logs {
     logs: MessageRowInsert[];

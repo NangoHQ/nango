@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../database"
+        },
+        {
             "path": "../node-client"
         },
         {
@@ -13,6 +16,9 @@
         },
         {
             "path": "../shared"
+        },
+        {
+            "path": "../shared-public"
         },
         {
             "path": "../types"

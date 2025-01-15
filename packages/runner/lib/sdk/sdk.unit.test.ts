@@ -1,17 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import type { Config } from '../models/index.js';
-import type { CursorPagination, DBSyncConfig, LinkPagination, OffsetPagination, Pagination, Provider } from '@nangohq/types';
-import configService from '../services/config.service.js';
-import * as providerService from '../services/providers.js';
-import type { NangoProps } from './sync.js';
-import { NangoAction, NangoSync } from './sync.js';
-import { isValidHttpUrl } from '../utils/utils.js';
-import proxyService from '../services/proxy.service.js';
+import { isValidHttpUrl, proxyService } from '@nangohq/shared';
+import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import { NangoError } from '../utils/error.js';
+import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
+import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -19,7 +13,6 @@ const nangoProps: NangoProps = {
     providerConfigKey: 'github',
     provider: 'github',
     connectionId: 'connection-1',
-    dryRun: false,
     activityLogId: '1',
     team: {
         id: 1,
@@ -39,10 +32,10 @@ const nangoProps: NangoProps = {
 };
 
 describe('cache', () => {
-    let nangoAction: NangoAction;
+    let nangoAction: NangoActionRunner;
     let nango: Nango;
     beforeEach(async () => {
-        nangoAction = new NangoAction({
+        nangoAction = new NangoActionRunner({
             ...nangoProps
         });
         nango = new Nango({ secretKey: '***' });
@@ -52,6 +45,7 @@ describe('cache', () => {
         nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
         vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
     });
+
     afterEach(() => {
         vi.clearAllMocks();
     });
@@ -123,19 +117,19 @@ describe('Pagination', () => {
 
     const paginationConfigs = [cursorPagination, offsetPagination, linkPagination];
 
-    let nangoAction: NangoAction;
-    let nango: Nango;
+    let nangoAction: NangoActionRunner;
 
-    beforeEach(() => {
-        const config: any = {
+    beforeEach(async () => {
+        const config: NangoProps = {
+            ...nangoProps,
             secretKey: 'encrypted',
-            serverUrl: 'https://example.com',
             providerConfigKey,
-            connectionId,
-            dryRun: true
+            connectionId
         };
-        nangoAction = new NangoAction(config);
-        nango = new Nango({ secretKey: config.secretKey });
+        nangoAction = new NangoActionRunner(config);
+
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
     });
 
     afterEach(() => {
@@ -151,50 +145,44 @@ describe('Pagination', () => {
             token_url: '',
             docs: ''
         };
-        (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
-        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
+        vi.spyOn(await import('@nangohq/shared-public'), 'getProvider').mockImplementation(() => provider);
 
         const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
     });
 
     it('Sends pagination params in body for POST HTTP method', async () => {
-        stubProviderTemplate(cursorPagination);
-        mockErrorManagerReport();
+        await stubProviderTemplate(cursorPagination);
 
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
-            return Promise.resolve({} as Config);
-        });
-
-        // TODO: mock to return at least one more page to check that cursor is passed in body too
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi.fn().mockReturnValue({ data: { issues: [] } });
-        (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
-        (await import('@nangohq/node')).Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        const spy = vi.spyOn(proxyService, 'route').mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
 
         const endpoint = '/issues';
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
-        expect(nango.proxy).toHaveBeenCalledWith({
-            method: 'POST',
-            endpoint,
-            headers: {
-                'user-agent': expect.any(String)
-            },
-            data: { limit: 2 },
-            paginate: { limit: 2 },
-            connectionId: 'abc',
-            providerConfigKey: 'github'
-        });
+        expect(spy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                method: 'POST',
+                endpoint,
+                headers: {
+                    'user-agent': expect.any(String)
+                },
+                data: { limit: 2 },
+                paginate: { limit: 2 },
+                connectionId: 'abc',
+                providerConfigKey: 'github'
+            }),
+            expect.objectContaining({})
+        );
     });
 
     it('Overrides template pagination params with ones passed in the proxy config', async () => {
-        stubProviderTemplate(cursorPagination);
+        await stubProviderTemplate(cursorPagination);
 
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi
-            .fn()
-            .mockReturnValueOnce({ data: { issues: [{}, {}, {}] } })
-            .mockReturnValueOnce({ data: { issues: [] } });
+        const spy = vi
+            .spyOn(proxyService, 'route')
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [{}, {}, {}] } } as AxiosResponse }))
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
 
         const endpoint = '/issues';
         const paginationConfigOverride: OffsetPagination = {
@@ -210,29 +198,32 @@ describe('Pagination', () => {
             expect(batch.length).toBe(3);
         }
 
-        expect(nango.proxy).toHaveBeenLastCalledWith({
-            method: 'GET',
-            endpoint,
-            headers: {
-                'user-agent': expect.any(String)
+        expect(spy).toHaveBeenLastCalledWith(
+            {
+                method: 'GET',
+                endpoint,
+                headers: {
+                    'user-agent': expect.any(String)
+                },
+                params: { offset: '3', per_page: 3 },
+                paginate: paginationConfigOverride,
+                providerConfigKey,
+                connectionId
             },
-            params: { offset: '3', per_page: 3 },
-            paginate: paginationConfigOverride,
-            providerConfigKey,
-            connectionId
-        });
+            { connection: { credentials: {} }, existingActivityLogId: '1', providerName: 'github' }
+        );
     });
 
     it('Paginates using offset', async () => {
-        stubProviderTemplate(offsetPagination);
+        await stubProviderTemplate(offsetPagination);
 
         const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi
-            .fn()
-            .mockReturnValueOnce({ data: { issues: firstBatch } })
-            .mockReturnValueOnce({ data: { issues: secondBatch } })
-            .mockReturnValueOnce({ data: { issues: [] } });
+
+        vi.spyOn(proxyService, 'route')
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: firstBatch } } as AxiosResponse }))
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: secondBatch } } as AxiosResponse }))
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
 
         const endpoint = '/issues';
 
@@ -249,30 +240,26 @@ describe('Pagination', () => {
     });
 
     it('Paginates using cursor', async () => {
-        stubProviderTemplate(cursorPagination);
+        await stubProviderTemplate(cursorPagination);
 
         const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
         const thirdBatch: any[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi
-            .fn()
-            .mockReturnValueOnce({
-                data: {
-                    issues: firstBatch,
-                    metadata: {
-                        next_cursor: '2'
-                    }
-                }
-            })
-            .mockReturnValueOnce({
-                data: {
-                    issues: secondBatch,
-                    metadata: {
-                        next_cursor: '2'
-                    }
-                }
-            })
-            .mockReturnValueOnce({ data: { issues: thirdBatch } });
+
+        vi.spyOn(proxyService, 'route')
+            .mockReturnValueOnce(
+                Promise.resolve({
+                    logs: [],
+                    response: { data: { issues: firstBatch, metadata: { next_cursor: '2' } } } as AxiosResponse
+                })
+            )
+            .mockReturnValueOnce(
+                Promise.resolve({
+                    logs: [],
+                    response: { data: { issues: secondBatch, metadata: { next_cursor: '2' } } } as AxiosResponse
+                })
+            )
+            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: thirdBatch } } as AxiosResponse }));
 
         const endpoint = '/issues';
 
@@ -289,17 +276,16 @@ describe('Pagination', () => {
     });
 
     it('Stops pagination if cursor is empty', async () => {
-        stubProviderTemplate(cursorPagination);
+        await stubProviderTemplate(cursorPagination);
 
         const onlyBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi.fn().mockReturnValueOnce({
-            data: {
-                issues: onlyBatch,
-                metadata: {
-                    next_cursor: ''
-                }
-            }
-        });
+
+        vi.spyOn(proxyService, 'route').mockReturnValueOnce(
+            Promise.resolve({
+                logs: [],
+                response: { data: { issues: onlyBatch, metadata: { next_cursor: '' } } } as AxiosResponse
+            })
+        );
 
         const endpoint = '/issues';
 
@@ -316,29 +302,24 @@ describe('Pagination', () => {
     it.each(paginationConfigs)(
         'Extracts records from nested body param for $type pagination type',
         async (paginationConfig: CursorPagination | OffsetPagination | LinkPagination) => {
-            stubProviderTemplate(paginationConfig);
+            await stubProviderTemplate(paginationConfig);
 
             const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
             const emptyBatch: any[] = [];
-            (await import('@nangohq/node')).Nango.prototype.proxy = vi
-                .fn()
-                .mockReturnValueOnce({
-                    data: {
-                        issues: firstBatch,
-                        metadata: {
-                            next_cursor: ''
-                        }
-                    }
-                })
 
-                .mockReturnValueOnce({
-                    data: {
-                        issues: emptyBatch,
-                        metadata: {
-                            next_cursor: ''
-                        }
-                    }
-                });
+            vi.spyOn(proxyService, 'route')
+                .mockReturnValueOnce(
+                    Promise.resolve({
+                        logs: [],
+                        response: { data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse
+                    })
+                )
+                .mockReturnValueOnce(
+                    Promise.resolve({
+                        logs: [],
+                        response: { data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse
+                    })
+                );
 
             const endpoint = '/issues';
 
@@ -358,30 +339,32 @@ describe('Pagination', () => {
         ['https://api.gihub.com/issues?page=2', 'https://api.gihub.com/issues?page=3'],
         ['/issues?page=2', '/issues?page=3']
     ])('Paginates using next URL/path %s from body', async (nextUrlOrPathValue, anotherNextUrlOrPathValue) => {
-        stubProviderTemplate(linkPagination);
+        await stubProviderTemplate(linkPagination);
 
         const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
         const thirdBatch: any[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
-        (await import('@nangohq/node')).Nango.prototype.proxy = vi
-            .fn()
-            .mockReturnValueOnce({
-                data: {
-                    issues: firstBatch,
-                    metadata: {
-                        next_cursor: nextUrlOrPathValue
-                    }
-                }
-            })
-            .mockReturnValueOnce({
-                data: {
-                    issues: secondBatch,
-                    metadata: {
-                        next_cursor: anotherNextUrlOrPathValue
-                    }
-                }
-            })
-            .mockReturnValueOnce({ data: { issues: thirdBatch } });
+
+        const spy = vi
+            .spyOn(proxyService, 'route')
+            .mockReturnValueOnce(
+                Promise.resolve({
+                    logs: [],
+                    response: { data: { issues: firstBatch, metadata: { next_cursor: nextUrlOrPathValue } } } as AxiosResponse
+                })
+            )
+            .mockReturnValueOnce(
+                Promise.resolve({
+                    logs: [],
+                    response: { data: { issues: secondBatch, metadata: { next_cursor: anotherNextUrlOrPathValue } } } as AxiosResponse
+                })
+            )
+            .mockReturnValueOnce(
+                Promise.resolve({
+                    logs: [],
+                    response: { data: { issues: thirdBatch } } as AxiosResponse
+                })
+            );
 
         const endpoint = '/issues';
 
@@ -402,16 +385,21 @@ describe('Pagination', () => {
         }
 
         expect(actualRecords).toStrictEqual(expectedRecords);
-        expect(nango.proxy).toHaveBeenCalledWith(
+        expect(spy).toHaveBeenNthCalledWith(
+            3,
             expect.objectContaining({
                 endpoint: expectedEndpoint
+            }),
+            expect.objectContaining({
+                providerName: 'github'
             })
         );
     });
 
-    const stubProviderTemplate = (paginationConfig: Pagination) => {
+    const stubProviderTemplate = async (paginationConfig: Pagination) => {
         const provider: Provider = buildTemplate(paginationConfig);
-        vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
+
+        vi.spyOn(await import('@nangohq/shared-public'), 'getProvider').mockImplementation(() => provider);
     };
 
     const buildTemplate = (paginationConfig: Pagination): Provider => {
@@ -428,9 +416,8 @@ describe('Pagination', () => {
 
 describe('batchSave', () => {
     it('should validate records with json schema', async () => {
-        const nango = new NangoSync({
+        const nango = new NangoSyncRunner({
             ...nangoProps,
-            dryRun: true,
             runnerFlags: { validateSyncRecords: true } as any,
             syncConfig: {
                 models_json_schema: {
@@ -439,25 +426,25 @@ describe('batchSave', () => {
             } as any
         });
 
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new NangoError(`invalid_sync_record`));
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new InvalidRecordSDKError());
     });
 });
 
 describe('Log', () => {
     it('should enforce activityLogId when not in dryRun', () => {
         expect(() => {
-            new NangoAction({ ...nangoProps, activityLogId: undefined });
+            new NangoActionRunner({ ...nangoProps, activityLogId: undefined });
         }).toThrowError(new Error('Parameter activityLogId is required when not in dryRun'));
     });
 
     it('should not fail on null', async () => {
-        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log(null);
     });
 
     it('should allow level', async () => {
         const mock = vi.fn(() => ({ response: { status: 200 } }));
-        const nangoAction = new NangoAction({ ...nangoProps }, { persistApi: mock as any });
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistApi: mock as any });
 
         await nangoAction.log('hello', { level: 'error' });
 
@@ -485,27 +472,26 @@ describe('Log', () => {
     });
 
     it('should enforce type: log message + object + level', async () => {
-        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
-        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { foo: 'bar' }, { level: 'foobar' });
     });
 
     it('should enforce type: log message +level', async () => {
-        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
-        // @ts-expect-error Level is wrong on purpose, if it's not breaking anymore the type is broken
+        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { level: 'foobar' });
     });
 
     it('should enforce type: log message + object', async () => {
-        const nangoAction = new NangoAction({ ...nangoProps, dryRun: true });
+        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { foo: 'bar' });
     });
 });
+
 describe('Aborted script', () => {
     it('show throw', () => {
         const ac = new AbortController();
-        const nango = new NangoSync({ ...nangoProps, abortSignal: ac.signal });
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
         ac.abort();
-        expect(nango.log('hello')).rejects.toThrowError(new Error('The script was aborted'));
+        expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
     });
 });

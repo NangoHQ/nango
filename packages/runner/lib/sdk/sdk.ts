@@ -61,6 +61,11 @@ export class NangoActionRunner extends NangoActionBase {
                 interceptors: { response: { onFulfilled: this.logAPICall.bind(this) } }
             }
         );
+
+        if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
+        if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
+        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
+        if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -134,6 +139,7 @@ export class NangoActionRunner extends NangoActionBase {
     }
 
     public triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+        this.throwIfAborted();
         return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
     }
 
@@ -243,6 +249,9 @@ export class NangoSyncRunner extends NangoSyncBase {
                 interceptors: { response: { onFulfilled: this.logAPICall.bind(this) } }
             }
         );
+
+        if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
+        if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
     }
 
     // Can't double extends
