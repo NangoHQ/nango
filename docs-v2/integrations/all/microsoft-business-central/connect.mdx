@@ -1,0 +1,76 @@
+---
+title: Microsoft Business Central - How do I link my account?
+sidebarTitle: Microsoft Business Central
+---
+
+
+# Overview
+
+To authenticate with Microsoft Business Central, you need:
+1. **Tenant ID** - The unique identifier for your organization that uses Microsoft services.
+2. **Enrivonment Name** - The environment name to your organization.
+3. **Client ID** - The unique identifier that Azure assigns to your application when it's registered.
+4. **Client Secret** - A unique string that enables the client application to access Microsoft Business Central.
+
+This guide will walk you through generating and finding these credentials within Azure and Microsoft Business Central.
+
+### Prerequisites:
+
+- You must have an Azure account with an active Microsoft Business Central subscription.
+
+### Instructions:
+
+#### Step 1: Finding your Tenant ID
+1. Your Tenant ID can be found in the **Tenant ID** field on the [Overview page](https://aad.portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview) within your Azure account. 
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" />
+
+#### Step 2: Finding your Enrivonment Name
+1. Your Enrivonment Name can be found in the **Environments tab** of the Business Central administration center account.
+
+
+#### Step 3: Generating your Client ID
+1. Navigate to the [Azure portal home page](https://portal.azure.com/#home) and sign in using the credentials of an administrator.
+2. Select **App registrations**.
+<img src="/integrations/all/microsoft-business-central/app_registration.png" />
+3. Select **New registration**.
+<img src="/integrations/all/microsoft-business-central/new_registration.png" />
+4. In the **Register an application** section, enter a meaningful application name to display to users. Select who can use this application based on your environment and click **Register**.
+<img src="/integrations/all/microsoft-business-central/register_new_app.png" />
+5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**.
+<img src="/integrations/all/microsoft-business-central/client_id.png" />
+6. Go to **Authentication**, click **Add a platform**, and select **Web**.
+<img src="/integrations/all/microsoft-business-central/authentication.png" />
+7. Set the redirect URI: **https://businesscentral.dynamics.com/OAuthLanding.htm**, then click **Configure**.
+
+
+#### Step 4: Generating your Client Secret
+1. After registering a new app in the [step](#step-3-generating-your-client-id) above, you can now generate a client secret for that specific application. Navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
+2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
+<img src="/integrations/all/microsoft-business-central/client_secret.png" />
+3. Once completed, your **Client Secret** will be generated. This value can be found in the **Value** field within the **Client Secrets** table.
+<img src="/integrations/all/microsoft-business-central/gen_client_secret.png" />
+4. After generating the **Client Secret**, you must grant the registered application the necessary permissions for **Dynamics 365 Business Central**. To do this, navigate to **API permissions**, select **Add a permission**, and choose **Dynamics 365 Business Central**.
+<img src="/integrations/all/microsoft-business-central/permissions.png" />
+5. Select **Application permissions**, choose the required permissions, and then click **Add permissions**.
+<img src="/integrations/all/microsoft-business-central/app_permissions.png" />
+6. Grant admin consent for the selected permission by choosing it from the list and then clicking **Grant admin consent for your specific tenant name**.
+
+- After setting up the app above, we need to Configure service-to-service authentication for the Azure AD application in Business Central.
+7. Login to your **Business Central** client, search for **Microsoft Entra Applications**, open the page, and click **New**.
+<img src="/integrations/all/microsoft-business-central/ms_entra_business_central.png" />
+8. In the opened screen, enter the **Application (Client) ID** to the **Client ID** field. This is the Azure AD application ID that you obtained at [step 2](#step-3-generating-your-client-id) above.
+9. Fill in the **Description** field. If this application is set up by a partner, please enter sufficient partner-identifying information, so that all applications set up by this partner can be tracked in the future.
+10. Set the **State** to **Enabled**.
+11. Give a permission set or assign a user group.
+12. (Optional) - If you didn´t grant admin consent from Azure you can do it here as well by selecting **Grant Consent**.
+<img src="/integrations/all/microsoft-business-central/grant_consent.png" />
+
+Once you have your credentials:
+1. Open the form where you need to authenticate with Microsoft Business Central.
+2. Enter the **Tenant ID**,  **Enrivonment Name**, **Client ID** and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/microsoft-business-central/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Microsoft Business Central.
+ 
