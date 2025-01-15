@@ -306,7 +306,9 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 account: team!,
                                 environment,
                                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-                                connection: { id: connection.id!, name: connection.connection_id }
+                                connection: { id: connection.id!, name: connection.connection_id },
+                                syncConfig: { id: nangoProps.syncConfig.id!, name: nangoProps.syncConfig.sync_name },
+                                meta: { scriptVersion: nangoProps.syncConfig.version }
                             }
                         );
 
