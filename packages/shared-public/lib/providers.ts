@@ -6,6 +6,10 @@ import { projectRoot } from './path.js';
 
 let providers: Record<string, Provider> | undefined = undefined;
 
+export function updateProviderCache(update: Record<string, Provider>) {
+    providers = update;
+}
+
 export function getProviders() {
     if (!providers) {
         providers = loadProvidersYaml();

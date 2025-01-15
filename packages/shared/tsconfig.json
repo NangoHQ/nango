@@ -31,6 +31,9 @@
         },
         {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../shared-public"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

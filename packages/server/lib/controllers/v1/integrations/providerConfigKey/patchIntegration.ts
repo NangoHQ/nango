@@ -120,7 +120,6 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.custom = {};
         }
         if (!body.webhookSecret) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration.custom['webhookSecret'];
         } else {
             integration.custom['webhookSecret'] = body.webhookSecret;

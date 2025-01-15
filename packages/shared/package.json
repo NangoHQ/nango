@@ -24,6 +24,7 @@
         "@nangohq/database": "file:../database",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/node": "file:../node-client",
+        "@nangohq/shared-public": "file:../shared-public",
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
