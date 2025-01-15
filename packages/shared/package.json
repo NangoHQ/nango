@@ -71,7 +71,6 @@
     },
     "files": [
         "dist/**/*",
-        "flows.yaml",
-        "providers.yaml"
+        "flows.yaml"
     ]
 }

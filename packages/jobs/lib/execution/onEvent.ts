@@ -120,7 +120,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             runTime: 0,
             error,
             environment: { id: task.connection.environment_id, name: environment?.name || 'unknown' },
-            syncConfig: syncConfig,
+            syncConfig,
             ...(account?.id && account?.name ? { team: { id: account.id, name: account.name } } : {}),
             endUser
         });

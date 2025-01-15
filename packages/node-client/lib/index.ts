@@ -232,7 +232,7 @@ export class Nango {
     /**
      * Updates an integration with the specified provider and configuration key
      * Only integrations using OAuth 1 & 2 can be updated, not integrations using API keys & Basic auth (because there is nothing to update for them)
-     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml))
+     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared-public/providers.yaml))
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
      * @returns A promise that resolves with the updated integration configuration object
