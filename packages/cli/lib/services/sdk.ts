@@ -68,11 +68,10 @@ export class NangoActionCLI extends NangoActionBase {
 
         const logLevel = logLevelToLogger[level] ?? 'info';
 
-        // TODO: we shouldn't use a floating logger, it should be passed from dryrun or runner
         if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
-            console[logLevel](null, [args[0], { status: args[1]?.response?.code || 'xxx' }] as any);
+            console[logLevel](args[0], { status: args[1]?.response?.code || 'xxx' });
         } else {
-            console[logLevel](null, args as any);
+            console[logLevel](...args);
         }
     }
 
