@@ -28,7 +28,18 @@ export const NON_FORWARDABLE_HEADERS = [
 ];
 
 export const retry = async (logCtx?: LogContext | null, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
-    if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
+    if (error && !error.response) {
+        const content = `Webhook request failed with an error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
+
+        const meta: Record<string, unknown> = {};
+
+        if (error.code) {
+            meta['code'] = error.code;
+        }
+
+        await logCtx?.error(content, meta);
+        return true;
+    } else if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
         const content = `Webhook response received a ${
             error?.response?.status || error?.code
         } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
