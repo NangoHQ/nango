@@ -108,7 +108,7 @@ class ProxyService {
                 break;
             }
             default: {
-                throw new Error(`Unhandled connection.credentials for: ${connection.credentials}`);
+                throw new Error(`Unhandled connection.credentials for: ${(connection.credentials as any).type}`);
             }
         }
 
