@@ -87,6 +87,7 @@ bump_other_pkg "frontend" "types"
 bump_other_pkg "nango-yaml" "types"
 bump_other_pkg "node-client" "types"
 bump_other_pkg "shared" "types"
+bump_other_pkg "providers" "types"
 
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
