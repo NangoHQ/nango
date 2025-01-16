@@ -24,6 +24,7 @@
         "@nangohq/database": "file:../database",
         "@nangohq/nango-yaml": "0.48.3",
         "@nangohq/node": "^0.48.3",
+        "@nangohq/providers": "0.48.3",
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
@@ -71,7 +72,6 @@
     },
     "files": [
         "dist/**/*",
-        "flows.yaml",
-        "providers.yaml"
+        "flows.yaml"
     ]
 }
