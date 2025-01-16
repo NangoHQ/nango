@@ -301,7 +301,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 void tracer.scope().activate(span, async () => {
                     try {
                         const webhookLogCtx = await logContextGetter.create(
-                            { operation: { type: 'nango-webhook', action: 'deliver' } },
+                            { operation: { type: 'webhook', action: 'sync' } },
                             {
                                 account: team!,
                                 environment,
