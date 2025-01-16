@@ -29,11 +29,9 @@ COPY packages/orchestrator/package.json ./packages/orchestrator/package.json
 COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/records/package.json ./packages/records/package.json
 COPY packages/runner/package.json ./packages/runner/package.json
-COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
-COPY packages/providers/package.json ./packages/providers/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
 COPY packages/utils/package.json ./packages/utils/package.json

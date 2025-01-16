@@ -14,7 +14,6 @@ COPY packages/shared/ packages/shared/
 COPY packages/utils/ packages/utils/
 COPY packages/database/ packages/database/
 COPY packages/runner/ packages/runner/
-COPY packages/runner-sdk/ packages/runner-sdk/
 COPY packages/providers/ packages/providers/
 COPY packages/runner-sdk/ packages/runner-sdk/
 COPY package*.json ./
