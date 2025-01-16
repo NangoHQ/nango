@@ -12,7 +12,7 @@ const options: https.AgentOptions = {
     timeout: 60000,
     maxFreeSockets: 2000,
     scheduling: 'fifo', // optimize for open sockets and better for high throughput
-    family: 4 // Using IPV4 can reduce error network and reduce latency https://github.com/nodejs/node/issues/5436#issuecomment-189474356
+    family: 4 // Using IPV4 can reduce network error and reduce latency https://github.com/nodejs/node/issues/5436#issuecomment-189474356
 };
 
 export let httpAgent: HttpProxyAgent<string> | HttpAgent = new http.Agent(options);
