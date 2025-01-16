@@ -300,14 +300,30 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 });
                 void tracer.scope().activate(span, async () => {
                     try {
+                        if (!team) {
+                            throw new Error('Missing team');
+                        }
+
+                        if (!providerConfig.id) {
+                            throw new Error('Missing providerConfig.id');
+                        }
+
+                        if (!connection.id) {
+                            throw new Error('Missing connection.id');
+                        }
+
+                        if (!nangoProps.syncConfig.id) {
+                            throw new Error('Missing synConfig.id');
+                        }
+
                         const webhookLogCtx = await logContextGetter.create(
                             { operation: { type: 'webhook', action: 'sync' } },
                             {
-                                account: team!,
+                                account: team,
                                 environment,
-                                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-                                connection: { id: connection.id!, name: connection.connection_id },
-                                syncConfig: { id: nangoProps.syncConfig.id!, name: nangoProps.syncConfig.sync_name },
+                                integration: { id: providerConfig.id, name: providerConfig.unique_key, provider: providerConfig.provider },
+                                connection: { id: connection.id, name: connection.connection_id },
+                                syncConfig: { id: nangoProps.syncConfig.id, name: nangoProps.syncConfig.sync_name },
                                 meta: { scriptVersion: nangoProps.syncConfig.version }
                             }
                         );
