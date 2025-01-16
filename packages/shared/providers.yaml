@@ -4458,7 +4458,7 @@ mailgun:
             description: The region of your Mailgun account
             pattern: '^[a-z]+$'
             example: us
-            doc_section: '#step-1-finding-your-region'
+            doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
     display_name: Mailchimp
@@ -4945,7 +4945,7 @@ next-cloud-ocs:
         headers:
             'ocs-apirequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
-    docs_connect: https://docs.nango.dev/integrations/all/next-cloud/connect
+    docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
         domain:
             type: string
