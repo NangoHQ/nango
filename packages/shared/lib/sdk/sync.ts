@@ -16,14 +16,15 @@ import {
     MAX_LOG_PAYLOAD,
     stringifyAndTruncateValue,
     stringifyObject,
-    truncateJson
+    truncateJson,
+    redactHeaders,
+    redactURL
 } from '@nangohq/utils';
 import type { ValidateDataError } from './dataValidation.js';
 import { validateData } from './dataValidation.js';
 import { NangoError } from '../utils/error.js';
 import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, MessageRowInsert, RunnerFlags } from '@nangohq/types';
 import { getProvider } from '../services/providers.js';
-import { redactHeaders, redactURL } from '../utils/http.js';
 
 const logger = getLogger('SDK');
 
