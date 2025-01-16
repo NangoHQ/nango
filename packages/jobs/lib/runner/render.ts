@@ -153,7 +153,7 @@ function getPlan(node: Node): 'starter' | 'standard' | 'pro' {
 // Render has a hard limit of 1000 service creations per hour
 // and also recommends to limit ourselves to 20 per minute
 // We are throttling to 50 per minute max (to allow for some burst)
-// as well as 600 per hour to always keep some buffer
+// as well as 700 per hour to always keep some buffer
 class CombinedThrottler {
     private throttlers: RateLimiterAbstract[];
 
@@ -180,7 +180,7 @@ const serviceCreationThrottler = await (async () => {
     };
     const hourThrottlerOpts = {
         keyPrefix: 'hour',
-        points: envs.RENDER_SERVICE_CREATION_MAX_PER_HOUR || 600,
+        points: envs.RENDER_SERVICE_CREATION_MAX_PER_HOUR || 700,
         duration: 3600,
         blockDuration: 0
     };
