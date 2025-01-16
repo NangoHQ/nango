@@ -1,6 +1,7 @@
 import tracer from 'dd-trace';
 import type { Request, Response, NextFunction, Express } from 'express';
 import type { Endpoint } from '@nangohq/types';
+import * as metrics from '../telemetry/metrics.js';
 
 export type EndpointRequest<E extends Endpoint<any>> = Request<E['Params'], E['Reply'], E['Body'], E['Querystring']>;
 export type EndpointResponse<E extends Endpoint<any>> = Response<E['Reply']>;
@@ -18,7 +19,16 @@ export interface RouteHandler<E extends Endpoint<any>> extends Route<E> {
 export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteHandler<E>): void => {
     const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction): void => {
         const active = tracer.scope().active();
-        active?.setTag('http.route', req.route?.path || req.originalUrl);
+        if (active) {
+            active?.setTag('http.route', req.route?.path || req.originalUrl);
+            const contentLength = req.header('content-length');
+            if (contentLength) {
+                const int = parseInt(contentLength, 10);
+                active.setTag('http.request.content_length', `${(int / 1024).toPrecision(2)}kb`);
+                metrics.histogram(metrics.Types.API_REQUEST_CONTENT_LENGTH, int);
+            }
+        }
+
         Promise.resolve(rh.handler(req, res, next)).catch((err: unknown) => next(err));
     };
 
