@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/providers",
     "version": "0.48.3",
-    "description": "Nango's shared components.",
+    "description": "Nango's providers.yaml and getters",
     "type": "module",
     "main": "./dist/index.js",
     "typings": "./dist/index.d.ts",
