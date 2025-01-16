@@ -31,40 +31,15 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import { getProvider } from '@nangohq/providers';
-import { AbortedSDKError, UnknownProviderSDKError } from './errors.js';
-import { validateData } from './dataValidation.js';
-import type { ValidateDataError } from './dataValidation.js';
+import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 
-export const oldLevelToNewLevel = {
-    debug: 'debug',
-    info: 'info',
-    warn: 'warn',
-    error: 'error',
-    verbose: 'debug',
-    silly: 'debug',
-    http: 'info'
-} as const;
+const MEMOIZED_CONNECTION_TTL = 60000;
+const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
 };
-
-export class ActionError<T = Record<string, unknown>> extends Error {
-    type: string;
-    payload?: Record<string, unknown>;
-
-    constructor(payload?: T) {
-        super();
-        this.type = 'action_script_runtime_error';
-        if (payload) {
-            this.payload = payload;
-        }
-    }
-}
-
-const MEMOIZED_CONNECTION_TTL = 60000;
-const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
 export abstract class NangoActionBase {
     abstract nango: Nango;
@@ -384,58 +359,4 @@ export abstract class NangoActionBase {
     }
 
     public abstract triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
-}
-
-export abstract class NangoSyncBase extends NangoActionBase {
-    lastSyncDate?: Date;
-    track_deletes = false;
-
-    constructor(config: NangoProps) {
-        super(config);
-
-        if (config.lastSyncDate) {
-            this.lastSyncDate = config.lastSyncDate;
-        }
-
-        if (config.track_deletes) {
-            this.track_deletes = config.track_deletes;
-        }
-    }
-
-    /**
-     * @deprecated please use batchSave
-     */
-    public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        return this.batchSave(results, model);
-    }
-
-    public abstract batchSave<T = any>(results: T[], model: string): MaybePromise<boolean>;
-
-    public abstract batchDelete<T = any>(results: T[], model: string): MaybePromise<boolean>;
-
-    public abstract batchUpdate<T = any>(results: T[], model: string): MaybePromise<boolean>;
-
-    protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
-        // Validate records
-        const hasErrors: { data: any; validation: ValidateDataError[] }[] = [];
-        for (const record of records) {
-            const validation = validateData({
-                version: this.syncConfig?.version || '1',
-                input: JSON.parse(JSON.stringify(record)),
-                jsonSchema: this.syncConfig!.models_json_schema,
-                modelName: model
-            });
-            if (validation === true) {
-                continue;
-            }
-
-            hasErrors.push({ data: record, validation });
-
-            if (this.runnerFlags?.validateSyncRecords) {
-                break;
-            }
-        }
-
-        return hasErrors;
-    }
 }
