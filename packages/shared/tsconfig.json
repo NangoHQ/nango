@@ -24,9 +24,6 @@
             "path": "../utils"
         },
         {
-            "path": "../webhooks"
-        },
-        {
             "path": "../records"
         },
         {
