@@ -103,11 +103,12 @@ class ProxyService {
             case 'APP_STORE':
             case 'CUSTOM':
             case 'TBA':
+            case undefined:
             case 'BILL': {
                 break;
             }
             default: {
-                throw new Error(`Unhandled connection.credentials.type: ${connection.credentials.type}`);
+                throw new Error(`Unhandled connection.credentials for: ${connection.credentials}`);
             }
         }
 
