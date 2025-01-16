@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
-import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
+import { axiosInstance as axios, SIGNATURE_METHOD, redactHeaders, redactURL } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
@@ -13,7 +13,6 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
 import { getProvider } from './providers.js';
-import { redactHeaders, redactURL } from '../utils/http.js';
 
 interface Logs {
     logs: MessageRowInsert[];
