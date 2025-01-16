@@ -24,7 +24,7 @@ export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteH
             const contentLength = req.header('content-length');
             if (contentLength) {
                 const int = parseInt(contentLength, 10);
-                active.setTag('http.request.content_length', `${(int / 1024).toPrecision(2)}kb`);
+                active.setTag('http.request.body.size', int);
                 metrics.histogram(metrics.Types.API_REQUEST_CONTENT_LENGTH, int);
             }
         }
