@@ -74,6 +74,9 @@
             "path": "packages/fleet"
         },
         {
+            "path": "packages/providers"
+        },
+        {
             "path": "packages/types"
         }
     ]

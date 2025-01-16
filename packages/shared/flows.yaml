@@ -9207,6 +9207,16 @@ integrations:
                     path: /projects
                     group: Projects
                 version: 1.0.0
+            users:
+                runs: every 5min
+                description: |
+                    Fetches a list of users from Linear
+                output: LinearUser
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
             teams:
                 runs: every 5min
                 description: |
@@ -9269,6 +9279,12 @@ integrations:
                 description: string | null
                 createdAt: string
                 updatedAt: string
+            LinearUser:
+                id: string
+                admin: boolean
+                email: string
+                firstName: string
+                lastName: string
             LinearProject:
                 id: string
                 url: string
