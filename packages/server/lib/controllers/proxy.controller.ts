@@ -9,18 +9,8 @@ import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 import type { HTTP_METHOD, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
-import {
-    LogActionEnum,
-    errorManager,
-    ErrorSourceEnum,
-    proxyService,
-    connectionService,
-    configService,
-    featureFlags,
-    redactHeaders,
-    redactURL
-} from '@nangohq/shared';
-import { metrics, getLogger, axiosInstance as axios, getHeaders } from '@nangohq/utils';
+import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
+import { metrics, getLogger, axiosInstance as axios, getHeaders, redactHeaders, redactURL } from '@nangohq/utils';
 import { flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
