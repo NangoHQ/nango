@@ -300,6 +300,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 });
                 void tracer.scope().activate(span, async () => {
                     try {
+                        const syncConfigId = nangoProps.syncConfig.id!;
+
                         const webhookLogCtx = await logContextGetter.create(
                             { operation: { type: 'webhook', action: 'sync' } },
                             {
@@ -307,7 +309,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 environment,
                                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                                 connection: { id: connection.id!, name: connection.connection_id },
-                                syncConfig: { id: nangoProps.syncConfig.id!, name: nangoProps.syncConfig.sync_name },
+                                syncConfig: { id: syncConfigId, name: nangoProps.syncConfig.sync_name },
                                 meta: { scriptVersion: nangoProps.syncConfig.version }
                             }
                         );
