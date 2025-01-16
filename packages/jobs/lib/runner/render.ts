@@ -1,11 +1,16 @@
 import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, getLogger } from '@nangohq/utils';
 import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
-import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
+import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
 import type { AxiosResponse } from 'axios';
 import { isAxiosError } from 'axios';
+import type { RateLimiterAbstract } from 'rate-limiter-flexible';
+import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
+import { createClient } from 'redis';
+
+const logger = getLogger('Render');
 
 const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
 
@@ -106,6 +111,13 @@ function serviceName(node: Node) {
 const rateLimitResetTimestamps = new Map<string, Date>();
 
 async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'resume' | 'get', fn: () => Promise<AxiosResponse>): Promise<Result<T>> {
+    if (rateLimitGroup === 'create') {
+        const throttled = await serviceCreationThrottler.consume('render-service-creation');
+        if (throttled.isErr()) {
+            return Err(new Error(`Throttling Render service creation`, { cause: throttled.error }));
+        }
+    }
+
     const rateLimitReset = rateLimitResetTimestamps.get(rateLimitGroup);
     if (rateLimitReset && rateLimitReset > new Date()) {
         return Err(`Render rate limit exceeded. Resetting at ${rateLimitReset.toISOString()}`);
@@ -137,3 +149,53 @@ function getPlan(node: Node): 'starter' | 'standard' | 'pro' {
     }
     return 'starter';
 }
+
+// Render has a hard limit of 1000 service creations per hour
+// and also recommends to limit ourselves to 20 per minute
+// We are throttling to 50 per minute max (to allow for some burst)
+// as well as 700 per hour to always keep some buffer
+class CombinedThrottler {
+    private throttlers: RateLimiterAbstract[];
+
+    constructor(throttlers: RateLimiterAbstract[]) {
+        this.throttlers = throttlers;
+    }
+
+    async consume(clientId: string, points: number = 1): Promise<Result<void>> {
+        try {
+            await Promise.all(this.throttlers.map((throttler) => throttler.consume(clientId, points)));
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error('Rate limit exceeded', { cause: err }));
+        }
+    }
+}
+
+const serviceCreationThrottler = await (async () => {
+    const minuteThrottlerOpts = {
+        keyPrefix: 'minute',
+        points: envs.RENDER_SERVICE_CREATION_MAX_PER_MINUTE || 50,
+        duration: 60,
+        blockDuration: 0
+    };
+    const hourThrottlerOpts = {
+        keyPrefix: 'hour',
+        points: envs.RENDER_SERVICE_CREATION_MAX_PER_HOUR || 700,
+        duration: 3600,
+        blockDuration: 0
+    };
+    const url = getRedisUrl();
+    if (url) {
+        const redisClient = await createClient({ url: url, disableOfflineQueue: true }).connect();
+        redisClient.on('error', (err) => {
+            logger.error(`Redis (rate-limiter) error: ${err}`);
+        });
+        if (redisClient) {
+            return new CombinedThrottler([
+                new RateLimiterRedis({ storeClient: redisClient, ...minuteThrottlerOpts }),
+                new RateLimiterRedis({ storeClient: redisClient, ...hourThrottlerOpts })
+            ]);
+        }
+    }
+    return new CombinedThrottler([new RateLimiterMemory(minuteThrottlerOpts), new RateLimiterMemory(hourThrottlerOpts)]);
+})();

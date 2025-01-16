@@ -64,7 +64,7 @@ bump_other_pkg "providers" "types"
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 
-# Shared Public
+# Providers
 bump_and_npm_publish "@nangohq/providers" "$VERSION"
 bump_other_pkg "runner-sdk" "providers"
 

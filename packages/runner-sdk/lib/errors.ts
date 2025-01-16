@@ -27,3 +27,19 @@ export class InvalidActionInputSDKError extends SDKError {
 export class InvalidActionOutputSDKError extends SDKError {
     code = 'invalid_action_output';
 }
+
+/**
+ * For external use only
+ */
+export class ActionError<T = Record<string, unknown>> extends Error {
+    type: string;
+    payload?: Record<string, unknown>;
+
+    constructor(payload?: T) {
+        super();
+        this.type = 'action_script_runtime_error';
+        if (payload) {
+            this.payload = payload;
+        }
+    }
+}
