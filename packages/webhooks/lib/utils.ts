@@ -1,10 +1,9 @@
 import crypto from 'crypto';
 import type { AxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, axiosInstance as axios, retryWithBackoff, truncateJson } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, retryWithBackoff, truncateJson, redactHeaders } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment } from '@nangohq/types';
-import { redactHeaders } from '@nangohq/shared';
 import type { ClientRequest } from 'node:http';
 
 export const RETRY_ATTEMPTS = 7;

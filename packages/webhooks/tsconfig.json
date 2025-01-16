@@ -13,9 +13,6 @@
         },
         {
             "path": "../types"
-        },
-        {
-            "path": "../shared"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
