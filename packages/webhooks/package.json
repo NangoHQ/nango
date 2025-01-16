@@ -16,6 +16,7 @@
     "keywords": [],
     "dependencies": {
         "@nangohq/logs": "file:../logs",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "axios": "^1.7.9",
         "dayjs": "1.11.7",

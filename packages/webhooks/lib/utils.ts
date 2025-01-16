@@ -1,9 +1,11 @@
 import crypto from 'crypto';
 import type { AxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, retryWithBackoff, truncateJson } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment } from '@nangohq/types';
+import { redactHeaders } from '@nangohq/shared';
+import type { ClientRequest } from 'node:http';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -27,12 +29,39 @@ export const NON_FORWARDABLE_HEADERS = [
 
 export const retry = async (logCtx?: LogContext | null, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
     if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
-        const content = `Webhook response received an ${
+        const content = `Webhook response received a ${
             error?.response?.status || error?.code
         } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-        await logCtx?.error(content);
+        const meta: Record<string, unknown> = {};
 
+        if (error.code) {
+            meta['code'] = error.code;
+        }
+
+        if (error.response) {
+            const metaResponse: Record<string, unknown> = {};
+            metaResponse['status'] = error.response.status;
+            if (error.response.headers) {
+                metaResponse['headers'] = redactHeaders({ headers: error.response.headers });
+            }
+            if (error.response.data) {
+                metaResponse['data'] = error.response.data;
+            }
+            meta['response'] = metaResponse;
+
+            if (error.request) {
+                const request = error.request as ClientRequest;
+
+                const metaRequest: Record<string, unknown> = {};
+                metaRequest['url'] = `${request.protocol}//${request.host}${request.path}`;
+                metaRequest['method'] = request.method;
+                metaRequest['headers'] = redactHeaders({ headers: request.getHeaders() });
+                meta['request'] = metaRequest;
+            }
+        }
+
+        await logCtx?.error(content, truncateJson(meta));
         return true;
     }
 
