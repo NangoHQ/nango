@@ -4423,6 +4423,7 @@ make:
             method: GET
             endpoint: /users/me
     docs: https://docs.nango.dev/integrations/all/make
+    docs_connect: https://docs.nango.dev/integrations/all/make/connect
     connection_config:
         environmentUrl:
             type: string
@@ -4430,11 +4431,13 @@ make:
             description: The domain of your Make account
             format: hostname
             prefix: https://
+            doc_section: '#step-2-finding-your-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Make account
+            doc_section: '#step-1-generating-an-api-key'
 
 mailgun:
     display_name: Mailgun
@@ -4605,6 +4608,7 @@ metabase:
             method: GET
             endpoint: /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
+    docs_connect: https://docs.nango.dev/integrations/all/metabase/connect
     connection_config:
         domain:
             type: string
@@ -4612,11 +4616,13 @@ metabase:
             description: The domain (without the extension) of your Metabase account
             pattern: '^[a-z0-9.-]+$'
             example: metabase
+            doc_section: '#step-2-finding-your-metabase-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
+            doc_section: '#step-1-generating-an-api-key'
 
 microsoft:
     display_name: Microsoft
