@@ -375,6 +375,7 @@
                 "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
+                "integrations/all/microsoft-business-central",
                 "integrations/all/mindbody",
                 "integrations/all/miro",
                 "integrations/all/mixpanel",
