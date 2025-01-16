@@ -100,6 +100,15 @@ class ProxyService {
                 const nangoError = new NangoError('pass_through_error', error);
                 return { success: false, error: nangoError, response: null, logs };
             }
+            case 'APP_STORE':
+            case 'CUSTOM':
+            case 'TBA':
+            case 'BILL': {
+                break;
+            }
+            default: {
+                throw new Error(`Unhandled connection.credentials.type: ${connection.credentials.type}`);
+            }
         }
 
         const provider = getProvider(providerName);
