@@ -226,7 +226,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        for (const model of nangoProps.syncConfig.models!) {
+        for (const model of nangoProps.syncConfig.models) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
                 deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
@@ -300,29 +300,13 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 });
                 void tracer.scope().activate(span, async () => {
                     try {
-                        if (!team) {
-                            throw new Error('Missing team');
-                        }
-
-                        if (!providerConfig.id) {
-                            throw new Error('Missing providerConfig.id');
-                        }
-
-                        if (!connection.id) {
-                            throw new Error('Missing connection.id');
-                        }
-
-                        if (!nangoProps.syncConfig.id) {
-                            throw new Error('Missing synConfig.id');
-                        }
-
                         const webhookLogCtx = await logContextGetter.create(
                             { operation: { type: 'webhook', action: 'sync' } },
                             {
-                                account: team,
+                                account: team!,
                                 environment,
-                                integration: { id: providerConfig.id, name: providerConfig.unique_key, provider: providerConfig.provider },
-                                connection: { id: connection.id, name: connection.connection_id },
+                                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                                connection: { id: connection.id!, name: connection.connection_id },
                                 syncConfig: { id: nangoProps.syncConfig.id, name: nangoProps.syncConfig.sync_name },
                                 meta: { scriptVersion: nangoProps.syncConfig.version }
                             }
@@ -455,7 +439,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             activityLogId: nangoProps.activityLogId!,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
-            models: nangoProps.syncConfig.models!,
+            models: nangoProps.syncConfig.models,
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
@@ -490,7 +474,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
-        models: nangoProps.syncConfig.models!,
+        models: nangoProps.syncConfig.models,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
