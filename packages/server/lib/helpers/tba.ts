@@ -1,8 +1,7 @@
-import axios from 'axios';
 import type { OAuthSession } from '@nangohq/shared';
 import type { Provider, IntegrationConfig as ProviderConfig } from '@nangohq/types';
 import { interpolateStringFromObject } from '@nangohq/shared';
-import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode } from '@nangohq/utils';
+import { generateBaseString, generateSignature, getTbaMetaParams, SIGNATURE_METHOD, percentEncode, axiosInstance } from '@nangohq/utils';
 
 export async function makeAccessTokenRequest({
     provider,
@@ -67,7 +66,7 @@ export async function makeAccessTokenRequest({
         Authorization: authHeader
     };
 
-    const response = await axios.post(fullAccessTokenEndpoint, null, { headers });
+    const response = await axiosInstance.post(fullAccessTokenEndpoint, null, { headers });
 
     const parsedData = new URLSearchParams(response.data);
 

@@ -7,8 +7,16 @@ import type { Agent as HttpAgent } from 'node:http';
 import type { Agent as HttpsAgent } from 'node:https';
 import https from 'node:https';
 
-export let httpAgent: HttpProxyAgent<string> | HttpAgent = new http.Agent();
-export let httpsAgent: HttpsProxyAgent<string> | HttpsAgent = new https.Agent();
+const options: https.AgentOptions = {
+    keepAlive: true, // default to false for some reason
+    timeout: 60000,
+    maxFreeSockets: 2000,
+    scheduling: 'fifo', // optimize for open sockets and better for high throughput
+    family: 4 // Using IPV4 can reduce network error and reduce latency https://github.com/nodejs/node/issues/5436#issuecomment-189474356
+};
+
+export let httpAgent: HttpProxyAgent<string> | HttpAgent = new http.Agent(options);
+export let httpsAgent: HttpsProxyAgent<string> | HttpsAgent = new https.Agent(options);
 
 const hasHttpProxy = process.env['http_proxy'] || process.env['HTTP_PROXY'];
 const hasHttpsProxy = process.env['https_proxy'] || process.env['HTTPS_PROXY'];
