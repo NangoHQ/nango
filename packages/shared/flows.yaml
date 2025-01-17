@@ -4318,7 +4318,7 @@ integrations:
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
-                input: string
+                input: DocumentId
                 description: >
                     Fetches the content of a file given its ID, processes the data using
 
@@ -4328,12 +4328,14 @@ integrations:
                     string can be used to recreate the file in its original format using
                     an external tool.
                 output: string
-                version: 1.0.2
+                version: 2.0.0
                 endpoint:
                     method: GET
                     path: /fetch-document
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
+            DocumentId:
+                id: string
             DocumentMetadata:
                 files: string[] | undefined
                 folders: string[] | undefined

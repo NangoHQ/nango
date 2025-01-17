@@ -19,6 +19,7 @@ export const validNodeStateTransitions = [
     { from: 'STARTING', to: 'ERROR' },
     { from: 'RUNNING', to: 'OUTDATED' },
     { from: 'RUNNING', to: 'ERROR' },
+    { from: 'RUNNING', to: 'IDLE' },
     { from: 'OUTDATED', to: 'FINISHING' },
     { from: 'OUTDATED', to: 'ERROR' },
     { from: 'FINISHING', to: 'IDLE' },

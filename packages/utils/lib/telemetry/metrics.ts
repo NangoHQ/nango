@@ -54,7 +54,9 @@ export enum Types {
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
-    ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled'
+    ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
+
+    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length'
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
@@ -67,6 +69,10 @@ export function decrement(metricName: Types, value = 1, dimensions?: Record<stri
 
 export function gauge(metricName: Types, value?: number): void {
     tracer.dogstatsd.gauge(metricName, value ?? 1);
+}
+
+export function histogram(metricName: Types, value: number): void {
+    tracer.dogstatsd.histogram(metricName, value);
 }
 
 export function duration(metricName: Types, value: number): void {
