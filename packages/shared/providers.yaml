@@ -2325,7 +2325,7 @@ emarsys:
             pattern: '^[a-zA-Z0-9-]+$'
 
 emarsys-oauth:
-    display_name: Emarsys (Ouath)
+    display_name: Emarsys (OAuth)
     categories:
         - marketing
     auth_mode: OAUTH2_CC
@@ -4678,6 +4678,36 @@ microsoft-tenant-specific:
             title: Tenant
             description: The tenant of your Microsoft account
 
+microsoft-business-central:
+    display_name: Microsoft Business Central
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.businesscentral.dynamics.com/v2.0/${connectionConfig.tenantId}/${connectionConfig.environmentName}
+    docs: https://docs.nango.dev/integrations/all/microsoft-business-central
+    docs_connect: https://docs.nango.dev/integrations/all/microsoft-business-central/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentName:
+            type: string
+            title: Enrivonment Name
+            description: The environment name to your organization
+            example: production
+            pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-finding-your-enrivonment-name'
+            order: 2
+
 microsoft-ads:
     display_name: Microsoft Ads
     alias: microsoft
@@ -6352,6 +6382,28 @@ shopify-api-key:
             example: shpat_***************c03266f
             pattern: '^shpat_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
+
+shopify-scim:
+    display_name: Shopify (SCIM API)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://shopifyscim.com/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/shopify
+    docs_connect: https://docs.nango.dev/integrations/all/shopify-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from your Shopify organization settings.
+            doc_section: '#step-1-generating-your-scim-api-token'
 
 shortcut:
     display_name: Shortcut

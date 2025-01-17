@@ -556,7 +556,7 @@ export class Orchestrator {
                 }
             });
         } else {
-            await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
+            await logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
     }
@@ -683,7 +683,7 @@ export class Orchestrator {
                     environment,
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                     connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
-                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                    syncConfig: { id: syncConfig!.id, name: syncConfig!.sync_name }
                 }
             );
 

@@ -1,0 +1,69 @@
+---
+title: Shopify SCIM - How do I link my account?
+sidebarTitle: Shopify SCIM
+---
+
+# Overview
+
+To authenticate with Shopify SCIM, you need one key piece of information:
+1. **SCIM API Token** - A token generated from your Shopify organization settings to authenticate SCIM requests.
+
+This guide will walk you through the steps to generate and use this token to connect your Shopify account.
+
+---
+
+### Prerequisites:
+
+- You must have an **Enterprise** Shopify Plus account.
+- You must have a verified domain and a configured **SAML Authentication** for your organization.
+- The logged-in user **must** have the necessary admin privileges to generate the SCIM API token.
+
+---
+
+## Step 1: Generating Your SCIM API Token
+
+1. Log in to your Shopify admin and navigate to **Settings > Users**.
+2. Select the **Security** tab.
+3. In the **SCIM Integration** section, click **Generate API Token**.
+4. Click **Copy** to copy the generated API token to your clipboard.
+
+**Important**: Store your API token securely, as it will be required to connect your Shopify account.
+
+---
+
+## Step 2: Base URL for SCIM API Integration
+
+When connecting your identity provider, you may need to provide a **Base URL** for Shopify SCIM. Use the following:
+https://shopifyscim.com/scim/
+
+
+This URL is required by most identity providers to integrate with Shopify's SCIM API.
+
+---
+
+## Step 3: Connect Your Shopify Account
+
+To authenticate with Shopify SCIM:
+
+1. Navigate to the Shopify authentication form in your identity service provider.
+2. Enter the following credentials:
+   - **API Token**: Paste the token generated in Step 1.
+   - **Base URL**: Use `https://shopifyscim.com/scim/`.
+
+3. Test the connection to verify the credentials.
+4. Click **Connect** to complete the authentication process.
+
+---
+
+## Additional Notes
+
+- Once connected, you can use SCIM to:
+  - Create and update users.
+  - Assign or update user roles.
+  - Deactivate users.
+- Make sure the users are associated with a verified domain for your organization.
+- For detailed SCIM integration steps with identity providers like Okta, OneLogin, or Entra, refer to the [Shopify Help Center](https://help.shopify.com/en/manual/organization-settings/users/security/scim).
+
+---
+
+**Keep your SCIM API token confidential and do not share it publicly. If the token is compromised, generate a new one immediately.**

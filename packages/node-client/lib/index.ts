@@ -6,6 +6,7 @@ import https from 'node:https';
 import type {
     ApiKeyCredentials,
     AppCredentials,
+    OAuth1Token,
     AppStoreCredentials,
     BasicApiCredentials,
     CredentialsCommon,
@@ -37,7 +38,6 @@ import type {
     Metadata,
     MetadataChangeResponse,
     NangoProps,
-    OAuth1Token,
     ProxyConfiguration,
     RecordMetadata,
     StandardNangoConfig,

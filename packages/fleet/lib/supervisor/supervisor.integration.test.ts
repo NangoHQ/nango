@@ -57,7 +57,11 @@ describe('Supervisor', () => {
             const tickSpy2 = vi.spyOn(supervisor2, 'tick');
             void supervisor1.start();
             void supervisor2.start();
-            await new Promise((resolve) => setTimeout(resolve, 50));
+
+            await vi.waitUntil(() => tickSpy1.mock.calls.length > 0, {
+                timeout: 5000
+            });
+
             expect(tickSpy1).toHaveBeenCalled();
             expect(tickSpy2).toHaveBeenCalledTimes(0);
         });
@@ -107,22 +111,65 @@ describe('Supervisor', () => {
         const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
         expect(nodeAfter.state).toBe('OUTDATED');
     });
-    it('should mark nodes with config override as OUTDATED', async () => {
+    it('should mark nodes with resource override as OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
-        (
-            await nodeConfigOverrides.create(dbClient.db, {
-                routingId: node.routingId,
-                image: 'new-image',
-                cpuMilli: 10000,
-                memoryMb: 1234,
-                storageMb: 567890
-            })
-        ).unwrap();
+        await nodeConfigOverrides.create(dbClient.db, {
+            routingId: node.routingId,
+            image: node.image,
+            cpuMilli: 10000,
+            memoryMb: 1234,
+            storageMb: 567890
+        });
 
         await supervisor.tick();
 
         const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
         expect(nodeAfter.state).toBe('OUTDATED');
+
+        await supervisor.tick();
+
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        expect(newNode).toMatchObject({
+            state: 'PENDING',
+            routingId: node.routingId,
+            deploymentId: activeDeployment.id,
+            image: node.image,
+            cpuMilli: 10000,
+            memoryMb: 1234,
+            storageMb: 567890,
+            error: null
+        });
+    });
+
+    it('should mark nodes with image override as OUTDATED', async () => {
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id });
+        const imageOverride = `${mockNodeProvider.defaultNodeConfig.image}:12345`;
+        await nodeConfigOverrides.create(dbClient.db, {
+            routingId: node.routingId,
+            image: imageOverride,
+            cpuMilli: node.cpuMilli,
+            memoryMb: node.memoryMb,
+            storageMb: node.storageMb
+        });
+
+        await supervisor.tick();
+
+        const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeAfter.state).toBe('OUTDATED');
+
+        await supervisor.tick();
+
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        expect(newNode).toMatchObject({
+            state: 'PENDING',
+            routingId: node.routingId,
+            deploymentId: activeDeployment.id,
+            image: imageOverride,
+            cpuMilli: node.cpuMilli,
+            memoryMb: node.memoryMb,
+            storageMb: node.storageMb,
+            error: null
+        });
     });
 
     it('should create new nodes if only OUTDATED', async () => {

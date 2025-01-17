@@ -14,6 +14,7 @@ import type {
     HTTP_METHOD,
     NangoSyncEndpointV2,
     AllAuthCredentials,
+    OAuth1Token,
     OAuth1Credentials,
     OAuth2Credentials,
     OAuth2ClientCredentials,
@@ -58,6 +59,7 @@ export type {
     AuthModeType,
     AuthModes,
     AllAuthCredentials,
+    OAuth1Token,
     OAuth1Credentials,
     OAuth2Credentials,
     OAuth2ClientCredentials,
@@ -105,11 +107,6 @@ export interface CreateConnectionOAuth1 extends OAuth1Credentials {
     type: AuthModes['OAuth1'];
 }
 
-export interface OAuth1Token {
-    oAuthToken: string;
-    oAuthTokenSecret: string;
-}
-
 export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     connection_id: string;
     provider_config_key: string;
@@ -128,7 +125,7 @@ export interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    decompress?: boolean;
+    decompress?: boolean | string;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
     retryOn?: number[] | null;
 }

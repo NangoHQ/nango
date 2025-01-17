@@ -315,7 +315,7 @@ class SyncController {
                     environment,
                     integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
                     meta: truncateJson({ input })
                 }
             );
@@ -585,7 +585,7 @@ class SyncController {
                     environment,
                     integration: { id: config.id!, name: config.unique_key, provider: config.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
                 }
             );
 

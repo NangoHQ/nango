@@ -5,11 +5,11 @@ import { logger } from '../utils/logger.js';
 import * as nodes from '../models/nodes.js';
 import * as deployments from '../models/deployments.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { Err, Ok, retryWithBackoff } from '@nangohq/utils';
+import { Err, errorToObject, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from '../utils/errors.js';
 import type { Node, NodeConfigOverride } from '../types.js';
-import type { Deployment, NodeConfig } from '@nangohq/types';
+import type { Deployment } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from '../node-providers/node_provider.js';
 import { envs } from '../env.js';
@@ -182,8 +182,11 @@ export class Supervisor {
                     if (!configOverride) {
                         return false;
                     }
+                    // image override might have a commitId
+                    // so we need to check if the image override with commitId is the same as the node's image
+                    // or if the image override (without commitId) + current deployment commitId is the same as the node's image
                     return !(
-                        node.image === `${configOverride.image}:${deployment.commitId}` &&
+                        (configOverride.image === node.image || `${configOverride.image}:${deployment.commitId}` === node.image) &&
                         node.cpuMilli === configOverride.cpuMilli &&
                         node.memoryMb === configOverride.memoryMb &&
                         node.storageMb === configOverride.storageMb
@@ -287,7 +290,7 @@ export class Supervisor {
                         const result = await this.execute(operation);
                         if (result.isErr()) {
                             operationSpan?.setTag('error', result.error);
-                            logger.error('Failed to execute operation:', result.error, result.error.cause);
+                            logger.error('Failed to execute operation:', result.error, errorToObject(result.error.cause));
                         }
                     }
                 );
@@ -320,31 +323,28 @@ export class Supervisor {
         db: Knex,
         {
             routingId,
-            deployment,
-            nodeConfig
+            deployment
         }: {
             type: 'CREATE';
             routingId: Node['routingId'];
             deployment: Deployment;
-            nodeConfig?: NodeConfig | undefined;
         }
     ): Promise<Result<Node>> {
         let newNodeConfig = this.nodeProvider.defaultNodeConfig;
-        if (!nodeConfig) {
-            const nodeConfigOverride = await nodeConfigOverrides.search(db, { routingIds: [routingId] });
-            if (nodeConfigOverride.isErr()) {
-                return Err(nodeConfigOverride.error);
-            }
-            const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
-            if (nodeConfigOverrideValue) {
-                newNodeConfig = nodeConfigOverrideValue;
-            }
+
+        const nodeConfigOverride = await nodeConfigOverrides.search(db, { routingIds: [routingId] });
+        if (nodeConfigOverride.isErr()) {
+            return Err(nodeConfigOverride.error);
+        }
+        const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
+        if (nodeConfigOverrideValue) {
+            newNodeConfig = nodeConfigOverrideValue;
         }
 
         return nodes.create(db, {
             routingId,
             deploymentId: deployment.id,
-            image: `${newNodeConfig.image}:${deployment.commitId}`,
+            image: newNodeConfig.image.includes(':') ? newNodeConfig.image : `${newNodeConfig.image}:${deployment.commitId}`,
             cpuMilli: newNodeConfig.cpuMilli,
             memoryMb: newNodeConfig.memoryMb,
             storageMb: newNodeConfig.storageMb

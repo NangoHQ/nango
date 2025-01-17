@@ -127,7 +127,7 @@ export async function exec(
                 const valOutput = validateData({
                     version: nangoProps.syncConfig.version || '1',
                     input: output,
-                    modelName: nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
+                    modelName: nangoProps.syncConfig.models && nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
                     jsonSchema: nangoProps.syncConfig.models_json_schema
                 });
                 if (Array.isArray(valOutput)) {

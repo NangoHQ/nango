@@ -1,0 +1,27 @@
+---
+title: 'Whitelabel the OAuth flow'
+sidebarTitle: 'Whitelabel the OAuth flow'
+description: 'Guide to whitelabel the OAuth flow.'
+---
+
+# Use your own OAuth app
+
+OAuth APIs require developers to register an OAuth app on their developer portal. Nango does not own this developer app, you do. This means that you have full control on the OAuth settings & permissions. 
+
+# Use a custom callback URL
+
+Some API providers (e.g. Google) show the domain of the callback URL to the user during the OAuth flow. By default, the domain of the callback URL is `api.nango.dev`.
+
+You can whitelabel this experience by using a custom callback URL which uses your domain.
+
+If you are using Nango Cloud, follow these steps:
+
+1. Add a new endpoint in your app, e.g. `https://EXAMPLE.com/oauth-callback`. All requests to this endpoint should redirect to `https://api.nango.dev/oauth/callback` and **pass along all original parameters**. The easiest way to do this is with a 308 redirect.
+2. Change the registered OAuth callback URL with all API providers. Otherwise, they will refuse new flows!
+3. When ready, change your Nango callback URL in the _Environment Settings_ tab.
+
+If you are self-hosting Nango, follow the instructions [here](/guides/self-hosting/free-self-hosting/overview) to change your callback URL.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
