@@ -6,7 +6,7 @@ import { envs } from '../env.js';
 import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
 import type { AxiosResponse } from 'axios';
 import { isAxiosError } from 'axios';
-import type { RateLimiterAbstract } from 'rate-limiter-flexible';
+import type { IRateLimiterRedisOptions, RateLimiterAbstract } from 'rate-limiter-flexible';
 import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
 
@@ -172,13 +172,13 @@ class CombinedThrottler {
 }
 
 const serviceCreationThrottler = await (async () => {
-    const minuteThrottlerOpts = {
+    const minuteThrottlerOpts: Omit<IRateLimiterRedisOptions, 'storeClient'> = {
         keyPrefix: 'minute',
         points: envs.RENDER_SERVICE_CREATION_MAX_PER_MINUTE || 50,
         duration: 60,
         blockDuration: 0
     };
-    const hourThrottlerOpts = {
+    const hourThrottlerOpts: Omit<IRateLimiterRedisOptions, 'storeClient'> = {
         keyPrefix: 'hour',
         points: envs.RENDER_SERVICE_CREATION_MAX_PER_HOUR || 700,
         duration: 3600,
