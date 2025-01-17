@@ -1,3 +1,4 @@
+import { httpAgent, httpsAgent } from '@nangohq/utils';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
 
@@ -6,6 +7,8 @@ export class RenderAPI {
     constructor(apiKey: string) {
         this.httpClient = axios.create({
             baseURL: 'https://api.render.com/v1',
+            httpAgent: httpAgent,
+            httpsAgent: httpsAgent,
             headers: {
                 Authorization: `Bearer ${apiKey}`,
                 Accept: 'application/json'
