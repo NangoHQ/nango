@@ -1,25 +1,31 @@
 import type {
-    Connection,
     SyncResult,
     ErrorPayload,
     SyncType,
     ExternalWebhook,
     NangoSyncWebhookBody,
     NangoSyncWebhookBodyBase,
-    DBEnvironment
+    DBEnvironment,
+    DBTeam,
+    DBSyncConfig,
+    NangoConnection
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 import { Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import type { Config } from '@nangohq/shared';
 
 dayjs.extend(utc);
 
 export const sendSync = async ({
     connection,
     environment,
+    account,
+    providerConfig,
+    syncConfig,
     webhookSettings,
     syncName,
     model,
@@ -27,11 +33,13 @@ export const sendSync = async ({
     responseResults,
     success,
     operation,
-    error,
-    logCtx
+    error
 }: {
-    connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
+    connection: NangoConnection;
     environment: DBEnvironment;
+    account: DBTeam;
+    providerConfig: Config;
+    syncConfig: DBSyncConfig;
     webhookSettings: ExternalWebhook | null;
     syncName: string;
     model: string;
@@ -40,7 +48,6 @@ export const sendSync = async ({
     error?: ErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
-    logCtx?: LogContext | undefined;
 } & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<Result<void>> => {
     if (!webhookSettings) {
         return Ok(undefined);
@@ -49,6 +56,18 @@ export const sendSync = async ({
     if (!shouldSend({ success, type: 'sync', webhookSettings, operation })) {
         return Ok(undefined);
     }
+
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'webhook', action: 'sync' } },
+        {
+            account,
+            environment,
+            integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+            connection: { id: connection.id!, name: connection.connection_id },
+            syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+            meta: { scriptVersion: syncConfig.version }
+        }
+    );
 
     const bodyBase: NangoSyncWebhookBodyBase = {
         from: 'nango',
@@ -69,7 +88,7 @@ export const sendSync = async ({
             responseResults?.added === 0 && responseResults?.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
 
         if (!webhookSettings.on_sync_completion_always && noChanges) {
-            await logCtx?.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
+            await logCtx.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
 
             return Ok(undefined);
         }
@@ -105,7 +124,7 @@ export const sendSync = async ({
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
-    return deliver({
+    const result = await deliver({
         webhooks,
         body: finalBody,
         webhookType: 'sync',
@@ -113,4 +132,12 @@ export const sendSync = async ({
         environment,
         logCtx
     });
+
+    if (result.isErr()) {
+        await logCtx.failed();
+    } else {
+        await logCtx.success();
+    }
+
+    return result;
 };
