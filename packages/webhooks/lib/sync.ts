@@ -7,8 +7,8 @@ import type {
     NangoSyncWebhookBodyBase,
     DBEnvironment,
     DBTeam,
-    DBSyncConfig,
-    NangoConnection
+    Connection,
+    DBSyncConfig
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -25,9 +25,8 @@ export const sendSync = async ({
     environment,
     account,
     providerConfig,
-    syncConfig,
     webhookSettings,
-    syncName,
+    syncConfig,
     model,
     now,
     responseResults,
@@ -35,13 +34,12 @@ export const sendSync = async ({
     operation,
     error
 }: {
-    connection: NangoConnection;
+    connection: Connection | Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
     account: DBTeam;
     providerConfig: Config;
-    syncConfig: DBSyncConfig;
     webhookSettings: ExternalWebhook | null;
-    syncName: string;
+    syncConfig: DBSyncConfig;
     model: string;
     now: Date | undefined;
     operation: SyncType;
@@ -74,7 +72,7 @@ export const sendSync = async ({
         type: 'sync',
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
-        syncName,
+        syncName: syncConfig.sync_name,
         model,
         // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
         syncType: operation === 'FULL' ? 'INITIAL' : operation

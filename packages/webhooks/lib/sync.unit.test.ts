@@ -7,7 +7,8 @@ import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
-const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
+const connection: Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'> = {
+    id: 1,
     connection_id: '1',
     provider_config_key: 'providerkey'
 };
@@ -33,7 +34,6 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
-        const logCtx = getLogCtx();
         const responseResults = { added: 10, updated: 0, deleted: 0 };
 
         await sendSync({
@@ -45,13 +45,11 @@ describe('Webhooks: sync notification tests', () => {
                 secondary_url: '',
                 on_sync_completion_always: false
             },
-            syncName: 'syncName',
             model: 'model',
             responseResults,
             success: true,
             operation: 'INCREMENTAL',
-            now: new Date(),
-            logCtx
+            now: new Date()
         });
         expect(spy).not.toHaveBeenCalled();
     });
