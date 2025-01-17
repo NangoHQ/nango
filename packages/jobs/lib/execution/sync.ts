@@ -1,5 +1,5 @@
 import tracer from 'dd-trace';
-import type { Config, Job, NangoProps, SyncConfig } from '@nangohq/shared';
+import type { Config, Job, NangoProps } from '@nangohq/shared';
 import {
     environmentService,
     externalWebhookService,
@@ -26,7 +26,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBTeam, NangoConnection, SyncResult } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
@@ -45,9 +45,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     let environment: DBEnvironment | undefined;
     let syncJob: Job | null = null;
     let lastSyncDate: Date | null = null;
-    let syncType: SyncType = SyncType.FULL;
+    let syncType: SyncTypeLiteral = 'full';
     let providerConfig: Config | null = null;
-    let syncConfig: SyncConfig | null = null;
+    let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
@@ -80,7 +80,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        syncType = syncConfig.sync_type?.toLowerCase() === 'incremental' && lastSyncDate ? 'incremental' : 'full';
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' } },
@@ -89,18 +89,18 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 environment,
                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: task.connection.id, name: task.connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
                 meta: { scriptVersion: syncConfig.version }
             }
         );
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
-            type: syncType,
+            type: syncType === 'full' ? SyncType.FULL : SyncType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
-            sync_config_id: syncConfig.id!,
+            sync_config_id: syncConfig.id,
             run_id: task.id,
             log_id: logCtx.id
         });
@@ -138,7 +138,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncJobId: syncJob.id,
             attributes: syncConfig.attributes,
             track_deletes: syncConfig.track_deletes,
-            syncConfig: syncConfig,
+            syncConfig,
             debug: task.debug || false,
             runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),
@@ -188,7 +188,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
-    const syncType = nangoProps.syncConfig.sync_type === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL;
+    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental';
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     try {
@@ -226,7 +226,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        for (const model of nangoProps.syncConfig.models) {
+        for (const model of nangoProps.syncConfig.models!) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
                 deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
@@ -455,7 +455,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             activityLogId: nangoProps.activityLogId!,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
-            models: nangoProps.syncConfig.models,
+            models: nangoProps.syncConfig.models!,
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
@@ -490,7 +490,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
-        models: nangoProps.syncConfig.models,
+        models: nangoProps.syncConfig.models!,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
@@ -603,7 +603,7 @@ async function onFailure({
     provider: string;
     syncId: string;
     syncName: string;
-    syncType: SyncType;
+    syncType: SyncTypeLiteral;
     syncJobId: number;
     lastSyncDate?: Date | undefined;
     activityLogId: string;
@@ -611,7 +611,7 @@ async function onFailure({
     models: string[];
     runTime: number;
     isCancel?: boolean;
-    syncConfig: SyncConfig | null;
+    syncConfig: DBSyncConfig | null;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
     endUser: NangoProps['endUser'];

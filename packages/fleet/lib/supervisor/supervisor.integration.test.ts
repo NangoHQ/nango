@@ -57,7 +57,11 @@ describe('Supervisor', () => {
             const tickSpy2 = vi.spyOn(supervisor2, 'tick');
             void supervisor1.start();
             void supervisor2.start();
-            await new Promise((resolve) => setTimeout(resolve, 50));
+
+            await vi.waitUntil(() => tickSpy1.mock.calls.length > 0, {
+                timeout: 5000
+            });
+
             expect(tickSpy1).toHaveBeenCalled();
             expect(tickSpy2).toHaveBeenCalledTimes(0);
         });

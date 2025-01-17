@@ -127,7 +127,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 name: syncName,
                 type: 'sync',
                 description: (sync.description || '').trim(),
-                sync_type: sync.sync_type === 'incremental' ? 'incremental' : 'full',
+                sync_type: sync.sync_type?.toLocaleLowerCase() === 'incremental' ? 'incremental' : 'full',
                 usedModels: Array.from(modelNames),
                 runs: sync.runs,
                 version: sync.version || '',

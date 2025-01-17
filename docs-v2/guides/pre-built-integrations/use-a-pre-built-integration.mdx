@@ -1,0 +1,27 @@
+---
+title: 'Use a pre-built integration'
+sidebarTitle: 'Use a pre-built integration'
+description: 'Guide on how to use a pre-built integration.'
+---
+
+<Steps>
+    <Step title="Find the right pre-built integration">
+        Pick an API you are interested in from the [list of APIs](https://www.nango.dev/api-integrations) or [ask support for a new one](/guides/new-api-support#option-1-ask-nango-to-add-support-for-a-new-api).
+
+        On the API docs page, go to the _Pre-built integrations_ section and view the available pre-built integrations. Go to the integration's `.md` file for details about the integration. Optionally explore it's configuration (`nango.yaml`) and implementation in code (`.ts`).
+    </Step>
+    <Step title="Activate the integration in the Nango UI">
+        Go to the _Integrations_ tab in the Nango UI, select an API, and enable the desired integration toggle in the _Endpoints_ tab.
+    </Step>
+    <Step title="Call the relevant integration endpoint">
+        Refer to the endpoint reference available in the Nango UI (_Integrations_ tab > select an API > _Endpoints_ tab > select an endpoint) or in the integration's `.md` file in the [integration GitHub repository](https://github.com/NangoHQ/integration-templates/tree/main/integrations).
+
+        <Info>
+            You interact with integration types ([syncs](/guides/syncs/overview) & [actions](/guides/actions/overview)) slightly differently. Refer to the related guides ([sync guide](/guides/syncs/use-a-sync), [action guide](/guides/actions/use-an-action)) for detailed instructions.
+        </Info>
+    </Step>
+</Steps>
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

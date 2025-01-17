@@ -4,8 +4,8 @@ import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
-import type { NangoProps, SyncConfig } from '@nangohq/shared';
-import type { Metadata, ParsedNangoAction, ParsedNangoSync, RunnerOutput, ScriptFileType } from '@nangohq/types';
+import type { NangoProps } from '@nangohq/shared';
+import type { DBSyncConfig, Metadata, ParsedNangoAction, ParsedNangoSync, RunnerOutput, ScriptFileType } from '@nangohq/types';
 import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -285,12 +285,12 @@ export class DryRunService {
         }
 
         try {
-            const syncConfig: SyncConfig = {
+            const syncConfig: DBSyncConfig = {
                 id: -1,
                 sync_name: syncName,
                 file_location: '',
                 models: scriptInfo?.output || [],
-                input: scriptInfo?.input || undefined,
+                input: scriptInfo?.input || null,
                 track_deletes: false,
                 type: scriptInfo?.type || 'sync',
                 active: true,
@@ -303,7 +303,13 @@ export class DryRunService {
                 webhook_subscriptions: [],
                 models_json_schema: jsonSchema,
                 created_at: new Date(),
-                updated_at: new Date()
+                updated_at: new Date(),
+                attributes: {},
+                is_public: false,
+                metadata: {},
+                pre_built: false,
+                sync_type: lastSyncDate ? 'incremental' : 'full',
+                version: '0.0.1'
             };
             const nangoProps: NangoProps = {
                 scriptType: scriptInfo?.type || 'sync',
@@ -541,7 +547,8 @@ export class DryRunService {
                     const output = await scriptExports.default(nango, input);
 
                     // Validate action output against json schema
-                    const modelNameOutput = nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined;
+                    const modelNameOutput =
+                        nangoProps.syncConfig.models && nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined;
                     const valOutput = validateData({
                         version: nangoProps.syncConfig.version || '1',
                         input: output,

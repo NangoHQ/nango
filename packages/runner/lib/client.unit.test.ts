@@ -1,7 +1,8 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
-import type { NangoProps, SyncConfig } from '@nangohq/shared';
+import type { NangoProps } from '@nangohq/shared';
+import type { DBSyncConfig } from '@nangohq/types';
 
 describe('Runner client', () => {
     const port = 3095;
@@ -27,7 +28,7 @@ describe('Runner client', () => {
             counts: { updated: 0, added: 0, deleted: 0 },
             messages: []
         },
-        syncConfig: {} as SyncConfig,
+        syncConfig: {} as DBSyncConfig,
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,

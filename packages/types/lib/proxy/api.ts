@@ -55,26 +55,30 @@ export enum PaginationType {
     OFFSET = 'offset'
 }
 
-export interface Pagination {
-    type: string;
+export interface PaginationBase {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
 }
 
-export interface CursorPagination extends Pagination {
+export type Pagination = CursorPagination | LinkPagination | OffsetPagination;
+
+export interface CursorPagination extends PaginationBase {
+    type: 'cursor';
     cursor_path_in_response: string;
     cursor_name_in_request: string;
 }
 
-export interface LinkPagination extends Pagination {
+export interface LinkPagination extends PaginationBase {
+    type: 'link';
     link_rel_in_response_header?: string;
     link_path_in_response_body?: string;
 }
 
 export type OffsetCalculationMethod = 'per-page' | 'by-response-size';
 
-export interface OffsetPagination extends Pagination {
+export interface OffsetPagination extends PaginationBase {
+    type: 'offset';
     offset_name_in_request: string;
     offset_start_value?: number;
     offset_calculation_method?: OffsetCalculationMethod;

@@ -2,11 +2,10 @@
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
-import type { Config, SyncConfig } from '../models/index.js';
-import type { Provider } from '@nangohq/types';
+import type { Config } from '../models/index.js';
+import type { CursorPagination, DBSyncConfig, LinkPagination, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import configService from '../services/config.service.js';
 import * as providerService from '../services/providers.js';
-import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import type { NangoProps } from './sync.js';
 import { NangoAction, NangoSync } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
@@ -29,7 +28,7 @@ const nangoProps: NangoProps = {
     environmentId: 1,
     environmentName: 'test-env',
     lastSyncDate: new Date(),
-    syncConfig: {} as SyncConfig,
+    syncConfig: {} as DBSyncConfig,
     syncId: '1',
     syncJobId: 1,
     nangoConnectionId: 1,
@@ -410,12 +409,12 @@ describe('Pagination', () => {
         );
     });
 
-    const stubProviderTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination) => {
+    const stubProviderTemplate = (paginationConfig: Pagination) => {
         const provider: Provider = buildTemplate(paginationConfig);
         vi.spyOn(providerService, 'getProvider').mockImplementation(() => provider);
     };
 
-    const buildTemplate = (paginationConfig: CursorPagination | OffsetPagination | LinkPagination): Provider => {
+    const buildTemplate = (paginationConfig: Pagination): Provider => {
         return {
             display_name: 'test',
             auth_mode: 'OAUTH2',
