@@ -4363,7 +4363,7 @@ lucid-scim:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://users.lucid.app/scim/v2
+        base_url: https://users.lucid.app/scim
         headers:
             authorization: Bearer ${apiKey}
             accept: application/json
