@@ -2,8 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendSync } from './sync.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoSyncWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, DBTeam, DBSyncConfig } from '@nangohq/types';
-import type { Config } from '@nangohq/shared';
+import type { NangoSyncWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, DBTeam, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -16,7 +15,7 @@ const account: DBTeam = {
     updated_at: new Date()
 };
 
-const providerConfig: Config = {
+const providerConfig: IntegrationConfig = {
     id: 1,
     provider: 'provider',
     unique_key: 'unique_key',
