@@ -226,7 +226,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        for (const model of nangoProps.syncConfig.models) {
+        for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
                 deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
@@ -439,7 +439,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             activityLogId: nangoProps.activityLogId!,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
-            models: nangoProps.syncConfig.models,
+            models: nangoProps.syncConfig.models || [],
 
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
@@ -475,7 +475,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
-        models: nangoProps.syncConfig.models,
+        models: nangoProps.syncConfig.models || [],
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
