@@ -2325,7 +2325,7 @@ emarsys:
             pattern: '^[a-zA-Z0-9-]+$'
 
 emarsys-oauth:
-    display_name: Emarsys (Oauth)
+    display_name: Emarsys (OAuth)
     categories:
         - marketing
     auth_mode: OAUTH2_CC
