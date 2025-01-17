@@ -8,7 +8,8 @@ import type {
     DBEnvironment,
     DBTeam,
     Connection,
-    DBSyncConfig
+    DBSyncConfig,
+    IntegrationConfig
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -16,7 +17,6 @@ import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 import { Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { Config } from '@nangohq/shared';
 
 dayjs.extend(utc);
 
@@ -37,7 +37,7 @@ export const sendSync = async ({
     connection: Connection | Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
     account: DBTeam;
-    providerConfig: Config;
+    providerConfig: IntegrationConfig;
     webhookSettings: ExternalWebhook | null;
     syncConfig: DBSyncConfig;
     model: string;

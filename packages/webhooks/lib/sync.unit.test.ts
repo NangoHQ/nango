@@ -261,7 +261,7 @@ describe('Webhooks: sync notification tests', () => {
             queryTimeStamp: now as unknown as string,
             responseResults,
             connectionId: connection.connection_id,
-            syncName: 'syncName',
+            syncName: 'a_sync',
             providerConfigKey: connection.provider_config_key,
             success: true,
             syncType: 'INCREMENTAL'
