@@ -218,7 +218,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
 
         const providerConfig = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
         if (providerConfig === null) {
-            throw new Error(`Provider config not found for connection: ${connection.connection_id} in handleSyncSuccess`);
+            throw new Error(`Provider config not found for connection: ${connection.connection_id}`);
         }
 
         const syncPayload = {
@@ -440,6 +440,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
             models: nangoProps.syncConfig.models,
+
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
