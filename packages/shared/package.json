@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.48.2",
+    "version": "0.48.3",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/index.js",
@@ -22,8 +22,8 @@
         "@datadog/datadog-api-client": "1.26.0",
         "@hapi/boom": "^10.0.1",
         "@nangohq/database": "file:../database",
-        "@nangohq/nango-yaml": "0.48.2",
-        "@nangohq/node": "^0.48.2",
+        "@nangohq/nango-yaml": "0.48.3",
+        "@nangohq/node": "^0.48.3",
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
@@ -54,7 +54,7 @@
     "devDependencies": {
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
-        "@nangohq/types": "0.48.2",
+        "@nangohq/types": "0.48.3",
         "@types/braintree": "^3.3.12",
         "@types/js-yaml": "^4.0.5",
         "@types/json-schema": "7.0.15",

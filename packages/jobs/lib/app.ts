@@ -22,37 +22,46 @@ try {
 
     // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
     let healthCheck: NodeJS.Timeout | undefined;
+    let healthCheckFailures = 0;
     const check = async () => {
+        const MAX_FAILURES = 5;
+        const TIMEOUT = 1000;
         try {
-            await db.knex.raw('SELECT 1').timeout(1000);
-            healthCheck = setTimeout(check, 1000);
+            await db.knex.raw('SELECT 1').timeout(TIMEOUT);
+            healthCheckFailures = 0;
+            healthCheck = setTimeout(check, TIMEOUT);
         } catch (err) {
-            logger.error('HealthCheck failed...', err);
-            void close();
+            healthCheckFailures += 1;
+            logger.error(`HealthCheck failed (${healthCheckFailures} times)...`, err);
+            if (healthCheckFailures > MAX_FAILURES) {
+                close();
+            } else {
+                healthCheck = setTimeout(check, TIMEOUT);
+            }
         }
     };
     void check();
 
-    const close = once(async () => {
+    const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
-        processor.stop();
-        otlp.stop();
-        await runnersFleet.stop();
-        await db.knex.destroy();
-        srv.close(() => {
+        srv.close(async () => {
+            processor.stop();
+            otlp.stop();
+            await runnersFleet.stop();
+            await db.knex.destroy();
             process.exit();
         });
     });
 
     process.on('SIGINT', () => {
         logger.info('Received SIGINT...');
-        void close();
+        close();
     });
 
     process.on('SIGTERM', () => {
         logger.info('Received SIGTERM...');
-        void close();
+        close();
     });
 
     process.on('unhandledRejection', (reason) => {

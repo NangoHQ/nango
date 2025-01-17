@@ -38,6 +38,9 @@
             "path": "packages/runner"
         },
         {
+            "path": "packages/runner-sdk"
+        },
+        {
             "path": "packages/scheduler"
         },
         {
@@ -66,6 +69,9 @@
         },
         {
             "path": "packages/fleet"
+        },
+        {
+            "path": "packages/providers"
         },
         {
             "path": "packages/types"

@@ -159,6 +159,8 @@ export const ENVS = z.object({
 
     // Render
     RENDER_API_KEY: z.string().optional(),
+    RENDER_SERVICE_CREATION_MAX_PER_MINUTE: z.coerce.number().optional(),
+    RENDER_SERVICE_CREATION_MAX_PER_HOUR: z.coerce.number().optional(),
     IS_RENDER: bool,
 
     // Sentry
