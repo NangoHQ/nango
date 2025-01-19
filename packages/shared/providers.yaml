@@ -3525,6 +3525,7 @@ greenhouse-basic:
             suffix: .greenhouse.io
             prefix: https://
             order: 1
+            doc_section: '#step-2-finding-your-greenhouse-api-domain'
     credentials:
         username:
             type: string
@@ -3532,7 +3533,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-greenhouse-api-key'
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -3541,6 +3542,110 @@ greenhouse-basic:
             # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
+
+greenhouse-harvest:
+    display_name: Greenhouse (Harvest API)
+    alias: greenhouse-basic
+    categories:
+        - ats
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-job-board:
+    display_name: Greenhouse (Job Board API)
+    alias: greenhouse-basic
+    categories:
+        - ats
+    proxy:
+        base_url: https://boards-api.greenhouse.io
+    docs: https://docs.nango.dev/integrations/all/greenhouse-job-board
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-job-board/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-assessment:
+    display_name: Greenhouse (Assessment API)
+    alias: greenhouse-basic
+    categories:
+        - ats
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Assessment Base Url
+            description: The Assessment API Base Url you want to connect to
+            pattern: '^[a-z0-9_-]+$'
+            example: www.testing-partner.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-greenhouse-assessment-base-url'
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-ingestion:
+    display_name: Greenhouse (Ingestion API)
+    alias: greenhouse
+    categories:
+        - ats
+    docs: https://docs.nango.dev/integrations/all/greenhouse-ingestion
+
+greenhouse-onboarding:
+    display_name: Greenhouse (Onboarding API)
+    alias: greenhouse-basic
+    categories:
+        - ats
+    docs: https://docs.nango.dev/integrations/all/greenhouse-onboarding
 
 gumroad:
     display_name: Gumroad

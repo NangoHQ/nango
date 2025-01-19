@@ -327,6 +327,8 @@
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+                "integrations/all/greenhouse-harvest",
+                "integrations/all/greenhouse-job-board",
                 "integrations/all/grain",
                 "integrations/all/gumroad",
                 "integrations/all/guru",
