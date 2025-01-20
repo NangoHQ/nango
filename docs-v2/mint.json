@@ -116,7 +116,7 @@
             "group": "Guides",
             "pages": [
                 {
-                    "group": "API authorization (free)",
+                    "group": "API authorization",
                     "pages": [
                         "guides/api-authorization/overview",
                         "guides/api-authorization/configuration",
