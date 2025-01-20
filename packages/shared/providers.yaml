@@ -3028,6 +3028,35 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gebruder-weiss:
+    display_name: Gebrüder Weiss
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    authorization_url: https://my.api.gw-world.com/oauth2/authorize
+    token_url: https://my.api.gw-world.com/oauth2/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://my.api.gw-world.com
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/gebruder-weiss
+    connection_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: The client ID provided by Gebrüder Weiss.
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The client secret provided by Gebrüder Weiss.
+
 gerrit:
     display_name: Gerrit
     categories:
