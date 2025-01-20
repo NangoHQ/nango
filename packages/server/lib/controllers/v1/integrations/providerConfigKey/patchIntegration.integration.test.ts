@@ -81,7 +81,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'invalid_body', message: "can't rename an integration with active connection" }
+            error: { code: 'invalid_body', message: "Can't rename an integration with active connections" }
         });
     });
 });

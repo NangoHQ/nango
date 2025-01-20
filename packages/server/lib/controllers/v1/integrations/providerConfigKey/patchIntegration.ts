@@ -93,7 +93,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
         const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
         if (count > 0) {
-            res.status(400).send({ error: { code: 'invalid_body', message: "can't rename an integration with active connection" } });
+            res.status(400).send({ error: { code: 'invalid_body', message: "Can't rename an integration with active connections" } });
             return;
         }
 
