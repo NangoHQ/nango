@@ -278,6 +278,7 @@
                 "integrations/all/discord",
                 "integrations/all/discourse",
                 "integrations/all/dixa",
+                "integrations/all/document360",
                 "integrations/all/docusign",
                 "integrations/all/dropbox",
                 "integrations/all/e-conomic",
