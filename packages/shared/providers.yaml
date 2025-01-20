@@ -3525,7 +3525,7 @@ greenhouse-basic:
             suffix: .greenhouse.io
             prefix: https://
             order: 1
-            doc_section: '#step-2-finding-your-greenhouse-api-domain'
+            doc_section: '#step-1-finding-your-greenhouse-api-domain'
     credentials:
         username:
             type: string
@@ -3533,7 +3533,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-finding-your-greenhouse-api-key'
         password:
             type: string
             title: Password
