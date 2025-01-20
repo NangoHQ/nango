@@ -2250,7 +2250,7 @@ document360:
     proxy:
         headers:
             api_token: ${apiKey}
-        base_url: https://api.document360.com/v2
+        base_url: https://api.document360.com
     docs: https://docs.nango.dev/integrations/all/document360
     credentials:
         apiKey:
