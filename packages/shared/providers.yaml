@@ -3545,7 +3545,7 @@ greenhouse-basic:
 
 greenhouse-harvest:
     display_name: Greenhouse (Harvest API)
-    alias: greenhouse-basic
+    auth_mode: BASIC
     categories:
         - ats
     proxy:
@@ -3573,7 +3573,7 @@ greenhouse-harvest:
 
 greenhouse-job-board:
     display_name: Greenhouse (Job Board API)
-    alias: greenhouse-basic
+    auth_mode: BASIC
     categories:
         - ats
     proxy:
@@ -3599,7 +3599,7 @@ greenhouse-job-board:
 
 greenhouse-assessment:
     display_name: Greenhouse (Assessment API)
-    alias: greenhouse-basic
+    auth_mode: BASIC
     categories:
         - ats
     proxy:
@@ -3615,7 +3615,7 @@ greenhouse-assessment:
             example: www.testing-partner.com
             prefix: https://
             order: 1
-            doc_section: '#step-1-finding-your-greenhouse-assessment-base-url'
+            doc_section: '#step-1-obtaining-your-base-url'
     credentials:
         username:
             type: string
@@ -3623,7 +3623,7 @@ greenhouse-assessment:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-your-greenhouse-api-key'
+            doc_section: '#step-2-obtaining-your-api-key'
         password:
             type: string
             title: Password
@@ -3635,17 +3635,37 @@ greenhouse-assessment:
 
 greenhouse-ingestion:
     display_name: Greenhouse (Ingestion API)
-    alias: greenhouse
+    auth_mode: OAUTH2
+    authorization_url: https://api.greenhouse.io/oauth/authorize
+    token_url: https://api.greenhouse.io/oauth/token
     categories:
         - ats
+    proxy:
+        base_url: https://api.greenhouse.io
     docs: https://docs.nango.dev/integrations/all/greenhouse-ingestion
 
 greenhouse-onboarding:
     display_name: Greenhouse (Onboarding API)
-    alias: greenhouse-basic
+    auth_mode: BASIC
     categories:
         - ats
+    proxy:
+        base_url: https://onboarding-api.greenhouse.io/graphql
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: The Access Key to your Greenhouse Onboarding account
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-generating-your-access-and-secret-key'
+        password:
+            type: string
+            title: Secret Key
+            description: The Secret Key to your Greenhouse Onboarding account
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-generating-your-access-and-secret-key'
     docs: https://docs.nango.dev/integrations/all/greenhouse-onboarding
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-onboarding/connect
 
 gumroad:
     display_name: Gumroad
