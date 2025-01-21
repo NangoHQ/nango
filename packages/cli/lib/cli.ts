@@ -136,6 +136,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
  */
 export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
+    const envData = fs.readFileSync(path.resolve(__dirname, './templates/env'), 'utf8');
 
     // if currently in the nango-integrations directory then don't create another one
     const currentDirectory = path.basename(absolutePath);
@@ -176,21 +177,7 @@ export function init({ absolutePath, debug = false }: { absolutePath: string; de
         if (debug) {
             printDebug(`Creating the .env file at ${envFileLocation}`);
         }
-        fs.writeFileSync(
-            envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
-#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
-#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
-
-# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
-NANGO_HOSTPORT=https://api.nango.dev # Default value
-
-# How to handle CLI upgrades ("prompt", "auto" or "ignore").
-NANGO_CLI_UPGRADE_MODE=prompt # Default value
-
-# Whether to prompt before deployments.
-NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
-        );
+        fs.writeFileSync(envFileLocation, envData);
     } else {
         if (debug) {
             printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
