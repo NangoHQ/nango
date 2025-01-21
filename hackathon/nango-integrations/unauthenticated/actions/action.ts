@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createAction } from './models.js';
+import { createAction } from '../../models.js';
 
 // Action
 export default createAction({

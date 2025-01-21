@@ -1,4 +1,4 @@
-import { createOnEvent } from './models.js';
+import { createOnEvent } from '../../models.js';
 
 // Events
 export default createOnEvent({

@@ -462,7 +462,6 @@ export declare class NangoSync<
     saveRecords(modelName: TKeys, data: z.infer<TModels[TKeys]>[]): Promise<boolean | null>;
 }
 
-export type SemverVersion = `${number}.${number}.${number}`;
 export declare function createSync<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined>(params: {
     name: string;
     endpoint: { method: 'GET' | 'POST'; path: string; group: string };
@@ -475,7 +474,7 @@ export declare function createSync<TModels extends Record<string, Zod.ZodObject<
     autoStart?: boolean;
     scopes?: string;
     metadata?: TMetadata;
-    version?: SemverVersion;
+    version?: string;
     fetchData: (nango: NangoSync<TModels, TMetadata>) => Promise<void> | void;
     onWebhook?: (nango: NangoSync<TModels, TMetadata>, payload: any) => Promise<void> | void;
 }): any;
@@ -494,7 +493,7 @@ export declare function createAction<
     input: TInput;
     output: TOutput;
     metadata?: TMetadata;
-    version?: SemverVersion;
+    version?: string;
     runAction: (nango: NangoAction<TMetadata>, input: TInputInferred) => Promise<TOutputInferred> | TOutputInferred;
 }): any;
 
@@ -504,6 +503,6 @@ export declare function createOnEvent<TMetadata extends Zod.ZodObject<any> | und
     integrationId: string;
     type: 'post-connection-creation' | 'pre-connection-deletion';
     metadata?: TMetadata;
-    version?: SemverVersion;
+    version?: string;
     exec: (nango: NangoAction<TMetadata>) => Promise<void> | void;
 }): any;

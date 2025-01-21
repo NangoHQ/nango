@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createSync } from './models.js';
+import { createSync } from '../../models.js';
 
 const ticketSchema = z.object({ id: z.string(), name: z.string() });
 
