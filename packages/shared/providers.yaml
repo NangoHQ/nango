@@ -3040,6 +3040,8 @@ gebruder-weiss:
     token_params:
         grant_type: client_credentials
     proxy:
+        headers:
+            accept-language: en-US
         base_url: https://my.api.gw-world.com
         retry:
             after: 'retry-after'
