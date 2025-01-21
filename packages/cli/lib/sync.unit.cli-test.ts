@@ -23,7 +23,9 @@ describe('generate function tests', () => {
 
     it('should init the expected files in the nango-integrations directory', async () => {
         const dir = await getTestDirectory('init');
-        init({ absolutePath: path.resolve(dir, '..'), debug: false });
+        init({ absolutePath: path.resolve(dir), debug: false });
+        expect(fs.existsSync(join(dir, '.nango'))).toBe(true);
+        expect(fs.existsSync(join(dir, '.nango/.gitkeep'))).toBe(true);
         expect(fs.existsSync(join(dir, `demo-github-integration/syncs/${exampleSyncName}.ts`))).toBe(true);
         expect(fs.existsSync(join(dir, '.env'))).toBe(true);
         expect(fs.existsSync(join(dir, 'nango.yaml'))).toBe(true);
