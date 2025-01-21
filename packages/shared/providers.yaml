@@ -3028,6 +3028,29 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gemini:
+    display_name: Gemini
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://generativelanguage.googleapis.com
+        query:
+            key: ${apiKey}
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/models
+    docs: https://docs.nango.dev/integrations/all/gemini
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Gemini account
+            doc_section: '#step-1-finding-you-api-key'
+
 gerrit:
     display_name: Gerrit
     categories:

@@ -312,6 +312,7 @@
                 "integrations/all/front",
                 "integrations/all/gainsight-cc",
                 "integrations/all/garmin",
+                "integrations/all/gemini",
                 "integrations/all/gerrit",
                 "integrations/all/github",
                 "integrations/all/gitlab",
