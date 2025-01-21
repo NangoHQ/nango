@@ -57,7 +57,7 @@ In addition for self-Hosting: set the NANGO_HOSTPORT env variable.
 
 Global flag: --auto-confirm - automatically confirm yes to all prompts.
 
-Available environment variables available:
+Available environment variables:
 
 # Recommendation: in a ".env" file in ./nango-integrations.
 
@@ -88,11 +88,12 @@ program
 
 program
     .command('init')
+    .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
     .action(function (this: Command) {
         const { debug } = this.opts();
-        const fullPath = process.cwd();
-        init({ absolutePath: fullPath, debug });
+        const targetPath = path.resolve(process.cwd(), this.args[0] || '');
+        init({ targetPath, debug });
 
         console.log(chalk.green(`Nango integrations initialized!`));
     });
