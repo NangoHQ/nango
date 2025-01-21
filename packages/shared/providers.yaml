@@ -792,6 +792,41 @@ bamboohr-basic:
             default_value: x
             hidden: true
 
+basecamp:
+    display_name: Basecamp
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://launchpad.37signals.com/authorization/new
+    token_url: https://launchpad.37signals.com/authorization/token
+    authorization_params:
+        type: web_server
+    token_params:
+        type: web_server
+    refresh_params:
+        type: refresh
+    proxy:
+        base_url: https://3.basecampapi.com/${connectionConfig.accountId}
+        headers:
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+    retry:
+        after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/basecamp
+    docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Account ID
+            example: 5899981
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-account-id'
+
 battlenet:
     display_name: Battle.net
     categories:
