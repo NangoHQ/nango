@@ -2325,7 +2325,7 @@ emarsys:
             pattern: '^[a-zA-Z0-9-]+$'
 
 emarsys-oauth:
-    display_name: Emarsys (Ouath)
+    display_name: Emarsys (OAuth)
     categories:
         - marketing
     auth_mode: OAUTH2_CC
@@ -3116,6 +3116,7 @@ github-app:
             description: The public link of your GitHub App
             format: uri
             pattern: '^https?://.*$'
+            automated: true
         installation_id:
             type: string
             title: Installation ID
@@ -3146,6 +3147,7 @@ github-app-oauth:
             description: The public link of your GitHub App
             format: uri
             pattern: '^https?://.*$'
+            automated: true
         installation_id:
             type: string
             title: Installation ID
