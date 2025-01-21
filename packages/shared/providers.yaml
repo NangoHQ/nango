@@ -809,8 +809,8 @@ basecamp:
         base_url: https://3.basecampapi.com/${connectionConfig.accountId}
         headers:
             user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
-    retry:
-        after: 'retry-after'
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/basecamp
     docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
     connection_config:
@@ -823,7 +823,7 @@ basecamp:
             type: string
             title: Account ID
             description: Your Account ID
-            example: 5899981
+            example: '5899981'
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
 
