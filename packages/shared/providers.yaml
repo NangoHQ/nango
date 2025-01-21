@@ -4425,6 +4425,7 @@ make:
             method: GET
             endpoint: /users/me
     docs: https://docs.nango.dev/integrations/all/make
+    docs_connect: https://docs.nango.dev/integrations/all/make/connect
     connection_config:
         environmentUrl:
             type: string
@@ -4432,11 +4433,13 @@ make:
             description: The domain of your Make account
             format: hostname
             prefix: https://
+            doc_section: '#step-2-finding-your-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Make account
+            doc_section: '#step-1-generating-an-api-key'
 
 mailgun:
     display_name: Mailgun
@@ -4449,6 +4452,7 @@ mailgun:
             method: GET
             endpoint: /v4/domains
     docs: https://docs.nango.dev/integrations/all/mailgun
+    docs_connect: https://docs.nango.dev/integrations/all/mailgun/connect
     connection_config:
         region:
             type: string
@@ -4456,6 +4460,7 @@ mailgun:
             description: The region of your Mailgun account
             pattern: '^[a-z]+$'
             example: us
+            doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
     display_name: Mailchimp
@@ -4498,11 +4503,13 @@ manatal:
             link_path_in_response_body: next
             response_path: results
     docs: https://docs.nango.dev/integrations/all/manatal
+    docs_connect: https://docs.nango.dev/integrations/all/manatal/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Manatal account
+            doc_section: '#step-2-generate-an-api-key'
 
 marketo:
     display_name: Marketo
@@ -4576,6 +4583,7 @@ medallia:
             after: 'x-ratelimit-reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+    docs_connect: https://docs.nango.dev/integrations/all/medallia/connect
     connection_config:
         reportingInstance:
             type: string
@@ -4583,16 +4591,19 @@ medallia:
             description: The domain of your Medallia account
             format: hostname
             prefix: https://
+            doc_section: '#step-3-connect-your-medallia-account'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
+            doc_section: '#step-3-connect-your-medallia-account'
         gatewayUrl:
             type: string
             title: Gateway URL
             description: The gateway URL of your Medallia account
             format: hostname
             prefix: https://
+            doc_section: '#step-3-connect-your-medallia-account'
 
 metabase:
     display_name: Metabase
@@ -4607,6 +4618,7 @@ metabase:
             method: GET
             endpoint: /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
+    docs_connect: https://docs.nango.dev/integrations/all/metabase/connect
     connection_config:
         domain:
             type: string
@@ -4614,11 +4626,13 @@ metabase:
             description: The domain (without the extension) of your Metabase account
             pattern: '^[a-z0-9.-]+$'
             example: metabase
+            doc_section: '#step-2-finding-your-metabase-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
+            doc_section: '#step-1-generating-an-api-key'
 
 microsoft:
     display_name: Microsoft
@@ -4756,6 +4770,7 @@ mindbody:
             method: GET
             endpoint: /public/v6/site/locations
     docs: https://docs.nango.dev/integrations/all/mindbody
+    docs_connect: https://docs.nango.dev/integrations/all/mindbody/connect
     credentials:
         apiKey:
             type: string
@@ -4763,6 +4778,7 @@ mindbody:
             description: The API key for your Mindbody account
             pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            doc_section: '#step-2-generate-api-key'
     connection_config:
         siteId:
             type: string
@@ -4770,12 +4786,14 @@ mindbody:
             description: The site ID for your Mindbody account
             pattern: '^\d+$'
             example: '-99'
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
         staffUserToken:
             type: string
             title: Staff User Token
             description: The staff user token for your Mindbody account
             pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
 
 mixpanel:
     display_name: Mixpanel
@@ -4929,6 +4947,7 @@ next-cloud-ocs:
         headers:
             'ocs-apirequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
+    docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
         domain:
             type: string
@@ -4936,6 +4955,7 @@ next-cloud-ocs:
             description: The domain of your Next Cloud account
             format: hostname
             prefix: https://
+            doc_section: '#step-1-locate-your-next-cloud-domain'
 
 notion:
     display_name: Notion
@@ -5091,11 +5111,13 @@ openai:
         retry:
             after: 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
+    docs_connect: https://docs.nango.dev/integrations/all/openai/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your OpenAI account
+            doc_section: '#step-1-retrieve-your-openai-api-key'
 
 ory:
     display_name: Ory

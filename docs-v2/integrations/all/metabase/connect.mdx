@@ -1,0 +1,61 @@
+---
+title: Metabase - How do I link my account?
+sidebarTitle: Metabase
+---
+
+# Overview
+
+To authenticate with Metabase, you need the following:
+1. **API Key** - A unique key that provides access to your Metabase account.
+2. **Metabase Domain** - The domain (without the extension) of your Metabase account.
+
+This guide will walk you through generating your API Key and finding your Metabase domain.
+
+---
+
+## Prerequisites
+- You must have administrative access to your Metabase account.
+- Ensure you have permission to generate and manage API keys.
+
+---
+
+## Step 1: Generating an API Key
+1. Log in to your **Metabase** account.
+2. Click on the **gear icon** in the top-right corner of the interface and select **Admin settings**.
+3. Navigate to the **Settings** tab, and click on the **Authentication** option in the left menu.
+4. Scroll to the **API Keys** section and click **Manage**.
+5. Click on the **Create API Key** button.
+6. In the **Key Name** field, provide a name for your key that reflects its purpose.
+7. Assign the key to a **Group**. The permissions for the API key will be the same as those granted to the selected group.
+8. Click **Create**.
+9. **Copy the generated API Key** and store it securely. Metabase will not show the key again.
+
+   <img src="/integrations/all/metabase/nango_metabase_api_key.png" />
+
+---
+
+## Step 2: Finding Your Metabase Domain
+Your Metabase domain is the subdomain of your account's URL. For example, if your Metabase account is hosted at:
+
+https://your-metabase-instance.com
+
+Your domain is **`your-metabase-instance`**.
+
+---
+
+## Step 3: Connecting Your Metabase Account
+To link your Metabase account:
+1. Navigate to the Metabase authentication form in your application.
+2. Enter the following details:
+   - **API Key**: Paste the key you generated in Step 1.
+   - **Metabase Domain**: Enter your Metabase domain (without the `.com` or `.org` extension) from Step 2.
+3. Click **Connect** to complete the authentication process.
+
+   <img src="/integrations/all/metabase/nango_metabase_auth_form.png" />
+
+---
+
+### Notes
+- **API Key**: Keep your API Key secure, as it grants access to your Metabase account.
+- **Domain**: Double-check your domain for accuracy to avoid connection issues.
+- For troubleshooting or support, refer to the [Metabase documentation](https://www.metabase.com/docs/latest/).
