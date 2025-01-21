@@ -1,82 +1,87 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
+import path, { dirname } from 'node:path';
 import chalk from 'chalk';
 import { printDebug } from '../utils.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { generate } from '../cli.js';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Init
  * If we're not currently in the nango-integrations directory create one
  * and create an example nango.yaml file
  */
-export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
+export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }): boolean {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `../templates/${nangoConfigFile}`), 'utf8');
     const envData = fs.readFileSync(path.resolve(__dirname, '../templates/env'), 'utf8');
+    const gitIgnoreData = fs.readFileSync(path.resolve(__dirname, '../templates/gitignore'), 'utf8');
 
-    // if currently in the nango-integrations directory then don't create another one
-    const currentDirectory = path.basename(absolutePath);
-    let fullPath: string;
-
-    if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
-        if (debug) {
-            printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
-        }
-        fullPath = absolutePath;
-    } else {
-        fullPath = path.resolve(absolutePath, NANGO_INTEGRATIONS_NAME);
-    }
-
-    if (fs.existsSync(fullPath)) {
-        console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
-    } else {
+    const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
+    if (!stat) {
         if (debug) {
             printDebug(`Creating the nango integrations directory at ${absolutePath}`);
         }
-        fs.mkdirSync(fullPath);
+        fs.mkdirSync(absolutePath);
+    } else if (!stat.isDirectory()) {
+        console.log(chalk.red(`The path provided is not a directory. Exiting.`));
+        return false;
     }
 
-    const configFileLocation = path.resolve(fullPath, nangoConfigFile);
-    if (!fs.existsSync(configFileLocation)) {
+    const dotNangoPath = path.resolve(absolutePath, '.nango');
+    const dotNangoStat = fs.statSync(dotNangoPath, { throwIfNoEntry: false });
+
+    if (!dotNangoStat) {
         if (debug) {
-            printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
+            printDebug(`Creating the .nango directory at ${dotNangoPath}`);
         }
-        fs.writeFileSync(configFileLocation, yamlData);
+        fs.mkdirSync(dotNangoPath);
+    } else if (!dotNangoStat.isDirectory()) {
+        console.log(chalk.red(`.nango exists but is not a directory. Exiting.`));
+        return false;
+    } else {
+        console.log(chalk.red(`.nango directory already exists. Exiting.`));
+        return false;
+    }
+
+    const yamlPath = path.resolve(absolutePath, nangoConfigFile);
+    if (!fs.existsSync(yamlPath)) {
+        if (debug) {
+            printDebug(`Creating the ${nangoConfigFile} file at ${yamlPath}`);
+        }
+        fs.writeFileSync(yamlPath, yamlData);
     } else {
         if (debug) {
-            printDebug(`Nango config file already exists at ${configFileLocation} so not creating a new one`);
+            printDebug(`Nango config file already exists at ${yamlPath} so not creating a new one`);
         }
     }
 
-    const envFileLocation = path.resolve(fullPath, '.env');
-    if (!fs.existsSync(envFileLocation)) {
+    const envPath = path.resolve(absolutePath, '.env');
+    if (!fs.existsSync(envPath)) {
         if (debug) {
-            printDebug(`Creating the .env file at ${envFileLocation}`);
+            printDebug(`Creating the .env file at ${envPath}`);
         }
-        fs.writeFileSync(envFileLocation, envData);
+        fs.writeFileSync(envPath, envData);
     } else {
         if (debug) {
-            printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
+            printDebug(`.env file already exists at ${envPath} so not creating a new one`);
         }
     }
 
-    const gitIgnoreFileLocation = path.resolve(fullPath, '.gitignore');
-    if (!fs.existsSync(gitIgnoreFileLocation)) {
+    const gitIgnorePath = path.resolve(absolutePath, '.gitignore');
+    if (!fs.existsSync(gitIgnorePath)) {
         if (debug) {
-            printDebug(`Creating the .gitignore file at ${gitIgnoreFileLocation}`);
+            printDebug(`Creating the .gitignore file at ${gitIgnorePath}`);
         }
-        fs.writeFileSync(
-            gitIgnoreFileLocation,
-            `dist
-.env
-`
-        );
+        fs.writeFileSync(gitIgnorePath, gitIgnoreData);
     } else {
         if (debug) {
-            printDebug(`.gitignore file already exists at ${gitIgnoreFileLocation} so not creating a new one`);
+            printDebug(`.gitignore file already exists at ${gitIgnorePath} so not creating a new one`);
         }
     }
 
-    generate({ debug, fullPath });
+    generate({ debug, fullPath: absolutePath });
+    return true;
 }

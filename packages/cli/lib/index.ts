@@ -92,10 +92,12 @@ program
     .description('Initialize a new Nango project')
     .action(function (this: Command) {
         const { debug } = this.opts();
-        const targetPath = path.resolve(process.cwd(), this.args[0] || '');
-        init({ targetPath, debug });
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const ok = init({ absolutePath, debug });
 
-        console.log(chalk.green(`Nango integrations initialized!`));
+        if (ok) {
+            console.log(chalk.green(`Nango integrations initialized!`));
+        }
     });
 
 program
