@@ -11,7 +11,7 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { init, generate, tscWatch, configWatch, version } from './cli.js';
+import { generate, tscWatch, configWatch, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
@@ -21,6 +21,7 @@ import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebu
 import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { init } from './services/init.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
