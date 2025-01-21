@@ -46,6 +46,18 @@ export function init({ absolutePath, debug = false }: { absolutePath: string; de
         return false;
     }
 
+    const gitkeepPath = path.resolve(absolutePath, '.nango/.gitkeep');
+    if (!fs.existsSync(gitkeepPath)) {
+        if (debug) {
+            printDebug(`Creating the .gitkeep file at ${gitkeepPath}`);
+        }
+        fs.writeFileSync(gitkeepPath, '');
+    } else {
+        if (debug) {
+            printDebug(`.gitkeep file already exists at ${gitkeepPath} so not creating a new one`);
+        }
+    }
+
     const yamlPath = path.resolve(absolutePath, nangoConfigFile);
     if (!fs.existsSync(yamlPath)) {
         if (debug) {
