@@ -68,7 +68,7 @@ const nangoPropsSchema = z
                 pre_built: z.boolean(),
                 is_public: z.boolean(),
                 input: z.string().nullable(),
-                sync_type: z.enum(['full', 'incremental']).nullable(),
+                sync_type: z.enum(['full', 'incremental', 'FULL', 'INCREMENTAL']).nullable(),
                 metadata: z.record(z.string(), z.any())
             })
             .passthrough(),

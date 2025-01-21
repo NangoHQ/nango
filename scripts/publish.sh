@@ -8,13 +8,15 @@ set -x
 # $1: package name
 # $2: package version
 function bump_and_npm_publish {
+    echo
+    echo "Publishing '$1@$2'"
     if npm view "$1@$2" >/dev/null 2>&1; then
         echo "Package '$1@$2' already exists"
     else
-        echo "Publishing '$1@$2'"
         npm version "$2" -w "$1"
         npm publish --access public -w "$1"
     fi
+    echo
 }
 
 function bump_other_pkg {
@@ -87,6 +89,7 @@ bump_other_pkg "frontend" "types"
 bump_other_pkg "nango-yaml" "types"
 bump_other_pkg "node-client" "types"
 bump_other_pkg "shared" "types"
+bump_other_pkg "runner-sdk" "types"
 bump_other_pkg "providers" "types"
 
 # NangoYaml

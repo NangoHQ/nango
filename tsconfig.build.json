@@ -38,6 +38,9 @@
             "path": "packages/runner"
         },
         {
+            "path": "packages/runner-sdk"
+        },
+        {
             "path": "packages/scheduler"
         },
         {
