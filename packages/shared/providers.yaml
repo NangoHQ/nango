@@ -3033,8 +3033,8 @@ gebruder-weiss:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    authorization_url: https://my.api.gw-world.com/oauth2/authorize
-    token_url: https://my.api.gw-world.com/oauth2/token
+    authorization_url: https://my.api.gw-world.com/authorize
+    token_url: https://my.api.gw-world.com/token
     token_request_auth_method: basic
     scope_separator: ' '
     token_params:
