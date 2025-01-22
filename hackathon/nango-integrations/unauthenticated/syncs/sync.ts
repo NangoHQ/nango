@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createSync } from '../../models.js';
+import { createSync } from '../../tmp.js';
 
 const ticketSchema = z.object({ id: z.string(), name: z.string() });
 
@@ -51,7 +51,7 @@ createSync({
     }
 });
 
-// No metadata
+// Webhook
 createSync({
     name: 'My Script',
     description: 'Hi this is a description',

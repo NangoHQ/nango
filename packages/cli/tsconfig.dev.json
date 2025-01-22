@@ -21,8 +21,13 @@
         "sourceMap": false,
         "composite": false,
         "checkJs": false,
-        "outDir": "nango-integrations/dist"
+        "allowImportingTsExtensions": true
     },
-    "include": ["*.ts", "**/*.ts"],
-    "exclude": ["node_modules"]
+    "include": [
+        "*.ts",
+        "**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }

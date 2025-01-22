@@ -1,3 +1,3 @@
-import './unauthenticated/actions/action.js';
-import './unauthenticated/syncs/sync.js';
-import './unauthenticated/on-events/onevent.js';
+import './unauthenticated/actions/action.ts';
+import './unauthenticated/syncs/sync.ts';
+import './unauthenticated/on-events/onevent.ts';
