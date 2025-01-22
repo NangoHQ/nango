@@ -1765,6 +1765,7 @@ commercetools:
         headers:
             authorization: Bearer ${accessToken}
     docs: https://docs.nango.dev/integrations/all/commercetools
+    docs_connect: https://docs.nango.dev/integrations/all/commercetools/connect
     connection_config:
         region:
             type: string
