@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import * as tsNode from 'ts-node';
 import path from 'path';
 
-import { getNangoRootPath, printDebug, slash } from '../utils.js';
+import { getNangoRootPath, printDebug, slash } from '../../utils.js';
 import { build } from 'tsup';
 
 export interface ListedFile {
@@ -20,6 +20,13 @@ async function exists(file: string) {
     }
 }
 
+/**
+ * Compile all scripts:
+ * - create a dist
+ * - type check "index.ts"
+ * - read exports from "index.ts"
+ * - tsup each script
+ */
 export async function compileScripts({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<boolean> {
     const distDir = path.join(fullPath, 'dist');
 
@@ -69,7 +76,7 @@ export async function compileScripts({ fullPath, debug }: { fullPath: string; de
 // Function to get all imports from a file
 async function extractImports({ fullPath, filePath }: { fullPath: string; filePath: string }): Promise<Map<string, ListedFile>> {
     const fileContent = await fs.readFile(filePath, 'utf-8');
-    const importRegex = /import\s+.*?['"](.*?)['"]/g;
+    const importRegex = /export\s+.*?['"](.*?)['"]/g;
     const imports = new Map<string, ListedFile>();
     let match;
 
@@ -77,13 +84,16 @@ async function extractImports({ fullPath, filePath }: { fullPath: string; filePa
         if (!match[1]) {
             break;
         }
+
         const resolved = resolveImportPath({ filePath: match[1], baseDir: fullPath });
         const baseName = path.basename(resolved, '.ts');
         const split = resolved.split('/');
+        const integration = split[split.length - 3];
+        const scriptType = split[split.length - 2];
 
         imports.set(resolved, {
             inputPath: resolved,
-            outputPath: path.join(fullPath, 'dist', `${baseName}-${split[split.length - 3]}.js`),
+            outputPath: path.join(fullPath, 'dist', `${integration}/${scriptType}/${baseName}.cjs`),
             baseName
         });
     }
@@ -108,18 +118,16 @@ async function compileOneFile({ fullPath, file, debug = false }: { fullPath: str
     }
 
     await build({
-        entry: [file.inputPath],
+        entry: [slash(file.inputPath)],
         esbuildOptions(options) {
-            options.outfile = file.outputPath; // Override the output file path
+            options.outfile = slash(file.outputPath); // Override the output file path
             delete options.outdir;
         },
         tsconfig: path.join(getNangoRootPath(), 'tsconfig.dev.json'),
         skipNodeModulesBundle: true,
         silent: !debug,
-        sourcemap: true,
+        sourcemap: 'inline',
         outDir: file.outputPath,
-        treeshake: true,
-        // outExtension: () => ({ js: '.js' }),
         // eslint-disable-next-line @typescript-eslint/require-await
         onSuccess: async () => {
             console.log('Compiled', file.inputPath.replace(fullPath, '.'));

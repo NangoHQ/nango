@@ -21,7 +21,8 @@ import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebu
 import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { compileScripts } from './services/compile.new.service.js';
+import { compileScripts } from './services/zeroYaml/compile.js';
+import { deploy as zeroYamlDeploy } from './services/zeroYaml/deploy.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -177,7 +178,13 @@ program
         const options: DeployOptions = this.opts();
         const { debug } = options;
         const fullPath = process.cwd();
-        await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
+
+        const preCheck = await verificationService.preCheck({ fullPath });
+        if (preCheck.isZeroYaml) {
+            await zeroYamlDeploy({ fullPath, environmentName: environment, debug, options });
+        } else {
+            await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
+        }
     });
 
 program
@@ -233,7 +240,7 @@ program
         const fullPath = process.cwd();
 
         const preCheck = await verificationService.preCheck({ fullPath });
-        if (preCheck.isNango || !preCheck.folderName) {
+        if (preCheck.isZeroYaml) {
             // New structure
             console.log('Compiling new structure');
 

@@ -4,7 +4,7 @@ import { createOnEvent } from '../../tmp.js';
 export default createOnEvent({
     name: 'My Pre connection',
     description: 'yes',
-    type: 'pre-connection-deletion',
+    event: 'pre-connection-deletion',
     integrationId: 'unauthenticated',
     exec: async (nango) => {
         await nango.log('top');
@@ -15,7 +15,7 @@ export default createOnEvent({
 createOnEvent({
     name: 'My post connection',
     description: 'yes',
-    type: 'post-connection-creation',
+    event: 'post-connection-creation',
     integrationId: 'unauthenticated',
     exec: async (nango) => {
         await nango.log('top');
