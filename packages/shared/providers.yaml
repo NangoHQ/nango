@@ -1772,18 +1772,21 @@ commercetools:
             description: The region of your Commercetools account. Use the full region identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
             example: us-central1
             pattern: '^[a-z]+-[a-z0-9-]+$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
         projectKey:
             type: string
             title: Project Key
             description: The project key of your Commercetools account
             example: demo-project-slug
             pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-save-the-api-environment-variables'
         cloudProvider:
             type: string
             title: Cloud Provider
             description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
             example: gcp
             pattern: '^(gcp|aws)$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
 copper:
     display_name: Copper
