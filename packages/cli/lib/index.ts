@@ -21,6 +21,7 @@ import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebu
 import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { compileScripts } from './services/compile.new.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -230,6 +231,20 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
+
+        const preCheck = await verificationService.preCheck({ fullPath });
+        if (preCheck.isNango || !preCheck.folderName) {
+            // New structure
+            console.log('Compiling new structure');
+
+            const success = await compileScripts({ fullPath, debug });
+            if (!success) {
+                console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
+                process.exitCode = 1;
+            }
+            return;
+        }
+
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
         const match = verificationService.filesMatchConfig({ fullPath });

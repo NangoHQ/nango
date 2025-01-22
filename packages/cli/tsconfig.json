@@ -15,5 +15,7 @@
             "path": "../nango-yaml"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": [
+        "lib/**/*"
+    ]
 }

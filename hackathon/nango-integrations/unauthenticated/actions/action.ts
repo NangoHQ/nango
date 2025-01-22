@@ -18,3 +18,9 @@ export default createAction({
         return 1;
     }
 });
+
+function name(top: string) {
+    console.log(top);
+}
+
+name(1);

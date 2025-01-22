@@ -11,6 +11,16 @@ import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
 import { init, generate } from '../cli.js';
 
 class VerificationService {
+    public async preCheck({ fullPath }: { fullPath: string }): Promise<{ isNango: boolean; hasNangoYaml: boolean; folderName: string }> {
+        const files = await fs.promises.readdir(fullPath);
+
+        return {
+            isNango: files.includes('.nango'),
+            folderName: path.basename(fullPath),
+            hasNangoYaml: files.includes('nango.yaml')
+        };
+    }
+
     public async necessaryFilesExist({
         fullPath,
         autoConfirm,
