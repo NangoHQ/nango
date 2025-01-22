@@ -5010,6 +5010,51 @@ odoo:
             format: hostname
             prefix: https://
 
+odoo-cc:
+    display_name: Odoo (Client Credentials)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    token_params:
+        client_id: ${credential.consumerId}
+        client_secret: ${credential.consumerSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: access_token_validity
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/restapi
+    docs: https://docs.nango.dev/integrations/all/odoo
+    docs_connect: https://docs.nango.dev/integrations/all/odoo/connect
+    credentials:
+        consumerId:
+            type: string
+            title: Consumer ID
+            description: Your App Consumer ID
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+        consumerSecret:
+            type: string
+            title: Consumer Secret
+            description: Your App Consumer Secret
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain to your Odoo account
+            format: hostname
+            example: example.odoo.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-odoo-domain'
+
 okta:
     display_name: Okta
     auth_mode: OAUTH2
