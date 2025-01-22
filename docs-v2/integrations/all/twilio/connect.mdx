@@ -1,0 +1,57 @@
+---
+title: Twilio
+sidebarTitle: Twilio
+---
+
+## Features
+
+- Send SMS messages
+- Make voice calls
+- Manage phone numbers
+- Access message history
+- Handle webhooks
+
+## API Reference
+
+The Twilio API reference can be found [here](https://www.twilio.com/docs/api).
+
+## Authentication
+
+Twilio uses API Key authentication. You'll need:
+1. Account SID
+2. Auth Token
+
+## Setup
+
+### Step 1: Find your Account SID and Auth Token
+
+1. Log in to your [Twilio Console](https://console.twilio.com/)
+2. Your Account SID and Auth Token will be displayed on the dashboard
+3. If the Auth Token is hidden, click on "Show" to reveal it
+
+<Tip>
+Keep your Auth Token secure and never share it publicly.
+</Tip>
+
+### Step 2: Create Nango Connection
+
+```bash
+curl --request POST \
+--url https://api.nango.dev/connection \
+--header 'Authorization: Bearer <NANGO_SECRET_KEY>' \
+--header 'Content-Type: application/json' \
+--data '{
+"provider_config_key": "twilio",
+"connection_id": "my-twilio-connection",
+"credentials": {
+"apiKey": "<AUTH_TOKEN>"
+},
+"connection_config": {
+"accountSid": "<ACCOUNT_SID>"
+}
+}'
+```
+
+## Rate Limits
+
+Twilio's rate limits vary by account type and API endpoint. Check the [Twilio Rate Limits documentation](https://www.twilio.com/docs/usage/api/rate-limits) for details.
