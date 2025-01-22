@@ -694,9 +694,6 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        verification:
-            method: GET
-            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
