@@ -7685,7 +7685,6 @@ xAI:
             method: GET
             endpoint: /v1/models
     docs: https://docs.nango.dev/integrations/all/xai
-    docs_connect: https://docs.nango.dev/integrations/all/xai/connect
     credentials:
         apiKey:
             type: string
