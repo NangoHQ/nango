@@ -385,21 +385,27 @@ class ProxyService {
         }
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-        let endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
-
-        if (config.provider.auth_mode === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
-            const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
-            const token = config.token as ApiKeyCredentials;
-            endpoint += endpoint.includes('?') ? '&' : '?';
-            endpoint += `${apiKeyProp}=${token.apiKey}`;
-        }
+        const endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
         const fullEndpoint = interpolateIfNeeded(
             `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
             connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
         );
 
-        return fullEndpoint;
+        const url = new URL(fullEndpoint);
+        if (config.params) {
+            for (const [k, v] of Object.entries(config.params)) {
+                url.searchParams.set(k, v as string);
+            }
+        }
+
+        if (config.provider.auth_mode === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
+            const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
+            const token = config.token as ApiKeyCredentials;
+            url.searchParams.set(apiKeyProp!, token.apiKey);
+        }
+
+        return url.toString();
     }
 
     /**
