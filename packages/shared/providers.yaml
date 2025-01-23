@@ -3025,6 +3025,23 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gebruder-weiss:
+    display_name: Gebrüder Weiss
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    authorization_url: https://my.api.gw-world.com/authorize
+    token_url: https://my.api.gw-world.com/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            accept-language: en-US
+        base_url: https://my.api.gw-world.com
+    docs: https://docs.nango.dev/integrations/all/gebruder-weiss
+
 gerrit:
     display_name: Gerrit
     categories:
