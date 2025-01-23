@@ -7670,7 +7670,7 @@ wrike:
             format: hostname
             prefix: https://
 
-xAI:
+xai:
     display_name: xAI
     categories:
         - productivity
