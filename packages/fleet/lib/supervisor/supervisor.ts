@@ -88,6 +88,8 @@ export class Supervisor {
             } catch (err) {
                 span.setTag('error', err);
                 return Err(new FleetError('supervisor_tick_failed', { cause: err }));
+            } finally {
+                await setTimeout(envs.FLEET_SUPERVISOR_WAIT_TICK_MS);
             }
         });
     }
