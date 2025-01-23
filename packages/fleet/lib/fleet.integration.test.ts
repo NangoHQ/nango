@@ -4,6 +4,8 @@ import { getTestDbClient, testDbUrl } from './db/helpers.test.js';
 import { generateCommitHash } from './models/helpers.js';
 import { noopNodeProvider } from './node-providers/noop.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
+import { createNodeWithAttributes } from './models/helpers.test.js';
+import { nanoid } from '@nangohq/utils';
 
 describe('fleet', () => {
     const fleetId = 'nango_runners';
@@ -54,6 +56,38 @@ describe('fleet', () => {
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
+        });
+    });
+
+    describe('getRunningNode', () => {
+        it('should return a running node', async () => {
+            const commitId = generateCommitHash().unwrap();
+            const deployment = (await fleet.rollout(commitId)).unwrap();
+            const routingId = nanoid();
+            const runningNode = await createNodeWithAttributes(dbClient.db, {
+                state: 'RUNNING',
+                deploymentId: deployment.id,
+                routingId
+            });
+            const res = await fleet.getRunningNode(routingId);
+            expect(res.unwrap()).toStrictEqual(runningNode);
+        });
+        it('should return an outdated node', async () => {
+            const commitId = generateCommitHash().unwrap();
+            const deployment = (await fleet.rollout(commitId)).unwrap();
+            const routingId = nanoid();
+            await createNodeWithAttributes(dbClient.db, {
+                state: 'PENDING',
+                deploymentId: deployment.id,
+                routingId
+            });
+            const outdatedNode = await createNodeWithAttributes(dbClient.db, {
+                state: 'OUTDATED',
+                deploymentId: deployment.id,
+                routingId
+            });
+            const res = await fleet.getRunningNode(routingId);
+            expect(res.unwrap()).toStrictEqual(outdatedNode);
         });
     });
 });
