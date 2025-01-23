@@ -4408,6 +4408,26 @@ loops-so:
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
 
+lucid-scim:
+    display_name: Lucid(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://users.lucid.app/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/lucid
+    docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The SCIM API key generated from the Lucid admin panel
+            doc_section: '#step-1-generate-the-bearer-token'
+
 luma:
     display_name: Luma
     categories:
