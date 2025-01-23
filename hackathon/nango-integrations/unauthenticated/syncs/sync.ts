@@ -5,7 +5,6 @@ const ticketSchema = z.object({ id: z.string(), name: z.string() });
 
 // Sync
 export default createSync({
-    name: 'My Script',
     description: 'Hi this is a description',
     endpoints: [{ method: 'GET', path: '/my-script', group: 'My Group' }],
     integrationId: 'unauthenticated',
@@ -28,8 +27,8 @@ export default createSync({
         any: z.any(),
         reco: z.record(z.string(), z.date())
     }),
-    fetchData: async (nango) => {
-        await nango.batchSave([{ id: '', name: '' }], 'Ticket');
+    exec: async (nango) => {
+        await nango.batchSave([{ id: 'foobar', name: '' }], 'Ticket');
 
         const meta = await nango.getMetadata();
         console.log(meta.foo);
@@ -39,7 +38,6 @@ export default createSync({
 
 // No metadata
 createSync({
-    name: 'My Script',
     description: 'Hi this is a description',
     endpoints: [{ method: 'GET', path: '/my-script', group: 'My Group' }],
     integrationId: 'unauthenticated',
@@ -52,7 +50,7 @@ createSync({
         Ticket: ticketSchema
     },
 
-    fetchData: async (nango) => {
+    exec: async (nango) => {
         await nango.batchSave([{ id: '', name: '' }], 'Ticket');
 
         const meta = await nango.getMetadata();
@@ -64,14 +62,13 @@ createSync({
 
 // Webhook
 createSync({
-    name: 'My Script',
     description: 'Hi this is a description',
     endpoints: [{ method: 'GET', path: '/my-script', group: 'My Group' }],
     integrationId: 'unauthenticated',
     runs: 'every 1hour',
     syncType: 'incremental',
     models: { Ticket: ticketSchema },
-    fetchData: async () => {
+    exec: async () => {
         //
     },
     onWebhook: async (nango, payload) => {

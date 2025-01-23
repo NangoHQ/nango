@@ -134,7 +134,11 @@ program
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment, integrationId, validation, saveResponses } = this.opts();
         const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
+        const preCheck = await verificationService.preCheck({ fullPath });
+        if (!preCheck.isZeroYaml) {
+            await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
+        }
+
         const dryRun = new DryRunService({ fullPath, validation });
         await dryRun.run(
             {

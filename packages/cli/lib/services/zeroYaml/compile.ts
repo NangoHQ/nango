@@ -4,20 +4,12 @@ import path from 'path';
 
 import { getNangoRootPath, printDebug, slash } from '../../utils.js';
 import { build } from 'tsup';
+import { exists } from './files.js';
 
 export interface ListedFile {
     inputPath: string;
     outputPath: string;
     baseName: string;
-}
-
-async function exists(file: string) {
-    try {
-        await fs.access(file);
-        return true;
-    } catch {
-        return false;
-    }
 }
 
 /**

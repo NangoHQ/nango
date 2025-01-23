@@ -33,7 +33,11 @@ export async function startScript({
         const script: string | null =
             isCloud || integrationFilesAreRemote
                 ? await remoteFileService.getFile(integrationData.fileLocation, environmentId)
-                : localFileService.getIntegrationFile(nangoProps.syncConfig.sync_name, nangoProps.providerConfigKey);
+                : localFileService.getIntegrationFile({
+                      scriptType: nangoProps.scriptType,
+                      syncName: nangoProps.syncConfig.sync_name,
+                      providerConfigKey: nangoProps.providerConfigKey
+                  });
 
         if (!script) {
             const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;

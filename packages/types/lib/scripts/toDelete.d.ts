@@ -458,6 +458,4 @@ export declare class NangoSync<
     batchDelete<T = any>(results: T[], model: string): Promise<boolean | null>;
     batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
     getMetadata(): Promise<TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>>;
-
-    saveRecords(modelName: TKeys, data: z.infer<TModels[TKeys]>[]): Promise<boolean | null>;
 }

@@ -8,23 +8,34 @@ import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } 
 import type { ZodTypeAny } from 'zod';
 import { zodToNangoModelField } from '../../utils/zodToNango.js';
 
+async function readdirRecursive(dir: string): Promise<string[]> {
+    let files: string[] = [];
+    const folder = await fs.promises.readdir(dir, { withFileTypes: true });
+
+    for (const file of folder) {
+        if (file.isDirectory()) {
+            const nestedFiles = await readdirRecursive(path.join(file.path, file.name));
+            files = files.concat(nestedFiles);
+        } else if (file.isFile() && file.name.endsWith('.cjs')) {
+            files.push(path.join(file.path, file.name));
+        }
+    }
+
+    return files;
+}
+
 export async function rebuildParsed({ fullPath }: { fullPath: string; debug?: boolean }): Promise<NangoYamlParsed> {
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     const dist = path.join(fullPath, 'dist');
-    const files = await fs.promises.readdir(dist);
+    const files = await readdirRecursive(dist);
 
     console.log('Found', files.length, 'scripts');
 
     for (const file of files) {
-        const basename = path.basename(file, '.cjs').split('-')[0]!;
+        const basename = path.basename(file, '.cjs');
         const basenameClean = basename.replaceAll(/[^a-zA-Z]/g, '');
-        const filePath = path.join(dist, file);
-        const fileStat = await fs.promises.stat(filePath);
-
-        if (!fileStat.isFile() || !file.endsWith('.cjs')) {
-            continue;
-        }
+        const filePath = file;
 
         const importedModule = await import(filePath);
         const obj:
@@ -54,13 +65,14 @@ export async function rebuildParsed({ fullPath }: { fullPath: string; debug?: bo
                 usedModels.push(metadata.name);
                 parsed.models.set(metadata.name, { name: metadata.name, fields: metadata.value as NangoModelField[] });
             }
+
             integration.syncs.push({
                 type: 'sync',
                 description: params.description,
                 auto_start: params.autoStart === true,
                 endpoints: params.endpoints,
                 input: metadata?.name || null,
-                name: params.name,
+                name: basename,
                 output: Object.entries(params.models).map(([name, model]) => {
                     const to = zodToNangoModelField(name, model);
                     parsed.models.set(name, { name, fields: to['value'] as NangoModelField[] });
@@ -88,7 +100,7 @@ export async function rebuildParsed({ fullPath }: { fullPath: string; debug?: bo
                 description: params.description,
                 endpoint: params.endpoint,
                 input: input.name,
-                name: params.name,
+                name: basename,
                 output: [output.name],
                 scopes: params.scopes || [],
                 usedModels: [input.name, output.name],

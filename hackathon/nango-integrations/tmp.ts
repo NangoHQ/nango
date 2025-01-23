@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { CreateActionProps, CreateActionResponse, CreateOnEventProps, CreateOnEventResponse, CreateSyncProps, CreateSyncResponse } from './tmp.types';
+import type { CreateActionProps, CreateActionResponse, CreateOnEventProps, CreateOnEventResponse, CreateSyncProps, CreateSyncResponse } from '@nangohq/types';
 
 export function createSync<TModels extends Record<string, Zod.ZodObject<any>>, TMetadata extends Zod.ZodObject<any> | undefined = undefined>(
     params: CreateSyncProps<TModels, TMetadata>

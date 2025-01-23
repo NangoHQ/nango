@@ -1,15 +1,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
-import type { NangoYamlParsed, OnEventScriptsByProvider, ScriptFileType, IncomingFlowConfig, NangoConfigMetadata, OnEventType } from '@nangohq/types';
-import { resolveTsFileLocation } from '../compile.service.js';
+import type {
+    NangoYamlParsed,
+    OnEventScriptsByProvider,
+    ScriptFileType,
+    IncomingFlowConfig,
+    NangoConfigMetadata,
+    OnEventType,
+    PostDeploy
+} from '@nangohq/types';
 
-import { printDebug, parseSecretKey } from '../../utils.js';
+import { printDebug, parseSecretKey, http, enrichHeaders, hostport } from '../../utils.js';
 import type { DeployOptions } from '../../types.js';
 import type { JSONSchema7 } from 'json-schema';
-import { loadSchemaJson } from '../model.service.js';
+// import { loadSchemaJson } from '../model.service.js';
 
 import { rebuildParsed } from './rebuild.js';
+import type { AxiosResponse } from 'axios';
+import { isAxiosError } from 'axios';
 
 export async function deploy({
     fullPath,
@@ -31,13 +40,21 @@ export async function deploy({
 
     await parseSecretKey(environmentName, debug);
 
-    const postData = createPackage({ parsed, fullPath, debug, version, optionalSyncName, optionalActionName });
+    const postData = await createPackage({ parsed, fullPath, debug, version, optionalSyncName, optionalActionName });
     if (!postData) {
         return;
     }
+
+    const nangoYamlBody = '';
+
+    const url = hostport + `/sync/deploy`;
+
+    const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody };
+
+    await postPackage(url, bodyDeploy);
 }
 
-function createPackage({
+async function createPackage({
     parsed,
     fullPath,
     debug,
@@ -51,7 +68,11 @@ function createPackage({
     version?: string | undefined;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
-}): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
+}): Promise<{
+    flowConfigs: IncomingFlowConfig[];
+    onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined;
+    jsonSchema: JSONSchema7 | undefined;
+} | null> {
     const postData: IncomingFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
@@ -62,7 +83,7 @@ function createPackage({
             const scripts: OnEventScriptsByProvider['scripts'] = [];
             for (const event of Object.keys(onEventScripts) as OnEventType[]) {
                 for (const scriptName of onEventScripts[event]) {
-                    const files = loadScriptFiles({ scriptName: scriptName, providerConfigKey, fullPath, type: 'on-events' });
+                    const files = await loadScriptFiles({ scriptName, providerConfigKey, fullPath, type: 'on-events' });
                     if (!files) {
                         console.log(chalk.red(`No script files found for "${scriptName}"`));
                         return null;
@@ -90,7 +111,7 @@ function createPackage({
                     metadata['scopes'] = sync.scopes;
                 }
 
-                const files = loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
+                const files = await loadScriptFiles({ scriptName: sync.name, providerConfigKey, fullPath, type: 'syncs' });
                 if (!files) {
                     console.log(chalk.red(`No script files found for "${sync.name}"`));
                     return null;
@@ -136,7 +157,7 @@ function createPackage({
                     metadata['scopes'] = action.scopes;
                 }
 
-                const files = loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
+                const files = await loadScriptFiles({ scriptName: action.name, providerConfigKey, fullPath, type: 'actions' });
                 if (!files) {
                     console.log(chalk.red(`No script files found for "${action.name}"`));
                     return null;
@@ -165,27 +186,21 @@ function createPackage({
         }
     }
 
-    if (debug && onEventScriptsByProvider) {
-        for (const onEventScriptByProvider of onEventScriptsByProvider) {
-            const { providerConfigKey, scripts } = onEventScriptByProvider;
+    // const jsonSchema = loadSchemaJson({ fullPath });
+    // if (!jsonSchema) {
+    //     return null;
+    // }
 
-            for (const script of scripts) {
-                const { name } = script;
+    // console.log(postData);
 
-                printDebug(`on-events script found for ${providerConfigKey} with name ${name}`);
-            }
-        }
-    }
-
-    const jsonSchema = loadSchemaJson({ fullPath });
-    if (!jsonSchema) {
-        return null;
-    }
-
-    return { flowConfigs: postData, onEventScriptsByProvider, jsonSchema };
+    return {
+        flowConfigs: postData,
+        onEventScriptsByProvider,
+        jsonSchema: undefined
+    };
 }
 
-function loadScriptFiles({
+async function loadScriptFiles({
     fullPath,
     scriptName,
     providerConfigKey,
@@ -195,13 +210,13 @@ function loadScriptFiles({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-}): { js: string; ts: string } | null {
-    const js = loadScriptJsFile({ fullPath, scriptName, providerConfigKey });
+}): Promise<{ js: string; ts: string } | null> {
+    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type });
     if (!js) {
         return null;
     }
 
-    const ts = loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
+    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
     if (!ts) {
         return null;
     }
@@ -209,19 +224,21 @@ function loadScriptFiles({
     return { js, ts };
 }
 
-function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptName: string; providerConfigKey: string; fullPath: string }): string | null {
-    const filePath = path.join(fullPath, 'dist', `${scriptName}.js`);
-    const fileNameWithProviderConfigKey = filePath.replace(`.js`, `-${providerConfigKey}.js`);
+async function loadScriptJsFile({
+    scriptName,
+    providerConfigKey,
+    fullPath,
+    type
+}: {
+    scriptName: string;
+    type: ScriptFileType;
+    providerConfigKey: string;
+    fullPath: string;
+}): Promise<string | null> {
+    const filePath = path.join(fullPath, 'dist', providerConfigKey, type, `${scriptName}.cjs`);
 
     try {
-        let realPath;
-        if (fs.existsSync(fileNameWithProviderConfigKey)) {
-            realPath = fs.realpathSync(fileNameWithProviderConfigKey);
-        } else {
-            realPath = fs.realpathSync(filePath);
-        }
-        const content = fs.readFileSync(realPath, 'utf8');
-
+        const content = await fs.promises.readFile(filePath, 'utf8');
         return content;
     } catch (err) {
         console.error(chalk.red(`Error loading file ${filePath}`), err instanceof Error ? err.message : err);
@@ -229,7 +246,7 @@ function loadScriptJsFile({ scriptName, providerConfigKey, fullPath }: { scriptN
     }
 }
 
-function loadScriptTsFile({
+async function loadScriptTsFile({
     fullPath,
     scriptName,
     providerConfigKey,
@@ -239,15 +256,31 @@ function loadScriptTsFile({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-}): string | null {
-    const dir = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey, type });
-    const filePath = path.join(dir, `${scriptName}.ts`);
-    try {
-        const tsIntegrationFileContents = fs.readFileSync(filePath, 'utf8');
+}): Promise<string | null> {
+    const filePath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
 
-        return tsIntegrationFileContents;
+    try {
+        const content = await fs.promises.readFile(filePath, 'utf8');
+        return content;
     } catch (err) {
-        console.error(chalk.red(`Error loading file ${filePath}`), err);
+        console.error(chalk.red(`Error loading file ${filePath}`), err instanceof Error ? err.message : err);
         return null;
+    }
+}
+
+async function postPackage(url: string, body: PostDeploy['Body']) {
+    console.log('Deploying', body.flowConfigs.length, 'scripts', ', to', url);
+    try {
+        const res = await http.post<any, AxiosResponse<PostDeploy['Success']>>(url, body, { headers: enrichHeaders() });
+        if (res.data.length === 0) {
+            console.log(chalk.green(`Successfully removed the syncs/actions.`));
+        } else {
+            const nameAndVersions = res.data.map((result) => `${result.name}@v${result.version}`);
+            console.log(chalk.green(`Successfully deployed the scripts: ${nameAndVersions.join(', ')}!`));
+        }
+    } catch (err) {
+        const errorMessage = isAxiosError(err) ? JSON.stringify(err.response?.data, null, 2) : JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        console.log(chalk.red(`Error deploying the scripts with the following error: ${errorMessage}`));
+        process.exit(1);
     }
 }

@@ -7,25 +7,39 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import type { NangoProps } from '@nangohq/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const SYNC_FILE_EXTENSION = 'js';
+const SYNC_FILE_EXTENSION = 'cjs';
 
+const scriptTypeToReal: Record<NangoProps['scriptType'], string> = {
+    'on-event': 'on-events',
+    action: 'actions',
+    sync: 'syncs',
+    webhook: 'syncs'
+};
 class LocalFileService {
-    public getIntegrationFile(syncName: string, providerConfigKey: string, setIntegrationPath?: string | null) {
+    public getIntegrationFile({
+        syncName,
+        scriptType,
+        providerConfigKey
+    }: {
+        syncName: string;
+        providerConfigKey: string;
+        scriptType: NangoProps['scriptType'];
+    }) {
         try {
-            const filePath = setIntegrationPath ? `${setIntegrationPath}dist/${syncName}.${SYNC_FILE_EXTENSION}` : this.resolveIntegrationFile(syncName);
-            const fileNameWithProviderConfigKey = filePath.replace(`.${SYNC_FILE_EXTENSION}`, `-${providerConfigKey}.${SYNC_FILE_EXTENSION}`);
+            const filePath = process.env['NANGO_INTEGRATIONS_FULL_PATH']
+                ? path.resolve(
+                      process.env['NANGO_INTEGRATIONS_FULL_PATH'],
+                      `dist/${providerConfigKey}/${scriptTypeToReal[scriptType]}/${syncName}.${SYNC_FILE_EXTENSION}`
+                  )
+                : path.resolve(__dirname, `../nango-integrations/dist/${providerConfigKey}/${scriptTypeToReal[scriptType]}/${syncName}.${SYNC_FILE_EXTENSION}`);
 
-            let realPath;
-            if (fs.existsSync(fileNameWithProviderConfigKey)) {
-                realPath = fs.realpathSync(fileNameWithProviderConfigKey);
-            } else {
-                realPath = fs.realpathSync(filePath);
-            }
-            const integrationFileContents = fs.readFileSync(realPath, 'utf8');
+            console.log('Loading local file', filePath);
+            const integrationFileContents = fs.readFileSync(filePath, 'utf8');
 
             return integrationFileContents;
         } catch (err) {
@@ -140,14 +154,6 @@ class LocalFileService {
         archive.append(fs.createReadStream(tsFilePath), { name: `${integrationName}.ts` });
 
         await archive.finalize();
-    }
-
-    private resolveIntegrationFile(syncName: string): string {
-        if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-            return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `dist/${syncName}.${SYNC_FILE_EXTENSION}`);
-        } else {
-            return path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
-        }
     }
 }
 

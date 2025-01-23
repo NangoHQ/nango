@@ -12,6 +12,7 @@ import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { RunnerOutput } from '@nangohq/types';
+import type { CreateAnyResponse } from '@nangohq/types/lib/scripts/api.js';
 
 export async function exec(
     nangoProps: NangoProps,
@@ -78,20 +79,41 @@ export async function exec(
             const context = vm.createContext(sandbox);
             const scriptExports = script.runInContext(context);
 
+            const isZeroYaml =
+                typeof scriptExports.default === 'object' &&
+                typeof scriptExports.default.type === 'string' &&
+                typeof scriptExports.default.params?.exec === 'function';
+            const isNangoYaml = !isZeroYaml && typeof scriptExports.default === 'function';
+
+            if (!isZeroYaml && !isNangoYaml) {
+                throw new Error(`Invalid script exports`);
+            }
+
+            // -- Handle webhook scripts
             if (nangoProps.scriptType === 'webhook') {
-                if (!scriptExports.onWebhookPayloadReceived) {
-                    const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
+                if (isZeroYaml) {
+                    const payload: CreateAnyResponse = scriptExports.default;
+                    if (payload.type !== 'sync') {
+                        throw new Error('Incorrect script loaded for webhook');
+                    }
+                    if (!payload.params.onWebhook) {
+                        throw new Error(`Missing onWebhook function`);
+                    }
 
-                    throw new Error(content);
+                    const output = await payload.params.onWebhook(nango as any, codeParams);
+                    return { success: true, response: output, error: null };
+                } else {
+                    if (!scriptExports.onWebhookPayloadReceived) {
+                        const content = `There is no onWebhookPayloadReceived export for ${nangoProps.syncId}`;
+                        throw new Error(content);
+                    }
+
+                    const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                    return { success: true, response: output, error: null };
                 }
-
-                const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
-                return { success: true, response: output, error: null };
             }
 
-            if (!scriptExports.default || typeof scriptExports.default !== 'function') {
-                throw new Error(`Default exports is not a function but a ${typeof scriptExports.default}`);
-            }
+            // -- Handle action scripts
             if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
                 if (typeof codeParams === 'object' && Object.keys(codeParams).length === 0) {
@@ -116,7 +138,20 @@ export async function exec(
                     }
                 }
 
-                const output = await scriptExports.default(nango, inputParams);
+                let output: unknown;
+                if (isZeroYaml) {
+                    const payload: CreateAnyResponse = scriptExports.default;
+                    if (payload.type !== 'action') {
+                        throw new Error('Incorrect script loaded for action');
+                    }
+                    if (!payload.params.exec) {
+                        throw new Error(`Missing exec function`);
+                    }
+
+                    output = await payload.params.exec(nango as any, codeParams);
+                } else {
+                    output = await scriptExports.default(nango, inputParams);
+                }
 
                 // Validate action output against json schema
                 const valOutput = validateData({
@@ -141,10 +176,24 @@ export async function exec(
                 }
 
                 return { success: true, response: output, error: null };
+            }
+
+            // -- Handle sync scripts
+            if (isZeroYaml) {
+                const payload: CreateAnyResponse = scriptExports.default;
+                if (payload.type !== 'sync') {
+                    throw new Error('Incorrect script loaded for sync');
+                }
+                if (!payload.params.exec) {
+                    throw new Error(`Missing exec function`);
+                }
+
+                await payload.params.exec(nango as any);
             } else {
                 await scriptExports.default(nango);
-                return { success: true, response: true, error: null };
             }
+
+            return { success: true, response: true, error: null };
         } catch (err) {
             if (err instanceof ActionError) {
                 // It's not a mistake, we don't want to report user generated error
