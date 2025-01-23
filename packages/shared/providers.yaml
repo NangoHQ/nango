@@ -5902,6 +5902,26 @@ rapidapi:
             suffix: .p.rapidapi.com
             prefix: https://
 
+recharge:
+    display_name: Recharge
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-recharge-access-token: ${apiKey}
+        base_url: https://api.rechargeapps.com
+    docs: https://docs.nango.dev/integrations/all/recharge
+    docs_connect: https://docs.nango.dev/integrations/all/recharge/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Recharge account
+            example: sk_test_1p1_**************************************************
+            pattern: '^[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-token'
+
 reddit:
     display_name: Reddit
     categories:
