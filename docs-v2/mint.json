@@ -411,6 +411,7 @@
                 "integrations/all/plain",
                 "integrations/all/podium",
                 "integrations/all/posthog",
+                "integrations/all/prive",
                 "integrations/all/productboard",
                 "integrations/all/qualtrics",
                 "integrations/all/quickbooks",
