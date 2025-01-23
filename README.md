@@ -90,8 +90,8 @@ Sign up for free:
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 
 - [Contribute an API](https://docs.nango.dev/guides/new-api-support)
-- [Create a custom integration](https://docs.nango.dev/guides/custom-integration-builder/overview)
-- [Extend an integration template](https://docs.nango.dev/guides/custom-integration-builder/extend-a-pre-built-integration)
+- [Create a custom integration](https://docs.nango.dev/guides/custom-integrations/overview)
+- [Extend an integration template](https://docs.nango.dev/guides/custom-integrations/extend-a-pre-built-integration)
 
 # 📚 Learn more
 

@@ -789,6 +789,41 @@ bamboohr-basic:
             default_value: x
             hidden: true
 
+basecamp:
+    display_name: Basecamp
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://launchpad.37signals.com/authorization/new
+    token_url: https://launchpad.37signals.com/authorization/token
+    authorization_params:
+        type: web_server
+    token_params:
+        type: web_server
+    refresh_params:
+        type: refresh
+    proxy:
+        base_url: https://3.basecampapi.com/${connectionConfig.accountId}
+        headers:
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/basecamp
+    docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Account ID
+            example: '5899981'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-account-id'
+
 battlenet:
     display_name: Battle.net
     categories:
@@ -4373,6 +4408,26 @@ loops-so:
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
 
+lucid-scim:
+    display_name: Lucid(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://users.lucid.app/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/lucid
+    docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The SCIM API key generated from the Lucid admin panel
+            doc_section: '#step-1-generate-the-bearer-token'
+
 luma:
     display_name: Luma
     categories:
@@ -5846,6 +5901,26 @@ rapidapi:
             example: api-football-v1
             suffix: .p.rapidapi.com
             prefix: https://
+
+recharge:
+    display_name: Recharge
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-recharge-access-token: ${apiKey}
+        base_url: https://api.rechargeapps.com
+    docs: https://docs.nango.dev/integrations/all/recharge
+    docs_connect: https://docs.nango.dev/integrations/all/recharge/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Recharge account
+            example: sk_test_1p1_**************************************************
+            pattern: '^[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-token'
 
 reddit:
     display_name: Reddit
