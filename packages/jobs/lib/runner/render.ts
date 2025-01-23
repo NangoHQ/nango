@@ -9,6 +9,7 @@ import { isAxiosError } from 'axios';
 import type { IRateLimiterRedisOptions, RateLimiterAbstract } from 'rate-limiter-flexible';
 import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
+import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('Render');
 
@@ -114,12 +115,14 @@ async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'r
     if (rateLimitGroup === 'create') {
         const throttled = await serviceCreationThrottler.consume('render-service-creation');
         if (throttled.isErr()) {
+            await setTimeout(envs.RENDER_WAIT_WHEN_THROTTLED_MS);
             return Err(new Error(`Throttling Render service creation`, { cause: throttled.error }));
         }
     }
 
     const rateLimitReset = rateLimitResetTimestamps.get(rateLimitGroup);
     if (rateLimitReset && rateLimitReset > new Date()) {
+        await setTimeout(envs.RENDER_WAIT_WHEN_THROTTLED_MS);
         return Err(`Render rate limit exceeded. Resetting at ${rateLimitReset.toISOString()}`);
     }
     try {
