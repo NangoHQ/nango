@@ -5,7 +5,16 @@ import type { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 
 import type { NangoProps } from '@nangohq/shared';
-import type { DBSyncConfig, Metadata, ParsedNangoAction, ParsedNangoSync, RunnerOutput, ScriptFileType } from '@nangohq/types';
+import type {
+    CreateAnyResponse,
+    DBSyncConfig,
+    Metadata,
+    NangoYamlParsed,
+    ParsedNangoAction,
+    ParsedNangoSync,
+    RunnerOutput,
+    ScriptFileType
+} from '@nangohq/types';
 import { NangoError, validateData, NangoSync, ActionError } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
@@ -20,6 +29,8 @@ import * as crypto from 'crypto';
 import * as zod from 'zod';
 import { Buffer } from 'buffer';
 import { serializeError } from 'serialize-error';
+import { rebuildParsed } from './zeroYaml/rebuild.js';
+import type { JSONSchema7 } from 'json-schema';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -38,20 +49,24 @@ export class DryRunService {
     validation: boolean;
     environment?: string;
     returnOutput?: boolean;
+    isZeroYaml: boolean;
 
     constructor({
         environment,
         returnOutput = false,
         fullPath,
+        isZeroYaml,
         validation
     }: {
         environment?: string;
         returnOutput?: boolean;
+        isZeroYaml: boolean;
         fullPath: string;
         validation: boolean;
     }) {
         this.fullPath = fullPath;
         this.validation = validation;
+        this.isZeroYaml = isZeroYaml;
         if (environment) {
             this.environment = environment;
         }
@@ -97,14 +112,20 @@ export class DryRunService {
             return;
         }
 
-        const parsing = parse(process.cwd(), debug);
-        if (parsing.isErr()) {
-            console.log(chalk.red(parsing.error.message));
-            return;
+        let parsed: NangoYamlParsed;
+        if (this.isZeroYaml) {
+            parsed = await rebuildParsed({ fullPath: this.fullPath });
+        } else {
+            const parsing = parse(process.cwd(), debug);
+            if (parsing.isErr()) {
+                console.log(chalk.red(parsing.error.message));
+                return;
+            }
+
+            parsed = parsing.value.parsed!;
         }
 
-        const parser = parsing.value;
-        if (options.optionalProviderConfigKey && !parser.parsed!.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
+        if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
             console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
             return;
         }
@@ -114,7 +135,7 @@ export class DryRunService {
 
         // Find the appropriate script to run
         let scriptInfo: ParsedNangoSync | ParsedNangoAction | undefined;
-        for (const integration of parser.parsed!.integrations) {
+        for (const integration of parsed.integrations) {
             if (options.optionalProviderConfigKey && integration.providerConfigKey !== options.optionalProviderConfigKey) {
                 continue;
             }
@@ -210,11 +231,12 @@ export class DryRunService {
             type = 'on-events';
         }
 
-        const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
-
-        if (!result) {
-            console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
-            return;
+        if (!this.isZeroYaml) {
+            const result = await compileAllFiles({ fullPath: process.cwd(), debug, scriptName: syncName, providerConfigKey, type });
+            if (!result) {
+                console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
+                return;
+            }
         }
 
         let stubbedMetadata;
@@ -278,10 +300,13 @@ export class DryRunService {
             messages: []
         };
 
-        const jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
-        if (!jsonSchema) {
-            console.log(chalk.red('Failed to load schema.json'));
-            return;
+        let jsonSchema: JSONSchema7 | null = null;
+        if (!this.isZeroYaml) {
+            jsonSchema = loadSchemaJson({ fullPath: this.fullPath });
+            if (!jsonSchema) {
+                console.log(chalk.red('Failed to load schema.json'));
+                return;
+            }
         }
 
         try {
@@ -327,7 +352,13 @@ export class DryRunService {
                 logMessages,
                 stubbedMetadata,
                 syncConfig,
-                dryRunService: new DryRunService({ environment, returnOutput: true, fullPath: this.fullPath, validation: this.validation }),
+                dryRunService: new DryRunService({
+                    environment,
+                    returnOutput: true,
+                    fullPath: this.fullPath,
+                    validation: this.validation,
+                    isZeroYaml: this.isZeroYaml
+                }),
                 debug,
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
@@ -475,7 +506,12 @@ export class DryRunService {
         try {
             await nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
 
-            const script = getIntegrationFile(syncName, nangoProps.providerConfigKey, loadLocation);
+            const script = getIntegrationFile({
+                scriptType: nangoProps.scriptType,
+                syncName,
+                providerConfigKey: nangoProps.providerConfigKey,
+                location: loadLocation
+            });
             const isAction = nangoProps.scriptType === 'action';
 
             if (!script) {
@@ -520,12 +556,22 @@ export class DryRunService {
                 const context = vm.createContext(sandbox);
                 const scriptExports: any = scriptObj.runInContext(context);
 
-                if (!scriptExports.default || !(typeof scriptExports.default === 'function')) {
-                    const content = `There is no default export that is a function for ${syncName}`;
+                if (
+                    !scriptExports.default ||
+                    typeof scriptExports.default !== 'object' ||
+                    typeof scriptExports.default.type !== 'string' ||
+                    typeof scriptExports.default.params?.exec !== 'function'
+                ) {
+                    const content = `Wrong export for script ${syncName}`;
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
 
+                const payload: CreateAnyResponse = scriptExports.default;
                 if (isAction) {
+                    if (payload.type !== 'action') {
+                        throw new Error('Incorrect script loaded for action');
+                    }
+
                     // Validate action input against json schema
                     const valInput = validateData({
                         version: nangoProps.syncConfig.version || '1',
@@ -544,7 +590,7 @@ export class DryRunService {
                         }
                     }
 
-                    const output = await scriptExports.default(nango, input);
+                    const output = await payload.params.exec(nango as any, input);
 
                     // Validate action output against json schema
                     const modelNameOutput =
@@ -569,7 +615,11 @@ export class DryRunService {
                     return { success: true, error: null, response: output };
                 }
 
-                const results = await scriptExports.default(nango);
+                if (payload.type !== 'sync') {
+                    throw new Error('Incorrect script loaded for action');
+                }
+
+                const results = await payload.params.exec(nango as any);
                 return { success: true, error: null, response: results };
             } catch (err) {
                 if (err instanceof ActionError) {
@@ -654,19 +704,27 @@ function readFile(rawFilePath: string): string | null {
         return null;
     }
 }
+const scriptTypeToReal: Record<NangoProps['scriptType'], string> = {
+    'on-event': 'on-events',
+    action: 'actions',
+    sync: 'syncs',
+    webhook: 'syncs'
+};
 
-function getIntegrationFile(syncName: string, providerConfigKey: string, location: string): string | null {
+function getIntegrationFile({
+    scriptType,
+    syncName,
+    providerConfigKey,
+    location
+}: {
+    scriptType: NangoProps['scriptType'];
+    syncName: string;
+    providerConfigKey: string;
+    location: string;
+}): string | null {
     try {
-        const filePath = `${location}dist/${syncName}.js`;
-        const fileNameWithProviderConfigKey = filePath.replace(`.js`, `-${providerConfigKey}.js`);
-
-        let realPath;
-        if (fs.existsSync(fileNameWithProviderConfigKey)) {
-            realPath = fs.realpathSync(fileNameWithProviderConfigKey);
-        } else {
-            realPath = fs.realpathSync(filePath);
-        }
-        const integrationFileContents = fs.readFileSync(realPath, 'utf8');
+        const filePath = `${location}dist/${providerConfigKey}/${scriptTypeToReal[scriptType]}/${syncName}.cjs`;
+        const integrationFileContents = fs.readFileSync(filePath, 'utf8');
 
         return integrationFileContents;
     } catch (err) {

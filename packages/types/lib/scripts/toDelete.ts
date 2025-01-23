@@ -1,7 +1,10 @@
-import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
 import type { z } from 'zod';
+import type { ApiEndUser } from '../endUser';
+import type { DBTeam } from '../team/db';
+import type { DBSyncConfig } from '../syncConfigs/db';
+import type { RunnerFlags } from '../runner';
+import type { GetPublicIntegration } from '../integration/api';
 
 export declare const oldLevelToNewLevel: {
     readonly debug: 'debug';
@@ -320,7 +323,7 @@ export declare class NangoAction<
     TMetadata extends Zod.ZodObject<any> | undefined,
     TMetadataInfered = TMetadata extends never ? never : z.infer<Exclude<TMetadata, undefined>>
 > {
-    protected nango: Nango;
+    protected nango: any; // TODO: fix this
     private attributes;
     protected persistApi: AxiosInstance;
     activityLogId?: string | undefined;

@@ -139,7 +139,7 @@ program
             await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
         }
 
-        const dryRun = new DryRunService({ fullPath, validation });
+        const dryRun = new DryRunService({ fullPath, validation, isZeroYaml: preCheck.isZeroYaml });
         await dryRun.run(
             {
                 ...this.opts(),

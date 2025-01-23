@@ -1,10 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { NangoYamlParsed, NangoYamlParsedIntegration, NangoModelField } from '@nangohq/types';
+import type {
+    NangoYamlParsed,
+    NangoYamlParsedIntegration,
+    NangoModelField,
+    CreateSyncResponse,
+    CreateActionResponse,
+    CreateOnEventResponse
+} from '@nangohq/types';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '../../../../../hackathon/nango-integrations/tmp.types.js';
 import type { ZodTypeAny } from 'zod';
 import { zodToNangoModelField } from '../../utils/zodToNango.js';
 
