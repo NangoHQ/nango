@@ -226,6 +226,7 @@
                 "integrations/all/aws",
                 "integrations/all/bamboohr",
                 "integrations/all/battlenet",
+                "integrations/all/basecamp",
                 "integrations/all/beehiiv",
                 "integrations/all/bigcommerce",
                 "integrations/all/bill",
