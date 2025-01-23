@@ -219,7 +219,7 @@ export const Go: React.FC = () => {
                 // Legacy stuff because types were mixed together inappropriately
                 if (provider.auth_mode === 'NONE') {
                     res = await nango.create(integration.unique_key, { ...values });
-                } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1') {
+                } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'CUSTOM') {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
                         detectClosedAuthWindow: true
