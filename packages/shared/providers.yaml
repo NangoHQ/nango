@@ -694,9 +694,6 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        verification:
-            method: GET
-            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
@@ -3028,6 +3025,23 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gebruder-weiss:
+    display_name: Gebrüder Weiss
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    authorization_url: https://my.api.gw-world.com/authorize
+    token_url: https://my.api.gw-world.com/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            accept-language: en-US
+        base_url: https://my.api.gw-world.com
+    docs: https://docs.nango.dev/integrations/all/gebruder-weiss
+
 gerrit:
     display_name: Gerrit
     categories:
@@ -5029,6 +5043,51 @@ odoo:
             description: The domain of your Odoo account
             format: hostname
             prefix: https://
+
+odoo-cc:
+    display_name: Odoo (Client Credentials)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    token_params:
+        client_id: ${credential.consumerId}
+        client_secret: ${credential.consumerSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: access_token_validity
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/restapi
+    docs: https://docs.nango.dev/integrations/all/odoo
+    docs_connect: https://docs.nango.dev/integrations/all/odoo/connect
+    credentials:
+        consumerId:
+            type: string
+            title: Consumer ID
+            description: Your App Consumer ID
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+        consumerSecret:
+            type: string
+            title: Consumer Secret
+            description: Your App Consumer Secret
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain to your Odoo account
+            format: hostname
+            example: example.odoo.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-odoo-domain'
 
 okta:
     display_name: Okta
