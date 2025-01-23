@@ -1,5 +1,5 @@
 import { isAxiosError } from 'axios';
-import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
+import type { AxiosError, AxiosResponse, AxiosRequestConfig } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
 import { axiosInstance as axios, SIGNATURE_METHOD, redactHeaders, redactURL } from '@nangohq/utils';
@@ -173,7 +173,6 @@ class ProxyService {
             decompress: (externalConfig as UserProvidedProxyConfiguration).decompress === 'true' || externalConfig.decompress === true,
             connection,
             params: externalConfig.params as Record<string, string>,
-            paramsSerializer: externalConfig.paramsSerializer as ParamsSerializerOptions,
             responseType: externalConfig.responseType as ResponseType,
             retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
         };
@@ -316,14 +315,6 @@ class ProxyService {
     private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration): Promise<RouteResponse & Logs> {
         const options: AxiosRequestConfig = {};
 
-        if (configBody.params) {
-            options.params = configBody.params as Record<string, string>;
-        }
-
-        if (configBody.paramsSerializer) {
-            options.paramsSerializer = configBody.paramsSerializer;
-        }
-
         if (configBody.responseType) {
             options.responseType = configBody.responseType;
         }
@@ -392,10 +383,17 @@ class ProxyService {
             connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
         );
 
-        const url = new URL(fullEndpoint);
+        let url = new URL(fullEndpoint);
         if (config.params) {
-            for (const [k, v] of Object.entries(config.params)) {
-                url.searchParams.set(k, v as string);
+            if (typeof config.params === 'string') {
+                if (fullEndpoint.includes('?')) {
+                    throw new Error('Can not set query params in endpoint and in params');
+                }
+                url = new URL(`${fullEndpoint}${config.params.startsWith('?') ? config.params : `?${config.params}`}`);
+            } else {
+                for (const [k, v] of Object.entries(config.params)) {
+                    url.searchParams.set(k, v as string);
+                }
             }
         }
 

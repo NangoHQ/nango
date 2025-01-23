@@ -793,7 +793,7 @@ export class Nango {
 
         const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
 
-        const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
+        let url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
         const customPrefixedHeaders: CustomHeaders =
             customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0
@@ -834,11 +834,18 @@ export class Nango {
         };
 
         if (config.params) {
-            options.params = config.params;
-        }
-
-        if (config.paramsSerializer) {
-            options.paramsSerializer = config.paramsSerializer;
+            if (typeof config.params === 'string') {
+                if (url.includes('?')) {
+                    throw new Error('Can not set query params in endpoint and in params');
+                }
+                url = new URL(`${url}${config.params.startsWith('?') ? config.params : `?${config.params}`}`).href;
+            } else {
+                const tmp = new URL(url);
+                for (const [k, v] of Object.entries(config.params)) {
+                    tmp.searchParams.set(k, v as string);
+                }
+                url = tmp.href;
+            }
         }
 
         if (config.responseType) {
