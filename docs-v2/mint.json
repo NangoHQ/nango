@@ -424,6 +424,7 @@
                 "integrations/all/sage",
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
+                "integrations/all/salesforce-cdp",
                 "integrations/all/salesloft",
                 "integrations/all/sap-success-factors",
                 "integrations/all/scrapedo",

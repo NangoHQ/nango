@@ -58,7 +58,8 @@ import {
     interpolateObject,
     extractValueByPath,
     stripCredential,
-    interpolateObjectValues
+    interpolateObjectValues,
+    stripTokenResponse
 } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
@@ -1755,6 +1756,48 @@ class ConnectionService {
                 });
 
                 responseData = parser.parse(response.data);
+            }
+
+            if (provider.second_request) {
+                const secondRequestParams = provider.second_request_params;
+                let postBody: Record<string, any> | string = {};
+                if (secondRequestParams.token_params) {
+                    for (const [key, value] of Object.entries(secondRequestParams.token_params)) {
+                        let strippedValue = stripCredential(value);
+                        strippedValue = stripTokenResponse(strippedValue, responseData);
+
+                        if (typeof strippedValue === 'object' && strippedValue !== null) {
+                            postBody[key] = interpolateObject(strippedValue, dynamicCredentials);
+                        } else if (typeof strippedValue === 'string') {
+                            postBody[key] = interpolateString(strippedValue, dynamicCredentials);
+                        } else {
+                            postBody[key] = strippedValue;
+                        }
+                    }
+                    postBody = interpolateObjectValues(postBody, connectionConfig);
+                }
+                const interpolatedTokenUrl = stripTokenResponse(secondRequestParams.token_url, responseData);
+                const secondUrl = new URL(interpolatedTokenUrl).toString();
+
+                const secondBodyContent = bodyFormat === 'form' ? new URLSearchParams(postBody).toString() : JSON.stringify(postBody);
+
+                const secondHeaders: Record<string, string> = {};
+
+                if (secondRequestParams.token_headers) {
+                    for (const [key, value] of Object.entries(secondRequestParams.token_headers)) {
+                        secondHeaders[key] = interpolateString(value, dynamicCredentials);
+                    }
+                }
+
+                const secondRequestOptions = { headers: secondHeaders };
+
+                const secondResponse = await axios.post(secondUrl, secondBodyContent, secondRequestOptions);
+
+                if (secondResponse.status !== 200) {
+                    return { success: false, error: new NangoError('invalid_two_step_credentials_second_request'), response: null };
+                }
+
+                responseData = secondResponse.data;
             }
 
             const parsedCreds = this.parseRawCredentials(responseData, 'TWO_STEP', provider) as TwoStepCredentials;

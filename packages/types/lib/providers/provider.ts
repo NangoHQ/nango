@@ -130,6 +130,13 @@ export interface ProviderJwt extends BaseProvider {
 }
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     token_headers?: Record<string, string>;
+    second_request: boolean;
+    second_request_params: {
+        body_format?: 'json' | 'form';
+        token_params?: Record<string, string>;
+        token_headers?: Record<string, string>;
+        token_url: string;
+    };
     token_response: {
         token: string;
         token_expiration: string;

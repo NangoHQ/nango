@@ -16,7 +16,13 @@ type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
 interface GenericFormData {
     append(name: string, value: any, options?: any): any;
 }
-type SerializerVisitor = (this: GenericFormData, value: any, key: string | number, path: null | (string | number)[], helpers: FormDataVisitorHelpers) => boolean;
+type SerializerVisitor = (
+    this: GenericFormData,
+    value: any,
+    key: string | number,
+    path: null | (string | number)[],
+    helpers: FormDataVisitorHelpers
+) => boolean;
 type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
 interface FormDataVisitorHelpers {
     defaultVisitor: SerializerVisitor;
@@ -159,10 +165,12 @@ interface JwtCredentials {
     type: AuthModes['Jwt'];
     privateKeyId?: string;
     issuerId?: string;
-    privateKey:{
-        id: string;
-        secret: string;
-    } | string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -193,7 +201,22 @@ interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials | CustomCredentials;
+type AuthCredentials =
+    | OAuth2Credentials
+    | OAuth2ClientCredentials
+    | OAuth1Credentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials
+    | TbaCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | BillCredentials
+    | TwoStepCredentials
+    | SignatureCredentials
+    | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -330,7 +353,23 @@ export declare class NangoAction {
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials>;
+    getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | BillCredentials
+        | TwoStepCredentials
+        | SignatureCredentials
+    >;
     /**
      * Get current integration
      */

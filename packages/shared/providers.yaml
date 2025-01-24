@@ -6015,6 +6015,47 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+
+salesforce-cdp:
+    display_name: Salesforce (Data Cloud)
+    categories:
+        - storage
+    auth_mode: TWO_STEP
+    token_url: http://localhost:3090/first-server
+    body_format: form
+    second_request: true
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${credential.jwt}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    second_request_params:
+        body_format: form
+        token_params:
+            grant_type: urn:salesforce:grant-type:external:cdp
+            subject_token: ${token_response.access_token}
+            subject_token_type: urn:ietf:params:oauth:token-type:access_token
+        token_headers:
+            content-type: application/x-www-form-urlencoded
+        token_url: ${token_response.instance_url}/services/a360/token
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/salesforce-cdp
+    docs_connect: https://docs.nango.dev/integrations/all/salesforce-cdp/connect
+    credentials:
+        jwt:
+            type: string
+            title: Encoded JWT
+            description: This is your pre-generated, encoded JSON Web Token (JWT)
+            secret: true
+            doc_section: '#step-1-generating-your-encoded-jwt'
+
 sap-success-factors:
     display_name: SAP SuccessFactors
     categories:
