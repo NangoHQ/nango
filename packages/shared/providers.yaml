@@ -4812,6 +4812,7 @@ minimax:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/minimax
+    docs_connect: https://docs.nango.dev/integrations/all/minimax/connect
     connection_config:
         groupId:
             type: string
@@ -4819,13 +4820,13 @@ minimax:
             description: The unique identifier for your MiniMax account, linked to your account's privileges.
             example: '1234567890123456789'
             pattern: '^\d{19}$'
-            doc_section: '#step-1-finding-your-group-id'
+            doc_section: '#step-1-retrieve-your-group-id'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for securely accessing the MiniMax API.
-            doc_section: '#step-2-generating-your-api-key'
+            doc_section: '#step-2-generate-an-api-key'
             example: 'your-api-key-here'
             pattern: '^[a-zA-Z0-9-]+$'
 

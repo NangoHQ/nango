@@ -377,6 +377,7 @@
                 "integrations/all/microsoft-tenant-specific",
                 "integrations/all/microsoft-business-central",
                 "integrations/all/mindbody",
+                "integrations/all/minimax",
                 "integrations/all/miro",
                 "integrations/all/mixpanel",
                 "integrations/all/monday",
