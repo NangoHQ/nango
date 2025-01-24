@@ -5982,9 +5982,7 @@ retell-ai:
         base_url: https://api.retellai.com
         headers:
             authorization: Bearer ${apiKey}
-        verification:
-            method: GET
-            endpoint: /v1/agent
+            content-type: application/json
     docs: https://docs.nango.dev/integrations/all/retell-ai
     docs_connect: https://docs.nango.dev/integrations/all/retell-ai/connect
     credentials:
@@ -5992,8 +5990,6 @@ retell-ai:
             type: string
             title: API Key
             description: The API key for Retell AI (Bearer token authentication)
-            secret: true
-            pattern: '^[a-zA-Z0-9-]{40}$'
             example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             doc_section: '#step-1-finding-your-retell-ai-api-key'
 
