@@ -6021,7 +6021,7 @@ salesforce-cdp:
     categories:
         - storage
     auth_mode: TWO_STEP
-    token_url: http://localhost:3090/first-server
+    token_url: https://login.salesforce.com/services/oauth2/token
     body_format: form
     second_request: true
     token_params:
@@ -6033,11 +6033,11 @@ salesforce-cdp:
         body_format: form
         token_params:
             grant_type: urn:salesforce:grant-type:external:cdp
-            subject_token: ${token_response.access_token}
+            subject_token: ${tokenResponse.access_token}
             subject_token_type: urn:ietf:params:oauth:token-type:access_token
         token_headers:
             content-type: application/x-www-form-urlencoded
-        token_url: ${token_response.instance_url}/services/a360/token
+        token_url: ${tokenResponse.instance_url}/services/a360/token
     token_response_metadata:
         - instance_url
     proxy:

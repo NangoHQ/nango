@@ -223,7 +223,7 @@ export function stripCredential(obj: any): any {
 
 export function stripTokenResponse(obj: any, tokenResponse: Record<string, any>): any {
     if (typeof obj === 'string') {
-        return obj.replace(/\${token_response\.(.*?)}/g, (_, key) => {
+        return obj.replace(/\${tokenResponse\.(.*?)}/g, (_, key) => {
             return tokenResponse[key] || '';
         });
     } else if (typeof obj === 'object' && obj !== null) {

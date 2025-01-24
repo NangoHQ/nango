@@ -333,6 +333,50 @@
                 "request_url": {
                     "type": "string"
                 },
+                "second_request": {
+                    "type": "boolean"
+                },
+                "second_request_params": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "body_format": {
+                            "type": "string",
+                            "enum": ["form"]
+                        },
+                        "token_params": {
+                            "type": "object",
+                            "properties": {
+                                "grant_type": {
+                                    "type": "string",
+                                    "enum": ["urn:salesforce:grant-type:external:cdp"]
+                                },
+                                "subject_token": {
+                                    "type": "string"
+                                },
+                                "subject_token_type": {
+                                    "type": "string",
+                                    "enum": ["urn:ietf:params:oauth:token-type:access_token"]
+                                }
+                            },
+                            "required": ["grant_type", "subject_token", "subject_token_type"]
+                        },
+                        "token_headers": {
+                            "type": "object",
+                            "properties": {
+                                "content-type": {
+                                    "type": "string",
+                                    "enum": ["application/x-www-form-urlencoded"]
+                                }
+                            },
+                            "required": ["content-type"]
+                        },
+                        "token_url": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["body_format", "token_params", "token_headers", "token_url"]
+                },
                 "scope_separator": {
                     "type": "string"
                 },
@@ -359,7 +403,12 @@
                     "properties": {
                         "grant_type": {
                             "type": "string",
-                            "enum": ["authorization_code", "client_credentials", "urn:ietf:params:oauth:grant-type:saml2-bearer"]
+                            "enum": [
+                                "authorization_code",
+                                "client_credentials",
+                                "urn:ietf:params:oauth:grant-type:saml2-bearer",
+                                "urn:ietf:params:oauth:grant-type:jwt-bearer"
+                            ]
                         },
                         "request": {
                             "anyOf": [
