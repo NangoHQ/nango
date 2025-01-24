@@ -694,9 +694,6 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        verification:
-            method: GET
-            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
@@ -791,6 +788,41 @@ bamboohr-basic:
             # Bamboo HR is using basic auth with an api key
             default_value: x
             hidden: true
+
+basecamp:
+    display_name: Basecamp
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://launchpad.37signals.com/authorization/new
+    token_url: https://launchpad.37signals.com/authorization/token
+    authorization_params:
+        type: web_server
+    token_params:
+        type: web_server
+    refresh_params:
+        type: refresh
+    proxy:
+        base_url: https://3.basecampapi.com/${connectionConfig.accountId}
+        headers:
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/basecamp
+    docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Account ID
+            example: '5899981'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-account-id'
 
 battlenet:
     display_name: Battle.net
@@ -3028,6 +3060,23 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gebruder-weiss:
+    display_name: Gebrüder Weiss
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    authorization_url: https://my.api.gw-world.com/authorize
+    token_url: https://my.api.gw-world.com/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            accept-language: en-US
+        base_url: https://my.api.gw-world.com
+    docs: https://docs.nango.dev/integrations/all/gebruder-weiss
+
 gerrit:
     display_name: Gerrit
     categories:
@@ -3116,6 +3165,7 @@ github-app:
             description: The public link of your GitHub App
             format: uri
             pattern: '^https?://.*$'
+            automated: true
         installation_id:
             type: string
             title: Installation ID
@@ -3146,6 +3196,7 @@ github-app-oauth:
             description: The public link of your GitHub App
             format: uri
             pattern: '^https?://.*$'
+            automated: true
         installation_id:
             type: string
             title: Installation ID
@@ -4357,6 +4408,26 @@ loops-so:
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
 
+lucid-scim:
+    display_name: Lucid(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://users.lucid.app/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/lucid
+    docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The SCIM API key generated from the Lucid admin panel
+            doc_section: '#step-1-generate-the-bearer-token'
+
 luma:
     display_name: Luma
     categories:
@@ -4423,6 +4494,7 @@ make:
             method: GET
             endpoint: /users/me
     docs: https://docs.nango.dev/integrations/all/make
+    docs_connect: https://docs.nango.dev/integrations/all/make/connect
     connection_config:
         environmentUrl:
             type: string
@@ -4430,11 +4502,13 @@ make:
             description: The domain of your Make account
             format: hostname
             prefix: https://
+            doc_section: '#step-2-finding-your-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Make account
+            doc_section: '#step-1-generating-an-api-key'
 
 mailgun:
     display_name: Mailgun
@@ -4447,6 +4521,7 @@ mailgun:
             method: GET
             endpoint: /v4/domains
     docs: https://docs.nango.dev/integrations/all/mailgun
+    docs_connect: https://docs.nango.dev/integrations/all/mailgun/connect
     connection_config:
         region:
             type: string
@@ -4454,6 +4529,7 @@ mailgun:
             description: The region of your Mailgun account
             pattern: '^[a-z]+$'
             example: us
+            doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
     display_name: Mailchimp
@@ -4496,11 +4572,13 @@ manatal:
             link_path_in_response_body: next
             response_path: results
     docs: https://docs.nango.dev/integrations/all/manatal
+    docs_connect: https://docs.nango.dev/integrations/all/manatal/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Manatal account
+            doc_section: '#step-2-generate-an-api-key'
 
 marketo:
     display_name: Marketo
@@ -4574,6 +4652,7 @@ medallia:
             after: 'x-ratelimit-reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
+    docs_connect: https://docs.nango.dev/integrations/all/medallia/connect
     connection_config:
         reportingInstance:
             type: string
@@ -4581,16 +4660,19 @@ medallia:
             description: The domain of your Medallia account
             format: hostname
             prefix: https://
+            doc_section: '#step-3-connect-your-medallia-account'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
+            doc_section: '#step-3-connect-your-medallia-account'
         gatewayUrl:
             type: string
             title: Gateway URL
             description: The gateway URL of your Medallia account
             format: hostname
             prefix: https://
+            doc_section: '#step-3-connect-your-medallia-account'
 
 metabase:
     display_name: Metabase
@@ -4605,6 +4687,7 @@ metabase:
             method: GET
             endpoint: /api/database
     docs: https://docs.nango.dev/integrations/all/metabase
+    docs_connect: https://docs.nango.dev/integrations/all/metabase/connect
     connection_config:
         domain:
             type: string
@@ -4612,11 +4695,13 @@ metabase:
             description: The domain (without the extension) of your Metabase account
             pattern: '^[a-z0-9.-]+$'
             example: metabase
+            doc_section: '#step-2-finding-your-metabase-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
+            doc_section: '#step-1-generating-an-api-key'
 
 microsoft:
     display_name: Microsoft
@@ -4754,6 +4839,7 @@ mindbody:
             method: GET
             endpoint: /public/v6/site/locations
     docs: https://docs.nango.dev/integrations/all/mindbody
+    docs_connect: https://docs.nango.dev/integrations/all/mindbody/connect
     credentials:
         apiKey:
             type: string
@@ -4761,6 +4847,7 @@ mindbody:
             description: The API key for your Mindbody account
             pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            doc_section: '#step-2-generate-api-key'
     connection_config:
         siteId:
             type: string
@@ -4768,12 +4855,14 @@ mindbody:
             description: The site ID for your Mindbody account
             pattern: '^\d+$'
             example: '-99'
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
         staffUserToken:
             type: string
             title: Staff User Token
             description: The staff user token for your Mindbody account
             pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
 
 mixpanel:
     display_name: Mixpanel
@@ -4927,6 +5016,7 @@ next-cloud-ocs:
         headers:
             'ocs-apirequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
+    docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
         domain:
             type: string
@@ -4934,6 +5024,7 @@ next-cloud-ocs:
             description: The domain of your Next Cloud account
             format: hostname
             prefix: https://
+            doc_section: '#step-1-locate-your-next-cloud-domain'
 
 notion:
     display_name: Notion
@@ -5007,6 +5098,51 @@ odoo:
             description: The domain of your Odoo account
             format: hostname
             prefix: https://
+
+odoo-cc:
+    display_name: Odoo (Client Credentials)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    token_params:
+        client_id: ${credential.consumerId}
+        client_secret: ${credential.consumerSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: access_token_validity
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/restapi
+    docs: https://docs.nango.dev/integrations/all/odoo
+    docs_connect: https://docs.nango.dev/integrations/all/odoo/connect
+    credentials:
+        consumerId:
+            type: string
+            title: Consumer ID
+            description: Your App Consumer ID
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+        consumerSecret:
+            type: string
+            title: Consumer Secret
+            description: Your App Consumer Secret
+            secret: true
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain to your Odoo account
+            format: hostname
+            example: example.odoo.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-odoo-domain'
 
 okta:
     display_name: Okta
@@ -5089,11 +5225,13 @@ openai:
         retry:
             after: 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
+    docs_connect: https://docs.nango.dev/integrations/all/openai/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your OpenAI account
+            doc_section: '#step-1-retrieve-your-openai-api-key'
 
 ory:
     display_name: Ory
@@ -5763,6 +5901,26 @@ rapidapi:
             example: api-football-v1
             suffix: .p.rapidapi.com
             prefix: https://
+
+recharge:
+    display_name: Recharge
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-recharge-access-token: ${apiKey}
+        base_url: https://api.rechargeapps.com
+    docs: https://docs.nango.dev/integrations/all/recharge
+    docs_connect: https://docs.nango.dev/integrations/all/recharge/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Recharge account
+            example: sk_test_1p1_**************************************************
+            pattern: '^[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-token'
 
 reddit:
     display_name: Reddit
