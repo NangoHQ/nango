@@ -4802,15 +4802,12 @@ minimax:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.minimaxi.com
+        base_url: https://api.minimaxi.chat
         headers:
             authorization: Bearer ${apiKey}
             group-id: ${connectionConfig.groupId}
-        verification:
-            method: GET
-            endpoint: /v1/models
-        retry:
-            after: 'retry-after'
+        query:
+            GroupId: ${connectionConfig.groupId}
     docs: https://docs.nango.dev/integrations/all/minimax
     docs_connect: https://docs.nango.dev/integrations/all/minimax/connect
     connection_config:
