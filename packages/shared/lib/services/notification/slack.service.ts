@@ -239,24 +239,7 @@ export class SlackService {
             return;
         }
 
-        const logCtx = await this.logContextGetter.create(
-            { operation: { type: 'action', action: 'run' } },
-            {
-                account: adminEnvironment.account,
-                environment: adminEnvironment.environment,
-                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
-                connection: { id: slackConnection.id!, name: slackConnection.connection_id }
-            }
-        );
-
-        if (!success || !slackNotificationStatus) {
-            await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
-            await logCtx.failed();
-
-            return;
-        }
-
-        const count = slackNotificationStatus.connectionCount;
+        const count = slackNotificationStatus?.connectionCount || 0;
         const connectionWord = count === 1 ? 'connection' : 'connections';
         const flowType = type;
         const date = new Date();
@@ -277,6 +260,26 @@ export class SlackService {
             providerConfigKey: nangoConnection.provider_config_key,
             provider
         };
+
+        const logCtx = await this.logContextGetter.create(
+            { operation: { type: 'action', action: 'run' } },
+            {
+                account: adminEnvironment.account,
+                environment: adminEnvironment.environment,
+                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
+                connection: { id: slackConnection.id!, name: slackConnection.connection_id },
+                meta: truncateJson({ input: payload })
+            }
+        );
+
+        await logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
+
+        if (!success || !slackNotificationStatus) {
+            await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
+            await logCtx.failed();
+
+            return;
+        }
 
         if (slackNotificationStatus.slack_timestamp) {
             payload.ts = slackNotificationStatus.slack_timestamp;
@@ -424,6 +427,8 @@ export class SlackService {
             }
         );
 
+        await logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
+
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
                 connection: slackConnection as NangoConnection,
@@ -433,7 +438,8 @@ export class SlackService {
             });
 
             if (actionResponse.isOk() && actionResponse.value.ts) {
-                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${actionResponse.value.ts.replace('.', '')}`);
+                const res = actionResponse.value;
+                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
 
             await logCtx.info('Sending duplicate notification');
