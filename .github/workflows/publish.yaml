@@ -26,6 +26,12 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
+            - name: 'Setup jq'
+              uses: dcarbone/install-jq-action@v3
+              with:
+                  version: '${{ inputs.version }}'
+                  force: '${{ inputs.force }}'
+
             - name: Publish npm packages
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -23,7 +23,15 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    npm install --save --save-exact @nangohq/$package@$VERSION
+    jq --arg package "$package" --arg version "$VERSION" '
+    if .dependencies[$package] then
+        .dependencies[$package] = $version
+    elif .devDependencies[$package] then
+        .devDependencies[$package] = $version
+    else
+        .
+    end
+    ' package.json >temp.json && mv temp.json package.json
     popd
 }
 
@@ -104,9 +112,7 @@ bump_other_pkg "shared" "providers"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-pushd "$GIT_ROOT_DIR/packages/shared"
-npm install @nangohq/node@$VERSION
-popd
+bump_and_npm_publish "shared" "@nangohq/node"
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
@@ -123,9 +129,7 @@ bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-pushd "$GIT_ROOT_DIR/packages/webapp"
-npm install --save --save-exact @nangohq/frontend@$VERSION
-popd
+bump_and_npm_publish "webapp" "@nangohq/frontend"
 
 # clean up
 rm packages/shared/package-lock.json
