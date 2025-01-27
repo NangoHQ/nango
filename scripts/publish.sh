@@ -24,7 +24,6 @@ function bump_other_pkg {
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
     npm install -E @nangohq/$package@$VERSION
-    npm install -E @nangohq/$package@$VERSION
     popd
 }
 
@@ -98,9 +97,16 @@ bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 bump_other_pkg "shared" "nango-yaml"
 
+# Providers
+bump_and_npm_publish "@nangohq/providers" "$VERSION"
+bump_other_pkg "runner-sdk" "providers"
+bump_other_pkg "shared" "providers"
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-bump_other_pkg "shared" "node"
+pushd "$GIT_ROOT_DIR/packages/shared"
+npm install @nangohq/node@$VERSION
+popd
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
@@ -117,7 +123,9 @@ bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-bump_other_pkg "webapp" "frontend"
+pushd "$GIT_ROOT_DIR/packages/webapp"
+npm install @nangohq/frontend@$VERSION
+popd
 
 # clean up
 rm packages/shared/package-lock.json
