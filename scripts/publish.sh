@@ -105,7 +105,7 @@ bump_other_pkg "shared" "providers"
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
-npm install --save --save-exact @nangohq/node@$VERSION
+npm install @nangohq/node@$VERSION
 popd
 
 # Shared
