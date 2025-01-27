@@ -19,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const pathSchema = path.join(__dirname, 'schema.json');
-const pathProviders = path.join(__dirname, '../../../packages/shared/providers.yaml');
+const pathProviders = path.join(__dirname, '../../../packages/providers/providers.yaml');
 
 // Schema
 const ajv = new Ajv({ allErrors: true, discriminator: true });

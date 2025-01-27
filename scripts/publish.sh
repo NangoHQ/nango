@@ -23,7 +23,7 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    npm install -E @nangohq/$package@$VERSION
+    npm install --save --save-exact @nangohq/$package@$VERSION
     popd
 }
 
@@ -97,6 +97,11 @@ bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 bump_other_pkg "shared" "nango-yaml"
 
+# Providers
+bump_and_npm_publish "@nangohq/providers" "$VERSION"
+bump_other_pkg "runner-sdk" "providers"
+bump_other_pkg "shared" "providers"
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
@@ -119,7 +124,7 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/webapp"
-npm install @nangohq/frontend@$VERSION
+npm install --save --save-exact @nangohq/frontend@$VERSION
 popd
 
 # clean up
