@@ -255,16 +255,6 @@ class EnvironmentService {
         }
     }
 
-    async getEnvironmentName(id: number): Promise<string | null> {
-        const result = await db.knex.select('name').from<DBEnvironment>(TABLE).where({ id });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].name;
-    }
-
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
         const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereNotNull('otlp_settings');
         if (result == null) {
