@@ -353,6 +353,16 @@ await nango.listConnections();
     <ResponseField name="search" type="string">
         Optional. Search connections. Will search in connection ID or end user profile.
     </ResponseField>
+    <ResponseField name="queries" type="object">
+        <Expandable title="queries" defaultOpen>
+            <ResponseField name="endUserId" type="string">
+                Optional. Will exactly match a given end user ID.
+            </ResponseField>
+            <ResponseField name="endUserOrganizationId" type="string">
+                Optional. Will exactly match a given end organization ID.
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
 </Expandable>
 
 **Example Response**
