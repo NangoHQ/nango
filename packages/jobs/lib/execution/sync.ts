@@ -305,8 +305,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 });
 
                 void tracer.scope().activate(span, async () => {
-                    if (team && environment && providerConfig) {
-                        try {
+                    try {
+                        if (team && environment && providerConfig) {
                             const res = await sendSyncWebhook({
                                 account: team,
                                 connection: connection,
@@ -328,11 +328,26 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                             if (res.isErr()) {
                                 throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
                             }
-                        } catch (err) {
-                            span?.setTag('error', err);
-                        } finally {
-                            span.finish();
+                        } else {
+                            const missing: string[] = [];
+                            if (!team) {
+                                missing.push('team');
+                            }
+
+                            if (!environment) {
+                                missing.push('environment');
+                            }
+
+                            if (!providerConfig) {
+                                missing.push('providerConfig');
+                            }
+
+                            throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}, missing ${missing.join(',')}`);
                         }
+                    } catch (err) {
+                        span?.setTag('error', err);
+                    } finally {
+                        span.finish();
                     }
                 });
             }
