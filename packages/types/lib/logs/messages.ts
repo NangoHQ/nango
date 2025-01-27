@@ -60,8 +60,9 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward';
+    action: 'incoming' | 'forward' | 'sync';
 }
+
 export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
