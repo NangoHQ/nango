@@ -87,6 +87,7 @@ export const sendSync = async ({
 
         if (!webhookSettings.on_sync_completion_always && noChanges) {
             await logCtx.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
+            await logCtx.success();
 
             return Ok(undefined);
         }
