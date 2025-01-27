@@ -7,7 +7,7 @@ import { useStore } from '../../store';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { useListIntegration } from '../../hooks/useIntegration';
+import { clearIntegrationsCache, useListIntegration } from '../../hooks/useIntegration';
 import { globalEnv } from '../../utils/env';
 import Nango from '@nangohq/frontend';
 import { useUnmount, useSearchParam } from 'react-use';
@@ -68,6 +68,7 @@ export const ConnectionCreate: React.FC = () => {
             } else if (event.type === 'connect') {
                 void listIntegrationMutate();
                 clearConnectionsCache(cache, mutate);
+                clearIntegrationsCache(cache, mutate);
                 hasConnected.current = event.payload;
             }
         },

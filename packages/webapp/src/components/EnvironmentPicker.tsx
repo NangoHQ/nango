@@ -87,7 +87,9 @@ export const EnvironmentPicker: React.FC = () => {
             <PopoverTrigger asChild>
                 <Button role="combobox" variant={'select'} className="justify-between grow w-full capitalize border-grayscale-600 px-2.5 whitespace-pre">
                     <div className="text-ellipsis overflow-hidden">{env}</div>
-                    <IconChevronDown stroke={1} size={18} className="w-20" />
+                    <div className="w-4">
+                        <IconChevronDown stroke={1} size={18} />
+                    </div>
                 </Button>
             </PopoverTrigger>
             <PopoverContent

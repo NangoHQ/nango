@@ -1,3 +1,4 @@
+import type { Cache, useSWRConfig } from 'swr';
 import useSWR from 'swr';
 import type { ListIntegration } from '@nangohq/server';
 import type { SWRError } from '../utils/api';
@@ -86,4 +87,12 @@ export function useGetIntegrationFlows(env: string, integrationId: string) {
         data: data?.data,
         mutate
     };
+}
+
+export function clearIntegrationsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
+    for (const key of cache.keys()) {
+        if (key.includes('/api/v1/integrations')) {
+            void mutate(key, undefined);
+        }
+    }
 }

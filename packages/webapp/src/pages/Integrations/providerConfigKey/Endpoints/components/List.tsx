@@ -155,7 +155,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
             <div className="text-text-light-gray flex gap-2 items-center">
                 <QuestionMarkCircledIcon />
                 Can&apos;t find the endpoint you need?{' '}
-                <a href="https://docs.nango.dev/guides/custom-integration-builder/overview" className="underline">
+                <a href="https://docs.nango.dev/guides/custom-integrations/overview" className="underline">
                     Add your own
                 </a>
             </div>

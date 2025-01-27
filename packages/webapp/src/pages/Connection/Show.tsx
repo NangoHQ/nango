@@ -17,7 +17,7 @@ import { Authorization } from './Authorization';
 import { connectSlack } from '../../utils/slack-connection';
 
 import { useStore } from '../../store';
-import { apiDeleteConnection, useConnection } from '../../hooks/useConnections';
+import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
 import { useLocalStorage } from 'react-use';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useSyncs } from '../../hooks/useSyncs';
@@ -25,7 +25,7 @@ import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { AvatarOrganization } from '../../components/AvatarCustom';
 import { IconTrash } from '@tabler/icons-react';
 import { useToast } from '../../hooks/useToast';
-import { useListIntegration } from '../../hooks/useIntegration';
+import { clearIntegrationsCache } from '../../hooks/useIntegration';
 import { EndUserProfile } from './components/EndUserProfile';
 import { getConnectionDisplayName } from '../../utils/endUser';
 import { globalEnv } from '../../utils/env';
@@ -52,7 +52,6 @@ export const ConnectionShow: React.FC = () => {
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
     const { data: syncs, error: errorSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
-    const { mutate: listIntegrationMutate } = useListIntegration(env);
 
     // Modal delete
     const [open, setOpen] = useState(false);
@@ -82,8 +81,6 @@ export const ConnectionShow: React.FC = () => {
         const res = await apiDeleteConnection({ connectionId }, { provider_config_key: providerConfigKey, env });
         setLoadingDelete(false);
 
-        void listIntegrationMutate();
-
         if (res.res.status === 200) {
             toast({ title: `Connection deleted!`, variant: 'success' });
 
@@ -94,11 +91,8 @@ export const ConnectionShow: React.FC = () => {
                 undefined,
                 { revalidate: false }
             );
-            for (const key of cache.keys()) {
-                if (key.startsWith('/api/v1/connections')) {
-                    cache.delete(key);
-                }
-            }
+            clearConnectionsCache(cache, mutate);
+            clearIntegrationsCache(cache, mutate);
 
             navigate(`/${env}/connections`, { replace: true });
         } else {
