@@ -7,7 +7,7 @@ accelo:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/authorize
     token_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
     token_params:
@@ -22,7 +22,7 @@ accelo:
             type: string
             title: Accelo Domain
             description: The subdomain of your Accelo account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .api.accelo.com
             prefix: https://
@@ -65,14 +65,14 @@ adobe-umapi:
         - other
     auth_mode: OAUTH2_CC
     token_url: https://ims-na1.adobelogin.com/ims/token/v2
-    scope_separator: ","
+    scope_separator: ','
     token_params:
         grant_type: client_credentials
     proxy:
         headers:
             x-api-key: ${connectionConfig.clientId}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         base_url: https://usermanagement.adobe.io
     docs: https://docs.nango.dev/integrations/all/adobe
     post_connection_script: adobeUmapiPostConnection
@@ -80,8 +80,8 @@ adobe-umapi:
     connection_config:
         clientId:
             type: string
-            title: ""
-            description: ""
+            title: ''
+            description: ''
             automated: true
 
 adyen:
@@ -91,7 +91,7 @@ adyen:
     auth_mode: OAUTH2
     authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
     token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
-    scope_separator: " "
+    scope_separator: ' '
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -107,13 +107,13 @@ adyen:
             type: string
             title: Environment
             description: The environment to use
-            pattern: "^(live|test)$"
+            pattern: '^(live|test)$'
             example: live|test
         resource:
             type: string
             title: Resource
             description: The resource to use for your various requests
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: kyc
             suffix: -(live|test).adyen.com
             prefix: https://
@@ -133,9 +133,9 @@ affinity:
     credentials:
         username:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
         password:
             type: string
@@ -143,7 +143,7 @@ affinity:
             description: Your Affinity API Key
             # https://api-docs.affinity.co/#introduction
             # Affinity is using basic auth with an api key
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 
 aircall:
     display_name: Aircall
@@ -160,7 +160,7 @@ aircall:
     proxy:
         base_url: https://api.aircall.io
         retry:
-            at: "x-aircallapi-reset"
+            at: 'x-aircallapi-reset'
         paginate:
             type: link
             link_path_in_response_body: meta.next_page_link
@@ -205,7 +205,7 @@ autodesk:
     auth_mode: OAUTH2
     authorization_url: https://developer.api.autodesk.com/authentication/v2/authorize
     token_url: https://developer.api.autodesk.com/authentication/v2/token
-    scope_separator: " "
+    scope_separator: ' '
     disable_pkce: true
     authorization_params:
         response_type: code
@@ -216,7 +216,7 @@ autodesk:
     proxy:
         base_url: https://developer.api.autodesk.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/autodesk
 
 algolia:
@@ -239,17 +239,17 @@ algolia:
             title: Application ID
             description: The application ID for your Algolia account
             example: ERBSOWZO32
-            pattern: "^[A-Z0-9]{10}$"
+            pattern: '^[A-Z0-9]{10}$'
             order: 1
-            doc_section: "#step-1-finding-your-application-id"
+            doc_section: '#step-1-finding-your-application-id'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Algolia account
             example: c5c28261f9ade4e34891ccf761491b94
-            pattern: "^[a-zA-Z0-9]+$"
-            doc_section: "#step-2-finding-your-admin-api-key"
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-admin-api-key'
 
 amazon:
     display_name: Amazon
@@ -274,7 +274,7 @@ amazon:
             title: Domain Extension
             description: The domain extension for your Amazon account
             example: com
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
 
 anrok:
     display_name: Anrok
@@ -286,7 +286,7 @@ anrok:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anrok
     docs_connect: https://docs.nango.dev/integrations/all/anrok/connect
     credentials:
@@ -294,7 +294,7 @@ anrok:
             type: string
             title: API Key
             description: The API key for your Anrok account
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
     display_name: Amplitude (Event Streaming API)
@@ -332,15 +332,15 @@ anthropic:
             anthropic-version: ${connectionConfig.version}
             content-type: application/json
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
             type: string
             title: API Version
             description: The version of the Anthropic API to use
-            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-            example: "2023-06-01"
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
     credentials:
         apiKey:
             type: string
@@ -354,7 +354,7 @@ apaleo:
     auth_mode: OAUTH2
     authorization_url: https://identity.apaleo.com/connect/authorize
     token_url: https://identity.apaleo.com/connect/token
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: authorization_code
     authorization_params:
@@ -366,7 +366,7 @@ apaleo:
         headers:
             content-type: application/json
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/apaleo
 
 apollo:
@@ -437,7 +437,7 @@ asana:
     proxy:
         base_url: https://app.asana.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: next_page.offset
@@ -466,7 +466,7 @@ asana-scim:
             type: string
             title: API Key
             description: The API key for your Asana scim account
-            doc_section: "#step-1-finding-asana-api-key"
+            doc_section: '#step-1-finding-asana-api-key'
 
 ashby:
     display_name: Ashby
@@ -486,9 +486,9 @@ ashby:
             description: The API Key of your Ashby account
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
 
 atlas-so:
@@ -565,7 +565,7 @@ auth0:
             type: string
             title: Auth0 Domain
             description: The subdomain of your Auth0 account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .auth0.com
             prefix: https://
@@ -590,7 +590,7 @@ avalara:
             type: string
             title: User Name / Account ID
             description: Avalara User Name / Account ID
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
             title: Avalara Password / License Key
@@ -598,14 +598,14 @@ avalara:
             # https://developer.avalara.com/avatax/authentication-in-rest/
             # Avalara is using basic auth with combination of (username and password)
             # or (Account ID and License Key)
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: "^[a-zA-Z0-9_-]+$"
-            doc_section: "#step-2-generating-an-avalara-client"
+            pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
     display_name: Avalara (sandbox)
@@ -627,7 +627,7 @@ avalara-sandbox:
             type: string
             title: User Name / Account ID
             description: Avalara User Name / Account ID
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
             title: Password / License Key
@@ -635,14 +635,14 @@ avalara-sandbox:
             # https://developer.avalara.com/avatax/authentication-in-rest/
             # Avalara is using basic auth with combination of (username and password)
             # or (Account ID and License Key)
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         avalaraClient:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: "^[a-zA-Z0-9_-]+$"
-            doc_section: "#step-2-generating-an-avalara-client"
+            pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
     display_name: AWS
@@ -668,7 +668,7 @@ aws:
             type: string
             title: AWS Domain
             description: The subdomain of your AWS account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .amazoncognito.com
             prefix: https://
@@ -677,13 +677,13 @@ aws:
             title: Domain Extension
             description: The domain extension of your AWS account
             example: com
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
         apiSubdomain:
             type: string
             title: API Subdomain
             description: The API subdomain to the API you want to connect to
             example: idp.us-east-2
-            pattern: "^[a-z.-]+$"
+            pattern: '^[a-z.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
 
@@ -697,7 +697,7 @@ aws-iam:
         connection_config:
             region: ${connectionConfig.region}
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/aws
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
@@ -705,22 +705,22 @@ aws-iam:
             type: string
             title: AWS Access Key ID
             description: Your Access Key ID
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
         password:
             type: string
             title: AWS Secret Access Key
             description: Your Secret Access Key
             # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html
             # aws-iam is using basic auth with AWS Access Key ID and Secret Access Key
-            doc_section: "#step-1-finding-your-pair-keys"
+            doc_section: '#step-1-finding-your-pair-keys'
     connection_config:
         region:
             type: string
             title: Region
             description: The region to where your AWS account is hosted
             example: us-east-1
-            pattern: "^[a-z0-9-]+$"
-            doc_section: "#step-2-finding-your-region-host"
+            pattern: '^[a-z0-9-]+$'
+            doc_section: '#step-2-finding-your-region-host'
 
 bamboohr:
     display_name: BambooHR
@@ -743,7 +743,7 @@ bamboohr:
             type: string
             title: BambooHR Domain
             description: The subdomain of your BambooHR account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
             prefix: https://
@@ -766,20 +766,20 @@ bamboohr-basic:
             type: string
             title: BambooHR Domain
             description: The subdomain of your BambooHR account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .bamboohr.com
             prefix: https://
             order: 1
-            doc_section: "#step-1-finding-your-subdomain"
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         username:
             type: string
             title: API key
             description: The API Key of your BambooHR account
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
             secret: true
-            doc_section: "#step-2-finding-your-api-key"
+            doc_section: '#step-2-finding-your-api-key'
         password:
             type: string
             title: Password
@@ -807,7 +807,7 @@ basecamp:
         headers:
             user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/basecamp
     docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
     connection_config:
@@ -820,9 +820,9 @@ basecamp:
             type: string
             title: Account ID
             description: Your Account ID
-            example: "5899981"
-            pattern: "^[0-9]+$"
-            doc_section: "#step-1-finding-your-account-id"
+            example: '5899981'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-account-id'
 
 battlenet:
     display_name: Battle.net
@@ -844,14 +844,14 @@ battlenet:
             title: Domain Extension
             description: The domain extension of your Battle.net account
             example: com
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
             order: 1
         apiDomain:
             type: string
             title: API Domain
             description: The domain to where you will access your API
             example: us.api.blizzard.com
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
             prefix: https://
 
 beehiiv:
@@ -874,7 +874,7 @@ beehiiv:
             title: API Key
             description: The API key for your Beehiiv account
             example: 8ab3sjxqvHzyUnP9JhvlfT6C0wsbgr5XQrpaZZjxJkYBPy6sntvT1M2Lk94VQeRb
-            pattern: "^[a-zA-Z0-9]{64}$"
+            pattern: '^[a-zA-Z0-9]{64}$'
     connection_config:
         publicationId:
             type: string
@@ -890,7 +890,7 @@ bigcommerce:
     auth_mode: OAUTH2
     authorization_url: https://login.bigcommerce.com/oauth2/authorize
     token_url: https://login.bigcommerce.com/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
         context: stores/${connectionConfig.storeHash}
@@ -906,7 +906,7 @@ bigcommerce:
             type: string
             title: Store Hash
             description: The store hash of your BigCommerce account
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
         accountUuid:
             type: string
             title: Account UUID
@@ -954,7 +954,7 @@ bitdefender:
     proxy:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -962,12 +962,12 @@ bitdefender:
             type: string
             title: API Key
             description: The API Key of your Bitdefender account
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
     connection_config:
         ACCESS_URL:
@@ -976,8 +976,8 @@ bitdefender:
             description: The access URL of your Bitdefender account
             example: https://api.bitdefender.com
             format: uri
-            pattern: "^https://.*"
-            doc_section: "#step-1-finding-your-api-key"
+            pattern: '^https://.*'
+            doc_section: '#step-1-finding-your-api-key'
 
 bitly:
     display_name: Bitly
@@ -1070,7 +1070,7 @@ booking-com:
             type: string
             title: Environment Type
             description: The environment type for your various requests
-            pattern: "^(secure-supply|supply)$"
+            pattern: '^(secure-supply|supply)$'
             example: secure-supply|supply
             suffix: -xml.booking.com
             prefix: https://
@@ -1082,7 +1082,7 @@ braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
-    scope_separator: ","
+    scope_separator: ','
     authorization_method: header
     body_format: json
     token_params:
@@ -1098,7 +1098,7 @@ braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
-    scope_separator: ","
+    scope_separator: ','
     authorization_method: header
     body_format: json
     token_params:
@@ -1119,7 +1119,7 @@ braze:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/braze
     docs_connect: https://docs.nango.dev/integrations/all/braze/connect
     connection_config:
@@ -1131,13 +1131,13 @@ braze:
             format: hostname
             prefix: https://rest.
             order: 1
-            doc_section: "#step-1-finding-your-instance-url"
+            doc_section: '#step-1-finding-your-instance-url'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key to your Braze account
-            doc_section: "#step-2-finding-your-api-key"
+            doc_section: '#step-2-finding-your-api-key'
 
 brevo-api-key:
     display_name: Brevo (api key)
@@ -1184,8 +1184,8 @@ brex-api-key:
             title: API Token
             description: The API Token to your Brex account
             example: bxt_vRUwQT3snBmA1IDVq5iK1kXc4N0bhxr377z4
-            pattern: "^bxt_[a-zA-Z0-9]+$"
-            doc_section: "#step-1-finding-your-api-token"
+            pattern: '^bxt_[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-token'
 
 brex-staging:
     display_name: Brex (staging)
@@ -1235,15 +1235,15 @@ builder-io-private:
             example: cdn.builder.io
             format: hostname
             prefix: https://
-            doc_section: "#step-1-finding-your-api-domain"
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Builder.io account
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
-            doc_section: "#step-2-finding-your-api-key"
+            doc_section: '#step-2-finding-your-api-key'
 
 builder-io-public:
     display_name: Builder.io (public)
@@ -1266,15 +1266,15 @@ builder-io-public:
             example: builder.io
             format: hostname
             prefix: https://
-            doc_section: "#step-1-finding-your-api-domain"
+            doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Builder.io account
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
             example: bb209fb71eh2412dbe0114bdae18fd15
-            doc_section: "#step-2-finding-your-api-key"
+            doc_section: '#step-2-finding-your-api-key'
 
 buildium:
     display_name: Buildium
@@ -1298,18 +1298,18 @@ buildium:
             type: string
             title: Client ID
             description: Your API Key Client ID
-            pattern: "^[a-f0-9-]+$"
+            pattern: '^[a-f0-9-]+$'
             example: a228f0e7-b4a3-4150-b9ae-8552fc2880d3
-            doc_section: "#step-2-finding-your-client-id-and-secret"
+            doc_section: '#step-2-finding-your-client-id-and-secret'
             order: 1
     credentials:
         apiKey:
             type: string
             title: Secret
             description: The Secret for your Buildium account
-            pattern: "^[A-Za-z0-9+/]+$"
+            pattern: '^[A-Za-z0-9+/]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
-            doc_section: "#step-2-finding-your-client-id-and-secret"
+            doc_section: '#step-2-finding-your-client-id-and-secret'
 
 builtwith:
     display_name: BuiltWith
@@ -1333,7 +1333,7 @@ builtwith:
             description: The API key for your BuiltWith account
             example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
             format: uuid
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 
 cal-com-v1:
     display_name: Cal.com (v1)
@@ -1345,7 +1345,7 @@ cal-com-v1:
         query:
             apiKey: ${apiKey}
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
         verification:
             method: GET
             endpoint: /me
@@ -1356,9 +1356,9 @@ cal-com-v1:
             type: string
             title: API Key
             description: The API key for your Cal.com account
-            pattern: "^cal_[a-zA-Z0-9_]+$"
+            pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 cal-com-v2:
     display_name: Cal.com (v2)
     categories:
@@ -1374,7 +1374,7 @@ cal-com-v2:
             cursor_path_in_response: data.data.nextCursor
             limit_name_in_request: limit
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
         verification:
             method: GET
             endpoint: /me
@@ -1385,9 +1385,9 @@ cal-com-v2:
             type: string
             title: API Key
             description: The API key for your Cal.com account
-            pattern: "^cal_[a-zA-Z0-9_]+$"
+            pattern: '^cal_[a-zA-Z0-9_]+$'
             example: cal_xxxxxx
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 
 calendly:
     display_name: Calendly
@@ -1404,7 +1404,7 @@ calendly:
             type: link
             link_path_in_response_body: pagination.next_page
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
@@ -1430,8 +1430,8 @@ canny:
             title: API Key
             description: The API key for your Canny account
             example: a1f5937c-82df-bd29-4e3a-7b6fda8c54d1
-            pattern: "^[a-zA-Z0-9-]+$"
-            doc_section: "#step-1-finding-your-api-key"
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-finding-your-api-key'
 canva-scim:
     display_name: Canva (SCIM API)
     categories:
@@ -1450,7 +1450,7 @@ canva-scim:
             type: string
             title: API Key
             description: The API key for your Canva scim account
-            doc_section: "#step-1-finding-canva-api-key"
+            doc_section: '#step-1-finding-canva-api-key'
 
 certn:
     display_name: Certn
@@ -1505,14 +1505,14 @@ chargebee:
             method: GET
             endpoint: /api/v2/business_entities
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
     connection_config:
         subdomain:
             type: string
             title: Chargebee Domain
             description: The subdomain of your Chargebee account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .chargebee.com
             prefix: https://
@@ -1540,8 +1540,8 @@ chattermill:
             type: string
             title: Chattermill subdomain
             description: The subdomain for your api requests
-            pattern: "^(app|api|backend)$"
-            example: "app|api|backend"
+            pattern: '^(app|api|backend)$'
+            example: 'app|api|backend'
             suffix: .chattermill.com
             prefix: https://
 
@@ -1557,7 +1557,7 @@ checkr-partner:
         grant_type: authorization_code
     proxy:
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
@@ -1582,7 +1582,7 @@ checkr-partner-staging:
         grant_type: authorization_code
     proxy:
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
@@ -1644,7 +1644,7 @@ chorus:
             type: string
             title: API Key
             description: The API key for your Chorus account
-            doc_section: "#step-1-generating-your-chorus-api-key"
+            doc_section: '#step-1-generating-your-chorus-api-key'
 
 circle-so:
     display_name: Circle.so
@@ -1702,7 +1702,7 @@ cloudentity:
     categories:
         - other
     token_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -1822,9 +1822,9 @@ copper-api-key:
             type: string
             title: API Key
             description: The API key for your Copper account
-            pattern: "^[a-f0-9]{32}$"
-            example: "4f3c12efb9659a0b5c123b568745dbf9"
-            doc_section: "#step-1-finding-copper-api-key"
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-1-finding-copper-api-key'
     connection_config:
         userEmail:
             type: string
@@ -1849,7 +1849,7 @@ connectwise-psa:
             type: string
             title: ConnectWise PSA subdomain
             description: The subdomain to connect to ConnectWise PSA
-            pattern: "^api-(au|eu|na)$"
+            pattern: '^api-(au|eu|na)$'
             example: api-au
             suffix: .myconnectwise.net
             prefix: https://
@@ -1916,7 +1916,7 @@ contentful:
             type: string
             title: Contentful Domain
             description: The subdomain of your Contentful account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .contentful.com
             prefix: https://
@@ -1936,7 +1936,7 @@ contentstack:
             type: string
             title: Contentstack Domain
             description: The subdomain of your Contentstack account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .contentstack.com
             prefix: https://
@@ -1950,7 +1950,7 @@ contentstack:
             type: string
             title: API Domain
             description: The domain to where you will access your API
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: eu-api.contentstack.com
             prefix: https://
             order: 3
@@ -1999,7 +1999,7 @@ coupa-compass:
         - payment
         - invoicing
     auth_mode: OAUTH2_CC
-    scope_separator: " "
+    scope_separator: ' '
     token_url: https://${connectionConfig.instanceDomain}/oauth2/token
     token_params:
         grant_type: client_credentials
@@ -2062,7 +2062,7 @@ datev:
     authorization_url: https://login.datev.de/openid/authorize
     token_url: https://api.datev.de/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     default_scopes:
         - openid
     authorization_params:
@@ -2092,7 +2092,7 @@ datadog:
             method: GET
             endpoint: /v1/validate
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/datadog
     docs_connect: https://docs.nango.dev/integrations/all/datadog/connect
     connection_config:
@@ -2101,23 +2101,23 @@ datadog:
             title: Site Parameter
             description: The site parameter to datadog
             pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
-            example: "us5.datadoghq.com"
-            doc_section: "#step-1-finding-your-datadog-domain"
+            example: 'us5.datadoghq.com'
+            doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
             type: string
             title: Application Key
             description: The application key required for read data access
-            pattern: "^[a-f0-9]{40}$"
-            example: "5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7"
-            doc_section: "#step-3-datadog-application-key"
+            pattern: '^[a-f0-9]{40}$'
+            example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
+            doc_section: '#step-3-datadog-application-key'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Datadog account
-            pattern: "^[a-f0-9]{32}$"
-            example: "4f3c12efb9659a0b5c123b568745dbf9"
-            doc_section: "#step-2-datadog-api-key"
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-2-datadog-api-key'
 
 deel:
     display_name: Deel
@@ -2217,7 +2217,7 @@ discord:
     proxy:
         base_url: https://discord.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/discord
 
 discourse:
@@ -2228,7 +2228,7 @@ discourse:
     proxy:
         base_url: https://${connectionConfig.defaultHost}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         headers:
             api-username: ${connectionConfig.apiUsername}
             api-key: ${apiKey}
@@ -2272,7 +2272,7 @@ dixa:
             title: Api Type
             description: The Api type for your requests
             pattern: '^dev\|exports$'
-            example: "dev|exports"
+            example: 'dev|exports'
 
 docusign:
     display_name: DocuSign
@@ -2340,7 +2340,7 @@ emarsys:
             method: GET
             endpoint: /api/v2/settings
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     token:
         expires_in_ms: 300000
     docs: https://docs.nango.dev/integrations/all/emarsys
@@ -2349,12 +2349,12 @@ emarsys:
             type: string
             title: ID
             description: The ID of your Emarsys WSSE API Credentials
-            pattern: "^[a-zA-Z0-9_-]+$"
+            pattern: '^[a-zA-Z0-9_-]+$'
         password:
             type: string
             title: Client Secret
             description: The Client Secret of your Emarsys WSSE API Credentials
-            pattern: "^[a-zA-Z0-9-]+$"
+            pattern: '^[a-zA-Z0-9-]+$'
 
 emarsys-oauth:
     display_name: Emarsys (OAuth)
@@ -2368,7 +2368,7 @@ emarsys-oauth:
     proxy:
         base_url: https://api.emarsys.net
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys
 
 ebay:
@@ -2425,7 +2425,7 @@ egnyte:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
     token_url: https://${connectionConfig.subdomain}.egnyte.com/puboauth/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2440,7 +2440,7 @@ egnyte:
             type: string
             title: Egnyte Domain
             description: The subdomain of your Egnyte account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .egnyte.com
             prefix: https://
@@ -2482,7 +2482,7 @@ elevio:
             title: API Key
             description: The API key to your Elevio account
             pattern: '\b[a-f0-9]{40}\b'
-            example: "x12z67890dd34t8gq5j01ycc75912348"
+            example: 'x12z67890dd34t8gq5j01ycc75912348'
     connection_config:
         jwt:
             type: string
@@ -2503,7 +2503,7 @@ entrata:
             type: string
             title: Entrata Domain
             description: The subdomain of your Entrata account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .entrata.com
             prefix: https://
@@ -2515,7 +2515,7 @@ envoy:
     auth_mode: OAUTH2
     authorization_url: https://app.envoy.com/a/auth/v0/authorize
     token_url: https://app.envoy.com/a/auth/v0/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -2553,7 +2553,7 @@ evaluagent:
             title: Region
             description: The region of your EvaluAgent account
             example: eu
-            pattern: "^[a-z]+$"
+            pattern: '^[a-z]+$'
 
 eventbrite:
     display_name: Eventbrite
@@ -2608,7 +2608,7 @@ exact-online:
         headers:
             accept: application/json
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
         paginate:
             type: link
             link_path_in_response_body: d.__next
@@ -2619,7 +2619,7 @@ exact-online:
             title: Domain Extension
             description: The domain extension of your Exact Online account
             example: nl
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
 
 exist:
     display_name: Exist
@@ -2655,12 +2655,12 @@ expensify:
             type: string
             title: Partner User ID
             description: Your unique account identifier of Expensify
-            doc_section: "#step-1-finding-your-partneruserid-and-partnerusersecret"
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
         password:
             type: string
             title: Partner User Secret
             description: Unique secret for your account
-            doc_section: "#step-1-finding-your-partneruserid-and-partnerusersecret"
+            doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
     docs: https://docs.nango.dev/integrations/all/expensify
     docs_connect: https://docs.nango.dev/integrations/all/expensify/connect
 
@@ -2747,7 +2747,7 @@ findymail:
 
 firefish:
     display_name: Firefish
-    scope_separator: " "
+    scope_separator: ' '
     categories:
         - crm
     auth_mode: OAUTH2_CC
@@ -2839,7 +2839,7 @@ fortnox:
     authorization_url: https://apps.fortnox.se/oauth-v1/auth
     token_url: https://apps.fortnox.se/oauth-v1/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
         access_type: offline
@@ -2880,12 +2880,12 @@ freshdesk:
             type: string
             title: FreshDesk API Key
             description: The API Key of your FreshDesk account
-            doc_section: "#step-1-finding-your-freshdesk-api-key"
+            doc_section: '#step-1-finding-your-freshdesk-api-key'
             secret: true
         password:
             type: string
-            title: ""
-            description: ""
+            title: ''
+            description: ''
             default_value: X
             hidden: true
     connection_config:
@@ -2893,11 +2893,11 @@ freshdesk:
             type: string
             title: FreshDesk Domain
             description: The subdomain of your FreshDesk account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .freshdesk.com
             prefix: https://
-            doc_section: "#step-2-finding-your-freshdesk-domain"
+            doc_section: '#step-2-finding-your-freshdesk-domain'
 
 freshsales:
     display_name: Freshsales
@@ -2912,7 +2912,7 @@ freshsales:
         headers:
             authorization: Token token=${apiKey}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshsales
     docs_connect: https://docs.nango.dev/integrations/all/freshsales/connect
     connection_config:
@@ -2920,19 +2920,19 @@ freshsales:
             type: string
             title: Freshsales subdomain
             description: The subdomain of your Freshsales account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: subdomain
             suffix: .freshsales.io
             prefix: https://
-            doc_section: "#step-2-finding-your-freshsales-subdomain"
+            doc_section: '#step-2-finding-your-freshsales-subdomain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Freshsales account
             example: 4oBqA_AzM_G3xbW3TJGvrA
-            pattern: "[A-Za-z0-9_]{22}"
-            doc_section: "#step-1-finding-your-freshsales-api-key"
+            pattern: '[A-Za-z0-9_]{22}'
+            doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
     display_name: Freshservice
@@ -2945,7 +2945,7 @@ freshservice:
             method: GET
             endpoint: /api/v2/tickets
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/freshservice
     docs_connect: https://docs.nango.dev/integrations/all/freshservice/connect
     connection_config:
@@ -2953,25 +2953,25 @@ freshservice:
             type: string
             title: Freshservice subdomain
             description: The subdomain of your Freshservice account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: subdomain
             suffix: .freshservice.com
             prefix: https://
-            doc_section: "#step-2-finding-your-freshservice-subdomain"
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
     credentials:
         username:
             type: string
             title: API key
             description: The API Key of your Freshservice account
             secret: true
-            doc_section: "#step-1-finding-your-freshservice-api-key"
+            doc_section: '#step-1-finding-your-freshservice-api-key'
         password:
             type: string
-            title: ""
-            description: ""
+            title: ''
+            description: ''
             # https://api.freshservice.com/#authentication
             # FreshService is using basic auth with an api key, the basic username/password was deprecated
-            default_value: "X"
+            default_value: 'X'
             hidden: true
 
 freshteam:
@@ -2996,14 +2996,14 @@ freshteam:
             suffix: .freshteam.com
             prefix: https://
             order: 1
-            doc_section: "#step-1-finding-your-account-name"
+            doc_section: '#step-1-finding-your-account-name'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key to your Freshteam account
-            doc_section: "#step-2-finding-your-api-key"
-            example: "XtoF94LMNyKPbd5AvR1QJh"
+            doc_section: '#step-2-finding-your-api-key'
+            example: 'XtoF94LMNyKPbd5AvR1QJh'
             pattern: '^[a-zA-Z0-9_!@#$%^&*()\\-+=]+$'
 
 front:
@@ -3017,7 +3017,7 @@ front:
     proxy:
         base_url: https://api2.frontapp.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         paginate:
             type: link
             response_path: _results
@@ -3031,7 +3031,7 @@ gainsight-cc:
         - crm
     auth_mode: OAUTH2_CC
     token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -3044,8 +3044,8 @@ gainsight-cc:
             title: Region
             description: The region of your Gainsight account
             example: eu-west-1
-            pattern: "^[a-z]{2}-[a-z]+-[1-9]$"
-            doc_section: "#step-2-finding-your-region"
+            pattern: '^[a-z]{2}-[a-z]+-[1-9]$'
+            doc_section: '#step-2-finding-your-region'
 
 garmin:
     display_name: Garmin
@@ -3055,7 +3055,7 @@ garmin:
     request_url: https://connectapi.garmin.com/oauth-service/oauth/request_token
     authorization_url: https://connect.garmin.com/oauthConfirm
     token_url: https://connectapi.garmin.com/oauth-service/oauth/access_token
-    signature_method: "HMAC-SHA1"
+    signature_method: 'HMAC-SHA1'
     proxy:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
@@ -3068,7 +3068,7 @@ gebruder-weiss:
     authorization_url: https://my.api.gw-world.com/authorize
     token_url: https://my.api.gw-world.com/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -3098,7 +3098,7 @@ gemini:
             type: string
             title: API Key
             description: The API key for your Gemini account
-            doc_section: "#step-1-finding-you-api-key"
+            doc_section: '#step-1-finding-you-api-key'
 
 gerrit:
     display_name: Gerrit
@@ -3119,7 +3119,7 @@ gerrit:
             description: The host to where you Gerrit instance is hosted
             pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
             example: http://localhost:8080
-            doc_section: "#step-1-finding-your-host"
+            doc_section: '#step-1-finding-your-host'
             order: 1
 
 guru:
@@ -3139,7 +3139,7 @@ guru:
             type: string
             title: User/Collection ID
             description: The user or collection ID of your Guru account
-            doc_section: "#step-1-finding-your-user-collection-id"
+            doc_section: '#step-1-finding-your-user-collection-id'
         password:
             type: string
             title: User/Collection Token
@@ -3147,7 +3147,7 @@ guru:
             secret: true
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
-            doc_section: "#step-2-generating-your-user-collection-token"
+            doc_section: '#step-2-generating-your-user-collection-token'
 
 github:
     display_name: GitHub
@@ -3161,8 +3161,8 @@ github:
     proxy:
         base_url: https://api.github.com
         retry:
-            at: "x-ratelimit-reset"
-            remaining: "x-ratelimit-remaining"
+            at: 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
             error_code: 403
         paginate:
             type: link
@@ -3187,13 +3187,13 @@ github-app:
             title: App Public Link
             description: The public link of your GitHub App
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
             automated: true
         installation_id:
             type: string
             title: Installation ID
             description: The installation ID of your GitHub App
-            example: "38631545"
+            example: '38631545'
             automated: true
 
 github-app-oauth:
@@ -3218,13 +3218,13 @@ github-app-oauth:
             title: App Public Link
             description: The public link of your GitHub App
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
             automated: true
         installation_id:
             type: string
             title: Installation ID
             description: The installation ID of your GitHub App
-            example: "38631545"
+            example: '38631545'
             automated: true
 
 gitlab:
@@ -3265,13 +3265,13 @@ ghost-admin:
             type: string
             title: Ghost Admin Domain
             description: The domain of your Ghost Admin which can be different from your main domain
-            example: "mock.ghost.io"
+            example: 'mock.ghost.io'
             pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
         version:
             type: string
             title: API Version
             description: The version of the Ghost Admin API to use
-            example: "v3.0"
+            example: 'v3.0'
             pattern: '^v\d+\.\d+$'
 
 ghost-content:
@@ -3296,20 +3296,20 @@ ghost-content:
             type: string
             title: API Version
             description: The version of the Ghost Admin API to use
-            example: "v3.0"
+            example: 'v3.0'
             pattern: '^v\d+\.\d+$'
         adminDomain:
             type: string
             title: Ghost Admin Domain
             description: The domain of your Ghost Admin which can be different from your main domain
-            example: "mock.ghost.io"
+            example: 'mock.ghost.io'
             pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The content API key for your Ghost account
-            pattern: "^[a-zA-Z0-9]{26}$"
+            pattern: '^[a-zA-Z0-9]{26}$'
             example: a1b2c3d4e5f6g7h8i9j0k1l2m3
 
 gong:
@@ -3320,7 +3320,7 @@ gong:
     proxy:
         base_url: https://api.gong.io
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     docs_connect: https://docs.nango.dev/integrations/all/gong/connect
     credentials:
@@ -3328,14 +3328,14 @@ gong:
             type: string
             title: Access Key
             description: Your Gong Access Key
-            pattern: "^[a-zA-Z0-9-]+$"
-            doc_section: "#step-1-finding-gong-api-key-and-api-key-secret"
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
         password:
             type: string
             title: Access Key Secret
             description: Your Gong Access Key Secret
-            default_value: ""
-            doc_section: "#step-1-finding-gong-api-key-and-api-key-secret"
+            default_value: ''
+            doc_section: '#step-1-finding-gong-api-key-and-api-key-secret'
 
 gong-oauth:
     display_name: Gong (oauth)
@@ -3358,7 +3358,7 @@ gong-oauth:
     proxy:
         base_url: ${connectionConfig.api_base_url_for_customer} || https://api.gong.io
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gong
     connection_config:
         api_base_url_for_customer:
@@ -3366,7 +3366,7 @@ gong-oauth:
             title: API Base URL
             description: The base URL of your Gong account
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
 
 google:
     display_name: Google
@@ -3498,14 +3498,14 @@ gorgias:
     proxy:
         base_url: https://${connectionConfig.subdomain}.gorgias.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/gorgias
     connection_config:
         subdomain:
             type: string
             title: Gorgias Domain
             description: The subdomain of your Gorgias account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .gorgias.com
             prefix: https://
@@ -3558,7 +3558,7 @@ greenhouse:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -3569,7 +3569,7 @@ greenhouse:
             type: string
             title: Greenhouse API Domain
             description: The Greenhouse API Domain you want to connect to
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: harvest
             suffix: .greenhouse.io
             prefix: https://
@@ -3582,7 +3582,7 @@ greenhouse-basic:
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -3594,7 +3594,7 @@ greenhouse-basic:
             type: string
             title: Greenhouse API Domain
             description: The Greenhouse API Domain you want to connect to
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: harvest
             suffix: .greenhouse.io
             prefix: https://
@@ -3604,16 +3604,16 @@ greenhouse-basic:
             type: string
             title: API key
             description: The API Key of your Greenhouse account
-            pattern: "^[a-zA-Z0-9-]+$"
+            pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: "#step-1-finding-greenhouse-api-key"
+            doc_section: '#step-1-finding-greenhouse-api-key'
         password:
             type: string
             title: Password
             description: Password
             # https://developers.greenhouse.io/harvest.html#authentication
             # Greenhouse is using basic auth with an api key
-            default_value: ""
+            default_value: ''
             hidden: true
 
 gumroad:
@@ -3684,12 +3684,12 @@ hackerrank-work:
             type: string
             title: API Key
             description: Your HackerRank Work API Key
-            doc_section: "#step-1-finding-hackerrank-api-key"
+            doc_section: '#step-1-finding-hackerrank-api-key'
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
 
 harvest:
@@ -3699,7 +3699,7 @@ harvest:
     auth_mode: OAUTH2
     authorization_url: https://id.getharvest.com/oauth2/authorize
     token_url: https://id.getharvest.com/api/v2/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -3710,7 +3710,7 @@ harvest:
         headers:
             user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         base_url: https://api.harvestapp.com
     docs: https://docs.nango.dev/integrations/all/harvest
     connection_config:
@@ -3746,20 +3746,20 @@ hibob-service-user:
             method: GET
             endpoint: /v1/company/named-lists
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     credentials:
         username:
             type: string
             title: User name
             description: Your Hibob ID
-            doc_section: "#step-1-finding-your-hibob-service-user-id"
+            doc_section: '#step-1-finding-your-hibob-service-user-id'
         password:
             type: string
             title: Password
             description: Your Hibob Token
-            default_value: ""
+            default_value: ''
             hidden: true
-            doc_section: "#step-2-finding-your-hibob-token"
+            doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
 
@@ -3770,7 +3770,7 @@ highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     proxy:
         base_url: https://services.leadconnectorhq.com
     disable_pkce: true
@@ -3787,7 +3787,7 @@ highlevel-white-label:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.leadconnectorhq.com/oauth/chooselocation
     token_url: https://services.leadconnectorhq.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     proxy:
         base_url: https://services.leadconnectorhq.com
     disable_pkce: true
@@ -3858,7 +3858,7 @@ insightly:
             type: string
             title: Insightly Domain
             description: The subdomain of your Insightly account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .insightly.com
             prefix: https://
@@ -3869,10 +3869,10 @@ insightly:
             description: Your Insightly API key
         password:
             type: string
-            title: ""
-            description: ""
+            title: ''
+            description: ''
             hidden: true
-            default_value: ""
+            default_value: ''
 
 instantly:
     display_name: Instantly
@@ -3914,7 +3914,7 @@ intercom:
     proxy:
         base_url: https://api.intercom.io
         retry:
-            at: "x-ratelimit-reset"
+            at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/intercom
 
 intuit:
@@ -3962,7 +3962,7 @@ jira-basic:
     auth_mode: BASIC
     proxy:
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         base_url: https://${connectionConfig.subdomain}.atlassian.net
         verification:
             method: GET
@@ -3973,24 +3973,24 @@ jira-basic:
             type: string
             title: Jira Domain
             description: The subdomain of your Jira account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .atlassian.net
             prefix: https://
             order: 1
-            doc_section: "#step-2-finding-your-atlassian-domain"
+            doc_section: '#step-2-finding-your-atlassian-domain'
     credentials:
         username:
             type: string
             title: Email Address
             description: The Email Address of your Jira account
             format: email
-            doc_section: "#step-3-finding-your-user-name"
+            doc_section: '#step-3-finding-your-user-name'
         password:
             type: string
             title: API Key
             description: The API Key of your Jira account
-            doc_section: "#step-1-finding-atlassian-api-key"
+            doc_section: '#step-1-finding-atlassian-api-key'
     docs_connect: https://docs.nango.dev/integrations/all/jira-basic/connect
 
 jira-data-center:
@@ -4011,7 +4011,7 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            pattern: "^https://[a-z0-9.-]+.atlassian.net$"
+            pattern: '^https://[a-z0-9.-]+.atlassian.net$'
             example: https://foobar.atlassian.net
 
 jotform:
@@ -4035,7 +4035,7 @@ helpscout-docs:
     auth_mode: BASIC
     proxy:
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
         base_url: https://docsapi.helpscout.net
         verification:
             method: GET
@@ -4048,12 +4048,12 @@ helpscout-docs:
             title: API Key
             description: Your Help Scout Docs API Key
             secret: true
-            doc_section: "#step-1-finding-help-scout-api-key"
+            doc_section: '#step-1-finding-help-scout-api-key'
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: "X"
+            title: ''
+            description: ''
+            default_value: 'X'
             hidden: true
 
 helpscout-mailbox:
@@ -4069,7 +4069,7 @@ helpscout-mailbox:
         grant_type: refresh_token
     proxy:
         retry:
-            after: "x-ratelimit-retry-after"
+            after: 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
     docs: https://docs.nango.dev/integrations/all/helpscout
 
@@ -4109,17 +4109,17 @@ keeper-scim:
             type: string
             title: API Key
             description: The API key for your node keeper account
-            pattern: "^[A-Za-z0-9+/=]+$"
-            example: "J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2="
-            doc_section: "#step-2-finding-your-api-key-api-token"
+            pattern: '^[A-Za-z0-9+/=]+$'
+            example: 'J9b7kgdL2gf14d5F9p67zYXVrTZPTMEnl3/EmwwI9K2='
+            doc_section: '#step-2-finding-your-api-key-api-token'
     connection_config:
         node:
             type: string
             title: Node
             description: The node id to your Keeper account
             pattern: '^\d{15}$'
-            example: "123435384338765"
-            doc_section: "#step-1-finding-your-node-id"
+            example: '123435384338765'
+            doc_section: '#step-1-finding-your-node-id'
 
 klipfolio:
     display_name: Klipfolio
@@ -4150,19 +4150,19 @@ klaviyo:
         base_url: https://a.klaviyo.com
         headers:
             authorization: Klaviyo-API-Key ${apiKey}
-            revision: "2024-07-15"
+            revision: '2024-07-15'
         verification:
             method: GET
             endpoint: /api/accounts
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Klaviyo account
-            doc_section: "#step-1-finding-klaviyo-api-key"
+            doc_section: '#step-1-finding-klaviyo-api-key'
 
 klaviyo-oauth:
     display_name: Klaviyo (oauth)
@@ -4172,7 +4172,7 @@ klaviyo-oauth:
     authorization_url: https://www.klaviyo.com/oauth/authorize
     token_url: https://a.klaviyo.com/oauth/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -4182,9 +4182,9 @@ klaviyo-oauth:
     proxy:
         base_url: https://a.klaviyo.com
         headers:
-            revision: "2024-07-15"
+            revision: '2024-07-15'
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
 
 kustomer:
@@ -4195,7 +4195,7 @@ kustomer:
     proxy:
         base_url: https://${connectionConfig.extension}.kustomerapp.com
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/kustomer
@@ -4204,7 +4204,7 @@ kustomer:
             type: string
             title: Kustomer Domain
             description: The subdomain of your Kustomer account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .kustomerapp.com
             prefix: https://
@@ -4232,7 +4232,7 @@ lagrowthmachine:
             description: The API key for your La Growth Machine account
             example: 1bc32cba-a5d6-438a-bbcc-af312f560a3c
             format: uuid
-            doc_section: "#step-1-finding-your-api-key"
+            doc_section: '#step-1-finding-your-api-key'
 
 lastpass:
     display_name: LastPass
@@ -4248,13 +4248,13 @@ lastpass:
             type: string
             title: CID
             description: Your LastPass Account number
-            doc_section: "#step-1-finding-your-cid"
+            doc_section: '#step-1-finding-your-cid'
         password:
             type: string
             title: Provhash
-            description: "Your LastPass API key"
+            description: 'Your LastPass API key'
             secret: true
-            doc_section: "#step-2-generating-your-provhash"
+            doc_section: '#step-2-generating-your-provhash'
 
 lattice:
     display_name: Lattice
@@ -4268,7 +4268,7 @@ lattice:
             accept: application/json
             content-type: application/json
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/lattice
     docs_connect: https://docs.nango.dev/integrations/all/lattice/connect
     credentials:
@@ -4276,7 +4276,7 @@ lattice:
             type: string
             title: API Key
             description: The API key for your Lattice account
-            doc_section: "#step-1-finding-lattice-api-key"
+            doc_section: '#step-1-finding-lattice-api-key'
 
 lessonly:
     display_name: Lessonly
@@ -4324,12 +4324,12 @@ lever-basic:
             type: string
             title: User name
             description: The API Key of your lever account
-            doc_section: "#step-1-finding-lever-api-key"
+            doc_section: '#step-1-finding-lever-api-key'
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
 
 lever-sandbox:
@@ -4358,9 +4358,9 @@ lever-basic-sandbox:
             description: The API Key of your Lever sandbox account
         password:
             type: string
-            title: ""
-            description: ""
-            default_value: ""
+            title: ''
+            description: ''
+            default_value: ''
             hidden: true
 
 linear:
@@ -4371,14 +4371,14 @@ linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
     token_url: https://api.linear.app/oauth/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         prompt: consent
     proxy:
         base_url: https://api.linear.app
         retry:
-            at: "x-ratelimit-requests-reset"
-            remaining: "x-ratelimit-requests-remaining"
+            at: 'x-ratelimit-requests-reset'
+            remaining: 'x-ratelimit-requests-remaining'
             error_code: 400
     disable_pkce: true
     webhook_routing_script: linearWebhookRouting
@@ -4428,7 +4428,7 @@ loops-so:
             type: string
             title: API Key
             description: The API key for your Loops.so account
-            pattern: "^[a-f0-9]{32}$"
+            pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
 
 lucid-scim:
@@ -4449,7 +4449,7 @@ lucid-scim:
             type: string
             title: API Key
             description: The SCIM API key generated from the Lucid admin panel
-            doc_section: "#step-1-generate-the-bearer-token"
+            doc_section: '#step-1-generate-the-bearer-token'
 
 luma:
     display_name: Luma
@@ -4481,7 +4481,7 @@ listmonk:
         headers:
             content-type: application/json
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /lists
@@ -4525,13 +4525,13 @@ make:
             description: The domain of your Make account
             format: hostname
             prefix: https://
-            doc_section: "#step-2-finding-your-domain"
+            doc_section: '#step-2-finding-your-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Make account
-            doc_section: "#step-1-generating-an-api-key"
+            doc_section: '#step-1-generating-an-api-key'
 
 mailgun:
     display_name: Mailgun
@@ -4550,9 +4550,9 @@ mailgun:
             type: string
             title: Region
             description: The region of your Mailgun account
-            pattern: "^[a-z]+$"
+            pattern: '^[a-z]+$'
             example: us
-            doc_section: "#step-1-finding-your-mailgun-region"
+            doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
     display_name: Mailchimp
@@ -4601,7 +4601,7 @@ manatal:
             type: string
             title: API Key
             description: The API key for your Manatal account
-            doc_section: "#step-2-generate-an-api-key"
+            doc_section: '#step-2-generate-an-api-key'
 
 marketo:
     display_name: Marketo
@@ -4639,7 +4639,7 @@ malwarebytes:
     auth_mode: OAUTH2_CC
     token_url: https://api.malwarebytes.com/oauth2/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -4654,7 +4654,7 @@ malwarebytes:
             pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
             example: 9256034b-7967-4253-a5d9-260663e4fa4f
             order: 1
-            doc_section: "#step-1-finding-your-account-id"
+            doc_section: '#step-1-finding-your-account-id'
 
     docs: https://docs.nango.dev/integrations/all/malwarebytes
     docs_connect: https://docs.nango.dev/integrations/all/malwarebytes/connect
@@ -4672,7 +4672,7 @@ medallia:
         grant_type: client_credentials
     proxy:
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
         base_url: https://${connectionConfig.gatewayUrl}.apis.medallia.com
     docs: https://docs.nango.dev/integrations/all/medallia
     docs_connect: https://docs.nango.dev/integrations/all/medallia/connect
@@ -4683,19 +4683,19 @@ medallia:
             description: The domain of your Medallia account
             format: hostname
             prefix: https://
-            doc_section: "#step-3-connect-your-medallia-account"
+            doc_section: '#step-3-connect-your-medallia-account'
         tenantName:
             type: string
             title: Tenant Name
             description: The tenant name of your Medallia account
-            doc_section: "#step-3-connect-your-medallia-account"
+            doc_section: '#step-3-connect-your-medallia-account'
         gatewayUrl:
             type: string
             title: Gateway URL
             description: The gateway URL of your Medallia account
             format: hostname
             prefix: https://
-            doc_section: "#step-3-connect-your-medallia-account"
+            doc_section: '#step-3-connect-your-medallia-account'
 
 metabase:
     display_name: Metabase
@@ -4716,15 +4716,15 @@ metabase:
             type: string
             title: Metabase Domain
             description: The domain (without the extension) of your Metabase account
-            pattern: "^[a-z0-9.-]+$"
+            pattern: '^[a-z0-9.-]+$'
             example: metabase
-            doc_section: "#step-2-finding-your-metabase-domain"
+            doc_section: '#step-2-finding-your-metabase-domain'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
-            doc_section: "#step-1-generating-an-api-key"
+            doc_section: '#step-1-generating-an-api-key'
 
 microsoft:
     display_name: Microsoft
@@ -4745,7 +4745,7 @@ microsoft:
     proxy:
         base_url: https://graph.microsoft.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 
@@ -4805,15 +4805,15 @@ microsoft-business-central:
             description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
-            doc_section: "#step-1-finding-your-tenant-id"
+            doc_section: '#step-1-finding-your-tenant-id'
             order: 1
         environmentName:
             type: string
             title: Enrivonment Name
             description: The environment name to your organization
             example: production
-            pattern: "^[a-zA-Z0-9-_]+$"
-            doc_section: "#step-2-finding-your-enrivonment-name"
+            pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-finding-your-enrivonment-name'
             order: 2
 
 microsoft-ads:
@@ -4868,24 +4868,24 @@ mindbody:
             type: string
             title: API Key
             description: The API key for your Mindbody account
-            pattern: "^[a-f0-9]{32}$"
+            pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
-            doc_section: "#step-2-generate-api-key"
+            doc_section: '#step-2-generate-api-key'
     connection_config:
         siteId:
             type: string
             title: Site ID
             description: The site ID for your Mindbody account
             pattern: '^\d+$'
-            example: "-99"
-            doc_section: "#step-3-obtain-site-id-and-staff-user-token"
+            example: '-99'
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
         staffUserToken:
             type: string
             title: Staff User Token
             description: The staff user token for your Mindbody account
-            pattern: "^[a-f0-9]{32}$"
+            pattern: '^[a-f0-9]{32}$'
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
-            doc_section: "#step-3-obtain-site-id-and-staff-user-token"
+            doc_section: '#step-3-obtain-site-id-and-staff-user-token'
 
 mixpanel:
     display_name: Mixpanel
@@ -4900,12 +4900,12 @@ mixpanel:
             type: string
             title: Service Account Username
             description: Mixpanel Service Account Username
-            doc_section: "#step-1-finding-mixpanel-api-key"
+            doc_section: '#step-1-finding-mixpanel-api-key'
         password:
             type: string
             title: Service Account Secret
             description: Mixpanel Service Account Secret
-            doc_section: "#step-1-finding-mixpanel-api-key"
+            doc_section: '#step-1-finding-mixpanel-api-key'
     docs: https://docs.nango.dev/integrations/all/mixpanel
     docs_connect: https://docs.nango.dev/integrations/all/mixpanel/connect
 
@@ -4947,7 +4947,7 @@ miro-scim:
             type: string
             title: API Key
             description: The API key for your Miro scim account
-            doc_section: "#step-1-finding-miro-api-key"
+            doc_section: '#step-1-finding-miro-api-key'
 
 monday:
     display_name: Monday
@@ -5015,14 +5015,14 @@ netsuite:
     proxy:
         base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/netsuite
     connection_config:
         accountId:
             type: string
             title: Account ID
             description: The account ID of your NetSuite account
-            pattern: "^[a-zA-Z0-9-_]+$"
+            pattern: '^[a-zA-Z0-9-_]+$'
             example: tstdrv231585
 
 netsuite-tba:
@@ -5037,7 +5037,7 @@ next-cloud-ocs:
     proxy:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
-            "ocs-apirequest": "true"
+            'ocs-apirequest': 'true'
     docs: http://docs.nango.dev/integrations/all/next-cloud
     docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
@@ -5047,7 +5047,7 @@ next-cloud-ocs:
             description: The domain of your Next Cloud account
             format: hostname
             prefix: https://
-            doc_section: "#step-1-locate-your-next-cloud-domain"
+            doc_section: '#step-1-locate-your-next-cloud-domain'
 
 notion:
     display_name: Notion
@@ -5064,10 +5064,10 @@ notion:
     body_format: json
     proxy:
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         base_url: https://api.notion.com
         headers:
-            "notion-version": "2022-06-28"
+            'notion-version': '2022-06-28'
         paginate:
             type: cursor
             cursor_path_in_response: next_cursor
@@ -5096,7 +5096,7 @@ notion-scim:
             type: string
             title: API Key
             description: The API key for your Notion scim account
-            doc_section: "#step-1-finding-your-scim-api-key-token"
+            doc_section: '#step-1-finding-your-scim-api-key-token'
 
 odoo:
     display_name: Odoo
@@ -5149,13 +5149,13 @@ odoo-cc:
             title: Consumer ID
             description: Your App Consumer ID
             secret: true
-            doc_section: "#step-2-generating-your-odoo-client-credentials"
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
         consumerSecret:
             type: string
             title: Consumer Secret
             description: Your App Consumer Secret
             secret: true
-            doc_section: "#step-2-generating-your-odoo-client-credentials"
+            doc_section: '#step-2-generating-your-odoo-client-credentials'
     connection_config:
         serverUrl:
             type: string
@@ -5165,7 +5165,7 @@ odoo-cc:
             example: example.odoo.com
             prefix: https://
             order: 1
-            doc_section: "#step-1-finding-your-odoo-domain"
+            doc_section: '#step-1-finding-your-odoo-domain'
 
 okta:
     display_name: Okta
@@ -5182,18 +5182,18 @@ okta:
     proxy:
         base_url: https://${connectionConfig.subdomain}.okta.com
         retry:
-            at: "x-rate-limit-reset"
+            at: 'x-rate-limit-reset'
         paginate:
-            type: "link"
-            limit_name_in_request: "limit"
-            link_rel_in_response_header: "next"
+            type: 'link'
+            limit_name_in_request: 'limit'
+            link_rel_in_response_header: 'next'
     docs: https://docs.nango.dev/integrations/all/okta
     connection_config:
         subdomain:
             type: string
             title: Okta Domain
             description: The subdomain of your Okta account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .okta.com
             prefix: https://
@@ -5211,7 +5211,7 @@ okta-preview:
             type: string
             title: Okta Preview Domain
             description: The subdomain of your Okta Preview account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .oktapreview.com
             prefix: https://
@@ -5246,7 +5246,7 @@ openai:
             method: GET
             endpoint: /v1/models
         retry:
-            after: "x-ratelimit-reset-requests"
+            after: 'x-ratelimit-reset-requests'
     docs: https://docs.nango.dev/integrations/all/openai
     docs_connect: https://docs.nango.dev/integrations/all/openai/connect
     credentials:
@@ -5254,7 +5254,7 @@ openai:
             type: string
             title: API Key
             description: The API key for your OpenAI account
-            doc_section: "#step-1-retrieve-your-openai-api-key"
+            doc_section: '#step-1-retrieve-your-openai-api-key'
 
 ory:
     display_name: Ory
@@ -5264,7 +5264,7 @@ ory:
     proxy:
         base_url: https://${connectionConfig.projectSlug}.projects.oryapis.com
     token_url: https://${connectionConfig.projectSlug}.projects.oryapis.com/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/ory
@@ -5300,7 +5300,7 @@ oura:
     auth_mode: OAUTH2
     authorization_url: https://cloud.ouraring.com/oauth/authorize
     token_url: https://api.ouraring.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -5431,7 +5431,7 @@ pendo:
             type: string
             title: API Key
             description: The API key for your Pendo account
-            doc_section: "#step-1-finding-pendo-api-key"
+            doc_section: '#step-1-finding-pendo-api-key'
 
 pennylane:
     display_name: Pennylane
@@ -5445,7 +5445,7 @@ pennylane:
     token_url: https://app.pennylane.com/oauth/token
     proxy:
         base_url: https://app.pennylane.com
-    scope_separator: "+"
+    scope_separator: '+'
     authorization_params:
         response_type: code
     token_params:
@@ -5488,7 +5488,7 @@ perplexity:
             type: string
             title: API Key
             description: The API key for your Perplexity account
-            pattern: "^pplx-[a-f0-9]+$"
+            pattern: '^pplx-[a-f0-9]+$'
             example: pplx-xxxxxx
 
 perimeter81:
@@ -5516,8 +5516,8 @@ perimeter81:
             title: Domain
             description: The domain for Perimeter81
             pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
-            example: "(perimeter81,eu.sase.checkpoint)"
-            doc_section: "#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key"
+            example: '(perimeter81,eu.sase.checkpoint)'
+            doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
             suffix: .com
             prefix: https://api.
             order: 1
@@ -5547,12 +5547,12 @@ personio:
             type: string
             title: Partner ID
             description: The partner ID of your Personio account
-            doc_section: "#step-1-finding-personio-client-id"
+            doc_section: '#step-1-finding-personio-client-id'
         appId:
             type: string
             title: App ID
             description: The app ID of your Personio account
-            doc_section: "#step-2-finding-personio-client-secret"
+            doc_section: '#step-2-finding-personio-client-secret'
 
 personio-v2:
     display_name: Personio (v2)
@@ -5564,7 +5564,7 @@ personio-v2:
         headers:
             content-type: application/x-www-form-urlencoded
     token_url: https://api.personio.de/v2/auth/token
-    scope_separator: " "
+    scope_separator: ' '
     docs: https://docs.nango.dev/integrations/all/personio
     token_params:
         grant_type: client_credentials
@@ -5620,7 +5620,7 @@ pingboard:
     proxy:
         base_url: https://app.pingboard.com/api/v2
     token_url: https://app.pingboard.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/pingboard
@@ -5670,7 +5670,7 @@ pipedrive:
             title: API URL
             description: The API URL of your Pipedrive account
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
 
 pivotaltracker:
     display_name: Pivotal Tracker
@@ -5718,7 +5718,7 @@ podium:
     auth_mode: OAUTH2
     authorization_url: https://api.podium.com/oauth/authorize
     token_url: https://api.podium.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     body_format: json
     authorization_params:
         response_type: code
@@ -5732,7 +5732,7 @@ podium:
             content-type: application/json
         base_url: https://api.podium.com
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/podium
     connection_config:
         apiVersion:
@@ -5759,7 +5759,7 @@ posthog:
             type: string
             title: PostHog Domain
             description: The subdomain of your PostHog account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .posthog.com
             prefix: https://
@@ -5768,7 +5768,7 @@ posthog:
             type: string
             title: API Key
             description: The API key for your PostHog account
-            doc_section: "#step-1-finding-your-posthog-api-key"
+            doc_section: '#step-1-finding-your-posthog-api-key'
 
 productboard:
     display_name: Productboard
@@ -5777,7 +5777,7 @@ productboard:
     auth_mode: OAUTH2
     authorization_url: https://app.productboard.com/oauth2/authorize
     token_url: https://app.productboard.com/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -5786,7 +5786,7 @@ productboard:
         grant_type: refresh_token
     proxy:
         headers:
-            x-version: "1"
+            x-version: '1'
         base_url: https://api.productboard.com
     docs: https://docs.nango.dev/integrations/all/productboard
 
@@ -5805,7 +5805,7 @@ qualtrics:
             type: string
             title: Qualtrics Domain
             description: The subdomain of your Qualtrics account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .qualtrics.com
             prefix: https://
@@ -5832,8 +5832,8 @@ quickbooks:
             optional: true
             description: The realmId of your quickbooks company
             pattern: '^\d{16}$'
-            example: "9341453474484455"
-            doc_section: "#step-1-finding-your-realm-id"
+            example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 quickbooks-sandbox:
     alias: quickbooks
@@ -5851,8 +5851,8 @@ quickbooks-sandbox:
             optional: true
             description: The realmId of your quickbooks sandbox company
             pattern: '^\d{16}$'
-            example: "9341453474484455"
-            doc_section: "#step-1-finding-your-realm-id"
+            example: '9341453474484455'
+            doc_section: '#step-1-finding-your-realm-id'
 
 ragieai:
     display_name: Ragie AI
@@ -5873,7 +5873,7 @@ ragieai:
             title: API Key
             description: The API key for your ragie.ai account
             example: tnt_IZ56tqGVgX9_k8CKnxQ9MvQgzDXcDGgtcjXABkwusxSOR8QzwxxeA1B
-            pattern: "^tnt_[a-zA-Z0-9_]+$"
+            pattern: '^tnt_[a-zA-Z0-9_]+$'
 
 ramp:
     display_name: Ramp
@@ -5914,13 +5914,13 @@ rapidapi:
             title: API Key
             description: The API key for your RapidAPI account
             example: b7c156af2dmgh5c635305f3744bap168553jsp75193c8367ef
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
     connection_config:
         subdomain:
             type: string
             title: Subdomain
             description: The subdomain of the Rapid API.
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: api-football-v1
             suffix: .p.rapidapi.com
             prefix: https://
@@ -5942,8 +5942,8 @@ recharge:
             title: API Token
             description: The API Token for your Recharge account
             example: sk_test_1p1_**************************************************
-            pattern: "^[a-zA-Z0-9_]+$"
-            doc_section: "#step-1-generating-your-api-token"
+            pattern: '^[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-token'
 
 reddit:
     display_name: Reddit
@@ -6073,7 +6073,7 @@ sage-intacct:
                 password: ${credential.senderPassword}
                 controlid: ${now}
                 uniqueid: false
-                dtdversion: "3.0"
+                dtdversion: '3.0'
                 includewhitespace: false
             operation:
                 authentication:
@@ -6083,8 +6083,8 @@ sage-intacct:
                         password: ${credential.userPassword}
                 content:
                     function:
-                        $controlid: "{{$guid}}"
-                        getAPISession: ""
+                        $controlid: '{{$guid}}'
+                        getAPISession: ''
     token_headers:
         content-type: application/xml
     token_response:
@@ -6098,7 +6098,7 @@ sage-intacct:
             type: string
             title: Sender ID
             description: Your Sage Intacct Sender ID
-            doc_section: "#step-1-how-to-retrieve-the-sender-id"
+            doc_section: '#step-1-how-to-retrieve-the-sender-id'
         senderPassword:
             type: string
             title: Sender Password
@@ -6108,12 +6108,12 @@ sage-intacct:
             type: string
             title: User ID
             description: Your Sage Intacct User ID
-            doc_section: "#step-2-how-to-retrieve-the-user-id"
+            doc_section: '#step-2-how-to-retrieve-the-user-id'
         companyId:
             type: string
             title: Company ID
             description: Your Sage Intacct Company ID
-            doc_section: "#step-3-how-to-retrieve-the-company-id"
+            doc_section: '#step-3-how-to-retrieve-the-company-id'
         userPassword:
             type: string
             title: User Password
@@ -6144,7 +6144,7 @@ salesforce:
             title: Instance URL
             description: The instance URL of your Salesforce account
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
             automated: true
 
 salesforce-sandbox:
@@ -6165,7 +6165,7 @@ salesforce-sandbox:
             title: Instance URL
             description: The instance URL of your Salesforce account
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
             automated: true
 
 salesforce-experience-cloud:
@@ -6185,7 +6185,7 @@ salesforce-experience-cloud:
             type: string
             title: Salesforce Domain
             description: The subdomain of your Salesforce Experience Cloud account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .my.site.com
             prefix: https://
@@ -6194,7 +6194,7 @@ salesforce-experience-cloud:
             title: Instance URL
             description: The instance URL of your Salesforce Experience Cloud account
             format: uri
-            pattern: "^https?://.*$"
+            pattern: '^https?://.*$'
             automated: true
 sap-success-factors:
     display_name: SAP SuccessFactors
@@ -6222,18 +6222,18 @@ sap-success-factors:
             type: string
             title: API Server
             description: The API Server to connect to your SAP SuccessFactors account
-            pattern: "^[a-z0-9.-]+$"
+            pattern: '^[a-z0-9.-]+$'
             example: api41preview.sapsf.com
             prefix: https://
-            doc_section: "#step-1-finding-your-api-server"
+            doc_section: '#step-1-finding-your-api-server'
             order: 1
         companyId:
             type: string
             title: Company ID
             description: The company ID of your SAP SuccessFactors account
             example: SFSALES012345
-            pattern: "^[A-Z0-9]+$"
-            doc_section: "#step-2-finding-your-company-id"
+            pattern: '^[A-Z0-9]+$'
+            doc_section: '#step-2-finding-your-company-id'
             order: 2
     credentials:
         apiKey:
@@ -6241,13 +6241,13 @@ sap-success-factors:
             title: API Key
             description: The API key for your SAP SuccessFactors account
             secret: true
-            doc_section: "#step-3-generating-your-api-key"
+            doc_section: '#step-3-generating-your-api-key'
         assertion:
             type: string
             title: SAML Assertion
             description: The SAML Assertion generated for your SAP SuccessFactors account
             secret: true
-            doc_section: "#step-4-generating-your-saml-assertion"
+            doc_section: '#step-4-generating-your-saml-assertion'
 
 scrapedo:
     display_name: Scrape.do
@@ -6266,8 +6266,8 @@ scrapedo:
             title: API Token
             description: The API Token for your Scrape.do account
             example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
-            pattern: "^[a-zA-Z0-9]+$"
-            doc_section: "#step-1-finding-your-api-key"
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
 
 salesloft:
     display_name: Salesloft
@@ -6296,7 +6296,7 @@ sendgrid:
             type: string
             title: API Key
             description: The API key for your Sendgrid account
-            doc_section: "#step-1-generating-your-sendgrid-api-key"
+            doc_section: '#step-1-generating-your-sendgrid-api-key'
 
 sedna:
     display_name: Sedna (Oauth2)
@@ -6308,7 +6308,7 @@ sedna:
     token_url: https://${connectionConfig.tenant}.sednanetwork.com/platform/oauth/token
     token_params:
         grant_type: client_credentials
-    scope_separator: ","
+    scope_separator: ','
     docs: https://docs.nango.dev/integrations/all/sedna
     connection_config:
         tenant:
@@ -6339,7 +6339,7 @@ servicem8:
     token_url: https://go.servicem8.com/oauth/access_token
     proxy:
         base_url: https://api.servicem8.com
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -6407,7 +6407,7 @@ servicenow:
             type: string
             title: ServiceNow Domain
             description: The subdomain of your ServiceNow account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .service-now.com
             prefix: https://
@@ -6453,15 +6453,15 @@ sharepoint-online-v1:
             description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
-            doc_section: "#step-1-finding-your-tenant-id"
+            doc_section: '#step-1-finding-your-tenant-id'
             order: 1
         tenantName:
             type: string
             title: Tenant Name
             description: The initial domain name for your Microsoft services tenant
             example: mycompany
-            pattern: "^[a-zA-Z0-9]+$"
-            doc_section: "#step-2-finding-your-tenant-name"
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-2-finding-your-tenant-name'
             order: 2
     credentials:
         clientId:
@@ -6469,13 +6469,13 @@ sharepoint-online-v1:
             title: Client ID
             description: Your application Client ID
             secret: true
-            doc_section: "#step-3-finding-your-client-id"
+            doc_section: '#step-3-finding-your-client-id'
         assertion:
             type: string
             title: Client Assertion
             description: Your generated client assertion
             secret: true
-            doc_section: "#step-4-generating-your-client-assertion"
+            doc_section: '#step-4-generating-your-client-assertion'
 
 shipstation:
     display_name: Shipstation
@@ -6485,7 +6485,7 @@ shipstation:
     proxy:
         base_url: https://ssapi.shipstation.com
         retry:
-            after: "x-rate-limit-reset"
+            after: 'x-rate-limit-reset'
         verification:
             method: GET
             endpoint: /users
@@ -6496,14 +6496,14 @@ shipstation:
             type: string
             title: API Key
             description: Your ShipStation API key
-            doc_section: "#step-1-finding-shipstation-api-key-and-api-secret"
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Shipstation API secret
             # https://www.shipstation.com/docs/api/requirements/#authentication
             # Shipstation is using basic auth with API key and secret
-            doc_section: "#step-1-finding-shipstation-api-key-and-api-secret"
+            doc_section: '#step-1-finding-shipstation-api-key-and-api-secret'
 
 shopify:
     display_name: Shopify
@@ -6523,11 +6523,11 @@ shopify:
             type: string
             title: Shopify Domain
             description: The subdomain of your Shopify account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .myshopify.com
             prefix: https://
-            doc_section: "#step-1-finding-your-shopify-domain"
+            doc_section: '#step-1-finding-your-shopify-domain'
 
 shopify-api-key:
     display_name: Shopify (api key)
@@ -6549,11 +6549,11 @@ shopify-api-key:
             type: string
             title: Shopify Domain
             description: The subdomain of your Shopify account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .myshopify.com
             prefix: https://
-            doc_section: "#step-1-finding-your-shopify-domain"
+            doc_section: '#step-1-finding-your-shopify-domain'
             order: 1
     credentials:
         apiKey:
@@ -6561,8 +6561,8 @@ shopify-api-key:
             title: API Access Token
             description: The API access token generated
             example: shpat_***************c03266f
-            pattern: "^shpat_[a-f0-9]{32}$"
-            doc_section: "#step-2-generating-your-api-access-token"
+            pattern: '^shpat_[a-f0-9]{32}$'
+            doc_section: '#step-2-generating-your-api-access-token'
 
 shopify-scim:
     display_name: Shopify (SCIM API)
@@ -6576,7 +6576,7 @@ shopify-scim:
             accept: application/json
             content-type: application/json
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify
     docs_connect: https://docs.nango.dev/integrations/all/shopify-scim/connect
     credentials:
@@ -6584,7 +6584,7 @@ shopify-scim:
             type: string
             title: SCIM API Token
             description: The SCIM API token generated from your Shopify organization settings.
-            doc_section: "#step-1-generating-your-scim-api-token"
+            doc_section: '#step-1-generating-your-scim-api-token'
 
 shortcut:
     display_name: Shortcut
@@ -6665,8 +6665,8 @@ smugmug:
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
     authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
     token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
-    scope_separator: ","
-    signature_method: "PLAINTEXT"
+    scope_separator: ','
+    signature_method: 'PLAINTEXT'
     proxy:
         base_url: https://www.smugmug.com
     docs: https://docs.nango.dev/integrations/all/smugmug
@@ -6731,7 +6731,7 @@ spotify-oauth2-cc:
     auth_mode: OAUTH2_CC
     token_url: https://accounts.spotify.com/api/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -6747,7 +6747,7 @@ squarespace:
     authorization_url: https://login.squarespace.com/api/1/login/oauth/provider/authorize
     token_url: https://login.squarespace.com/api/1/login/oauth/provider/tokens
     token_request_auth_method: basic
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
     token_params:
@@ -6824,7 +6824,7 @@ strava:
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/mobile/authorize
     token_url: https://www.strava.com/api/v3/oauth/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
         approval_prompt: auto
@@ -6844,7 +6844,7 @@ strava-web:
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/authorize
     token_url: https://www.strava.com/api/v3/oauth/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
         approval_prompt: force
@@ -6973,10 +6973,10 @@ teamtailor:
     proxy:
         base_url: https://${connectionConfig.extension}.teamtailor.com
         retry:
-            after: "x-rate-limit-reset"
+            after: 'x-rate-limit-reset'
         headers:
             authorization: Token token=${apiKey}
-            x-api-version: "20210218"
+            x-api-version: '20210218'
         verification:
             method: GET
             endpoint: /v1/users
@@ -6986,7 +6986,7 @@ teamtailor:
             type: string
             title: Teamtailor Domain
             description: The subdomain of your Teamtailor instance
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .teamtailor.com
             prefix: https://
@@ -7018,7 +7018,7 @@ ticktick:
     auth_mode: OAUTH2
     authorization_url: https://ticktick.com/oauth/authorize
     token_url: https://ticktick.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     proxy:
         base_url: https://api.ticktick.com
     docs: https://docs.nango.dev/integrations/all/ticktick
@@ -7041,7 +7041,7 @@ tiktok-accounts:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    scope_separator: ","
+    scope_separator: ','
     docs: https://docs.nango.dev/integrations/all/tiktok-accounts
 
 tiktok-ads:
@@ -7085,7 +7085,7 @@ thrivecart-oauth:
     auth_mode: OAUTH2
     authorization_url: https://thrivecart.com/authorization/new
     token_url: https://thrivecart.com/authorization/token
-    scope_separator: " "
+    scope_separator: ' '
     proxy:
         base_url: https://thrivecart.com/api/external
     docs: https://docs.nango.dev/integrations/all/thrivecart
@@ -7109,8 +7109,8 @@ thrivecart-api-key:
             type: string
             title: API Key
             description: The API key for your ThriveCart account
-            example: "ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ"
-            pattern: "^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$"
+            example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
+            pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
 
 tremendous:
     display_name: Tremendous
@@ -7119,7 +7119,7 @@ tremendous:
     auth_mode: OAUTH2
     authorization_url: https://api.tremendous.com/oauth/authorize
     token_url: https://api.tremendous.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -7137,7 +7137,7 @@ tremendous-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://testflight.tremendous.com/oauth/authorize
     token_url: https://testflight.tremendous.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -7157,8 +7157,8 @@ trello:
     request_url: https://trello.com/1/OAuthGetRequestToken
     authorization_url: https://trello.com/1/OAuthAuthorizeToken
     token_url: https://trello.com/1/OAuthGetAccessToken
-    signature_method: "HMAC-SHA1"
-    scope_separator: ","
+    signature_method: 'HMAC-SHA1'
+    scope_separator: ','
     authorization_params:
         expiration: never
     proxy:
@@ -7184,7 +7184,7 @@ trello-scim:
             type: string
             title: API Key
             description: The API key for your Trello scim account
-            doc_section: "#step-1-finding-your-trello-api-key"
+            doc_section: '#step-1-finding-your-trello-api-key'
 
 tsheetsteam:
     display_name: TSheets
@@ -7212,7 +7212,7 @@ todoist:
     auth_mode: OAUTH2
     authorization_url: https://todoist.com/oauth/authorize
     token_url: https://todoist.com/oauth/access_token
-    scope_separator: ","
+    scope_separator: ','
     proxy:
         base_url: https://api.todoist.com
     docs: https://docs.nango.dev/integrations/all/todoist
@@ -7225,7 +7225,7 @@ tumblr:
     auth_mode: OAUTH2
     authorization_url: https://www.tumblr.com/oauth2/authorize
     token_url: https://api.tumblr.com/v2/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -7266,7 +7266,7 @@ twitter:
     request_url: https://api.twitter.com/oauth/request_token
     authorization_url: https://api.twitter.com/oauth/authorize
     token_url: https://api.twitter.com/oauth/access_token
-    signature_method: "HMAC-SHA1"
+    signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
     proxy:
@@ -7301,7 +7301,7 @@ twitter-oauth2-cc:
     auth_mode: OAUTH2_CC
     token_url: https://api.twitter.com/oauth2/token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
@@ -7318,7 +7318,7 @@ twinfield:
         nonce: AnotherRandomStringTwinfield
     refresh_params:
         grant_type: refresh_token
-    scope_separator: " "
+    scope_separator: ' '
     default_scopes:
         - openid
         - twf.user
@@ -7334,7 +7334,7 @@ twinfield:
             type: string
             title: Twinfield Cluster
             description: The cluster to your Twinfield instance
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: accounting
             suffix: .twinfield.com
             prefix: https://
@@ -7349,7 +7349,7 @@ twenty-crm:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /companies
@@ -7359,7 +7359,7 @@ twenty-crm:
             type: string
             title: API Key
             description: The API key for your Twenty CRM account
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc"
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
             pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
 
 twenty-crm-self-hosted:
@@ -7372,7 +7372,7 @@ twenty-crm-self-hosted:
         headers:
             authorization: Bearer ${apiKey}
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         verification:
             method: GET
             endpoint: /companies
@@ -7382,7 +7382,7 @@ twenty-crm-self-hosted:
             type: string
             title: API Key
             description: The API key for your Twenty CRM account
-            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc"
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc'
             pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
     connection_config:
         domain:
@@ -7470,25 +7470,25 @@ unanet:
             type: string
             title: Firm ID
             description: The firm ID of your Unanet instance
-            doc_section: "#step-2-finding-the-firm-id"
+            doc_section: '#step-2-finding-the-firm-id'
         apiKey:
             type: string
             title: API Key
             description: The API key of your Unanet instance
             secret: true
-            doc_section: "#step-3-finding-the-api-key"
+            doc_section: '#step-3-finding-the-api-key'
     credentials:
         username:
             type: string
             title: User name
             description: Your Unanet username
-            doc_section: "#step-1-finding-username-and-password"
+            doc_section: '#step-1-finding-username-and-password'
         password:
             type: string
             title: Password
             description: Your Unanet password
-            default_value: ""
-            doc_section: "#step-1-finding-username-and-password"
+            default_value: ''
+            doc_section: '#step-1-finding-username-and-password'
 
 unauthenticated:
     display_name: Unauthenticated
@@ -7520,7 +7520,7 @@ unipile:
             type: string
             title: Subdomain
             description: The subdomain of your Unipile instance
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: api1
             suffix: .unipile.com
             prefix: https://
@@ -7528,8 +7528,8 @@ unipile:
             type: string
             title: Port
             description: The port of your Unipile instance
-            pattern: "^[0-9]+$"
-            example: "13113"
+            pattern: '^[0-9]+$'
+            example: '13113'
 
 vimeo:
     display_name: Vimeo
@@ -7539,7 +7539,7 @@ vimeo:
     authorization_url: https://api.vimeo.com/oauth/authorize
     token_url: https://api.vimeo.com/oauth/access_token
     token_request_auth_method: basic
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -7637,7 +7637,7 @@ whatsapp-business:
             type: string
             title: API Key
             description: The access token to your whatsapp account
-            pattern: "^[a-zA-Z0-9]+$"
+            pattern: '^[a-zA-Z0-9]+$'
 
 whoop:
     display_name: Whoop
@@ -7651,7 +7651,7 @@ whoop:
     proxy:
         base_url: https://api.prod.whoop.com/
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
         paginate:
             type: cursor
             offset_name_in_request: nextToken
@@ -7675,7 +7675,7 @@ wildix-pbx:
             type: string
             title: Wildix Domain
             description: The subdomain of your Wildix instance
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .wildixin.com
             prefix: https://
@@ -7689,7 +7689,7 @@ wordpress:
     auth_mode: OAUTH2
     authorization_url: https://public-api.wordpress.com/oauth2/authorize
     token_url: https://public-api.wordpress.com/oauth2/token
-    scope_separator: " "
+    scope_separator: ' '
     authorization_params:
         response_type: code
     token_params:
@@ -7722,13 +7722,13 @@ woocommerce:
             type: string
             title: User name
             description: Your woocommerce Consumer Key
-            doc_section: "#step-1-finding-your-woocommerce-consumer-key"
+            doc_section: '#step-1-finding-your-woocommerce-consumer-key'
         password:
             type: string
             title: Password
             description: Your woocommerce Consumer Secret
-            default_value: ""
-            doc_section: "#step-2-finding-your-woocommerce-consumer-secret"
+            default_value: ''
+            doc_section: '#step-2-finding-your-woocommerce-consumer-secret'
 
 workable:
     display_name: Workable
@@ -7740,7 +7740,7 @@ workable:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: "x-rate-limit-reset"
+            at: 'x-rate-limit-reset'
     post_connection_script: workablePostConnection
     docs: https://docs.nango.dev/integrations/all/workable
     docs_connect: https://docs.nango.dev/integrations/all/workable/connect
@@ -7749,7 +7749,7 @@ workable:
             type: string
             title: Workable Domain
             description: The subdomain of your Workable account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workable.com
             prefix: https://
@@ -7759,7 +7759,7 @@ workable:
             type: string
             title: API Key
             description: The API key for your Workable account
-            doc_section: "#step-1-finding-workable-api-key"
+            doc_section: '#step-1-finding-workable-api-key'
 
 workable-oauth:
     display_name: Workable (OAuth)
@@ -7768,7 +7768,7 @@ workable-oauth:
     auth_mode: OAUTH2
     authorization_url: https://www.workable.com/oauth/authorize
     token_url: https://www.workable.com/oauth/token
-    scope_separator: "+"
+    scope_separator: '+'
     authorization_params:
         response_type: code
     token_params:
@@ -7778,14 +7778,14 @@ workable-oauth:
     proxy:
         base_url: https://${connectionConfig.subdomain}.workable.com
         retry:
-            at: "x-rate-limit-reset"
+            at: 'x-rate-limit-reset'
     docs: https://docs.nango.dev/integrations/all/workable
     connection_config:
         subdomain:
             type: string
             title: Workable Domain
             description: The subdomain of your Workable account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workable.com
             prefix: https://
@@ -7804,7 +7804,7 @@ workday:
             type: string
             title: Workday Domain
             description: The subdomain of your Workday account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .workday.com
             prefix: https://
@@ -7813,12 +7813,12 @@ workday:
             type: string
             title: Client ID
             description: Workday Client ID
-            doc_section: "#step-2-find-your-workday-client-id-and-client-secret"
+            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
         password:
             type: string
             title: Client Secret
             description: Workday Client Secret
-            doc_section: "#step-2-find-your-workday-client-id-and-client-secret"
+            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
             # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
             # Workday is using basic auth with client ID and client secret as username and password
 
@@ -7829,7 +7829,7 @@ wrike:
     auth_mode: OAUTH2
     authorization_url: https://login.wrike.com/oauth2/authorize/v4
     token_url: https://login.wrike.com/oauth2/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
     token_params:
@@ -7864,7 +7864,7 @@ xero:
     proxy:
         base_url: https://api.xero.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
@@ -7918,7 +7918,7 @@ zapier:
     auth_mode: OAUTH2
     authorization_url: https://api.zapier.com/v2/authorize
     token_url: https://zapier.com/oauth/token
-    scope_separator: " "
+    scope_separator: ' '
     default_scopes:
         - authentication
         - authentication:write
@@ -7957,7 +7957,7 @@ zendesk:
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:
-            after: "retry-after"
+            after: 'retry-after'
         paginate:
             type: link
             limit_name_in_request: per_page
@@ -7969,11 +7969,11 @@ zendesk:
             type: string
             title: Zendesk Domain
             description: The subdomain of your Zendesk account
-            pattern: "^[a-z0-9_-]+$"
+            pattern: '^[a-z0-9_-]+$'
             example: domain
             suffix: .zendesk.com
             prefix: https://
-            doc_section: "#step-1-finding-your-subdomain"
+            doc_section: '#step-1-finding-your-subdomain'
 
 zenefits:
     display_name: Zenefits
@@ -8015,7 +8015,7 @@ zoho:
             type: string
             title: Domain Extension
             description: The domain extension of your Zoho account
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
             prefix: https://accounts.zoho.
             example: com
             suffix: /
@@ -8066,7 +8066,7 @@ zoho-mail:
             type: string
             title: Domain Extension
             description: The domain extension of your Zoho account
-            pattern: "^[a-z.]+$"
+            pattern: '^[a-z.]+$'
 
 zoho-bigin:
     display_name: Zoho Bigin
@@ -8089,7 +8089,7 @@ zoom:
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize
     token_url: https://zoom.us/oauth/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         response_type: code
     refresh_params:
@@ -8111,7 +8111,7 @@ zoominfo:
     auth_mode: OAUTH2_CC
     proxy:
         retry:
-            after: "x-ratelimit-reset"
+            after: 'x-ratelimit-reset'
         base_url: https://api.zoominfo.com
     token_url: https://api.zoominfo.com/authenticate
     token_request_auth_method: custom
