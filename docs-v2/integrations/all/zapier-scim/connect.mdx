@@ -1,0 +1,39 @@
+---
+title: Zapier - How do I link my account?
+sidebarTitle: Zapier
+---
+
+
+# Overview
+
+To authenticate with Zapier, you need two key pieces of information:
+1. **Client ID** - Your Zapier Client ID
+2. **Client Secret** - Your Zapier Client Secret
+
+
+This guide will walk you through finding or creating those credentials within Zapier. 
+
+
+#### Step 1: Configure a Redirect URI
+1. You can configure one (or multiple) redirect URIs in the [Zapier Developer Platform](https://developer.zapier.com/) under **Embed →  Settings → Redirect**. Add Nango's callback URL (https://api.nango.dev/oauth/callback)
+
+<img src="/integrations/all/zapier-scim/zapier-redirect-url.png" />
+
+#### Step 2: Get Your ClientID and Client Secret
+You can find your Client ID and Client Secret in the Zapier Developer Platform under **Embed → Settings → Credentials**. 
+
+<img src="/integrations/all/zapier-scim/zapier-client-id.png"/>
+
+Add these credentials to Zapier authentication form in Nango.
+
+<img src="/integrations/all/zapier-scim/add-client-id.png"/>
+
+
+**Note:** Your application’s **Client ID** and **Client Secret** are only available after you’ve published your app as a **public integration in Zapier’s App Directory.**
+
+
+#### Step 3: Connect Your Zapier Account
+
+<img src="/integrations/all/zapier-scim/connect.png" />
+
+Click **Connect** to complete the authentication.
