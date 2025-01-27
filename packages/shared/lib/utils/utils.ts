@@ -91,6 +91,20 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
+export function getMultiplierForUnit(unit: string): number | null {
+    const multipliers: Record<string, number> = {
+        second: 1000,
+        seconds: 1000,
+        minute: 1000 * 60,
+        minutes: 1000 * 60,
+        hour: 1000 * 60 * 60,
+        hours: 1000 * 60 * 60,
+        day: 1000 * 60 * 60 * 24,
+        days: 1000 * 60 * 60 * 24
+    };
+    return multipliers[unit] || null;
+}
+
 export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
     // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
     const [days, hours, minutes] = timeStr.split(':').map(Number);

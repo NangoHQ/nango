@@ -58,7 +58,8 @@ import {
     interpolateObject,
     extractValueByPath,
     stripCredential,
-    interpolateObjectValues
+    interpolateObjectValues,
+    getMultiplierForUnit
 } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
@@ -1127,8 +1128,23 @@ class ConnectionService {
                 if (expirationStrategy === 'expireAt' && expiration) {
                     expiresAt = parseTokenExpirationDate(expiration);
                 } else if (expirationStrategy === 'expireIn' && expiration) {
-                    const expiresIn = Number.parseInt(expiration, 10);
-                    expiresAt = new Date(Date.now() + expiresIn * 1000);
+                    if (template && template.expires_in_unit) {
+                        const expirationUnit = template.expires_in_unit;
+                        if (expirationUnit === 'human_readable') {
+                            // Handle human-readable expiration (e.g., "60 minutes"), for drupal
+                            const [value, unit] = expiration.split(' ');
+                            const multiplier = getMultiplierForUnit(unit.toLowerCase());
+                            if (!multiplier) {
+                                throw new NangoError(`Unsupported human-readable unit: ${unit}`);
+                            }
+                            expiresAt = new Date(Date.now() + Number.parseInt(value, 10) * multiplier);
+                        } else {
+                            throw new NangoError(`Unsupported expiration unit: ${expirationUnit}`);
+                        }
+                    } else {
+                        const expiresIn = Number.parseInt(expiration, 10);
+                        expiresAt = new Date(Date.now() + expiresIn);
+                    }
                 } else if (template.token_expires_in_ms) {
                     expiresAt = new Date(Date.now() + template.token_expires_in_ms);
                 }
