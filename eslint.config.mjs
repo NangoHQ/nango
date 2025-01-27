@@ -350,6 +350,12 @@ export default tseslint.config(
         }
     },
     {
+        files: ['packages/cli/**/*.ts'],
+        rules: {
+            'no-console': 'off'
+        }
+    },
+    {
         files: ['**/**.test.ts'],
         rules: {
             '@typescript-eslint/no-unsafe-assignment': 'off',

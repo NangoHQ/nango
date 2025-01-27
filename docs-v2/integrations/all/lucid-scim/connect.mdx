@@ -1,0 +1,70 @@
+---
+title: Lucid SCIM - How do I link my account?
+sidebarTitle: Lucid SCIM
+---
+
+# Overview
+
+To authenticate with Lucid SCIM, you need the following credentials:
+1. **Bearer Token** - This token is used to authenticate SCIM API requests.
+2. **Tenant URL** - This is the SCIM endpoint URL for your Lucid account.
+
+This guide will walk you through generating the Bearer Token and configuring SCIM for your Lucid account.
+
+---
+
+## Prerequisites:
+
+- You must have an **Enterprise account** with Lucid.
+- Contact your **Lucid Customer Success Manager** or Lucid Support to enable SCIM for your account.
+
+---
+
+## Step 1: Generate the Bearer Token
+
+To generate a Bearer Token for SCIM:
+
+1. Log in to your Lucid admin account.
+2. Navigate to **Admin** > **App Integration**.
+3. Under the **SCIM** section, click on **Settings**.
+4. Click **Generate Token** to create your Bearer Token.
+
+   **Note:** If the "Generate Token" button is disabled, ensure the "Automatically upgrade account when no more licenses are available" option is enabled in the **License Settings**.
+
+5. **Copy** and securely store your Bearer Token. It will not be visible again once you leave this page.
+
+---
+
+## Step 2: Obtain the Tenant URL
+
+Your **Tenant URL** is the SCIM endpoint for your Lucid account. Use the following format:
+https://users.lucid.app/scim/v2
+
+This URL is used to connect to the Lucid SCIM API.
+
+---
+
+## Step 3: Exclude the "All Users" Group from Licensing
+
+To prevent all users in your organization from being automatically licensed, exclude your "All Users" group in the Lucid settings:
+
+1. In the Lucid admin panel, navigate to **SCIM Settings**.
+2. Click **Specify a Group** under "Exclude a group from your identity provider."
+3. Enter the name of your "All Users" group from Azure (or your identity provider) and click **Save**.
+
+---
+
+## Step 4: Connect Your Lucid SCIM Account to Nango
+
+To authenticate using your SCIM credentials:
+
+1. Navigate to the Lucid SCIM connection form in the Nango Connect UI.
+2. Enter your credentials:
+   - **Bearer Token**: The token generated in Step 1.
+   - **Tenant URL**: The URL obtained in Step 2.
+3. Click **Connect** to complete the authentication.
+
+---
+
+### Resources:
+- [Lucid SCIM API Documentation](https://lucid.readme.io/reference/overview-scim)

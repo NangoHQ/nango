@@ -1,7 +1,7 @@
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { PatchIntegration } from '@nangohq/types';
-import { configService } from '@nangohq/shared';
+import { configService, connectionService } from '@nangohq/shared';
 import { z } from 'zod';
 
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -91,6 +91,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             return;
         }
 
+        const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
+        if (count > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: "Can't rename an integration with active connections" } });
+            return;
+        }
+
         integration.unique_key = body.integrationId;
     }
 
@@ -120,7 +126,6 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.custom = {};
         }
         if (!body.webhookSecret) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration.custom['webhookSecret'];
         } else {
             integration.custom['webhookSecret'] = body.webhookSecret;

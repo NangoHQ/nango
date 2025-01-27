@@ -28,6 +28,9 @@
         },
         {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../providers"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
