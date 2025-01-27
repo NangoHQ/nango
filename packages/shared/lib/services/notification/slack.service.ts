@@ -2,7 +2,7 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
-import { basePublicUrl, getLogger, stringToHash } from '@nangohq/utils';
+import { basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -205,7 +205,12 @@ export class SlackService {
             return;
         }
 
-        const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
+        const accountEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id });
+        if (!accountEnv) {
+            throw new Error('failed_to_get_account');
+        }
+
+        const { account, environment } = accountEnv;
 
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
 
@@ -215,17 +220,12 @@ export class SlackService {
             return;
         }
 
-        const account = await environmentService.getAccountFromEnvironment(environment_id);
-        if (!account) {
-            throw new Error('failed_to_get_account');
-        }
-
-        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
-
         const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
         if (!adminEnvironment) {
             throw new Error('failed_to_get_admin_env');
         }
+
+        const slackConnectionId = generateSlackConnectionId(account.uuid, environment.name);
 
         // we get the connection on the nango admin account to be able to send the notification
         const {
@@ -268,7 +268,7 @@ export class SlackService {
                 flowType,
                 name,
                 providerConfigKey: nangoConnection.provider_config_key,
-                envName,
+                envName: environment.name,
                 originalActivityLogId,
                 date,
                 resolved: false
@@ -291,8 +291,12 @@ export class SlackService {
             });
 
             if (actionResponse.isOk() && actionResponse.value.ts) {
-                await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.value.ts);
+                const res = actionResponse.value;
+                await this.updateNotificationWithTimestamp(slackNotificationStatus.id, res.ts);
+                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
+
+            await logCtx.info('Sending duplicate notification');
 
             await this.sendDuplicateNotificationToNangoAdmins(
                 payload,
@@ -346,7 +350,12 @@ export class SlackService {
             return;
         }
 
-        const envName = (await environmentService.getEnvironmentName(nangoConnection.environment_id))!;
+        const accountEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoConnection.environment_id });
+        if (!accountEnv) {
+            throw new Error('failed_to_get_account');
+        }
+
+        const { account, environment } = accountEnv;
 
         let payloadContent = '';
 
@@ -358,7 +367,7 @@ export class SlackService {
                 flowType: type,
                 name: syncName,
                 providerConfigKey: nangoConnection.provider_config_key,
-                envName,
+                envName: environment.name,
                 originalActivityLogId,
                 date: new Date(),
                 resolved: true
@@ -373,7 +382,7 @@ export class SlackService {
                 flowType: type,
                 name: syncName,
                 providerConfigKey: nangoConnection.provider_config_key,
-                envName,
+                envName: environment.name,
                 originalActivityLogId,
                 date: new Date(),
                 resolved: false
@@ -388,17 +397,12 @@ export class SlackService {
             ts: slack_timestamp
         };
 
-        const account = await environmentService.getAccountFromEnvironment(environment_id);
-        if (!account) {
-            throw new Error('failed_to_get_account');
-        }
-
         const adminEnvironment = await environmentService.getAccountAndEnvironment({ accountUuid: this.nangoAdminUUID!, envName: this.env });
         if (!adminEnvironment) {
             throw new Error('failed_to_get_admin_env');
         }
 
-        const slackConnectionId = generateSlackConnectionId(account.uuid, envName);
+        const slackConnectionId = generateSlackConnectionId(account.uuid, environment.name);
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
@@ -415,7 +419,8 @@ export class SlackService {
                 account: adminEnvironment.account,
                 environment: adminEnvironment.environment,
                 integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
-                connection: { id: slackConnection.id!, name: slackConnection.connection_id }
+                connection: { id: slackConnection.id!, name: slackConnection.connection_id },
+                meta: truncateJson({ input: payload })
             }
         );
 
@@ -426,6 +431,12 @@ export class SlackService {
                 input: payload,
                 logCtx
             });
+
+            if (actionResponse.isOk() && actionResponse.value.ts) {
+                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${actionResponse.value.ts.replace('.', '')}`);
+            }
+
+            await logCtx.info('Sending duplicate notification');
 
             await this.sendDuplicateNotificationToNangoAdmins(payload, environment_id, logCtx, undefined, admin_slack_timestamp);
 
