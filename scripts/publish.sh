@@ -23,15 +23,8 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    jq --arg package "@nangohq/$package" --arg version "$VERSION" '
-    if .dependencies[$package] then
-        .dependencies[$package] = $version
-    elif .devDependencies[$package] then
-        .devDependencies[$package] = $version
-    else
-        .
-    end
-    ' package.json >temp.json && mv temp.json package.json
+    npm install -E @nangohq/$package@$VERSION
+    npm install -E @nangohq/$package@$VERSION
     popd
 }
 
@@ -99,29 +92,25 @@ bump_other_pkg "node-client" "types"
 bump_other_pkg "shared" "types"
 bump_other_pkg "runner-sdk" "types"
 bump_other_pkg "providers" "types"
-npm i
 
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 bump_other_pkg "shared" "nango-yaml"
-npm i
-
-# Providers
-bump_and_npm_publish "@nangohq/providers" "$VERSION"
-bump_other_pkg "runner-sdk" "providers"
-bump_other_pkg "shared" "providers"
-npm i
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 bump_other_pkg "shared" "node"
-npm i
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-bump_other_pkg "cli" "shared"
-npm i
+# Update all packages to use the new shared version
+package_dirs=("cli")
+for dir in "${package_dirs[@]}"; do
+    pushd "$GIT_ROOT_DIR/packages/$dir"
+    npm install @nangohq/shared@^$VERSION
+    popd
+done
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
@@ -129,7 +118,6 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 bump_other_pkg "webapp" "frontend"
-npm i
 
 # clean up
 rm packages/shared/package-lock.json
