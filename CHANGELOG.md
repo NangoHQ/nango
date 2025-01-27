@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.49.0] - 2025-01-27
+
+### Changed
+
+- Clarify unification docs (#3367) by @bastienbeurier
+
+### Fixed
+
+- *(npm)* Correct publish command (#3371) by @bodinsamuel
+
 ## [v0.48.4] - 2025-01-27
 
 ### Added
@@ -2810,6 +2820,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.49.0]: https://github.com/NangoHQ/nango/compare/v0.48.4..v0.49.0
 [v0.48.4]: https://github.com/NangoHQ/nango/compare/v0.48.3..v0.48.4
 [v0.48.3]: https://github.com/NangoHQ/nango/compare/v0.48.2..v0.48.3
 [v0.48.2]: https://github.com/NangoHQ/nango/compare/v0.48.1..v0.48.2
