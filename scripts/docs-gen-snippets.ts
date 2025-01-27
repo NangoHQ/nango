@@ -174,7 +174,7 @@ function useCasesSnippet(useCases: any) {
                 .join('\n')}
         </AccordionGroup>
 
-        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integration-builder/overview) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())
@@ -186,7 +186,7 @@ function emptyUseCases() {
 
         _No pre-built integration yet (time to contribute: &lt;48h)_
 
-        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integration-builder/overview) independently.</Tip>
+        <Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>
     `
         .split('\n')
         .map((line) => line.trim())

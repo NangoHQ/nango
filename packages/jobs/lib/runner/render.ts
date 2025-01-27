@@ -6,9 +6,10 @@ import { envs } from '../env.js';
 import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
 import type { AxiosResponse } from 'axios';
 import { isAxiosError } from 'axios';
-import type { RateLimiterAbstract } from 'rate-limiter-flexible';
+import type { IRateLimiterRedisOptions, RateLimiterAbstract } from 'rate-limiter-flexible';
 import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
+import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('Render');
 
@@ -114,12 +115,14 @@ async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'r
     if (rateLimitGroup === 'create') {
         const throttled = await serviceCreationThrottler.consume('render-service-creation');
         if (throttled.isErr()) {
+            await setTimeout(envs.RENDER_WAIT_WHEN_THROTTLED_MS);
             return Err(new Error(`Throttling Render service creation`, { cause: throttled.error }));
         }
     }
 
     const rateLimitReset = rateLimitResetTimestamps.get(rateLimitGroup);
     if (rateLimitReset && rateLimitReset > new Date()) {
+        await setTimeout(envs.RENDER_WAIT_WHEN_THROTTLED_MS);
         return Err(`Render rate limit exceeded. Resetting at ${rateLimitReset.toISOString()}`);
     }
     try {
@@ -172,13 +175,13 @@ class CombinedThrottler {
 }
 
 const serviceCreationThrottler = await (async () => {
-    const minuteThrottlerOpts = {
+    const minuteThrottlerOpts: Omit<IRateLimiterRedisOptions, 'storeClient'> = {
         keyPrefix: 'minute',
         points: envs.RENDER_SERVICE_CREATION_MAX_PER_MINUTE || 50,
         duration: 60,
         blockDuration: 0
     };
-    const hourThrottlerOpts = {
+    const hourThrottlerOpts: Omit<IRateLimiterRedisOptions, 'storeClient'> = {
         keyPrefix: 'hour',
         points: envs.RENDER_SERVICE_CREATION_MAX_PER_HOUR || 700,
         duration: 3600,

@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import type { AxiosError, AxiosResponse, AxiosRequestConfig, ParamsSerializerOptions } from 'axios';
 import OAuth from 'oauth-1.0a';
 import * as crypto from 'node:crypto';
-import { axiosInstance as axios, SIGNATURE_METHOD } from '@nangohq/utils';
+import { axiosInstance as axios, SIGNATURE_METHOD, redactHeaders, redactURL } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
@@ -13,7 +13,6 @@ import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxy
 import { NangoError } from '../utils/error.js';
 import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
 import { getProvider } from './providers.js';
-import { redactHeaders, redactURL } from '../utils/http.js';
 
 interface Logs {
     logs: MessageRowInsert[];
@@ -77,52 +76,39 @@ class ProxyService {
         let token;
         switch (connection.credentials.type) {
             case 'OAUTH2':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.access_token;
-                }
+            case 'APP': {
+                const credentials = connection.credentials;
+                token = credentials.access_token;
+                break;
+            }
+            case 'OAUTH2_CC':
+            case 'TWO_STEP':
+            case 'TABLEAU':
+            case 'JWT':
+            case 'SIGNATURE': {
+                const credentials = connection.credentials;
+                token = credentials.token;
+                break;
+            }
+            case 'BASIC':
+            case 'API_KEY':
+                token = connection.credentials;
                 break;
             case 'OAUTH1': {
                 const error = new Error('OAuth1 is not supported yet in the proxy.');
                 const nangoError = new NangoError('pass_through_error', error);
                 return { success: false, error: nangoError, response: null, logs };
             }
-            case 'BASIC':
-                token = connection.credentials;
+            case 'APP_STORE':
+            case 'CUSTOM':
+            case 'TBA':
+            case undefined:
+            case 'BILL': {
                 break;
-            case 'API_KEY':
-                token = connection.credentials;
-                break;
-            case 'APP':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.access_token;
-                }
-                break;
-            case 'OAUTH2_CC':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.token;
-                }
-                break;
-            case 'TABLEAU':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.token;
-                }
-                break;
-            case 'JWT':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.token;
-                }
-                break;
-            case 'SIGNATURE':
-                {
-                    const credentials = connection.credentials;
-                    token = credentials.token;
-                }
-                break;
+            }
+            default: {
+                throw new Error(`Unhandled connection.credentials for: ${(connection.credentials as any).type}`);
+            }
         }
 
         const provider = getProvider(providerName);
@@ -471,6 +457,7 @@ class ProxyService {
                         case 'API_KEY':
                         case 'OAUTH2_CC':
                         case 'TABLEAU':
+                        case 'TWO_STEP':
                         case 'JWT':
                             if (value.includes('connectionConfig')) {
                                 value = value.replace(/connectionConfig\./g, '');
