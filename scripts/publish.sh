@@ -112,18 +112,18 @@ bump_other_pkg "shared" "providers"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-bump_and_npm_publish "shared" "@nangohq/node"
+bump_other_pkg "shared" "@nangohq/node"
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-bump_and_npm_publish "cli" "@nangohq/shared"
+bump_other_pkg "cli" "@nangohq/shared"
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-bump_and_npm_publish "webapp" "@nangohq/frontend"
+bump_other_pkg "webapp" "@nangohq/frontend"
 
 # clean up
 rm packages/shared/package-lock.json
