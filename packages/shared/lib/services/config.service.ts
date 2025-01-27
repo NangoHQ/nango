@@ -148,7 +148,7 @@ class ConfigService {
         }
 
         const encrypted = encryptionManager.encryptProviderConfig(config);
-        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, encrypted);
+        encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
 
         return db.knex
             .from<ProviderConfig>(`_nango_configs`)
