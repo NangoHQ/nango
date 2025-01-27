@@ -79,7 +79,7 @@ export class Fleet {
                 return Err(new FleetError('fleet_node_not_ready_timeout', { context: { routingId } }));
             }
             const search = await nodes.search(this.dbClient.db, {
-                states: ['PENDING', 'STARTING', 'RUNNING'],
+                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED'],
                 routingId
             });
             if (search.isErr()) {
@@ -88,6 +88,10 @@ export class Fleet {
             const running = search.value.nodes.get(routingId)?.RUNNING || [];
             if (running[0]) {
                 return Ok(running[0]);
+            }
+            const outdated = search.value.nodes.get(routingId)?.OUTDATED || [];
+            if (outdated[0]) {
+                return Ok(outdated[0]);
             }
             const starting = search.value.nodes.get(routingId)?.STARTING || [];
             const pending = search.value.nodes.get(routingId)?.PENDING || [];

@@ -97,6 +97,11 @@ bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 bump_other_pkg "shared" "nango-yaml"
 
+# Providers
+bump_and_npm_publish "@nangohq/providers" "$VERSION"
+bump_other_pkg "runner-sdk" "providers"
+bump_other_pkg "shared" "providers"
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/shared"
