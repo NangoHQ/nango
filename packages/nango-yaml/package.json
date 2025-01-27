@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-yaml",
-    "version": "0.48.3",
+    "version": "0.48.4",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",

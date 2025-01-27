@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/providers",
-    "version": "0.48.3",
+    "version": "0.48.4",
     "description": "Nango's providers.yaml and getters",
     "type": "module",
     "main": "./dist/index.js",

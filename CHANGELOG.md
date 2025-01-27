@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.48.4] - 2025-01-27
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ea5ecf44c4030313fea953267b5d7a10cdbc54c3 by Khaliq. Commit message: feat(linear): add users sync (#196) by @github-actions[bot]
+- *(integrations)* Add support for Microsoft business central (#3309) by @hassan254-prog
+- Providers package  (#3308) by @bodinsamuel
+- *(render)* Add throttling so fleet never reaches render api limit (#3311) by @TBonnin
+- *(api)* Track request content length (#3316) by @bodinsamuel
+- Package runner-sdk (#3317) by @bodinsamuel
+- *(docs)* Connection ui documentation (#3315) by @AndrewKaranja
+- *(integrations)* Add support for odoo cc (#3348) by @hassan254-prog
+- *(gw)* Gebrüder weiss provider support (#3341) by @AndrewKaranja
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5b096d2ad50f9b93ddb341b0c25684d0afa948aa by Andrew Karanja. Commit message: feat(notion): added notion create database row action (#195) by @github-actions[bot]
+- *(integrations)* Add support for basecamp (#3339) by @hassan254-prog
+- *(lucid-scim)* Provider support docs (#3326) by @AndrewKaranja
+- *(integrations)* Add support for recharge (#3357) by @hassan254-prog
+- *(emarsys)* Add permissions to connect ui page (#3355) by @hassan254-prog
+- *(providers)* Use new package (#3322) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0231344d5821810c541337c541cb4d5098ad6945 by Khaliq. Commit message: feat(quickbooks): Quickbooks more syncs (#197) by @github-actions[bot]
+- Move shared/utils/http.ts to utils package (#3321) by @nalanj
+- Bring back sample app instructions (#3332) by @bastienbeurier
+- Allow console.log in the cli package (#3334) by @nalanj
+- *(deps)* Bump undici from 6.12.0 to 6.21.1 (#3342) by @dependabot[bot]
+- Rename custom integration builder to custom integrations (#3356) by @bastienbeurier
+- *(deps-dev)* Bump vite from 5.4.6 to 5.4.12 (#3369) by @dependabot[bot]
+
+### Fixed
+
+- Publish failed (#3307) by @bodinsamuel
+- *(jobs)* Closing logic (#3310) by @TBonnin
+- *(jobs)* Try to use a check loop to make that one supervisor test not fail (#3313) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/1fcbee8c7de13e545e95ba49dd77c50f823de10d by Khaliq. Commit message: fix(google-drive): id should be an object (#198) by @github-actions[bot]
+- *(fleet)* Set correct image for noopNodeProvider (#3320) by @TBonnin
+- *(fleet)* RUNNING to IDLE is a valid state transition (#3323) by @TBonnin
+- *(proxy)* Fix proxy header construction for two_step (#3314) by @hassan254-prog
+- *(http)* Use keepAlive and agent (almost) everywhere (#3318) by @bodinsamuel
+- *(jobs)* Sync_type validation (#3325) by @bodinsamuel
+- *(runner)* Tweak runner idling retry logic (#3324) by @TBonnin
+- *(integrations)* Fix emarsys-oauth typo (#3329) by @hassan254-prog
+- *(webapp)* Handle null sync_type to stop ui error (#3330) by @nalanj
+- *(github-app)* Public links are set in the integration (#3335) by @khaliqgant
+- *(ui)* Environment picker arrow placement (#3328) by @bodinsamuel
+- *(ui)* Correctly clear cache, prevent renaming integration with active connections (#3333) by @bodinsamuel
+- *(fleet)* If no running runner fallback to outdated (#3352) by @TBonnin
+- *(fleet)* Wait  (#3349) by @TBonnin
+- Delete aws IAM verification (#3353) by @TBonnin
+- *(webapp)* Limit json display on connections to 250kb (#3350) by @nalanj
+- *(server)* Fix errors on CUSTOM auth integrations (#3346) by @nalanj
+- *(connect)* Open oauth popen up for github app oauth (#3344) by @bodinsamuel
+- First requests to runner fails when new runner comes online (#3354) by @TBonnin
+- *(webapp)* Crash when env switching on teams page (#3360) by @nalanj
+- *(docs)* Updates Mailgun connect-ui guide with missing image and improved steps  (#3358) by @Maina-Francis
+
 ## [v0.48.3] - 2025-01-15
 
 ### Changed
@@ -2753,6 +2810,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.48.4]: https://github.com/NangoHQ/nango/compare/v0.48.3..v0.48.4
 [v0.48.3]: https://github.com/NangoHQ/nango/compare/v0.48.2..v0.48.3
 [v0.48.2]: https://github.com/NangoHQ/nango/compare/v0.48.1..v0.48.2
 [v0.48.1]: https://github.com/NangoHQ/nango/compare/v0.48.0..v0.48.1
