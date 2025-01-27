@@ -5,7 +5,7 @@ on:
         branches:
             - master
         paths:
-            - packages/shared/providers.yaml
+            - packages/providers/providers.yaml
             - docs-v2/integrations/all/*.md
     workflow_dispatch:
 

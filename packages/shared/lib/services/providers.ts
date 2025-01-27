@@ -1,30 +1,15 @@
-import path from 'node:path';
-import fs from 'node:fs';
-import yaml from 'js-yaml';
-import type { Provider, ProviderAlias } from '@nangohq/types';
+import type { Provider } from '@nangohq/types';
 import { NangoError } from '../utils/error.js';
-import { dirname } from '../utils/utils.js';
 import { getLogger, ENVS, parseEnvs } from '@nangohq/utils';
 import { createHash } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
+import { updateProviderCache } from '@nangohq/providers';
+
+// Just to avoid changing hundreds of refs
+export { getProviders, getProvider } from '@nangohq/providers';
 
 const logger = getLogger('providers');
 const envs = parseEnvs(ENVS);
-
-let providers: Record<string, Provider> | undefined = undefined;
-
-export function getProviders() {
-    if (!providers) {
-        providers = loadProvidersYaml();
-    }
-
-    return providers;
-}
-
-export function getProvider(providerName: string): Provider | null {
-    const providers = getProviders();
-    return providers?.[providerName] ?? null;
-}
 
 let polling = false;
 let providersHash = '';
@@ -42,7 +27,7 @@ export async function monitorProviders(): Promise<() => void> {
     const providersRaw = await fetchProvidersRaw(providersUrl);
     providersHash = createHash('sha1').update(providersRaw).digest('hex');
 
-    providers = JSON.parse(providersRaw) as Record<string, Provider>;
+    updateProviderCache(JSON.parse(providersRaw) as Record<string, Provider>);
     logger.info(`Providers loaded from url ${providersUrl} (${providersHash})`);
 
     void pollProviders(providersUrl);
@@ -70,7 +55,7 @@ async function pollProviders(providersUrl: string) {
 
             if (newProvidersHash !== providersHash) {
                 providersHash = newProvidersHash;
-                providers = JSON.parse(providersRaw) as Record<string, Provider>;
+                updateProviderCache(JSON.parse(providersRaw) as Record<string, Provider>);
                 logger.info(`Providers reloaded (${providersHash})`);
             }
         } catch (err) {
@@ -87,51 +72,4 @@ async function fetchProvidersRaw(providersUrl: string): Promise<string> {
     }
 
     return await response.text();
-}
-
-function getProvidersPath() {
-    // find the providers.yaml file
-    // recursively searching in parent directories
-    const findProvidersYaml = (dir: string): string => {
-        const providersYamlPath = path.join(dir, 'providers.yaml');
-        if (fs.existsSync(providersYamlPath)) {
-            return providersYamlPath;
-        }
-        const parentDir = path.dirname(dir);
-        if (parentDir === dir) {
-            throw new NangoError('providers_yaml_not_found');
-        }
-        return findProvidersYaml(parentDir);
-    };
-    return findProvidersYaml(dirname());
-}
-
-function loadProvidersYaml(): Record<string, Provider> | undefined {
-    try {
-        const fileEntries = yaml.load(fs.readFileSync(getProvidersPath()).toString()) as Record<string, Provider | ProviderAlias>;
-
-        if (fileEntries == null) {
-            throw new NangoError('provider_template_loading_failed');
-        }
-
-        for (const key in fileEntries) {
-            const entry = fileEntries[key];
-
-            if (entry && 'alias' in entry) {
-                if (Object.keys(entry).length <= 0) {
-                    logger.error('Failed to find alias', entry.alias);
-                    continue;
-                }
-
-                const { alias, ...overrides } = entry;
-                const aliasData = fileEntries[entry.alias] as Provider;
-                fileEntries[key] = { ...aliasData, ...overrides };
-            }
-        }
-
-        return fileEntries as Record<string, Provider>;
-    } catch (err) {
-        logger.error('Failed to load providers.yaml', err);
-    }
-    return;
 }
