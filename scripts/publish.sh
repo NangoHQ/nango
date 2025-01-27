@@ -116,13 +116,7 @@ bump_and_npm_publish "shared" "@nangohq/node"
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-# Update all packages to use the new shared version
-package_dirs=("cli")
-for dir in "${package_dirs[@]}"; do
-    pushd "$GIT_ROOT_DIR/packages/$dir"
-    npm install @nangohq/shared@^$VERSION
-    popd
-done
+bump_and_npm_publish "cli" "@nangohq/shared"
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
