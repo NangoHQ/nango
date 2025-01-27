@@ -23,7 +23,7 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    npm install -E @nangohq/$package@$VERSION
+    npm install --save --save-exact @nangohq/$package@$VERSION
     popd
 }
 
@@ -124,7 +124,7 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/webapp"
-npm install @nangohq/frontend@$VERSION
+npm install --save --save-exact @nangohq/frontend@$VERSION
 popd
 
 # clean up
