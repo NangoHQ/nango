@@ -10,8 +10,13 @@ const providersMonitorCleanup = await monitorProviders();
 try {
     const port = parseInt(process.argv[2] || '') || 3006;
     const id = process.argv[3] || process.env['RUNNER_ID'] || 'unknown-id';
-    const srv = server.listen(port, () => {
+    const srv = server.listen(port, async () => {
         logger.info(`🏃‍♀️ '${id}' ready at http://localhost:${port}`);
+
+        const res = await register();
+        if (res.isErr()) {
+            logger.error(`${id} Unable to register`, res.error);
+        }
     });
 
     const close = () => {
@@ -43,12 +48,6 @@ try {
         logger.error(`${id} Received uncaughtException...`, e);
         // not closing on purpose
     });
-
-    const res = await register();
-    if (res.isErr()) {
-        logger.error(`${id} Unable to register`, res.error);
-        // not exiting on purpose because REMOTE runner are not registering
-    }
 } catch (err) {
     logger.error(`Unable to start runner: ${stringifyError(err)}`);
     process.exit(1);

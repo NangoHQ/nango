@@ -44,7 +44,7 @@ services:
             - NANGO_LOGS_ES_PWD
             - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
         volumes:
-            - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
+            - './packages/providers/providers.yaml:/usr/nango-server/src/packages/providers/providers.yaml'
         restart: always
         ports:
             - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'

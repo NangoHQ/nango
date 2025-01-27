@@ -41,7 +41,7 @@ export function useConnections(queries: GetConnections['Querystring']) {
 
 export function clearConnectionsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
     for (const key of cache.keys()) {
-        if (key.includes('/api/v1/connections?')) {
+        if (key.includes('/api/v1/connections')) {
             void mutate(key, undefined);
             cache.delete(key);
         }

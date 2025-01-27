@@ -7,7 +7,7 @@ import SecretInput from '../../components/ui/input/SecretInput';
 import TagsInput from '../../components/ui/input/TagsInput';
 import type React from 'react';
 import { apiRefreshConnection } from '../../hooks/useConnections';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../../store';
 import { useToast } from '../../hooks/useToast';
 import { mutate } from 'swr';
@@ -15,6 +15,8 @@ import { getLogsUrl } from '../../utils/logs';
 import { Info } from '../../components/Info';
 import { Link } from 'react-router-dom';
 import { CopyText } from '../../components/CopyText';
+
+const JSON_DISPLAY_LIMIT = 250_000;
 
 interface AuthorizationProps {
     connection: ApiConnectionFull;
@@ -41,6 +43,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
             toast({ title: `Failed to refresh secrets`, variant: 'error' });
         }
     };
+
+    const connectionConfig = useMemo(() => JSON.stringify(connection.connection_config, null, 4) || '{}', [connection.connection_config]);
+    const connectionMetadata = useMemo(() => JSON.stringify(connection.metadata, null, 4) || '{}', [connection.metadata]);
+    const rawTokenResponse = useMemo(() => JSON.stringify(connection.credentials.raw, null, 4) || '{}', [connection.credentials.raw]);
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
@@ -321,13 +327,13 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">
-                    {JSON.stringify(connection.connection_config, null, 4) || '{}'}
+                    {connectionConfig.length < JSON_DISPLAY_LIMIT ? connectionConfig : 'Connection config too large to display'}
                 </Prism>
             </div>
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Metadata</span>
                 <Prism language="json" colorScheme="dark">
-                    {JSON.stringify(connection.metadata, null, 4) || '{}'}
+                    {connectionMetadata.length < JSON_DISPLAY_LIMIT ? connectionMetadata : 'Connection metadata too large to display'}
                 </Prism>
             </div>
             {(connection.credentials.type === 'OAUTH1' ||
@@ -339,7 +345,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>
                     <PrismPlus language="json" colorScheme="dark">
-                        {JSON.stringify(connection.credentials.raw, null, 4) || '{}'}
+                        {rawTokenResponse.length > JSON_DISPLAY_LIMIT ? 'Token response too large to display' : rawTokenResponse}
                     </PrismPlus>
                 </div>
             )}
