@@ -26,12 +26,13 @@ models:
         ok: boolean
         channel: string
         ts: string
+        text: string
         message:
             bot_id: string
             type: string
             text: string
             user: string
-            ts: string
+            ts?: string
             app_id: string
             team: string
             bot_profile:
@@ -42,7 +43,10 @@ models:
                 deleted: boolean
                 updated: number
                 team_id: string
+            edited?:
+                user: string
+                ts: string
             attachments: object[]
         warning: string | undefined
-        response_metadata:
+        response_metadata?:
             warnings: string[]
