@@ -23,7 +23,7 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    jq --arg package "$package" --arg version "$VERSION" '
+    jq --arg package "@nangohq/$package" --arg version "$VERSION" '
     if .dependencies[$package] then
         .dependencies[$package] = $version
     elif .devDependencies[$package] then
@@ -99,31 +99,37 @@ bump_other_pkg "node-client" "types"
 bump_other_pkg "shared" "types"
 bump_other_pkg "runner-sdk" "types"
 bump_other_pkg "providers" "types"
+npm i
 
 # NangoYaml
 bump_and_npm_publish "@nangohq/nango-yaml" "$VERSION"
 bump_other_pkg "cli" "nango-yaml"
 bump_other_pkg "shared" "nango-yaml"
+npm i
 
 # Providers
 bump_and_npm_publish "@nangohq/providers" "$VERSION"
 bump_other_pkg "runner-sdk" "providers"
 bump_other_pkg "shared" "providers"
+npm i
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-bump_other_pkg "shared" "@nangohq/node"
+bump_other_pkg "shared" "node"
+npm i
 
 # Shared
 bump_and_npm_publish "@nangohq/shared" "$VERSION"
-bump_other_pkg "cli" "@nangohq/shared"
+bump_other_pkg "cli" "shared"
+npm i
 
 # CLI
 bump_and_npm_publish "nango" "$VERSION"
 
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
-bump_other_pkg "webapp" "@nangohq/frontend"
+bump_other_pkg "webapp" "frontend"
+npm i
 
 # clean up
 rm packages/shared/package-lock.json
