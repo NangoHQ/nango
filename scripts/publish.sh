@@ -23,7 +23,7 @@ function bump_other_pkg {
     folder=$1
     package=$2
     pushd "$GIT_ROOT_DIR/packages/$folder"
-    npm install -E @nangohq/$package@$VERSION
+    npm install --save --save-exact @nangohq/$package@$VERSION
     popd
 }
 
@@ -68,6 +68,11 @@ bump_other_pkg "cli" "nango-yaml"
 bump_and_npm_publish "@nangohq/providers" "$VERSION"
 bump_other_pkg "runner-sdk" "providers"
 
+# Providers
+bump_and_npm_publish "@nangohq/providers" "$VERSION"
+bump_other_pkg "runner-sdk" "providers"
+bump_other_pkg "shared" "providers"
+
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
 bump_other_pkg "runner-sdk" "node"
@@ -83,7 +88,7 @@ bump_and_npm_publish "nango" "$VERSION"
 # Frontend
 bump_and_npm_publish "@nangohq/frontend" "$VERSION"
 pushd "$GIT_ROOT_DIR/packages/webapp"
-npm install @nangohq/frontend@$VERSION
+npm install --save --save-exact @nangohq/frontend@$VERSION
 popd
 
 jq ".version = \"$VERSION\"" package.json >temp.json && mv temp.json package.json

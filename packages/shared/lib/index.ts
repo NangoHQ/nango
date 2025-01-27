@@ -43,7 +43,6 @@ export * from './clients/locking.js';
 export * from './models/index.js';
 
 export * from './utils/utils.js';
-export * from './utils/http.js';
 export * from './utils/error.js';
 export * from './constants.js';
 

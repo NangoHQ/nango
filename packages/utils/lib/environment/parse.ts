@@ -100,6 +100,7 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(5 * 1000), // 5 seconds
+    FLEET_SUPERVISOR_WAIT_TICK_MS: z.coerce.number().optional().default(1000), // 1 sec
 
     // --- Third parties
     // AWS
@@ -161,6 +162,7 @@ export const ENVS = z.object({
     RENDER_API_KEY: z.string().optional(),
     RENDER_SERVICE_CREATION_MAX_PER_MINUTE: z.coerce.number().optional(),
     RENDER_SERVICE_CREATION_MAX_PER_HOUR: z.coerce.number().optional(),
+    RENDER_WAIT_WHEN_THROTTLED_MS: z.coerce.number().default(1000),
     IS_RENDER: bool,
 
     // Sentry

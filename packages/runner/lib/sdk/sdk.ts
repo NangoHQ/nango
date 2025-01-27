@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 import { getUserAgent, Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { getPersistAPIUrl, proxyService, redactHeaders, redactURL } from '@nangohq/shared';
+import { getPersistAPIUrl, proxyService } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters } from '@nangohq/types';
 import {
     getLogger,
@@ -13,6 +13,8 @@ import {
     isTest,
     MAX_LOG_PAYLOAD,
     metrics,
+    redactHeaders,
+    redactURL,
     retryWithBackoff,
     stringifyAndTruncateValue,
     stringifyObject,
