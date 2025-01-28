@@ -91,18 +91,18 @@ async function npmPublish(packageName) {
     await spinner(`Publishing ${packageName}...`, async () => {
         const res = await $({ quiet: true, nothrow: true })`npm view "${packageName}@${nextVersion}"`;
         const hasError = res.stderr.includes('npm error code');
-        const exists = hasError && !res.stderr.includes('npm error code E404');
-        if (hasError && !exists) {
+        const hasNotBeenPublished = res.stderr.includes('npm error code E404');
+        if (!hasError && !hasNotBeenPublished) {
+            echo(chalk.blue(`${figures.tick} Not published ${packageName} (already exists)`));
+            return;
+        }
+
+        if (hasError && !hasNotBeenPublished) {
             echo``;
             echo`${chalk.red(`An error occurred`)}`;
             console.log(res);
             echo`${res.stderr}`;
             process.exit(1);
-        }
-
-        if (exists) {
-            echo(chalk.blue(`${figures.tick} Not published ${packageName} (already exists)`));
-            return;
         }
 
         await $`npm version ${nextVersion} -w "${packageName}"`;
