@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
 import type { Config } from '../models/index.js';
 import type { CursorPagination, DBSyncConfig, LinkPagination, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import configService from '../services/config.service.js';
@@ -160,7 +159,6 @@ describe('Pagination', () => {
 
     it('Sends pagination params in body for POST HTTP method', async () => {
         stubProviderTemplate(cursorPagination);
-        mockErrorManagerReport();
 
         vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
             return Promise.resolve({} as Config);

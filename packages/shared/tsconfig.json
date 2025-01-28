@@ -24,13 +24,13 @@
             "path": "../utils"
         },
         {
-            "path": "../webhooks"
-        },
-        {
             "path": "../records"
         },
         {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../providers"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
