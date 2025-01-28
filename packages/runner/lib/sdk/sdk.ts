@@ -274,7 +274,6 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         if (hasErrors.length > 0) {
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS, hasErrors.length);
-            this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
             if (this.runnerFlags?.validateSyncRecords) {
                 throw new InvalidRecordSDKError({ ...hasErrors[0], model });
             }
