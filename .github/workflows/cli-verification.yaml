@@ -65,11 +65,9 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
-              continue-on-error: true
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
-                  npx zx ./scripts/publish.mjs "0.0.1-$GIT_HASH"
+                  npx zx ./scripts/publish.mjs 0.0.1-$GIT_HASH
 
             - name: Publish the cli privately under the correct scope
               working-directory: packages/cli

@@ -1,8 +1,7 @@
 #!/usr/bin/env zx
-import { $, echo, chalk, cd, glob, spinner, fs, ProcessOutput, path } from 'zx';
+import { $, echo, chalk, glob, spinner, fs, path } from 'zx';
 import figures from 'figures';
 
-const { GITHUB_TOKEN } = process.env;
 const nextVersion = process.argv[2];
 
 if (!nextVersion) {
@@ -29,32 +28,37 @@ await modifyVersionTs();
 // ---- Publish
 await npmPublish('@nangohq/types');
 await bumpPackageFor('@nangohq/types', ['cli', 'frontend', 'nango-yaml', 'node-client', 'runner-sdk', 'providers']);
+await npmInstall();
 
 await npmPublish('@nangohq/nango-yaml');
 await bumpPackageFor('@nangohq/nango-yaml', ['cli']);
+await npmInstall();
 
 await npmPublish('@nangohq/providers');
 await bumpPackageFor('@nangohq/providers', ['runner-sdk']);
+await npmInstall();
 
 await npmPublish('@nangohq/node');
 await bumpPackageFor('@nangohq/node', ['cli', 'runner-sdk']);
+await npmInstall();
 
 await npmPublish('@nangohq/runner-sdk');
 await bumpPackageFor('@nangohq/runner-sdk', ['cli']);
+await npmInstall();
 
 await npmPublish('nango');
+await npmInstall();
 
 // TODO: to delete maybe, seems unnecessary
 await npmPublish('@nangohq/frontend');
 await bumpPackageFor('webapp', ['frontend']);
+await npmInstall();
 // ---- /Publish
 
 await $`npm version "${nextVersion}" --no-git-tag-version --allow-same-version`;
 
 echo``;
-await spinner('npm install', async () => {
-    await $`npm i`;
-});
+await npmInstall();
 echo(chalk.green(`${figures.tick} npm install`));
 echo(chalk.grey('done'));
 
@@ -114,4 +118,10 @@ async function bumpPackageFor(packageName, folders) {
         await fs.writeFile(fp, content.replace(new RegExp(`${packageName}": ".*"`), `${packageName}": "${nextVersion}"`));
         echo(chalk.grey(`  ${figures.tick} Bumped ${packageName} to ${nextVersion} in ${fp}`));
     }
+}
+
+async function npmInstall() {
+    await spinner('npm install', async () => {
+        await $`npm i`;
+    });
 }
