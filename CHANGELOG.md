@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.51.0] - 2025-01-28
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ef41e344c36cc7f3252d6e9b10734175d143e9d7 by Hassan_Wari. Commit message: feat(recharge): add upsert and customers sync (#203) by @github-actions[bot]
+- *(records)* Add upserting/updating records merging strategy (#3379) by @TBonnin
+
+### Changed
+
+- Improve publish script (#3383) by @bodinsamuel
+
+### Fixed
+
+- Package.json by @bodinsamuel
+- *(node-client)* UpdateSyncConnectionFrequency parameters (#3380) by @TBonnin
+- *(docs)* Make webflow sync more graceful (#3382) by @nalanj
+- *(docs)* Fix provider line parsing in webflow sync. (#3384) by @nalanj
+- Fix list connections params in Node SDK (#3372) by @bastienbeurier
+- *(tests)* Fix a few flaky tests (#3385) by @nalanj
+
 ## [v0.50.0] - 2025-01-28
 
 ### Added
@@ -2841,6 +2861,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0
 [v0.50.0]: https://github.com/NangoHQ/nango/compare/v0.49.0..v0.50.0
 [v0.49.0]: https://github.com/NangoHQ/nango/compare/v0.48.4..v0.49.0
 [v0.48.4]: https://github.com/NangoHQ/nango/compare/v0.48.3..v0.48.4
