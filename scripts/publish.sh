@@ -70,7 +70,6 @@ bump_other_pkg "runner-sdk" "providers"
 
 # Node client
 bump_and_npm_publish "@nangohq/node" "$VERSION"
-bump_other_pkg "providers" "node"
 
 # Runner sdk
 bump_and_npm_publish "@nangohq/runner-sdk" "$VERSION"
