@@ -24,9 +24,11 @@ if (!nextVersion.match(versionRegex)) {
 
 const here = import.meta.dirname;
 
-await tsBuild();
-
+// Append version to file because it's easier to get the version
 await modifyVersionTs();
+
+// Rebuild with modified version.ts
+await tsBuild();
 
 // ---- Publish
 await npmPublish('@nangohq/types');
@@ -67,6 +69,7 @@ await npmInstall();
 echo(chalk.green(`${figures.tick} npm install`));
 echo(chalk.grey('done'));
 
+// Output for post deploy debug
 echo``;
 echo``;
 echo`- git diff`;
@@ -117,6 +120,7 @@ async function npmPublish(packageName) {
 }
 
 async function bumpPackageFor(packageName, folders) {
+    // We don't use npm install, because it behaves incoherently with workspaces and different terminals
     for (const folder of folders) {
         const fp = path.join(here, '..', 'packages', folder, 'package.json');
         const content = (await fs.readFile(fp)).toString();

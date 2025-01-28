@@ -108,3 +108,4 @@ jobs:
                   npx nango init --debug
                   cd nango-integrations
                   npx nango generate --debug
+                  npx nango compile --debug
