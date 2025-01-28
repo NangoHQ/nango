@@ -2,7 +2,8 @@
 import { $, echo, chalk, glob, spinner, fs, path } from 'zx';
 import figures from 'figures';
 
-const nextVersion = process.argv[2];
+// npx zx ./publish.mjs 0.0.1
+const nextVersion = process.argv[3];
 
 if (!nextVersion) {
     echo`${chalk.red(`Please specify a version: "node publish.mjs 0.0.1"`)}`;
