@@ -167,6 +167,17 @@ describe('Records service', () => {
     });
 
     describe('updating records', () => {
+        describe('should deep merge records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const records = [{ id: '1', person: { name: 'John Doe', age: 35 } }];
+
+            const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            expect(inserted).toStrictEqual({ addedKeys: ['1'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+        });
+
         describe('should respect merging strategy', () => {
             it('when strategy = override', async () => {
                 const connectionId = rnd.number();
