@@ -684,11 +684,11 @@ export class Nango {
             throw new Error('Provider Config Key is required');
         }
 
-        if (typeof sync === 'string') {
+        if (typeof sync !== 'string') {
             throw new Error('Sync must be a string.');
         }
 
-        if (typeof connectionId === 'string') {
+        if (typeof connectionId !== 'string') {
             throw new Error('ConnectionId must be a string.');
         }
 
