@@ -10,6 +10,7 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 import { Cursor } from '../cursor.js';
+import merge from 'lodash-es/merge.js';
 
 dayjs.extend(utc);
 
@@ -431,10 +432,7 @@ export async function update({
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,
-                        json: {
-                            ...oldRecordData,
-                            ...newRecordData
-                        },
+                        json: merge({}, oldRecordData, newRecordData),
                         updated_at: new Date()
                     };
                     recordsToUpdate.push(newRecord);

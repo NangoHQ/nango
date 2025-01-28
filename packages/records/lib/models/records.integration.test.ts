@@ -167,15 +167,37 @@ describe('Records service', () => {
     });
 
     describe('updating records', () => {
-        describe('should deep merge records', async () => {
+        it('should deep merge records', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = rnd.string();
             const syncId = uuid.v4();
-            const records = [{ id: '1', person: { name: 'John Doe', age: 35 } }];
+            const records = [{ id: '1', person: { name: 'John Doe', age: 35, children: [{ name: 'Jenny Doe', age: 3 }] } }];
 
             const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
             expect(inserted).toStrictEqual({ addedKeys: ['1'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+
+            const updated = await updateRecords({
+                records: [{ id: '1', person: { age: 36, children: [{}, { name: 'Maurice Doe', age: 1 }] } }],
+                connectionId,
+                model,
+                syncId,
+                syncJobId: 2
+            });
+            expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
+
+            const { records: found } = (await Records.getRecords({ connectionId, model })).unwrap();
+            expect(found.length).toBe(1);
+            expect(found?.[0]).toMatchObject({
+                person: {
+                    name: 'John Doe',
+                    age: 36,
+                    children: [
+                        { name: 'Jenny Doe', age: 3 },
+                        { name: 'Maurice Doe', age: 1 }
+                    ]
+                }
+            });
         });
 
         describe('should respect merging strategy', () => {
