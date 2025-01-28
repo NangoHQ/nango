@@ -454,6 +454,7 @@ integrations:
                 output: Task
             delete-task:
                 input: Id
+                description: Delete a task.
                 endpoint:
                     method: DELETE
                     path: /tasks
@@ -2358,6 +2359,7 @@ integrations:
                     path: /candidates
                 output: Candidate
                 input: CreateCandidate
+                description: Create a candidate
         syncs:
             background-checks:
                 endpoint:
@@ -4038,6 +4040,7 @@ integrations:
     google:
         syncs:
             workspace-org-units:
+                description: Sync all workspace org units
                 runs: every 6 hours
                 track_deletes: true
                 output: OrganizationalUnit
@@ -4049,6 +4052,7 @@ integrations:
                     - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
                     - https://www.googleapis.com/auth/admin.directory.user.readonly
             workspace-users:
+                description: Sync all workspace users
                 runs: every hour
                 input: Metadata
                 auto_start: false
@@ -4058,6 +4062,7 @@ integrations:
                     method: GET
                     path: /google/workspace-users
             workspace-user-access-tokens:
+                description: Sync all workspace users access tokens
                 runs: every hour
                 output: GoogleWorkspaceUserToken
                 sync_type: full
@@ -12452,6 +12457,95 @@ integrations:
                 directManagerId?: string
                 idempotencyKey?: string
                 locationId?: string
+    recharge:
+        actions:
+            upsert-customers:
+                endpoint:
+                    method: POST
+                    path: /customers
+                    group: Customers
+                description: Upsert a customer in Recharge
+                input: UpsertRechargeCustomerInput
+                output: UpsertRechargeCustomerOutput
+                scopes: read_customers, write_customers, write_payment_methods
+        syncs:
+            customers:
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /customers
+                    group: Customers
+                description: >-
+                    Incrementally fetch all Recharge customers and their subscription
+                    details.
+                runs: every 1 hour
+                output: Customer
+                scopes: read_customers, read_subscriptions
+        models:
+            Customer:
+                id: string
+                phone_number: string | null
+                first_name: string | null
+                last_name: string | null
+                subscriptions:
+                    - type: string
+                      name: string
+                      start_date: string
+                      end_date: string | null
+            UpsertRechargeCustomerInput:
+                email: string
+                external_customer_id?: ExternalCustomerId | undefined
+                first_name: string
+                last_name: string
+                phone?: string | undefined
+                tax_exempt?: boolean | undefined
+            UpsertRechargeCustomerOutput:
+                action: update | create
+                response:
+                    accepts_marketing: number | null
+                    analytics_data:
+                        utm_params:
+                            - utm_campaign?: string | undefined
+                              utm_content?: string | undefined
+                              utm_data_source?: string | undefined
+                              utm_source?: string | undefined
+                              utm_medium?: string | undefined
+                              utm_term?: string | undefined
+                              utm_timestamp?: string | undefined
+                    billing_address1: string | null
+                    billing_address2: string | null
+                    billing_city: string | null
+                    billing_company: string | null
+                    billing_country: string | null
+                    billing_phone: string | null
+                    billing_province: string | null
+                    billing_zip: string | null
+                    created_at: string
+                    email: string
+                    first_charge_processed_at: string | null
+                    first_name: string
+                    has_card_error_in_dunning: boolean
+                    has_valid_payment_method: boolean
+                    hash: string
+                    id: number
+                    last_name: string
+                    number_active_subscriptions: number
+                    number_subscriptions: number
+                    phone: string | null
+                    processor_type: string | null
+                    reason_payment_method_not_valid: string | null
+                    shopify_customer_id: string | null
+                    status: string
+                    tax_exempt: boolean
+                    updated_at: string
+                    apply_credit_to_next_recurring_charge?: boolean | undefined
+                    external_customer_id?: ExternalCustomerId | undefined
+                    has_payment_method_in_dunning?: boolean | undefined
+                    subscriptions_active_count?: number | undefined
+                    subscriptions_total_count?: number | undefined
+                    subscription_related_charge_streak?: number | undefined
+            ExternalCustomerId:
+                ecommerce: string
     ring-central:
         actions:
             create-user:
