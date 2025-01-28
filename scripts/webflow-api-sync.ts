@@ -32,6 +32,7 @@ const neededProviders: Record<string, Provider> = {};
 
 const providerLineRegex = /^provider: ([^\s]+)$/m;
 
+let hasWarnings = false;
 for (const file of files) {
     if (file.endsWith('.mdx')) {
         const filePath = path.join(docsPath, file);
@@ -39,12 +40,18 @@ for (const file of files) {
 
         const providerMatch = content.match(providerLineRegex);
         if (!providerMatch?.[1]) {
-            throw new Error(`No provider line found in ${file}`);
+            // eslint-disable-next-line no-console
+            console.warn(`No provider line found in ${file}`);
+            hasWarnings = true;
+            continue;
         }
         const provider = providerMatch[1];
 
         if (!providers[provider]) {
-            throw new Error(`${file}: invalid provider ${provider}`);
+            // eslint-disable-next-line no-console
+            console.error(`${file}: invalid provider ${provider}`);
+            hasWarnings = true;
+            continue;
         }
 
         neededProviders[provider] = providers[provider];
@@ -77,6 +84,7 @@ const neededCategories = Object.values(neededProviders)
 
 const missingCategories = neededCategories.filter((category) => !categoriesBySlug[category]);
 if (missingCategories.length > 0) {
+    // eslint-disable-next-line no-console
     console.error(`Missing categories: ${missingCategories.join(', ')}`);
     process.exit(1);
 }
@@ -180,3 +188,7 @@ for (const toDelete of needDeletion) {
 }
 
 await webflow.sites.publish(siteId, { customDomains: domainIds });
+
+if (hasWarnings) {
+    process.exit(1);
+}
