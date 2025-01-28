@@ -26,12 +26,15 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
+            - name: Install dependencies
+              run: npm ci
+
             - name: Publish npm packages
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               shell: bash
               run: |
-                  bash ./scripts/publish.sh ${{ inputs.version }}
+                  npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
 
             - name: Publish release
               env:
