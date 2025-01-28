@@ -5,7 +5,6 @@ import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
-import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
@@ -120,8 +119,6 @@ describe('Sync config create', () => {
                 ]
             }
         ];
-
-        mockErrorManagerReport();
 
         vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
             return Promise.resolve({
