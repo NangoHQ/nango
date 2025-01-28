@@ -1,11 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '@nangohq/database';
-import type { Connection } from '@nangohq/shared/lib/models/Connection.js';
-import connectionService from '@nangohq/shared/lib/services/connection.service.js';
-import environmentService from '@nangohq/shared/lib/services/environment.service.js';
-import { createConnectionSeeds } from '@nangohq/shared/lib/seeders/connection.seeder.js';
-import { createConfigSeeds } from '@nangohq/shared/lib/seeders/config.seeder.js';
-import { createEnvironmentSeed } from '@nangohq/shared/lib/seeders/environment.seeder.js';
+import type { Connection } from '@nangohq/shared';
+import { connectionService, environmentService, seeders } from '@nangohq/shared';
 import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 import { NangoActionRunner } from './sdk.js';
 
@@ -13,13 +9,13 @@ describe('Connection service integration tests', () => {
     let env: DBEnvironment;
     beforeAll(async () => {
         await multipleMigrations();
-        env = await createEnvironmentSeed();
-        await createConfigSeeds(env);
+        env = await seeders.createEnvironmentSeed();
+        await seeders.createConfigSeeds(env);
     });
 
     describe('Nango object tests', () => {
         it('Should retrieve connections correctly if different connection credentials are passed in', async () => {
-            const connections = await createConnectionSeeds(env);
+            const connections = await seeders.createConnectionSeeds(env);
 
             const [nangoConnectionId, secondNangoConnectionId]: number[] = connections;
             const establishedConnection = await connectionService.getConnectionById(nangoConnectionId as number);
