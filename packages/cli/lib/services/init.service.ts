@@ -16,8 +16,6 @@ const __dirname = dirname(__filename);
  */
 export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }): boolean {
     const yamlData = fs.readFileSync(path.resolve(__dirname, `../templates/${nangoConfigFile}`), 'utf8');
-    const envData = fs.readFileSync(path.resolve(__dirname, '../templates/env'), 'utf8');
-    const gitIgnoreData = fs.readFileSync(path.resolve(__dirname, '../templates/gitignore'), 'utf8');
 
     const stat = fs.statSync(absolutePath, { throwIfNoEntry: false });
     if (!stat) {
@@ -75,7 +73,21 @@ export function init({ absolutePath, debug = false }: { absolutePath: string; de
         if (debug) {
             printDebug(`Creating the .env file at ${envPath}`);
         }
-        fs.writeFileSync(envPath, envData);
+        fs.writeFileSync(
+            envPath,
+            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
+#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
+#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
+
+# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
+NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# How to handle CLI upgrades ("prompt", "auto" or "ignore").
+NANGO_CLI_UPGRADE_MODE=prompt # Default value
+
+# Whether to prompt before deployments.
+NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
+        );
     } else {
         if (debug) {
             printDebug(`.env file already exists at ${envPath} so not creating a new one`);
@@ -87,7 +99,12 @@ export function init({ absolutePath, debug = false }: { absolutePath: string; de
         if (debug) {
             printDebug(`Creating the .gitignore file at ${gitIgnorePath}`);
         }
-        fs.writeFileSync(gitIgnorePath, gitIgnoreData);
+        fs.writeFileSync(
+            gitIgnorePath,
+            `dist
+.env
+`
+        );
     } else {
         if (debug) {
             printDebug(`.gitignore file already exists at ${gitIgnorePath} so not creating a new one`);
