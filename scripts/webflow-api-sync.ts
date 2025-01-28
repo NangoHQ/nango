@@ -40,6 +40,7 @@ for (const file of files) {
 
         const providerMatch = content.match(providerLineRegex);
         if (!providerMatch?.[1]) {
+            // eslint-disable-next-line no-console
             console.warn(`No provider line found in ${file}`);
             hasWarnings = true;
             continue;
@@ -47,6 +48,7 @@ for (const file of files) {
         const provider = providerMatch[1];
 
         if (!providers[provider]) {
+            // eslint-disable-next-line no-console
             console.error(`${file}: invalid provider ${provider}`);
             hasWarnings = true;
             continue;
@@ -82,6 +84,7 @@ const neededCategories = Object.values(neededProviders)
 
 const missingCategories = neededCategories.filter((category) => !categoriesBySlug[category]);
 if (missingCategories.length > 0) {
+    // eslint-disable-next-line no-console
     console.error(`Missing categories: ${missingCategories.join(', ')}`);
     process.exit(1);
 }
