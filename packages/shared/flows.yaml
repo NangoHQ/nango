@@ -11423,6 +11423,7 @@ integrations:
             Updates:
                 id: string
                 sync_token: string
+                active?: boolean
             BaseInvoice:
                 created_at: string
                 updated_at: string
@@ -11530,6 +11531,7 @@ integrations:
             UpdateCustomer:
                 id: string
                 sync_token: string
+                active?: boolean
                 display_name?: string
                 suffix?: string
                 title?: string
@@ -11554,6 +11556,7 @@ integrations:
             UpdateItem:
                 id: string
                 sync_token: string
+                active?: boolean
                 track_qty_onHand?: boolean
                 qty_on_hand?: number
                 name: string
@@ -11573,6 +11576,7 @@ integrations:
             UpdateAccount:
                 id: string
                 sync_token: string
+                active?: boolean
                 name: string
                 account_type?: string
                 account_sub_type?: string
@@ -11596,6 +11600,7 @@ integrations:
             UpdateInvoice:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -11610,6 +11615,7 @@ integrations:
             UpdateCreditMemo:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -11744,6 +11750,8 @@ integrations:
                 detail_type?: string
                 deposit_account_id?: string | undefined
                 deposit_account_name?: string | undefined
+            DeleteResponse:
+                id: string
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -11999,6 +12007,7 @@ integrations:
             Updates:
                 id: string
                 sync_token: string
+                active?: boolean
             BaseInvoice:
                 created_at: string
                 updated_at: string
@@ -12106,6 +12115,7 @@ integrations:
             UpdateCustomer:
                 id: string
                 sync_token: string
+                active?: boolean
                 display_name?: string
                 suffix?: string
                 title?: string
@@ -12130,6 +12140,7 @@ integrations:
             UpdateItem:
                 id: string
                 sync_token: string
+                active?: boolean
                 track_qty_onHand?: boolean
                 qty_on_hand?: number
                 name: string
@@ -12149,6 +12160,7 @@ integrations:
             UpdateAccount:
                 id: string
                 sync_token: string
+                active?: boolean
                 name: string
                 account_type?: string
                 account_sub_type?: string
@@ -12172,6 +12184,7 @@ integrations:
             UpdateInvoice:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -12186,6 +12199,7 @@ integrations:
             UpdateCreditMemo:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -12320,6 +12334,8 @@ integrations:
                 detail_type?: string
                 deposit_account_id?: string | undefined
                 deposit_account_name?: string | undefined
+            DeleteResponse:
+                id: string
     ramp:
         syncs:
             users:
