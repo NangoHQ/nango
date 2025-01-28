@@ -29,10 +29,12 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
+
             - name: Build
               run: |
                   npm ci
                   npm run ts-build
+
             - name: Publish packages to github registry so they can be bumped
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,7 +69,7 @@ jobs:
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
                   echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+                  npx zx ./scripts/publish.mjs "0.0.1-$GIT_HASH"
 
             - name: Publish the cli privately under the correct scope
               working-directory: packages/cli
