@@ -34,7 +34,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               shell: bash
               run: |
-                  npx zx ./scripts/publish.mjs "${{ inputs.version }}"
+                  npx zx ./scripts/publish.mjs --version="${{ inputs.version }}"
 
             - name: Publish release
               env:

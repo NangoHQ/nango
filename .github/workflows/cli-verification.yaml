@@ -67,13 +67,16 @@ jobs:
               shell: bash
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
-                  npx zx ./scripts/publish.mjs 0.0.1-$GIT_HASH
+                  echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
+                  npx zx ./scripts/publish.mjs --version=0.0.1-$GIT_HASH --skip-cli
 
             - name: Publish the cli privately under the correct scope
               working-directory: packages/cli
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
+                  GIT_HASH=$(git rev-parse HEAD)
+                  npm version "0.0.1-$GIT_HASH" --no-git-tag-version --allow-same-version
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   npm publish
     verify:

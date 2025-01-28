@@ -1,9 +1,11 @@
 #!/usr/bin/env zx
-import { $, echo, chalk, glob, spinner, fs, path } from 'zx';
+import { $, echo, chalk, glob, spinner, fs, path, minimist } from 'zx';
 import figures from 'figures';
 
-// npx zx ./publish.mjs 0.0.1
-const nextVersion = process.argv[3];
+// npx zx ./publish.mjs --version=0.0.1
+const argv = minimist(process.argv.slice(2));
+const nextVersion = argv.version;
+const skipCli = argv['skip-cli'] === true;
 
 if (!nextVersion) {
     echo`${chalk.red(`Please specify a version: "node publish.mjs 0.0.1"`)}`;
@@ -47,13 +49,15 @@ await npmPublish('@nangohq/runner-sdk');
 await bumpPackageFor('@nangohq/runner-sdk', ['cli']);
 await npmInstall();
 
-await npmPublish('nango');
-await npmInstall();
-
 // TODO: to delete maybe, seems unnecessary
 await npmPublish('@nangohq/frontend');
 await bumpPackageFor('webapp', ['frontend']);
 await npmInstall();
+
+if (!skipCli) {
+    await npmPublish('nango');
+    await npmInstall();
+}
 // ---- /Publish
 
 await $`npm version "${nextVersion}" --no-git-tag-version --allow-same-version`;
