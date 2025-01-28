@@ -8095,3 +8095,26 @@ zoominfo:
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
     docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect
+
+zuora:
+    display_name: Zuora
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subDomain}/zuora.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subDomain}/zuora.com
+        retry:
+            after: 'ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/zuora
+    docs_connect: https://docs.nango.dev/integrations/all/zuora/connect
+    connection_config:
+        subDomain:
+            type: string
+            title: SubDomain
+            description: The subdomain to your Zuora Base URL
+            example: rest.test
+            doc_section: '#step-1-finding-your-zuora-subdomain'
+            order: 1
