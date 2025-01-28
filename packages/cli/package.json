@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.49.0",
+    "version": "0.50.0",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -24,8 +24,8 @@
         "@babel/parser": "^7.22.5",
         "@babel/traverse": "^7.22.5",
         "@babel/types": "^7.22.5",
-        "@nangohq/node": "0.49.0",
         "@nangohq/nango-yaml": "0.49.0",
+        "@nangohq/node": "0.49.0",
         "@nangohq/runner-sdk": "0.49.0",
         "@swc/core": "^1.5.25",
         "ajv": "^8.17.1",
