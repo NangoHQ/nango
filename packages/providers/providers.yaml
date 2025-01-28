@@ -3872,6 +3872,7 @@ instagram:
         - marketing
         - social
     auth_mode: OAUTH2
+    scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     proxy:
