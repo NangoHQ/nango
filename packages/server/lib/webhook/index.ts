@@ -9,4 +9,5 @@ export { default as checkrWebhookRouting } from './checkr-webhook-routing.js';
 export { default as microsoftTeamsWebhookRouting } from './microsoft-teams-webhook-routing.js';
 export { default as unauthenticatedWebhookRouting } from './unauthenticated-webhook-routing.js';
 export { default as airtableWebhookRouting } from './airtable-webhook-routing.js';
+export { default as calendlyWebhookRouting } from './calendly-webhook-routing.js';
 export type * from './types.js';
