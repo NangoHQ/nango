@@ -129,7 +129,7 @@ export class Fleet {
         }
         // in Render, network configuration can take a long time to be applied and accessible to other services
         // we therefore wait until the health url is reachable
-        const healthy = await waithUntilHealthy({ url: `${url}/health`, timeoutMs: 120_000 });
+        const healthy = await waithUntilHealthy({ url: `${url}/health`, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
         if (healthy.isErr()) {
             return Err(healthy.error);
         }
