@@ -412,6 +412,17 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
     </ResponseField>
 </Expandable>
 
+### Update records
+
+Updates records in the Nango cache by merging the given data into the existing record. The `id` field is required in each record and used to determine what existing record to merge into.
+
+The merge algorithm used is a deep merge. This means that nested objects and arrays are merged recursively. Any fields not present in the update record are left unchanged.
+
+```js
+const githubIssues: Pick<GitHubIssue, "id" | "state">[] = ...; // Create partial GitHub Issue update records with only id and state.
+
+await nango.batchUpdate(githubIssues, 'GitHubIssue');
+```
 
 # Action-specific helper methods
 
