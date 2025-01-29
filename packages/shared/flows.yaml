@@ -12548,6 +12548,7 @@ integrations:
                 runs: every 1 hour
                 output: Customer
                 scopes: read_customers, read_subscriptions
+                version: 1.0.0
         models:
             Customer:
                 id: string
@@ -12559,6 +12560,7 @@ integrations:
                       name: string
                       start_date: string
                       end_date: string | null
+                      next_charge_scheduled_at: string | null
             UpsertRechargeCustomerInput:
                 email: string
                 external_customer_id?: ExternalCustomerId | undefined
