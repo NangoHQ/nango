@@ -14,6 +14,7 @@ import type { FleetId } from './instances.js';
 import { envs } from './env.js';
 import { withPgLock } from './utils/locking.js';
 import { noopNodeProvider } from './node-providers/noop.js';
+import { waithUntilHealthy } from './utils/url.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
@@ -125,6 +126,12 @@ export class Fleet {
         const valid = await this.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
             return Err(valid.error);
+        }
+        // in Render, network configuration can take a long time to be applied and accessible to other services
+        // we therefore wait until the health url is reachable
+        const healthy = await waithUntilHealthy({ url: `${url}/health`, timeoutMs: 120_000 });
+        if (healthy.isErr()) {
+            return Err(healthy.error);
         }
         return await nodes.register(this.dbClient.db, { nodeId, url });
     }
