@@ -60,6 +60,11 @@
             "url": "reference"
         },
         {
+            "name": "Changelog",
+            "icon": "rss",
+            "url": "changelog"
+        },
+        {
             "name": "Community",
             "icon": "slack",
             "url": "https://nango.dev/slack"
@@ -643,6 +648,12 @@
                 "reference/api-configuration",
                 "reference/scripts",
                 "reference/integration-configuration"
+            ]
+        },
+        {
+            "group": "",
+            "pages": [
+                "changelog/overview"
             ]
         }
     ],
