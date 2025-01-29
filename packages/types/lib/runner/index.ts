@@ -1,12 +1,14 @@
 export interface RunnerOutputError {
     type: string;
-    payload: Record<string, unknown>;
+    payload: Record<string, unknown> | unknown[];
     status: number;
+    additional_properties?: Record<string, unknown> | undefined;
 }
+
 export interface RunnerOutput {
     success: boolean;
     error: RunnerOutputError | null;
-    response?: any; // TODO: define response type
+    response?: unknown; // TODO: define response type
 }
 
 export interface RunnerFlags {

@@ -9,6 +9,7 @@ import { Err, Ok, nanoid } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { OrchestratorTask } from './types.js';
 import { tracer } from 'dd-trace';
+import { setTimeout } from 'timers/promises';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new EventsHandler({
@@ -75,7 +76,11 @@ async function processN(handler: (task: OrchestratorTask) => Promise<Result<void
         await immediateTask({ groupKey });
     }
     // Wait so the processor can process all tasks
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    while (processor.queueSize() > 0) {
+        await setTimeout(100);
+    }
+    await setTimeout(100);
+
     return processor;
 }
 

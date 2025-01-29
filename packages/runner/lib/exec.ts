@@ -1,5 +1,5 @@
 import type { NangoProps } from '@nangohq/shared';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
@@ -12,6 +12,11 @@ import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { RunnerOutput } from '@nangohq/types';
+
+interface ScriptExports {
+    onWebhookPayloadReceived?: (nango: NangoAction, payload?: object) => Promise<unknown>;
+    default: (nango: NangoAction, payload?: object) => Promise<unknown>;
+}
 
 export async function exec(
     nangoProps: NangoProps,
@@ -76,7 +81,7 @@ export async function exec(
             };
 
             const context = vm.createContext(sandbox);
-            const scriptExports = script.runInContext(context);
+            const scriptExports = script.runInContext(context) as ScriptExports;
 
             if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
@@ -174,16 +179,44 @@ export async function exec(
                     },
                     response: null
                 };
-            } else if (err instanceof AxiosError) {
+            } else if (isAxiosError<unknown, unknown>(err)) {
+                // isAxiosError lets us use something the shape of an axios error in
+                // testing, which is handy with how strongly typed everything is
+
                 span.setTag('error', err);
-                if (err.response?.data) {
-                    const errorResponse = err.response.data.payload || err.response.data;
+                if (err.response) {
+                    const maybeData = err.response.data;
+
+                    let errorResponse: unknown = {};
+                    if (maybeData && typeof maybeData === 'object' && 'payload' in maybeData) {
+                        errorResponse = maybeData.payload as Record<string, unknown>;
+                    } else {
+                        errorResponse = maybeData;
+                    }
+
+                    const headers = Object.fromEntries(
+                        Object.entries(err.response.headers)
+                            .map<[string, string]>(([k, v]) => [k.toLowerCase(), String(v)])
+                            .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
+                    );
+
+                    const responseBody: Record<string, unknown> = truncateJson(
+                        errorResponse && typeof errorResponse === 'object' ? (errorResponse as Record<string, unknown>) : { message: errorResponse }
+                    );
+
                     return {
                         success: false,
                         error: {
                             type: 'script_http_error',
-                            payload: truncateJson(typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse),
-                            status: err.response.status
+                            payload: responseBody,
+                            status: err.response.status,
+                            additional_properties: {
+                                upstream_response: {
+                                    status: err.response.status,
+                                    headers,
+                                    body: responseBody
+                                }
+                            }
                         },
                         response: null
                     };
@@ -192,7 +225,7 @@ export async function exec(
                     return {
                         success: false,
                         error: {
-                            type: 'script_http_error',
+                            type: 'script_network_error',
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500
                         },
