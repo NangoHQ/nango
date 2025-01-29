@@ -21,7 +21,7 @@ type GetCursor = Endpoint<{
     };
 }>;
 
-const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
+export const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
 const method = 'GET';
 
 const validate = validateCursor<GetCursor>();

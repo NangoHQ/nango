@@ -324,14 +324,8 @@ export class NangoSyncRunner extends NangoSyncBase {
                     this.stringify()
                 );
 
-                if (response.status === 400) {
-                    throw new Error(
-                        `Records invalid format. Please make sure you are sending an array of objects that each contain an 'id' property with type string`
-                    );
-                } else {
-                    const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
-                    throw new Error(message);
-                }
+                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
+                throw new Error(message);
             }
         }
         return true;
