@@ -149,7 +149,9 @@ Nango can forward webhooks received from 3rd-party APIs. See details in this [gu
 
 # Webhook retries
 
-Nango retries (with exponential backoff) webhooks with non-2xx responses.
+Nango retries each webhook with non-2xx responses 7 times with exponential backoff (starting delay: 100ms, time multiple: 2, view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)).
+
+Each webhook attempt is logged in the _Logs_ tab. You can also use the [OpenTelemetry exporter](/guides/logs/opentelemetry-exporter) to monitor Nango webhooks in your own observability stack.
 
 # Webhook verification
 
