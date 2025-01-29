@@ -1,5 +1,5 @@
 import tracer from 'dd-trace';
-import type { Config, Job, NangoProps } from '@nangohq/shared';
+import type { Config, Job } from '@nangohq/shared';
 import {
     environmentService,
     externalWebhookService,
@@ -26,7 +26,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, SyncResult, SyncTypeLiteral } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';

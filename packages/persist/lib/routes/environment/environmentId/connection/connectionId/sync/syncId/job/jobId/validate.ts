@@ -2,6 +2,16 @@ import { z } from 'zod';
 import { validateRequest } from '@nangohq/utils';
 import type { Endpoint } from '@nangohq/types';
 
+const mergingStrategySchema = z.discriminatedUnion('strategy', [
+    z.object({
+        strategy: z.literal('override')
+    }),
+    z.object({
+        strategy: z.literal('ignore_if_modified_after_cursor'),
+        cursor: z.string()
+    })
+]);
+
 export const validateRecords = <E extends Endpoint<any>>() =>
     validateRequest<E>({
         parseBody: (data: unknown) =>
@@ -21,7 +31,8 @@ export const validateRecords = <E extends Endpoint<any>>() =>
                     environmentId: z.coerce.number().int().positive(),
                     nangoConnectionId: z.coerce.number().int().positive(),
                     syncId: z.string(),
-                    syncJobId: z.coerce.number().int().positive()
+                    syncJobId: z.coerce.number().int().positive(),
+                    merging: mergingStrategySchema.default({ strategy: 'override' })
                 })
                 .strict()
                 .parse(data)
