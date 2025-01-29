@@ -8101,20 +8101,22 @@ zuora:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.subDomain}/zuora.com/oauth/token
+    token_url: https://${connectionConfig.subdomain}.zuora.com/oauth/token
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subDomain}/zuora.com
+        base_url: https://${connectionConfig.subdomain}.zuora.com
         retry:
             after: 'ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/zuora
     docs_connect: https://docs.nango.dev/integrations/all/zuora/connect
     connection_config:
-        subDomain:
+        subdomain:
             type: string
-            title: SubDomain
-            description: The subdomain to your Zuora Base URL
+            title: Subdomain
+            description: The Subdomain to your Zuora Base URL
+            suffix: .zuora.com
+            prefix: https://
             example: rest.test
             doc_section: '#step-1-finding-your-zuora-subdomain'
             order: 1
