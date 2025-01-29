@@ -39,6 +39,37 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
     - [Shopify (api key)](/integrations/all/shopify)
     - [Shopify (SCIM API)](/integrations/all/shopify)
 
+    ## New pre-built integrations
+
+    - [Gong](/integrations/all/gong)
+        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
+    - [Linear](/integrations/all/linear)
+        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/users.md): Fetches a list of users from Linear.
+    - [Metabase](/integrations/all/metabase)
+        - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/create-user.md): Creates a user in Metabase.
+        - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/disable-user.md): Disables a user in Metabase by id.
+        - [PUT /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/update-user.md): Updates an existing, active user in Metabase.  
+        - [GET /users/single](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/fetch-user.md): Fetches details of a specific user by ID.
+        - [PUT /users/enable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/enable-user.md): Enables a disabled user.
+        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/syncs/users.md): Fetches a list of users from Metabase, including active and inactive users.
+    - [Netsuite](/integrations/all/netsuite)
+        - [GET /general-ledger](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/general-ledger.md): Fetches all JournalEntries in Netsuite.
+    - [Notion](/integrations/all/notion)
+        - [POST /databases/row](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/create-database-row.md): Create a new row in a specified Notion database.
+    - [Quickbooks](/integrations/all/quickbooks)
+        - [GET /bill-payments](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.md): Fetches all QuickBooks bill payments.
+        - [GET /bills](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.md): Fetches all QuickBooks bills.
+        - [GET /credit-memos](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.md): Fetches all QuickBooks credit memos.
+        - [GET /deposits](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.md): Fetches all QuickBooks deposits.
+        - [GET /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.md): Fetch all journal entries in QuickBooks.
+        - [GET /purchases](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.md): Fetches all QuickBooks purchases.
+        - [GET /transfers](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.md): Fetches all QuickBooks transfers.
+    - [Smartsheet](/integrations/all/smartsheet)
+        - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/create-user.md): Creates a user in Smartsheet.
+        - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/delete-user.md): Deletes a user from Smartsheet.
+        - [POST /users/disable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/disable-user.md): Disables a user in an organization account.
+        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
+
 </Update>
 
 <Update label="December 2024">
