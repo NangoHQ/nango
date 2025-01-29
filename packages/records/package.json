@@ -17,10 +17,10 @@
         "directory": "packages/records"
     },
     "dependencies": {
+        "@fastify/deepmerge": "2.0.1",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.10",
         "knex": "3.1.0",
-        "lodash-es": "^4.17.21",
         "md5": "2.3.0",
         "pg": "8.11.3",
         "uuid": "9.0.1"

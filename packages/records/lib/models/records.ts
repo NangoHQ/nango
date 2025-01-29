@@ -10,7 +10,8 @@ import type {
     ReturnedRecord,
     UpsertSummary,
     MergingStrategy,
-    CursorOffset
+    CursorOffset,
+    UnencryptedRecordData
 } from '../types.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
@@ -20,10 +21,31 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 import { Cursor } from '../cursor.js';
-import merge from 'lodash-es/merge.js';
+import deepmerge from '@fastify/deepmerge';
 
 dayjs.extend(utc);
 
+const merge = deepmerge({
+    // define algorithm for merging arrays - merges each item in the array
+    // rather than concatenating
+    mergeArray: (options) => {
+        const deepmerge = options.deepmerge;
+        const clone = options.clone;
+        return function (target, source) {
+            let i = 0;
+            const il = Math.max(target.length, source.length);
+            const result = new Array(il);
+            for (i = 0; i < il; ++i) {
+                if (i < source.length) {
+                    result[i] = deepmerge(target[i], source[i]);
+                } else {
+                    result[i] = clone(target[i]);
+                }
+            }
+            return result;
+        };
+    }
+});
 const BATCH_SIZE = 1000;
 
 export async function getRecordCountsByModel({
@@ -446,11 +468,12 @@ export async function update({
                         continue;
                     }
 
-                    const { json: newRecordData, ...newRecordRest } = inputRecord;
+                    const { json, ...newRecordRest } = inputRecord;
+                    const newRecordData = decryptRecordData(inputRecord);
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,
-                        json: merge({}, oldRecordData, newRecordData),
+                        json: merge(oldRecordData, newRecordData) as UnencryptedRecordData,
                         updated_at: new Date()
                     };
                     recordsToUpdate.push(newRecord);
