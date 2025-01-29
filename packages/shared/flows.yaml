@@ -6122,6 +6122,15 @@ integrations:
                     path: /contact
                 output: SuccessResponse
                 input: IdEntity
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes:
+                    - Read admins
         syncs:
             conversations:
                 runs: every 6 hours
@@ -6295,6 +6304,9 @@ integrations:
                 last_seen_at?: number
                 owner_id?: string
                 unsubscribed_from_emails?: boolean
+            UserInformation:
+                id: string
+                email: string
     jira:
         syncs:
             issues:
