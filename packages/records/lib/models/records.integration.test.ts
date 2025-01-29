@@ -17,11 +17,49 @@ describe('Records service', () => {
         await db(RECORDS_TABLE).truncate();
     });
 
-    it('Should write records', async () => {
-        const connectionId = Math.floor(Math.random() * 1000000);
-        const environmentId = Math.floor(Math.random() * 1000000);
+    describe('Should fetch cursor', () => {
         const model = 'my-model';
-        const syncId = '00000000-0000-0000-0000-000000000000';
+        const syncId = uuid.v4();
+        const records = [
+            { id: '1', name: 'John Doe' },
+            { id: '2', name: 'Jane Doe' },
+            { id: '3', name: 'Max Doe' },
+            { id: '4', name: 'Mike Doe' }
+        ];
+        it('when offset = first', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            const firstRecord = fetched.records[0];
+            const expectedFirstCursor = firstRecord?.['_nango_metadata'].cursor;
+            expect(expectedFirstCursor).not.toBe(undefined);
+
+            const firstCursor = (await Records.getCursor({ connectionId, model, offset: 'first' })).unwrap();
+            expect(firstCursor).not.toBe(undefined);
+            expect(firstCursor).toBe(expectedFirstCursor);
+        });
+
+        it('when offset = last', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            const lastRecord = fetched.records[fetched.records.length - 1];
+            const expectedLastCursor = lastRecord?.['_nango_metadata'].cursor;
+            expect(expectedLastCursor).not.toBe(undefined);
+
+            const lastCursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
+            expect(lastCursor).not.toBe(undefined);
+            expect(lastCursor).toBe(expectedLastCursor);
+        });
+    });
+
+    it('Should write records', async () => {
+        const connectionId = rnd.number();
+        const environmentId = rnd.number();
+        const model = rnd.string();
+        const syncId = uuid.v4();
         const records = [
             { id: '1', name: 'John Doe' },
             { id: '1', name: 'John Doe' },
@@ -29,14 +67,14 @@ describe('Records service', () => {
             { id: '3', name: 'Max Doe' },
             { id: '4', name: 'Mike Doe' }
         ];
-        const inserted = await upsertRecords(records, connectionId, environmentId, model, syncId, 1);
+        const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
         expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: ['1'] });
 
         const newRecords = [
             { id: '1', name: 'John Doe' }, // same
             { id: '2', name: 'Jane Moe' } // updated
         ];
-        const upserted = await upsertRecords(newRecords, connectionId, environmentId, model, syncId, 2);
+        const upserted = await upsertRecords({ records: newRecords, connectionId, environmentId, model, syncId, syncJobId: 2 });
         expect(upserted).toStrictEqual({ addedKeys: [], updatedKeys: ['2'], deletedKeys: [], nonUniqueKeys: [] });
 
         const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
@@ -45,15 +83,164 @@ describe('Records service', () => {
         expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
         expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
 
-        const updated = await updateRecords([{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, 3);
+        const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 3 });
         expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
     });
 
+    describe('upserting records', () => {
+        describe('should respect merging strategy', () => {
+            it('when strategy = override', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const records = [
+                    { id: '1', name: 'John Doe' },
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ];
+                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: ['1'] });
+
+                const newRecords = [
+                    { id: '1', name: 'John Doe' }, // same
+                    { id: '2', name: 'Jane Moe' } // updated
+                ];
+                const upserted = await upsertRecords({ records: newRecords, connectionId, environmentId, model, syncId, syncJobId: 2 });
+                expect(upserted).toStrictEqual({ addedKeys: [], updatedKeys: ['2'], deletedKeys: [], nonUniqueKeys: [] });
+
+                const after = await db.select<FormattedRecord[]>('*').from('nango_records.records').where({ connection_id: connectionId, model });
+                expect(after.find((r) => r.external_id === '1')?.sync_job_id).toBe(2);
+                expect(after.find((r) => r.external_id === '2')?.sync_job_id).toBe(2);
+                expect(after.find((r) => r.external_id === '3')?.sync_job_id).toBe(1);
+                expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
+            });
+            it('when strategy = ignore_if_modified_after_cursor', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const records = [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ];
+                // insert initial records
+                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+
+                // Get cursor of last record
+                const cursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
+                if (!cursor) {
+                    throw new Error('Cursor is undefined');
+                }
+
+                // upsert records
+                const moreRecords = [
+                    { id: '4', name: 'Bob Doe' },
+                    { id: '5', name: 'Another Doe' }
+                ];
+                const added = await upsertRecords({ records: moreRecords, connectionId, environmentId, model, syncId, syncJobId: 2 });
+                expect(added).toStrictEqual({ addedKeys: ['5'], updatedKeys: ['4'], deletedKeys: [], nonUniqueKeys: [] });
+
+                // upsert records with merging strategy 'ignore_if_modified_after_cursor'
+                const upserted = await upsertRecords({
+                    records: [
+                        { id: '1', name: 'Ken Doe' },
+                        { id: '4', name: 'Bloom Doe' },
+                        { id: '5', name: 'Yet Another Doe' }
+                    ],
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 3,
+                    merging: { strategy: 'ignore_if_modified_after_cursor', cursor }
+                });
+                // only '1' should be updated because '4' and '5' were modified after the cursor
+                expect(upserted).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
+            });
+        });
+    });
+
+    describe('updating records', () => {
+        describe('should respect merging strategy', () => {
+            it('when strategy = override', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const records = [
+                    { id: '1', name: 'John Doe' },
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ];
+                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: ['1'] });
+
+                const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 2 });
+                expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
+            });
+            it('when strategy = ignore_if_modified_after_cursor', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const records = [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ];
+
+                // insert initial records
+                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                expect(inserted).toStrictEqual({ addedKeys: ['1', '2', '3', '4'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+
+                // Get cursor of last record
+                const cursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
+                if (!cursor) {
+                    throw new Error('Cursor is undefined');
+                }
+
+                // update records
+                const updated = await updateRecords({
+                    records: [{ id: '4', name: 'Maurice Doe' }],
+                    connectionId,
+                    model,
+                    syncId,
+                    syncJobId: 2
+                });
+                expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['4'], deletedKeys: [], nonUniqueKeys: [] });
+
+                // update records with merging strategy 'ignore_if_modified_after_cursor'
+                const upserted = await updateRecords({
+                    records: [
+                        { id: '1', name: 'Ken Doe' },
+                        { id: '4', name: 'Bloom Doe' }
+                    ],
+                    connectionId,
+                    model,
+                    syncId,
+                    syncJobId: 3,
+                    merging: { strategy: 'ignore_if_modified_after_cursor', cursor }
+                });
+                // only '1' should be updated because '4' were modified after the cursor
+                expect(upserted).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
+            });
+        });
+    });
+
     it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
-        const connectionId = Math.floor(Math.random() * 1000000);
-        const environmentId = Math.floor(Math.random() * 1000000);
-        const model = 'my-model';
-        const syncId = '00000000-0000-0000-0000-000000000000';
+        const connectionId = rnd.number();
+        const environmentId = rnd.number();
+        const model = rnd.string();
+        const syncId = uuid.v4();
         const records = Array.from({ length: 2000 }, (_, i) => ({
             id: i.toString(),
             name: `record ${i}`,
@@ -65,7 +252,7 @@ describe('Records service', () => {
             zip: `12345`
         }));
         const start = Date.now();
-        const res = await upsertRecords(records, connectionId, environmentId, model, syncId, 1);
+        const res = await upsertRecords({ records, connectionId, environmentId, model, syncId });
         const end = Date.now();
 
         expect(res.addedKeys.length).toStrictEqual(2000);
@@ -76,27 +263,27 @@ describe('Records service', () => {
     });
 
     it('Should delete records', async () => {
-        const connectionId = Math.floor(Math.random() * 1000000);
-        const environmentId = Math.floor(Math.random() * 1000000);
-        const model = 'my-model';
-        const syncId = '00000000-0000-0000-0000-000000000000';
+        const connectionId = rnd.number();
+        const environmentId = rnd.number();
+        const model = rnd.string();
+        const syncId = uuid.v4();
         const records = [
             { id: '1', name: 'John Doe' },
             { id: '2', name: 'Jane Doe' },
             { id: '3', name: 'Max Doe' }
         ];
-        await upsertRecords(records, connectionId, environmentId, model, syncId, 1);
+        await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
         const toDelete = [
             { id: '1', name: 'John Doe' },
             { id: '2', name: 'Jane Doe' }
         ];
-        const res1 = await upsertRecords(toDelete, connectionId, environmentId, model, syncId, 1, true);
+        const res1 = await upsertRecords({ records: toDelete, connectionId, environmentId, model, syncId, softDelete: true });
         expect(res1).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: ['1', '2'], nonUniqueKeys: [] });
 
         // Try to delete the same records again
         // Should not have any effect
-        const res2 = await upsertRecords(toDelete, connectionId, environmentId, model, syncId, 1, true);
+        const res2 = await upsertRecords({ records: toDelete, connectionId, environmentId, model, syncId, softDelete: true });
         expect(res2).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
     });
 
@@ -196,17 +383,15 @@ describe('Records service', () => {
     });
 
     it('Should return correct added records count when upserting concurrently', async () => {
-        const connectionId = Math.floor(Math.random() * 1000000);
-        const environmentId = Math.floor(Math.random() * 1000000);
-        const model = 'my-model';
-        const syncId = '00000000-0000-0000-0000-000000000000';
-        const syncJobId = 1;
+        const connectionId = rnd.number();
+        const environmentId = rnd.number();
+        const model = rnd.string();
         const records = formatRecords({
             data: [{ id: '1', name: 'John Doe' }],
             connectionId,
             model,
-            syncId,
-            syncJobId,
+            syncId: '00000000-0000-0000-0000-000000000000',
+            syncJobId: 1,
             softDelete: false
         }).unwrap();
 
@@ -232,51 +417,78 @@ describe('Records service', () => {
     });
 });
 
-async function upsertNRecords(n: number): Promise<{ connectionId: number; model: string; syncId: string; syncJobId: number; result: UpsertSummary }> {
+async function upsertNRecords(n: number): Promise<{ connectionId: number; model: string; syncId: string; result: UpsertSummary }> {
     const records = Array.from({ length: n }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
-    const connectionId = Math.floor(Math.random() * 1000);
-    const environementId = Math.floor(Math.random() * 1000);
-    const model = 'model-' + Math.random().toString(36).substring(0, 4);
+    const connectionId = rnd.number();
+    const environmentId = rnd.number();
+    const model = 'model-' + rnd.string();
     const syncId = uuid.v4();
-    const syncJobId = Math.floor(Math.random() * 1000);
-    const result = await upsertRecords(records, connectionId, environementId, model, '00000000-0000-0000-0000-000000000000', 1);
+    const result = await upsertRecords({ records, connectionId, environmentId, model, syncId });
     return {
         connectionId,
         model,
         syncId,
-        syncJobId,
         result
     };
 }
 
-async function upsertRecords(
-    records: UnencryptedRecordData[],
-    connectionId: number,
-    environmentId: number,
-    model: string,
-    syncId: string,
-    syncJobId: number,
-    softDelete = false
-): Promise<UpsertSummary> {
+async function upsertRecords({
+    records,
+    connectionId,
+    environmentId,
+    model,
+    syncId,
+    syncJobId = rnd.number(),
+    softDelete = false,
+    merging = { strategy: 'override' }
+}: {
+    records: UnencryptedRecordData[];
+    connectionId: number;
+    environmentId: number;
+    model: string;
+    syncId: string;
+    syncJobId?: number;
+    softDelete?: boolean;
+    merging?: Records.MergingStrategy;
+}): Promise<UpsertSummary> {
     const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId, softDelete });
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, environmentId, model, softDelete });
+    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, environmentId, model, softDelete, merging });
     if (upsertRes.isErr()) {
         throw new Error(`Failed to update records: ${upsertRes.error.message}`);
     }
     return upsertRes.value;
 }
 
-async function updateRecords(records: UnencryptedRecordData[], connectionId: number, model: string, syncId: string, syncJobId: number) {
+async function updateRecords({
+    records,
+    connectionId,
+    model,
+    syncId,
+    syncJobId = rnd.number(),
+    merging = { strategy: 'override' }
+}: {
+    records: UnencryptedRecordData[];
+    connectionId: number;
+    model: string;
+    syncId: string;
+    syncJobId?: number;
+    merging?: Records.MergingStrategy;
+}) {
     const formatRes = formatRecords({ data: records, connectionId, model, syncId, syncJobId });
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const updateRes = await Records.update({ records: formatRes.value, connectionId, model });
+    const updateRes = await Records.update({ records: formatRes.value, connectionId, model, merging });
     if (updateRes.isErr()) {
         throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }
     return updateRes.value;
 }
+
+const rnd = {
+    number: () => Math.floor(Math.random() * 1000),
+    string: () => Math.random().toString(36).substring(6)
+};

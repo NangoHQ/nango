@@ -41,18 +41,18 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 // ------ SDK
 
-import { Nango } from '@nangohq/node';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AxiosError } from 'axios';
+import type { Nango } from '@nangohq/node';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
+
 export declare const oldLevelToNewLevel: {
-    readonly debug: "debug";
-    readonly info: "info";
-    readonly warn: "warn";
-    readonly error: "error";
-    readonly verbose: "debug";
-    readonly silly: "debug";
-    readonly http: "info";
+    readonly debug: 'debug';
+    readonly info: 'info';
+    readonly warn: 'warn';
+    readonly error: 'error';
+    readonly verbose: 'debug';
+    readonly silly: 'debug';
+    readonly http: 'info';
 };
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
@@ -202,7 +202,7 @@ interface JwtCredentials {
     type: AuthModes['Jwt'];
     privateKeyId?: string;
     issuerId?: string;
-    privateKey: {
+    privateKey:{
         id: string;
         secret: string;
     } | string;
@@ -298,14 +298,16 @@ export interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
-    logMessages?: {
-        counts: {
-            updated: number;
-            added: number;
-            deleted: number;
-        };
-        messages: unknown[];
-    } | undefined;
+    logMessages?:
+        | {
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
+        | undefined;
     rawSaveOutput?: Map<string, unknown[]> | undefined;
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
@@ -354,9 +356,14 @@ export declare class NangoAction {
     ActionError: typeof ActionError;
     private memoizedConnections;
     private memoizedIntegration;
-    constructor(config: NangoProps, { persistApi }?: {
-        persistApi: AxiosInstance;
-    });
+    constructor(
+        config: NangoProps,
+        {
+            persistApi
+        }?: {
+            persistApi: AxiosInstance;
+        }
+    );
     protected stringify(): string;
     private proxyConfig;
     protected throwIfAborted(): void;
@@ -393,15 +400,26 @@ export declare class NangoAction {
      * await nango.log('This is a log message', { level: 'error' })
      * \`\`\`
      */
-    log(message: any, options?: {
-        level?: LogLevel;
-    } | {
-        [key: string]: any;
-        level?: never;
-    }): Promise<void>;
-    log(message: string, ...args: [any, {
-        level?: LogLevel;
-    }]): Promise<void>;
+    log(
+        message: any,
+        options?:
+            | {
+                  level?: LogLevel;
+              }
+            | {
+                  [key: string]: any;
+                  level?: never;
+              }
+    ): Promise<void>;
+    log(
+        message: string,
+        ...args: [
+            any,
+            {
+                level?: LogLevel;
+            }
+        ]
+    ): Promise<void>;
     getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
@@ -413,14 +431,16 @@ export declare class NangoAction {
 export declare class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes: boolean;
-    logMessages?: {
-        counts: {
-            updated: number;
-            added: number;
-            deleted: number;
-        };
-        messages: unknown[];
-    } | undefined;
+    logMessages?:
+        | {
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
+        | undefined;
     rawSaveOutput?: Map<string, unknown[]>;
     rawDeleteOutput?: Map<string, unknown[]>;
     stubbedMetadata?: Metadata | undefined;
