@@ -2275,6 +2275,22 @@ dixa:
             pattern: '^dev\|exports$'
             example: 'dev|exports'
 
+document360:
+    display_name: Document360
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api_token: ${apiKey}
+        base_url: https://api.document360.com
+    docs: https://docs.nango.dev/integrations/all/document360
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Document360 account
+
 docusign:
     display_name: DocuSign
     categories:
@@ -3873,6 +3889,7 @@ instagram:
         - marketing
         - social
     auth_mode: OAUTH2
+    scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     proxy:
