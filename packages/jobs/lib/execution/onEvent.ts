@@ -1,10 +1,10 @@
 import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection, NangoProps } from '@nangohq/shared';
+import type { Config, NangoConnection } from '@nangohq/shared';
 import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
@@ -85,7 +85,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             activityLogId: logCtx.id,
             secretKey: environment.secret_key,
             nangoConnectionId: task.connection.id,
-            syncConfig: syncConfig,
+            syncConfig,
             debug: false,
             runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),

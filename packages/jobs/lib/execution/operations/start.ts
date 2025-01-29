@@ -2,10 +2,10 @@ import type { Result } from '@nangohq/utils';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import type { LogContext } from '@nangohq/logs';
-import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
 import { getRunner } from '../../runner/runner.js';
 import type { JsonValue } from 'type-fest';
+import type { NangoProps } from '@nangohq/types';
 
 export async function startScript({
     taskId,

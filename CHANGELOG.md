@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.51.0] - 2025-01-28
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ef41e344c36cc7f3252d6e9b10734175d143e9d7 by Hassan_Wari. Commit message: feat(recharge): add upsert and customers sync (#203) by @github-actions[bot]
+- *(records)* Add upserting/updating records merging strategy (#3379) by @TBonnin
+
+### Changed
+
+- Improve publish script (#3383) by @bodinsamuel
+
+### Fixed
+
+- Package.json by @bodinsamuel
+- *(node-client)* UpdateSyncConnectionFrequency parameters (#3380) by @TBonnin
+- *(docs)* Make webflow sync more graceful (#3382) by @nalanj
+- *(docs)* Fix provider line parsing in webflow sync. (#3384) by @nalanj
+- Fix list connections params in Node SDK (#3372) by @bastienbeurier
+- *(tests)* Fix a few flaky tests (#3385) by @nalanj
+
+## [v0.50.0] - 2025-01-28
+
+### Added
+
+- *(server, orchestrator, jobs, runner)* More descriptive action errors (#3279) by @nalanj
+- *(integrations)* Add support for prive (#3359) by @hassan254-prog
+- *(server)* Log webhooks from syncs separate from the sync (#3312) by @nalanj
+- *(server)* Enrich webhook errors (#3319) by @nalanj
+- *(cli)* Use runner sdk (#3375) by @bodinsamuel
+
+### Changed
+
+- Update package.json by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/afbb2c9d02de716d997f348d5e514adbc7c91651 by Victor Lang'at. Commit message: feat(quickbooks): Quickbooks CDC for incremental sync (#202) by @github-actions[bot]
+
+### Fixed
+
+- Use netsuite-tba for docs (#3362) by @nalanj
+- *(slack)* Fix input/output, env, verbosity (#3368) by @bodinsamuel
+- *(jobs)* Fix small bug in wehbook code that never closed log (#3377) by @nalanj
+
 ## [v0.49.0] - 2025-01-27
 
 ### Changed
@@ -2820,6 +2861,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0
+[v0.50.0]: https://github.com/NangoHQ/nango/compare/v0.49.0..v0.50.0
 [v0.49.0]: https://github.com/NangoHQ/nango/compare/v0.48.4..v0.49.0
 [v0.48.4]: https://github.com/NangoHQ/nango/compare/v0.48.3..v0.48.4
 [v0.48.3]: https://github.com/NangoHQ/nango/compare/v0.48.2..v0.48.3
