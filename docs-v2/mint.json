@@ -115,7 +115,7 @@
             "source": "guides/custom-integration-builder/overview",
             "destination": "guides/custom-integrations/overview"
         },
-        { 
+        {
             "source": "guides/custom-integration-builder/build-a-custom-integration",
             "destination": "guides/custom-integrations/build-a-custom-integration"
         },
@@ -300,6 +300,7 @@
                 "integrations/all/discord",
                 "integrations/all/discourse",
                 "integrations/all/dixa",
+                "integrations/all/document360",
                 "integrations/all/docusign",
                 "integrations/all/dropbox",
                 "integrations/all/e-conomic",
