@@ -7973,6 +7973,9 @@ zapier-scim:
             content-type: application/json
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /Users
     docs: https://help.zapier.com/hc/en-us/articles/8496291497741-Provision-user-accounts-with-SCIM
     docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
