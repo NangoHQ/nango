@@ -6,10 +6,7 @@
         "^[a-z0-9-]+$": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-                "display_name",
-                "docs"
-            ],
+            "required": ["display_name", "docs"],
             "properties": {
                 "alias": {
                     "type": "string"
@@ -48,9 +45,7 @@
                 },
                 "authorization_method": {
                     "type": "string",
-                    "enum": [
-                        "header"
-                    ]
+                    "enum": ["header"]
                 },
                 "authorization_params": {
                     "type": "object",
@@ -58,28 +53,19 @@
                     "properties": {
                         "access_type": {
                             "type": "string",
-                            "enum": [
-                                "offline"
-                            ]
+                            "enum": ["offline"]
                         },
                         "approval_prompt": {
                             "type": "string",
-                            "enum": [
-                                "auto",
-                                "force"
-                            ]
+                            "enum": ["auto", "force"]
                         },
                         "duration": {
                             "type": "string",
-                            "enum": [
-                                "permanent"
-                            ]
+                            "enum": ["permanent"]
                         },
                         "expiration": {
                             "type": "string",
-                            "enum": [
-                                "never"
-                            ]
+                            "enum": ["never"]
                         },
                         "force_verify": {
                             "type": "boolean"
@@ -89,9 +75,7 @@
                         },
                         "prompt": {
                             "type": "string",
-                            "enum": [
-                                "consent"
-                            ]
+                            "enum": ["consent"]
                         },
                         "response_mode": {
                             "type": "string"
@@ -183,9 +167,7 @@
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": [
-                        "base_url"
-                    ],
+                    "required": ["base_url"],
                     "properties": {
                         "base_url": {
                             "type": "string"
@@ -233,21 +215,14 @@
                                 },
                                 "offset_calculation_method": {
                                     "type": "string",
-                                    "enum": [
-                                        "per-page",
-                                        "by-response-size"
-                                    ]
+                                    "enum": ["per-page", "by-response-size"]
                                 },
                                 "response_path": {
                                     "type": "string"
                                 },
                                 "type": {
                                     "type": "string",
-                                    "enum": [
-                                        "link",
-                                        "cursor",
-                                        "offset"
-                                    ]
+                                    "enum": ["link", "cursor", "offset"]
                                 }
                             }
                         },
@@ -279,16 +254,11 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": [
-                                "endpoint"
-                            ],
+                            "required": ["endpoint"],
                             "properties": {
                                 "method": {
                                     "type": "string",
-                                    "enum": [
-                                        "GET",
-                                        "POST"
-                                    ]
+                                    "enum": ["GET", "POST"]
                                 },
                                 "endpoint": {
                                     "type": "string"
@@ -348,9 +318,7 @@
                     "properties": {
                         "grant_type": {
                             "type": "string",
-                            "enum": [
-                                "refresh_token"
-                            ]
+                            "enum": ["refresh_token"]
                         }
                     }
                 },
@@ -370,24 +338,17 @@
                 },
                 "signature_method": {
                     "type": "string",
-                    "enum": [
-                        "HMAC-SHA1",
-                        "PLAINTEXT"
-                    ]
+                    "enum": ["HMAC-SHA1", "PLAINTEXT"]
                 },
                 "signature": {
                     "type": "object",
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": [
-                                "WSSE"
-                            ]
+                            "enum": ["WSSE"]
                         }
                     },
-                    "required": [
-                        "protocol"
-                    ]
+                    "required": ["protocol"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"
@@ -398,11 +359,7 @@
                     "properties": {
                         "grant_type": {
                             "type": "string",
-                            "enum": [
-                                "authorization_code",
-                                "client_credentials",
-                                "urn:ietf:params:oauth:grant-type:saml2-bearer"
-                            ]
+                            "enum": ["authorization_code", "client_credentials", "urn:ietf:params:oauth:grant-type:saml2-bearer"]
                         },
                         "request": {
                             "anyOf": [
@@ -440,16 +397,11 @@
                 },
                 "token_request_auth_method": {
                     "type": "string",
-                    "enum": [
-                        "basic",
-                        "custom"
-                    ]
+                    "enum": ["basic", "custom"]
                 },
                 "expires_in_unit": {
                     "type": "string",
-                    "enum": [
-                        "milliseconds"
-                    ]
+                    "enum": ["milliseconds"]
                 },
                 "token_response_metadata": {
                     "type": "array",
@@ -516,17 +468,11 @@
                         "^[a-zA-Z_]+$": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": [
-                                "type",
-                                "title",
-                                "description"
-                            ],
+                            "required": ["type", "title", "description"],
                             "properties": {
                                 "type": {
                                     "type": "string",
-                                    "enum": [
-                                        "string"
-                                    ]
+                                    "enum": ["string"]
                                 },
                                 "title": {
                                     "type": "string"
@@ -542,12 +488,7 @@
                                 },
                                 "format": {
                                     "type": "string",
-                                    "enum": [
-                                        "hostname",
-                                        "uri",
-                                        "uuid",
-                                        "email"
-                                    ]
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "order": {
                                     "type": "number"
@@ -582,17 +523,11 @@
                         "^[a-zA-Z_]+$": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": [
-                                "type",
-                                "title",
-                                "description"
-                            ],
+                            "required": ["type", "title", "description"],
                             "properties": {
                                 "type": {
                                     "type": "string",
-                                    "enum": [
-                                        "string"
-                                    ]
+                                    "enum": ["string"]
                                 },
                                 "title": {
                                     "type": "string"
@@ -608,12 +543,7 @@
                                 },
                                 "format": {
                                     "type": "string",
-                                    "enum": [
-                                        "hostname",
-                                        "uri",
-                                        "uuid",
-                                        "email"
-                                    ]
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "default_value": {
                                     "type": "string"

@@ -10034,10 +10034,10 @@ integrations:
                 version: 1.0.0
             create-database-row:
                 description: >
-                    Create a new row in a specified Notion database.
+                    Create a new row in a specified Notion database. 
 
                     The properties are mapped to Notion-compatible formats based on the
-                    database schema.
+                    database schema. 
 
                     Supported property types include:
 
