@@ -219,7 +219,15 @@ describe('Records service', () => {
             const records = [{ id: '1', person: { name: 'John Doe', age: 35, children: [{ name: 'Jenny Doe', age: 3 }] } }];
 
             const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
-            expect(inserted).toStrictEqual({ addedKeys: ['1'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] });
+            expect(inserted).toStrictEqual({
+                addedKeys: ['1'],
+                updatedKeys: [],
+                deletedKeys: [],
+                nonUniqueKeys: [],
+                nextMerging: {
+                    strategy: 'override'
+                }
+            });
 
             const updated = await updateRecords({
                 records: [{ id: '1', person: { age: 36, children: [{}, { name: 'Maurice Doe', age: 1 }] } }],
@@ -228,7 +236,15 @@ describe('Records service', () => {
                 syncId,
                 syncJobId: 2
             });
-            expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [] });
+            expect(updated).toStrictEqual({
+                addedKeys: [],
+                updatedKeys: ['1'],
+                deletedKeys: [],
+                nonUniqueKeys: [],
+                nextMerging: {
+                    strategy: 'override'
+                }
+            });
 
             const { records: found } = (await Records.getRecords({ connectionId, model })).unwrap();
             expect(found.length).toBe(1);
