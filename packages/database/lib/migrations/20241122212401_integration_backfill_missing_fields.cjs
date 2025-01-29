@@ -7,7 +7,7 @@ const yaml = require('js-yaml');
  */
 exports.up = async function (knex) {
     let providers;
-    const providersPath = path.join(__dirname, '..', '..', '..', 'shared', 'providers.yaml');
+    const providersPath = path.join(__dirname, '..', '..', '..', 'providers', 'providers.yaml');
     try {
         providers = yaml.load(fs.readFileSync(providersPath, 'utf8'));
     } catch (err) {

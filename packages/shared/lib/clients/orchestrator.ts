@@ -32,6 +32,7 @@ import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config
 import environmentService from '../services/environment.service.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
+import type { JsonValue } from 'type-fest';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({
@@ -98,7 +99,7 @@ export class Orchestrator {
         return Ok(scheduleMap);
     }
 
-    async triggerAction<T = any>({
+    async triggerAction<T = unknown>({
         connection,
         actionName,
         input,
@@ -117,13 +118,18 @@ export class Orchestrator {
             'connection.provider_config_key': connection.provider_config_key,
             'connection.environment_id': connection.environment_id
         };
+
         const span = tracer.startSpan('execute.action', {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
         try {
-            let parsedInput = null;
+            if (!connection.id) {
+                throw new NangoError('invalid_input', { connection });
+            }
+
+            let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
             } catch (err) {
@@ -136,7 +142,7 @@ export class Orchestrator {
             const args = {
                 actionName,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -153,7 +159,10 @@ export class Orchestrator {
             const res = actionResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
-                    new NangoError('action_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                    new NangoError('action_script_failure', {
+                        error: err.message,
+                        ...(err.payload ? { payload: err.payload } : {})
+                    })
                 );
             });
 
@@ -241,7 +250,7 @@ export class Orchestrator {
         }
     }
 
-    async triggerWebhook<T = any>({
+    async triggerWebhook<T = unknown>({
         account,
         environment,
         integration,
@@ -370,7 +379,7 @@ export class Orchestrator {
         }
     }
 
-    async triggerOnEventScript<T = any>({
+    async triggerOnEventScript<T = unknown>({
         connection,
         version,
         name,

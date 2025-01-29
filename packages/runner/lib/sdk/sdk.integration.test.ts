@@ -1,26 +1,21 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '@nangohq/database';
-import type { Connection } from '../models/Connection.js';
-import type { NangoProps } from './sync.js';
-import { NangoAction } from './sync.js';
-import connectionService from '../services/connection.service.js';
-import environmentService from '../services/environment.service.js';
-import { createConnectionSeeds } from '../seeders/connection.seeder.js';
-import { createConfigSeeds } from '../seeders/config.seeder.js';
-import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import type { DBEnvironment, DBSyncConfig } from '@nangohq/types';
+import type { Connection } from '@nangohq/shared';
+import { connectionService, environmentService, seeders } from '@nangohq/shared';
+import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
+import { NangoActionRunner } from './sdk.js';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
     beforeAll(async () => {
         await multipleMigrations();
-        env = await createEnvironmentSeed();
-        await createConfigSeeds(env);
+        env = await seeders.createEnvironmentSeed();
+        await seeders.createConfigSeeds(env);
     });
 
     describe('Nango object tests', () => {
         it('Should retrieve connections correctly if different connection credentials are passed in', async () => {
-            const connections = await createConnectionSeeds(env);
+            const connections = await seeders.createConnectionSeeds(env);
 
             const [nangoConnectionId, secondNangoConnectionId]: number[] = connections;
             const establishedConnection = await connectionService.getConnectionById(nangoConnectionId as number);
@@ -60,7 +55,7 @@ describe('Connection service integration tests', () => {
                 endUser: null
             };
 
-            const nango = new NangoAction(nangoProps);
+            const nango = new NangoActionRunner(nangoProps);
 
             // @ts-expect-error we are overriding a private method here
             nango.nango.getConnection = async (providerConfigKey: string, connectionId: string) => {

@@ -1,7 +1,7 @@
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection, NangoProps } from '@nangohq/shared';
+import type { Config, NangoConnection } from '@nangohq/shared';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -15,7 +15,7 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';

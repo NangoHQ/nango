@@ -3,7 +3,6 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import type { NangoProps } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { abort } from './abort.js';
@@ -11,6 +10,7 @@ import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
 import { abortControllers } from './state.js';
 import { runnerId, persistServiceUrl, jobsServiceUrl, heartbeatIntervalMs } from './env.js';
+import type { NangoProps } from '@nangohq/types';
 
 export const t = initTRPC.create({
     transformer: superjson
