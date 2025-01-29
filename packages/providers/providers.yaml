@@ -7976,7 +7976,7 @@ zapier-scim:
         verification:
             method: GET
             endpoint: /Users
-    docs: https://docs.nango.dev/integrations/all/zapier-scim/connect
+    docs: https://docs.nango.dev/integrations/all/zapier
     credentials:
         apiKey:
             type: string
