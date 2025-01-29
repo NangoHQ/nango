@@ -520,6 +520,7 @@
                 "integrations/all/youtube",
                 "integrations/all/zapier",
                 "integrations/all/zapier-nla",
+                "integrations/all/zapier-scim",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
                 "integrations/all/zoho-bigin",
