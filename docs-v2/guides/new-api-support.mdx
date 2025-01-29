@@ -1,0 +1,79 @@
+---
+title: 'New API support'
+sidebarTitle: 'New API support'
+description: 'Guide on how to add support for a new API.'
+---
+
+# Pre-requisites
+
+- You have access to a test account for the API
+- The API is publicly accessible
+- The API is of type HTTP or SOAP
+
+Nango support all authorization types (OAuth, API key, basic), including custom ones.
+
+# Option 1: Ask Nango to add support for a new API
+
+The simplest way to add a new API is to ask us in the [community](https://nango.dev/slack) on the `#contribution` channel. 
+
+We usually deliver them in &lt;48h, for free. 
+
+# Option 2: Contribute a new API yourself
+
+To contribute a new API, follow the steps below and check out past [PRs](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Aclosed) starting with `feat(integrations)` for examples.
+
+### Add an API configuration
+
+Fork the [repo](https://github.com/NangoHQ/nango) and edit the API configurations file ([providers.yaml](https://nango.dev/providers.yaml)).
+
+You can test the configuration of your new provider with this command:
+
+```sh
+npx tsx scripts/validation/providers/validate.ts
+```
+
+### Test the API
+
+To test your new provider, go to the `nango` repo root and run:
+
+```bash
+docker compose up
+```
+
+<Tip>
+You can modify the ports in the `docker-compose.yaml` file if there are conflicts with
+other local services on your host machine.
+</Tip>
+
+When you are ready to test your API:
+
+**Create an integration**
+
+Open the [local Nango UI](http://localhost:3003) in your browser and add a new integration with your freshly added API.
+
+**Create a connection**
+
+Create a new connection for this API in the Nango UI, completing the authorization flow.
+
+**Verify the connection**
+
+If all goes well, you should see your new connection in the _Connections_ tab. Check the connection details and make sure that the credentials are valid.
+
+### Document the API
+
+Add a `<api>.mdx` file (e.g. `github.mdx`) for you API to the `docs-v2/integrations/all` folder. Check out [other examples](/integrations) to fill out the content of the documentation page.
+
+Reference the page in the `docs-v2/mint.json` file in the `Supported APIs` group in alphabetical order.
+
+
+### Submit a pull request
+
+Verify your contribution against [examples of past contributions](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Amerged+label%3Aapi+).
+
+Submit a pull request with the new provider to the Nango repo. Please thoroughly test the integration!
+
+Thanks a lot for your contribution!! ❤️
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

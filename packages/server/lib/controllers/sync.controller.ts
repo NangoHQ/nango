@@ -315,7 +315,7 @@ class SyncController {
                     environment,
                     integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
                     meta: truncateJson({ input })
                 }
             );
@@ -337,7 +337,20 @@ class SyncController {
                 span.setTag('nango.error', actionResponse.error);
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, actionResponse.error);
+                if (actionResponse.error.type === 'script_http_error') {
+                    res.status(424).json({
+                        error: {
+                            payload: actionResponse.error.payload,
+                            code: actionResponse.error.type,
+                            ...(actionResponse.error.additional_properties && 'upstream_response' in actionResponse.error.additional_properties
+                                ? { upstream: actionResponse.error.additional_properties['upstream_response'] }
+                                : {})
+                        }
+                    });
+                } else {
+                    errorManager.errResFromNangoErr(res, actionResponse.error);
+                }
+
                 span.finish();
                 return;
             }
@@ -572,7 +585,7 @@ class SyncController {
                     environment,
                     integration: { id: config.id!, name: config.unique_key, provider: config.provider },
                     connection: { id: connection.id!, name: connection.connection_id },
-                    syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
                 }
             );
 

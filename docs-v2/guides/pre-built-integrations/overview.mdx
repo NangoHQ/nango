@@ -1,0 +1,49 @@
+---
+title: 'Pre-built integrations - Overview'
+sidebarTitle: 'Overview'
+description: 'Overview of how pre-built integrations work in Nango.'
+---
+
+## What is a pre-built integration?
+
+A pre-built integration in Nango is similar to a capability for interacting with an external API. For example, if you want to sync contacts from the HubSpot API, Nango refers to this as an "integration." 
+
+Pre-built integrations in Nango abstract away many API requests and the associated data mapping logic. They provide a higher-level approach to interacting with external APIs, focusing on business use cases rather than low-level requests. By encapsulating API-specific logic, pre-built integrations reduce the integration footprint and complexity in your codebase.
+
+<Info>
+Nango integrations are sometimes referred to as "templates" or "use cases" (legacy terminology).
+</Info>
+
+## How do pre-built integrations work?
+
+Each pre-built integration in Nango is accessed via an HTTP endpoint on the Nango API. You can call Nango integration endpoint to retrieve data, perform actions (e.g. send email), or modify data in an external API. 
+
+Typically, you interact with Nango integrations from your backend. In additional the Nango API, Nango provides SDKs to facilitate interactions with integrations. 
+
+## Pre-built integration catalog
+
+Pre-built integrations are listed on:
+
+- **Individual API docs pages:** Each API has relevant pre-built integrations listed ([list of API docs pages](/integrations)).
+- **Dedicated GitHub repository:** This [repository](https://github.com/NangoHQ/integration-templates/tree/main/integrations) contains a complete list of pre-built integrations, including readmes with detailed configuration, code, and usage instructions.
+
+## Types of pre-built integrations
+
+Nango supports multiple types of integrations:
+
+- **Syncs:** meant to continuous sync data from external APIs, sending webhooks to notify you when to fetch the latest available data ([overview](/guides/syncs/overview), [guides](/guides/syncs/use-a-sync)).
+- **Actions:** to perform specific tasks synchronously, such as sending a Slack message or updating data ([overview](/guides/actions/overview), [guides](/guides/actions/use-an-action)).
+
+You interact with these types slightly differently, and the Nango UI clearly indicates whether an integration is a sync or an action. Refer to the related guides for detailed instructions.
+
+## Supporting new integrations
+
+In Nango, pre-built integrations are a starting point. You can extend them or create custom integrations from scratch, using [custom integrations](/guides/custom-integrations/overview). Custom integrations don't need to be publicly shared or approved by Nango. You can indenpendently & privately build, deploy and use them.
+
+Nango also continuously adds new pre-built integrations to its catalog. 
+
+For Scale plan customers, Nango can pre-build integrations on demand ([details](/guides/services)).
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

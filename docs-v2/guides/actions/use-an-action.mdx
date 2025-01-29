@@ -1,0 +1,64 @@
+---
+title: 'Use an action integration'
+sidebarTitle: 'Use an action'
+description: 'Guide on how to perform an synchronous task with an external API using an action integration.'
+---
+
+<Info>
+Pre-requisite: [configure Nango](/guides/api-authorization/configuration).
+</Info>
+
+# Activate an action integration
+
+Nango uses [actions](/guides/actions/overview) to perform tasks synchoronously involving external APIs. Tasks can involve arbitrary series of API requests & data transformations. For common use cases, [pre-built action integrations](/guides/pre-built-integrations/overview) are available to let you get started fast.
+
+Select your integration in the _Integrations_ tab, and navigate to the _Endpoints_ tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
+
+<Tip>
+Your use case is not covered by the available pre-built integrations? Use [custom integrations](/guides/custom-integrations/overview).
+</Tip>
+
+# Trigger an action
+
+Actions can take inputs, and they return a result synchronously. Trigger actions using the backend SDK ([reference](/reference/sdks/node#trigger-an-action)) or API ([reference](/reference/api/action/trigger)):
+
+<Tabs>
+
+<Tab title="cURL (standard endpoint)">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/action/trigger \
+  --header 'Authorization: Bearer <PROJECT-SECRET-KEY>' \
+  --header 'Connection-Id: <string>' \
+  --header 'Provider-Config-Key: <string>' \
+  --data '{ "action_name": "<string>", "input": <json> }'
+```
+</Tab>
+
+<Tab title="Node SDK">
+
+```ts
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
+
+const result = await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', '<ACTION-NAME>', jsonInput);
+```
+</Tab>
+
+</Tabs>
+
+<Tip>
+ If you consume the API (vs. the SDK), you can use the standard endpoint (above) or a unique generated endpoint described in the _Endpoints_ tab of your integration in the Nango UI. The generated endpoint documents the specific parameters & responses of each action.
+</Tip>
+
+
+# Troubleshoot errors & monitor
+
+Navigate to the _Logs_ tab to inspect potential errors & monitor action executions.
+
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

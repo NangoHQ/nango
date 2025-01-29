@@ -1,0 +1,114 @@
+---
+title: 'Quickstart'
+sidebarTitle: 'Quickstart'
+description: 'Start building integrations with Nango.'
+---
+
+# Quickstart guides
+
+Build your first integration with Nango using the following guides: 
+
+<CardGroup cols={2}>
+    <Card title="Guide 1: Authorize an API" icon="lock-open" href="/guides/api-authorization/authorize-in-your-app-default-ui">
+        Let users authorize an API directly from your app.
+    </Card>
+    <Card title="Guide 2: Sync data from an API" icon="rotate" href="/guides/syncs/use-a-sync">
+        Continutously sync data from an API to your app.
+    </Card>
+    <Card title="Guide 3: Write data back to an API" icon="pen" href="/guides/actions/use-an-action">
+        Write data back from you app to an API. 
+    </Card>
+    <Card title="Guide 4: Build custom integrations" icon="wrench" href="/guides/custom-integrations/overview">
+        Extend pre-built integrations or build new ones.
+    </Card>
+</CardGroup>
+
+# Sample app
+
+Alernatively, the sample app is a practical demonstration of integrating Nango in your codebase. It contains:
+- **A frontend**: lets users connect an integration using the Nango frontend SDK.
+- **A backend**: listens to Nango webhooks and consumes the Nango API to read & write data.
+
+<Frame>
+  <img src="/images/sample-app.png" />
+</Frame>
+
+The sample app uses Slack as an example integration and is showcased in this [demo video](/getting-started/intro-to-nango#what-is-nango).
+
+### Access the repository
+
+<a href="https://github.com/NangoHQ/sample-app" target="_blank" className="inline-flex items-center gap-3 border border-gray-400 h-7 px-5 py-5 rounded-xl hover:bg-gray-100 hover:dark:bg-gray-800">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 1024 1024" fill="currentColor" class="h-5 w-5">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" transform="scale(64)"></path>
+  </svg>
+  <div>NangoHQ/sample-app</div>
+</a>
+
+
+### Run the sample app
+
+<Steps>
+  <Step title="Create an account">
+    - Go to [nango.dev](https://app.nango.dev?source=sample-app) and create an account (free).
+  </Step>
+  <Step title="Create a Slack integration">
+    - Go to [Integrations](https://app.nango.dev/dev/integrations?source=sample-app) ans create a Slack integration.
+    - Go to [Slack Dev Center](https://api.slack.com/apps) and create a Slack OAuth app with **Bot Token Scopes**:
+      - `users:read`
+      - `chat:write`
+    - Go back to Nango. In the "Authorization" tab, add credentials in the Slack integration in the `Authorization` tab. In the "Endpoints" tab, activate endpoint `GET /users` and `POST /send-message`.
+  </Step>
+  <Step title="Prepare your env">
+    - Install: `NodeJS`, `Docker`. Then run:
+
+    ```sh
+    git clone https://github.com/NangoHQ/sample-app.git
+
+    cd sample-app
+
+    nvm use
+    npm i
+    ```
+    - Copy your Nango Secret Key, found in [Environment Settings](https://app.nango.dev/dev/environment-settings?source=sample-app).
+    - Create a file to store environment variables and fill in the Nango Secret Key:
+    ```sh
+    cp .env.example .env
+    ```
+  </Step>
+  <Step title="Transfer Nango webhooks locally">
+    - This command should be running at all time:
+
+    ```sh
+    npm run webhooks-proxy
+    ```
+
+    - Copy the URL the command gave you and go to [Environment Settings](https://app.nango.dev/dev/environment-settings?source=sample-app). Set Webhook URL to `${URL}/webhooks-from-nango`, e.g: `https://tame-socks-warn.loca.lt/webhooks-from-nango`.
+  </Step>
+  <Step title="Launch">
+    - Run:
+    ```sh
+    npm run start
+    ```
+    - Go to: [http://localhost:3011](http://localhost:3011)
+  </Step>
+  <Step title="Bonus: Deploy custom scripts">
+    This above sample app uses pre-built integrations, but you can also use custom ones.
+
+    - Set up the Nango CLI:
+    ```sh
+    npm install -g nango
+    cd nango-integrations/
+    nango init
+    ```
+    - Add your Nango Secret Key in NANGO_SECRET_KEY_PROD in `./nango-integrations/.env`.
+    - Optionally customize the integration using this [guide](/guides/custom-integrations/build-a-custom-integration).
+    - Deploy the custom integration:
+    ```sh
+    nango deploy prod
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

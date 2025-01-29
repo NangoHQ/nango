@@ -1,5 +1,5 @@
 import tracer from 'dd-trace';
-import type { Config, Job, NangoProps, SyncConfig } from '@nangohq/shared';
+import type { Config, Job } from '@nangohq/shared';
 import {
     environmentService,
     externalWebhookService,
@@ -26,7 +26,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBTeam, NangoConnection, SyncResult } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
@@ -45,9 +45,9 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     let environment: DBEnvironment | undefined;
     let syncJob: Job | null = null;
     let lastSyncDate: Date | null = null;
-    let syncType: SyncType = SyncType.FULL;
+    let syncType: SyncTypeLiteral = 'full';
     let providerConfig: Config | null = null;
-    let syncConfig: SyncConfig | null = null;
+    let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
@@ -80,7 +80,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        syncType = syncConfig.sync_type?.toLowerCase() === SyncType.INCREMENTAL.toLowerCase() && lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL;
+        syncType = syncConfig.sync_type?.toLowerCase() === 'incremental' && lastSyncDate ? 'incremental' : 'full';
 
         logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' } },
@@ -89,18 +89,18 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 environment,
                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: task.connection.id, name: task.connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name },
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
                 meta: { scriptVersion: syncConfig.version }
             }
         );
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
-            type: syncType,
+            type: syncType === 'full' ? SyncType.FULL : SyncType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
-            sync_config_id: syncConfig.id!,
+            sync_config_id: syncConfig.id,
             run_id: task.id,
             log_id: logCtx.id
         });
@@ -138,7 +138,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncJobId: syncJob.id,
             attributes: syncConfig.attributes,
             track_deletes: syncConfig.track_deletes,
-            syncConfig: syncConfig,
+            syncConfig,
             debug: task.debug || false,
             runnerFlags: await getRunnerFlags(featureFlags),
             startedAt: new Date(),
@@ -167,6 +167,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         await onFailure({
             connection: task.connection,
             provider: providerConfig?.provider || 'unknown',
+            providerConfig: providerConfig,
             syncId: task.syncId,
             syncName: syncConfig?.sync_name || 'unknown',
             syncType: syncType,
@@ -188,9 +189,12 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
-    const syncType = nangoProps.syncConfig.sync_type === SyncType.FULL ? SyncType.FULL : SyncType.INCREMENTAL;
+    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental';
+
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
+    let providerConfig: Config | null = null;
+
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
         if (!accountAndEnv) {
@@ -216,12 +220,17 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             provider_config_key: nangoProps.providerConfigKey
         };
 
+        providerConfig = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
+        if (!providerConfig) {
+            throw new Error(`Provider config not found for connection: ${connection.connection_id}`);
+        }
+
         const syncPayload = {
             records: {} as Record<string, SyncResult>,
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        for (const model of nangoProps.syncConfig.models) {
+        for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
                 deletedKeys = await records.markPreviousGenerationRecordsAsDeleted({
@@ -247,6 +256,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     environment,
                     connection,
                     provider: nangoProps.provider,
+                    providerConfig,
                     syncId: nangoProps.syncId,
                     syncName: nangoProps.syncConfig.sync_name,
                     syncType,
@@ -293,27 +303,46 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                         model
                     }
                 });
+
                 void tracer.scope().activate(span, async () => {
                     try {
-                        const res = await sendSyncWebhook({
-                            connection: connection,
-                            environment: environment!,
-                            webhookSettings,
-                            syncName: nangoProps.syncConfig.sync_name,
-                            model,
-                            now: nangoProps.startedAt,
-                            success: true,
-                            responseResults: {
-                                added,
-                                updated,
-                                deleted
-                            },
-                            operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
-                            logCtx
-                        });
+                        if (team && environment && providerConfig) {
+                            const res = await sendSyncWebhook({
+                                account: team,
+                                connection: connection,
+                                environment: environment,
+                                syncConfig: nangoProps.syncConfig,
+                                providerConfig,
+                                webhookSettings,
+                                model,
+                                now: nangoProps.startedAt,
+                                success: true,
+                                responseResults: {
+                                    added,
+                                    updated,
+                                    deleted
+                                },
+                                operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                            });
 
-                        if (res.isErr()) {
-                            throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
+                            if (res.isErr()) {
+                                throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}`);
+                            }
+                        } else {
+                            const missing: string[] = [];
+                            if (!team) {
+                                missing.push('team');
+                            }
+
+                            if (!environment) {
+                                missing.push('environment');
+                            }
+
+                            if (!providerConfig) {
+                                missing.push('providerConfig');
+                            }
+
+                            throw new Error(`Failed to send webhook for sync: ${nangoProps.syncConfig.sync_name}, missing ${missing.join(',')}`);
                         }
                     } catch (err) {
                         span?.setTag('error', err);
@@ -412,6 +441,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 provider_config_key: nangoProps.providerConfigKey
             },
             provider: nangoProps.provider,
+            providerConfig,
             syncId: nangoProps.syncId!,
             syncName: nangoProps.syncConfig.sync_name,
             syncType,
@@ -419,7 +449,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             activityLogId: nangoProps.activityLogId!,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
-            models: nangoProps.syncConfig.models,
+            models: nangoProps.syncConfig.models || [],
+
             runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
             failureSource: ErrorSourceEnum.CUSTOMER,
             isCancel: false,
@@ -432,11 +463,19 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
 export async function handleSyncError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
+    let providerConfig: Config | null = null;
+
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
     if (accountAndEnv) {
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
     }
+
+    providerConfig = await configService.getProviderConfig(nangoProps.providerConfigKey, nangoProps.environmentId);
+    if (!providerConfig) {
+        throw new Error(`Provider config not found for connection: ${nangoProps.nangoConnectionId}`);
+    }
+
     await onFailure({
         team,
         environment,
@@ -447,6 +486,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
             provider_config_key: nangoProps.providerConfigKey
         },
         provider: nangoProps.provider,
+        providerConfig,
         syncId: nangoProps.syncId!,
         syncName: nangoProps.syncConfig.sync_name,
         syncType: nangoProps.syncConfig.sync_type!,
@@ -454,7 +494,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         activityLogId: nangoProps.activityLogId!,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
-        models: nangoProps.syncConfig.models,
+        models: nangoProps.syncConfig.models || [],
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         failureSource: ErrorSourceEnum.CUSTOMER,
         isCancel: false,
@@ -508,9 +548,10 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
                 provider_config_key: task.connection.provider_config_key
             },
             provider: providerConfig.provider,
+            providerConfig,
             syncId: task.syncId,
-            syncName: syncConfig.sync_name,
             syncType: syncConfig.sync_type!,
+            syncName: syncConfig.sync_name,
             syncJobId: syncJob.id,
             activityLogId: syncJob.log_id!,
             debug: task.debug,
@@ -546,6 +587,7 @@ async function onFailure({
     environment,
     connection,
     provider,
+    providerConfig,
     syncId,
     syncName,
     syncType,
@@ -565,9 +607,10 @@ async function onFailure({
     environment?: DBEnvironment | undefined;
     connection: NangoConnection;
     provider: string;
+    providerConfig: Config | null;
     syncId: string;
     syncName: string;
-    syncType: SyncType;
+    syncType: SyncTypeLiteral;
     syncJobId: number;
     lastSyncDate?: Date | undefined;
     activityLogId: string;
@@ -575,7 +618,7 @@ async function onFailure({
     models: string[];
     runTime: number;
     isCancel?: boolean;
-    syncConfig: SyncConfig | null;
+    syncConfig: DBSyncConfig | null;
     failureSource?: ErrorSourceEnum;
     error: NangoError;
     endUser: NangoProps['endUser'];
@@ -633,33 +676,37 @@ async function onFailure({
                 syncSuccess: false
             }
         });
-        void tracer.scope().activate(span, async () => {
-            try {
-                const res = await sendSyncWebhook({
-                    connection: connection,
-                    environment: environment,
-                    webhookSettings,
-                    syncName: syncName,
-                    model: models.join(','),
-                    success: false,
-                    error: {
-                        type: 'script_error',
-                        description: error.message
-                    },
-                    now: lastSyncDate,
-                    operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL,
-                    logCtx: logCtx
-                });
 
-                if (res.isErr()) {
-                    throw new Error(`Failed to send webhook for sync: ${syncName}`);
+        if (team && environment && syncConfig && providerConfig) {
+            void tracer.scope().activate(span, async () => {
+                try {
+                    const res = await sendSyncWebhook({
+                        account: team,
+                        providerConfig,
+                        syncConfig,
+                        connection: connection,
+                        environment: environment,
+                        webhookSettings,
+                        model: models.join(','),
+                        success: false,
+                        error: {
+                            type: 'script_error',
+                            description: error.message
+                        },
+                        now: lastSyncDate,
+                        operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                    });
+
+                    if (res.isErr()) {
+                        throw new Error(`Failed to send webhook for sync: ${syncName}`);
+                    }
+                } catch (err) {
+                    span?.setTag('error', err);
+                } finally {
+                    span.finish();
                 }
-            } catch (err) {
-                span?.setTag('error', err);
-            } finally {
-                span.finish();
-            }
-        });
+            });
+        }
     }
 
     await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);

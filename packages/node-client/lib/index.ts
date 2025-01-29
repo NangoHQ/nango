@@ -6,6 +6,7 @@ import https from 'node:https';
 import type {
     ApiKeyCredentials,
     AppCredentials,
+    OAuth1Token,
     AppStoreCredentials,
     BasicApiCredentials,
     CredentialsCommon,
@@ -37,7 +38,6 @@ import type {
     Metadata,
     MetadataChangeResponse,
     NangoProps,
-    OAuth1Token,
     ProxyConfiguration,
     RecordMetadata,
     StandardNangoConfig,
@@ -232,7 +232,7 @@ export class Nango {
     /**
      * Updates an integration with the specified provider and configuration key
      * Only integrations using OAuth 1 & 2 can be updated, not integrations using API keys & Basic auth (because there is nothing to update for them)
-     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml))
+     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml))
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
      * @returns A promise that resolves with the updated integration configuration object
@@ -684,11 +684,11 @@ export class Nango {
             throw new Error('Provider Config Key is required');
         }
 
-        if (typeof sync === 'string') {
+        if (typeof sync !== 'string') {
             throw new Error('Sync must be a string.');
         }
 
-        if (typeof connectionId === 'string') {
+        if (typeof connectionId !== 'string') {
             throw new Error('ConnectionId must be a string.');
         }
 

@@ -1,0 +1,73 @@
+---
+title: Basecamp
+sidebarTitle: Basecamp
+provider: basecamp
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/basecamp/PreBuiltTooling.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/basecamp/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup [here](https://3.basecamp.com/signup/account/new?plan=free_v1). |
+| Paid test account | ✅ Not required | Create free account for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+<Steps>
+  <Step title="Create a free account">
+    Go to [Basecamp's signup page](https://3.basecamp.com/signup/account/new?plan=free_v1) and create an account.
+  </Step>
+  <Step title="Create & configure a Basecamp app">
+    - Start creating a Basecamp app by heading to the following [page](https://launchpad.37signals.com/integrations).
+    - Click **Register another application** to open the application registration form.
+    - Fill in the **About** section and configure the Redirect URL as follows: `https://api.nango.dev/oauth/callback`.
+    - Select the products your app integrates with.
+    - Submit Your Application.
+    - Once your application has been created, navigate to the specific app page and copy the `Client ID` and `Client Secret`. You will need to specify these in Nango later.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/basecamp.mdx)</Note>
+
+
+## Useful links
+
+| Topic | Links |
+| - | - |
+| General | [Website](https://basecamp.com/) |
+| | [Create a test account](https://3.basecamp.com/signup/account/new?plan=free_v1) |
+| Developer | [API documentation](https://github.com/basecamp/bcx-api/blob/master/README.md#api-ready-for-use) |
+| | [Authorization documentation](https://github.com/basecamp/api/blob/master/sections/authentication.md#oauth-2) |
+| | [Register an OAuth app](https://launchpad.37signals.com/integrations) |
+| | [Details on rate limits](https://github.com/Basecamp/bcx-api?tab=readme-ov-file#rate-limiting) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/basecamp.mdx)</Note>
+
+## API gotchas
+
+-   When creating a new connection in Nango, you will need to add the `appDetails`, configuration parameter in the format `MyApp (yourname@example.com)`, which will be appended to the request as a header: `User-Agent: MyApp (yourname@example.com)`. This information will be used to get in touch if you’re doing something wrong(so the provider can warn you before you’re blocked) or something awesome (so the provider can congratulate you). Requests without a valid `User-Agent` header are rejected.
+-   You will also need to add in your `accountId` connection configuration parameter.
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/basecamp.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Basecamp" icon="link" href="/integrations/all/basecamp/connect" horizontal>
+  Guide to connect to Basecamp using Connect UI
+</Card>

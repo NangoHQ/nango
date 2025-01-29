@@ -8,7 +8,7 @@
         "../webhooks/dist",
         "../keystore/dist",
         "../../.env",
-        "../shared/providers.yaml"
+        "../providers/providers.yaml"
     ],
     "ext": "js,ts,json",
     "ignore": ["src/**/*.test.ts"],

@@ -30,7 +30,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
 
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
-    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type === 'full' ? 'full' : 'incremental');
+    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental');
     const [deleteRecords, setDeleteRecords] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
@@ -246,7 +246,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                 <>
                                                                     Incremental sync mode will fetch the data modified since the last execution.{' '}
                                                                     <Link
-                                                                        to="https://docs.nango.dev/guides/customize/handle-large-datasets#incremental-syncing"
+                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#incremental-syncing"
                                                                         className="underline"
                                                                     >
                                                                         Learn more
@@ -256,7 +256,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                                                 <>
                                                                     Full refresh sync mode will fetch all the data.{' '}
                                                                     <Link
-                                                                        to="https://docs.nango.dev/guides/customize/handle-large-datasets#full-refresh-syncing-small-datasets-only"
+                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#full-refresh-syncing-small-datasets-only"
                                                                         className="underline"
                                                                     >
                                                                         Learn more

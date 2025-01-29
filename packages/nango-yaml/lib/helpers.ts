@@ -21,7 +21,7 @@ export function determineVersion(configData: NangoYaml): 'v1' | 'v2' {
 
     const firstProviderConfig = configData.integrations[keys[0]!];
 
-    if (firstProviderConfig && ('syncs' in firstProviderConfig || 'actions' in firstProviderConfig)) {
+    if (firstProviderConfig && ('syncs' in firstProviderConfig || 'actions' in firstProviderConfig || 'on-events' in firstProviderConfig)) {
         return 'v2';
     } else {
         return 'v1';

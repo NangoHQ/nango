@@ -1,0 +1,138 @@
+---
+title: 'API unification'
+sidebarTitle: 'API unification'
+description: 'Guide on how to unify API endpoints & models.'
+---
+
+# API unification support in Nango
+
+API unification is the process of standardizing multiple APIs with varying endpoints and schemas into a single, consistent interface for easier integration.
+
+Unification is treated as a first-class citizen in Nango, but it is optional.
+
+If you opt in for API unification, Nango lets you define your own unified endpoints and models so that they fit your specific use case.
+
+However, when API unification becomes limiting, Nango preserves your ability to have integrations that fully leverage an API’s specific data and capabilities.
+
+# Challenges and opportunities of unification
+
+### Unification challenges
+
+Not all use cases and APIs are good fits for unification. You might need to leverage specific capabilities of an API that are impossible to standardize with others. For example, Notion’s block-based structure reflects unique ways its API is consumed, making it difficult to unify with other knowledge management APIs like Google Drive or SharePoint. While basic use cases such as listing files or exporting plain-text documents can be unified, advanced capabilities like complex handling of Notion blocks cannot. APIs with no standard equivalent capabilities are sometimes referred to as _unstructured_ APIs.
+
+Even when APIs have standard models, such as CRMs (contacts, companies), accounting systems (transactions, invoices), or HR platforms (employees, teams) — often called _structured_ APIs — unification can still be imperfect due to discrepancies across providers. For instance, an Applicant Tracking System (ATS) might have 5 candidate statuses, another 10, and a third might allow fully customizable statuses. Mapping these statuses into a single unified model requires decisions that cannot follow a “one-size-fits-all” approach. These decisions have significant consequences for how your integration functions and must account for different use cases. For SaaS companies, these decisions often need to adapt to the specific logic of each customer, especially if they use custom fields or statuses.
+
+Fortunately, Nango streamlines this process while giving you full control over how you unify APIs to match your exact needs. It ensures flexibility to handle both standard models and specific API nuances without sacrificing functionality.
+
+### Unification opportunities
+
+Most SaaS products integrate with core systems of record, such as CRMs, accounting platforms, HR systems, or support tools. These systems typically include models with shared capabilities and fields — for example, a support ticket will usually have a title, description, author, and status. Integrating with these systems often means covering multiple providers chosen by your customers, which is where API unification provides the most value. By unifying the external models into a common internal model, you encapsulate the per-API logic (fetching and mapping data) into clean, reusable components. This keeps your standard integration logic simple and focused on your product’s internal needs.
+
+API unification doesn’t need to be perfect to deliver value. Even partial alignment across APIs is often sufficient. For example, you might unify most fields across multiple APIs but include special handling for certain APIs that support additional fields or lack certain data. While this reintroduces some per-API logic, it is far smaller and more manageable, particularly as integrations grow in number and complexity.
+
+# Best practices for API unification
+
+Based on our experience helping hundreds of companies build product integrations, here are some best practices for unifying APIs effectively:
+
+### Unify with your data model
+
+If your product already has a data model for the entities you’re working with (e.g., contacts, companies, invoices), use this as your universal model for API unification. This approach has several advantages:
+- It gives you a single, consistent model for your application.
+- It ensures that the unified model contains all the fields needed for your specific use case.
+- If your internal model is large, simplify it to focus on the subset of fields that are most important to your customers.
+
+### Expect fields to be optional
+
+Not all APIs will provide the same information. Some fields in your unified model will inevitably be `null` for certain APIs. Design your logic to handle missing fields gracefully, and build fallback mechanisms where necessary. This ensures that your integrations remain robust even when data is incomplete.
+
+### Use the same model for reads and writes
+
+Adopt the same data model for both reading data (e.g., syncing) and writing data back to the API. This approach eliminates duplicate logic in your application and integrations, making your codebase cleaner and easier to maintain.
+
+### Enforce custom data validation rules in your custom integration scripts
+
+When building custom integrations in Nango, leverage Nango’s built-in support for data validation using the zod library ([docs](/guides/data-validation#custom-validation)). By enforcing validation rules in Nango scripts, close to the external API source, you can catch errors early, reduce downstream bugs, and simplify debugging. Validations ensure that your unified model remains reliable and predictable across all integrated APIs.
+
+# How API Unification Works in Nango
+
+## Pre-built integrations
+
+Most of Nango’s integrations are not unified out of the box because one-size-fits-all unification often falls short of real-world requirements. Instead, we encourage you to focus on unifying APIs based on your specific use case.
+
+In the future, we may introduce default unified models as examples or starting points, but the flexibility to customize remains key.
+
+## Building custom unification
+
+To build a custom unified API in Nango, follow these steps:
+
+### 1. Define your unified model
+
+Start by defining your unified model in the `nango.yaml` file. This is where you standardize the fields and structure for your use case:
+
+```yaml
+models: 
+  User:
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+```
+
+### 2. Define your unified endpoints
+
+In your `nango.yaml` configuration, standardize the configuration of endpoints across APIs for consistency: use the same method, path & parameters across APIs.
+
+```yaml
+integrations:
+  jira-basic:
+    actions:
+    create-user:
+      description: Creates a user in Jira.
+      output: User # Common output between Jira & Zendesk
+      endpoint:  # Common endpoint between Jira & Zendesk
+        method: POST
+        path: /users
+        group: Users
+      input: User  # Common input between Jira & Zendesk
+  zendesk:
+    actions:
+    create-user:
+      description: Creates a user in Zendesk.
+      output: User
+      endpoint:
+        method: POST
+        path: /users
+        group: Users
+      input: User
+...
+```
+
+### 3. Fetch data and transform
+
+In your custom scripts, implement data-fetching logic and apply necessary transformations to align external data with the unified model.
+
+### Optional enhancements
+
+- **Enfore generated types in your codebase:** Nango will leverage your unified model to generate strongly-typed interfaces for your codebase, reducing errors and improving developer productivity ([docs](/guides/data-validation#using-schema-json-in-your-codebase)).
+- **Custom data validation:** Leverage Nango’s integration with zod to define custom validation rules tailored to your unified model ([docs](/guides/data-validation#custom-validation)).
+- **Runtime data validation:** Nango includes built-in runtime validation, which surfaces warnings in the _Logs_ tab of the Nango UI when runtime data validation error are detected. 
+
+### Calling the unified API from your app
+
+Once your unified API is ready, you can interact with it programmatically by making calls to the unified endpoints.
+
+# Manage API specificities 
+
+When dealing with API-specific data or functionality, Nango provides tools to handle edge cases without breaking your unified model:
+
+- **Extend common models:** Extend your unified model to include custom adaptations for specific APIs ([ref](https://docs.nango.dev/reference/integration-configuration#extend-types)). This ensures flexibility while preserving standardization for the majority of your integrations.
+- **Add API-specific fields:** Include additional fields that are unique to certain APIs when needed. This keeps the unified model clean while supporting specific API capabilities.
+- **Attach the raw external data:** Store raw API responses in a dedicated field to give you maximum flexibility for debugging, advanced use cases, or special handling of certain integrations.
+
+# Hire Nango to build a custom unified API
+
+If you need custom unified integrations tailored to your needs, you can hire Nango to handle the development. Our team also provide expertise to accelerate your integration development. Check out our [services](/guides/services) for details.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

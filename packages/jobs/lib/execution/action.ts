@@ -1,7 +1,7 @@
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection, NangoProps, SyncConfig } from '@nangohq/shared';
+import type { Config, NangoConnection } from '@nangohq/shared';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -15,7 +15,7 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';
@@ -25,7 +25,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
-    let syncConfig: SyncConfig | null = null;
+    let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
@@ -202,7 +202,7 @@ async function onFailure({
     provider: string;
     providerConfigKey: string;
     activityLogId: string;
-    syncConfig: SyncConfig | null;
+    syncConfig: DBSyncConfig | null;
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];

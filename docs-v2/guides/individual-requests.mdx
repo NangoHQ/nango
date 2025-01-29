@@ -1,0 +1,91 @@
+---
+title: 'Individual requests to APIs (Proxy)'
+sidebarTitle: 'Individual requests'
+description: 'Overview of how to perform individual requests to an API using the Proxy.'
+---
+
+<Tip>
+This feature is provided by Nango for free, on cloud or self-hosted editions.
+</Tip>
+
+Nango's Proxy simplifies making authenticated requests to external APIs. It’s a tool designed to save you time and reduce complexity in your interactions with APIs.
+
+# Key features
+
+- **Automatic credential injection:** Automatically adds necessary authentication to your API requests.
+- **Base URL setup:** Automatically determines and sets the correct base URL for your API requests.
+- **Effortless pagination:** Simplifies dealing with API pagination.
+- **Logs for debugging:** Tracks your requests in the Logs tab for easy debugging.
+- **Rate-limit management:** Handles rate limits with smart retries ([step-by-step guide](/guides/rate-limits)).
+
+Nango’s proxy is free, whether you are using Nango Cloud or Self-Hosted. It is also open source.
+
+# Use cases
+
+The Proxy is useful to perform any individual request to external APIs, e.g.
+
+- Fetching data: Great for one-time data retrieval, like getting user metadata.
+- Writing data: Use it to send data back to an API, such as updating a user profile.
+
+**Proxy vs. actions**
+
+The Proxy works for individual API requests, while [actions](/guides/actions/overview) handle more complex scenarios that require multiple requests or data transformations.
+
+# Getting started with the Proxy
+
+<Info>
+Pre-requisite: [configure Nango](/guides/api-authorization/configuration).
+</Info>
+
+Here is an example of how to query external APIs with the proxy, using the SDK ([reference](/reference/sdks/node#proxy-get-requests)) and API ([reference](/reference/api/proxy/get)):
+
+<Tabs>
+<Tab title="Node">
+
+```typescript
+try {
+    const res = await nango.proxy({
+        method: 'POST',
+        baseUrlOverride: 'https://api.example.com',
+        endpoint: '/external-endpoint',
+        providerConfigKey: '<string>',
+        connectionId: '<string>',
+        retries: 5, // Retries with exponential backoff (optional, default 0)
+        data: {
+            id: 1,
+            colorId: 'blue',
+            selected: true
+        }
+    });
+
+    // Response was 200!
+    // See https://axios-http.com/docs/res_schema
+    console.log(res.data);
+} catch (error) {
+    // Status of response != 200
+    // See https://axios-http.com/docs/handling_errors
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+}
+```
+</Tab>
+
+<Tab title="cURL">
+
+```bash
+curl -X POST -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+-H 'Provider-Config-Key: <INTEGRATION-ID>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-d '{"colorId: "blue"}' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
+```
+
+</Tab>
+
+</Tabs>
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

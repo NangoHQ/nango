@@ -93,7 +93,7 @@ export const GettingStarted: React.FC = () => {
             <div className="grid grid-cols-2 text-white gap-7">
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                    href="https://docs.nango.dev/guides/getting-started/authorize-an-api-from-your-app"
+                    href="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
                     target="_blank"
                     rel="noreferrer"
@@ -119,7 +119,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/guides/getting-started/read-from-an-api"
+                    href="https://docs.nango.dev/guides/syncs/use-a-sync"
                     onClick={() => analyticsTrack('web:getting_started:read')}
                     target="_blank"
                     rel="noreferrer"
@@ -145,7 +145,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/guides/getting-started/write-to-an-api"
+                    href="https://docs.nango.dev/guides/actions/use-an-action"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
                     target="_blank"
                     rel="noreferrer"
@@ -171,7 +171,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/guides/customize/create-a-custom-integration"
+                    href="https://docs.nango.dev/guides/custom-integrations/overview"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
                     rel="noreferrer"

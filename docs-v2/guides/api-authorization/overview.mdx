@@ -1,0 +1,77 @@
+---
+title: 'API authorization - Overview'
+sidebarTitle: 'Overview'
+description: 'Overview of how to authorize APIs with Nango.'
+---
+
+<Tip>
+This feature is provided by Nango for free, on cloud or self-hosted editions.
+</Tip>
+
+Integrating with APIs starts with gaining access to them—a process known as **authorization**. Nango simplifies this step, enabling secure connections between your app and third-party APIs on behalf of your end users.
+## What is API authorization?
+
+API authorization is the process of granting your app access to a third-party API. This access is provided by your end users, allowing your app to interact with the API on their behalf for seamless integrations.
+
+<Info>
+    Authorization is different from authentication (signing in to your app through Google, etc.). Nango focuses on authorization and does not handle authentication for your app.
+</Info>
+
+
+### How authorization works
+
+1. **User credential input**:  
+   Users provide their account credentials through a secure popup interface in your app. This flow ensures credentials are handled safely while offering a seamless user experience.
+
+2. **Access granted**:  
+   Once authorized, your app interacts with the API using permissions granted by the user.
+
+### Multiple authorization modes
+
+APIs often employ different authorization methods, such as **OAuth**, **API keys**, or proprietary protocols. Nango supports these methods and can handle APIs with multiple authorization types.
+
+### Connections: user-level or organization-level
+
+When a user grants access, a **connection** is created in Nango. Connections can be:
+- **User-level**: Specific to individual users.
+- **Organization-level**: Shared access for an entire group or entity.
+
+You can also manage multiple connections for the same API and user, offering flexibility for complex use cases.
+
+## Secure credential management
+
+Nango is designed with security as a top priority:
+- **Secure storage**: Credentials are encrypted and securely stored.
+- **Token refreshing**: OAuth tokens are automatically refreshed before expiration.
+- **Credential access and export**: Credentials can be retrieved or exported at any time to avoid vendor lock-in.
+- **Expired credential detection**: Nango detects and flags expired credentials, ensuring uninterrupted API access.
+
+## Customizable authorization flows
+
+Nango adapts to your app’s branding and user experience while ensuring transparency and seamless integration.
+
+- **Default UI components**:  
+  - Inputs are validated.  
+  - End-user instructions are provided, such as guidance for obtaining API keys or other required parameters.  
+  - Nango operates transparently, meaning users are unaware of its involvement, ensuring a native feel.
+
+- **Fully customizable flows**:  
+  - You can fully customize the popup UI for inputting credentials to match your app's design.  
+  - Nango remains transparent, providing the same native experience while managing authorization complexities under the hood.
+
+### Automatic parameter handling
+
+Nango simplifies authorization by:
+- Identifying required parameters for each API.
+- Validating input formats.
+- Verifying credentials validity.
+
+## Free forever
+
+Nango’s API authorization features are free, whether you are using Nango Cloud or Self-Hosted. It is also open source.
+
+These features make Nango suitable for projects of any size, from small-scale apps to enterprise-level integrations, and is already used by hundreds of companies from startups to listed companies.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

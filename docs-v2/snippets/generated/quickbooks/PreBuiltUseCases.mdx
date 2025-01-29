@@ -1,5 +1,5 @@
 
-## Pre-built use cases
+## Pre-built integrations
 
 <AccordionGroup>
 
@@ -13,11 +13,26 @@
 </Accordion>
 
 
+<Accordion title="Bill Payments">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /bill-payments` | Fetches all QuickBooks bill payments | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.md) |
+</Accordion>
+
+
+<Accordion title="Bills">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /bills` | Fetches all QuickBooks bills | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.md) |
+</Accordion>
+
+
 <Accordion title="Credit Memos">
 | Endpoint | Description | Readme |
 | - | - | - |
 | `POST /credit-memos` | Creates a single credit memo in QuickBooks. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-credit-memo.md) |
 | `PUT /credit-memos` | Updates a single credit memo in QuickBooks. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-credit-memo.md) |
+| `GET /credit-memos` | Fetches all QuickBooks credit memos | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.md) |
 </Accordion>
 
 
@@ -30,10 +45,10 @@
 </Accordion>
 
 
-<Accordion title="General Ledger">
+<Accordion title="Deposits">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `GET /general-ledger` | Fetch all general ledger entries in QuickBooks | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/general-ledger.md) |
+| `GET /deposits` | Fetches all QuickBooks deposits | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.md) |
 </Accordion>
 
 
@@ -55,6 +70,13 @@
 </Accordion>
 
 
+<Accordion title="Journal Entries">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /journal-entries` | Fetch all journal entries in QuickBooks | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.md) |
+</Accordion>
+
+
 <Accordion title="Payments">
 | Endpoint | Description | Readme |
 | - | - | - |
@@ -62,6 +84,20 @@
 | `GET /payments` | Fetches all payments in QuickBooks. Handles both active and voided payments, saving or deleting them based on their status. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/payments.md) |
 </Accordion>
 
+
+<Accordion title="Purchases">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /purchases` | Fetches all QuickBooks purchases | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.md) |
+</Accordion>
+
+
+<Accordion title="Transfers">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /transfers` | Fetches all QuickBooks transfers | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.md) |
+</Accordion>
+
 </AccordionGroup>
 
-<Tip>Not seeing the use case you need? [Build your own](https://docs.nango.dev/guides/customize/setup) independently.</Tip>
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

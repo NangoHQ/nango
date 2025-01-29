@@ -348,16 +348,20 @@ await nango.listConnections();
 
 <Expandable>
     <ResponseField name="connectionId" type="string">
-        Filter the list of connections based on this connection ID.
+        Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
     </ResponseField>
     <ResponseField name="search" type="string">
-        Will partially match connection IDs or end user profiles.
+        Optional. Search connections. Will search in connection ID or end user profile.
     </ResponseField>
-    <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on the given end user id.
-    </ResponseField>
-    <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on the given end user's organization id.
+    <ResponseField name="queries" type="object">
+        <Expandable title="queries" defaultOpen>
+            <ResponseField name="endUserId" type="string">
+                Optional. Will exactly match a given end user ID.
+            </ResponseField>
+            <ResponseField name="endUserOrganizationId" type="string">
+                Optional. Will exactly match a given end organization ID.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -410,7 +414,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests-to-an-api)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/individual-requests)).
 </Info>
 
 <Tip>
@@ -1125,7 +1129,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 
 # Proxy
 
-Makes an HTTP request using the [proxy](/understand/concepts/proxy):
+Makes an HTTP request using the [proxy](/guides/individual-requests):
 
 ```js
 const config = {

@@ -1,0 +1,164 @@
+---
+title: 'Free self-hosting - Configuration'
+sidebarTitle: 'Configuration'
+description: 'Instructions & configuration options for self-hosting Nango.'
+---
+
+## Server URL, Callback URL & Custom Domains[](#custom-urls 'Direct link to Server URL, Callback URL & Custom Domains')
+
+Add server environment variables for the instance URL and port (in the `.env`
+file or directly on Heroku/Render):
+
+```sh
+NANGO_SERVER_URL=<INSTANCE-URL>
+SERVER_PORT=<PORT>
+```
+
+The resulting callback URL for OAuth will be `<INSTANCE-URL>/oauth/callback`.
+
+<Note>You can customize the callback URL by updating "Callback URL" field in the "Environment Settings" tab in the Nango admin.</Note>
+
+<Note>
+    If you are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on
+    Heroku/Render).
+</Note>
+
+## Using Nango Connect
+
+Nango Connect is an aditionnal UI that you can your customers can use to easily connect to integration. [See related documentation](/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app).
+This UI is directly available for self-hosted in the main docker image.
+
+```sh
+FLAG_SERVE_CONNECT_UI=true
+NANGO_CONNECT_UI_PORT=3009
+NANGO_PUBLIC_CONNECT_URL=<INSTANCE-URL>
+```
+
+Nango Connect is available by default at `http://localhost:3009`.
+
+<Note>
+    If you are using a custom domain, you should change the `NANGO_PUBLIC_CONNECT_URL` server environment variable accordingly (in the `.env` file or directly on
+    Heroku/Render).
+</Note>
+
+
+## Persistent storage[](#persistent-storage 'Direct link to Persistent storage')
+
+If deploying with Docker Compose (e.g. AWS, GCP, DO), the database is bundled in
+a docker container with local storage using Docker registries. This is a no-go for production.
+
+Connect Nango to an external Postgres DB that lives outside the docker setup to
+mitigate this.
+
+To do so, modify the default values of the following server env variables (in
+the `.env` file):
+
+```
+NANGO_DB_USER=<REPLACE>
+NANGO_DB_PASSWORD=<REPLACE>
+NANGO_DB_HOST=<REPLACE>
+NANGO_DB_PORT=<REPLACE>
+NANGO_DB_NAME=<REPLACE>
+NANGO_DB_SSL=true
+```
+
+Records saved by syncs can be persisted in a dedicated database. If you opt in for this setup, set the `RECORDS_DATABASE_URL` env var. Ex:
+```
+RECORDS_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+Special characters in the RECORDS_DATABASE_URL should be URL encoded.
+If not specified, the records will be stored in the main database.
+
+<Tip>
+Deploying with Render or Heroku automatically generates a persistent database
+connected to your Nango instance.
+
+For Render, the environment variables above are automatically set for you. For
+Heroku, check out our Heroku docs page for specific instructions.
+
+</Tip>
+
+## Securing your instance[](#securing-your-instance 'Direct link to Securing your instance')
+
+### Securing the dashboard[](#securing-the-dashboard 'Direct link to Securing the dashboard')
+
+By default, the dashboard of your Nango instance is open to anybody who has
+access to your instance URL.
+
+You can secure it with Basic Auth by setting the following environment variables
+and restarting the server:
+
+```bash
+FLAG_AUTH_ENABLED=false # This will disable regular login and signup
+NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
+NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
+```
+
+### Encrypt sensitive data[](#encrypt-sensitive-data 'Direct link to Encrypt sensitive data')
+
+You can enforce encryption of sensitive data (tokens, secret key, app secret)
+using the AES-GCM encryption algorithm. To do so, generate a 256-bit base64-encoded key:
+
+```
+openssl rand -base64 32
+```
+
+And set the `NANGO_ENCRYPTION_KEY` environment variable to the generated key:
+
+```
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
+```
+
+Once you restart the Nango server, the encryption of the database will happen
+automatically. Please note that, at the current time, you cannot modify this
+encryption key once you have set it.
+
+### Custom websockets path[](#custom-websockets-path 'Direct link to Custom websockets path')
+
+The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow.
+If you want more isolation between websockets and the dashboard (also served from `/`), then you can set the `NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
+
+```
+NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
+```
+
+If you do set this variable to a different path, you will need to configure the `websocketsPath` parameter when initializing the `Nango` object in the `@nangohq/frontend` SDK:
+
+```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '</YOUR-WEBSOCKETS-PATH>' });
+```
+
+## Telemetry[](#telemetry 'Direct link to Telemetry')
+
+We use telemetry to understand Nango's usage at a high-level and improve it over
+time.
+
+Telemetry on self-hosted instances is very light by default. We only track core
+actions and do not track sensitive information.
+
+You can disable telemetry by setting the env var `TELEMETRY=false` (in the
+`.env` file or directly on Heroku/Render).
+
+## Logs[](#logs 'Direct link to Logs')
+
+We use Elasticsearch to store Nango's execution logs and power the logs UI.
+To limit the requirements to self-host, this stack is optional and up to the developer to setup.
+
+If you want to enable logs, you will need to:
+- Host an Elasticsearch cluster
+- Update your environment variables, with `NANGO_LOGS_ENABLED=true` and add the appropriate values in `NANGO_LOGS_ES_*`
+
+### Hosting
+
+To host an Elasticsearch cluster you have multiple solutions:
+
+- Locally: uncomment the service inside `docker-compose.yml` ([GitHub](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63)) and run `docker-compose up`
+- ElasticCloud: minimal installation on Standard tier is about 20€/mo ([elastic.co](https://www.elastic.co/))
+- Render: deploy a free instance ([render.com](https://docs.render.com/deploy-elasticsearch))
+
+### Alternatives
+
+We don't provide alternatives storage for the moment.
+If `NANGO_LOGS_ENABLED` is `false`, all the logs are sent to stdout so you can always find everything in your hosts logs UI.

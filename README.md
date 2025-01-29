@@ -20,7 +20,7 @@ Ship integrations fast. Maintain full control.
     ·
     <a href="https://nango.dev">Website</a>
     ·
-    <a href="https://docs.nango.dev/guides/customize/contribute-an-api">Contribute an API</a>
+    <a href="https://docs.nango.dev/guides/new-api-support">Contribute an API</a>
     ·
     <a href="https://nango.dev/slack">Slack Community</a>
 </p>
@@ -89,9 +89,9 @@ Sign up for free:
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 
-- [Contribute an API](https://docs.nango.dev/guides/customize/contribute-an-api)
-- [Create a custom integration](https://docs.nango.dev/guides/customize/create-a-custom-integration)
-- [Extend an integration template](https://docs.nango.dev/guides/customize/extend-an-integration-template)
+- [Contribute an API](https://docs.nango.dev/guides/new-api-support)
+- [Create a custom integration](https://docs.nango.dev/guides/custom-integrations/overview)
+- [Extend an integration template](https://docs.nango.dev/guides/custom-integrations/extend-a-pre-built-integration)
 
 # 📚 Learn more
 
