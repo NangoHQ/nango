@@ -7406,6 +7406,33 @@ twenty-crm-self-hosted:
             pattern: '^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
             example: domain
 
+twilio:
+    display_name: Twilio
+    categories:
+        - dev-tools
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.twilio.com
+        verification:
+            method: GET
+            endpoint: /2010-04-01/Accounts/${credentials.username}/Messages.json
+    docs: https://docs.nango.dev/integrations/all/twilio
+    docs_connect: https://docs.nango.dev/integrations/all/twilio/connect
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: Your Twilio Account SID
+            pattern: '^AC[a-zA-Z0-9]{32}$'
+            doc_section: '#step-1-finding-your-account-sid'
+        password:
+            type: string
+            title: Auth Token
+            description: Your Twilio Auth Token
+            secret: true
+            doc_section: '#step-2-finding-your-auth-token'
+
 typeform:
     display_name: Typeform
     categories:
