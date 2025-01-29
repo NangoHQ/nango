@@ -30,6 +30,7 @@ for (const [integration, config] of Object.entries<any>(flows.integrations)) {
     useCases[integration] = buildEndpoints('action', config.actions, integration).concat(buildEndpoints('sync', config.syncs, integration));
 }
 
+const providersHandled: string[] = [];
 const files = await fs.readdir(docsPath);
 for (const file of files) {
     if (file.endsWith('.mdx')) {
@@ -61,7 +62,17 @@ for (const file of files) {
 
         const casesSnippet = useCasesSnippet(useCases[provider]);
         await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
+
+        providersHandled.push(provider);
     }
+}
+
+const allProviders = Object.keys(providers);
+const missingDocs = allProviders.filter((provider) => !providersHandled.includes(provider));
+
+if (missingDocs.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 
 function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
