@@ -1,13 +1,12 @@
 ---
-title: BambooHR
-sidebarTitle: BambooHR
-provider: bamboohr
+title: BambooHR Basic
+sidebarTitle: BambooHR Basic
+provider: bamboohr-basic
 ---
 
 import Overview from "/snippets/overview.mdx";
-import PreBuiltTooling from "/snippets/generated/bamboohr/PreBuiltTooling.mdx";
-
-import PreBuiltUseCases from "/snippets/generated/bamboohr/PreBuiltUseCases.mdx"
+import PreBuiltTooling from "/snippets/generated/bamboohr-basic/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/bamboohr-basic/PreBuiltUseCases.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -29,17 +28,16 @@ _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
 
 
 ## Useful links
 
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/docs/getting-started)
 -   [How to register/integrate an Application](https://documentation.bamboohr.com/docs#what-will-you-need-to-get-started)
--   [OAuth-related docs](https://documentation.bamboohr.com/page/single-sign-on-sso-with-openid-connect)
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/reference/get-employee)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
 
 ## Connection configuration in Nango
 
@@ -48,7 +46,6 @@ BambooHR requires a user specific subdomain to authenticate
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
-// API key
 nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
         credentials: {
             username: '<END-USER-API-KEY>',
@@ -68,7 +65,7 @@ For more details, see the [docs here](/guides/api-authorization/authorize-in-you
 - Authenticating via API key: BambooHR gives only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username and use `x` for the password. See BambooHR [documentation](https://documentation.bamboohr.com/docs#section-authentication)
 
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
 
 ## Going further
 
