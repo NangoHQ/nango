@@ -4438,6 +4438,19 @@ integrations:
                     path: /tickets
                     group: Tickets
                 version: 1.0.1
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: full
+                track_deletes: true
+                runs: every 6 hours
+                output: GorgiasUser
+                scopes:
+                    - users:read
         actions:
             create-ticket:
                 description: |
@@ -4453,7 +4466,35 @@ integrations:
                     path: /ticket
                     group: Tickets
                 output: Ticket
+            create-user:
+                description: >
+                    Creates a new user with a role in Gorgias. Defaults to agent if a role
+                    is not provided
+                input: GorgiasCreateUser
+                output: GorgiasUser
+                endpoint:
+                    method: POST
+                    path: /user
+                    group: Users
+                scopes:
+                    - users:write
+            delete-user:
+                description: Deletes a user in Gorgias
+                output: SuccessResponse
+                input: IdEntity
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
             Ticket:
                 id: number
                 assignee_user: AssigneeUser | null
@@ -4585,6 +4626,20 @@ integrations:
                 body_html: string
                 body_text: string
                 id: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GorgiasCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role: admin | agent | basic-agent | lite-agent | observer-agent
+            GorgiasUser:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     greenhouse-basic:
         syncs:
             applications:
