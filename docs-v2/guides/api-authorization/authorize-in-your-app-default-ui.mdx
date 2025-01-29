@@ -123,7 +123,17 @@ Refer to the [Authorize in your app (custom UI)](/guides/api-authorization/autho
 <Accordion title="👩🏻‍💻 Simplified flow during development">
   In development, you can retrieve the connection ID without relying on webhooks.
 
-	When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback.
+	When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback:
+
+  ```ts
+  await nango.openConnectUI({
+      onEvent: (event) {
+          if (event.type === 'connect') {
+              saveToDatabase(event.payload.connectionId, event.payload.providerConfigKey);
+          }
+      }
+  });
+  ```
 
 	However, we do not recommend using this approach in production, as it is safer to avoid exposing the connection ID to the frontend.
 </Accordion>
