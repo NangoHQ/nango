@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.52.0] - 2025-01-30
+## [v0.52.1] - 2025-01-30
 
 ### Added
 
@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - *(persist)* Add support for merging strategy (#3389) by @TBonnin
 - *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5f6b7afb40a161e3c7b09bdb17764c0a099744cd by Francis Maina. Commit message: feat(google): adds fetch-documents actions for Google Docs and Google Sheets (#204) by @github-actions[bot]
 - *(zapier-scim)* Add integration guide and configuration for Zapier SCIM (#3400) by @viictoo
+- *(cli)* Allow init to create any directory name (#3338) by @nalanj
 
 ### Changed
 
@@ -30,6 +31,8 @@ All notable changes to this project will be documented in this file.
 - Nango webhook ref (#3394) by @bastienbeurier
 - Pagination reference (#3405) by @bastienbeurier
 - *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f922ae99610d196540aa0790465d507567e22c82 by Andrew Karanja. Commit message: feat(basecamp): todos sync (#205) by @github-actions[bot]
+- Compress changelog images + update changelog format (#3408) by @bastienbeurier
+- *(logs)* Bump elasticsearch to 8.17.0 (#3399) by @nalanj
 
 ### Fixed
 
@@ -37,6 +40,9 @@ All notable changes to this project will be documented in this file.
 - *(persist)* Fix express.json limit (#3401) by @TBonnin
 - *(webhooks)* Regression where body wasn't logged after webhook log enrichment (#3402) by @nalanj
 - *(proxy)* Apply query params outside axios (#3361) by @bodinsamuel
+- *(cli)* Update dry run to exclude nango prop on output.json files (#3411) by @nalanj
+- *(ui)* Change copy for connection create (#3407) by @bodinsamuel
+- *(ui)* Copy snippets with secrets (#3409) by @bodinsamuel
 
 ## [v0.51.0] - 2025-01-28
 
@@ -2897,7 +2903,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
-[0.52.0]: https://github.com/NangoHQ/nango/compare/v0.51.0..0.52.0
+[v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1
 [v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0
 [v0.50.0]: https://github.com/NangoHQ/nango/compare/v0.49.0..v0.50.0
 [v0.49.0]: https://github.com/NangoHQ/nango/compare/v0.48.4..v0.49.0
