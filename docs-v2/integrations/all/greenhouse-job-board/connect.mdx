@@ -1,0 +1,43 @@
+---
+title: Greenhouse (Job Board API) - How do I link my account?
+sidebarTitle: Greenhouse (Job Board API)
+---
+
+
+# Overview
+
+To authenticate with Greenhouse (Job Board API), you need:
+1. **API Key** - Your Greenhouse (Job Board) API Key.
+
+This guide will walk you through creating the API Key within Greenhouse.
+
+### Prerequisites:
+
+- You must set up an account with Greenhouse.
+
+#### Step 1: Finding Your Greenhouse API Key
+
+1. Log into your [Greenhouse](https://app.greenhouse.io/users/sign_in) account and click the **Configure** ⚙️ icon on your navigation bar, then click **Dev Center**.
+<img src="/integrations/all/greenhouse-basic/greenhouse_1.png" />
+2. Click **API Credential Management**.
+<img src="/integrations/all/greenhouse-basic/greenhouse_2.png" />
+3. Click **Create New API Key**.
+<img src="/integrations/all/greenhouse-basic/greenhouse_3.png" />
+4. Make the following selections:
+    - **API type**: `Job board`.
+    - **Partner**: Select the name of the integration that requested the API Key. If the integration isn't listed, select unlisted vendor. If you're creating a custom integration, select custom.
+    - **Description**: Give your API Key a descriptive name.
+5. When finished, click **Manage permissions**, or click **Create** to generate the API Key and automatically assign it the appropriate permissions required by the integration.
+6. After the key is created, click **Copy**. Paste the API Key in a secure location.
+7. Click **I have stored the API Key**.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with Greenhouse (Job Board API).
+2. Enter the **API Key** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/greenhouse-job-board/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Greenhouse (Job Board API).

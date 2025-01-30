@@ -17,6 +17,7 @@ interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 interface CursorPagination extends Pagination {
     cursor_path_in_response: string;

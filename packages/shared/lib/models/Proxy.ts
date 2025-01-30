@@ -88,6 +88,7 @@ export interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 
 export interface CursorPagination extends Pagination {
