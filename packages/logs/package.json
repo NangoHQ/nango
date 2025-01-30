@@ -14,7 +14,7 @@
         "directory": "packages/logs"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "8.13.1",
+        "@elastic/elasticsearch": "8.17.0",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.0",
