@@ -1,13 +1,12 @@
 ---
-title: Netsuite
-sidebarTitle: Netsuite
-provider: netsuite
+title: Netsuite TBA
+sidebarTitle: Netsuite TBA
+provider: netsuite-tba
 ---
 
 import Overview from "/snippets/overview.mdx";
-import PreBuiltTooling from "/snippets/generated/netsuite/PreBuiltTooling.mdx";
-
-import PreBuiltUseCases from "/snippets/generated/netsuite/PreBuiltUseCases.mdx"
+import PreBuiltTooling from "/snippets/generated/netsuite-tba/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/netsuite-tba/PreBuiltUseCases.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -29,7 +28,7 @@ _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite-tba.mdx)</Note>
 
 
 ## Useful links
@@ -39,7 +38,7 @@ _No setup guide yet._
 -   [Scopes](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_158081944642.html#subsect_158091028094) (`restlets`, `rest_webservices` and/or `suite_analytics`)
 -   [API endpoints](https://system.netsuite.com/help/helpcenter/en_US/APIs/REST_API_Browser/record/v1/2023.1/index.html)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite.mdx)</Note>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite-tba.mdx)</Note>
 
 ## Connection configuration in Nango
 
@@ -59,7 +58,7 @@ For more details see the [docs here](/guides/api-authorization/authorize-in-your
 - The `netsuite` integration which uses OAuth 2.0 has a refresh token that has a fixed expiration of 7 days. After which point the refresh token becomes invalid and a new access token must be obtained by making users go through the authorization code flow again.
 To avoid this we recommend using the machine to machine flow which is called the `netsuite-tba` integration in Nango
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/netsuite-tba.mdx)</Note>
 
 ## Admin Setup for `netsuite-tba`
 -   Ensure you have admin privileges and login to your Netsuite account and navigate to **Setup** > **Company** > **Enable Features**
