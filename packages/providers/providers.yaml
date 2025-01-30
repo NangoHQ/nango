@@ -3682,6 +3682,7 @@ greenhouse-assessment:
             pattern: '^[a-z0-9_-]+$'
             example: www.testing-partner.com
             prefix: https://
+            format: hostname
             order: 1
             doc_section: '#step-1-obtaining-your-base-url'
     credentials:
