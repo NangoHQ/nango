@@ -16,6 +16,9 @@
             "to": "#012AC3"
         }
     },
+    "modeToggle": {
+        "default": "dark"
+    },
     "feedback": {
         "suggestEdit": true,
         "raiseIssue": true,
@@ -58,6 +61,11 @@
             "name": "Reference",
             "icon": "book",
             "url": "reference"
+        },
+        {
+            "name": "Changelog",
+            "icon": "rss",
+            "url": "changelog"
         },
         {
             "name": "Community",
@@ -110,7 +118,7 @@
             "source": "guides/custom-integration-builder/overview",
             "destination": "guides/custom-integrations/overview"
         },
-        { 
+        {
             "source": "guides/custom-integration-builder/build-a-custom-integration",
             "destination": "guides/custom-integrations/build-a-custom-integration"
         },
@@ -295,6 +303,7 @@
                 "integrations/all/discord",
                 "integrations/all/discourse",
                 "integrations/all/dixa",
+                "integrations/all/document360",
                 "integrations/all/docusign",
                 "integrations/all/dropbox",
                 "integrations/all/drupal",
@@ -515,6 +524,7 @@
                 "integrations/all/youtube",
                 "integrations/all/zapier",
                 "integrations/all/zapier-nla",
+                "integrations/all/zapier-scim",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
                 "integrations/all/zoho-bigin",
@@ -526,7 +536,8 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo"
+                "integrations/all/zoominfo",
+                "integrations/all/zuora"
             ]
         },
         {
@@ -644,6 +655,12 @@
                 "reference/api-configuration",
                 "reference/scripts",
                 "reference/integration-configuration"
+            ]
+        },
+        {
+            "group": "",
+            "pages": [
+                "changelog/overview"
             ]
         }
     ],

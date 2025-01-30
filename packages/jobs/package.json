@@ -23,7 +23,6 @@
         "@nangohq/nango-runner": "file:../runner",
         "@nangohq/shared": "file:../shared",
         "@nangohq/records": "file:../records",
-        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/fleet": "file:../fleet",
@@ -37,6 +36,7 @@
         "zod": "3.24.1"
     },
     "devDependencies": {
+        "@nangohq/types": "file:../types",
         "@types/node": "^20.12.2",
         "nodemon": "3.1.9",
         "typescript": "5.7.3",

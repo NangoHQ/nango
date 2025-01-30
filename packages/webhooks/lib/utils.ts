@@ -148,7 +148,8 @@ export const deliver = async ({
         const logRequest: MessageRow['request'] = {
             method: 'POST',
             url,
-            headers: redactHeaders({ headers: filteredHeaders })
+            headers: redactHeaders({ headers: filteredHeaders }),
+            body
         };
 
         try {

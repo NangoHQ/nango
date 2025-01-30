@@ -55,6 +55,7 @@ export interface UpsertSummary {
     updatedKeys: string[];
     deletedKeys?: string[];
     nonUniqueKeys: string[];
+    nextMerging: MergingStrategy;
 }
 
 export interface RecordCount {
@@ -64,3 +65,7 @@ export interface RecordCount {
     count: number;
     updated_at: string;
 }
+
+export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor: string };
+
+export type CursorOffset = 'first' | 'last';

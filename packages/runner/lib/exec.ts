@@ -1,6 +1,5 @@
-import type { NangoProps } from '@nangohq/shared';
+import { SpanTypes } from '@nangohq/shared';
 import { isAxiosError } from 'axios';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
 import * as url from 'url';
@@ -11,11 +10,14 @@ import * as botbuilder from 'botbuilder';
 import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
-import type { RunnerOutput } from '@nangohq/types';
+import type { NangoProps, RunnerOutput } from '@nangohq/types';
+import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
+import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
 
 interface ScriptExports {
-    onWebhookPayloadReceived?: (nango: NangoAction, payload?: object) => Promise<unknown>;
-    default: (nango: NangoAction, payload?: object) => Promise<unknown>;
+    onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
+    default: (nango: NangoActionBase, payload?: object) => Promise<unknown>;
 }
 
 export async function exec(
@@ -28,10 +30,10 @@ export async function exec(
         switch (nangoProps.scriptType) {
             case 'sync':
             case 'webhook':
-                return new NangoSync(nangoProps);
+                return new NangoSyncRunner(nangoProps);
             case 'action':
             case 'on-event':
-                return new NangoAction(nangoProps);
+                return new NangoActionRunner(nangoProps);
         }
     })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
@@ -90,7 +92,7 @@ export async function exec(
                     throw new Error(content);
                 }
 
-                const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
                 return { success: true, response: output, error: null };
             }
 
@@ -168,14 +170,14 @@ export async function exec(
                 };
             }
 
-            if (err instanceof NangoError) {
+            if (err instanceof SDKError) {
                 span.setTag('error', err);
                 return {
                     success: false,
                     error: {
-                        type: err.type,
+                        type: err.code,
                         payload: truncateJson(err.payload),
-                        status: err.status
+                        status: 500
                     },
                     response: null
                 };

@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
+import type { Config, Job, NangoConnection, Sync } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
@@ -20,7 +20,7 @@ import {
 } from '@nangohq/shared';
 import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import db from '@nangohq/database';
