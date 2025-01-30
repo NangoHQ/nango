@@ -83,7 +83,6 @@ export interface BaseProvider {
     credentials?: Record<string, SimplifiedJSONSchema>;
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
-    expires_in_unit?: 'milliseconds' | 'human_readable';
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -101,6 +100,7 @@ export interface ProviderOAuth2 extends BaseProvider {
     authorization_method?: OAuthAuthorizationMethodType;
 
     refresh_url?: string;
+    expires_in_unit?: 'milliseconds';
 
     token_request_auth_method?: 'basic' | 'custom';
 }

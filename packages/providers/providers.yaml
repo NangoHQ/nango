@@ -2350,7 +2350,6 @@ drupal:
     auth_mode: TWO_STEP
     body_format: form
     token_url: https://${connectionConfig.baseUrl}/rest_api/access_token
-    expires_in_unit: human_readable
     token_params:
         client_id: ${credential.clientId}
         client_secret: ${credential.clientSecret}

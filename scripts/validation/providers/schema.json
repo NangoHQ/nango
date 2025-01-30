@@ -401,7 +401,7 @@
                 },
                 "expires_in_unit": {
                     "type": "string",
-                    "enum": ["milliseconds", "human_readable"]
+                    "enum": ["milliseconds"]
                 },
                 "token_response_metadata": {
                     "type": "array",
