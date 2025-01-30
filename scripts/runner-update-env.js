@@ -40,7 +40,6 @@ async function fetchRunners() {
     let services = [];
     let cursor = '';
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
         const params = new URLSearchParams({
             limit: 100,

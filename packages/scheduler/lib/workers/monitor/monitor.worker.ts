@@ -78,7 +78,7 @@ export class MonitorChild {
 
     async start(): Promise<void> {
         logger.info('Starting monitor...');
-        // eslint-disable-next-line no-constant-condition
+
         while (!this.cancelled) {
             await this.expires();
             await setTimeout(this.tickIntervalMs);

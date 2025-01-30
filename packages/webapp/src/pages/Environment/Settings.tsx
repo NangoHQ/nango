@@ -310,7 +310,7 @@ export const EnvironmentSettings: React.FC = () => {
             const [[, header], [, value]] = entries.slice(i, i + 2);
             newOtlpHeaders = {
                 ...newOtlpHeaders,
-                [header.toString()]: value
+                [JSON.stringify(header)]: value
             };
         }
         return newOtlpHeaders;

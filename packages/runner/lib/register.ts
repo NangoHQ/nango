@@ -13,7 +13,7 @@ export async function register(): Promise<Result<void>> {
     try {
         await retryWithBackoff(
             async () => {
-                return await httpFetch({
+                await httpFetch({
                     method: 'POST',
                     url: `${jobsServiceUrl}/runners/${envs.RUNNER_NODE_ID}/register`,
                     data: JSON.stringify({ url: envs.RUNNER_URL })
