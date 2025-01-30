@@ -107,6 +107,7 @@ interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    pass_pagination_params_in_body?: boolean;
 }
 
 interface CursorPagination extends Pagination {
@@ -835,7 +836,7 @@ export class NangoAction {
         config.method = config.method || 'GET';
 
         const configMethod = config.method.toLocaleLowerCase();
-        const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
+        const passPaginationParamsInBody: boolean = config.paginate?.pass_pagination_params_in_body ?? ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
         const limitParameterName: string = paginationConfig.limit_name_in_request;
