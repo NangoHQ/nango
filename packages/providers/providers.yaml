@@ -74,7 +74,7 @@ adobe-umapi:
         retry:
             after: 'retry-after'
         base_url: https://usermanagement.adobe.io
-    docs: https://docs.nango.dev/integrations/all/adobe
+    docs: https://docs.nango.dev/integrations/all/adobe-umapi
     post_connection_script: adobeUmapiPostConnection
     docs_connect: https://docs.nango.dev/integrations/all/adobe-umapi/connect
     connection_config:
@@ -181,7 +181,7 @@ aircall-basic:
             link_path_in_response_body: meta.next_page_link
             response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
-    docs: https://docs.nango.dev/integrations/all/aircall
+    docs: https://docs.nango.dev/integrations/all/aircall-basic
 
 airtable:
     display_name: Airtable
