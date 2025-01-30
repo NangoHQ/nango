@@ -5,6 +5,7 @@
         "@apidevtools/swagger-cli": "4.0.4",
         "ajv": "8.17.1",
         "chalk": "5.4.1",
+        "figures": "6.1.0",
         "git-cliff": "2.7.0",
         "js-yaml": "4.1.0",
         "zx": "8.3.0",

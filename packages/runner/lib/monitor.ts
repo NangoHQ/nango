@@ -1,9 +1,9 @@
 import os from 'os';
 import fs from 'fs';
-import type { NangoProps } from '@nangohq/shared';
 import { httpFetch, logger } from './utils.js';
 import { idle } from './idle.js';
 import { envs } from './env.js';
+import type { NangoProps } from '@nangohq/types';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 

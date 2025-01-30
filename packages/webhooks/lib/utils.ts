@@ -1,9 +1,10 @@
 import crypto from 'crypto';
-import type { AxiosError } from 'axios';
+import type { AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, axiosInstance as axios, retryWithBackoff } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, retryWithBackoff, redactHeaders } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment } from '@nangohq/types';
+import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -25,14 +26,26 @@ export const NON_FORWARDABLE_HEADERS = [
     'server'
 ];
 
-export const retry = async (logCtx?: LogContext | null, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
+function formatLogResponse(response: AxiosResponse): MessageRow['response'] {
+    return {
+        code: response.status,
+        headers: response.headers ? redactHeaders({ headers: response.headers }) : {},
+        body: response.data
+    };
+}
+
+export const retry = async (logRequest: MessageRow['request'], logCtx?: LogContext | null, error?: AxiosError, attemptNumber?: number): Promise<boolean> => {
     if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
-        const content = `Webhook response received an ${
+        const content = `Webhook response received a ${
             error?.response?.status || error?.code
         } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-        await logCtx?.error(content);
+        await logCtx?.http(content, { response: formatLogResponse(error.response), request: logRequest });
+        return true;
+    } else if (error && !error.response) {
+        const content = `Webhook request failed with an ${error.code ? error.code : 'unknown'} error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
+        await logCtx?.error(content, { request: logRequest });
         return true;
     }
 
@@ -126,36 +139,62 @@ export const deliver = async ({
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
-        try {
-            const filteredHeaders = filterHeaders(incomingHeaders || {});
-            const headers = {
-                ...getSignatureHeader(environment.secret_key, body),
-                ...filteredHeaders
-            };
+        const filteredHeaders = filterHeaders(incomingHeaders || {});
+        const headers = {
+            ...getSignatureHeader(environment.secret_key, body),
+            ...filteredHeaders
+        };
 
+        const logRequest: MessageRow['request'] = {
+            method: 'POST',
+            url,
+            headers: redactHeaders({ headers: filteredHeaders }),
+            body
+        };
+
+        try {
             const response = await retryWithBackoff(
                 () => {
                     return axios.post(url, body, { headers });
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, logCtx) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, logRequest, logCtx) }
             );
 
             if (logCtx) {
+                const logResponse = formatLogResponse(response);
+
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx.info(
+                    await logCtx.http(
                         `${webhookType} webhook sent successfully to the ${type} ${url} and received with a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}.`,
-                        { headers: filteredHeaders, body }
+                        { request: logRequest, response: logResponse }
                     );
                 } else {
-                    await logCtx.error(
+                    await logCtx.http(
                         `${webhookType} sent webhook successfully to the ${type} ${url} but received a ${response.status} response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`,
-                        { headers: filteredHeaders, body }
+                        { request: logRequest, response: logResponse }
                     );
                     success = false;
                 }
             }
         } catch (err) {
-            await logCtx?.error(`${webhookType} webhook failed to send to the ${type} to ${url}`, { error: err });
+            if (logCtx) {
+                if (err instanceof AxiosError && err.response) {
+                    await logCtx.http(`${webhookType} webhook failed to send to the ${type} to ${url}`, {
+                        request: logRequest,
+                        response: formatLogResponse(err.response),
+                        meta: {
+                            error: {
+                                message: err.message,
+                                code: err.code
+                            }
+                        }
+                    });
+                } else {
+                    await logCtx.error(`${webhookType} webhook failed to send to the ${type} to ${url}`, {
+                        error: err
+                    });
+                }
+            }
 
             success = false;
         }
