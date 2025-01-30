@@ -8,7 +8,8 @@ import { parse } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
-import { init, generate } from '../cli.js';
+import { generate } from '../cli.js';
+import { init } from './init.service.js';
 
 class VerificationService {
     public async necessaryFilesExist({
