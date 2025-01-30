@@ -134,7 +134,10 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["getting-started/intro-to-nango", "getting-started/quickstart"]
+            "pages": [
+                "getting-started/intro-to-nango",
+                "getting-started/quickstart"
+            ]
         },
         {
             "group": "Guides",
@@ -193,7 +196,9 @@
                 "guides/api-unification",
                 {
                     "group": "Logs",
-                    "pages": ["guides/logs/opentelemetry-exporter"]
+                    "pages": [
+                        "guides/logs/opentelemetry-exporter"
+                    ]
                 },
                 "guides/data-validation",
                 "guides/rate-limits",
