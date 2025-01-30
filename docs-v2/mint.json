@@ -16,6 +16,9 @@
             "to": "#012AC3"
         }
     },
+    "modeToggle": {
+        "default": "dark"
+    },
     "feedback": {
         "suggestEdit": true,
         "raiseIssue": true,
@@ -60,6 +63,11 @@
             "url": "reference"
         },
         {
+            "name": "Changelog",
+            "icon": "rss",
+            "url": "changelog"
+        },
+        {
             "name": "Community",
             "icon": "slack",
             "url": "https://nango.dev/slack"
@@ -76,11 +84,11 @@
         },
         {
             "source": "/customize/guides/create-a-custom-integration",
-            "destination": "/guides/custom-integration-builder/overview"
+            "destination": "/guides/custom-integrations/overview"
         },
         {
             "source": "/guides/customize/extend-an-integration-template",
-            "destination": "/guides/custom-integration-builder/extend-a-pre-built-integration"
+            "destination": "/guides/custom-integrations/extend-a-pre-built-integration"
         },
         {
             "source": "/guides/customize/contribute-an-api",
@@ -105,6 +113,22 @@
         {
             "source": "/home",
             "destination": "/"
+        },
+        {
+            "source": "guides/custom-integration-builder/overview",
+            "destination": "guides/custom-integrations/overview"
+        },
+        {
+            "source": "guides/custom-integration-builder/build-a-custom-integration",
+            "destination": "guides/custom-integrations/build-a-custom-integration"
+        },
+        {
+            "source": "guides/custom-integration-builder/extend-a-pre-built-integration",
+            "destination": "guides/custom-integrations/extend-a-pre-built-integration"
+        },
+        {
+            "source": "guides/custom-integration-builder/event-based-scripts",
+            "destination": "guides/custom-integrations/event-based-scripts"
         }
     ],
     "navigation": [
@@ -116,7 +140,7 @@
             "group": "Guides",
             "pages": [
                 {
-                    "group": "API authorization (free)",
+                    "group": "API authorization",
                     "pages": [
                         "guides/api-authorization/overview",
                         "guides/api-authorization/configuration",
@@ -134,12 +158,12 @@
                     ]
                 },
                 {
-                    "group": "Custom integration builder",
+                    "group": "Custom integrations",
                     "pages": [
-                        "guides/custom-integration-builder/overview",
-                        "guides/custom-integration-builder/build-a-custom-integration",
-                        "guides/custom-integration-builder/extend-a-pre-built-integration",
-                        "guides/custom-integration-builder/event-based-scripts"
+                        "guides/custom-integrations/overview",
+                        "guides/custom-integrations/build-a-custom-integration",
+                        "guides/custom-integrations/extend-a-pre-built-integration",
+                        "guides/custom-integrations/event-based-scripts"
                     ]
                 },
                 {
@@ -226,6 +250,7 @@
                 "integrations/all/aws",
                 "integrations/all/bamboohr",
                 "integrations/all/battlenet",
+                "integrations/all/basecamp",
                 "integrations/all/beehiiv",
                 "integrations/all/bigcommerce",
                 "integrations/all/bill",
@@ -278,6 +303,7 @@
                 "integrations/all/discord",
                 "integrations/all/discourse",
                 "integrations/all/dixa",
+                "integrations/all/document360",
                 "integrations/all/docusign",
                 "integrations/all/dropbox",
                 "integrations/all/e-conomic",
@@ -313,6 +339,7 @@
                 "integrations/all/gainsight-cc",
                 "integrations/all/garmin",
                 "integrations/all/gerrit",
+                "integrations/all/gebruder-weiss",
                 "integrations/all/github",
                 "integrations/all/gitlab",
                 "integrations/all/gong",
@@ -365,6 +392,7 @@
                 "integrations/all/linear",
                 "integrations/all/listmonk",
                 "integrations/all/loops-so",
+                "integrations/all/lucid",
                 "integrations/all/luma",
                 "integrations/all/mailchimp",
                 "integrations/all/mailgun",
@@ -380,6 +408,7 @@
                 "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
+                "integrations/all/microsoft-business-central",
                 "integrations/all/mindbody",
                 "integrations/all/miro",
                 "integrations/all/mixpanel",
@@ -415,6 +444,7 @@
                 "integrations/all/plain",
                 "integrations/all/podium",
                 "integrations/all/posthog",
+                "integrations/all/prive",
                 "integrations/all/productboard",
                 "integrations/all/qualtrics",
                 "integrations/all/quickbooks",
@@ -422,6 +452,7 @@
                 "integrations/all/ramp",
                 "integrations/all/rapidapi",
                 "integrations/all/reddit",
+                "integrations/all/recharge",
                 "integrations/all/refiner",
                 "integrations/all/replicate",
                 "integrations/all/ring-central",
@@ -497,6 +528,7 @@
                 "integrations/all/youtube",
                 "integrations/all/zapier",
                 "integrations/all/zapier-nla",
+                "integrations/all/zapier-scim",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
                 "integrations/all/zoho-bigin",
@@ -508,7 +540,8 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo"
+                "integrations/all/zoominfo",
+                "integrations/all/zuora"
             ]
         },
         {
@@ -626,6 +659,12 @@
                 "reference/api-configuration",
                 "reference/scripts",
                 "reference/integration-configuration"
+            ]
+        },
+        {
+            "group": "",
+            "pages": [
+                "changelog/overview"
             ]
         }
     ],

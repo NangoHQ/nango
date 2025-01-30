@@ -1,0 +1,43 @@
+---
+title: Odoo (Client Credentials) - How do I link my account?
+sidebarTitle: Odoo (Client Credentials)
+---
+
+
+# Overview
+
+To authenticate with Odoo (Client Credentials), you need:
+1. **Domain** - The domain URL to your Odoo instance.
+2. **Consumer Key** - A unique identifier for your client.
+3. **Consumer Secret** - A confidential key used to authenticate the identity of the application (client).
+
+This guide will walk you through obtaining these credentials within Odoo.
+
+### Prerequisites:
+
+- You must have an account with Odoo and installed the Odoo REST API by (Synconics Technologies Pvt. Ltd).
+
+### Instructions:
+
+#### Step 1: Finding Your Odoo Domain
+1. Login to your **Odoo** account. On you address bar, The URL will be similar to: `https://example.odoo.com`. Your domain is the text after `https://`, which in this case would be `example.odoo.com`.
+
+#### Step 2: Generating Your Odoo Client Credentials
+1. Log in to your Odoo instance with an administrator account.
+2. Go to **Settings ‣ Users ‣ Users**.
+3. Click on the **user** you want to use for REST API access.
+4. Click the **OAuth applications** button.
+5. Register an **Application** you want to interact with your Odoo instance
+6. Click on **Save** button to generate **Consumer Key** and **Secret**.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have the **Domain**, **Consumer Key** and **Consumer Secret**:
+1. Open the form where you need to authenticate with Odoo (Client Credentials).
+2. Enter the **Domain**, **Consumer Key** and **Consumer Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/odoo-cc/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Odoo (Client Credentials).

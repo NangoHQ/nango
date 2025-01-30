@@ -1,9 +1,9 @@
 import os from 'os';
 import fs from 'fs';
-import type { NangoProps } from '@nangohq/shared';
 import { httpFetch, logger } from './utils.js';
 import { idle } from './idle.js';
 import { envs } from './env.js';
+import type { NangoProps } from '@nangohq/types';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 
@@ -93,9 +93,10 @@ export class RunnerMonitor {
         }
     }
 
-    private checkIdle(): NodeJS.Timeout | null {
+    private checkIdle(timeoutMs: number = 10000): NodeJS.Timeout | null {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        return setInterval(async () => {
+        return setTimeout(async () => {
+            let nextTimeout = timeoutMs;
             if (this.idleMaxDurationMs > 0 && this.tracked.size == 0) {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
@@ -105,7 +106,11 @@ export class RunnerMonitor {
                         const res = await idle();
                         if (res.isErr()) {
                             logger.error(`Failed to idle runner`, res.error);
+                            nextTimeout = timeoutMs; // Reset to default on error
                         }
+                        // Increase the timeout to 2 minutes after a successful idle
+                        // to give enough time to fleet to terminate the runner
+                        nextTimeout = 120_000;
                     } else {
                         // TODO: DEPRECATE legacy /idle endpoint
                         await httpFetch({
@@ -120,7 +125,8 @@ export class RunnerMonitor {
                     this.lastIdleTrackingDate = Date.now();
                 }
             }
-        }, 10000);
+            this.checkIdle(nextTimeout);
+        }, timeoutMs);
     }
 }
 

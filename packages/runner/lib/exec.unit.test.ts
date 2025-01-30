@@ -1,7 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { exec } from './exec.js';
-import type { NangoProps } from '@nangohq/shared';
-import type { DBSyncConfig } from '@nangohq/types';
+import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 
 function getNangoProps(): NangoProps {
     return {
@@ -17,18 +16,17 @@ function getNangoProps(): NangoProps {
         syncId: 'sync-id',
         syncJobId: 1,
         lastSyncDate: new Date(),
-        dryRun: true,
         attributes: {},
         track_deletes: false,
-        logMessages: {
-            counts: { updated: 0, added: 0, deleted: 0 },
-            messages: []
-        },
         syncConfig: {} as DBSyncConfig,
         debug: false,
         startedAt: new Date(),
-        runnerFlags: {} as any,
-        stubbedMetadata: {},
+        runnerFlags: {
+            validateActionInput: false,
+            validateActionOutput: false,
+            validateSyncMetadata: false,
+            validateSyncRecords: false
+        },
         endUser: null
     };
 }
@@ -127,14 +125,47 @@ describe('Exec', () => {
         expect(res.success).toEqual(false);
     });
 
-    it('should return a formatted error when receiving an AxiosError (without a body)', async () => {
+    it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
         const nangoProps = getNangoProps();
         const jsCode = `
         fn = async (nango) => {
-            await nango.get({
-                endpoint: '/',
-                baseUrl: 'https://example.dev/'
-            })
+            const err = new Error("Something broke");
+            err.isAxiosError = true;
+            err.code = "ECONNREFUSED";
+
+            throw err;
+        };
+        exports.default = fn
+        `;
+        const res = await exec(nangoProps, jsCode);
+
+        expect(res.error).toMatchObject({
+            payload: {
+                code: 'ECONNREFUSED'
+            },
+            status: 500,
+            type: 'script_network_error'
+        });
+        expect(res.success).toEqual(false);
+    });
+
+    it('should return a script_network_error when receiving an AxiosError (without a body)', async () => {
+        const nangoProps = getNangoProps();
+        const jsCode = `
+        fn = async (nango) => {
+            const err = new Error("Something broke");
+            err.isAxiosError = true;
+            err.code = "ERR_BAD_RESPONSE";
+            err.response = {
+                status: 404,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Security-Policy': 'blech',
+                    'X-RateLimit-Limit': '100',
+                },
+                data: { error: "Not found" }
+            }
+            throw err;
         };
         exports.default = fn
         `;
@@ -142,11 +173,23 @@ describe('Exec', () => {
 
         // NB: it will fail because Nango is not running not because the website is not reachable
         // NB2: the message is different depending on the system running Node
-        expect(res.error).toMatchObject({
+        expect(res.error).toEqual({
             payload: {
-                code: 'ECONNREFUSED'
+                error: 'Not found'
             },
-            status: 500,
+            status: 404,
+            additional_properties: {
+                upstream_response: {
+                    body: {
+                        error: 'Not found'
+                    },
+                    headers: {
+                        'content-type': 'application/json',
+                        'x-ratelimit-limit': '100'
+                    },
+                    status: 404
+                }
+            },
             type: 'script_http_error'
         });
         expect(res.success).toEqual(false);
@@ -175,7 +218,7 @@ describe('Exec', () => {
         expect(res.success).toEqual(false);
     });
 
-    it('should redac Authorization', async () => {
+    it('should redact Authorization', async () => {
         const nangoProps = getNangoProps();
         const jsCode = `
         fn = async (nango) => {

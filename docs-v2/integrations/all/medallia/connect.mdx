@@ -1,0 +1,98 @@
+---
+title: Medallia - How to Connect Your Account
+sidebarTitle: Medallia
+---
+
+# Overview
+
+Medallia Experience Cloud APIs use OAuth 2.0 to authenticate access to data and API endpoints. To establish a connection with Medallia, you will need the following:
+
+1. **Client ID**: The unique identifier for your account, used as the HTTP Basic Authentication username.
+2. **Client Secret**: The secret key for your account, used as the HTTP Basic Authentication password.
+3. **Reporting Instance**: The domain of your Medallia account.
+4. **Tenant Name**: The tenant name of your Medallia account.
+5. **Gateway URL**: The gateway URL for your Medallia account.
+
+This guide will walk you through generating these credentials and using them to connect your account.
+
+---
+
+### Prerequisites
+
+- Admin access to your Medallia Experience Cloud instance.
+- OAuth 2.0 enabled for your account.
+
+---
+
+### Step 1: Generate OAuth Credentials
+
+To access Medallia APIs, you need to create a Client ID and Client Secret:
+
+1. **Log into your Medallia Experience Cloud instance**:
+   - Navigate to the **Admin Settings**.
+   - Go to the **OAuth 2.0 Management** section.
+
+2. **Create a new Client ID and Client Secret**:
+   - Click **Create OAuth Client**.
+   - Assign a role to the client ID. This role determines the actions and data the client ID can access.
+   - Save the generated **Client ID** and **Client Secret** securely. These values will not be shown again.
+
+⚠️ **Note**: Each environment (production, sandbox, developer) requires separate credentials.
+
+---
+
+### Step 2: Retrieve an Access Token
+
+1. **Identify the OAuth Token URL**:
+   - Use the following format:
+     `https://${reportingInstance}/oauth/${tenantName}/token`.
+
+2. **Request a Token**:
+   - Use the Client ID and Client Secret to send a `POST` request to the OAuth endpoint.
+   - Example `cURL` command:
+
+     ```bash
+     export REPORTING_INSTANCE="instance.medallia.com"
+     export TENANT_NAME="tenant"
+
+     curl \
+       "https://${REPORTING_INSTANCE}/oauth/${TENANT_NAME}/token" \
+       -X POST \
+       -u 'client_id:client_secret' \
+       -d 'grant_type=client_credentials'
+     ```
+
+3. **Access Token Response**:
+   - If successful, you will receive a response like this:
+
+     ```json
+     {
+       "access_token": "2c5822312345678901d21",
+       "token_type": "Bearer",
+       "expires_in": 3600
+     }
+     ```
+
+   - Save the `access_token` securely. Use it in subsequent API requests.
+
+---
+
+### Step 3: Connect Your Medallia Account
+
+1. **Field Requirements**:
+   - **Reporting Instance**: Enter the domain of your Medallia account (e.g., `instance.medallia.com`).
+   - **Tenant Name**: Provide the tenant name for your account.
+   - **Gateway URL**: Specify the gateway URL (e.g., `instance-tenant.apis.medallia.com`).
+   - **Client ID and Secret**: Use the credentials generated earlier.
+
+2. **Authentication Flow**:
+   - The integration will use your Client ID and Secret to fetch an access token.
+   - The token will authenticate your connection to the Medallia API.
+
+---
+
+### Notes
+
+- Tokens expire after 3600 seconds (1 hour). The integration will refresh tokens automatically as needed.
+- Ensure that the role assigned to your Client ID has the necessary permissions for your use case.
+- For API usage and permissions, refer to the [Medallia Experience Cloud documentation](https://developer.medallia.com/medallia-apis/reference/integrations).

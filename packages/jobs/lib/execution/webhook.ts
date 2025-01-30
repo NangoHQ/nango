@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, NangoConnection, NangoProps, Sync } from '@nangohq/shared';
+import type { Config, Job, NangoConnection, Sync } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
@@ -20,7 +20,7 @@ import {
 } from '@nangohq/shared';
 import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import db from '@nangohq/database';
@@ -29,7 +29,7 @@ import { getRunnerFlags } from '../utils/flags.js';
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
-    let providerConfig: Config | undefined | null;
+    let providerConfig: Config | null = null;
     let sync: Sync | undefined | null;
     let syncJob: Pick<Job, 'id'> | null = null;
     let syncConfig: DBSyncConfig | null = null;
@@ -145,6 +145,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncName: task.parentSyncName,
             syncJobId: syncJob?.id,
             providerConfigKey: task.connection.provider_config_key,
+            providerConfig,
             activityLogId: task.activityLogId,
             models: syncConfig?.models || [],
             runTime: 0,
@@ -184,11 +185,22 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
         throw new Error(`Failed to update sync job status to SUCCESS for sync job: ${nangoProps.syncJobId}`);
     }
 
+    const providerConfig = await configService.getProviderConfig(nangoProps.providerConfigKey, nangoProps.environmentId);
+    if (providerConfig === null) {
+        throw new Error(`Provider config not found for connection: ${nangoProps.connectionId}`);
+    }
+
     const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
-    const environment = await environmentService.getById(nangoProps.environmentId);
+
+    const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: nangoProps.environmentId });
+    if (!accountAndEnv) {
+        throw new Error(`Account and environment not found`);
+    }
+    const team = accountAndEnv.account;
+    const environment = accountAndEnv.environment;
+
     if (environment) {
-        for (const model of nangoProps.syncConfig.models!) {
+        for (const model of nangoProps.syncConfig.models || []) {
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
                     environmentId: nangoProps.environmentId,
@@ -199,9 +211,11 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
                     model
                 }
             });
+
             void tracer.scope().activate(span, async () => {
                 try {
                     const res = await sendSyncWebhook({
+                        account: team,
                         connection: {
                             id: nangoProps.nangoConnectionId!,
                             connection_id: nangoProps.connectionId,
@@ -210,13 +224,13 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
                         },
                         environment: environment,
                         webhookSettings,
-                        syncName: nangoProps.syncConfig.sync_name,
+                        syncConfig: nangoProps.syncConfig,
+                        providerConfig,
                         model,
                         now: nangoProps.startedAt,
                         success: true,
                         responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0 },
-                        operation: 'WEBHOOK',
-                        logCtx
+                        operation: 'WEBHOOK'
                     });
 
                     if (res.isErr()) {
@@ -240,6 +254,12 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
     }
+
+    const providerConfig = await configService.getProviderConfig(nangoProps.providerConfigKey, nangoProps.environmentId);
+    if (providerConfig === null) {
+        throw new Error(`Provider config not found for connection: ${nangoProps.connectionId}`);
+    }
+
     await onFailure({
         team,
         environment,
@@ -253,8 +273,9 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
         syncName: nangoProps.syncConfig.sync_name,
         syncJobId: nangoProps.syncJobId!,
         providerConfigKey: nangoProps.providerConfigKey,
+        providerConfig,
         activityLogId: nangoProps.activityLogId || 'unknown',
-        models: nangoProps.syncConfig.models!,
+        models: nangoProps.syncConfig.models || [],
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         syncConfig: nangoProps.syncConfig,
@@ -270,9 +291,9 @@ async function onFailure({
     syncName,
     syncJobId,
     syncConfig,
+    providerConfig,
     providerConfigKey,
     models,
-    activityLogId,
     runTime,
     error,
     endUser
@@ -284,6 +305,7 @@ async function onFailure({
     syncJobId?: number | undefined;
     syncName: string;
     syncConfig: DBSyncConfig | null;
+    providerConfig: Config | null;
     providerConfigKey: string;
     models: string[];
     activityLogId: string;
@@ -319,7 +341,6 @@ async function onFailure({
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
         if (webhookSettings) {
-            const logCtx = await logContextGetter.get({ id: activityLogId });
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
                     environmentId: environment.id,
@@ -329,33 +350,37 @@ async function onFailure({
                     syncSuccess: false
                 }
             });
-            void tracer.scope().activate(span, async () => {
-                try {
-                    const res = await sendSyncWebhook({
-                        connection: connection,
-                        environment,
-                        webhookSettings,
-                        syncName: syncName,
-                        model: models.join(','),
-                        success: false,
-                        error: {
-                            type: 'script_error',
-                            description: error.message
-                        },
-                        now: new Date(),
-                        operation: 'WEBHOOK',
-                        logCtx: logCtx
-                    });
 
-                    if (res.isErr()) {
-                        throw new Error(`Failed to send webhook for webhook: ${syncName}`);
+            if (team && environment && syncConfig && providerConfig) {
+                void tracer.scope().activate(span, async () => {
+                    try {
+                        const res = await sendSyncWebhook({
+                            account: team,
+                            environment,
+                            connection: connection,
+                            webhookSettings,
+                            syncConfig,
+                            providerConfig,
+                            model: models.join(','),
+                            success: false,
+                            error: {
+                                type: 'script_error',
+                                description: error.message
+                            },
+                            now: new Date(),
+                            operation: 'WEBHOOK'
+                        });
+
+                        if (res.isErr()) {
+                            throw new Error(`Failed to send webhook for webhook: ${syncName}`);
+                        }
+                    } catch (err) {
+                        span?.setTag('error', err);
+                    } finally {
+                        span.finish();
                     }
-                } catch (err) {
-                    span?.setTag('error', err);
-                } finally {
-                    span.finish();
-                }
-            });
+                });
+            }
         }
     }
 }

@@ -25,6 +25,8 @@ COPY packages/scheduler/ packages/scheduler/
 COPY packages/orchestrator/ packages/orchestrator/
 COPY packages/keystore/ packages/keystore/
 COPY packages/fleet/ packages/fleet/
+COPY packages/providers/ packages/providers/
+COPY packages/runner-sdk/ packages/runner-sdk/
 
 RUN npm pkg delete scripts.prepare
 RUN npm ci --omit=dev

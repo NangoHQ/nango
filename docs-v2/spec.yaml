@@ -1434,6 +1434,45 @@ paths:
                                     message:
                                         type: string
 
+                '424':
+                    description: Action http error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
+                                            upstream:
+                                                type: object
+                                                properties:
+                                                    status_code:
+                                                        type: integer
+                                                    headers:
+                                                        type: object
+                                                        properties:
+                                                            content-type:
+                                                                type: string
+                                                        patternProperties:
+                                                            '^x-rate':
+                                                                type: string
+                                                    body:
+                                                        type: object
+                                                        additionalProperties: true
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
+                                    required:
+                                        - error
+
     /environment-variables:
         get:
             description: Retrieve the environment variables as added in the Nango dashboard

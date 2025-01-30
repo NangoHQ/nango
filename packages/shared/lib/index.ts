@@ -43,12 +43,8 @@ export * from './clients/locking.js';
 export * from './models/index.js';
 
 export * from './utils/utils.js';
-export * from './utils/http.js';
 export * from './utils/error.js';
 export * from './constants.js';
-
-export * from './sdk/sync.js';
-export * from './sdk/dataValidation.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 
