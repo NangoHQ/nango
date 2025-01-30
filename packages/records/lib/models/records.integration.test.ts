@@ -230,7 +230,18 @@ describe('Records service', () => {
             });
 
             const updated = await updateRecords({
-                records: [{ id: '1', person: { age: 36, children: [{}, { name: 'Maurice Doe', age: 1 }] } }],
+                records: [
+                    {
+                        id: '1',
+                        person: {
+                            age: 36,
+                            children: [
+                                { name: 'Jennifer Doe', age: 3 },
+                                { name: 'Maurice Doe', age: 1 }
+                            ]
+                        }
+                    }
+                ],
                 connectionId,
                 model,
                 syncId,
@@ -253,7 +264,7 @@ describe('Records service', () => {
                     name: 'John Doe',
                     age: 36,
                     children: [
-                        { name: 'Jenny Doe', age: 3 },
+                        { name: 'Jennifer Doe', age: 3 },
                         { name: 'Maurice Doe', age: 1 }
                     ]
                 }
