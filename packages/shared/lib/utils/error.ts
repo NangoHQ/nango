@@ -337,7 +337,7 @@ export class NangoError extends Error {
 
             case 'generic_error_support':
                 this.status = 500;
-                this.message = 'An error occurred. Please contact support with this unique id: ' + this.payload;
+                this.message = `An error occurred. Please contact support with this unique id: ${JSON.stringify(this.payload)}`;
                 break;
 
             case 'sync_interval_too_short':
@@ -454,7 +454,7 @@ export class NangoError extends Error {
 
             case 'deploy_missing_json_schema_model':
                 this.status = 400;
-                this.message = String(this.payload);
+                this.message = JSON.stringify(this.payload);
                 break;
 
             case 'invalid_action_input':
@@ -504,7 +504,7 @@ export class NangoError extends Error {
 
             case 'wsse_token_generation_error':
                 this.status = 500;
-                this.message = `An error occured while generating an WSSE token`;
+                this.message = `An error occurred while generating an WSSE token`;
                 break;
 
             case 'script_aborted':

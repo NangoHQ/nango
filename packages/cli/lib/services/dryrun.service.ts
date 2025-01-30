@@ -26,8 +26,8 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    input?: unknown;
-    metadata?: Metadata;
+    input?: string;
+    metadata?: string;
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
@@ -221,8 +221,8 @@ export class DryRunService {
         let normalizedInput;
 
         if (actionInput) {
-            if (actionInput.toString().includes('@') && actionInput.toString().endsWith('.json')) {
-                const fileContents = readFile(actionInput.toString());
+            if (actionInput.startsWith('@') && actionInput.endsWith('.json')) {
+                const fileContents = readFile(actionInput);
                 if (!fileContents) {
                     console.log(chalk.red('The file could not be read. Please make sure it exists.'));
                     return;
@@ -235,9 +235,9 @@ export class DryRunService {
                 }
             } else {
                 try {
-                    normalizedInput = JSON.parse(actionInput as string);
+                    normalizedInput = JSON.parse(actionInput);
                 } catch {
-                    normalizedInput = actionInput;
+                    throw new Error('Failed to parse --input');
                 }
             }
 
@@ -252,8 +252,8 @@ export class DryRunService {
         }
 
         if (rawStubbedMetadata) {
-            if (rawStubbedMetadata.toString().includes('@') && rawStubbedMetadata.toString().endsWith('.json')) {
-                const fileContents = readFile(rawStubbedMetadata.toString());
+            if (rawStubbedMetadata.startsWith('@') && rawStubbedMetadata.endsWith('.json')) {
+                const fileContents = readFile(rawStubbedMetadata);
                 if (!fileContents) {
                     console.log(chalk.red('The metadata file could not be read. Please make sure it exists.'));
                     return;
@@ -266,9 +266,9 @@ export class DryRunService {
                 }
             } else {
                 try {
-                    stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+                    stubbedMetadata = JSON.parse(rawStubbedMetadata);
                 } catch {
-                    stubbedMetadata = rawStubbedMetadata;
+                    throw new Error('fail to parse --metadata');
                 }
             }
         }
@@ -340,6 +340,7 @@ export class DryRunService {
                 };
             }
             console.log('---');
+
             const results = await this.runScript({
                 syncName,
                 nangoProps,

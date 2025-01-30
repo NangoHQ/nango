@@ -27,6 +27,7 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     const res = await apiFetch(url, req);
 
     if (!res.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/only-throw-error
         throw { json: await res.json(), status: res.status };
     }
 
