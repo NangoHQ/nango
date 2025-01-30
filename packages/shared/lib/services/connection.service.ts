@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import ms from 'ms';
 import type { Knex } from '@nangohq/database';
 import db, { dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -58,8 +59,7 @@ import {
     interpolateObject,
     extractValueByPath,
     stripCredential,
-    interpolateObjectValues,
-    getMultiplierForUnit
+    interpolateObjectValues
 } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
@@ -1128,22 +1128,14 @@ class ConnectionService {
                 if (expirationStrategy === 'expireAt' && expiration) {
                     expiresAt = parseTokenExpirationDate(expiration);
                 } else if (expirationStrategy === 'expireIn' && expiration) {
-                    if (template && template.expires_in_unit) {
-                        const expirationUnit = template.expires_in_unit;
-                        if (expirationUnit === 'human_readable') {
-                            // Handle human-readable expiration (e.g., "60 minutes"), for drupal
-                            const [value, unit] = expiration.split(' ');
-                            const multiplier = getMultiplierForUnit(unit.toLowerCase());
-                            if (!multiplier) {
-                                throw new NangoError(`Unsupported human-readable unit: ${unit}`);
-                            }
-                            expiresAt = new Date(Date.now() + Number.parseInt(value, 10) * multiplier);
-                        } else {
-                            throw new NangoError(`Unsupported expiration unit: ${expirationUnit}`);
-                        }
+                    if (Number.isSafeInteger(Number(expiration))) {
+                        expiresAt = new Date(Date.now() + Number(expiration) * 1000);
                     } else {
-                        const expiresIn = Number.parseInt(expiration, 10);
-                        expiresAt = new Date(Date.now() + expiresIn);
+                        const durationMs = ms(expiration);
+                        if (!durationMs) {
+                            throw new NangoError(`Unsupported expiration format: ${expiration}`);
+                        }
+                        expiresAt = new Date(Date.now() + durationMs);
                     }
                 } else if (template.token_expires_in_ms) {
                     expiresAt = new Date(Date.now() + template.token_expires_in_ms);

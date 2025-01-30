@@ -2391,6 +2391,7 @@ drupal:
             title: Base Url
             description: Your Drupal base url
             example: example.drupal.com
+            format: hostname
             prefix: https://
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
