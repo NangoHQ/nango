@@ -482,6 +482,55 @@ describe('Proxy service Construct URL Tests', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should construct url with a string query params with ?', () => {
+        const url = proxyService.constructUrl(
+            getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url: 'https://example.com'
+                    }
+                },
+                params: '?foo=bar'
+            })
+        );
+
+        expect(url).toBe('https://example.com/api/test?foo=bar');
+    });
+
+    it('should construct url with a string query params without ?', () => {
+        const url = proxyService.constructUrl(
+            getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url: 'https://example.com'
+                    }
+                },
+                params: 'foo=bar'
+            })
+        );
+
+        expect(url).toBe('https://example.com/api/test?foo=bar');
+    });
+
+    it('should throw when setting query params in both endpoint and params', () => {
+        expect(() => {
+            proxyService.constructUrl(
+                getDefaultProxy({
+                    provider: {
+                        auth_mode: 'OAUTH2',
+                        proxy: {
+                            base_url: 'https://example.com'
+                        }
+                    },
+                    endpoint: 'https://example.com?bar=foo',
+                    params: '?foo=bar'
+                })
+            );
+        }).toThrow(new Error('Can not set query params in endpoint and in params'));
+    });
+
     it('Should retry after', async () => {
         const mockAxiosError = {
             response: {
