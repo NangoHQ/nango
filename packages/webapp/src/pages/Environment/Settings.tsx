@@ -308,9 +308,13 @@ export const EnvironmentSettings: React.FC = () => {
         const entries = Array.from(formData.entries());
         for (let i = 0; i < entries.length - 1; i = i + 2) {
             const [[, header], [, value]] = entries.slice(i, i + 2);
+            if (typeof header !== 'string') {
+                continue;
+            }
+
             newOtlpHeaders = {
                 ...newOtlpHeaders,
-                [JSON.stringify(header)]: value
+                [header]: value
             };
         }
         return newOtlpHeaders;
