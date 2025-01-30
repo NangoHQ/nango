@@ -8,7 +8,7 @@ export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
     executeScriptForWebhooks(
         integration: ProviderConfig,
-        body: any,
+        body: Record<string, any>,
         webhookType: string,
         connectionIdentifier: string,
         logContextGetter: LogContextGetter,
