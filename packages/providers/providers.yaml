@@ -8009,7 +8009,7 @@ zapier-scim:
             type: string
             title: SCIM API Token
             description: The SCIM API token generated from the Provision tab in your Zapier account.
-            doc_section: '#step-1-generating-your-scim-api-token'
+            doc_section: '#getting-your-scim-api-token'
 
 zendesk:
     display_name: Zendesk
