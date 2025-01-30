@@ -10,17 +10,33 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     ## Trigger syncs
 
+    <Frame>
+        <img src="/images/changelog/trigger-syncs.png" alt="Trigger syncs illustration" />
+    </Frame>
+
     You can now trigger syncs directly from the Nango UI with customizable options. The new modal allows you to trigger syncs incrementally, retrieving only the data modified since the last sync, or fully, fetching all historical data. Additionally, you can choose to clear the cached data if needed. To trigger a sync, navigate to the Connections tab, select a connection, go to the Syncs sub-tab, and click the “…” menu.
 
     ## Lighter CLI
+
+    <Frame>
+        <img src="/images/changelog/lighter-cli.png" alt="Lighter CLI illustration" />
+    </Frame>
 
     The CLI is now drastically lighter, going from more than 30 seconds to less than 2 seconds to install.
 
     ## Create environments
 
+    <Frame>
+        <img src="/images/changelog/create-environments.png" alt="Create environments illustration" />
+    </Frame>
+
     You can now create new environments in Nango, beyond the default _Production_ and _Dev_ environemnts. Simply use the dropfown at the top of the left nav bar in the [Nango UI](https://app.nango.dev). This feature is available for paid plans only.
 
     ## Event-based scripts
+
+    <Frame>
+        <img src="/images/changelog/event-based-scripts.png" alt="Event-based scripts illustration" />
+    </Frame>
 
     Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/custom-integrations/event-based-scripts).
 
@@ -76,17 +92,33 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     ## Resilient integrations
 
+    <Frame>
+        <img src="/images/changelog/resilient-integrations.png" alt="Resilient integrations illustration" />
+    </Frame>
+
     Integration executions are no longer disrupted during runner VM upgrades. The VMs now wait for ongoing executions to complete before proceeding with the upgrade. This enhancement minimizes interruptions, especially for long-running syncs that can take up to 24 hours.
 
     ## Surface misconfigured integrations
+
+    <Frame>
+        <img src="/images/changelog/surface-misconfigured-integrations.png" alt="Surface misconfigured integrations illustration" />
+    </Frame>
 
     The Nango UI now highlights misconfigured integrations, such as those missing OAuth app credentials. An error icon will appear next to the misconfigured integration in the _Integrations_ tab of the [Nango UI](https://app.nango.dev).
 
     ## Getting started tab
 
+    <Frame>
+        <img src="/images/changelog/getting-started.png" alt="Getting started illustration" />
+    </Frame>
+
     The Nango UI now includes a _Getting Started_ tab featuring a 2-minute demo video and essential guides to help you get started. You can dismiss this tab when it's no longer needed, but it will remain accessible from the bottom-left menu.
 
     ## API catalog
+
+    <Frame>
+        <img src="/images/changelog/api-catalog.png" alt="API catalog illustration" />
+    </Frame>
 
     You can now search through [all the APIs supported by Nango](https://www.nango.dev/api-integrations). This list is automatically updated whenever new APIs are added.
 
@@ -114,13 +146,25 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     ## Guides
 
+    <Frame>
+        <img src="/images/changelog/guides.png" alt="Guides illustration" />
+    </Frame>
+
     The [Guides](/guides) section of the documentation has been improved with a feature-based classification and more comprehensive, detailed guides.
 
     ## API-specific docs
 
+    <Frame>
+        <img src="/images/changelog/api-specific-docs.png" alt="API-specific docs illustration" />
+    </Frame>
+
     API-specific documentation has been enhanced to include more details about tooling, pre-built integrations, and configurations for each API. For example, see the [Hubspot](/integrations/all/hubspot) documentation. These API-specific docs are automatically generated and kept up-to-date.
 
     ## Integration docs
+
+    <Frame>
+        <img src="/images/changelog/integration-docs.png" alt="Integration docs illustration" />
+    </Frame>
 
     Each pre-built integration now includes a ReadMe file with detailed information about the integration, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company integration](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
 

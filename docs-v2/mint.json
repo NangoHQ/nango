@@ -16,6 +16,9 @@
             "to": "#012AC3"
         }
     },
+    "modeToggle": {
+        "default": "dark"
+    },
     "feedback": {
         "suggestEdit": true,
         "raiseIssue": true,
@@ -520,6 +523,7 @@
                 "integrations/all/youtube",
                 "integrations/all/zapier",
                 "integrations/all/zapier-nla",
+                "integrations/all/zapier-scim",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
                 "integrations/all/zoho-bigin",
@@ -531,7 +535,8 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo"
+                "integrations/all/zoominfo",
+                "integrations/all/zuora"
             ]
         },
         {
