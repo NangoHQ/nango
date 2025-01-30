@@ -2025,7 +2025,7 @@ databricks-account:
         grant_type: client_credentials
     proxy:
         base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
-    docs: https://docs.nango.dev/integrations/all/databricks
+    docs: https://docs.nango.dev/integrations/all/databricks-account
     connection_config:
         accountId:
             type: string
@@ -2044,7 +2044,7 @@ databricks-workspace:
         grant_type: client_credentials
     proxy:
         base_url: https://${connectionConfig.databricksInstance}/api/2.0/
-    docs: https://docs.nango.dev/integrations/all/databricks
+    docs: https://docs.nango.dev/integrations/all/databricks-workspace
     connection_config:
         databricksInstance:
             type: string
@@ -3253,7 +3253,7 @@ ghost-admin:
             accept: application/json
             accept-version: ${connectionConfig.version}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
-    docs: https://docs.nango.dev/integrations/all/ghost
+    docs: https://docs.nango.dev/integrations/all/ghost-admin
     connection_config:
         adminDomain:
             type: string
@@ -3284,7 +3284,7 @@ ghost-content:
         verification:
             method: GET
             endpoint: /tags
-    docs: https://docs.nango.dev/integrations/all/ghost
+    docs: https://docs.nango.dev/integrations/all/ghost-content
     connection_config:
         version:
             type: string
@@ -4035,7 +4035,7 @@ helpscout-docs:
         verification:
             method: GET
             endpoint: /v1/sites
-    docs: https://docs.nango.dev/integrations/all/helpscout
+    docs: https://docs.nango.dev/integrations/all/helpscout-docs
     docs_connect: https://docs.nango.dev/integrations/all/helpscout-docs/connect
     credentials:
         username:
@@ -4066,7 +4066,7 @@ helpscout-mailbox:
         retry:
             after: 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
-    docs: https://docs.nango.dev/integrations/all/helpscout
+    docs: https://docs.nango.dev/integrations/all/helpscout-mailbox
 
 keap:
     display_name: Keap
@@ -7102,7 +7102,7 @@ thrivecart-oauth:
     scope_separator: ' '
     proxy:
         base_url: https://thrivecart.com/api/external
-    docs: https://docs.nango.dev/integrations/all/thrivecart
+    docs: https://docs.nango.dev/integrations/all/thrivecart-oauth
 
 thrivecart-api-key:
     display_name: ThriveCart (api key)
@@ -7117,7 +7117,7 @@ thrivecart-api-key:
         verification:
             method: GET
             endpoint: /ping
-    docs: https://docs.nango.dev/integrations/all/thrivecart
+    docs: https://docs.nango.dev/integrations/all/thrivecart-api-key
     credentials:
         apiKey:
             type: string
