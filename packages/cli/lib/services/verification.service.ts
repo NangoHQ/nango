@@ -2,13 +2,12 @@ import fs from 'fs';
 import chalk from 'chalk';
 import promptly from 'promptly';
 import path from 'path';
-
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { parse } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
-import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
-import { init, generate } from '../cli.js';
+import { generate } from '../cli.js';
+import { init } from './init.service.js';
 
 class VerificationService {
     public async necessaryFilesExist({
@@ -29,11 +28,6 @@ class VerificationService {
         const currentDirectory = path.basename(fullPath);
         if (debug) {
             printDebug(`Current stripped directory is read as: ${currentDirectory}`);
-        }
-
-        if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
-            console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));
-            process.exit(1);
         }
 
         if (!fs.existsSync(path.join(fullPath, nangoConfigFile))) {

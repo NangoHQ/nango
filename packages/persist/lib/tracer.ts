@@ -11,5 +11,5 @@ tracer.use('elasticsearch', {
 });
 tracer.use('express');
 tracer.use('dns', {
-    enabled: false
+    enabled: true
 });

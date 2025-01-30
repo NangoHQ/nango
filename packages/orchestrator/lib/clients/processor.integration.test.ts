@@ -79,7 +79,7 @@ async function processN(handler: (task: OrchestratorTask) => Promise<Result<void
     while (processor.queueSize() > 0) {
         await setTimeout(100);
     }
-    await setTimeout(100);
+    await setTimeout(500);
 
     return processor;
 }
