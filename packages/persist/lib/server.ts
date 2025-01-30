@@ -7,7 +7,7 @@ import { routeHandler as postLogHandler, path as logsPath } from './routes/envir
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
-import { routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
+import { routeHandler as getCursorHandler, path as cursorPath } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
 import { recordsPath } from './records.js';
 
 const logger = getLogger('Persist');
@@ -21,9 +21,10 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
     server.use(requestLoggerMiddleware({ logger }));
 }
 
-server.use('/environment/:environmentId/*', authMiddleware, express.json());
+server.use('/environment/:environmentId/*', authMiddleware);
 server.use(logsPath, express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
+server.use(cursorPath, express.json());
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);

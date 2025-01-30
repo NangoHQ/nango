@@ -11,7 +11,7 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { init, generate, tscWatch, configWatch, version } from './cli.js';
+import { generate, tscWatch, configWatch, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import { compileAllFiles } from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
@@ -21,6 +21,7 @@ import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebu
 import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import { init } from './services/init.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -56,7 +57,7 @@ In addition for self-Hosting: set the NANGO_HOSTPORT env variable.
 
 Global flag: --auto-confirm - automatically confirm yes to all prompts.
 
-Available environment variables available:
+Available environment variables:
 
 # Recommendation: in a ".env" file in ./nango-integrations.
 
@@ -87,13 +88,16 @@ program
 
 program
     .command('init')
+    .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
     .action(function (this: Command) {
         const { debug } = this.opts();
-        const fullPath = process.cwd();
-        init({ absolutePath: fullPath, debug });
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const ok = init({ absolutePath, debug });
 
-        console.log(chalk.green(`Nango integrations initialized!`));
+        if (ok) {
+            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+        }
     });
 
 program

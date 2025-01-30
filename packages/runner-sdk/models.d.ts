@@ -12,27 +12,6 @@ export declare const oldLevelToNewLevel: {
     readonly http: 'info';
 };
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
-type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
-interface GenericFormData {
-    append(name: string, value: any, options?: any): any;
-}
-type SerializerVisitor = (this: GenericFormData, value: any, key: string | number, path: null | (string | number)[], helpers: FormDataVisitorHelpers) => boolean;
-type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
-interface FormDataVisitorHelpers {
-    defaultVisitor: SerializerVisitor;
-    convertValue: (value: any) => any;
-    isVisitable: (value: any) => boolean;
-}
-interface SerializerOptions {
-    visitor?: SerializerVisitor;
-    dots?: boolean;
-    metaTokens?: boolean;
-    indexes?: boolean | null;
-}
-interface ParamsSerializerOptions extends SerializerOptions {
-    encode?: ParamEncoder;
-    serialize?: CustomParamsSerializer;
-}
 interface Pagination {
     type: string;
     limit?: number;
@@ -63,7 +42,6 @@ export interface ProxyConfiguration {
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
@@ -234,9 +212,6 @@ interface RunArgs {
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
 }
-export interface DryRunServiceInterface {
-    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
-}
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
@@ -269,7 +244,6 @@ export interface NangoProps {
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
@@ -304,7 +278,6 @@ export declare class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
     connectionId: string;
