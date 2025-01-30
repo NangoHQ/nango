@@ -279,6 +279,7 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessions
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 
+publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
 publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
