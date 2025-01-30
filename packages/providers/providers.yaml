@@ -7987,6 +7987,30 @@ zapier-nla:
         base_url: https://nla.zapier.com
     docs: https://docs.nango.dev/integrations/all/zapier-nla
 
+zapier-scim:
+    display_name: Zapier (SCIM API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://zapier.com/scim/v2
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json, application/scim+json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/zapier
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from the Provision tab in your Zapier account.
+            doc_section: '#getting-your-scim-api-token'
+
 zendesk:
     display_name: Zendesk
     categories:
