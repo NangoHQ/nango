@@ -44,11 +44,11 @@ To access Medallia APIs, you need to create a Client ID and Client Secret:
 ### Step 2: Retrieve an Access Token
 
 1. **Identify the OAuth Token URL**:
-   - Use the following format:  
+   - Use the following format:
      `https://${reportingInstance}/oauth/${tenantName}/token`.
 
 2. **Request a Token**:
-   - Use the Client ID and Client Secret to send a `POST` request to the OAuth endpoint.  
+   - Use the Client ID and Client Secret to send a `POST` request to the OAuth endpoint.
    - Example `cURL` command:
 
      ```bash
@@ -96,4 +96,3 @@ To access Medallia APIs, you need to create a Client ID and Client Secret:
 - Tokens expire after 3600 seconds (1 hour). The integration will refresh tokens automatically as needed.
 - Ensure that the role assigned to your Client ID has the necessary permissions for your use case.
 - For API usage and permissions, refer to the [Medallia Experience Cloud documentation](https://developer.medallia.com/medallia-apis/reference/integrations).
-
