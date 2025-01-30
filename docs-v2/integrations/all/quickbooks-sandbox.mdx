@@ -1,13 +1,12 @@
 ---
-title: Quickbooks
-sidebarTitle: Quickbooks
-provider: quickbooks
+title: Quickbooks Sandbox
+sidebarTitle: Quickbooks Sandbox
+provider: quickbooks-sandbox
 ---
 
 import Overview from "/snippets/overview.mdx";
-import PreBuiltTooling from "/snippets/generated/quickbooks/PreBuiltTooling.mdx";
-
-import PreBuiltUseCases from "/snippets/generated/quickbooks/PreBuiltUseCases.mdx"
+import PreBuiltTooling from "/snippets/generated/quickbooks-sandbox/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/quickbooks-sandbox/PreBuiltUseCases.mdx"
 
 <Overview />
 <PreBuiltTooling />
@@ -29,7 +28,7 @@ _No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks-sandbox.mdx)</Note>
 
 
 ## Useful links
@@ -39,17 +38,17 @@ _No setup guide yet._
 -   [List of OAuth scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes#current-scopes)
 -   [Quickbooks API docs](https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks-sandbox.mdx)</Note>
 
 ## API gotchas
 
 - QuickBooks requires a company ID/realmId for each API request. To obtain this when creating a new connection on Nango, go to Settings and select Your Account and Settings. On the Your Account page, your Company ID (found under the Billing & Subscription tab) will be displayed at the top. Nango can automatically retrieve this for you, or you can manually override it by specifying the realmId when creating a new connection.
 - You can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve it, or when you fetch the Connection credentials with the REST API or SDK
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks-sandbox.mdx)</Note>
 
 ## Going further
 
-<Card title="Connect to Quickbooks" icon="link" href="/integrations/all/quickbooks/connect" horizontal>
-  Guide to connect to Quickbooks using Connect UI
+<Card title="Connect to Quickbooks (Sandbox)" icon="link" href="/integrations/all/quickbooks-sandbox/connect" horizontal>
+  Guide to connect to Quickbooks (Sandbox) using Connect UI
 </Card>
