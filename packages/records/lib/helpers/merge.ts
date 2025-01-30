@@ -5,20 +5,9 @@ const merge = deepmerge({
     // define algorithm for merging arrays - merges each item in the array
     // rather than concatenating
     mergeArray: (options) => {
-        const deepmerge = options.deepmerge;
         const clone = options.clone;
-        return function (target, source) {
-            let i = 0;
-            const il = Math.max(target.length, source.length);
-            const result = new Array(il);
-            for (i = 0; i < il; ++i) {
-                if (i < source.length) {
-                    result[i] = deepmerge(target[i], source[i]);
-                } else {
-                    result[i] = clone(target[i]);
-                }
-            }
-            return result;
+        return function (_, source) {
+            return clone(source);
         };
     }
 });
