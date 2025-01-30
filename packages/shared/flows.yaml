@@ -4288,6 +4288,39 @@ integrations:
                       iconLink: string
                       fileId: string
                 eventType: string
+    google-docs:
+        actions:
+            fetch-document:
+                input: DocumentId
+                description: |
+                    Fetches the content of a document given its ID.
+                output: Document
+                endpoint:
+                    method: GET
+                    path: /fetch-document
+                scopes: https://www.googleapis.com/auth/documents.readonly
+        models:
+            DocumentId:
+                id: string
+            Document:
+                documentId: string
+                title: string
+                url: string
+                tabs: object[]
+                revisionId: string
+                suggestionsViewMode: "DEFAULT_FOR_CURRENT_ACCESS | SUGGESTIONS_INLINE | PREVIEW_SUGGESTIONS_ACCEPTED\t| PREVIEW_WITHOUT_SUGGESTIONS"
+                body: object
+                headers: object
+                footers: object
+                footnotes: object
+                documentStyle: object
+                suggestedDocumentStyleChanges: object
+                namedStyles: object
+                suggestedNamedStylesChanges: object
+                lists: object
+                namedRanges: object
+                inlineObjects: object
+                positionedObjects: object
     google-drive:
         syncs:
             documents:
@@ -4422,6 +4455,30 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    google-sheet:
+        actions:
+            fetch-spreadsheet:
+                input: SpreadsheetId
+                description: |
+                    Fetches the content of a spreadsheet given its ID.
+                output: Spreadsheet
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /spreadsheet
+                scopes: https://www.googleapis.com/auth/spreadsheets.readonly
+        models:
+            SpreadsheetId:
+                id: string
+            Spreadsheet:
+                spreadsheetId: string
+                properties: object
+                sheets: object[]
+                namedRanges: object[]
+                spreadsheetUrl: string
+                developerMetadata: object[]
+                dataSources: object[]
+                dataSourceSchedules: object[]
     gorgias:
         syncs:
             tickets:
