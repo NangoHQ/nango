@@ -21,7 +21,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook, connectionTest } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
-import { isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
 
 const bodyValidation = z
     .object({
@@ -76,10 +76,10 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 
-    // if (isConnectSession && queryString.connection_id) {
-    //     errorRestrictConnectionId(res);
-    //     return;
-    // }
+    if (isConnectSession && queryString.connection_id) {
+        errorRestrictConnectionId(res);
+        return;
+    }
 
     let logCtx: LogContext | undefined;
     try {

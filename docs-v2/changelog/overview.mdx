@@ -8,6 +8,56 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
 <Update label="January 2025">
 
+    ## January catalog update
+
+    <AccordionGroup>
+        <Accordion title="12 new APIs" icon="webhook">
+            - [Basecamp](/integrations/all/basecamp)
+            - [FindyMail](/integrations/all/findymail)
+            - [Gebruder Weiss](/integrations/all/gebruder-weiss)
+            - [La Growth Machine](/integrations/all/lagrowthmachine)
+            - [Lucid](/integrations/all/lucid)
+            - [Microsoft Business Central](/integrations/all/microsoft-business-central)
+            - [Odoo](/integrations/all/odoo)
+            - [Recharge](/integrations/all/recharge)
+            - [Scrape.do](/integrations/all/scrapedo)
+            - [SharePoint Online (v1)](/integrations/all/sharepoint-online)
+            - [Shopify (api key)](/integrations/all/shopify)
+            - [Shopify (SCIM API)](/integrations/all/shopify)
+        </Accordion>
+
+        <Accordion title="21 new pre-built integrations" icon="plug">
+            - [Gong](/integrations/all/gong)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
+            - [Linear](/integrations/all/linear)
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/users.md): Fetches a list of users from Linear.
+            - [Metabase](/integrations/all/metabase)
+                - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/create-user.md): Creates a user in Metabase.
+                - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/disable-user.md): Disables a user in Metabase by id.
+                - [PUT /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/update-user.md): Updates an existing, active user in Metabase.
+                - [GET /users/single](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/fetch-user.md): Fetches details of a specific user by ID.
+                - [PUT /users/enable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/enable-user.md): Enables a disabled user.
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/syncs/users.md): Fetches a list of users from Metabase, including active and inactive users.
+            - [Netsuite](/integrations/all/netsuite)
+                - [GET /general-ledger](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/general-ledger.md): Fetches all JournalEntries in Netsuite.
+            - [Notion](/integrations/all/notion)
+                - [POST /databases/row](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/create-database-row.md): Create a new row in a specified Notion database.
+            - [Quickbooks](/integrations/all/quickbooks)
+                - [GET /bill-payments](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.md): Fetches all QuickBooks bill payments.
+                - [GET /bills](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.md): Fetches all QuickBooks bills.
+                - [GET /credit-memos](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.md): Fetches all QuickBooks credit memos.
+                - [GET /deposits](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.md): Fetches all QuickBooks deposits.
+                - [GET /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.md): Fetch all journal entries in QuickBooks.
+                - [GET /purchases](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.md): Fetches all QuickBooks purchases.
+                - [GET /transfers](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.md): Fetches all QuickBooks transfers.
+            - [Smartsheet](/integrations/all/smartsheet)
+                - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/create-user.md): Creates a user in Smartsheet.
+                - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/delete-user.md): Deletes a user from Smartsheet.
+                - [POST /users/disable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/disable-user.md): Disables a user in an organization account.
+                - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
+        </Accordion>
+    </AccordionGroup>
+
     ## Trigger syncs
 
     <Frame>
@@ -40,55 +90,31 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/custom-integrations/event-based-scripts).
 
-    ## New APIs
-
-    - [Basecamp](/integrations/all/basecamp)
-    - [FindyMail](/integrations/all/findymail)
-    - [Gebruder Weiss](/integrations/all/gebruder-weiss)
-    - [La Growth Machine](/integrations/all/lagrowthmachine)
-    - [Lucid](/integrations/all/lucid)
-    - [Microsoft Business Central](/integrations/all/microsoft-business-central)
-    - [Odoo](/integrations/all/odoo)
-    - [Recharge](/integrations/all/recharge)
-    - [Scrape.do](/integrations/all/scrapedo)
-    - [SharePoint Online (v1)](/integrations/all/sharepoint-online)
-    - [Shopify (api key)](/integrations/all/shopify)
-    - [Shopify (SCIM API)](/integrations/all/shopify)
-
-    ## New pre-built integrations
-
-    - [Gong](/integrations/all/gong)
-        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
-    - [Linear](/integrations/all/linear)
-        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/users.md): Fetches a list of users from Linear.
-    - [Metabase](/integrations/all/metabase)
-        - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/create-user.md): Creates a user in Metabase.
-        - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/disable-user.md): Disables a user in Metabase by id.
-        - [PUT /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/update-user.md): Updates an existing, active user in Metabase.
-        - [GET /users/single](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/fetch-user.md): Fetches details of a specific user by ID.
-        - [PUT /users/enable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/actions/enable-user.md): Enables a disabled user.
-        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/metabase/syncs/users.md): Fetches a list of users from Metabase, including active and inactive users.
-    - [Netsuite](/integrations/all/netsuite)
-        - [GET /general-ledger](https://github.com/NangoHQ/integration-templates/blob/main/integrations/netsuite-tba/syncs/general-ledger.md): Fetches all JournalEntries in Netsuite.
-    - [Notion](/integrations/all/notion)
-        - [POST /databases/row](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/create-database-row.md): Create a new row in a specified Notion database.
-    - [Quickbooks](/integrations/all/quickbooks)
-        - [GET /bill-payments](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.md): Fetches all QuickBooks bill payments.
-        - [GET /bills](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.md): Fetches all QuickBooks bills.
-        - [GET /credit-memos](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.md): Fetches all QuickBooks credit memos.
-        - [GET /deposits](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.md): Fetches all QuickBooks deposits.
-        - [GET /journal-entries](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.md): Fetch all journal entries in QuickBooks.
-        - [GET /purchases](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.md): Fetches all QuickBooks purchases.
-        - [GET /transfers](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.md): Fetches all QuickBooks transfers.
-    - [Smartsheet](/integrations/all/smartsheet)
-        - [POST /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/create-user.md): Creates a user in Smartsheet.
-        - [DELETE /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/delete-user.md): Deletes a user from Smartsheet.
-        - [POST /users/disable](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/disable-user.md): Disables a user in an organization account.
-        - [GET /users](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md): Fetches a list of users from Smartsheet.
-
 </Update>
 
 <Update label="December 2024">
+
+    ## December catalog update
+
+    <AccordionGroup>
+        <Accordion title="15 new APIs" icon="webhook">
+            - [Atlas.so](/integrations/all/atlas-so)
+            - [Braze](/integrations/all/braze)
+            - [BuiltWith](/integrations/all/builtwith)
+            - [Canva (SCIM API)](/integrations/all/canva)
+            - [Copper](/integrations/all/copper)
+            - [Emarsys (OAuth)](/integrations/all/emarsys)
+            - [eBay](/integrations/all/ebay)
+            - [Fortnox](/integrations/all/fortnox)
+            - [Freshteam](/integrations/all/freshteam)
+            - [Gerrit](/integrations/all/gerrit)
+            - [LastPass](/integrations/all/lastpass)
+            - [Lattice](/integrations/all/lattice)
+            - [Personio (v2)](/integrations/all/personio)
+            - [SAP SuccessFactors](/integrations/all/sap-success-factors)
+            - [Zapier](/integrations/all/zapier)
+        </Accordion>
+    </AccordionGroup>
 
     ## Resilient integrations
 
@@ -122,27 +148,32 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     You can now search through [all the APIs supported by Nango](https://www.nango.dev/api-integrations). This list is automatically updated whenever new APIs are added.
 
-    ## New APIs
-
-    - [Atlas.so](/integrations/all/atlas-so)
-    - [Braze](/integrations/all/braze)
-    - [BuiltWith](/integrations/all/builtwith)
-    - [Canva (SCIM API)](/integrations/all/canva)
-    - [Copper](/integrations/all/copper)
-    - [Emarsys (OAuth)](/integrations/all/emarsys)
-    - [eBay](/integrations/all/ebay)
-    - [Fortnox](/integrations/all/fortnox)
-    - [Freshteam](/integrations/all/freshteam)
-    - [Gerrit](/integrations/all/gerrit)
-    - [LastPass](/integrations/all/lastpass)
-    - [Lattice](/integrations/all/lattice)
-    - [Personio (v2)](/integrations/all/personio)
-    - [SAP SuccessFactors](/integrations/all/sap-success-factors)
-    - [Zapier](/integrations/all/zapier)
-
 </Update>
 
 <Update label="November 2024">
+
+    ## November catalog update
+
+    <AccordionGroup>
+        <Accordion title="16 new APIs" icon="webhook">
+            - [Asana (SCIM API)](/integrations/all/asana)
+            - [AWS IAM](/integrations/all/aws)
+            - [Beehiiv](/integrations/all/beehiiv)
+            - [Brevo (api key)](/integrations/all/brevo)
+            - [BrightCrowd](/integrations/all/brightcrowd)
+            - [Emarsys Core API](/integrations/all/emarsys)
+            - [Grain](/integrations/all/grain)
+            - [Grain (api key)](/integrations/all/grain)
+            - [Mindbody (api key)](/integrations/all/mindbody)
+            - [Okta (Preview)](/integrations/all/okta)
+            - [Plain](/integrations/all/plain)
+            - [Sage Intacct](/integrations/all/sage)
+            - [TapClicks](/integrations/all/tapclicks)
+            - [Twenty CRM](/integrations/all/twenty-crm)
+            - [Twenty CRM (Self Hosted)](/integrations/all/twenty-crm)
+            - [Unipile](/integrations/all/unipile)
+        </Accordion>
+    </AccordionGroup>
 
     ## Guides
 
@@ -176,28 +207,60 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/api-authorization/authorize-in-your-app-default-ui).
 
-    ## New APIs
-
-    - [Asana (SCIM API)](/integrations/all/asana)
-    - [AWS IAM](/integrations/all/aws)
-    - [Beehiiv](/integrations/all/beehiiv)
-    - [Brevo (api key)](/integrations/all/brevo)
-    - [BrightCrowd](/integrations/all/brightcrowd)
-    - [Emarsys Core API](/integrations/all/emarsys)
-    - [Grain](/integrations/all/grain)
-    - [Grain (api key)](/integrations/all/grain)
-    - [Mindbody (api key)](/integrations/all/mindbody)
-    - [Okta (Preview)](/integrations/all/okta)
-    - [Plain](/integrations/all/plain)
-    - [Sage Intacct](/integrations/all/sage)
-    - [TapClicks](/integrations/all/tapclicks)
-    - [Twenty CRM](/integrations/all/twenty-crm)
-    - [Twenty CRM (Self Hosted)](/integrations/all/twenty-crm)
-    - [Unipile](/integrations/all/unipile)
-
 </Update>
 
 <Update label="October 2024">
+    ## October catalog update
+
+    <AccordionGroup>
+        <Accordion title="45 new APIs" icon="webhook">
+            - [Acuity Scheduling](/integrations/all/acuity-scheduling)
+            - [Adyen](/integrations/all/adyen)
+            - [Aircall (basic auth)](/integrations/all/aircall)
+            - [Apaleo](/integrations/all/apaleo)
+            - [Apollo (OAuth)](/integrations/all/apollo)
+            - [Bill (Connect API)](/integrations/all/bill)
+            - [Bill (Connect API sandbox)](/integrations/all/bill)
+            - [Booking.com](/integrations/all/booking-com)
+            - [Buildium](/integrations/all/buildium)
+            - [Chattermill](/integrations/all/chattermill)
+            - [ConnectWise PSA](/integrations/all/connectwise-psa)
+            - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa)
+            - [Databricks (Account Level)](/integrations/all/databricks)
+            - [Databricks (Workspace Level)](/integrations/all/databricks)
+            - [Datadog](/integrations/all/datadog)
+            - [Dialpad (sandbox)](/integrations/all/dialpad)
+            - [Dixa](/integrations/all/dixa)
+            - [Eleven Labs](/integrations/all/elevenlabs)
+            - [Elevio](/integrations/all/elevio)
+            - [fal.ai](/integrations/all/falai)
+            - [Firefish](/integrations/all/firefish)
+            - [Ghost (Admin API)](/integrations/all/ghost)
+            - [Ghost (Content API)](/integrations/all/ghost)
+            - [Google Analytics](/integrations/all/google-analytics)
+            - [Keeper (SCIM)](/integrations/all/keeper)
+            - [Loops.so](/integrations/all/loops-so)
+            - [Malwarebytes](/integrations/all/malwarebytes)
+            - [Miro (SCIM API)](/integrations/all/miro)
+            - [Notion (SCIM API)](/integrations/all/notion)
+            - [Perimeter81](/integrations/all/perimeter81)
+            - [Perplexity](/integrations/all/perplexity)
+            - [Quickbooks (sandbox)](/integrations/all/quickbooks)
+            - [Ragie AI](/integrations/all/ragieai)
+            - [RapidAPI](/integrations/all/rapidapi)
+            - [Sage Intacct](/integrations/all/sage)
+            - [Sedna (Basic Auth)](/integrations/all/sedna)
+            - [Sedna (Oauth2)](/integrations/all/sedna)
+            - [ThriveCart (OAuth)](/integrations/all/thrivecart)
+            - [ThriveCart (api key)](/integrations/all/thrivecart)
+            - [Trello (SCIM API)](/integrations/all/trello)
+            - [Typefully](/integrations/all/typefully)
+            - [Twenty CRM](/integrations/all/twenty-crm)
+            - [UMAPI (Adobe User Management API)](/integrations/all/adobe)
+            - [WhatsApp Business](/integrations/all/whatsapp-business)
+            - [Workable (OAuth)](/integrations/all/workable)
+        </Accordion>
+    </AccordionGroup>
 
     ## Authorization input validation
 
@@ -239,57 +302,27 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
 
     The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/api-authorization/authorize-in-your-app-default-ui) to use it, or continue using your [custom UI](/guides/api-authorization/authorize-in-your-app-custom-ui) without interruption.
 
-    ## New APIs
-
-    - [Acuity Scheduling](/integrations/all/acuity-scheduling)
-    - [Adyen](/integrations/all/adyen)
-    - [Aircall (basic auth)](/integrations/all/aircall)
-    - [Apaleo](/integrations/all/apaleo)
-    - [Apollo (OAuth)](/integrations/all/apollo)
-    - [Bill (Connect API)](/integrations/all/bill)
-    - [Bill (Connect API sandbox)](/integrations/all/bill)
-    - [Booking.com](/integrations/all/booking-com)
-    - [Buildium](/integrations/all/buildium)
-    - [Chattermill](/integrations/all/chattermill)
-    - [ConnectWise PSA](/integrations/all/connectwise-psa)
-    - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa)
-    - [Databricks (Account Level)](/integrations/all/databricks)
-    - [Databricks (Workspace Level)](/integrations/all/databricks)
-    - [Datadog](/integrations/all/datadog)
-    - [Dialpad (sandbox)](/integrations/all/dialpad)
-    - [Dixa](/integrations/all/dixa)
-    - [Eleven Labs](/integrations/all/elevenlabs)
-    - [Elevio](/integrations/all/elevio)
-    - [fal.ai](/integrations/all/falai)
-    - [Firefish](/integrations/all/firefish)
-    - [Ghost (Admin API)](/integrations/all/ghost)
-    - [Ghost (Content API)](/integrations/all/ghost)
-    - [Google Analytics](/integrations/all/google-analytics)
-    - [Keeper (SCIM)](/integrations/all/keeper)
-    - [Loops.so](/integrations/all/loops-so)
-    - [Malwarebytes](/integrations/all/malwarebytes)
-    - [Miro (SCIM API)](/integrations/all/miro)
-    - [Notion (SCIM API)](/integrations/all/notion)
-    - [Perimeter81](/integrations/all/perimeter81)
-    - [Perplexity](/integrations/all/perplexity)
-    - [Quickbooks (sandbox)](/integrations/all/quickbooks)
-    - [Ragie AI](/integrations/all/ragieai)
-    - [RapidAPI](/integrations/all/rapidapi)
-    - [Sage Intacct](/integrations/all/sage)
-    - [Sedna (Basic Auth)](/integrations/all/sedna)
-    - [Sedna (Oauth2)](/integrations/all/sedna)
-    - [ThriveCart (OAuth)](/integrations/all/thrivecart)
-    - [ThriveCart (api key)](/integrations/all/thrivecart)
-    - [Trello (SCIM API)](/integrations/all/trello)
-    - [Typefully](/integrations/all/typefully)
-    - [Twenty CRM](/integrations/all/twenty-crm)
-    - [UMAPI (Adobe User Management API)](/integrations/all/adobe)
-    - [WhatsApp Business](/integrations/all/whatsapp-business)
-    - [Workable (OAuth)](/integrations/all/workable)
-
 </Update>
 
 <Update label="September 2024">
+    ## September catalog update
+
+    <AccordionGroup>
+        <Accordion title="12 new APIs" icon="webhook">
+            - [Replicate](/integrations/all/replicate)
+            - [Anthropic](/integrations/all/anthropic)
+            - [OpenAI](/integrations/all/openai)
+            - [Bit.ly](/integrations/all/bitly)
+            - [Odoo](/integrations/all/odoo)
+            - [Avalara](/integrations/all/avalara)
+            - [Avalara (Sandbox)](/integrations/all/avalara)
+            - [Discourse](/integrations/all/discourse)
+            - [ShipStation](/integrations/all/shipstation)
+            - [Manatal](/integrations/all/manatal)
+            - [Coupe Compass](/integrations/all/coupa-compass)
+            - [Zoho People](/integrations/all/zoho-people)
+        </Accordion>
+    </AccordionGroup>
 
     ## Improved logging
 
@@ -322,20 +355,5 @@ A full technical changelog can be found on [GitHub](https://github.com/NangoHQ/n
     </Frame>
 
     Nango now lets you generate strongly-typed JSONSchema models for your integrations inputs and ouputs, compatible with all programming languages and importable in your codebase. For Typescript codebases, you can also generate Typescript and Zod models. Check out this [guide](/guides/data-validation#using-schema-json-in-your-codebase) to get started
-
-    ## New APIs
-
-    - [Replicate](/integrations/all/replicate)
-    - [Anthropic](/integrations/all/anthropic)
-    - [OpenAI](/integrations/all/openai)
-    - [Bit.ly](/integrations/all/bitly)
-    - [Odoo](/integrations/all/odoo)
-    - [Avalara](/integrations/all/avalara)
-    - [Avalara (Sandbox)](/integrations/all/avalara)
-    - [Discourse](/integrations/all/discourse)
-    - [ShipStation](/integrations/all/shipstation)
-    - [Manatal](/integrations/all/manatal)
-    - [Coupe Compass](/integrations/all/coupa-compass)
-    - [Zoho People](/integrations/all/zoho-people)
 
 </Update>
