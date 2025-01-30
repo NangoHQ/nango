@@ -1742,6 +1742,151 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    basecamp:
+        actions:
+            fetch-projects:
+                description: Fetch all projects from Basecamp
+                endpoint:
+                    method: GET
+                    path: /projects
+                    group: Projects
+                output: BasecampProjectsResponse
+            create-todo:
+                description: Create a new to-do in a specific project + list
+                endpoint:
+                    method: POST
+                    path: /todos
+                    group: Todos
+                input: BasecampCreateTodoInput
+                output: BasecampTodoResponse
+        syncs:
+            todos:
+                runs: every 1 day
+                description: >
+                    Syncs to-dos from Basecamp for the specified projects. Example of a
+                    metadata input Example: { projects: [ { projectId: 1234, todoSetId:
+                    9999 }, ... ] }
+                sync_type: full
+                track_deletes: true
+                input: TodosMetadata
+                auto_start: false
+                output: BasecampTodo
+                endpoint:
+                    method: GET
+                    path: /todos
+                    group: Todos
+        models:
+            BasecampProjectsResponse:
+                projects: BasecampProject[]
+            BasecampCreateTodoInput:
+                projectId: number
+                todoListId: number
+                content: string
+                description?: string
+                due_on?: string
+                starts_on?: string
+                notify?: boolean
+                assigneeEmails?: string[]
+                completionSubscriberEmails?: string[]
+            BasecampTodoResponse:
+                id: number
+                status: string
+                visible_to_clients: boolean
+                created_at: string
+                updated_at: string
+                title: string
+                inherits_status: boolean
+                type: string
+                url: string
+                app_url: string
+                bookmark_url: string
+                subscription_url: string
+                comments_count: integer
+                comments_url: string
+                position: integer
+                parent: BasecampTodoParent
+                bucket: BasecampTodoBucket
+                creator: any
+                description: string
+                completed: boolean
+                content: string
+                starts_on: string
+                due_on: string
+                assignees: any[]
+                completion_subscribers: any[]
+                completion_url: string
+            BasecampProject:
+                id: number
+                status: string
+                created_at: string
+                updated_at: string
+                name: string
+                description: string | null
+                purpose: string
+                clients_enabled: boolean
+                timesheet_enabled?: boolean
+                color?: string | null
+                last_needle_color?: string | null
+                last_needle_position?: string | null
+                previous_needle_position?: string | null
+                bookmark_url: string
+                url: string
+                app_url: string
+                dock: DockItem[]
+                bookmarked: boolean
+            BasecampPerson:
+                id: number
+                name: string
+                email_address: string
+                avatar_url?: string
+                admin?: boolean
+                owner?: boolean
+                created_at?: string
+                updated_at?: string
+                attachable_sgid?: string
+                personable_type?: string
+                title?: string | null
+                bio?: string | null
+                location?: string | null
+            BasecampTodo:
+                id: number
+                content: string
+                description?: string | undefined
+                due_on?: string | undefined
+                completed: boolean
+                created_at: string
+                updated_at: string
+                bucket_id: number
+                assignees?: BasecampPerson[] | undefined
+            BasecampTodoParent:
+                id: number
+                title: string
+                type: string
+                url: string
+                app_url: string
+            BasecampTodoBucket:
+                id: number
+                name: string
+                type: string
+            BasecampCompany:
+                id: number
+                name: string
+            DockItem:
+                id: number
+                title: string
+                name: string
+                enabled: boolean
+                position: number | null
+                url: string
+                app_url: string
+            ClientSide:
+                url: string
+                app_url: string
+            TodosMetadata:
+                projects: Project[]
+            Project:
+                projectId: number
+                todoSetId: number
     bill:
         actions:
             create-user:
