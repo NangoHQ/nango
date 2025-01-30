@@ -29,7 +29,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "type-fest": "4.32.0",
-        "vitest": "2.1.8"
+        "vitest": "3.0.4"
     },
     "files": [
         "dist/**/*"
