@@ -1197,7 +1197,7 @@ class ConnectionService {
             const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success || !connection) {
-                throw error;
+                throw error as NangoError;
             }
 
             const shouldRefresh = await this.shouldRefreshCredentials(

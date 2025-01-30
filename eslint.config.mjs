@@ -124,7 +124,7 @@ export default tseslint.config(
             '@typescript-eslint/restrict-plus-operands': 'warn',
             '@typescript-eslint/consistent-type-exports': 'error',
             '@typescript-eslint/no-unnecessary-condition': 'off',
-            '@typescript-eslint/only-throw-error': 'warn',
+            '@typescript-eslint/only-throw-error': 'error',
 
             '@typescript-eslint/no-unused-vars': [
                 'error',
