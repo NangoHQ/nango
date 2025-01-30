@@ -96,7 +96,7 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
-    it.skip('should not be allowed to pass a connection_id with session token', async () => {
+    it('should not be allowed to pass a connection_id with session token', async () => {
         const env = await seeders.createEnvironmentSeed();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
