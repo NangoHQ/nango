@@ -54,7 +54,7 @@ export async function exec(): Promise<void> {
 
             let cursor = undefined;
             const limit = 1000;
-            // eslint-disable-next-line no-constant-condition
+
             while (true) {
                 const staleConnections = await connectionService.getStaleConnections({ days: 1, limit, cursor });
                 logger.info(`${cronName} found ${staleConnections.length} stale connections`);

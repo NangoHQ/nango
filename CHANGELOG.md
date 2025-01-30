@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.52.2] - 2025-01-30
+
+### Fixed
+
+- *(auth)* Reup connectionId check (#3413) by @bodinsamuel
+- *(ui)* Properly debounce/abort logs search (#3412) by @bodinsamuel
+- Eslint pass (#3406) by @bodinsamuel
+- *(cli)* Remove directory requirement in verification service (#3417) by @nalanj
+
 ## [v0.52.1] - 2025-01-30
 
 ### Added
@@ -2903,6 +2912,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
 [v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1
 [v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0
 [v0.50.0]: https://github.com/NangoHQ/nango/compare/v0.49.0..v0.50.0

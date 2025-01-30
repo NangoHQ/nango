@@ -96,7 +96,7 @@ program
         const ok = init({ absolutePath, debug });
 
         if (ok) {
-            console.log(chalk.green(`Nango integrations initialized!`));
+            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
         }
     });
 
