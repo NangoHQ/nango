@@ -90,7 +90,7 @@ export interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
-    pass_pagination_params_in_body?: boolean;
+    in_body?: boolean;
 }
 
 export interface CursorPagination extends Pagination {
