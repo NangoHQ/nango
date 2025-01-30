@@ -74,7 +74,7 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
         onEvent: (event) {
             if (event.type === 'connect') {
                 // The auth flow succeeded. The user is connected!
-                saveToDatabase(connectionId, integrationId);
+                saveToDatabase(event.payload.connectionId, event.payload.providerConfigKey);
             }
         }
     });

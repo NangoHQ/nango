@@ -11,30 +11,149 @@ Nango sends webhook notifications to your backend in different cases:
 - **Authorization webhook**: an authorization flow completes ([guide](/guides/api-authorization/authorize-in-your-app-default-ui#3-listen-for-webhoooks-and-save-the-connection-id-backend))
 - **External API webhook forwarding**: an external API webhook is forwarded to your app ([guide](/guides/webhooks/webhooks-from-apis#forward-external-webhooks-to-your-app))
 
-# Nango webhook settings
+# Webhook settings
 
-Settings related to Nango webhooks can be found in the _Environment Settings_ tab of the Nango UI. It lets you specify webhook URLs as well as the types of webhooks you wish to receive. We advise to enable all webhooks by default and filter for specific webhook types in your codebase.
+Settings related to Nango webhooks can be found in the _Environment Settings_ tab of the Nango UI. It lets you specify webhook URLs as well as the types of webhooks you wish to receive.
 
 <Warning>
 New Nango webhook types are added regularly, without considering this a breaking change. Your webhook handling logic should gracefully support receiving new types of webhooks by simply ignoring them.
 </Warning>
 
-# Technical details
+# Types of Nango webhooks
 
-Nango retries (with exponential backoff) webhooks with non-2xx responses.
+Webhooks from Nango are POST requests. Nango sends multiple types of webhooks to your backend. All webhook types are sent to the same URL(s) configured in your _Environment Settings_. 
 
-Webhooks from Nango are POST requests with the following JSON body:
+Webhook type definitions can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/webhooks/api.ts).
 
+### Auth webhooks
+
+New connection webhooks have `"type": "auth"` and `"operation": "creation"`. They are sent after a connection has been successfully created. 
+
+Payload received following a connection creation: 
 ```json
 {
     "type": "auth",
     "operation": "creation",
-    "connectionId": "<CONNECTION-ID>",
-    ... // Payload specific to the webhook type/operation.
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": true,
+    "endUser": { 
+        "endUserId": "<your-end-user-id>", 
+        "organizationId": "<your-organization-id>"
+    }
 }
 ```
 
-# Nango webhook verification
+<Warning>
+Processing webhooks with `"type": "auth"` and `"operation": "creation"` is **necessary**. After a connection is created, these webhooks give you the generated connection ID which lets you access the connection later on. 
+
+Use the values of `endUser.endUserId` (and optionally `endUser.organizationId`) to reconcile and save the connection ID with the user/org who initiated the connection.
+</Warning>
+
+All `authMode` values can be found [here](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/auth/api.ts). The `authMode` value depends on the `provider` value.
+
+All `operation` values are: 
+- `creation`: a new connection has been created
+- `override`: a connection has been re-authorized
+- `refresh`: an OAuth connection's access token has been refreshed
+
+Payload received following a refresh token error: 
+```json
+{
+    "type": "auth",
+    "operation": "refresh",
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": false,
+    "endUser": { 
+        "endUserId": "<your-end-user-id>", 
+        "organizationId": "<your-organization-id>"
+    },
+    "error": {
+        "type": "<string>",
+        "description": "<string>"
+    }
+}
+```
+
+
+<Note>
+Webhooks are only sent for certain connection creation errors. For example, during the OAuth flow, some errors are reported locally in the OAuth modal by the external API. Since Nango does not receive these errors, it cannot trigger a webhook for them.
+</Note>
+
+### Sync webhooks
+
+Sync webhooks are sent when a [sync](/guides/syncs/overview) execution finishes, whether successful or not.
+
+Payload received following a successful sync execution: 
+```json
+{
+    "type": "sync",
+    "connectionId": "<your-connection-id>",
+    "providerConfigKey": "<your-integration-id>",
+    "syncName": "<your-sync-script-name>",
+    "model": "<your-model-name>",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "success": true,
+    "modifiedAfter": "<timestamp>",
+    "responseResults": {
+        "added": number,
+        "updated": number,
+        "deleted": number
+    }
+}
+```
+
+By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
+```json
+[
+    "added": 0,
+    "updated": 0,
+    "deleted": 0
+  ]
+```
+
+The `syncType` possible values are:
+- `INITIAL`: for the very first execution of a sync.
+- `INCREMENTAL`: for subsequent executions  of a sync.
+- `WEBHOOK`: when an external API webhooks triggers the execution of the sync's `onWebhookPayloadReceived` function.
+
+Payload received following a failed sync execution: 
+```json
+{
+    "type": "sync",
+    "connectionId": "<your-connection-id>",
+    "providerConfigKey": "<your-integration-id>",
+    "syncName": "<your-sync-script-name>",
+    "model": "<your-model-name>",
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK",
+    "success": true,
+    "error": {
+        "type": "<string>",
+        "description": "<string>"
+    },
+    "startedAt": "<timestamp>",
+    "failedAt": "<timestamp>"
+}
+```
+
+### External webhook forwarding
+
+Nango can forward webhooks received from 3rd-party APIs. See details in this [guide](/guides/webhooks/webhooks-from-apis#forward-external-webhooks-to-your-app).
+
+# Webhook retries
+
+Nango retries each webhook with non-2xx responses 7 times with exponential backoff (starting delay: 100ms, time multiple: 2, view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)).
+
+Each webhook attempt is logged in the _Logs_ tab. You can also use the [OpenTelemetry exporter](/guides/logs/opentelemetry-exporter) to monitor Nango webhooks in your own observability stack.
+
+# Webhook verification
 
 Validate webhook provenance by looking at the `X-Nango-Signature` header.
 

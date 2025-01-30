@@ -12,7 +12,7 @@ Nango currently supports the following events:
 - `post-connection-creation` occurs when a connection has been created.
 - `pre-connection-deletion` occurs before a connection is deleted.
 
-Checkout the [reference](/reference/integration-configuration#on-events-fields) for details. 
+Checkout the [reference](/reference/integration-configuration#on-events-fields) for details.
 
 # Use cases
 
@@ -45,7 +45,7 @@ Event-based scripts operate under specific __constraints__:
     - They can modify external resource states.
 
 # Event-based scripts
-Event-based executions are powered by integration scripts that encapsulate the logic for interfacing with external APIs. 
+Event-based executions are powered by integration scripts that encapsulate the logic for interfacing with external APIs.
 
 Event-based scripts have the following structure:
 
@@ -57,10 +57,10 @@ export default async function onEvent(nango: NangoAction): Promise<void> {
 }
 ```
 
-To enable the above script, you need to configure your `nango.yaml` integration configuration as follows: 
+To enable the above script, you need to configure your `nango.yaml` integration configuration as follows:
 ```yaml nango.yaml
 integrations:
-  airtable: 
+  airtable:
     on-events:
       post-connection-creation:
         - setup # Name of your event-based script (without the .ts extension)

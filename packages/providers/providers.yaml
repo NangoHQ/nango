@@ -1408,6 +1408,7 @@ calendly:
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
+    webhook_routing_script: calendlyWebhookRouting
     docs: https://docs.nango.dev/integrations/all/calendly
 
 canny:
@@ -2273,6 +2274,22 @@ dixa:
             description: The Api type for your requests
             pattern: '^dev\|exports$'
             example: 'dev|exports'
+
+document360:
+    display_name: Document360
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api_token: ${apiKey}
+        base_url: https://api.document360.com
+    docs: https://docs.nango.dev/integrations/all/document360
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Document360 account
 
 docusign:
     display_name: DocuSign
@@ -3872,6 +3889,7 @@ instagram:
         - marketing
         - social
     auth_mode: OAUTH2
+    scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     proxy:
@@ -7388,6 +7406,33 @@ twenty-crm-self-hosted:
             pattern: '^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
             example: domain
 
+twilio:
+    display_name: Twilio
+    categories:
+        - dev-tools
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.twilio.com
+        verification:
+            method: GET
+            endpoint: /2010-04-01/Accounts/${credentials.username}/Messages.json
+    docs: https://docs.nango.dev/integrations/all/twilio
+    docs_connect: https://docs.nango.dev/integrations/all/twilio/connect
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: Your Twilio Account SID
+            pattern: '^AC[a-zA-Z0-9]{32}$'
+            doc_section: '#step-1-finding-your-account-sid'
+        password:
+            type: string
+            title: Auth Token
+            description: Your Twilio Auth Token
+            secret: true
+            doc_section: '#step-2-finding-your-auth-token'
+
 typeform:
     display_name: Typeform
     categories:
@@ -7942,6 +7987,30 @@ zapier-nla:
         base_url: https://nla.zapier.com
     docs: https://docs.nango.dev/integrations/all/zapier-nla
 
+zapier-scim:
+    display_name: Zapier (SCIM API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://zapier.com/scim/v2
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json, application/scim+json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/zapier
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from the Provision tab in your Zapier account.
+            doc_section: '#getting-your-scim-api-token'
+
 zendesk:
     display_name: Zendesk
     categories:
@@ -8114,3 +8183,28 @@ zoominfo:
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
     docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect
+
+zuora:
+    display_name: Zuora
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.zuora.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zuora.com
+        retry:
+            after: 'ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/zuora
+    docs_connect: https://docs.nango.dev/integrations/all/zuora/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The Subdomain to your Zuora Base URL
+            suffix: .zuora.com
+            prefix: https://
+            example: rest.test
+            doc_section: '#step-1-finding-your-zuora-subdomain'
+            order: 1
