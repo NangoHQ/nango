@@ -214,50 +214,48 @@ export class NangoSyncRunner extends NangoSyncBase {
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
 
-    public async setMergingStrategy(merging: 'ignore_if_modified_after' | 'override', ...models: string[]): Promise<void> {
+    public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         const now = new Date();
-        for (const model of models) {
-            if (this.mergingByModel.has(model)) {
-                await this.sendLogToPersist({
-                    type: 'log',
-                    level: 'warn',
-                    source: 'user',
-                    message: `Merging strategy for model ${model} is already set. Skipping`,
-                    createdAt: now.toISOString(),
-                    environmentId: this.environmentId,
-                    meta: { model, merging }
-                });
-                continue;
-            }
-            switch (merging) {
-                case 'ignore_if_modified_after': {
-                    const res = await this.persistClient.getCursor({
-                        environmentId: this.environmentId,
-                        nangoConnectionId: this.nangoConnectionId!,
-                        model: model,
-                        offset: 'last'
-                    });
-                    if (res.isErr()) {
-                        throw res.error;
-                    }
-                    this.mergingByModel.set(model, { strategy: 'ignore_if_modified_after_cursor', ...(res.value ? { cursor: res.value.cursor } : {}) });
-                    break;
-                }
-                case 'override':
-                    this.mergingByModel.set(model, { strategy: 'override' });
-                    break;
-                default:
-                    throw new Error(`Unsupported merging strategy: ${merging}`);
-            }
+        if (this.mergingByModel.has(model)) {
             await this.sendLogToPersist({
                 type: 'log',
-                level: 'info',
+                level: 'warn',
                 source: 'user',
-                message: `Merging strategy set to ${merging} for model ${model}.`,
+                message: `Merging strategy for model ${model} is already set. Skipping`,
                 createdAt: now.toISOString(),
-                environmentId: this.environmentId
+                environmentId: this.environmentId,
+                meta: { model, merging }
             });
+            return;
         }
+        switch (merging.strategy) {
+            case 'ignore_if_modified_after': {
+                const res = await this.persistClient.getCursor({
+                    environmentId: this.environmentId,
+                    nangoConnectionId: this.nangoConnectionId!,
+                    model: model,
+                    offset: 'last'
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                this.mergingByModel.set(model, { strategy: 'ignore_if_modified_after_cursor', ...(res.value ? { cursor: res.value.cursor } : {}) });
+                break;
+            }
+            case 'override':
+                this.mergingByModel.set(model, { strategy: 'override' });
+                break;
+            default:
+                throw new Error(`Unsupported merging strategy: ${merging.strategy}`);
+        }
+        await this.sendLogToPersist({
+            type: 'log',
+            level: 'info',
+            source: 'user',
+            message: `Merging strategy set to '${merging.strategy}' for model ${model}.`,
+            createdAt: now.toISOString(),
+            environmentId: this.environmentId
+        });
     }
 
     private getMergingStategy(model: string): MergingStrategy {

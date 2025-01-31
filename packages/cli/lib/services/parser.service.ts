@@ -124,20 +124,18 @@ class ParserService {
                     if (callsReferencingModelsToCheck.includes(callee.property.name)) {
                         const args = path.node.arguments as t.Expression[];
                         if (args.length > 1) {
-                            const models = args.slice(1);
-                            for (const model of models) {
-                                if (t.isStringLiteral(model) && !modelNames.includes(model.value)) {
-                                    console.log(
-                                        chalk.red(
-                                            `"${
-                                                model.value
-                                            }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
-                                                ', '
-                                            )}`
-                                        )
-                                    );
-                                    usedCorrectly = false;
-                                }
+                            const modelArg = args[args.length - 1];
+                            if (t.isStringLiteral(modelArg) && !modelNames.includes(modelArg.value)) {
+                                console.log(
+                                    chalk.red(
+                                        `"${
+                                            modelArg.value
+                                        }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
+                                            ', '
+                                        )}`
+                                    )
+                                );
+                                usedCorrectly = false;
                             }
                         }
                     }
@@ -220,21 +218,17 @@ class ParserService {
             }
         });
 
-        if (setMergingStrategyLines.length > 1) {
-            console.log(
-                chalk.red(
-                    `Multiple 'setMergingStrategy' calls found in "${filePath}" (lines: ${setMergingStrategyLines.join(',')}). Please make sure to set merging strategy only once.`
-                )
-            );
-            usedCorrectly = false;
-        }
-        if (batchingRecordsLines.length > 0 && setMergingStrategyLines.length > 0 && Math.min(...batchingRecordsLines) < Math.min(...setMergingStrategyLines)) {
+        if (
+            batchingRecordsLines.length > 0 &&
+            setMergingStrategyLines.length > 0 &&
+            setMergingStrategyLines.some((line) => line > Math.min(...batchingRecordsLines))
+        ) {
             console.log(
                 chalk.red(`setMergingStrategy should be called before any batching records function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`)
             );
             usedCorrectly = false;
         }
-        if (proxyLines.length > 0 && setMergingStrategyLines.length > 0 && Math.min(...proxyLines) < Math.min(...setMergingStrategyLines)) {
+        if (proxyLines.length > 0 && setMergingStrategyLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...proxyLines))) {
             console.log(chalk.red(`setMergingStrategy should be called before any proxy function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`));
             usedCorrectly = false;
         }
