@@ -6,7 +6,6 @@ import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/
 import { proxyService } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
-import type { PersistApi } from './persist.js';
 import { PersistClient } from './persist.js';
 
 export const oldLevelToNewLevel = {
@@ -26,11 +25,11 @@ const RECORDS_VALIDATION_SAMPLE = 5;
  */
 export class NangoActionRunner extends NangoActionBase {
     nango: Nango;
-    protected persistClient: PersistApi;
+    protected persistClient: PersistClient;
 
-    constructor(props: NangoProps, runnerProps?: { persistApi: PersistApi }) {
+    constructor(props: NangoProps, runnerProps?: { persistClient: PersistClient }) {
         super(props);
-        this.persistClient = runnerProps?.persistApi || new PersistClient({ secretKey: props.secretKey });
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
 
         this.nango = new Nango(
             { isSync: false, dryRun: isTest, ...props },

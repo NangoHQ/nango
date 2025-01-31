@@ -6,7 +6,7 @@ import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, Offset
 import type { AxiosResponse } from 'axios';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
-import type { PersistApi } from './persist.js';
+import { PersistClient } from './persist.js';
 import { Ok } from '@nangohq/utils';
 
 const nangoProps: NangoProps = {
@@ -433,14 +433,13 @@ describe('batchSave', () => {
 });
 
 describe('Log', () => {
-    const persistApi: PersistApi = {
-        saveLog: vi.fn().mockReturnValue(Promise.resolve(Ok(undefined))),
-        saveRecords: vi.fn().mockReturnValue(Promise.resolve(Ok(undefined))),
-        updateRecords: vi.fn().mockReturnValue(Promise.resolve(Ok(undefined))),
-        deleteRecords: vi.fn().mockReturnValue(Promise.resolve(Ok(undefined))),
-        getCursor: vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)))
-    };
-    const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistApi });
+    const persistClient = (() => {
+        const client = new PersistClient({ secretKey: '***' });
+        client.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        return client;
+    })();
+
+    const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
 
     it('should enforce activityLogId when not in dryRun', () => {
         expect(() => {
@@ -453,11 +452,11 @@ describe('Log', () => {
     });
 
     it('should allow level', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistApi });
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
 
         await nangoAction.log('hello', { level: 'error' });
 
-        expect(persistApi.saveLog).toHaveBeenCalledWith({
+        expect(persistClient.saveLog).toHaveBeenCalledWith({
             environmentId: 1,
             data: expect.stringMatching(
                 '{"activityLogId":"1","log":{"createdAt":".*","environmentId":1,"level":"error","message":"hello","meta":null,"source":"user","type":"log"}}'
