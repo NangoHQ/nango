@@ -17,7 +17,7 @@
         "@nangohq/types": "0.52.2",
         "@types/json-schema": "7.0.15",
         "json-schema": "0.4.0",
-        "vitest": "3.0.4"
+        "vitest": "2.1.8"
     },
     "files": [
         "dist/",
