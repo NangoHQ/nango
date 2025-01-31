@@ -1764,8 +1764,8 @@ integrations:
                 runs: every 1 day
                 description: >
                     Syncs to-dos from Basecamp for the specified projects. Example of a
-                    metadata input Example: { projects: [ { projectId: 1234, todoSetId:
-                    9999 }, ... ] }
+                    metadata input Example: `{ projects: [ { projectId: 1234, todoSetId:
+                    9999 }, ... ] }`
                 sync_type: full
                 track_deletes: true
                 input: TodosMetadata
