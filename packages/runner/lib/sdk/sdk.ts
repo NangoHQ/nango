@@ -259,11 +259,11 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
     }
 
-    getMergingStategy(model: string): MergingStrategy {
+    private getMergingStategy(model: string): MergingStrategy {
         return this.mergingByModel.get(model) || { strategy: 'override' };
     }
 
-    setMergingStategyByModel(model: string, merging: MergingStrategy): void {
+    private setMergingStategyByModel(model: string, merging: MergingStrategy): void {
         this.mergingByModel.set(model, merging);
     }
 
