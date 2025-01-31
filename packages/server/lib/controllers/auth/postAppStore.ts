@@ -164,6 +164,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                     },
                     operation: 'unknown'
                 },
+                account,
                 config
             );
             await logCtx.error('Failed to credentials');
@@ -205,9 +206,9 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
+            account,
             config,
-            logContextGetter,
-            undefined
+            logContextGetter
         );
 
         res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -215,17 +216,20 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         const prettyError = stringifyError(err, { pretty: true });
 
         if (logCtx) {
-            void connectionCreationFailedHook({
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'APP_STORE',
-                error: {
-                    type: 'unknown',
-                    description: `Error during App Store auth: ${prettyError}`
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
+                    auth_mode: 'APP_STORE',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during App Store auth: ${prettyError}`
+                    },
+                    operation: 'unknown'
                 },
-                operation: 'unknown'
-            });
+                account
+            );
             await logCtx.error('Error during App Store auth', { error: err });
             await logCtx.failed();
         }

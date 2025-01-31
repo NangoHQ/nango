@@ -9,8 +9,10 @@ import type {
     NangoAuthWebhookBodyBase,
     DBEnvironment,
     EndUser,
-    IntegrationConfig
+    IntegrationConfig,
+    DBTeam
 } from '@nangohq/types';
+import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 
 export async function sendAuth({
@@ -22,7 +24,8 @@ export async function sendAuth({
     endUser,
     error,
     operation,
-    providerConfig
+    providerConfig,
+    account
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
@@ -33,6 +36,7 @@ export async function sendAuth({
     error?: ErrorPayload;
     operation: AuthOperationType;
     providerConfig?: IntegrationConfig | undefined;
+    account: DBTeam;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
         return;
@@ -75,11 +79,27 @@ export async function sendAuth({
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url);
 
-    await deliver({
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'webhook', action: 'sync' } },
+        {
+            account,
+            environment,
+            ...(providerConfig ? { integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } } : {}),
+            ...('id' in connection ? { connection: { id: connection.id, name: connection.connection_id } } : {})
+        }
+    );
+
+    const res = await deliver({
         webhooks,
         body: success ? successBody : errorBody,
         webhookType: 'auth',
-        environment
-        //logCtx
+        environment,
+        logCtx
     });
+
+    if (res.isErr()) {
+        await logCtx.failed();
+    } else {
+        await logCtx.success();
+    }
 }

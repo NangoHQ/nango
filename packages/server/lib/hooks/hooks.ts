@@ -26,7 +26,16 @@ import type {
 } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials, MessageRowInsert } from '@nangohq/types';
+import type {
+    TbaCredentials,
+    IntegrationConfig,
+    DBEnvironment,
+    Provider,
+    JwtCredentials,
+    SignatureCredentials,
+    MessageRowInsert,
+    DBTeam
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -70,6 +79,7 @@ export const connectionCreationStartCapCheck = async ({
 
 export const connectionCreated = async (
     createdConnectionPayload: RecentlyCreatedConnection,
+    account: DBTeam,
     providerConfig: IntegrationConfig,
     logContextGetter: LogContextGetter,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
@@ -95,11 +105,16 @@ export const connectionCreated = async (
         endUser,
         success: true,
         operation: 'creation',
-        providerConfig
+        providerConfig,
+        account
     });
 };
 
-export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, providerConfig?: IntegrationConfig): Promise<void> => {
+export const connectionCreationFailed = async (
+    failedConnectionPayload: RecentlyFailedConnection,
+    account: DBTeam,
+    providerConfig?: IntegrationConfig
+): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
@@ -113,7 +128,8 @@ export const connectionCreationFailed = async (failedConnectionPayload: Recently
             success: false,
             error,
             operation: 'creation',
-            providerConfig
+            providerConfig,
+            account
         });
     }
 };
@@ -148,6 +164,7 @@ export const connectionRefreshSuccess = async ({
 };
 
 export const connectionRefreshFailed = async ({
+    account,
     connection,
     logCtx,
     authError,
@@ -156,6 +173,7 @@ export const connectionRefreshFailed = async ({
     config,
     action
 }: {
+    account: DBTeam;
     connection: Connection;
     environment: DBEnvironment;
     provider: Provider;
@@ -182,7 +200,8 @@ export const connectionRefreshFailed = async ({
         operation: 'refresh',
         error: authError,
         success: false,
-        providerConfig: config
+        providerConfig: config,
+        account
     });
 
     const slackNotificationService = new SlackService({ orchestrator, logContextGetter });

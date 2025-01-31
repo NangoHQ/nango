@@ -1,9 +1,18 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, IntegrationConfig } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, IntegrationConfig, DBTeam } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
+
+const account: DBTeam = {
+    id: 1,
+    name: 'account',
+    uuid: 'uuid',
+    is_capped: true,
+    created_at: new Date(),
+    updated_at: new Date()
+};
 
 const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
     connection_id: '1',
@@ -50,6 +59,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -71,6 +81,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -93,6 +104,7 @@ describe('Webhooks: auth notification tests', () => {
                 primary_url: ''
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -113,6 +125,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -138,6 +151,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -158,6 +172,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: false
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -181,6 +196,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -203,6 +219,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -224,6 +241,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: false
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -246,6 +264,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
+            account,
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });

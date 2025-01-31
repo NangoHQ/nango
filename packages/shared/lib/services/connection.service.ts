@@ -840,6 +840,7 @@ class ConnectionService {
             environment: DBEnvironment;
             provider: Provider;
             config: ProviderConfig;
+            account: DBTeam;
             action: 'token_refresh' | 'connection_test';
         }) => Promise<void>;
         connectionTestHook?:
@@ -903,6 +904,7 @@ class ConnectionService {
                         },
                         environment,
                         provider,
+                        account,
                         config: integration as ProviderConfig,
                         action: 'token_refresh'
                     });
@@ -963,6 +965,7 @@ class ConnectionService {
                         },
                         environment,
                         provider,
+                        account,
                         config: integration as ProviderConfig,
                         action: 'connection_test'
                     });

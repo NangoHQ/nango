@@ -168,6 +168,7 @@ class AppAuthController {
                         },
                         operation: 'unknown'
                     },
+                    account,
                     config
                 );
 
@@ -219,6 +220,7 @@ class AppAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
+                account,
                 config,
                 logContextGetter,
                 undefined
@@ -252,17 +254,20 @@ class AppAuthController {
                 connectionId: String(receivedConnectionId)
             });
 
-            void connectionCreationFailedHook({
-                connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'APP',
-                error: {
-                    type: 'unknown',
-                    description: content
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
+                    environment,
+                    account,
+                    auth_mode: 'APP',
+                    error: {
+                        type: 'unknown',
+                        description: content
+                    },
+                    operation: 'unknown'
                 },
-                operation: 'unknown'
-            });
+                account
+            );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
         }

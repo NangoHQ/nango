@@ -146,6 +146,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
+            account,
             config,
             logContextGetter,
             undefined
@@ -155,14 +156,17 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailed({
-            connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-            environment,
-            account,
-            auth_mode: 'NONE',
-            error: { type: 'unknown', description: `Error during Unauth create: ${prettyError}` },
-            operation: 'unknown'
-        });
+        void connectionCreationFailed(
+            {
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'NONE',
+                error: { type: 'unknown', description: `Error during Unauth create: ${prettyError}` },
+                operation: 'unknown'
+            },
+            account
+        );
         if (logCtx) {
             await logCtx.error('Error during Unauthenticated connection creation', { error: err });
             await logCtx.failed();

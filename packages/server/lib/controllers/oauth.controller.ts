@@ -446,26 +446,29 @@ class OAuthController {
                     operation: updatedConnection.operation,
                     endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
+                account,
                 config,
-                logContextGetter,
-                undefined
+                logContextGetter
             );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
-            void connectionCreationFailedHook({
-                connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
-                environment,
-                account,
-                auth_mode: 'OAUTH2_CC',
-                error: {
-                    type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
+            void connectionCreationFailedHook(
+                {
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    environment,
+                    account,
+                    auth_mode: 'OAUTH2_CC',
+                    error: {
+                        type: 'unknown',
+                        description: `Error during Unauth create: ${prettyError}`
+                    },
+                    operation: 'unknown'
                 },
-                operation: 'unknown'
-            });
+                account
+            );
             if (logCtx) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
                 await logCtx.failed();
@@ -949,6 +952,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
+                account,
                 config
             );
 
@@ -1075,6 +1079,7 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
+                    account,
                     config
                 );
 
@@ -1215,6 +1220,7 @@ class OAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
+                account,
                 config,
                 logContextGetter,
                 { initiateSync, runPostConnectionScript }
@@ -1232,6 +1238,7 @@ class OAuthController {
                             operation: res.operation,
                             endUser: connectSession?.endUser
                         },
+                        account,
                         config,
                         logContextGetter,
                         { initiateSync: true, runPostConnectionScript: false }
@@ -1296,6 +1303,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
+                account,
                 config
             );
 
@@ -1336,6 +1344,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
+                account,
                 config
             );
 
@@ -1422,6 +1431,7 @@ class OAuthController {
                         operation: updatedConnection.operation,
                         endUser: connectSession?.endUser
                     },
+                    account,
                     config,
                     logContextGetter,
                     { initiateSync, runPostConnectionScript }
@@ -1468,6 +1478,7 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
+                    account,
                     config
                 );
 

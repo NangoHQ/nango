@@ -238,6 +238,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
+                        account,
                         integration,
                         logContextGetter
                     );
@@ -302,6 +303,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
+                        account,
                         integration,
                         logContextGetter
                     );
@@ -352,6 +354,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
+                        account,
                         integration,
                         logContextGetter
                     );
@@ -396,6 +399,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
+                        account,
                         integration,
                         logContextGetter
                     );
@@ -438,6 +442,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
+                        account,
                         integration,
                         logContextGetter
                     );
@@ -587,6 +592,7 @@ class ConnectionController {
                         operation: updatedConnection.operation || 'unknown',
                         endUser: undefined
                     },
+                    account,
                     integration,
                     logContextGetter
                 );
