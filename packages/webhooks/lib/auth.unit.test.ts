@@ -50,7 +50,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -72,7 +71,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -95,7 +93,6 @@ describe('Webhooks: auth notification tests', () => {
                 primary_url: ''
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -116,7 +113,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -142,7 +138,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -163,7 +158,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: false
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
@@ -187,7 +181,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -210,7 +203,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -232,7 +224,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: false
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
@@ -255,7 +246,6 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_refresh_error: true
             },
             providerConfig,
-            type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });

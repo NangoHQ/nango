@@ -3,7 +3,6 @@ import type {
     NangoAuthWebhookBodyError,
     ExternalWebhook,
     Connection,
-    WebhookTypes,
     AuthModeType,
     ErrorPayload,
     AuthOperationType,
@@ -23,8 +22,7 @@ export async function sendAuth({
     endUser,
     error,
     operation,
-    providerConfig,
-    type
+    providerConfig
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
@@ -35,7 +33,6 @@ export async function sendAuth({
     error?: ErrorPayload;
     operation: AuthOperationType;
     providerConfig?: IntegrationConfig | undefined;
-    type: WebhookTypes;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
         return;
@@ -81,7 +78,7 @@ export async function sendAuth({
     await deliver({
         webhooks,
         body: success ? successBody : errorBody,
-        webhookType: type,
+        webhookType: 'auth',
         environment
         //logCtx
     });

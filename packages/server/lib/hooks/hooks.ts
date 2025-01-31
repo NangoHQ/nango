@@ -95,8 +95,7 @@ export const connectionCreated = async (
         endUser,
         success: true,
         operation: 'creation',
-        providerConfig,
-        type: 'auth'
+        providerConfig
     });
 };
 
@@ -114,8 +113,7 @@ export const connectionCreationFailed = async (failedConnectionPayload: Recently
             success: false,
             error,
             operation: 'creation',
-            providerConfig,
-            type: 'auth'
+            providerConfig
         });
     }
 };
@@ -184,8 +182,7 @@ export const connectionRefreshFailed = async ({
         operation: 'refresh',
         error: authError,
         success: false,
-        providerConfig: config,
-        type: 'auth'
+        providerConfig: config
     });
 
     const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
