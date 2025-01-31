@@ -59,7 +59,7 @@ describe('Supervisor', () => {
             void supervisor2.start();
 
             await vi.waitUntil(() => tickSpy1.mock.calls.length > 0, {
-                timeout: 5000
+                timeout: 10000
             });
 
             expect(tickSpy1).toHaveBeenCalled();

@@ -13,6 +13,7 @@ export interface ValidationError {
 }
 
 export type ResDefaultErrors =
+    | ApiError<'invalid_content_type'>
     | ApiError<'not_found'>
     | ApiError<'conflict'>
     | ApiError<'invalid_query_params', ValidationError[]>
