@@ -1148,7 +1148,7 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
-    docs: https://docs.nango.dev/integrations/all/brevo
+    docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
             type: string
@@ -1225,7 +1225,7 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/builder-io
+    docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
         domain:
@@ -1256,7 +1256,7 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/builder-io
+    docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
         domain:
@@ -1349,7 +1349,7 @@ cal-com-v1:
         verification:
             method: GET
             endpoint: /me
-    docs: https://docs.nango.dev/integrations/all/cal-com
+    docs: https://docs.nango.dev/integrations/all/cal-com-v1
     docs_connect: https://docs.nango.dev/integrations/all/cal-com-v1/connect
     credentials:
         apiKey:
@@ -1378,7 +1378,7 @@ cal-com-v2:
         verification:
             method: GET
             endpoint: /me
-    docs: https://docs.nango.dev/integrations/all/cal-com
+    docs: https://docs.nango.dev/integrations/all/cal-com-v2
     docs_connect: https://docs.nango.dev/integrations/all/cal-com-v2/connect
     credentials:
         apiKey:
@@ -1445,7 +1445,7 @@ canva-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/canva
+    docs: https://docs.nango.dev/integrations/all/canva-scim
     credentials:
         apiKey:
             type: string
@@ -3853,7 +3853,7 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
-    docs: https://docs.nango.dev/integrations/all/healthgorilla
+    docs: https://docs.nango.dev/integrations/all/health-gorilla
 
 hibob-service-user:
     display_name: Hibob Service User
@@ -3880,7 +3880,7 @@ hibob-service-user:
             default_value: ''
             hidden: true
             doc_section: '#step-2-finding-your-hibob-token'
-    docs: https://docs.nango.dev/integrations/all/hibob
+    docs: https://docs.nango.dev/integrations/all/hibob-service-user
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
 
 highlevel:
@@ -4223,7 +4223,7 @@ keeper-scim:
         verification:
             method: GET
             endpoint: /Users
-    docs: https://docs.nango.dev/integrations/all/keeper
+    docs: https://docs.nango.dev/integrations/all/keeper-scim
     docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
     credentials:
         apiKey:
@@ -4563,7 +4563,7 @@ lucid-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/lucid
+    docs: https://docs.nango.dev/integrations/all/lucid-scim
     docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
     credentials:
         apiKey:
@@ -5159,7 +5159,7 @@ next-cloud-ocs:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
             'ocs-apirequest': 'true'
-    docs: http://docs.nango.dev/integrations/all/next-cloud
+    docs: http://docs.nango.dev/integrations/all/next-cloud-ocs
     docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
         domain:
@@ -6779,7 +6779,7 @@ smartrecruiters-api-key:
         verification:
             method: GET
             endpoint: /feed/publications
-    docs: https://docs.nango.dev/integrations/all/smartrecruiters
+    docs: https://docs.nango.dev/integrations/all/smartrecruiters-api-key
     credentials:
         apiKey:
             type: string
