@@ -35,6 +35,12 @@ For those not using HMAC, the risk of attack was minimal but theoretically possi
 3. The Connect session will let us provide additional API capabilities that can be called directly & securely from the frontend.
 4. The Connect session unlocks our [pre-built authorization UI](/guides/api-authorization/authorize-in-your-app-default-ui#option-1-use-the-default-ui-nango-connect), which simplifies collecting API keys, basic credentials, and OAuth flows with custom parameters. This UI also validates end-user inputs and provides guidance on required credentials.
 
+<Note>
+The Connect session is compatible with both the pre-built authorization UI and custom ones. Custom authorization UIs are not deprecated and considered a critical feature. 
+
+The deprecated public key is only compatible with a custom authorization UI, not the pre-built one.
+</Note>
+
 # Migration steps
 
 Follow the steps in this [guide](/guides/api-authorization/authorize-in-your-app-default-ui), focusing on these key changes:
