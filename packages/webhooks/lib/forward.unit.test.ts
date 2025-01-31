@@ -1,10 +1,21 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
+import { forwardWebhook } from './forward.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { Connection, DBEnvironment, ExternalWebhook } from '@nangohq/types';
+import type { Connection, DBEnvironment, DBTeam, ExternalWebhook, IntegrationConfig } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
+
+const account: DBTeam = {
+    id: 1,
+    name: 'test',
+    uuid: 'whatever',
+    is_capped: true,
+    created_at: new Date(),
+    updated_at: new Date()
+};
 
 const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
     connection_id: '1',
@@ -24,6 +35,12 @@ const webhookSettings: ExternalWebhook = {
     updated_at: new Date()
 };
 
+const integration = {
+    id: 1,
+    provider: 'hubspot',
+    unique_key: 'hubspot'
+} as IntegrationConfig;
+
 const getLogCtx = () => new logPackage.LogContext({ parentId: '1', operation: {} as any }, { dryRun: true, logToConsole: false });
 
 describe('Webhooks: forward notification tests', () => {
@@ -32,11 +49,9 @@ describe('Webhooks: forward notification tests', () => {
     });
 
     it('Should not send a forward webhook if the webhook url is not present', async () => {
-        const logCtx = getLogCtx();
-
-        await sendAuth({
-            connection,
-            success: true,
+        await forwardWebhook({
+            connectionIds: [],
+            account,
             environment: {
                 name: 'dev',
                 id: 1,
@@ -47,11 +62,12 @@ describe('Webhooks: forward notification tests', () => {
                 primary_url: '',
                 secondary_url: ''
             },
-            provider: 'hubspot',
-            type: 'auth',
-            auth_mode: 'OAUTH2',
-            operation: 'creation',
-            logCtx
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {
+                'content-type': 'application/json'
+            }
         });
         expect(spy).not.toHaveBeenCalled();
     });
