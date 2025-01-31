@@ -8,7 +8,7 @@ import * as dotenv from 'dotenv';
 
 import { getNangoRootPath, printDebug } from './utils.js';
 import { loadYamlAndGenerate } from './services/model.service.js';
-import { NANGO_INTEGRATIONS_NAME, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
+import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
 import { getLayoutMode } from './utils/layoutMode.js';
 import { getProviderConfigurationFromPath, nangoConfigFile } from '@nangohq/nango-yaml';
@@ -127,94 +127,6 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
             }
         }
     }
-}
-
-/**
- * Init
- * If we're not currently in the nango-integrations directory create one
- * and create an example nango.yaml file
- */
-export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
-    const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
-
-    // if currently in the nango-integrations directory then don't create another one
-    const currentDirectory = path.basename(absolutePath);
-    let fullPath: string;
-
-    if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
-        if (debug) {
-            printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
-        }
-        fullPath = absolutePath;
-    } else {
-        fullPath = path.resolve(absolutePath, NANGO_INTEGRATIONS_NAME);
-    }
-
-    if (fs.existsSync(fullPath)) {
-        console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
-    } else {
-        if (debug) {
-            printDebug(`Creating the nango integrations directory at ${absolutePath}`);
-        }
-        fs.mkdirSync(fullPath);
-    }
-
-    const configFileLocation = path.resolve(fullPath, nangoConfigFile);
-    if (!fs.existsSync(configFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
-        }
-        fs.writeFileSync(configFileLocation, yamlData);
-    } else {
-        if (debug) {
-            printDebug(`Nango config file already exists at ${configFileLocation} so not creating a new one`);
-        }
-    }
-
-    const envFileLocation = path.resolve(fullPath, '.env');
-    if (!fs.existsSync(envFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the .env file at ${envFileLocation}`);
-        }
-        fs.writeFileSync(
-            envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
-#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
-#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
-
-# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
-NANGO_HOSTPORT=https://api.nango.dev # Default value
-
-# How to handle CLI upgrades ("prompt", "auto" or "ignore").
-NANGO_CLI_UPGRADE_MODE=prompt # Default value
-
-# Whether to prompt before deployments.
-NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
-        );
-    } else {
-        if (debug) {
-            printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
-        }
-    }
-
-    const gitIgnoreFileLocation = path.resolve(fullPath, '.gitignore');
-    if (!fs.existsSync(gitIgnoreFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the .gitignore file at ${gitIgnoreFileLocation}`);
-        }
-        fs.writeFileSync(
-            gitIgnoreFileLocation,
-            `dist
-.env
-`
-        );
-    } else {
-        if (debug) {
-            printDebug(`.gitignore file already exists at ${gitIgnoreFileLocation} so not creating a new one`);
-        }
-    }
-
-    generate({ debug, fullPath });
 }
 
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {

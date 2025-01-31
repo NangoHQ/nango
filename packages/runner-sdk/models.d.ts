@@ -17,6 +17,7 @@ interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 interface CursorPagination extends Pagination {
     cursor_path_in_response: string;
@@ -212,9 +213,6 @@ interface RunArgs {
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
 }
-export interface DryRunServiceInterface {
-    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
-}
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
@@ -247,7 +245,6 @@ export interface NangoProps {
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
@@ -282,7 +279,6 @@ export declare class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
     connectionId: string;

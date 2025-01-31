@@ -45,13 +45,11 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
     const { environmentAndAccount } = useEnvironment(env);
     const [language, setLanguage] = useLocalStorage<'node' | 'curl' | 'go' | 'javascript' | 'java' | 'php' | 'python'>('nango:snippet:language', 'node');
     const [requestSnippet, setRequestSnippet] = useState('');
+    const [requestSnippetCopy, setRequestSnippetCopy] = useState('');
     const [responseSnippet, setResponseSnippet] = useState('');
 
     useEffect(() => {
         const generate = async () => {
-            let req = '';
-            let res = '';
-
             const activeEndpointIndex = flow.endpoints.findIndex((endpoint) => {
                 return endpoint.method === flow.endpoint.method && endpoint.path === flow.endpoint.path;
             });
@@ -64,30 +62,49 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
 
             // Request
             if (language === 'node') {
-                req =
+                setRequestSnippet(
                     flow.type === 'sync'
                         ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey })
-                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input });
+                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input })
+                );
+                setRequestSnippetCopy(
+                    flow.type === 'sync'
+                        ? nodeSyncSnippet({ modelName: outputModel!.name, secretKey, connectionId, providerConfigKey, hideSecret: false })
+                        : nodeActionSnippet({ actionName: flow.name, secretKey, connectionId, providerConfigKey, input: flow.input, hideSecret: false })
+                );
             } else {
-                req = await httpSnippet({
-                    baseUrl,
-                    endpoint: flow.endpoints[activeEndpointIndex],
-                    secretKey,
-                    connectionId,
-                    providerConfigKey,
-                    input: flow.type === 'action' ? flow.input : undefined,
-                    language: language === 'curl' ? 'shell' : language!
-                });
+                setRequestSnippet(
+                    await httpSnippet({
+                        baseUrl,
+                        endpoint: flow.endpoints[activeEndpointIndex],
+                        secretKey,
+                        connectionId,
+                        providerConfigKey,
+                        input: flow.type === 'action' ? flow.input : undefined,
+                        language: language === 'curl' ? 'shell' : language!
+                    })
+                );
+                setRequestSnippetCopy(
+                    await httpSnippet({
+                        baseUrl,
+                        endpoint: flow.endpoints[activeEndpointIndex],
+                        secretKey,
+                        connectionId,
+                        providerConfigKey,
+                        input: flow.type === 'action' ? flow.input : undefined,
+                        language: language === 'curl' ? 'shell' : language!,
+                        hideSecret: false
+                    })
+                );
             }
 
             // Response
+            let res = '';
             if (flow.type === 'sync') {
                 res = outputModel ? getSyncResponse(outputModel) : 'no response';
             } else {
                 res = outputModel ? modelToString(outputModel) : 'no response';
             }
-
-            setRequestSnippet(req);
             setResponseSnippet(res);
         };
 
@@ -243,7 +260,7 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <CopyButton text={requestSnippet} />
+                                <CopyButton text={requestSnippetCopy} />
                             </div>
                         </header>
                         <div>

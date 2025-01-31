@@ -2,8 +2,9 @@ import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { AdminAxiosProps } from '@nangohq/node';
-import type { DryRunServiceInterface, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { DryRunService } from './dryrun.service';
 
 const logLevelToLogger = {
     info: 'info',
@@ -17,10 +18,10 @@ const logLevelToLogger = {
 
 export class NangoActionCLI extends NangoActionBase {
     nango: Nango;
-    dryRunService: DryRunServiceInterface;
+    dryRunService: DryRunService;
     dryRun = true;
 
-    constructor(props: NangoProps, cliProps: { dryRunService: DryRunServiceInterface }) {
+    constructor(props: NangoProps, cliProps: { dryRunService: DryRunService }) {
         super(props);
 
         this.dryRunService = cliProps.dryRunService;
@@ -87,7 +88,7 @@ export class NangoActionCLI extends NangoActionBase {
 
 export class NangoSyncCLI extends NangoSyncBase {
     nango: Nango;
-    dryRunService: DryRunServiceInterface;
+    dryRunService: DryRunService;
     dryRun = true;
 
     logMessages: { counts: { updated: number; added: number; deleted: number }; messages: unknown[] } = {
@@ -99,7 +100,7 @@ export class NangoSyncCLI extends NangoSyncBase {
     rawDeleteOutput = new Map<string, unknown[]>();
     stubbedMetadata?: Metadata | undefined = undefined;
 
-    constructor(props: NangoProps, cliProps: { stubbedMetadata?: Metadata | undefined; dryRunService: DryRunServiceInterface }) {
+    constructor(props: NangoProps, cliProps: { stubbedMetadata?: Metadata | undefined; dryRunService: DryRunService }) {
         super(props);
 
         if (cliProps.stubbedMetadata) {

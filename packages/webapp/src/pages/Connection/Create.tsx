@@ -218,7 +218,10 @@ export const ConnectionCreate: React.FC = () => {
                             </div>
                         </div>
 
-                        <Info>Test user email and name use your Nango account details.</Info>
+                        <Info>
+                            The test connection will use the name & email address of your Nango dashboard account. In your app, you can pass your user’s
+                            details.
+                        </Info>
 
                         {paramExtended && (
                             <Collapsible>
