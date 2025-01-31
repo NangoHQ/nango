@@ -194,8 +194,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -214,8 +213,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            'unknown'
         );
         if (logCtx) {
             await logCtx.error('Error during Bill credentials creation', { error: err });

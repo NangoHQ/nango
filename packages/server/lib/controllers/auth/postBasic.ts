@@ -199,8 +199,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -220,8 +219,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                'unknown'
             );
             await logCtx.error('Error during Basic auth', { error: err });
             await logCtx.failed();

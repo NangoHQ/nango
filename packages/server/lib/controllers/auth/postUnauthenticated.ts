@@ -148,8 +148,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -165,8 +164,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 error: { type: 'unknown', description: `Error during Unauth create: ${prettyError}` },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            'unknown'
         );
         if (logCtx) {
             await logCtx.error('Error during Unauthenticated connection creation', { error: err });

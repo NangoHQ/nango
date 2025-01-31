@@ -11,7 +11,6 @@ import type {
     DBEnvironment,
     EndUser
 } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 
 export async function sendAuth({
@@ -24,8 +23,7 @@ export async function sendAuth({
     error,
     operation,
     provider,
-    type,
-    logCtx
+    type
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
@@ -37,7 +35,6 @@ export async function sendAuth({
     operation: AuthOperationType;
     provider: string;
     type: WebhookTypes;
-    logCtx?: LogContext | undefined;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
         return;
@@ -84,7 +81,7 @@ export async function sendAuth({
         webhooks,
         body: success ? successBody : errorBody,
         webhookType: type,
-        environment,
-        logCtx
+        environment
+        //logCtx
     });
 }

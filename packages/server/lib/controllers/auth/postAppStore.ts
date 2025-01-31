@@ -164,8 +164,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                     },
                     operation: 'unknown'
                 },
-                config.provider,
-                logCtx
+                config.provider
             );
             await logCtx.error('Failed to credentials');
             await logCtx.failed();
@@ -208,8 +207,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -229,8 +227,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                'unknown'
             );
             await logCtx.error('Error during App Store auth', { error: err });
             await logCtx.failed();

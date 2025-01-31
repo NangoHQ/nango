@@ -218,8 +218,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -238,8 +237,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            'unknown'
         );
         if (logCtx) {
             await logCtx.error('Error during JWT credentials creation', { error: err });

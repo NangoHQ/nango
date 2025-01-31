@@ -212,8 +212,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -232,8 +231,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            'unknown'
         );
         if (logCtx) {
             await logCtx.error('Error during Signature credentials creation', { error: err });

@@ -197,8 +197,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             },
             config.provider,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -217,8 +216,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            'unknown'
         );
         if (logCtx) {
             await logCtx.error('Error during Tableau credentials creation', { error: err });

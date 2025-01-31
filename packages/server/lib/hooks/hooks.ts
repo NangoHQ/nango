@@ -72,8 +72,7 @@ export const connectionCreated = async (
     createdConnectionPayload: RecentlyCreatedConnection,
     provider: string,
     logContextGetter: LogContextGetter,
-    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
-    logCtx?: LogContext
+    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
 
@@ -97,12 +96,11 @@ export const connectionCreated = async (
         success: true,
         operation: 'creation',
         provider,
-        type: 'auth',
-        logCtx
+        type: 'auth'
     });
 };
 
-export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string, logCtx?: LogContext): Promise<void> => {
+export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
@@ -117,8 +115,7 @@ export const connectionCreationFailed = async (failedConnectionPayload: Recently
             error,
             operation: 'creation',
             provider,
-            type: 'auth',
-            logCtx
+            type: 'auth'
         });
     }
 };
@@ -188,8 +185,7 @@ export const connectionRefreshFailed = async ({
         error: authError,
         success: false,
         provider: config.provider,
-        type: 'auth',
-        logCtx
+        type: 'auth'
     });
 
     const slackNotificationService = new SlackService({ orchestrator, logContextGetter });

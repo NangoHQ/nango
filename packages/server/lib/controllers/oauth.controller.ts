@@ -448,8 +448,7 @@ class OAuthController {
                 },
                 config.provider,
                 logContextGetter,
-                undefined,
-                logCtx
+                undefined
             );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -468,8 +467,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                'unknown'
             );
             if (logCtx) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
@@ -954,8 +952,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                session.provider
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1081,8 +1078,7 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    session.provider
                 );
 
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
@@ -1224,8 +1220,7 @@ class OAuthController {
                 },
                 session.provider,
                 logContextGetter,
-                { initiateSync, runPostConnectionScript },
-                logCtx
+                { initiateSync, runPostConnectionScript }
             );
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
@@ -1242,8 +1237,7 @@ class OAuthController {
                         },
                         config.provider,
                         logContextGetter,
-                        { initiateSync: true, runPostConnectionScript: false },
-                        logCtx
+                        { initiateSync: true, runPostConnectionScript: false }
                     );
                 };
                 await connectionService.getAppCredentialsAndFinishConnection(
@@ -1305,8 +1299,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                session.provider
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1346,8 +1339,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                session.provider
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1435,8 +1427,7 @@ class OAuthController {
                     },
                     session.provider,
                     logContextGetter,
-                    { initiateSync, runPostConnectionScript },
-                    logCtx
+                    { initiateSync, runPostConnectionScript }
                 );
                 await logCtx.success();
 
@@ -1480,8 +1471,7 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    session.provider
                 );
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

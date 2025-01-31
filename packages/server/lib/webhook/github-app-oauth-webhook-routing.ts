@@ -103,8 +103,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                 },
                 integration.provider,
                 logContextGetter,
-                { initiateSync: true, runPostConnectionScript: false },
-                logCtx
+                { initiateSync: true, runPostConnectionScript: false }
             );
         };
 
