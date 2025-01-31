@@ -13,3 +13,7 @@ export interface NangoRecord {
     id: string | number;
     _nango_metadata: RecordMetadata;
 }
+
+export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor?: string };
+
+export type CursorOffset = 'first' | 'last';

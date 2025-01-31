@@ -137,7 +137,8 @@ describe('Persist API', () => {
                         records: records,
                         providerConfigKey: seed.connection.provider_config_key,
                         connectionId: seed.connection.connection_id,
-                        activityLogId: seed.activityLogId
+                        activityLogId: seed.activityLogId,
+                        merging: { strategy: 'override' }
                     }),
                     headers: {
                         Authorization: `Bearer ${mockSecretKey}`,

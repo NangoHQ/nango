@@ -1,6 +1,5 @@
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, Endpoint, CursorOffset, GetCursorSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
-import type { CursorOffset } from '@nangohq/records';
 import { records } from '@nangohq/records';
 import { validateCursor } from './validate.js';
 
@@ -16,9 +15,7 @@ type GetCursor = Endpoint<{
         offset: CursorOffset;
     };
     Error: ApiError<'get_cursor_failed' | 'cursor_not_found'>;
-    Success: {
-        cursor?: string;
-    };
+    Success: GetCursorSuccess;
 }>;
 
 export const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';

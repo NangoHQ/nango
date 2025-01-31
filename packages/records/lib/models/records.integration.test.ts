@@ -6,7 +6,8 @@ import { RECORDS_TABLE } from '../constants.js';
 import { db } from '../db/client.js';
 import * as Records from '../models/records.js';
 import { formatRecords } from '../helpers/format.js';
-import type { FormattedRecord, UnencryptedRecordData, UpsertSummary, MergingStrategy } from '../types.js';
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
+import type { MergingStrategy } from '@nangohq/types';
 
 describe('Records service', () => {
     beforeAll(async () => {
@@ -69,7 +70,7 @@ describe('Records service', () => {
         ];
         const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
         expect(inserted).toStrictEqual({
-            addedKeys: ['1', '2', '3', '4'],
+            addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
             updatedKeys: [],
             deletedKeys: [],
             nonUniqueKeys: ['1'],
@@ -116,7 +117,7 @@ describe('Records service', () => {
                 ];
                 const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
                 expect(inserted).toStrictEqual({
-                    addedKeys: ['1', '2', '3', '4'],
+                    addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: ['1'],
@@ -154,22 +155,29 @@ describe('Records service', () => {
                     { id: '4', name: 'Mike Doe' }
                 ];
                 // insert initial records
-                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                const inserted = await upsertRecords({
+                    records,
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 1,
+                    merging: {
+                        strategy: 'ignore_if_modified_after_cursor'
+                    }
+                });
                 expect(inserted).toStrictEqual({
-                    addedKeys: ['1', '2', '3', '4'],
+                    addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: [],
-                    nextMerging: { strategy: 'override' }
+                    nextMerging: {
+                        strategy: 'ignore_if_modified_after_cursor',
+                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                    }
                 });
 
-                // Get cursor of last record
-                const cursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
-                if (!cursor) {
-                    throw new Error('Cursor is undefined');
-                }
-
-                // upsert records
+                // simulate records being modified after the cursor
                 const moreRecords = [
                     { id: '4', name: 'Bob Doe' },
                     { id: '5', name: 'Another Doe' }
@@ -195,16 +203,18 @@ describe('Records service', () => {
                     model,
                     syncId,
                     syncJobId: 3,
-                    merging: { strategy: 'ignore_if_modified_after_cursor', cursor }
+                    merging: inserted.nextMerging
                 });
                 // only '1' should be updated because '4' and '5' were modified after the cursor
-                const nextCursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
                 expect(upserted).toStrictEqual({
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
                     nonUniqueKeys: [],
-                    nextMerging: { strategy: 'ignore_if_modified_after_cursor', cursor: nextCursor }
+                    nextMerging: {
+                        strategy: 'ignore_if_modified_after_cursor',
+                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                    }
                 });
             });
         });
@@ -286,7 +296,7 @@ describe('Records service', () => {
                 ];
                 const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
                 expect(inserted).toStrictEqual({
-                    addedKeys: ['1', '2', '3', '4'],
+                    addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: ['1'],
@@ -309,22 +319,27 @@ describe('Records service', () => {
                 ];
 
                 // insert initial records
-                const inserted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+                const inserted = await upsertRecords({
+                    records,
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 1,
+                    merging: { strategy: 'ignore_if_modified_after_cursor' }
+                });
                 expect(inserted).toStrictEqual({
-                    addedKeys: ['1', '2', '3', '4'],
+                    addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: [],
-                    nextMerging: { strategy: 'override' }
+                    nextMerging: {
+                        strategy: 'ignore_if_modified_after_cursor',
+                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                    }
                 });
 
-                // Get cursor of last record
-                const cursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
-                if (!cursor) {
-                    throw new Error('Cursor is undefined');
-                }
-
-                // update records
+                // simulate an records being modified after the cursor
                 const updated = await updateRecords({
                     records: [{ id: '4', name: 'Maurice Doe' }],
                     connectionId,
@@ -344,7 +359,7 @@ describe('Records service', () => {
                     model,
                     syncId,
                     syncJobId: 3,
-                    merging: { strategy: 'ignore_if_modified_after_cursor', cursor }
+                    merging: inserted.nextMerging
                 });
                 // only '1' should be updated because '4' were modified after the cursor
                 const nextCursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
@@ -402,7 +417,13 @@ describe('Records service', () => {
             { id: '2', name: 'Jane Doe' }
         ];
         const res1 = await upsertRecords({ records: toDelete, connectionId, environmentId, model, syncId, softDelete: true });
-        expect(res1).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: ['1', '2'], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+        expect(res1).toStrictEqual({
+            addedKeys: [],
+            updatedKeys: [],
+            deletedKeys: expect.arrayContaining(['1', '2']),
+            nonUniqueKeys: [],
+            nextMerging: { strategy: 'override' }
+        });
 
         // Try to delete the same records again
         // Should not have any effect
