@@ -9,7 +9,7 @@ import { abort } from './abort.js';
 import superjson from 'superjson';
 import { httpFetch, logger } from './utils.js';
 import { abortControllers } from './state.js';
-import { runnerId, persistServiceUrl, jobsServiceUrl, heartbeatIntervalMs } from './env.js';
+import { envs, persistServiceUrl, jobsServiceUrl, heartbeatIntervalMs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
 
 export const t = initTRPC.create({
@@ -41,7 +41,7 @@ function healthProcedure() {
     });
 }
 
-const usage = new RunnerMonitor({ runnerId, jobsServiceUrl, persistServiceUrl });
+const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID, jobsServiceUrl, persistServiceUrl });
 
 function startProcedure() {
     return publicProcedure
