@@ -201,7 +201,6 @@ publicAPI.use('/unauth', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.use('/webhook', jsonContentTypeMiddleware);
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
 
 // API Admin routes
