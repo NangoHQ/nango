@@ -21,7 +21,7 @@ describe('route', () => {
 
             isError(res.json);
             expect(res.json).toStrictEqual({
-                error: { code: 'invalid_content_type', message: 'Header Content-Type must be application/json' }
+                error: { code: 'invalid_content_type', message: 'Content-Type header must be application/json' }
             });
         });
 
