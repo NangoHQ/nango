@@ -138,12 +138,10 @@ interface JwtCredentials {
     type: AuthModes['Jwt'];
     privateKeyId?: string;
     issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string;
+    privateKey:{
+        id: string;
+        secret: string;
+    } | string;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -174,22 +172,7 @@ interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials =
-    | OAuth2Credentials
-    | OAuth2ClientCredentials
-    | OAuth1Credentials
-    | BasicApiCredentials
-    | ApiKeyCredentials
-    | AppCredentials
-    | AppStoreCredentials
-    | UnauthCredentials
-    | TbaCredentials
-    | TableauCredentials
-    | JwtCredentials
-    | BillCredentials
-    | TwoStepCredentials
-    | SignatureCredentials
-    | CustomCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -321,23 +304,7 @@ export declare class NangoAction {
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<
-        | string
-        | OAuth1Token
-        | OAuth2ClientCredentials
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | TableauCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-    >;
+    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials>;
     /**
      * Get current integration
      */
@@ -388,6 +355,7 @@ export declare class NangoAction {
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
+    zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<void>;
     triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
     private sendLogToPersist;
     private logAPICall;
