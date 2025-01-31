@@ -247,6 +247,8 @@ export class NangoSyncRunner extends NangoSyncBase {
                 case 'override':
                     this.mergingByModel.set(model, { strategy: 'override' });
                     break;
+                default:
+                    throw new Error(`Unsupported merging strategy: ${merging}`);
             }
             await this.sendLogToPersist({
                 type: 'log',
