@@ -238,7 +238,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -302,7 +302,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -352,7 +352,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -396,7 +396,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -438,7 +438,7 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -587,7 +587,7 @@ class ConnectionController {
                         operation: updatedConnection.operation || 'unknown',
                         endUser: undefined
                     },
-                    providerName,
+                    integration,
                     logContextGetter
                 );
             }

@@ -164,7 +164,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                     },
                     operation: 'unknown'
                 },
-                config.provider
+                config
             );
             await logCtx.error('Failed to credentials');
             await logCtx.failed();
@@ -205,7 +205,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -215,20 +215,17 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         const prettyError = stringifyError(err, { pretty: true });
 
         if (logCtx) {
-            void connectionCreationFailedHook(
-                {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                    environment,
-                    account,
-                    auth_mode: 'APP_STORE',
-                    error: {
-                        type: 'unknown',
-                        description: `Error during App Store auth: ${prettyError}`
-                    },
-                    operation: 'unknown'
+            void connectionCreationFailedHook({
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'APP_STORE',
+                error: {
+                    type: 'unknown',
+                    description: `Error during App Store auth: ${prettyError}`
                 },
-                'unknown'
-            );
+                operation: 'unknown'
+            });
             await logCtx.error('Error during App Store auth', { error: err });
             await logCtx.failed();
         }

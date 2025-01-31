@@ -1,7 +1,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, IntegrationConfig } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -23,6 +23,12 @@ const webhookSettings: ExternalWebhook = {
     updated_at: new Date()
 };
 
+const providerConfig = {
+    id: 1,
+    unique_key: 'hubspot',
+    provider: 'hubspot'
+} as IntegrationConfig;
+
 describe('Webhooks: auth notification tests', () => {
     beforeEach(() => {
         vi.resetAllMocks();
@@ -43,7 +49,7 @@ describe('Webhooks: auth notification tests', () => {
                 secondary_url: '',
                 on_auth_creation: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -65,7 +71,7 @@ describe('Webhooks: auth notification tests', () => {
                 secondary_url: '',
                 on_auth_creation: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -88,7 +94,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true,
                 primary_url: ''
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -109,7 +115,7 @@ describe('Webhooks: auth notification tests', () => {
                 ...webhookSettings,
                 on_auth_creation: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -135,7 +141,7 @@ describe('Webhooks: auth notification tests', () => {
                 secondary_url: '',
                 on_auth_creation: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -156,7 +162,7 @@ describe('Webhooks: auth notification tests', () => {
                 ...webhookSettings,
                 on_auth_creation: false
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'creation'
@@ -180,7 +186,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true,
                 on_auth_refresh_error: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
@@ -203,7 +209,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true,
                 on_auth_refresh_error: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
@@ -225,7 +231,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: true,
                 on_auth_refresh_error: false
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'
@@ -248,7 +254,7 @@ describe('Webhooks: auth notification tests', () => {
                 on_auth_creation: false,
                 on_auth_refresh_error: true
             },
-            provider: 'hubspot',
+            providerConfig,
             type: 'auth',
             auth_mode: 'OAUTH2',
             operation: 'refresh'

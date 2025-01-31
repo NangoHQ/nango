@@ -195,7 +195,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -204,20 +204,17 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailedHook(
-            {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'TABLEAU',
-                error: {
-                    type: 'unknown',
-                    description: `Error during Unauth create: ${prettyError}`
-                },
-                operation: 'unknown'
+        void connectionCreationFailedHook({
+            connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+            environment,
+            account,
+            auth_mode: 'TABLEAU',
+            error: {
+                type: 'unknown',
+                description: `Error during Unauth create: ${prettyError}`
             },
-            'unknown'
-        );
+            operation: 'unknown'
+        });
         if (logCtx) {
             await logCtx.error('Error during Tableau credentials creation', { error: err });
             await logCtx.failed();

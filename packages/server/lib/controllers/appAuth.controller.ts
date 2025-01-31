@@ -168,7 +168,7 @@ class AppAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider
+                    config
                 );
 
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
@@ -219,7 +219,7 @@ class AppAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
-                session.provider,
+                config,
                 logContextGetter,
                 undefined
             );
@@ -252,20 +252,17 @@ class AppAuthController {
                 connectionId: String(receivedConnectionId)
             });
 
-            void connectionCreationFailedHook(
-                {
-                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
-                    environment,
-                    account,
-                    auth_mode: 'APP',
-                    error: {
-                        type: 'unknown',
-                        description: content
-                    },
-                    operation: 'unknown'
+            void connectionCreationFailedHook({
+                connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'APP',
+                error: {
+                    type: 'unknown',
+                    description: content
                 },
-                'unknown'
-            );
+                operation: 'unknown'
+            });
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
         }

@@ -210,7 +210,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -219,20 +219,17 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailedHook(
-            {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'SIGNATURE',
-                error: {
-                    type: 'unknown',
-                    description: `Error during Signature create: ${prettyError}`
-                },
-                operation: 'unknown'
+        void connectionCreationFailedHook({
+            connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+            environment,
+            account,
+            auth_mode: 'SIGNATURE',
+            error: {
+                type: 'unknown',
+                description: `Error during Signature create: ${prettyError}`
             },
-            'unknown'
-        );
+            operation: 'unknown'
+        });
         if (logCtx) {
             await logCtx.error('Error during Signature credentials creation', { error: err });
             await logCtx.failed();

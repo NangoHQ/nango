@@ -190,7 +190,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -199,20 +199,17 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailedHook(
-            {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'TWO_STEP',
-                error: {
-                    type: 'unknown',
-                    description: `Error during TwoStep create: ${prettyError}`
-                },
-                operation: 'unknown'
+        void connectionCreationFailedHook({
+            connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+            environment,
+            account,
+            auth_mode: 'TWO_STEP',
+            error: {
+                type: 'unknown',
+                description: `Error during TwoStep create: ${prettyError}`
             },
-            'unknown'
-        );
+            operation: 'unknown'
+        });
         if (logCtx) {
             await logCtx.error('Error during TwoStep credentials creation', { error: err });
             await logCtx.failed();

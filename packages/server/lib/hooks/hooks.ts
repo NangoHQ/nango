@@ -70,15 +70,15 @@ export const connectionCreationStartCapCheck = async ({
 
 export const connectionCreated = async (
     createdConnectionPayload: RecentlyCreatedConnection,
-    provider: string,
+    providerConfig: IntegrationConfig,
     logContextGetter: LogContextGetter,
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
-        await postConnection(createdConnectionPayload, provider, logContextGetter);
-        await postConnectionCreation(createdConnectionPayload, provider, logContextGetter);
+        await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
+        await postConnectionCreation(createdConnectionPayload, providerConfig.provider, logContextGetter);
     }
 
     if (options.initiateSync === true && !isHosted) {
@@ -95,12 +95,12 @@ export const connectionCreated = async (
         endUser,
         success: true,
         operation: 'creation',
-        provider,
+        providerConfig,
         type: 'auth'
     });
 };
 
-export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string): Promise<void> => {
+export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, providerConfig?: IntegrationConfig): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
@@ -114,7 +114,7 @@ export const connectionCreationFailed = async (failedConnectionPayload: Recently
             success: false,
             error,
             operation: 'creation',
-            provider,
+            providerConfig,
             type: 'auth'
         });
     }
@@ -184,7 +184,7 @@ export const connectionRefreshFailed = async ({
         operation: 'refresh',
         error: authError,
         success: false,
-        provider: config.provider,
+        providerConfig: config,
         type: 'auth'
     });
 

@@ -192,7 +192,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -201,20 +201,17 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 
-        void connectionCreationFailedHook(
-            {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                environment,
-                account,
-                auth_mode: 'BILL',
-                error: {
-                    type: 'unknown',
-                    description: `Error during Bill create: ${prettyError}`
-                },
-                operation: 'unknown'
+        void connectionCreationFailedHook({
+            connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+            environment,
+            account,
+            auth_mode: 'BILL',
+            error: {
+                type: 'unknown',
+                description: `Error during Bill create: ${prettyError}`
             },
-            'unknown'
-        );
+            operation: 'unknown'
+        });
         if (logCtx) {
             await logCtx.error('Error during Bill credentials creation', { error: err });
             await logCtx.failed();

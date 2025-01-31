@@ -9,7 +9,8 @@ import type {
     AuthOperationType,
     NangoAuthWebhookBodyBase,
     DBEnvironment,
-    EndUser
+    EndUser,
+    IntegrationConfig
 } from '@nangohq/types';
 import { deliver, shouldSend } from './utils.js';
 
@@ -22,7 +23,7 @@ export async function sendAuth({
     endUser,
     error,
     operation,
-    provider,
+    providerConfig,
     type
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
@@ -33,7 +34,7 @@ export async function sendAuth({
     endUser?: EndUser | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
-    provider: string;
+    providerConfig?: IntegrationConfig | undefined;
     type: WebhookTypes;
 } & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
@@ -53,7 +54,7 @@ export async function sendAuth({
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         authMode: auth_mode,
-        provider,
+        provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
         operation,
         endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId } : undefined

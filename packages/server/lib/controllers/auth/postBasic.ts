@@ -197,7 +197,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -207,20 +207,17 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         const prettyError = stringifyError(err, { pretty: true });
 
         if (logCtx) {
-            void connectionCreationFailedHook(
-                {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                    environment,
-                    account,
-                    auth_mode: 'BASIC',
-                    error: {
-                        type: 'unknown',
-                        description: `Error during Basic auth: ${prettyError}`
-                    },
-                    operation: 'unknown'
+            void connectionCreationFailedHook({
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'BASIC',
+                error: {
+                    type: 'unknown',
+                    description: `Error during Basic auth: ${prettyError}`
                 },
-                'unknown'
-            );
+                operation: 'unknown'
+            });
             await logCtx.error('Error during Basic auth', { error: err });
             await logCtx.failed();
         }

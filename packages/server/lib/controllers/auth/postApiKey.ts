@@ -195,7 +195,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            config,
             logContextGetter,
             undefined
         );
@@ -205,20 +205,17 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
         const prettyError = stringifyError(err, { pretty: true });
 
         if (logCtx) {
-            void connectionCreationFailedHook(
-                {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
-                    environment,
-                    account,
-                    auth_mode: 'API_KEY',
-                    error: {
-                        type: 'unknown',
-                        description: `Error during API key auth: ${prettyError}`
-                    },
-                    operation: 'unknown'
+            void connectionCreationFailedHook({
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'API_KEY',
+                error: {
+                    type: 'unknown',
+                    description: `Error during API key auth: ${prettyError}`
                 },
-                'unknown'
-            );
+                operation: 'unknown'
+            });
             await logCtx.error('Error during API key auth', { error: err });
             await logCtx.failed();
         }
