@@ -2358,7 +2358,7 @@ integrations:
                 created_at: string
                 updated_at: string
                 event_memberships: EventMembership[]
-                event_guests: EventGuest[]
+                event_guests?: EventGuest[]
                 calendar_event: CalendarEvent | null
                 cancellation?: EventCancellation
             CalendarEvent:

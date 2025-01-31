@@ -146,7 +146,8 @@
                         "guides/api-authorization/configuration",
                         "guides/api-authorization/authorize-in-your-app-default-ui",
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
-                        "guides/api-authorization/whitelabel-the-oauth-flow"
+                        "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 "guides/new-api-support",
@@ -354,7 +355,13 @@
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+                "integrations/all/greenhouse-assessment",
+                "integrations/all/greenhouse-harvest",
+                "integrations/all/greenhouse-job-board",
+                "integrations/all/greenhouse-onboarding",
+                "integrations/all/greenhouse-ingestion",
                 "integrations/all/grain",
+                "integrations/all/grafana",
                 "integrations/all/gumroad",
                 "integrations/all/guru",
                 "integrations/all/gusto",
@@ -523,7 +530,6 @@
                 "integrations/all/youtube",
                 "integrations/all/zapier",
                 "integrations/all/zapier-nla",
-                "integrations/all/zapier-scim",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
                 "integrations/all/zoho-bigin",

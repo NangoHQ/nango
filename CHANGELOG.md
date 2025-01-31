@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.52.3] - 2025-01-31
+
+### Added
+
+- *(pagination)* Add flag to optionally add params to body (#3404) by @hassan254-prog
+- *(integrations)* Split greenhouse apis into seperate providers (#3331) by @hassan254-prog
+- *(integrations)* Add support for grafana (#3422) by @hassan254-prog
+
+### Changed
+
+- Revamp design of older changelog assets (#3416) by @bastienbeurier
+- Public key deprecation guide (#3421) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Fix link for zapier connect (#3414) by @khaliqgant
+- *(api)* Enforce content-type when possible (#3410) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/58c8dad986716d17821d17a7b452ea9d28f2d007 by Khaliq. Commit message: fix(optionals): chaining (#208) by @github-actions[bot]
+- *(webapp)* Fix code generation for two_step (#3415) by @hassan254-prog
+
 ## [v0.52.2] - 2025-01-30
 
 ### Fixed
@@ -2912,6 +2932,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
 [v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
 [v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1
 [v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0

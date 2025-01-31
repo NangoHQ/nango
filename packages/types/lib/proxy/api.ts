@@ -57,6 +57,7 @@ export interface PaginationBase {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 
 export type Pagination = CursorPagination | LinkPagination | OffsetPagination;
