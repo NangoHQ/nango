@@ -146,7 +146,8 @@
                         "guides/api-authorization/configuration",
                         "guides/api-authorization/authorize-in-your-app-default-ui",
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
-                        "guides/api-authorization/whitelabel-the-oauth-flow"
+                        "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 "guides/new-api-support",
