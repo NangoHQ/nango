@@ -64,8 +64,6 @@ export class LogContextStateless {
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
         const { error, ...rest } = meta || {};
         const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        const errJson = JSON.stringify(err, null, 2);
-        console.debug('ERR--------', errJson, errJson.length);
         return await this.log({
             type: 'log',
             level: 'error',
