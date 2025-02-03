@@ -25,48 +25,31 @@ import PreBuiltUseCases from "/snippets/generated/xai/PreBuiltUseCases.mdx"
 
 ## Setup guide
 
-<Steps>
-  <Step title="Login/Sign-up to your xAI Account">
-    Go to [xAI Account](https://accounts.x.ai/sign-in) and login or sign up using your credentials.
-  </Step>
-
-  <Step title="Generate xAI API key">
-    Click _Go to API console_ button in the lower left. 
-
-    In the left sidebar, click _API keys_.
-
-    Click _Create API key_.
-
-    Enter a name for the key, select endpoints and the models.
-
-    Click _Save_.
-    
-    Copy the API key—you'll need to provide it in Nango when setting up your xAI connection.
-  </Step>
-
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
-
+_No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xai.mdx)</Note>
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
 
 
 ## Useful links
 
--   [Get a xAI API key](https://accounts.x.ai/sign-in)
-
--   [xAI API docs](https://docs.x.ai/docs)
+-   [Generate an API key within your xAI account](https://console.x.ai/team/default/api-keys)
+-   [xAI Authentication](https://docs.x.ai/docs/tutorial#making-your-first-request)
+-   [xAI API docs](https://docs.x.ai/docs/api-reference)
 
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xai.mdx)</Note>
 
 ## API gotchas
 
-- Keeping your xAI API key secure is essential. Unauthorized access allows others to use your project's quota, potentially resulting in quota loss or unexpected charges for billed projects. It also exposes your tuned models and files to unauthorized use.
+- API requests are rate-limited per tier; exceeding limits returns a 429 error—monitor usage to avoid disruptions and consider upgrading for higher quotas. For more on this please visit, [Usage, Tiers and Rate Limits](https://docs.x.ai/docs/usage-tiers-and-rate-limits#usage-tiers-and-rate-limits)
 
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xai.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to xAI" icon="link" href="/integrations/all/xai/connect" horizontal>
+  Guide to connect to xAI using Connect UI
+</Card>
