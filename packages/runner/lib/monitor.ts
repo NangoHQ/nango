@@ -2,13 +2,12 @@ import os from 'os';
 import fs from 'fs';
 import { httpFetch, logger } from './utils.js';
 import { idle } from './idle.js';
-import { envs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
 
 const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 
 export class RunnerMonitor {
-    private runnerId: string;
+    private runnerId: number;
     private tracked: Map<number, NangoProps> = new Map<number, NangoProps>();
     private jobsServiceUrl: string = '';
     private persistServiceUrl: string = '';
@@ -18,7 +17,7 @@ export class RunnerMonitor {
     private idleInterval: NodeJS.Timeout | null = null;
     private memoryInterval: NodeJS.Timeout | null = null;
 
-    constructor({ runnerId, jobsServiceUrl, persistServiceUrl }: { runnerId: string; jobsServiceUrl: string; persistServiceUrl: string }) {
+    constructor({ runnerId, jobsServiceUrl, persistServiceUrl }: { runnerId: number; jobsServiceUrl: string; persistServiceUrl: string }) {
         this.runnerId = runnerId;
         this.jobsServiceUrl = jobsServiceUrl;
         this.persistServiceUrl = persistServiceUrl;
@@ -101,27 +100,14 @@ export class RunnerMonitor {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
-
-                    if (envs.RUNNER_NODE_ID) {
-                        const res = await idle();
-                        if (res.isErr()) {
-                            logger.error(`Failed to idle runner`, res.error);
-                            nextTimeout = timeoutMs; // Reset to default on error
-                        }
-                        // Increase the timeout to 2 minutes after a successful idle
-                        // to give enough time to fleet to terminate the runner
-                        nextTimeout = 120_000;
-                    } else {
-                        // TODO: DEPRECATE legacy /idle endpoint
-                        await httpFetch({
-                            method: 'post',
-                            url: `${this.jobsServiceUrl}/idle`,
-                            data: JSON.stringify({
-                                runnerId: this.runnerId,
-                                idleTimeMs
-                            })
-                        });
+                    const res = await idle();
+                    if (res.isErr()) {
+                        logger.error(`Failed to idle runner`, res.error);
+                        nextTimeout = timeoutMs; // Reset to default on error
                     }
+                    // Increase the timeout to 2 minutes after a successful idle
+                    // to give enough time to fleet to terminate the runner
+                    nextTimeout = 120_000;
                     this.lastIdleTrackingDate = Date.now();
                 }
             }
