@@ -44,7 +44,7 @@ if (!isCloud && !isEnterprise) {
     let instanceId = '';
     if (isCloud && process.env['RENDER_INSTANCE_ID']) {
         const parts = process.env['RENDER_INSTANCE_ID'].split('-');
-        instanceId = parts[parts.length - 1] || '';
+        instanceId = parts[parts.length - 1] ? ` ${parts[parts.length - 1]}` : '';
     }
 
     formatters = [
