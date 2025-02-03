@@ -2164,8 +2164,8 @@ deel:
     categories:
         - hr
     auth_mode: OAUTH2
-    authorization_url: https://auth.letsdeel.com/oauth2/authorize
-    token_url: https://auth.letsdeel.com/oauth2/tokens
+    authorization_url: https://app.deel.com/oauth2/authorize
+    token_url: https://app.deel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -2180,8 +2180,8 @@ deel:
 deel-sandbox:
     display_name: Deel (sandbox)
     auth_mode: OAUTH2
-    authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
-    token_url: https://auth-demo.letsdeel.com/oauth2/tokens
+    authorization_url: https://demo.deel.com/oauth2/authorize
+    token_url: https://demo.deel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -2190,7 +2190,7 @@ deel-sandbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api-staging.letsdeel.com
+        base_url: https://api-sandbox.demo.deel.com
     docs: https://docs.nango.dev/integrations/all/deel
 
 dialpad:
