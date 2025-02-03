@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import ms from 'ms';
 import type { Knex } from '@nangohq/database';
 import db, { dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
@@ -1127,8 +1128,15 @@ class ConnectionService {
                 if (expirationStrategy === 'expireAt' && expiration) {
                     expiresAt = parseTokenExpirationDate(expiration);
                 } else if (expirationStrategy === 'expireIn' && expiration) {
-                    const expiresIn = Number.parseInt(expiration, 10);
-                    expiresAt = new Date(Date.now() + expiresIn * 1000);
+                    if (Number.isSafeInteger(Number(expiration))) {
+                        expiresAt = new Date(Date.now() + Number(expiration) * 1000);
+                    } else {
+                        const durationMs = ms(expiration);
+                        if (!durationMs) {
+                            throw new NangoError(`Unsupported expiration format: ${expiration}`);
+                        }
+                        expiresAt = new Date(Date.now() + durationMs);
+                    }
                 } else if (template.token_expires_in_ms) {
                     expiresAt = new Date(Date.now() + template.token_expires_in_ms);
                 }
