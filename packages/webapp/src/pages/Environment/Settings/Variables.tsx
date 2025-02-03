@@ -17,9 +17,18 @@ export const VariablesSettings: React.FC = () => {
     const [edit, setEdit] = useState(false);
     const [loading, setLoading] = useState(false);
     const [vars, setVars] = useState<ApiEnvironmentVariable[]>(() =>
-        environmentAndAccount!.env_variables.length > 0 ? JSON.parse(JSON.stringify(environmentAndAccount!.env_variables)) : [{ name: '', value: '' }]
+        environmentAndAccount && environmentAndAccount.env_variables.length > 0
+            ? JSON.parse(JSON.stringify(environmentAndAccount.env_variables))
+            : [{ name: '', value: '' }]
     );
-    const [errors, setErrors] = useState<{ name: string; error: string }[]>([]);
+    const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
+
+    const onEnabledEdit = () => {
+        if (vars[vars.length - 1].name !== '') {
+            setVars((copy) => [...copy, { name: '', value: '' }]);
+        }
+        setEdit(true);
+    };
 
     const onUpdate = (key: 'name' | 'value', value: string, index: number) => {
         setVars((copy) => {
@@ -59,14 +68,21 @@ export const VariablesSettings: React.FC = () => {
     const onSave = async () => {
         setLoading(true);
         const res = await apiPostVariables(env, {
-            variables: vars
+            variables: vars.filter((v) => v.name !== '' || v.value !== '')
         });
 
         if ('error' in res.json) {
             toast({ title: 'There was an issue updating the webhook settings', variant: 'error' });
             setLoading(false);
-            if (res.json.error.code === 'invalid_body') {
-                setErrors(res.json.error.errors as any);
+            if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
+                setErrors(
+                    res.json.error.errors.map((err) => {
+                        if (err.path[0] !== 'variables') {
+                            return null as any;
+                        }
+                        return { index: err.path[1], key: err.path[2], error: err.message };
+                    })
+                );
             }
             return;
         }
@@ -76,10 +92,10 @@ export const VariablesSettings: React.FC = () => {
 
         setLoading(false);
     };
+
     const onCancel = () => {
-        console.log(environmentAndAccount);
         setErrors([]);
-        setVars(environmentAndAccount!.env_variables);
+        setVars(JSON.parse(JSON.stringify(environmentAndAccount!.env_variables)));
         setEdit(false);
     };
 
@@ -103,7 +119,8 @@ export const VariablesSettings: React.FC = () => {
 
                     <div className="flex flex-col gap-2">
                         {vars.map((envVar, i) => {
-                            const error = errors.find((err) => err.name === envVar.name);
+                            const errorName = errors.find((err) => err.index === i && err.key === 'name');
+                            const errorValue = errors.find((err) => err.index === i && err.key === 'value');
                             return (
                                 <div key={i} className="flex flex-col gap-0.5">
                                     <div className="flex gap-2">
@@ -113,9 +130,9 @@ export const VariablesSettings: React.FC = () => {
                                             inputSize={'lg'}
                                             variant={'black'}
                                             onPaste={(e) => onPaste(e)}
-                                            className={cn('w-[225px]', error && 'border-red-base')}
+                                            className={cn('w-[225px]', errorName && 'border-alert-400')}
                                             placeholder="MY_ENV_VAR"
-                                            readOnly={!edit && !loading}
+                                            disabled={!edit && !loading}
                                         />
                                         <SecretInput
                                             value={envVar.value}
@@ -123,9 +140,9 @@ export const VariablesSettings: React.FC = () => {
                                             inputSize={'lg'}
                                             variant={'black'}
                                             onPaste={(e) => onPaste(e)}
-                                            className={cn('w-[225px] grow', error && 'border-red-base')}
+                                            className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
                                             placeholder="value"
-                                            readOnly={!edit && !loading}
+                                            disabled={!edit && !loading}
                                         />
                                         {edit ? (
                                             <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
@@ -135,14 +152,18 @@ export const VariablesSettings: React.FC = () => {
                                             <div></div>
                                         )}
                                     </div>
-                                    {error && <div className="text-red-base text-sm">{error.error}</div>}
+
+                                    <div className="flex gap-2 ">
+                                        <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                        <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
                     <div className="flex justify-end gap-2">
                         {!edit && (
-                            <Button variant={'secondary'} onClick={() => setEdit(true)}>
+                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
                                 <IconEdit stroke={1} /> Edit
                             </Button>
                         )}

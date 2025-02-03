@@ -6,7 +6,7 @@ import { environmentService } from '@nangohq/shared';
 
 const validation = z
     .object({
-        variables: z.array(z.object({ name: z.string().max(256), value: z.string().max(4000) })).max(100)
+        variables: z.array(z.object({ name: z.string().min(1).max(256), value: z.string().min(1).max(4000) })).max(100)
     })
     .strict();
 
