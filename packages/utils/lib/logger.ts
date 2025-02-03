@@ -41,7 +41,11 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
-    const instanceId = isCloud && process.env['RENDER_INSTANCE_ID'] ? ` ${process.env['RENDER_INSTANCE_ID']}` : '';
+    let instanceId = '';
+    if (isCloud && process.env['RENDER_INSTANCE_ID']) {
+        const parts = process.env['RENDER_INSTANCE_ID'].split('-');
+        instanceId = parts[parts.length - 1] || '';
+    }
 
     formatters = [
         winston.format.printf((info) => {
