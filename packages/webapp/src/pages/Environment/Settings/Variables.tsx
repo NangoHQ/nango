@@ -76,9 +76,10 @@ export const VariablesSettings: React.FC = () => {
             variables: vars.filter((v) => v.name !== '' || v.value !== '')
         });
 
+        setLoading(false);
+
         if ('error' in res.json) {
             toast({ title: 'There was an issue updating the environment variables', variant: 'error' });
-            setLoading(false);
             if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
                 setErrors(
                     res.json.error.errors.map((err) => {
@@ -96,7 +97,6 @@ export const VariablesSettings: React.FC = () => {
         void mutate();
 
         setErrors([]);
-        setLoading(false);
     };
 
     const onCancel = () => {
@@ -118,53 +118,51 @@ export const VariablesSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Script Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
+                <fieldset className="flex flex-col gap-2 mb-2">
                     <label htmlFor="envvar" className="font-semibold">
                         Environment variables
                     </label>
 
-                    <div className="flex flex-col gap-2">
-                        {vars.map((envVar, i) => {
-                            const errorName = errors.find((err) => err.index === i && err.key === 'name');
-                            const errorValue = errors.find((err) => err.index === i && err.key === 'value');
-                            return (
-                                <div key={i} className="flex flex-col gap-0.5">
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={envVar.name}
-                                            onChange={(e) => onUpdate('name', e.target.value, i)}
-                                            inputSize={'lg'}
-                                            variant={'black'}
-                                            onPaste={(e) => onPaste(e)}
-                                            className={cn('w-[225px]', errorName && 'border-alert-400')}
-                                            placeholder="MY_ENV_VAR"
-                                            disabled={!edit || loading}
-                                        />
-                                        <SecretInput
-                                            value={envVar.value}
-                                            onChange={(e) => onUpdate('value', e.target.value, i)}
-                                            inputSize={'lg'}
-                                            variant={'black'}
-                                            onPaste={(e) => onPaste(e)}
-                                            className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
-                                            placeholder="value"
-                                            disabled={!edit || loading}
-                                        />
-                                        {edit && (
-                                            <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
-                                                <IconTrash stroke={1} />
-                                            </Button>
-                                        )}
-                                    </div>
-
-                                    <div className="flex gap-2 ">
-                                        <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
-                                        <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
-                                    </div>
+                    {vars.map((envVar, i) => {
+                        const errorName = errors.find((err) => err.index === i && err.key === 'name');
+                        const errorValue = errors.find((err) => err.index === i && err.key === 'value');
+                        return (
+                            <div key={i} className="flex flex-col gap-0.5">
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={envVar.name}
+                                        onChange={(e) => onUpdate('name', e.target.value, i)}
+                                        inputSize={'lg'}
+                                        variant={'black'}
+                                        onPaste={(e) => onPaste(e)}
+                                        className={cn('w-[225px]', errorName && 'border-alert-400')}
+                                        placeholder="MY_ENV_VAR"
+                                        disabled={!edit || loading}
+                                    />
+                                    <SecretInput
+                                        value={envVar.value}
+                                        onChange={(e) => onUpdate('value', e.target.value, i)}
+                                        inputSize={'lg'}
+                                        variant={'black'}
+                                        onPaste={(e) => onPaste(e)}
+                                        className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
+                                        placeholder="value"
+                                        disabled={!edit || loading}
+                                    />
+                                    {edit && (
+                                        <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
+                                            <IconTrash stroke={1} />
+                                        </Button>
+                                    )}
                                 </div>
-                            );
-                        })}
-                    </div>
+
+                                <div className="flex gap-2">
+                                    <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                    <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                </div>
+                            </div>
+                        );
+                    })}
                     <div className="flex justify-end gap-2">
                         {!edit && (
                             <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>

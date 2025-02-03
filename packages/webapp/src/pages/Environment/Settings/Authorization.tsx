@@ -41,8 +41,8 @@ export const AuthorizationSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Authorization Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
-                    <label htmlFor="publicKey" className="font-semibold">
+                <fieldset className="flex flex-col">
+                    <label htmlFor="publicKey" className="font-semibold mb-4">
                         Public Key
                     </label>
                     <SecretInput inputSize={'lg'} copy={true} variant={'black'} name="publicKey" value={environmentAndAccount.environment.public_key} />

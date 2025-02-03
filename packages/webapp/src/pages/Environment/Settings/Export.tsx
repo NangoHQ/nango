@@ -45,10 +45,10 @@ export const ExportSettings: React.FC = () => {
         const res = await apiPatchEnvironment(env, {
             otlp_headers: headers.filter((v) => v.name !== '' || v.value !== '')
         });
+        setLoading(false);
 
         if ('error' in res.json) {
             toast({ title: 'There was an issue updating the OTLP Headers', variant: 'error' });
-            setLoading(false);
             if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
                 setErrors(
                     res.json.error.errors.map((err) => {
@@ -66,7 +66,6 @@ export const ExportSettings: React.FC = () => {
         void mutate();
 
         setErrors([]);
-        setLoading(false);
     };
 
     const onRemove = (index: number) => {
@@ -109,13 +108,14 @@ export const ExportSettings: React.FC = () => {
                 <EditableInput
                     name="otlp_endpoint"
                     title="Endpoint"
+                    subTitle
                     originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
                     apiCall={(value) => apiPatchEnvironment(env, { otlp_endpoint: value })}
                     onSuccess={() => void mutate()}
                     placeholder="https://my.otlp.commector:4318/v1"
                 />
-                <fieldset className="flex flex-col gap-2">
-                    <label htmlFor="otlp_headers" className="text-sm">
+                <fieldset className="flex flex-col gap-1">
+                    <label htmlFor="otlp_headers" className="text-s">
                         Headers
                     </label>
                     <div className="flex flex-col gap-2">

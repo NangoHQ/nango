@@ -29,10 +29,10 @@ export const EditableInput: React.FC<
     const onSave = async () => {
         setLoading(true);
         const res = await apiCall(value);
+        setLoading(false);
 
         if ('error' in res.json) {
             toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
-            setLoading(false);
             if (res.json.error.code === 'invalid_body' && res.json.error.errors && res.json.error.errors[0]) {
                 setError(res.json.error.errors[0].message);
             }
@@ -43,13 +43,12 @@ export const EditableInput: React.FC<
         onSuccess();
 
         setError(null);
-        setLoading(false);
     };
 
     const TInput = (secret ? SecretInput : Input) as typeof Input;
 
     return (
-        <fieldset className={cn('flex flex-col gap-4', subTitle && 'gap-2')}>
+        <fieldset className={cn('flex flex-col gap-4', subTitle && 'gap-1')}>
             <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s')}>
                 {title}
             </label>
@@ -64,7 +63,7 @@ export const EditableInput: React.FC<
                 {...rest}
             />
             {error && <div className="text-alert-400 text-s">{error}</div>}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-1">
                 {!edit && (
                     <Button variant={'secondary'} size={'sm'} onClick={() => setEdit(true)}>
                         <IconEdit stroke={1} size={18} /> Edit
