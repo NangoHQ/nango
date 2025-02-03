@@ -24,7 +24,7 @@ import { useStore } from '../../store';
 import { Button } from '../../components/ui/button/Button';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { connectSlack } from '../../utils/slack-connection';
-import WebhookCheckboxes from './WebhookCheckboxes';
+import WebhookCheckboxes from './Settings/WebhookCheckboxes';
 import type { WebhookSettings as CheckboxState } from '@nangohq/types';
 import { globalEnv } from '../../utils/env';
 import { useLocalStorage } from 'react-use';

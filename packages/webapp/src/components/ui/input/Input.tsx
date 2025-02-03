@@ -6,6 +6,8 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../../../utils/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
+export type InputVariantProp = VariantProps<typeof wrapperStyles>;
+export type InputStyleProp = VariantProps<typeof inputStyles>;
 export const wrapperStyles = cva('', {
     variants: {
         variant: {
@@ -38,8 +40,8 @@ const Input = forwardRef<
     InputProps & {
         before?: React.ReactNode;
         after?: React.ReactNode;
-    } & VariantProps<typeof inputStyles> &
-        VariantProps<typeof wrapperStyles>
+    } & InputStyleProp &
+        InputVariantProp
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
         <div

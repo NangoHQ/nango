@@ -246,10 +246,10 @@ class EnvironmentService {
             const newEnv = await this.createEnvironment(accountId, environment);
             if (newEnv) {
                 await externalWebhookService.update(newEnv.id, {
-                    alwaysSendWebhook: true,
-                    sendAuthWebhook: true,
-                    sendRefreshFailedWebhook: true,
-                    sendSyncFailedWebhook: true
+                    on_auth_creation: true,
+                    on_auth_refresh_error: true,
+                    on_sync_completion_always: true,
+                    on_sync_error: true
                 });
             }
         }
@@ -285,6 +285,19 @@ class EnvironmentService {
         return result[0].slack_notifications;
     }
 
+    async update({
+        accountId,
+        environmentId,
+        data
+    }: {
+        accountId: number;
+        environmentId: number;
+        data: Omit<Partial<DBEnvironment>, 'account_id' | 'id' | 'created_at' | 'updated_at'>;
+    }): Promise<DBEnvironment | null> {
+        const [res] = await db.knex.from<DBEnvironment>(TABLE).where({ account_id: accountId, id: environmentId }).update(data).returning('*');
+        return res || null;
+    }
+
     async editHmacKey(hmacKey: string, id: number): Promise<DBEnvironment | null> {
         return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
     }
@@ -310,12 +323,14 @@ class EnvironmentService {
             return null;
         }
 
-        const mappedValues: DBEnvironmentVariable[] = values.map((value) => {
+        const mappedValues: Omit<DBEnvironmentVariable, 'id'>[] = values.map((value) => {
             return {
                 ...value,
                 created_at: new Date(),
                 updated_at: new Date(),
-                environment_id
+                environment_id,
+                value_iv: null,
+                value_tag: null
             };
         });
 
@@ -468,7 +483,7 @@ class EnvironmentService {
         return true;
     }
 
-    async getOauthCallbackUrl(environmentId?: number) {
+    async getOauthCallbackUrl(environmentId?: number): Promise<string> {
         const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
         if (environmentId != null) {
