@@ -33,6 +33,9 @@ export const VariablesSettings: React.FC = () => {
     const onUpdate = (key: 'name' | 'value', value: string, index: number) => {
         setVars((copy) => {
             copy[index][key] = value;
+            if (copy.length === index + 1 && value !== '') {
+                copy[index + 1] = { name: '', value: '' };
+            }
             return [...copy];
         });
     };
@@ -40,8 +43,10 @@ export const VariablesSettings: React.FC = () => {
     const onRemove = (index: number) => {
         if (index === 0 && vars.length === 1) {
             setVars([{ name: '', value: '' }]);
+            setErrors([]);
         } else {
             setVars(vars.filter((_, i) => i !== index));
+            setErrors(errors.filter((e) => e.index !== index));
         }
     };
 
@@ -72,7 +77,7 @@ export const VariablesSettings: React.FC = () => {
         });
 
         if ('error' in res.json) {
-            toast({ title: 'There was an issue updating the webhook settings', variant: 'error' });
+            toast({ title: 'There was an issue updating the environment variables', variant: 'error' });
             setLoading(false);
             if (res.json.error.code === 'invalid_body' && res.json.error.errors) {
                 setErrors(
@@ -87,9 +92,10 @@ export const VariablesSettings: React.FC = () => {
             return;
         }
 
-        toast({ title: 'Webhook settings updated successfully!', variant: 'success' });
-        mutate();
+        toast({ title: 'Environment settings updated successfully!', variant: 'success' });
+        void mutate();
 
+        setErrors([]);
         setLoading(false);
     };
 
@@ -132,7 +138,7 @@ export const VariablesSettings: React.FC = () => {
                                             onPaste={(e) => onPaste(e)}
                                             className={cn('w-[225px]', errorName && 'border-alert-400')}
                                             placeholder="MY_ENV_VAR"
-                                            disabled={!edit && !loading}
+                                            disabled={!edit || loading}
                                         />
                                         <SecretInput
                                             value={envVar.value}
@@ -142,14 +148,12 @@ export const VariablesSettings: React.FC = () => {
                                             onPaste={(e) => onPaste(e)}
                                             className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
                                             placeholder="value"
-                                            disabled={!edit && !loading}
+                                            disabled={!edit || loading}
                                         />
-                                        {edit ? (
+                                        {edit && (
                                             <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
                                                 <IconTrash stroke={1} />
                                             </Button>
-                                        ) : (
-                                            <div></div>
                                         )}
                                     </div>
 
@@ -163,16 +167,16 @@ export const VariablesSettings: React.FC = () => {
                     </div>
                     <div className="flex justify-end gap-2">
                         {!edit && (
-                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
-                                <IconEdit stroke={1} /> Edit
+                            <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>
+                                <IconEdit stroke={1} size={18} /> Edit
                             </Button>
                         )}
                         {edit && (
                             <>
-                                <Button variant={'emptyFaded'} onClick={onCancel}>
+                                <Button variant={'tertiary'} onClick={onCancel} size={'sm'}>
                                     cancel
                                 </Button>
-                                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
+                                <Button variant={'primary'} onClick={onSave} isLoading={loading} size={'sm'}>
                                     Save
                                 </Button>
                             </>

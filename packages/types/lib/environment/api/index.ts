@@ -20,7 +20,14 @@ export type PostEnvironment = Endpoint<{
 export type PatchEnvironment = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/environments';
-    Body: { slack_notifications?: boolean | undefined };
+    Body: {
+        callback_url?: string | undefined;
+        hmac_key?: string | undefined;
+        hmac_enabled?: boolean | undefined;
+        slack_notifications?: boolean | undefined;
+        otlp_endpoint?: string | undefined;
+        otlp_headers?: { name: string; value: string }[] | undefined;
+    };
     Success: {
         data: ApiEnvironment;
     };

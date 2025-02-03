@@ -1,12 +1,12 @@
 import { IconServer } from '@tabler/icons-react';
 import { useStore } from '../../../store';
-import { useEnvironment } from '../../../hooks/useEnvironment';
+import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import SecretInput from '../../../components/ui/input/SecretInput';
-import { Input } from '../../../components/ui/input/Input';
+import { EditableInput } from './EditableInput';
 
 export const BackendSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { environmentAndAccount, mutate } = useEnvironment(env);
 
     if (!environmentAndAccount) {
         return null;
@@ -28,12 +28,13 @@ export const BackendSettings: React.FC = () => {
                     <SecretInput inputSize={'lg'} copy={true} variant={'black'} name="secretKey" value={environmentAndAccount.environment.secret_key} />
                 </fieldset>
 
-                <fieldset className="flex flex-col gap-4">
-                    <label htmlFor="webhookUrl" className="font-semibold">
-                        Callback URL
-                    </label>
-                    <Input inputSize={'lg'} variant={'black'} name="webhookUrl" value={environmentAndAccount.environment.callback_url} />
-                </fieldset>
+                <EditableInput
+                    name="callback_url"
+                    title="Callback URL"
+                    originalValue={environmentAndAccount.environment.callback_url}
+                    apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
+                    onSuccess={() => void mutate()}
+                />
             </div>
         </div>
     );

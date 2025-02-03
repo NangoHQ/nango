@@ -52,6 +52,11 @@ export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
         data.on_sync_error = body.on_sync_error;
     }
 
+    if (Object.keys(data).length <= 0) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'Nothing to update' } });
+        return;
+    }
+
     await externalWebhookService.update(environment.id, data);
 
     res.status(200).send({ success: true });

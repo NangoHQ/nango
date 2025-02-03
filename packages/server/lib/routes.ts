@@ -27,7 +27,6 @@ import { errorManager } from '@nangohq/shared';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { postSettings as postOtlpSettings } from './controllers/v1/environment/otlp/postSettings.js';
 import {
     getEmailByUuid,
     resendVerificationEmailByUuid,
@@ -348,14 +347,9 @@ web.route('/api/v1/environments/').patch(webAuth, patchEnvironment);
 web.route('/api/v1/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/api/v1/environments/variables').post(webAuth, postEnvironmentVariables);
 
-web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 web.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
-web.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
-web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/api/v1/environment/otlp/settings').post(webAuth, postOtlpSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { ApiWebhooks } from '@nangohq/types';
-import { Checkbox } from '../../../components/ui/Checkbox';
 import { useToast } from '../../../hooks/useToast';
 import { apiPatchWebhook } from '../../../hooks/useEnvironment';
+import { Switch } from '../../../components/ui/Switch';
 
 interface CheckboxConfig {
     label: string;
@@ -77,9 +77,9 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                     <label htmlFor={stateKey} className={`text-sm font-medium`}>
                         {label}
                     </label>
-                    <Checkbox
-                        name={stateKey}
-                        className={'flex ml-3 bg-black'}
+
+                    <Switch
+                        name="hmac_enabled"
                         checked={checkboxState[stateKey] as boolean}
                         onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
                     />

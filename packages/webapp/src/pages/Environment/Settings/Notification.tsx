@@ -1,14 +1,14 @@
 import { IconServer } from '@tabler/icons-react';
 import { useStore } from '../../../store';
-import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
+import { apiPatchEnvironment, apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
 import { Button } from '../../../components/ui/button/Button';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { apiFetch } from '../../../utils/api';
 import { connectSlack } from '../../../utils/slack-connection';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { Input } from '../../../components/ui/input/Input';
 import { WebhookCheckboxes } from './WebhookCheckboxes';
+import { EditableInput } from './EditableInput';
 
 export const NotificationSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -42,7 +42,7 @@ export const NotificationSettings: React.FC = () => {
             return;
         }
 
-        const resPatch = await apiPatchEnvironment({ slack_notifications: false });
+        const resPatch = await apiPatchEnvironment(env, { slack_notifications: false });
         if ('error' in resPatch.json) {
             toast({ title: 'There was a problem when disconnecting Slack', variant: 'error' });
             return;
@@ -67,26 +67,27 @@ export const NotificationSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Notification Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
-                    <label htmlFor="webhookUrl" className="font-semibold">
-                        Webhooks URL
-                    </label>
-                    <Input
-                        inputSize={'lg'}
-                        variant={'black'}
-                        name="webhookUrl"
-                        value={environmentAndAccount.webhook_settings.primary_url || ''}
-                        placeholder="https://example.com/webhooks_from_nango"
+                <div className="flex flex-col gap-4">
+                    <label className="font-semibold">Webhooks URLs</label>
+
+                    <EditableInput
+                        name="primary_url"
+                        title="Primary URL"
+                        subTitle={true}
+                        originalValue={environmentAndAccount.webhook_settings.primary_url || ''}
+                        apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}
+                        onSuccess={() => void mutate()}
                     />
-                    <Input
-                        inputSize={'lg'}
-                        variant={'black'}
-                        name="secondaryWebhookUrl"
-                        value={environmentAndAccount.webhook_settings.secondary_url || ''}
-                        placeholder="https://example.com/webhooks_from_nango"
+                    <EditableInput
+                        name="secondary_url"
+                        title="Secondary URL"
+                        subTitle={true}
+                        originalValue={environmentAndAccount.webhook_settings.secondary_url || ''}
+                        apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}
+                        onSuccess={() => void mutate()}
                     />
                     <WebhookCheckboxes env={env} checkboxState={environmentAndAccount.webhook_settings} mutate={mutate} />
-                </fieldset>
+                </div>
 
                 <fieldset className="flex gap-4 items-center">
                     <label htmlFor="envvar" className="font-semibold">

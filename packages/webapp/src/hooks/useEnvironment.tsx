@@ -28,8 +28,8 @@ export async function apiPostEnvironment(body: PostEnvironment['Body']) {
     };
 }
 
-export async function apiPatchEnvironment(body: PatchEnvironment['Body']) {
-    const res = await apiFetch('/api/v1/environments', {
+export async function apiPatchEnvironment(env: string, body: PatchEnvironment['Body']) {
+    const res = await apiFetch(`/api/v1/environments?env=${env}`, {
         method: 'PATCH',
         body: JSON.stringify(body)
     });
