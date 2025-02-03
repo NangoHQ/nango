@@ -3092,13 +3092,14 @@ google-gemini:
         verification:
             method: GET
             endpoint: /v1/models
-    docs: https://docs.nango.dev/integrations/all/gemini
+    docs: https://docs.nango.dev/integrations/all/google-gemini
+    docs_connect: https://docs.nango.dev/integrations/all/google-gemini/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Gemini account
-            doc_section: '#step-1-finding-you-api-key'
+            doc_section: '#step-1-generating-your-api-key'
             example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
             pattern: '^[0-9A-Za-z_-]+$'
 
