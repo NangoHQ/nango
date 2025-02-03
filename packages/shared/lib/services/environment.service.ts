@@ -263,18 +263,10 @@ class EnvironmentService {
         return result.map((env) => encryptionManager.decryptEnvironment(env));
     }
 
-    async editCallbackUrl(callbackUrl: string, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
-    }
-
-    async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
-    }
-
-    async editSlackNotifications(slack_notifications: boolean, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ slack_notifications }, ['id']);
-    }
-
+    /**
+     * @deprecated
+     * TODO: remove this in favor of using environment
+     */
     async getSlackNotificationsEnabled(environmentId: number): Promise<boolean | null> {
         const result = await db.knex.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
 
@@ -296,14 +288,6 @@ class EnvironmentService {
     }): Promise<DBEnvironment | null> {
         const [res] = await db.knex.from<DBEnvironment>(TABLE).where({ account_id: accountId, id: environmentId }).update(data).returning('*');
         return res || null;
-    }
-
-    async editHmacKey(hmacKey: string, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
-    }
-
-    async editOtlpSettings(environmentId: number, otlpSettings: { endpoint: string; headers: Record<string, string> } | null): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update({ otlp_settings: otlpSettings }, ['id']);
     }
 
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[] | null> {
@@ -487,6 +471,7 @@ class EnvironmentService {
         const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
         if (environmentId != null) {
+            // TODO: remove this call
             const environment: DBEnvironment | null = await this.getById(environmentId);
             return environment?.callback_url || globalCallbackUrl;
         }

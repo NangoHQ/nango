@@ -17,14 +17,16 @@ export const ExportSettings: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);
     const [headers, setHeaders] = useState<{ name: string; value: string }[]>(() =>
-        environmentAndAccount && environmentAndAccount.environment.otlp_settings?.headers
+        environmentAndAccount &&
+        environmentAndAccount.environment.otlp_settings?.headers &&
+        Object.keys(environmentAndAccount.environment.otlp_settings?.headers).length > 0
             ? Object.entries(environmentAndAccount.environment.otlp_settings?.headers).map(([k, v]) => ({ name: k, value: v }))
             : [{ name: '', value: '' }]
     );
     const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
 
     const onEnabledEdit = () => {
-        if (headers[headers.length - 1].name !== '') {
+        if (headers.length === 0 || headers[headers.length - 1].name !== '') {
             setHeaders((copy) => [...copy, { name: '', value: '' }]);
         }
         setEditHeaders(true);
@@ -65,6 +67,8 @@ export const ExportSettings: React.FC = () => {
         toast({ title: 'OTLP Headers updated successfully!', variant: 'success' });
         void mutate();
 
+        setEditHeaders(false);
+        setHeaders((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
         setErrors([]);
     };
 
@@ -81,7 +85,9 @@ export const ExportSettings: React.FC = () => {
     const onCancelHeaders = () => {
         setErrors([]);
         setHeaders(
-            environmentAndAccount && environmentAndAccount.environment.otlp_settings?.headers
+            environmentAndAccount &&
+                environmentAndAccount.environment.otlp_settings?.headers &&
+                Object.keys(environmentAndAccount.environment.otlp_settings?.headers).length > 0
                 ? Object.entries(environmentAndAccount.environment.otlp_settings?.headers).map(([k, v]) => ({ name: k, value: v }))
                 : [{ name: '', value: '' }]
         );
@@ -101,7 +107,7 @@ export const ExportSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Export Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-4 w-3/5">
-                <fieldset className="flex flex-col gap-4">
+                <fieldset className="flex flex-col">
                     <label className="font-semibold">OpenTelemetry</label>
                 </fieldset>
 
@@ -158,7 +164,7 @@ export const ExportSettings: React.FC = () => {
                             );
                         })}
                     </div>
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2 mt-1">
                         {!editHeaders && (
                             <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>
                                 <IconEdit stroke={1} size={18} /> Edit

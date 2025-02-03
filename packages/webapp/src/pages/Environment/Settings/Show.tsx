@@ -6,6 +6,7 @@ import { VariablesSettings } from './Variables';
 import { NotificationSettings } from './Notification';
 import { BackendSettings } from './Backend';
 import { ExportSettings } from './Export';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/Accordion';
 
 export const EnvironmentSettings: React.FC = () => {
     return (
@@ -22,7 +23,14 @@ export const EnvironmentSettings: React.FC = () => {
                 <NotificationSettings />
                 <VariablesSettings />
                 <ExportSettings />
-                <AuthorizationSettings />
+                <Accordion type="single" collapsible>
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger>Authorization settings</AccordionTrigger>
+                        <AccordionContent>
+                            <AuthorizationSettings />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
             </div>
         </DashboardLayout>
     );

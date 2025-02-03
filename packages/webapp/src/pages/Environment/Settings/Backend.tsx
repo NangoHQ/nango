@@ -31,6 +31,7 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
+        toast({ title: `New secret generated, delete one or the other to activate`, variant: 'success' });
     };
 
     const onRevert = async () => {
@@ -47,6 +48,7 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
+        toast({ title: `New secret deleted, current secret is still active`, variant: 'success' });
     };
 
     const onRotate = async () => {
@@ -63,6 +65,7 @@ export const BackendSettings: React.FC = () => {
         }
 
         void mutate();
+        toast({ title: `Old secret deleted, new secret is now active`, variant: 'success' });
     };
 
     if (!environmentAndAccount) {
@@ -79,52 +82,59 @@ export const BackendSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Backend Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
-                    <label htmlFor="secretKey" className="font-semibold">
+                <fieldset className="flex flex-col gap-2">
+                    <label htmlFor="secretKey" className="font-semibold mb-2">
                         Secret Key
                     </label>
-                    <div className="flex flex-col gap-1">
+                    {hasNewSecretKey && (
                         <label htmlFor="secretKey" className={'text-s'}>
                             Current secret
                         </label>
-                        <div className="flex gap-2">
-                            <SecretInput inputSize={'lg'} copy={true} variant={'black'} name="secretKey" value={environmentAndAccount.environment.secret_key} />
+                    )}
+                    <div className="flex gap-2">
+                        <SecretInput
+                            view={false}
+                            inputSize={'lg'}
+                            copy={true}
+                            variant={'black'}
+                            name="secretKey"
+                            value={environmentAndAccount.environment.secret_key}
+                        />
 
-                            {hasNewSecretKey && (
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button variant={'icon'} size="lg">
-                                            <IconTrash stroke={1} />
+                        {hasNewSecretKey && (
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant={'icon'} size="lg">
+                                        <IconTrash stroke={1} />
+                                    </Button>
+                                </DialogTrigger>
+
+                                <DialogContent>
+                                    <DialogTitle>Rotate secret key?</DialogTitle>
+                                    <DialogDescription>
+                                        This key will be deleted and the new key will be activated. Only do this when the new key is in production. This
+                                        operation is not reversible.
+                                    </DialogDescription>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button variant={'tertiary'}>Cancel</Button>
+                                        </DialogClose>
+                                        <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
+                                            Rotate
                                         </Button>
-                                    </DialogTrigger>
-
-                                    <DialogContent>
-                                        <DialogTitle>Rotate secret key?</DialogTitle>
-                                        <DialogDescription>
-                                            This key will be deleted and the new key will be activated. Only do this when the new key is in production. This
-                                            operation is not reversible.
-                                        </DialogDescription>
-                                        <DialogFooter>
-                                            <DialogClose asChild>
-                                                <Button variant={'tertiary'}>Cancel</Button>
-                                            </DialogClose>
-                                            <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
-                                                Rotate
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            )}
-                        </div>
-                        {!hasNewSecretKey && (
-                            <div>
-                                <Button variant={'secondary'} onClick={onGenerate} isLoading={loading}>
-                                    <IconKey stroke={1} />
-                                    Generate new secret key
-                                </Button>
-                            </div>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         )}
                     </div>
+                    {!hasNewSecretKey && (
+                        <div className="">
+                            <Button variant={'secondary'} onClick={onGenerate} isLoading={loading}>
+                                <IconKey stroke={1} />
+                                Generate new secret key
+                            </Button>
+                        </div>
+                    )}
                     {hasNewSecretKey && (
                         <div className="flex flex-col gap-1">
                             <label htmlFor="secretKey" className={'text-s'}>
@@ -132,6 +142,7 @@ export const BackendSettings: React.FC = () => {
                             </label>
                             <div className="flex gap-2">
                                 <SecretInput
+                                    view={false}
                                     inputSize={'lg'}
                                     copy={true}
                                     variant={'black'}
@@ -149,6 +160,7 @@ export const BackendSettings: React.FC = () => {
                 <EditableInput
                     name="callback_url"
                     title="Callback URL"
+                    placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
                     apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
                     onSuccess={() => void mutate()}

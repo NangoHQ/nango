@@ -42,14 +42,15 @@ export const EditableInput: React.FC<
         toast({ title: `${title} updated successfully!`, variant: 'success' });
         onSuccess();
 
+        setEdit(false);
         setError(null);
     };
 
     const TInput = (secret ? SecretInput : Input) as typeof Input;
 
     return (
-        <fieldset className={cn('flex flex-col gap-4', subTitle && 'gap-1')}>
-            <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s')}>
+        <fieldset className={cn('flex flex-col gap-1')}>
+            <label htmlFor={name} className={cn(!subTitle ? 'font-semibold mb-2' : 'text-s')}>
                 {title}
             </label>
             <TInput

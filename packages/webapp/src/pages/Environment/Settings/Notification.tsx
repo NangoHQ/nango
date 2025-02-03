@@ -73,6 +73,7 @@ export const NotificationSettings: React.FC = () => {
                     <EditableInput
                         name="primary_url"
                         title="Primary URL"
+                        placeholder="https://example.com/webhooks_from_nango"
                         subTitle={true}
                         originalValue={environmentAndAccount.webhook_settings.primary_url || ''}
                         apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}
@@ -81,6 +82,7 @@ export const NotificationSettings: React.FC = () => {
                     <EditableInput
                         name="secondary_url"
                         title="Secondary URL"
+                        placeholder="https://example.com/webhooks_from_nango"
                         subTitle={true}
                         originalValue={environmentAndAccount.webhook_settings.secondary_url || ''}
                         apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}

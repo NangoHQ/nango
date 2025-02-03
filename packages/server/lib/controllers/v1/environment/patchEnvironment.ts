@@ -8,10 +8,10 @@ import { environmentToApi } from '../../../formatters/environment.js';
 const validationBody = z
     .object({
         callback_url: z.string().url().optional(),
-        hmac_key: z.string().min(1).max(1000).optional(),
+        hmac_key: z.string().min(0).max(1000).optional(),
         hmac_enabled: z.boolean().optional(),
         slack_notifications: z.boolean().optional(),
-        otlp_endpoint: z.string().url().optional(),
+        otlp_endpoint: z.string().url().or(z.literal('')).optional(),
         otlp_headers: z
             .array(z.object({ name: z.string().min(1).max(256), value: z.string().min(1).max(4000) }))
             .max(100)

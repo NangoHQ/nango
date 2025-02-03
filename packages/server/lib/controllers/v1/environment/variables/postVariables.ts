@@ -28,8 +28,8 @@ export const postEnvironmentVariables = asyncWrapper<PostEnvironmentVariables>(a
     const body: PostEnvironmentVariables['Body'] = val.data;
 
     const updated = await environmentService.editEnvironmentVariable(environment.id, body.variables);
-    if (!updated) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Fziled to update environment variable' } });
+    if (!updated && body.variables.length > 0) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to update environment variable' } });
         return;
     }
 

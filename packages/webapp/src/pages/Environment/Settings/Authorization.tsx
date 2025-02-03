@@ -1,4 +1,3 @@
-import { IconServer } from '@tabler/icons-react';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { useStore } from '../../../store';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
@@ -34,18 +33,19 @@ export const AuthorizationSettings: React.FC = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10">
-                <div>
-                    <IconServer stroke={1} size={18} />
-                </div>
-                <h3 className="uppercase text-sm">Authorization Settings</h3>
-            </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <fieldset className="flex flex-col">
                     <label htmlFor="publicKey" className="font-semibold mb-4">
                         Public Key
                     </label>
-                    <SecretInput inputSize={'lg'} copy={true} variant={'black'} name="publicKey" value={environmentAndAccount.environment.public_key} />
+                    <SecretInput
+                        inputSize={'lg'}
+                        view={false}
+                        copy={true}
+                        variant={'black'}
+                        name="publicKey"
+                        value={environmentAndAccount.environment.public_key}
+                    />
                 </fieldset>
 
                 <div className="flex flex-col gap-4">
@@ -54,7 +54,7 @@ export const AuthorizationSettings: React.FC = () => {
                     </label>
 
                     <div className="flex items-center justify-between">
-                        <label htmlFor={'hmac_enabled'} className={`text-sm font-medium`}>
+                        <label htmlFor={'hmac_enabled'} className={`text-s`}>
                             Enabled
                         </label>
                         <Switch
@@ -67,6 +67,7 @@ export const AuthorizationSettings: React.FC = () => {
                     <EditableInput
                         name="hmac_key"
                         title="HMAC Key"
+                        placeholder="*****"
                         subTitle
                         secret
                         originalValue={environmentAndAccount.environment.hmac_key || ''}

@@ -96,12 +96,14 @@ export const VariablesSettings: React.FC = () => {
         toast({ title: 'Environment settings updated successfully!', variant: 'success' });
         void mutate();
 
+        setEdit(false);
+        setVars((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
         setErrors([]);
     };
 
     const onCancel = () => {
         setErrors([]);
-        setVars(JSON.parse(JSON.stringify(environmentAndAccount!.env_variables)));
+        setVars(environmentAndAccount!.env_variables.length > 0 ? JSON.parse(JSON.stringify(environmentAndAccount!.env_variables)) : [{ name: '', value: '' }]);
         setEdit(false);
     };
 
@@ -118,8 +120,8 @@ export const VariablesSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Script Settings</h3>
             </div>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-2 mb-2">
-                    <label htmlFor="envvar" className="font-semibold">
+                <fieldset className="flex flex-col gap-2">
+                    <label htmlFor="envvar" className="font-semibold mb-2">
                         Environment variables
                     </label>
 
