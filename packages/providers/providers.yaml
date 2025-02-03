@@ -2380,6 +2380,60 @@ dropbox:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
 
+drupal:
+    display_name: Drupal
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.baseUrl}/rest_api/access_token
+    token_params:
+        client_id: ${credential.clientId}
+        client_secret: ${credential.clientSecret}
+        username: ${credential.userName}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://docs.nango.dev/integrations/all/drupal
+    docs_connect: https://docs.nango.dev/integrations/all/drupal/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Client ID
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Client Secret
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        userName:
+            type: string
+            title: User Name
+            description: Your Drupal User Name
+            doc_section: '#step-2-finding-your-drupal-user-name'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base Url
+            description: Your Drupal base url
+            example: example.drupal.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-drupal-base-url'
+
 emarsys:
     display_name: Emarsys Core API (WSSE)
     categories:
