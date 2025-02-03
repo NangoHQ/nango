@@ -90,7 +90,7 @@ jobs:
                   curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
-                    --data "{ \"commitHash\": \"${{ github.sha }}\" }"
+                    --data "{ \"image\": \"nangohq/nango-runner:${{ github.sha }}\" }"
 
     deploy_persist:
         if: inputs.service == 'persist'
