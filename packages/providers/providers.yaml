@@ -1783,6 +1783,45 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
 
+commercetools:
+    display_name: Commercetools
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/oauth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/${connectionConfig.projectKey}
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://docs.nango.dev/integrations/all/commercetools
+    docs_connect: https://docs.nango.dev/integrations/all/commercetools/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Commercetools account. Use the full region identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
+            example: us-central1
+            pattern: '^[a-z]+-[a-z0-9-]+$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
+        projectKey:
+            type: string
+            title: Project Key
+            description: The project key of your Commercetools account
+            example: demo-project-slug
+            pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-save-the-api-environment-variables'
+        cloudProvider:
+            type: string
+            title: Cloud Provider
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
+            example: gcp
+            pattern: '^(gcp|aws)$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
+
 copper:
     display_name: Copper
     categories:

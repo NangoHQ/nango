@@ -288,6 +288,7 @@
                 "integrations/all/cloudentity",
                 "integrations/all/codeclimate",
                 "integrations/all/coda",
+                "integrations/all/commercetools",
                 "integrations/all/connectwise-psa",
                 "integrations/all/confluence",
                 "integrations/all/contentful",
