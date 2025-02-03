@@ -79,7 +79,7 @@ export class CleanupChild {
 
     async start(): Promise<void> {
         logger.info('Starting cleanup...');
-        // eslint-disable-next-line no-constant-condition
+
         while (!this.cancelled) {
             await this.clean();
             await setTimeout(this.tickIntervalMs);

@@ -36,7 +36,9 @@ export function useSignout() {
             await mutate(key, undefined, { revalidate: false });
         }
 
-        window.ko?.reset();
+        if (window.ko && window.ko.reset) {
+            window.ko.reset();
+        }
 
         // force a full reload to ensure all state is cleared
         window.location.href = '/signin';

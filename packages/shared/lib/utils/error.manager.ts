@@ -44,9 +44,13 @@ class ErrorManager {
         if (err) {
             logger.error(`Response error`, errorToObject(err));
             if (!err.message) {
-                res.status(err.status || 500).send({ error: { code: err.type || 'unknown_error', payload: err.payload } });
+                res.status(err.status || 500).send({
+                    error: { code: err.type || 'unknown_error', payload: err.payload, additional_properties: err.additional_properties }
+                });
             } else {
-                res.status(err.status || 500).send({ error: { message: err.message, code: err.type, payload: err.payload } });
+                res.status(err.status || 500).send({
+                    error: { message: err.message, code: err.type, payload: err.payload, additional_properties: err.additional_properties }
+                });
             }
         } else {
             res.status(500).json({ error: { code: 'unknown_empty_error' } });

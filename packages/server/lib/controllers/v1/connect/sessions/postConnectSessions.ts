@@ -28,7 +28,7 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
     const body: PostInternalConnectSessions['Body'] = valBody.data;
 
     // req.body is never but we want to fake it on purpose
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     req.body = {
         allowed_integrations: body.allowed_integrations,
         end_user: body.end_user,

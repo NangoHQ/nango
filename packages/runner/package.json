@@ -18,7 +18,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@nangohq/node": "file:../node-client",
+        "@nangohq/runner-sdk": "file:../runner-sdk",
         "@nangohq/shared": "file:../shared",
+        "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "^10.45.1",
         "@trpc/server": "^10.45.1",
@@ -34,8 +37,8 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
+        "@nangohq/database": "file:../database",
         "@types/connect-timeout": "0.0.39",
-        "@types/node": "20.12.2",
         "typescript": "5.7.3",
         "vitest": "2.1.8"
     }

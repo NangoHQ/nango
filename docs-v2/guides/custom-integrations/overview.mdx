@@ -1,0 +1,77 @@
+---
+title: 'Custom integrations - Overview'
+sidebarTitle: 'Overview'
+description: 'Overview of custom integrations in Nango.'
+---
+
+Custom integrations allows you to create tailored interactions with external APIs. The interactions are defined in integration scripts that run on Nango's infrastructure.
+
+## Integration configurations & scripts
+
+Each integration combines:
+- **Configuration**: Managed in the `nango.yaml` file.
+- **Script**: Written in TypeScript, similar to a lambda function.
+
+Configurations & scripts are developed locally using the Nango CLI and deployed independently to your Nango workspace. Once deployed, each integration creates a Nango API endpoint to:
+- Execute scripts (for actions).
+- Provide access to synced data (for syncs).
+
+Scripts and configurations can be stored in your main code repository and should be version-controlled like the rest of your codebase.
+
+## Why TypeScript?
+
+Nango scripts are written in TypeScript because it combines the notoriety of JavaScript with the type safety necessary for interacting with external APIs. When dealing with uncertain external payloads, type safety ensures high data quality.
+
+Additionally, TypeScript benefits from the rich and mature Node.js ecosystem, which offers extensive tools and libraries for building integrations.
+
+<Info>
+Although scripts are written in TypeScript, they are fully encapsulated within Nango. This design makes Nango integrations easy to use, regardless of the programming language your main application is built in.
+</Info>
+
+## Types of integration scripts
+
+Nango supports four main script types:
+
+- **Syncs**: Automate data synchronization from external APIs to your application.
+- **Actions**: Synchronously trigger specific tasks on an external API, like creating or updating a resource.
+- **Webhooks**: Manage and process incoming webhooks for real-time updates.
+- **Event-based**: Execute tasks when specific Nango events occur (e.g. connection creation/deletion).
+
+Integration scripts are tied to a specific API and apply to all connections for that API. By default, scripts run across all past and future connections, but their behavior can be customized for individual connections.
+
+## Development workflow
+
+Scripts are stored in a dedicated `nango-integrations` folder and developed locally using the Nango CLI. This workflow ensures a smooth process from scaffolding to deployment.
+
+### Steps to develop an integration:
+1. **Define configurations**: Use the `nango.yaml` file to specify integration details, including:
+   - Script types (syncs, actions, webhooks).
+   - Input/output models.
+   - Schedules and operational modes (e.g., incremental or full refresh for syncs).
+2. **Build scripts**: Use the CLI to scaffold and develop your TypeScript scripts.
+3. **Test locally**: Validate scripts using the CLI before deploying them.
+4. **Deploy to Nango**: Push scripts to Nango's infrastructure for execution.
+
+## The `nango` helper object
+
+The `nango` helper object simplifies script development by providing:
+- **API utilities**: Streamline interactions with external APIs.
+- **Data persistence**: Store and retrieve data across executions.
+- **Logging**: Enable debugging and monitoring.
+- **Environment access**: Access connection-specific details and environment variables.
+
+## Performance considerations
+
+Scripts run in a resource-limited environment to maintain operational efficiency. To optimize performance:
+- Write CPU and memory-efficient code.
+- Consider upgrading to paid plans for enhanced VM resources and auto-scaling capabilities.
+
+## Testing and deployment
+
+Scripts should be thoroughly tested locally using the Nango CLI. Once validated:
+- Deploy scripts to Nango's cloud infrastructure.
+- Deployed scripts operate in your designated environment and are dynamically executed by the Nango runners.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

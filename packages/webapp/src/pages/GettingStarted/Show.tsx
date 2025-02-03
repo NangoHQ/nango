@@ -38,7 +38,7 @@ export const GettingStarted: React.FC = () => {
         try {
             analyticsTrack('web:getting_started:video:play');
             // @ts-expect-error I don't understand
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             new window.YT.Player('player', {
                 height: '100%',
                 width: '100%',
@@ -171,7 +171,7 @@ export const GettingStarted: React.FC = () => {
 
                 <a
                     className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
-                    href="https://docs.nango.dev/guides/custom-integration-builder/overview"
+                    href="https://docs.nango.dev/guides/custom-integrations/overview"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
                     rel="noreferrer"

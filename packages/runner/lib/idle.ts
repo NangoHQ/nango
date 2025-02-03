@@ -10,7 +10,7 @@ export async function idle(): Promise<Result<void>> {
     try {
         await retryWithBackoff(
             async () => {
-                return await httpFetch({
+                await httpFetch({
                     method: 'POST',
                     url: `${jobsServiceUrl}/runners/${envs.RUNNER_NODE_ID}/idle`
                 });

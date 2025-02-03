@@ -1,0 +1,77 @@
+---
+title: 'Event-based scripts'
+sidebarTitle: 'Event-based scripts'
+description: 'Guide on how to build integrations triggered on certain events.'
+---
+
+Nango events allow you to execute integration scripts in response to particular situations, enabling more dynamic and responsive integrations.
+
+# Types of Nango events
+
+Nango currently supports the following events:
+- `post-connection-creation` occurs when a connection has been created.
+- `pre-connection-deletion` occurs before a connection is deleted.
+
+Checkout the [reference](/reference/integration-configuration#on-events-fields) for details.
+
+# Use cases
+
+Event-based scripts are particularly useful for:
+1. **Connection setup**. Ex:
+    - Setting up webhooks with an external API.
+    - Creating default resources or configurations.
+2. **Cleanup operations**. Ex:
+    - Removing webhooks from an external API.
+    - Notifying external systems about the connection termination.
+    - Cleaning up associated resources.
+
+# Main characteristics
+
+## Trigger
+Event-based Scripts are __automatically__ triggered by Nango:
+    - They execute immediately when the event occurs.
+    - No manual intervention is required.
+    - They cannot be scheduled or delayed.
+    - Events are triggered exactly once per occurrence.
+    - Their executions are logged and can be monitored.
+
+## Constraints
+Event-based scripts operate under specific __constraints__:
+    - They cannot save, update or delete records.
+    - They focus on side effects and external system interactions.
+    - They can make API calls to external systems.
+    - They can read existing connection data.
+    - They can log information for monitoring.
+    - They can modify external resource states.
+
+# Event-based scripts
+Event-based executions are powered by integration scripts that encapsulate the logic for interfacing with external APIs.
+
+Event-based scripts have the following structure:
+
+```typescript setup.ts
+import type { NangoAction } from '../../models';
+
+export default async function onEvent(nango: NangoAction): Promise<void> {
+    // Your integration code goes here.
+}
+```
+
+To enable the above script, you need to configure your `nango.yaml` integration configuration as follows:
+```yaml nango.yaml
+integrations:
+  airtable:
+    on-events:
+      post-connection-creation:
+        - setup # Name of your event-based script (without the .ts extension)
+      pre-connection-deletion:
+        - cleanup # Name of your event-based script (without the .ts extension)
+```
+
+The `onEvent` function kicks off when the event the script is associated to occurs.
+
+Event-based scripts focus solely on immediate tasks. Calls to `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()` are not applicable. However, scripts can call actions, enabling complex workflows through the composition of multiple actions.
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

@@ -1,16 +1,19 @@
 import { stringifyError } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 export class NangoError extends Error {
     public readonly status: number = 500;
     public readonly type: string;
     public payload: Record<string, unknown>;
+    public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
 
-    constructor(type: string, payload = {}, status?: number) {
+    constructor(type: string, payload = {}, status?: number, additional_properties?: Record<string, JsonValue>) {
         super();
 
         this.type = type;
         this.payload = payload;
+        this.additional_properties = additional_properties;
 
         if (status) {
             this.status = status;
@@ -334,7 +337,7 @@ export class NangoError extends Error {
 
             case 'generic_error_support':
                 this.status = 500;
-                this.message = 'An error occurred. Please contact support with this unique id: ' + this.payload;
+                this.message = `An error occurred. Please contact support with this unique id: ${JSON.stringify(this.payload)}`;
                 break;
 
             case 'sync_interval_too_short':
@@ -451,7 +454,7 @@ export class NangoError extends Error {
 
             case 'deploy_missing_json_schema_model':
                 this.status = 400;
-                this.message = String(this.payload);
+                this.message = JSON.stringify(this.payload);
                 break;
 
             case 'invalid_action_input':
@@ -484,8 +487,13 @@ export class NangoError extends Error {
                 this.message = `An invalid error of type: ${typeof this.payload}`;
                 break;
 
-            case 'script_http_error':
+            case 'script_network_error':
                 this.status = 500;
+                this.message = 'A network error occurred during an HTTP call';
+                break;
+
+            case 'script_http_error':
+                this.status = 424;
                 this.message = `An error occurred during an HTTP call`;
                 break;
 
@@ -496,7 +504,7 @@ export class NangoError extends Error {
 
             case 'wsse_token_generation_error':
                 this.status = 500;
-                this.message = `An error occured while generating an WSSE token`;
+                this.message = `An error occurred while generating an WSSE token`;
                 break;
 
             case 'script_aborted':
@@ -522,7 +530,7 @@ export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
 
 export function deserializeNangoError(err: unknown): NangoError | null {
     if (isNangoErrorAsJson(err)) {
-        return new NangoError(err['type'], err.payload, err.status);
+        return new NangoError(err['type'], err.payload, err.status, err.additional_properties);
     }
     return null;
 }

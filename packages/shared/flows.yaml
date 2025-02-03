@@ -454,6 +454,7 @@ integrations:
                 output: Task
             delete-task:
                 input: Id
+                description: Delete a task.
                 endpoint:
                     method: DELETE
                     path: /tasks
@@ -1741,6 +1742,151 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+    basecamp:
+        actions:
+            fetch-projects:
+                description: Fetch all projects from Basecamp
+                endpoint:
+                    method: GET
+                    path: /projects
+                    group: Projects
+                output: BasecampProjectsResponse
+            create-todo:
+                description: Create a new to-do in a specific project + list
+                endpoint:
+                    method: POST
+                    path: /todos
+                    group: Todos
+                input: BasecampCreateTodoInput
+                output: BasecampTodoResponse
+        syncs:
+            todos:
+                runs: every 1 day
+                description: >
+                    Syncs to-dos from Basecamp for the specified projects. Example of a
+                    metadata input Example: `{ projects: [ { projectId: 1234, todoSetId:
+                    9999 }, ... ] }`
+                sync_type: full
+                track_deletes: true
+                input: TodosMetadata
+                auto_start: false
+                output: BasecampTodo
+                endpoint:
+                    method: GET
+                    path: /todos
+                    group: Todos
+        models:
+            BasecampProjectsResponse:
+                projects: BasecampProject[]
+            BasecampCreateTodoInput:
+                projectId: number
+                todoListId: number
+                content: string
+                description?: string
+                due_on?: string
+                starts_on?: string
+                notify?: boolean
+                assigneeEmails?: string[]
+                completionSubscriberEmails?: string[]
+            BasecampTodoResponse:
+                id: number
+                status: string
+                visible_to_clients: boolean
+                created_at: string
+                updated_at: string
+                title: string
+                inherits_status: boolean
+                type: string
+                url: string
+                app_url: string
+                bookmark_url: string
+                subscription_url: string
+                comments_count: integer
+                comments_url: string
+                position: integer
+                parent: BasecampTodoParent
+                bucket: BasecampTodoBucket
+                creator: any
+                description: string
+                completed: boolean
+                content: string
+                starts_on: string
+                due_on: string
+                assignees: any[]
+                completion_subscribers: any[]
+                completion_url: string
+            BasecampProject:
+                id: number
+                status: string
+                created_at: string
+                updated_at: string
+                name: string
+                description: string | null
+                purpose: string
+                clients_enabled: boolean
+                timesheet_enabled?: boolean
+                color?: string | null
+                last_needle_color?: string | null
+                last_needle_position?: string | null
+                previous_needle_position?: string | null
+                bookmark_url: string
+                url: string
+                app_url: string
+                dock: DockItem[]
+                bookmarked: boolean
+            BasecampPerson:
+                id: number
+                name: string
+                email_address: string
+                avatar_url?: string
+                admin?: boolean
+                owner?: boolean
+                created_at?: string
+                updated_at?: string
+                attachable_sgid?: string
+                personable_type?: string
+                title?: string | null
+                bio?: string | null
+                location?: string | null
+            BasecampTodo:
+                id: number
+                content: string
+                description?: string | undefined
+                due_on?: string | undefined
+                completed: boolean
+                created_at: string
+                updated_at: string
+                bucket_id: number
+                assignees?: BasecampPerson[] | undefined
+            BasecampTodoParent:
+                id: number
+                title: string
+                type: string
+                url: string
+                app_url: string
+            BasecampTodoBucket:
+                id: number
+                name: string
+                type: string
+            BasecampCompany:
+                id: number
+                name: string
+            DockItem:
+                id: number
+                title: string
+                name: string
+                enabled: boolean
+                position: number | null
+                url: string
+                app_url: string
+            ClientSide:
+                url: string
+                app_url: string
+            TodosMetadata:
+                projects: Project[]
+            Project:
+                projectId: number
+                todoSetId: number
     bill:
         actions:
             create-user:
@@ -2212,7 +2358,7 @@ integrations:
                 created_at: string
                 updated_at: string
                 event_memberships: EventMembership[]
-                event_guests: EventGuest[]
+                event_guests?: EventGuest[]
                 calendar_event: CalendarEvent | null
                 cancellation?: EventCancellation
             CalendarEvent:
@@ -2358,6 +2504,7 @@ integrations:
                     path: /candidates
                 output: Candidate
                 input: CreateCandidate
+                description: Create a candidate
         syncs:
             background-checks:
                 endpoint:
@@ -4038,6 +4185,7 @@ integrations:
     google:
         syncs:
             workspace-org-units:
+                description: Sync all workspace org units
                 runs: every 6 hours
                 track_deletes: true
                 output: OrganizationalUnit
@@ -4049,6 +4197,7 @@ integrations:
                     - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
                     - https://www.googleapis.com/auth/admin.directory.user.readonly
             workspace-users:
+                description: Sync all workspace users
                 runs: every hour
                 input: Metadata
                 auto_start: false
@@ -4058,6 +4207,7 @@ integrations:
                     method: GET
                     path: /google/workspace-users
             workspace-user-access-tokens:
+                description: Sync all workspace users access tokens
                 runs: every hour
                 output: GoogleWorkspaceUserToken
                 sync_type: full
@@ -4283,6 +4433,39 @@ integrations:
                       iconLink: string
                       fileId: string
                 eventType: string
+    google-docs:
+        actions:
+            fetch-document:
+                input: DocumentId
+                description: |
+                    Fetches the content of a document given its ID.
+                output: Document
+                endpoint:
+                    method: GET
+                    path: /fetch-document
+                scopes: https://www.googleapis.com/auth/documents.readonly
+        models:
+            DocumentId:
+                id: string
+            Document:
+                documentId: string
+                title: string
+                url: string
+                tabs: object[]
+                revisionId: string
+                suggestionsViewMode: "DEFAULT_FOR_CURRENT_ACCESS | SUGGESTIONS_INLINE | PREVIEW_SUGGESTIONS_ACCEPTED\t| PREVIEW_WITHOUT_SUGGESTIONS"
+                body: object
+                headers: object
+                footers: object
+                footnotes: object
+                documentStyle: object
+                suggestedDocumentStyleChanges: object
+                namedStyles: object
+                suggestedNamedStylesChanges: object
+                lists: object
+                namedRanges: object
+                inlineObjects: object
+                positionedObjects: object
     google-drive:
         syncs:
             documents:
@@ -4417,6 +4600,30 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+    google-sheet:
+        actions:
+            fetch-spreadsheet:
+                input: SpreadsheetId
+                description: |
+                    Fetches the content of a spreadsheet given its ID.
+                output: Spreadsheet
+                version: 1.0.0
+                endpoint:
+                    method: GET
+                    path: /spreadsheet
+                scopes: https://www.googleapis.com/auth/spreadsheets.readonly
+        models:
+            SpreadsheetId:
+                id: string
+            Spreadsheet:
+                spreadsheetId: string
+                properties: object
+                sheets: object[]
+                namedRanges: object[]
+                spreadsheetUrl: string
+                developerMetadata: object[]
+                dataSources: object[]
+                dataSourceSchedules: object[]
     gorgias:
         syncs:
             tickets:
@@ -4433,6 +4640,19 @@ integrations:
                     path: /tickets
                     group: Tickets
                 version: 1.0.1
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: full
+                track_deletes: true
+                runs: every 6 hours
+                output: GorgiasUser
+                scopes:
+                    - users:read
         actions:
             create-ticket:
                 description: |
@@ -4448,7 +4668,35 @@ integrations:
                     path: /ticket
                     group: Tickets
                 output: Ticket
+            create-user:
+                description: >
+                    Creates a new user with a role in Gorgias. Defaults to agent if a role
+                    is not provided
+                input: GorgiasCreateUser
+                output: GorgiasUser
+                endpoint:
+                    method: POST
+                    path: /user
+                    group: Users
+                scopes:
+                    - users:write
+            delete-user:
+                description: Deletes a user in Gorgias
+                output: SuccessResponse
+                input: IdEntity
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
         models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
             Ticket:
                 id: number
                 assignee_user: AssigneeUser | null
@@ -4580,6 +4828,20 @@ integrations:
                 body_html: string
                 body_text: string
                 id: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GorgiasCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role: admin | agent | basic-agent | lite-agent | observer-agent
+            GorgiasUser:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
     greenhouse-basic:
         syncs:
             applications:
@@ -6062,6 +6324,15 @@ integrations:
                     path: /contact
                 output: SuccessResponse
                 input: IdEntity
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes:
+                    - Read admins
         syncs:
             conversations:
                 runs: every 6 hours
@@ -6235,6 +6506,9 @@ integrations:
                 last_seen_at?: number
                 owner_id?: string
                 unsubscribed_from_emails?: boolean
+            UserInformation:
+                id: string
+                email: string
     jira:
         syncs:
             issues:
@@ -10027,7 +10301,55 @@ integrations:
                     path: /contents/single
                     group: Contents
                 version: 1.0.0
+            create-database-row:
+                description: >
+                    Create a new row in a specified Notion database. 
+
+                    The properties are mapped to Notion-compatible formats based on the
+                    database schema. 
+
+                    Supported property types include:
+
+                    - `title` (string): Creates a title property.
+
+                    - `select` (string): Creates a select property.
+
+                    - `multi_select` (array of strings): Creates a multi-select property.
+
+                    - `status` (string): Creates a status property.
+
+                    - `date` (string or object): Supports ISO date strings or objects with
+                    a `start` field.
+
+                    - `checkbox` (boolean): Creates a checkbox property.
+
+                    - `number` (number): Creates a number property.
+
+                    - `url` (string): Creates a URL property.
+
+                    - `email` (string): Creates an email property.
+
+                    - `phone_number` (string): Creates a phone number property.
+
+                    - `rich_text` (string): Creates a rich text property.
+
+                    - `relation` (array of IDs): Creates a relation property.
+                output: CreateDatabaseRowOutput
+                endpoint:
+                    method: POST
+                    path: /databases/row
+                    group: Databases
+                input: CreateDatabaseRowInput
+                version: 1.0.0
         models:
+            SuccessResponse:
+                success: boolean
+            CreateDatabaseRowOutput:
+                success: boolean
+                addedProperties: Property[]
+            Property:
+                propertyKey: string
+                notionValue: any
             RichPageInput:
                 pageId: string
             ContentMetadata:
@@ -10048,6 +10370,9 @@ integrations:
                 parent_id?: string | undefined
             DatabaseInput:
                 databaseId: string
+            CreateDatabaseRowInput:
+                databaseId: string
+                properties: object
             RowEntry:
                 id: string
                 row:
@@ -11372,6 +11697,7 @@ integrations:
             Updates:
                 id: string
                 sync_token: string
+                active?: boolean
             BaseInvoice:
                 created_at: string
                 updated_at: string
@@ -11479,6 +11805,7 @@ integrations:
             UpdateCustomer:
                 id: string
                 sync_token: string
+                active?: boolean
                 display_name?: string
                 suffix?: string
                 title?: string
@@ -11503,6 +11830,7 @@ integrations:
             UpdateItem:
                 id: string
                 sync_token: string
+                active?: boolean
                 track_qty_onHand?: boolean
                 qty_on_hand?: number
                 name: string
@@ -11522,6 +11850,7 @@ integrations:
             UpdateAccount:
                 id: string
                 sync_token: string
+                active?: boolean
                 name: string
                 account_type?: string
                 account_sub_type?: string
@@ -11545,6 +11874,7 @@ integrations:
             UpdateInvoice:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -11559,6 +11889,7 @@ integrations:
             UpdateCreditMemo:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -11693,6 +12024,8 @@ integrations:
                 detail_type?: string
                 deposit_account_id?: string | undefined
                 deposit_account_name?: string | undefined
+            DeleteResponse:
+                id: string
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -11948,6 +12281,7 @@ integrations:
             Updates:
                 id: string
                 sync_token: string
+                active?: boolean
             BaseInvoice:
                 created_at: string
                 updated_at: string
@@ -12055,6 +12389,7 @@ integrations:
             UpdateCustomer:
                 id: string
                 sync_token: string
+                active?: boolean
                 display_name?: string
                 suffix?: string
                 title?: string
@@ -12079,6 +12414,7 @@ integrations:
             UpdateItem:
                 id: string
                 sync_token: string
+                active?: boolean
                 track_qty_onHand?: boolean
                 qty_on_hand?: number
                 name: string
@@ -12098,6 +12434,7 @@ integrations:
             UpdateAccount:
                 id: string
                 sync_token: string
+                active?: boolean
                 name: string
                 account_type?: string
                 account_sub_type?: string
@@ -12121,6 +12458,7 @@ integrations:
             UpdateInvoice:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -12135,6 +12473,7 @@ integrations:
             UpdateCreditMemo:
                 id: string
                 sync_token: string
+                active?: boolean
                 customer_ref?: Reference
                 line?: Line[]
                 due_date?: string
@@ -12269,6 +12608,8 @@ integrations:
                 detail_type?: string
                 deposit_account_id?: string | undefined
                 deposit_account_name?: string | undefined
+            DeleteResponse:
+                id: string
     ramp:
         syncs:
             users:
@@ -12385,6 +12726,97 @@ integrations:
                 directManagerId?: string
                 idempotencyKey?: string
                 locationId?: string
+    recharge:
+        actions:
+            upsert-customers:
+                endpoint:
+                    method: POST
+                    path: /customers
+                    group: Customers
+                description: Upsert a customer in Recharge
+                input: UpsertRechargeCustomerInput
+                output: UpsertRechargeCustomerOutput
+                scopes: read_customers, write_customers, write_payment_methods
+        syncs:
+            customers:
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /customers
+                    group: Customers
+                description: >-
+                    Incrementally fetch all Recharge customers and their subscription
+                    details.
+                runs: every 1 hour
+                output: Customer
+                scopes: read_customers, read_subscriptions
+                version: 1.0.0
+        models:
+            Customer:
+                id: string
+                phone_number: string | null
+                first_name: string | null
+                last_name: string | null
+                subscriptions:
+                    - type: string
+                      name: string
+                      start_date: string
+                      end_date: string | null
+                      next_charge_scheduled_at: string | null
+            UpsertRechargeCustomerInput:
+                email: string
+                external_customer_id?: ExternalCustomerId | undefined
+                first_name: string
+                last_name: string
+                phone?: string | undefined
+                tax_exempt?: boolean | undefined
+            UpsertRechargeCustomerOutput:
+                action: update | create
+                response:
+                    accepts_marketing: number | null
+                    analytics_data:
+                        utm_params:
+                            - utm_campaign?: string | undefined
+                              utm_content?: string | undefined
+                              utm_data_source?: string | undefined
+                              utm_source?: string | undefined
+                              utm_medium?: string | undefined
+                              utm_term?: string | undefined
+                              utm_timestamp?: string | undefined
+                    billing_address1: string | null
+                    billing_address2: string | null
+                    billing_city: string | null
+                    billing_company: string | null
+                    billing_country: string | null
+                    billing_phone: string | null
+                    billing_province: string | null
+                    billing_zip: string | null
+                    created_at: string
+                    email: string
+                    first_charge_processed_at: string | null
+                    first_name: string
+                    has_card_error_in_dunning: boolean
+                    has_valid_payment_method: boolean
+                    hash: string
+                    id: number
+                    last_name: string
+                    number_active_subscriptions: number
+                    number_subscriptions: number
+                    phone: string | null
+                    processor_type: string | null
+                    reason_payment_method_not_valid: string | null
+                    shopify_customer_id: string | null
+                    status: string
+                    tax_exempt: boolean
+                    updated_at: string
+                    apply_credit_to_next_recurring_charge?: boolean | undefined
+                    external_customer_id?: ExternalCustomerId | undefined
+                    has_payment_method_in_dunning?: boolean | undefined
+                    subscriptions_active_count?: number | undefined
+                    subscriptions_total_count?: number | undefined
+                    subscription_related_charge_streak?: number | undefined
+            ExternalCustomerId:
+                ecommerce: string
     ring-central:
         actions:
             create-user:

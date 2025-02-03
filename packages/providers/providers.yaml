@@ -694,9 +694,6 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
-        verification:
-            method: GET
-            endpoint: /?Action=ListUsers
         connection_config:
             region: ${connectionConfig.region}
         retry:
@@ -791,6 +788,41 @@ bamboohr-basic:
             # Bamboo HR is using basic auth with an api key
             default_value: x
             hidden: true
+
+basecamp:
+    display_name: Basecamp
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://launchpad.37signals.com/authorization/new
+    token_url: https://launchpad.37signals.com/authorization/token
+    authorization_params:
+        type: web_server
+    token_params:
+        type: web_server
+    refresh_params:
+        type: refresh
+    proxy:
+        base_url: https://3.basecampapi.com/${connectionConfig.accountId}
+        headers:
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/basecamp
+    docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    connection_config:
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Account ID
+            example: '5899981'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-1-finding-your-account-id'
 
 battlenet:
     display_name: Battle.net
@@ -1376,6 +1408,7 @@ calendly:
     token_response_metadata:
         - owner
     post_connection_script: calendlyPostConnection
+    webhook_routing_script: calendlyWebhookRouting
     docs: https://docs.nango.dev/integrations/all/calendly
 
 canny:
@@ -1749,6 +1782,45 @@ codeclimate:
             type: string
             title: API Key
             description: The API key for your Code Climate account
+
+commercetools:
+    display_name: Commercetools
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/oauth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/${connectionConfig.projectKey}
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://docs.nango.dev/integrations/all/commercetools
+    docs_connect: https://docs.nango.dev/integrations/all/commercetools/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Commercetools account. Use the full region identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
+            example: us-central1
+            pattern: '^[a-z]+-[a-z0-9-]+$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
+        projectKey:
+            type: string
+            title: Project Key
+            description: The project key of your Commercetools account
+            example: demo-project-slug
+            pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-save-the-api-environment-variables'
+        cloudProvider:
+            type: string
+            title: Cloud Provider
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
+            example: gcp
+            pattern: '^(gcp|aws)$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
 copper:
     display_name: Copper
@@ -2242,6 +2314,22 @@ dixa:
             pattern: '^dev\|exports$'
             example: 'dev|exports'
 
+document360:
+    display_name: Document360
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api_token: ${apiKey}
+        base_url: https://api.document360.com
+    docs: https://docs.nango.dev/integrations/all/document360
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Document360 account
+            
 docusign:
     display_name: DocuSign
     categories:
@@ -2291,6 +2379,60 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+drupal:
+    display_name: Drupal
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.baseUrl}/rest_api/access_token
+    token_params:
+        client_id: ${credential.clientId}
+        client_secret: ${credential.clientSecret}
+        username: ${credential.userName}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://docs.nango.dev/integrations/all/drupal
+    docs_connect: https://docs.nango.dev/integrations/all/drupal/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Client ID
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Client Secret
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        userName:
+            type: string
+            title: User Name
+            description: Your Drupal User Name
+            doc_section: '#step-2-finding-your-drupal-user-name'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base Url
+            description: Your Drupal base url
+            example: example.drupal.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-drupal-base-url'
 
 emarsys:
     display_name: Emarsys Core API (WSSE)
@@ -3028,6 +3170,23 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://docs.nango.dev/integrations/all/garmin
 
+gebruder-weiss:
+    display_name: Gebrüder Weiss
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    authorization_url: https://my.api.gw-world.com/authorize
+    token_url: https://my.api.gw-world.com/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            accept-language: en-US
+        base_url: https://my.api.gw-world.com
+    docs: https://docs.nango.dev/integrations/all/gebruder-weiss
+
 gerrit:
     display_name: Gerrit
     categories:
@@ -3438,6 +3597,39 @@ gorgias:
             suffix: .gorgias.com
             prefix: https://
 
+grafana:
+    display_name: Grafana
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        verification:
+            endpoint: /api/access-control/user/permissions
+            method: GET
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grafana
+    docs_connect: https://docs.nango.dev/integrations/all/grafana/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your Grafana domain
+            example: example.grafana.net
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-finding-your-domain'
+    credentials:
+        apiKey:
+            type: string
+            title: Token
+            description: The Token for your Grafana service account
+            example: glsa_*****************************************
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-2-generating-your-service-account-token'
+
 grain:
     display_name: Grain
     categories:
@@ -3527,6 +3719,7 @@ greenhouse-basic:
             suffix: .greenhouse.io
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-greenhouse-api-domain'
     credentials:
         username:
             type: string
@@ -3534,7 +3727,7 @@ greenhouse-basic:
             description: The API Key of your Greenhouse account
             pattern: '^[a-zA-Z0-9-]+$'
             secret: true
-            doc_section: '#step-1-finding-greenhouse-api-key'
+            doc_section: '#step-2-finding-your-greenhouse-api-key'
         password:
             type: string
             title: Password
@@ -3543,6 +3736,131 @@ greenhouse-basic:
             # Greenhouse is using basic auth with an api key
             default_value: ''
             hidden: true
+
+greenhouse-harvest:
+    display_name: Greenhouse (Harvest API)
+    auth_mode: BASIC
+    categories:
+        - ats
+    proxy:
+        base_url: https://harvest.greenhouse.io
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-job-board:
+    display_name: Greenhouse (Job Board API)
+    auth_mode: BASIC
+    categories:
+        - ats
+    proxy:
+        base_url: https://boards-api.greenhouse.io
+    docs: https://docs.nango.dev/integrations/all/greenhouse-job-board
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-job-board/connect
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-greenhouse-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-assessment:
+    display_name: Greenhouse (Assessment API)
+    auth_mode: BASIC
+    categories:
+        - ats
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Assessment Base Url
+            description: The Assessment API Base Url you want to connect to
+            pattern: '^[a-z0-9_-]+$'
+            example: www.testing-partner.com
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-obtaining-your-base-url'
+    credentials:
+        username:
+            type: string
+            title: API key
+            description: The API Key of your Greenhouse account
+            pattern: '^[a-zA-Z0-9-]+$'
+            secret: true
+            doc_section: '#step-2-obtaining-your-api-key'
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://developers.greenhouse.io/harvest.html#authentication
+            # Greenhouse is using basic auth with an api key
+            default_value: ''
+            hidden: true
+
+greenhouse-ingestion:
+    display_name: Greenhouse (Ingestion API)
+    auth_mode: OAUTH2
+    authorization_url: https://api.greenhouse.io/oauth/authorize
+    token_url: https://api.greenhouse.io/oauth/token
+    categories:
+        - ats
+    proxy:
+        base_url: https://api.greenhouse.io
+    docs: https://docs.nango.dev/integrations/all/greenhouse-ingestion
+
+greenhouse-onboarding:
+    display_name: Greenhouse (Onboarding API)
+    auth_mode: BASIC
+    categories:
+        - ats
+    proxy:
+        base_url: https://onboarding-api.greenhouse.io/graphql
+    credentials:
+        username:
+            type: string
+            title: Access Key
+            description: The Access Key to your Greenhouse Onboarding account
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-generating-your-access-and-secret-key'
+        password:
+            type: string
+            title: Secret Key
+            description: The Secret Key to your Greenhouse Onboarding account
+            pattern: '^[a-zA-Z0-9-]+$'
+            doc_section: '#step-1-generating-your-access-and-secret-key'
+    docs: https://docs.nango.dev/integrations/all/greenhouse-onboarding
+    docs_connect: https://docs.nango.dev/integrations/all/greenhouse-onboarding/connect
 
 gumroad:
     display_name: Gumroad
@@ -3823,6 +4141,7 @@ instagram:
         - marketing
         - social
     auth_mode: OAUTH2
+    scope_separator: ','
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     proxy:
@@ -4358,6 +4677,26 @@ loops-so:
             description: The API key for your Loops.so account
             pattern: '^[a-f0-9]{32}$'
             example: d2d561f5ff80136f69b4b5a31b9fb3c9
+
+lucid-scim:
+    display_name: Lucid(SCIM)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://users.lucid.app/scim
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/lucid
+    docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The SCIM API key generated from the Lucid admin panel
+            doc_section: '#step-1-generate-the-bearer-token'
 
 luma:
     display_name: Luma
@@ -5709,7 +6048,25 @@ posthog:
             title: API Key
             description: The API key for your PostHog account
             doc_section: '#step-1-finding-your-posthog-api-key'
-
+prive:
+    display_name: Prive
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        base_url: https://subs.api.tryprive.com
+    docs: https://docs.nango.dev/integrations/all/prive
+    docs_connect: https://docs.nango.dev/integrations/all/prive/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Prive account
+            doc_section: '#step-1-requesting-your-prive-api-key'
+           
 productboard:
     display_name: Productboard
     categories:
@@ -5865,6 +6222,26 @@ rapidapi:
             suffix: .p.rapidapi.com
             prefix: https://
 
+recharge:
+    display_name: Recharge
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-recharge-access-token: ${apiKey}
+        base_url: https://api.rechargeapps.com
+    docs: https://docs.nango.dev/integrations/all/recharge
+    docs_connect: https://docs.nango.dev/integrations/all/recharge/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Recharge account
+            example: sk_test_1p1_**************************************************
+            pattern: '^[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-token'
+
 reddit:
     display_name: Reddit
     categories:
@@ -5914,6 +6291,27 @@ replicate:
             type: string
             title: API Key
             description: The API key for your Replicate account
+
+retell-ai:
+    display_name: Retell AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retellai.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/retell-ai
+    docs_connect: https://docs.nango.dev/integrations/all/retell-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for Retell AI
+            example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            doc_section: '#step-1-finding-your-retell-ai-api-key'
 
 ring-central:
     display_name: RingCentral
@@ -7312,6 +7710,33 @@ twenty-crm-self-hosted:
             pattern: '^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
             example: domain
 
+twilio:
+    display_name: Twilio
+    categories:
+        - dev-tools
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.twilio.com
+        verification:
+            method: GET
+            endpoint: /2010-04-01/Accounts/${credentials.username}/Messages.json
+    docs: https://docs.nango.dev/integrations/all/twilio
+    docs_connect: https://docs.nango.dev/integrations/all/twilio/connect
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: Your Twilio Account SID
+            pattern: '^AC[a-zA-Z0-9]{32}$'
+            doc_section: '#step-1-finding-your-account-sid'
+        password:
+            type: string
+            title: Auth Token
+            description: Your Twilio Auth Token
+            secret: true
+            doc_section: '#step-2-finding-your-auth-token'
+
 typeform:
     display_name: Typeform
     categories:
@@ -7769,6 +8194,31 @@ wrike:
             format: hostname
             prefix: https://
 
+xai:
+    display_name: xAI
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.x.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/api-key
+    docs: https://docs.nango.dev/integrations/all/xai
+    docs_connect: https://docs.nango.dev/integrations/all/xai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your xAI account
+            example: xai-******************************************************
+            pattern: 'xai-[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 xero:
     display_name: Xero
     categories:
@@ -7865,6 +8315,30 @@ zapier-nla:
     proxy:
         base_url: https://nla.zapier.com
     docs: https://docs.nango.dev/integrations/all/zapier-nla
+
+zapier-scim:
+    display_name: Zapier (SCIM API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://zapier.com/scim/v2
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json, application/scim+json
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/zapier
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Token
+            description: The SCIM API token generated from the Provision tab in your Zapier account.
+            doc_section: '#getting-your-scim-api-token'
 
 zendesk:
     display_name: Zendesk
@@ -8038,3 +8512,28 @@ zoominfo:
     body_format: json
     docs: https://docs.nango.dev/integrations/all/zoominfo
     docs_connect: https://docs.nango.dev/integrations/all/zoominfo/connect
+
+zuora:
+    display_name: Zuora
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.zuora.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zuora.com
+        retry:
+            after: 'ratelimit-reset'
+    docs: https://docs.nango.dev/integrations/all/zuora
+    docs_connect: https://docs.nango.dev/integrations/all/zuora/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The Subdomain to your Zuora Base URL
+            suffix: .zuora.com
+            prefix: https://
+            example: rest.test
+            doc_section: '#step-1-finding-your-zuora-subdomain'
+            order: 1

@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, Endpoint, MergingStrategy, PutRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
 import { validateRecords } from './validate.js';
@@ -18,9 +18,10 @@ type PutRecords = Endpoint<{
         providerConfigKey: string;
         connectionId: string;
         activityLogId: string;
+        merging: MergingStrategy;
     };
     Error: ApiError<'put_records_failed'>;
-    Success: never;
+    Success: PutRecordsSuccess;
 }>;
 
 const path = recordsPath;
@@ -29,10 +30,8 @@ const method = 'PUT';
 const validate = validateRecords<PutRecords>();
 
 const handler = async (req: EndpointRequest<PutRecords>, res: EndpointResponse<PutRecords>) => {
-    const {
-        params: { environmentId, nangoConnectionId, syncId, syncJobId },
-        body: { model, records, providerConfigKey, connectionId, activityLogId }
-    } = req;
+    const { environmentId, nangoConnectionId, syncId, syncJobId }: PutRecords['Params'] = req.params;
+    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PutRecords['Body'] = req.body;
     const result = await persistRecords({
         persistType: 'update',
         environmentId,
@@ -43,10 +42,11 @@ const handler = async (req: EndpointRequest<PutRecords>, res: EndpointResponse<P
         syncJobId,
         model,
         records,
-        activityLogId
+        activityLogId,
+        merging
     });
     if (result.isOk()) {
-        res.status(204).send();
+        res.status(200).send({ nextMerging: result.value });
     } else {
         res.status(500).json({ error: { code: 'put_records_failed', message: `Failed to update records: ${result.error.message}` } });
     }

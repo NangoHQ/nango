@@ -18,10 +18,15 @@ if (!process.env['WEBFLOW_CMS_API_TOKEN']) {
     throw new Error('Missing WEBFLOW_CMS_API_TOKEN');
 }
 
+let dryRun = false;
+if (process.env['DRYRUN']) {
+    dryRun = true;
+}
+
 const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TOKEN'] });
 
-const providersPath = 'packages/shared/providers.yaml';
-// eslint-disable-next-line import/no-named-as-default-member, @typescript-eslint/no-explicit-any
+const providersPath = 'packages/providers/providers.yaml';
+// eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
 
 const docsPath = 'docs-v2/integrations/all';
@@ -30,8 +35,9 @@ const files = await fs.readdir(docsPath);
 // we only need a subset of providers based on how our docs are written
 const neededProviders: Record<string, Provider> = {};
 
-const providerLineRegex = /^provider: ([^\s]+)$/m;
+const providerLineRegex = /^provider: ([^\s]+)\s*$/m;
 
+let hasWarnings = false;
 for (const file of files) {
     if (file.endsWith('.mdx')) {
         const filePath = path.join(docsPath, file);
@@ -39,12 +45,18 @@ for (const file of files) {
 
         const providerMatch = content.match(providerLineRegex);
         if (!providerMatch?.[1]) {
-            throw new Error(`No provider line found in ${file}`);
+            // eslint-disable-next-line no-console
+            console.warn(`No provider line found in ${file}`);
+            hasWarnings = true;
+            continue;
         }
         const provider = providerMatch[1];
 
         if (!providers[provider]) {
-            throw new Error(`${file}: invalid provider ${provider}`);
+            // eslint-disable-next-line no-console
+            console.error(`${file}: invalid provider ${provider}`);
+            hasWarnings = true;
+            continue;
         }
 
         neededProviders[provider] = providers[provider];
@@ -77,6 +89,7 @@ const neededCategories = Object.values(neededProviders)
 
 const missingCategories = neededCategories.filter((category) => !categoriesBySlug[category]);
 if (missingCategories.length > 0) {
+    // eslint-disable-next-line no-console
     console.error(`Missing categories: ${missingCategories.join(', ')}`);
     process.exit(1);
 }
@@ -133,8 +146,11 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
 
         if (!util.isDeepStrictEqual(previous, update)) {
             try {
-                await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
-                console.log(`Updated ${slug}`);
+                if (!dryRun) {
+                    await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
+                }
+
+                console.log(`Updated ${slug} ${dryRun ? '(dry run)' : ''}`);
                 await setTimeout(rateLimitSleep);
             } catch (err) {
                 console.error(`Failed to update ${slug}`, err);
@@ -145,16 +161,18 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
         try {
             const providerCategories: string[] = provider.categories || [];
 
-            await webflow.collections.items.createItem(apiCollectionId, {
-                fieldData: {
-                    name: provider.display_name,
-                    slug: slug,
-                    documentation: provider.docs,
-                    logo: `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/packages/webapp/public/images/template-logos/${slug}.svg`,
-                    'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
-                }
-            });
-            console.log(`Created ${slug}`);
+            if (!dryRun) {
+                await webflow.collections.items.createItem(apiCollectionId, {
+                    fieldData: {
+                        name: provider.display_name,
+                        slug: slug,
+                        documentation: provider.docs,
+                        logo: `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/packages/webapp/public/images/template-logos/${slug}.svg`,
+                        'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
+                    }
+                });
+            }
+            console.log(`Created ${slug} ${dryRun ? '(dry run)' : ''}`);
             await setTimeout(rateLimitSleep);
         } catch (err) {
             console.error(`Failed to update ${slug}`, err);
@@ -170,8 +188,11 @@ for (const toDelete of needDeletion) {
             throw new Error('Unexpected missing item id');
         }
 
-        await webflow.collections.items.deleteItem(apiCollectionId, apiItemsBySlug[toDelete].id);
-        console.log(`Deleted ${toDelete}`);
+        if (!dryRun) {
+            await webflow.collections.items.deleteItem(apiCollectionId, apiItemsBySlug[toDelete].id);
+        }
+
+        console.log(`Deleted ${toDelete} ${dryRun ? '(dry run)' : ''}`);
         await setTimeout(rateLimitSleep);
     } catch (err) {
         console.error(`Failed to delete ${toDelete}`, err);
@@ -179,4 +200,10 @@ for (const toDelete of needDeletion) {
     }
 }
 
-await webflow.sites.publish(siteId, { customDomains: domainIds });
+if (!dryRun) {
+    await webflow.sites.publish(siteId, { customDomains: domainIds });
+}
+
+if (hasWarnings) {
+    process.exit(1);
+}

@@ -34,8 +34,9 @@ export function apiFetch(baseUrl: string) {
             query,
             token,
             body,
-            params
-        }: { token?: string } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
+            params,
+            headers: additionalHeaders
+        }: { token?: string; headers?: Record<string, string> } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
             (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
             (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] })
@@ -60,6 +61,12 @@ export function apiFetch(baseUrl: string) {
         if (body) {
             headers.append('content-type', 'application/json');
         }
+        if (additionalHeaders) {
+            for (const [k, v] of Object.entries(additionalHeaders)) {
+                headers.set(k, v);
+            }
+        }
+
         const res = await fetch(params ? uriParamsReplacer(url.href, params) : url, {
             method: method || 'GET',
             headers,
