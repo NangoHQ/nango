@@ -8049,6 +8049,31 @@ wrike:
             format: hostname
             prefix: https://
 
+xai:
+    display_name: xAI
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.x.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/api-key
+    docs: https://docs.nango.dev/integrations/all/xai
+    docs_connect: https://docs.nango.dev/integrations/all/xai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your xAI account
+            example: xai-******************************************************
+            pattern: 'xai-[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 xero:
     display_name: Xero
     categories:
