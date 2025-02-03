@@ -6,6 +6,8 @@ import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, Offset
 import type { AxiosResponse } from 'axios';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
+import { PersistClient } from './persist.js';
+import { Ok } from '@nangohq/utils';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -431,6 +433,14 @@ describe('batchSave', () => {
 });
 
 describe('Log', () => {
+    const persistClient = (() => {
+        const client = new PersistClient({ secretKey: '***' });
+        client.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        return client;
+    })();
+
+    const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
+
     it('should enforce activityLogId when not in dryRun', () => {
         expect(() => {
             new NangoActionRunner({ ...nangoProps, activityLogId: undefined });
@@ -438,51 +448,31 @@ describe('Log', () => {
     });
 
     it('should not fail on null', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log(null);
     });
 
     it('should allow level', async () => {
-        const mock = vi.fn(() => ({ response: { status: 200 } }));
-        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistApi: mock as any });
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
 
         await nangoAction.log('hello', { level: 'error' });
 
-        expect(mock).toHaveBeenCalledWith({
-            data: expect.any(String),
-            headers: {
-                Authorization: 'Bearer ***',
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            url: '/environment/1/log'
-        });
-        expect(JSON.parse((mock.mock.calls as any)[0][0].data)).toStrictEqual({
-            activityLogId: '1',
-            log: {
-                type: 'log',
-                level: 'error',
-                message: 'hello',
-                createdAt: expect.any(String),
-                environmentId: 1,
-                meta: null,
-                source: 'user'
-            }
+        expect(persistClient.saveLog).toHaveBeenCalledWith({
+            environmentId: 1,
+            data: expect.stringMatching(
+                '{"activityLogId":"1","log":{"createdAt":".*","environmentId":1,"level":"error","message":"hello","meta":null,"source":"user","type":"log"}}'
+            )
         });
     });
 
     it('should enforce type: log message + object + level', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { foo: 'bar' }, { level: 'foobar' });
     });
 
     it('should enforce type: log message +level', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { level: 'foobar' });
     });
 
     it('should enforce type: log message + object', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps });
         await nangoAction.log('hello', { foo: 'bar' });
     });
 });

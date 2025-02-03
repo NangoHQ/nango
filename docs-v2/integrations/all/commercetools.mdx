@@ -1,0 +1,56 @@
+---
+title: Commercetools
+sidebarTitle: Commercetools
+provider: commercetools
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/commercetools/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/commercetools/PreBuiltUseCases.mdx";
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Required for API access |
+| Paid test account | ✅ | Recommended for testing |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+## Setup guide
+
+To integrate with Commercetools, follow these steps:
+
+1. **Create a Project**: Log in to your Commercetools account and create a new project. Note down the **Project Key**.
+2. **Generate API Credentials**: Navigate to the **API Clients** section in your project settings and create a new API client. Save the **Client ID** and **Client Secret**.
+3. **Configure Nango**: Use the **Client ID**, **Client Secret**, and **Project Key** to set up the Commercetools integration in Nango.
+4. **Set Region**: Specify the region (e.g., `us`, `eu`, `au`) where your Commercetools project is hosted.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/commercetools.mdx)</Note>
+
+## Useful links
+
+-   [Commercetools API Documentation](https://docs.commercetools.com/api)
+-   [OAuth 2.0 Authentication Guide](https://docs.commercetools.com/api/authorization)
+-   [Commercetools SDKs](https://docs.commercetools.com/sdk)
+-   [Commercetools Getting Started Guide](https://docs.commercetools.com/getting-started)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/commercetools.mdx)</Note>
+
+## API gotchas
+
+-   **Scopes**: Ensure you specify the correct scope (e.g., `manage_project:your-project-key`) when generating the OAuth token. Without the correct scope, API requests will fail.
+-   **Token Expiry**: Access tokens expire after 2 days (172800 seconds). Make sure to refresh the token before it expires.
+-   **Region-Specific Endpoints**: Use the correct region-specific endpoint (e.g., `auth.us.commercetools.com` for the US region) when making API requests.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/commercetools.mdx)</Note>
+
+<Card title="Connect to Commercetools" icon="link" href="/integrations/all/commercetools/connect" horizontal>
+  Guide to connect to Commercetools using Nango Connect.
+</Card>

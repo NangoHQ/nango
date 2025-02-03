@@ -128,7 +128,7 @@ describe('Supervisor', () => {
 
         await supervisor.tick();
 
-        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
             routingId: node.routingId,
@@ -159,7 +159,7 @@ describe('Supervisor', () => {
 
         await supervisor.tick();
 
-        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
             routingId: node.routingId,
@@ -175,7 +175,7 @@ describe('Supervisor', () => {
     it('should create new nodes if only OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'OUTDATED', deploymentId: previousDeployment.id });
         await supervisor.tick();
-        const { nodes: pendingNodes } = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap();
+        const pendingNodes = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap();
         expect(pendingNodes.get(node.routingId)).toMatchObject({
             PENDING: [
                 {
@@ -224,12 +224,11 @@ describe('Supervisor', () => {
     });
 
     it('should remove old TERMINATED nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1);
         const terminatedNode = await createNodeWithAttributes(dbClient.db, { state: 'TERMINATED', deploymentId: activeDeployment.id });
         const oldTerminatedNode = await createNodeWithAttributes(dbClient.db, {
             state: 'TERMINATED',
             deploymentId: activeDeployment.id,
-            lastStateTransitionAt: sevenDaysAgo
+            lastStateTransitionAt: new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1)
         });
 
         await supervisor.tick();
@@ -247,12 +246,11 @@ describe('Supervisor', () => {
     });
 
     it('should remove old ERROR nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1);
         const errorNode = await createNodeWithAttributes(dbClient.db, { state: 'ERROR', deploymentId: activeDeployment.id });
         const oldErrorNode = await createNodeWithAttributes(dbClient.db, {
             state: 'ERROR',
             deploymentId: activeDeployment.id,
-            lastStateTransitionAt: sevenDaysAgo
+            lastStateTransitionAt: new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1)
         });
 
         await supervisor.tick();
