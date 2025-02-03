@@ -7848,7 +7848,7 @@ xai:
             title: API Key
             description: The API key for your xAI account
             example: xai-******************************************************
-            format: 'xai-[A-Za-z0-9]+$'
+            pattern: 'xai-[A-Za-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 xero:
