@@ -6207,6 +6207,27 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+retell-ai:
+    display_name: Retell AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retellai.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/retell-ai
+    docs_connect: https://docs.nango.dev/integrations/all/retell-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for Retell AI
+            example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            doc_section: '#step-1-finding-your-retell-ai-api-key'
+
 ring-central:
     display_name: RingCentral
     categories:
