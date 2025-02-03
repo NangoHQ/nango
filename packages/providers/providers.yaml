@@ -3077,8 +3077,8 @@ gebruder-weiss:
         base_url: https://my.api.gw-world.com
     docs: https://docs.nango.dev/integrations/all/gebruder-weiss
 
-gemini:
-    display_name: Gemini
+google-gemini:
+    display_name: Google Gemini
     categories:
         - productivity
         - dev-tools
@@ -3099,6 +3099,8 @@ gemini:
             title: API Key
             description: The API key for your Gemini account
             doc_section: '#step-1-finding-you-api-key'
+            example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
+            pattern: '^[0-9A-Za-z_-]+$'
 
 gerrit:
     display_name: Gerrit
