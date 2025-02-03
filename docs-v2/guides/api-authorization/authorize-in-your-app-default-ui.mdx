@@ -98,6 +98,17 @@ In **your frontend**, load the Nango frontend SDK, retrieve the session token fr
 
 ### Option 1: Use the default UI (Nango Connect)
 
+<Tip>
+  Nango's default authorization UI comes with pre-built features:
+  - Displays the necessary input fields, validates their format & provides end-user instructions
+  - Authorizes a specific integration or can display a list of integrations to choose from
+  - Is fully whitelabel, without any Nango branding
+</Tip>
+
+<Frame caption="Nango's default authorization UI.">
+  <img src="/images/connect-ui.gif" />
+</Frame>
+
 ```js
 import Nango from '@nangohq/frontend';
 
@@ -124,7 +135,7 @@ Refer to the [Authorize in your app (custom UI)](/guides/api-authorization/autho
 
 ## 3. Listen for webhoooks & save the Connection ID (backend)
 
-<Accordion title="👩🏻‍💻 Simplified flow during development">
+<Accordion title="👩🏻‍💻 Simplified flow for development">
   In development, you can retrieve the connection ID without relying on webhooks.
 
 	When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback:
