@@ -86,16 +86,16 @@ export class Fleet {
             if (search.isErr()) {
                 return Err(search.error);
             }
-            const running = search.value.nodes.get(routingId)?.RUNNING || [];
+            const running = search.value.get(routingId)?.RUNNING || [];
             if (running[0]) {
                 return Ok(running[0]);
             }
-            const outdated = search.value.nodes.get(routingId)?.OUTDATED || [];
+            const outdated = search.value.get(routingId)?.OUTDATED || [];
             if (outdated[0]) {
                 return Ok(outdated[0]);
             }
-            const starting = search.value.nodes.get(routingId)?.STARTING || [];
-            const pending = search.value.nodes.get(routingId)?.PENDING || [];
+            const starting = search.value.get(routingId)?.STARTING || [];
+            const pending = search.value.get(routingId)?.PENDING || [];
 
             if (!starting[0] && !pending[0]) {
                 await withPgLock({
