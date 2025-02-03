@@ -1,17 +1,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { db } from '../db/client.js';
-import type {
-    FormattedRecord,
-    FormattedRecordWithMetadata,
-    GetRecordsResponse,
-    LastAction,
-    RecordCount,
-    ReturnedRecord,
-    UpsertSummary,
-    MergingStrategy,
-    CursorOffset
-} from '../types.js';
+import type { FormattedRecord, FormattedRecordWithMetadata, GetRecordsResponse, LastAction, RecordCount, ReturnedRecord, UpsertSummary } from '../types.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
@@ -20,6 +10,8 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 import { Cursor } from '../cursor.js';
+import { deepMergeRecordData } from '../helpers/merge.js';
+import type { MergingStrategy, CursorOffset } from '@nangohq/types';
 
 dayjs.extend(utc);
 
@@ -311,7 +303,7 @@ export async function upsert({
                             .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at'])
                             .onConflict(['connection_id', 'external_id', 'model'])
                             .merge();
-                        if (merging.strategy === 'ignore_if_modified_after_cursor') {
+                        if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
                             const cursor = Cursor.from(merging.cursor);
                             if (cursor) {
                                 qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
@@ -340,7 +332,11 @@ export async function upsert({
                             END as status`)
                     )
                     .from('upsert')
-                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id');
+                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
+                    .orderBy([
+                        { column: 'updated_at', order: 'asc' },
+                        { column: 'id', order: 'asc' }
+                    ]);
                 const updatedRes = await withRetry(query);
 
                 const inserted = updatedRes.filter((r) => r.status === 'inserted').map((r) => r.external_id);
@@ -356,8 +352,11 @@ export async function upsert({
                 }
 
                 const lastRecord = updatedRes[updatedRes.length - 1];
-                if ('cursor' in summary.nextMerging && lastRecord) {
-                    summary.nextMerging.cursor = Cursor.new(lastRecord);
+                if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
+                    summary.nextMerging = {
+                        strategy: merging.strategy,
+                        cursor: Cursor.new(lastRecord)
+                    };
                 }
             }
             const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
@@ -414,7 +413,7 @@ export async function update({
     model: string;
     merging?: MergingStrategy;
 }): Promise<Result<UpsertSummary>> {
-    const nextMerging = merging;
+    let nextMerging = merging;
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
@@ -445,14 +444,12 @@ export async function update({
                         continue;
                     }
 
-                    const { json: newRecordData, ...newRecordRest } = inputRecord;
+                    const { json, ...newRecordRest } = inputRecord;
+                    const newRecordData = decryptRecordData(inputRecord);
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,
-                        json: {
-                            ...oldRecordData,
-                            ...newRecordData
-                        },
+                        json: deepMergeRecordData(oldRecordData, newRecordData),
                         updated_at: new Date()
                     };
                     recordsToUpdate.push(newRecord);
@@ -466,7 +463,7 @@ export async function update({
                                 .returning(['external_id', 'id', 'updated_at'])
                                 .onConflict(['connection_id', 'external_id', 'model'])
                                 .merge();
-                            if (merging.strategy === 'ignore_if_modified_after_cursor') {
+                            if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
                                 const cursor = Cursor.from(merging.cursor);
                                 if (cursor) {
                                     qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
@@ -488,13 +485,20 @@ export async function update({
                             upsert.external_id as external_id,
                             to_json(upsert.updated_at) as last_modified_at`)
                         )
-                        .from('upsert');
+                        .from('upsert')
+                        .orderBy([
+                            { column: 'updated_at', order: 'asc' },
+                            { column: 'id', order: 'asc' }
+                        ]);
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
                     const lastRecord = updated[updated.length - 1];
-                    if ('cursor' in nextMerging && lastRecord) {
-                        nextMerging.cursor = Cursor.new(lastRecord);
+                    if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
+                        nextMerging = {
+                            strategy: merging.strategy,
+                            cursor: Cursor.new(lastRecord)
+                        };
                     }
                 }
             }

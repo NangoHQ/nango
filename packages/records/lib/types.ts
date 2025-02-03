@@ -1,3 +1,5 @@
+import type { MergingStrategy } from '@nangohq/types';
+
 type RecordValue = string | number | boolean | null | undefined | object | Record<string, string | boolean | number>;
 
 export interface RecordInput {
@@ -65,7 +67,3 @@ export interface RecordCount {
     count: number;
     updated_at: string;
 }
-
-export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor: string };
-
-export type CursorOffset = 'first' | 'last';

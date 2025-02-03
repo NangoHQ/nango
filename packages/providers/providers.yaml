@@ -3504,6 +3504,39 @@ gorgias:
             suffix: .gorgias.com
             prefix: https://
 
+grafana:
+    display_name: Grafana
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        verification:
+            endpoint: /api/access-control/user/permissions
+            method: GET
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/grafana
+    docs_connect: https://docs.nango.dev/integrations/all/grafana/connect
+    connection_config:
+        domain:
+            type: string
+            title: Domain
+            description: Your Grafana domain
+            example: example.grafana.net
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-finding-your-domain'
+    credentials:
+        apiKey:
+            type: string
+            title: Token
+            description: The Token for your Grafana service account
+            example: glsa_*****************************************
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-2-generating-your-service-account-token'
+
 grain:
     display_name: Grain
     categories:
