@@ -96,7 +96,7 @@ describe('Nodes', () => {
         const searchAllStates = await nodes.search(db, {
             states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR']
         });
-        expect(searchAllStates.unwrap().nodes).toEqual(
+        expect(searchAllStates.unwrap()).toEqual(
             new Map([
                 [route1PendingNode.routingId, { PENDING: [route1PendingNode], RUNNING: [route1RunningNode] }],
                 [startingNode.routingId, { STARTING: [startingNode] }],
@@ -110,7 +110,7 @@ describe('Nodes', () => {
         );
 
         const searchRunning = await nodes.search(db, { states: ['RUNNING'] });
-        expect(searchRunning.unwrap().nodes).toEqual(
+        expect(searchRunning.unwrap()).toEqual(
             new Map([
                 [route1RunningNode.routingId, { RUNNING: [route1RunningNode] }],
                 [runningNode.routingId, { RUNNING: [runningNode] }]
@@ -118,24 +118,17 @@ describe('Nodes', () => {
         );
 
         const searchWithWrongRoute = await nodes.search(db, { states: ['PENDING'], routingId: terminatedNode.routingId });
-        expect(searchWithWrongRoute.unwrap().nodes).toEqual(new Map());
+        expect(searchWithWrongRoute.unwrap()).toEqual(new Map());
     });
 
-    it('should be searchable (with pagination support)', async () => {
-        for (let i = 0; i < 12; i++) {
-            await createNodeWithAttributes(db, { state: 'PENDING', routingId: i.toString(), deploymentId: activeDeployment.id });
+    it('should be searchable when more than page size', async () => {
+        const routingId = 'my-routing-id';
+        const count = 1111;
+        for (let i = 0; i < count; i++) {
+            await createNodeWithAttributes(db, { state: 'PENDING', deploymentId: activeDeployment.id, routingId });
         }
-        const searchFirstPage = (await nodes.search(db, { states: ['PENDING'], limit: 5 })).unwrap();
-        expect(searchFirstPage.nodes.size).toBe(5);
-        expect(searchFirstPage.nextCursor).toBe(6);
-
-        const searchSecondPage = (await nodes.search(db, { states: ['PENDING'], limit: 5, cursor: searchFirstPage.nextCursor! })).unwrap();
-        expect(searchSecondPage.nodes.size).toBe(5);
-        expect(searchSecondPage.nextCursor).toBe(11);
-
-        const searchThirdPage = (await nodes.search(db, { states: ['PENDING'], limit: 5, cursor: searchSecondPage.nextCursor! })).unwrap();
-        expect(searchThirdPage.nodes.size).toBe(2);
-        expect(searchThirdPage.nextCursor).toBe(undefined);
+        const pending = (await nodes.search(db, { states: ['PENDING'] })).unwrap().get(routingId);
+        expect((pending?.PENDING || []).length).toBe(count);
     });
 
     it('should be able to fail a node', async () => {
