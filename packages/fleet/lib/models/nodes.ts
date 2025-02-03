@@ -137,50 +137,63 @@ export async function search(
     params: {
         states: [NodeState, ...NodeState[]]; // non-empty array
         routingId?: RoutingId;
-        cursor?: number;
         limit?: number;
     }
-): Promise<
-    Result<{
-        nodes: Map<RoutingId, Record<NodeState, Node[]>>;
-        nextCursor?: number;
-    }>
-> {
-    try {
-        const limit = params.limit || 1000;
-        const query = db
-            .select<DBNode[]>('*')
-            .from(NODES_TABLE)
-            .whereIn('state', params.states)
-            .orderBy('id')
-            .limit(limit + 1); // fetch one more than limit to determine if there are more results
+): Promise<Result<Map<RoutingId, Record<NodeState, Node[]>>>> {
+    const recursiveSearch = async ({
+        cursor,
+        nodesMap,
+        remaining
+    }: {
+        cursor?: number;
+        nodesMap: Map<RoutingId, Record<NodeState, Node[]>>;
+        remaining: number;
+    }): Promise<Map<RoutingId, Record<NodeState, Node[]>>> => {
+        const pageSize = 1000;
+        const limit = Math.min(pageSize, remaining);
 
+        if (remaining <= 0) {
+            return nodesMap;
+        }
+
+        const query = db.select<DBNode[]>('*').from(NODES_TABLE).whereIn('state', params.states).orderBy('id').limit(limit);
+        if (cursor) {
+            query.where('id', '>', cursor);
+        }
         if (params.routingId) {
             query.where({ routing_id: params.routingId });
-        }
-        if (params.cursor) {
-            query.where('id', '>=', params.cursor);
         }
 
         const nodes = await query;
 
-        const nextCursor = nodes.length > limit ? nodes.pop()?.id : undefined;
-
-        const nodesMap = new Map<RoutingId, Record<NodeState, Node[]>>();
-
         for (const node of nodes) {
             const routingId = node.routing_id;
             const existingNodes = nodesMap.get(routingId) || ({} as Record<NodeState, Node[]>);
+
             nodesMap.set(routingId, {
                 ...existingNodes,
                 [node.state]: [...(existingNodes[node.state] || []), DBNode.from(node)]
             });
         }
 
-        return Ok({
-            nodes: nodesMap,
-            ...(nextCursor ? { nextCursor } : {})
+        const nextCursor = nodes[nodes.length - 1]?.id;
+        if (!nextCursor) {
+            return nodesMap;
+        }
+
+        return recursiveSearch({
+            cursor: nextCursor,
+            nodesMap,
+            remaining: remaining - nodes.length
         });
+    };
+
+    try {
+        const res = await recursiveSearch({
+            nodesMap: new Map<RoutingId, Record<NodeState, Node[]>>(),
+            remaining: params.limit || Infinity
+        });
+        return Ok(res);
     } catch (err) {
         return Err(new FleetError(`node_search_failed`, { cause: err, context: params }));
     }

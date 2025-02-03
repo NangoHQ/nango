@@ -1,7 +1,6 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
-import { routeHandler as postLegacyIdleHandler } from './routes/postIdle.js';
 import { routeHandler as putTaskHandler } from './routes/tasks/putTask.js';
 import { routeHandler as postHeartbeatHandler } from './routes/tasks/taskId/postHeartbeat.js';
 import { routeHandler as postIdleHandler } from './routes/runners/postIdle.js';
@@ -22,7 +21,6 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
 }
 
 createRoute(server, getHealthHandler);
-createRoute(server, postLegacyIdleHandler);
 createRoute(server, postIdleHandler);
 createRoute(server, postRegisterHandler);
 createRoute(server, putTaskHandler);

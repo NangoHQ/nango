@@ -9,17 +9,23 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { PostHogProvider } from 'posthog-js/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import posthog from 'posthog-js';
 
-const options = {
-    api_host: globalEnv.publicPosthogHost,
-    maskAllInputs: true
-};
+if (globalEnv.publicPosthogKey) {
+    posthog.init(globalEnv.publicPosthogKey, {
+        api_host: globalEnv.publicPosthogHost,
+        mask_personal_data_properties: true,
+        session_recording: {
+            maskAllInputs: true
+        }
+    });
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <React.StrictMode>
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
-            <PostHogProvider apiKey={globalEnv.publicPosthogKey} options={options}>
+            <PostHogProvider client={posthog}>
                 <BrowserRouter>
                     <App />
                 </BrowserRouter>
