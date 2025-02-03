@@ -34,6 +34,7 @@ process.on('uncaughtException', (e) => {
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 
 // Log all requests
 if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
