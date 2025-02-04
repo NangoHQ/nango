@@ -1,17 +1,12 @@
 import { z } from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostRollout, CommitHash } from '@nangohq/types';
+import type { PostRollout } from '@nangohq/types';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { runnersFleet } from '../../fleet.js';
 
 const bodyValidation = z
     .object({
-        commitHash: z
-            .string()
-            .length(40)
-            .transform((data) => {
-                return data as CommitHash;
-            })
+        image: z.string().regex(/^[a-z0-9-]+\/[a-z0-9-]+:[a-f0-9]{40}$/, { message: "Invalid image. Must be 'repository/image:commit'" })
     })
     .strict();
 
@@ -41,14 +36,14 @@ export const postRollout = asyncWrapper<PostRollout>(async (req, res) => {
     }
 
     const { fleetId }: PostRollout['Params'] = params.data;
-    const { commitHash }: PostRollout['Body'] = body.data;
+    const { image }: PostRollout['Body'] = body.data;
 
     if (fleetId !== runnersFleet.fleetId) {
         res.status(404).send({ error: { code: 'invalid_uri_params', message: 'Unknown fleet' } });
         return;
     }
 
-    const rollout = await runnersFleet.rollout(commitHash);
+    const rollout = await runnersFleet.rollout(image);
     if (rollout.isErr()) {
         res.status(500).send({ error: { code: 'rollout_failed', message: rollout.error.message } });
     } else {
