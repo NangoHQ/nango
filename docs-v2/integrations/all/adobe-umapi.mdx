@@ -1,0 +1,58 @@
+---
+title: Adobe UMAPI
+sidebarTitle: Adobe UMAPI
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/adobe-umapi/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/adobe-umapi/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe-umapi.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register an Application](https://developer.adobe.com/developer-console/docs/guides/getting-started)
+-   [OAuth-related docs](https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/implementation/#oauth-20-scopes)
+-   [Adding an Adobe service](https://developer.adobe.com/developer-console/docs/guides/services/services-add-api-oauth-user-authentication/)
+-   [List of OAuth scopes](https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/implementation/#oauth-20-scopes)
+-   [UMAPI authentication](https://adobe-apiplatform.github.io/umapi-documentation/en/UM_Authentication.html)
+-   [UMAPI API docs](https://adobe-apiplatform.github.io/umapi-documentation/en/RefOverview.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe-umapi.mdx)</Note>
+
+## API gotchas
+
+-   If the service you are trying to integrate allows `offline_access`, then you will be able to get refresh token if you add this in the scopes.
+-   Depending on the selected API, some platforms may not be available to be used with that API. Select the platform that best suits your application use case if more than one platform is available.
+-   When creating an API make, it is important to web app as the type of application you are integrating too. (Not all apps support OAuth 2.0.)
+-   To refresh the token, simply use `nango.getConnection()` to generate a new set of tokens.
+-   Adobe provides [UMAPI](https://developer.adobe.com/UMAPI/) Adobe user management API, which gives you programmatic access to users, groups, and entitlements for Adobe products and services.
+-   UMAPI is only available to the [enterprise plan](https://community.adobe.com/t5/enterprise-teams-discussions/is-the-user-management-api-available-only-for-enterprise-customers/td-p/12159610)
+-   UMAPI enforces API rate limiting, please refer to the Throttling section of each API to determine its limitations. e.g, [Throttling](https://adobe-apiplatform.github.io/umapi-documentation/en/api/getUsersREST.html#getUsersRESTThrottle) for the Get All Users in Organization API.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe-umapi.mdx)</Note>
+
+<Card title="Connect to UMAPI (Adobe User Management API)" icon="link" href="/integrations/all/adobe-umapi/connect" horizontal>
+  Guide to connect to UMAPI (Adobe User Management API) using Connect UI
+</Card>

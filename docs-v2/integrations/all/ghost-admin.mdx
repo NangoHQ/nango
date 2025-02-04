@@ -1,0 +1,68 @@
+---
+title: Ghost Admin
+sidebarTitle: Ghost Admin
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/ghost-admin/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/ghost-admin/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ghost-admin.mdx)</Note>
+
+
+## Useful links
+
+-   [Ghost(Admin API authentication)](https://ghost.org/docs/admin-api/#token-authentication)
+-   [Ghost(Content API authentication)](https://ghost.org/docs/content-api#url)
+-   [Ghost(Admin API docs)](https://ghost.org/docs/admin-api/)
+-   [Ghost(Content API docs)](https://ghost.org/docs/content-api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ghost-admin.mdx)</Note>
+
+## API gotchas
+
+- Both Admin and Content API keys can be be obtained by creating a new Custom Integration under the Integrations screen in Ghost Admin.
+- For Ghost Admin, the API Key should be in the format `id:secret`.
+- After creating a connection on Nango, you can use the token generated as follows;
+```js
+const connection = await nango.getConnection();
+
+const token = connection.credentials.token;
+
+if (!token) {
+    throw new nango.ActionError({
+        message: `Access token is missing`,
+    });
+}
+
+// Define the configuration for the API call
+const config: ProxyConfiguration = {
+    endpoint: '/users',
+    retries: 10,
+    headers: {
+        Authorization: `Ghost ${token}`,
+    },
+};
+```
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ghost-admin.mdx)</Note>

@@ -35,22 +35,10 @@ const files = await fs.readdir(docsPath);
 // we only need a subset of providers based on how our docs are written
 const neededProviders: Record<string, Provider> = {};
 
-const providerLineRegex = /^provider: ([^\s]+)\s*$/m;
-
 let hasWarnings = false;
 for (const file of files) {
     if (file.endsWith('.mdx')) {
-        const filePath = path.join(docsPath, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-
-        const providerMatch = content.match(providerLineRegex);
-        if (!providerMatch?.[1]) {
-            // eslint-disable-next-line no-console
-            console.warn(`No provider line found in ${file}`);
-            hasWarnings = true;
-            continue;
-        }
-        const provider = providerMatch[1];
+        const provider = path.basename(file, '.mdx');
 
         if (!providers[provider]) {
             // eslint-disable-next-line no-console
