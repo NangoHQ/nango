@@ -62,6 +62,7 @@ import type { PostPublicWebhook } from './webhooks/http.api';
 import type { PatchEnvironment, PostEnvironment } from './environment/api';
 import type { PatchWebhook } from './environment/api/webhook';
 import type { PostEnvironmentVariables } from './environment/variable/api';
+import type { GetPublicRecords } from './record/api';
 
 export type PublicApiEndpoints =
     | SetMetadata
@@ -92,7 +93,8 @@ export type PublicApiEndpoints =
     | DeletePublicConnection
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
-    | PostPublicWebhook;
+    | PostPublicWebhook
+    | GetPublicRecords;
 
 export type PrivateApiEndpoints =
     | PostSignup

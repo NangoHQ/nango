@@ -51,10 +51,10 @@ export async function getRecords({
 }: {
     connectionId: number;
     model: string;
-    modifiedAfter?: string;
-    limit?: number | string;
-    filter?: LastAction;
-    cursor?: string;
+    modifiedAfter?: string | undefined;
+    limit?: number | string | undefined;
+    filter?: LastAction | undefined;
+    cursor?: string | undefined;
 }): Promise<Result<GetRecordsResponse>> {
     try {
         if (!model) {

@@ -17,6 +17,7 @@ export type ResDefaultErrors =
     | ApiError<'not_found'>
     | ApiError<'conflict'>
     | ApiError<'invalid_query_params', ValidationError[]>
+    | ApiError<'invalid_headers', ValidationError[]>
     | ApiError<'invalid_body', ValidationError[]>
     | ApiError<'invalid_uri_params', ValidationError[]>
     | ApiError<'feature_disabled'>
@@ -40,6 +41,7 @@ export interface EndpointDefinition {
     Path: string;
     Params?: Record<string, any>;
     Body?: Record<string, any>;
+    Headers?: Record<string, any>;
     Querystring?: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     Error?: ApiError<any> | never;
@@ -70,6 +72,11 @@ export interface Endpoint<T extends EndpointDefinition> {
      * Received body
      */
     Body: T['Body'] extends Record<string, any> ? T['Body'] : never;
+
+    /**
+     * Received headers
+     */
+    Headers: T['Headers'] extends Record<string, any> ? T['Headers'] : never;
 
     // ------------
     // ------------ Response
