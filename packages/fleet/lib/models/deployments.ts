@@ -73,7 +73,6 @@ export async function create(db: knex.Knex, image: string): Promise<Result<Deplo
             return Ok(DBDeployment.to(inserted));
         });
     } catch (err) {
-        console.log(err);
         return Err(new FleetError(`deployment_creation_failed`, { cause: err, context: { image } }));
     }
 }
