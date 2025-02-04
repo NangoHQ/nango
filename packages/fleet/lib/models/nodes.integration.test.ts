@@ -5,7 +5,7 @@ import { nodeStates } from '../types.js';
 import type { NodeState } from '../types.js';
 import type { Deployment } from '@nangohq/types';
 import { getTestDbClient } from '../db/helpers.test.js';
-import { generateCommitHash } from './helpers.js';
+import { generateImage } from './helpers.js';
 import { createNodeWithAttributes } from './helpers.test.js';
 
 describe('Nodes', () => {
@@ -16,8 +16,8 @@ describe('Nodes', () => {
     let activeDeployment: Deployment;
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(db, generateCommitHash().unwrap())).unwrap();
-        activeDeployment = (await deployments.create(db, generateCommitHash().unwrap())).unwrap();
+        previousDeployment = (await deployments.create(db, generateImage().unwrap())).unwrap();
+        activeDeployment = (await deployments.create(db, generateImage().unwrap())).unwrap();
     });
 
     afterEach(async () => {
