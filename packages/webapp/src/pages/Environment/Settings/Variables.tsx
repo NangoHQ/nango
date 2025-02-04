@@ -158,10 +158,12 @@ export const VariablesSettings: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div className="flex gap-2">
-                                    <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
-                                    <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
-                                </div>
+                                {(errorName || errorValue) && (
+                                    <div className="flex gap-2">
+                                        <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
+                                        <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

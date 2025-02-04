@@ -141,10 +141,10 @@ export const BackendSettings: React.FC = () => {
                                     </DialogDescription>
                                     <DialogFooter>
                                         <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Abort</Button>
+                                            <Button variant={'tertiary'}>Dismiss</Button>
                                         </DialogClose>
                                         <Button variant={'danger'} onClick={onRevert} isLoading={loading}>
-                                            Cancel
+                                            Cancel key rotation
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -162,15 +162,21 @@ export const BackendSettings: React.FC = () => {
                                     </DialogDescription>
                                     <DialogFooter>
                                         <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Abort</Button>
+                                            <Button variant={'tertiary'}>Dismiss</Button>
                                         </DialogClose>
                                         <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
-                                            Rotate
+                                            Confirm key rotation
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
                         </div>
+                    )}
+                    {hasNewSecretKey && (
+                        <Info>
+                            The current secret is still active, the new secret is not. Confirm key rotation to activate new secret and deactivate current
+                            secret.
+                        </Info>
                     )}
                 </fieldset>
 
@@ -179,17 +185,22 @@ export const BackendSettings: React.FC = () => {
                     title="Callback URL"
                     placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
+                    editInfo={
+                        <Info>
+                            Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers.
+                            Otherwise authorization attempts will fail. Details in{' '}
+                            <Link
+                                to="https://docs.nango.dev/guides/api-authorization/whitelabel-the-oauth-flow#use-a-custom-callback-url"
+                                className="underline"
+                            >
+                                docs
+                            </Link>
+                            .
+                        </Info>
+                    }
                     apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
                     onSuccess={() => void mutate()}
                 />
-                <Info>
-                    Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers. Otherwise
-                    authorization attempts will fail. Details in{' '}
-                    <Link to="https://docs.nango.dev/guides/api-authorization/whitelabel-the-oauth-flow#use-a-custom-callback-url" className="underline">
-                        docs
-                    </Link>
-                    .
-                </Info>
             </div>
         </div>
     );
