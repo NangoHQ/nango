@@ -8,6 +8,8 @@ import { apiFetch } from '../../../utils/api';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
+import { Info } from '../../../components/Info';
+import { Link } from 'react-router-dom';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -165,6 +167,14 @@ export const BackendSettings: React.FC = () => {
                     apiCall={(value) => apiPatchEnvironment(env, { callback_url: value })}
                     onSuccess={() => void mutate()}
                 />
+                <Info>
+                    Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers. Otherwise
+                    authorization attempts will fail. Details in{' '}
+                    <Link to="https://docs.nango.dev/guides/api-authorization/whitelabel-the-oauth-flow#use-a-custom-callback-url" className="underline">
+                        docs
+                    </Link>
+                    .
+                </Info>
             </div>
         </div>
     );

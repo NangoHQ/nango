@@ -25,7 +25,7 @@ export const EnvironmentSettings: React.FC = () => {
                 <ExportSettings />
                 <Accordion type="single" collapsible>
                     <AccordionItem value="item-1">
-                        <AccordionTrigger>Authorization settings</AccordionTrigger>
+                        <AccordionTrigger>Deprecated authorization settings</AccordionTrigger>
                         <AccordionContent>
                             <AuthorizationSettings />
                         </AccordionContent>
