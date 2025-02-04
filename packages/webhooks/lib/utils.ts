@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, axiosInstance as axios, retryWithBackoff, redactHeaders } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncType, AuthOperationType, ExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
+import type { WebhookTypes, SyncType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -81,7 +81,7 @@ export const shouldSend = ({
     type,
     operation
 }: {
-    webhookSettings: ExternalWebhook;
+    webhookSettings: DBExternalWebhook;
     success: boolean;
     type: 'auth' | 'sync' | 'forward';
     operation: SyncType | AuthOperationType | 'incoming_webhook';
