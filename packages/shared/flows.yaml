@@ -12750,7 +12750,7 @@ integrations:
                 runs: every 1 hour
                 output: Customer
                 scopes: read_customers, read_subscriptions
-                version: 1.0.0
+                version: 1.0.1
         models:
             Customer:
                 id: string
@@ -12758,7 +12758,8 @@ integrations:
                 first_name: string | null
                 last_name: string | null
                 subscriptions:
-                    - type: string
+                    - id: string
+                      type: string
                       name: string
                       start_date: string
                       end_date: string | null
