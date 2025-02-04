@@ -49,7 +49,7 @@ describe('fleet', () => {
             expect(nodeConfigOverride.get('test')).toStrictEqual({
                 id: expect.any(Number),
                 routingId: props.routingId,
-                image,
+                image: null,
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
