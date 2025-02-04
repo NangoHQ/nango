@@ -6,6 +6,8 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../../../utils/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
+export type InputVariantProp = VariantProps<typeof wrapperStyles>;
+export type InputStyleProp = VariantProps<typeof inputStyles>;
 export const wrapperStyles = cva('', {
     variants: {
         variant: {
@@ -22,10 +24,10 @@ export const wrapperStyles = cva('', {
 export const inputStyles = cva('', {
     variants: {
         inputSize: {
-            xs: 'text-sm px-3 py-[4px] placeholder-gray-400',
-            sm: 'text-sm px-3 py-[7px] placeholder-gray-400',
-            md: 'text-sm px-3 py-[10px] placeholder-gray-400',
-            lg: 'text-sm px-3 h-[42px] placeholder-gray-400'
+            xs: 'text-sm px-3 py-[4px] placeholder-grayscale-500',
+            sm: 'text-sm px-3 py-[7px] placeholder-grayscale-500',
+            md: 'text-sm px-3 py-[10px] placeholder-grayscale-500',
+            lg: 'text-sm px-3 h-[42px] placeholder-grayscale-500'
         }
     },
     defaultVariants: {
@@ -38,8 +40,8 @@ const Input = forwardRef<
     InputProps & {
         before?: React.ReactNode;
         after?: React.ReactNode;
-    } & VariantProps<typeof inputStyles> &
-        VariantProps<typeof wrapperStyles>
+    } & InputStyleProp &
+        InputVariantProp
 >(({ className, type, before, after, inputSize, variant, ...props }, ref) => {
     return (
         <div
@@ -50,7 +52,7 @@ const Input = forwardRef<
                 type={type}
                 ref={ref}
                 className={cn(
-                    'bg-transparent border-0 h-full w-full rounded text-white focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-1 file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-light-gray disabled:cursor-not-allowed',
+                    'bg-transparent border-0 h-full w-full rounded text-grayscale-100 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-1 file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-grayscale-400 disabled:cursor-not-allowed',
                     inputStyles({ inputSize }),
                     before && 'pl-8',
                     after && 'pr-8'

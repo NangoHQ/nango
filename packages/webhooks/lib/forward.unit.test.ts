@@ -1,7 +1,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { forwardWebhook } from './forward.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { DBEnvironment, DBTeam, ExternalWebhook, IntegrationConfig } from '@nangohq/types';
+import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
 import { logContextGetter } from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -15,7 +15,7 @@ const account: DBTeam = {
     updated_at: new Date()
 };
 
-const webhookSettings: ExternalWebhook = {
+const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
     primary_url: 'http://example.com/webhook',

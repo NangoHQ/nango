@@ -1,4 +1,4 @@
-import type { NangoForwardWebhookBody, ExternalWebhook, IntegrationConfig, DBTeam, DBEnvironment } from '@nangohq/types';
+import type { NangoForwardWebhookBody, DBExternalWebhook, IntegrationConfig, DBTeam, DBEnvironment } from '@nangohq/types';
 import type { LogContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 
@@ -15,7 +15,7 @@ export const forwardWebhook = async ({
     integration: IntegrationConfig;
     account: DBTeam;
     environment: DBEnvironment;
-    webhookSettings: ExternalWebhook | null;
+    webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
     payload: Record<string, any> | null;
     webhookOriginalHeaders: Record<string, string>;
