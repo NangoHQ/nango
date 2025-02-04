@@ -22,7 +22,7 @@ const DashboardLayout = forwardRef<HTMLDivElement, DashboardLayoutI>(function Da
             <div className="w-[250px] h-screen z-10 flex-grow-0">
                 <LeftNavBar selectedItem={selectedItem} />
             </div>
-            <div className="flex-grow relative h-screen flex flex-col">
+            <div className="flex-grow relative h-screen flex flex-col overflow-hidden">
                 <div className="h-[57px] w-full">
                     <TopNavBar />
                 </div>
