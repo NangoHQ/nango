@@ -113,7 +113,7 @@ export const ScriptSettings: React.FC<{
     return (
         <Drawer
             direction="right"
-            snapPoints={open ? [drawerWidth] : []}
+            snapPoints={[drawerWidth]}
             handleOnly={true}
             noBodyStyles={true}
             dismissible={true}

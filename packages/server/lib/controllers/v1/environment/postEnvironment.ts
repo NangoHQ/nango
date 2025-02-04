@@ -53,10 +53,10 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
     }
 
     await externalWebhookService.update(created.id, {
-        alwaysSendWebhook: true,
-        sendAuthWebhook: true,
-        sendRefreshFailedWebhook: true,
-        sendSyncFailedWebhook: true
+        on_auth_creation: true,
+        on_auth_refresh_error: true,
+        on_sync_completion_always: true,
+        on_sync_error: true
     });
 
     res.status(200).send({ data: { id: created.id, name: created.name } });

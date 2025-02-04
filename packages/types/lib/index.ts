@@ -54,6 +54,7 @@ export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
 export type * from './environment/variable/index.js';
+export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
 export type * from './webhooks/http.api.js';
 export type * from './flow/http.api.js';
@@ -63,3 +64,5 @@ export type * from './web/env.js';
 
 export type * from './fleet/api.js';
 export type * from './fleet/index.js';
+
+export type * from './persist/api.js';

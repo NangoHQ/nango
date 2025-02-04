@@ -1,12 +1,12 @@
 import type { Timestamps } from '../db';
 
 export interface DBEnvironmentVariable extends Timestamps {
-    id?: number;
+    id: number;
     name: string;
     value: string;
     environment_id: number;
-    value_iv?: string | null;
-    value_tag?: string | null;
+    value_iv: string | null;
+    value_tag: string | null;
 }
 
 export interface DBEnvironment extends Timestamps {
@@ -20,7 +20,13 @@ export interface DBEnvironment extends Timestamps {
     secret_key_tag?: string | null;
     secret_key_hashed?: string | null;
     callback_url: string | null;
+    /**
+     * @deprecated
+     */
     webhook_url: string | null;
+    /**
+     * @deprecated
+     */
     webhook_url_secondary: string | null;
     websockets_path: string | null;
     hmac_enabled: boolean;
@@ -38,15 +44,15 @@ export interface DBEnvironment extends Timestamps {
     pending_public_key?: string | null;
     slack_notifications: boolean;
 
-    webhook_receive_url?: string;
+    webhook_receive_url: string | null;
     otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
 }
 
-export interface ExternalWebhook extends Timestamps {
+export interface DBExternalWebhook extends Timestamps {
     id: number;
     environment_id: number;
-    primary_url: string;
-    secondary_url: string;
+    primary_url: string | null;
+    secondary_url: string | null;
     on_sync_completion_always: boolean;
     on_auth_creation: boolean;
     on_auth_refresh_error: boolean;

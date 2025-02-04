@@ -2,7 +2,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendSync } from './sync.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoSyncWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment, DBTeam, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
+import type { NangoSyncWebhookBodySuccess, Connection, DBExternalWebhook, DBEnvironment, DBTeam, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -60,7 +60,7 @@ const connection: Pick<Connection, 'id' | 'connection_id' | 'provider_config_key
     provider_config_key: 'providerkey'
 };
 
-const webhookSettings: ExternalWebhook = {
+const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
     primary_url: 'http://example.com/webhook',

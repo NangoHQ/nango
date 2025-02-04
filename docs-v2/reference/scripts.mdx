@@ -525,6 +525,46 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
     </ResponseField>
 </Expandable>
 
+### Update records
+
+Updates records in the Nango cache by merging the given data into the existing record. The `id` field is required in each record and used to determine what existing record to merge into.
+
+`batchUpdate` is primarily useful in webhook sync scripts, where you receive partial updates from a webhook and want to merge them into the existing records.
+
+The merge algorithm used is a deep merge. Nested objects are merged recursively, while arrays always use the new value for the array. Any fields not present in the update record are left unchanged.
+
+```ts
+// Create partial GitHub Issue update records with only id and state.
+const githubIssues: Pick<GitHubIssue, "id" | "state">[] = ...; 
+
+await nango.batchUpdate(githubIssues, 'GitHubIssue');
+```
+
+**Take special care when using `batchUpdate` with records containing arrays.** The merge algorithm does not attempt to merge arrays, but rather always uses the value of the new array.
+
+```ts
+// given a an existing record: 
+// { id: '1', tags: [{id: 12, name: 'Dev'}, {id: 13, name: "QA"}] }
+const updates: Pick<Issue, "id" | "tags">[] = [
+    { id: '1', tags: [{id: 14, name: 'UX'}] }
+];
+
+// after the update, the record will be: 
+// { id: '1', tags: [{id: 14, name: "UX"}] }
+await nango.batchUpdate(updates, 'Issue');
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="recordList" type="Pick<Model, 'id' | ...>[]" required>
+        The list of partial records to persist.
+    </ResponseField>
+
+    <ResponseField name="modelType" type="string" required>
+        The model type of the records to persist.
+    </ResponseField>
+</Expandable>
 
 # Action-specific helper methods
 
@@ -538,7 +578,6 @@ export default async function runAction(nango: NangoAction): Promise<Response> {
 
     throw new ActionError({ any_key: 'any_value' });
 }
-
 ```
 
 In this case, the response to the trigger action call will be:

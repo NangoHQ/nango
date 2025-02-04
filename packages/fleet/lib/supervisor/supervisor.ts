@@ -121,7 +121,7 @@ export class Supervisor {
         this.state = 'stopped';
     }
 
-    private async plan(cursor?: number): Promise<Result<Operation[]>> {
+    private async plan(): Promise<Result<Operation[]>> {
         const activeSpan = tracer.scope().active();
         return tracer.trace('fleet.supervisor.plan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (span) => {
             const getDeployment = await deployments.getActive(this.dbClient.db);
@@ -138,22 +138,20 @@ export class Supervisor {
             const plan: Operation[] = [];
 
             const search = await nodes.search(this.dbClient.db, {
-                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'],
-                ...(cursor ? { cursor } : {})
+                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR']
             });
             if (search.isErr()) {
                 span?.setTag('error', search.error);
                 return Err(search.error);
             }
-
-            const routingIds = Array.from(search.value.nodes.keys());
+            const routingIds = Array.from(search.value.keys());
             const configOverrides = await nodeConfigOverrides.search(this.dbClient.db, { routingIds });
             if (configOverrides.isErr()) {
                 span?.setTag('error', configOverrides.error);
                 return Err(configOverrides.error);
             }
 
-            for (const [routingId, nodes] of search.value.nodes) {
+            for (const [routingId, nodes] of search.value) {
                 // Start pending nodes
                 plan.push(...(nodes.PENDING || []).map<Operation>((node) => ({ type: 'START', node })));
 
@@ -262,17 +260,6 @@ export class Supervisor {
                     })
                 );
             }
-
-            // Recursively fetch next page of nodes
-            if (search.value.nextCursor) {
-                const nextPagePlan = await this.plan(search.value.nextCursor);
-                if (nextPagePlan.isErr()) {
-                    logger.error('Failed to get next plan:', nextPagePlan.error);
-                } else {
-                    plan.push(...nextPagePlan.value);
-                }
-            }
-
             return Ok(plan);
         });
     }

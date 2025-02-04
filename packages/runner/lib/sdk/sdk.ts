@@ -1,27 +1,12 @@
-import https from 'node:https';
-import type { AxiosInstance, AxiosResponse } from 'axios';
-import axios, { AxiosError } from 'axios';
+import type { AxiosResponse } from 'axios';
 
-import { getUserAgent, Nango } from '@nangohq/node';
+import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { getPersistAPIUrl, proxyService } from '@nangohq/shared';
-import type { MessageRowInsert, NangoProps, UserLogParameters } from '@nangohq/types';
-import {
-    getLogger,
-    httpRetryStrategy,
-    isTest,
-    MAX_LOG_PAYLOAD,
-    metrics,
-    redactHeaders,
-    redactURL,
-    retryWithBackoff,
-    stringifyAndTruncateValue,
-    stringifyObject,
-    truncateJson
-} from '@nangohq/utils';
-
-const logger = getLogger('SDK');
+import { proxyService } from '@nangohq/shared';
+import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
+import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import { PersistClient } from './persist.js';
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -33,17 +18,6 @@ export const oldLevelToNewLevel = {
     http: 'info'
 } as const;
 
-export const defaultPersistApi = axios.create({
-    baseURL: getPersistAPIUrl(),
-    httpsAgent: new https.Agent({ keepAlive: true }),
-    headers: {
-        'User-Agent': getUserAgent('sdk')
-    },
-    validateStatus: (_status) => {
-        return true;
-    }
-});
-
 const RECORDS_VALIDATION_SAMPLE = 5;
 
 /**
@@ -51,11 +25,11 @@ const RECORDS_VALIDATION_SAMPLE = 5;
  */
 export class NangoActionRunner extends NangoActionBase {
     nango: Nango;
-    protected persistApi: AxiosInstance;
+    protected persistClient: PersistClient;
 
-    constructor(props: NangoProps, runnerProps?: { persistApi: AxiosInstance }) {
+    constructor(props: NangoProps, runnerProps?: { persistClient: PersistClient }) {
         super(props);
-        this.persistApi = runnerProps?.persistApi || defaultPersistApi;
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
 
         this.nango = new Nango(
             { isSync: false, dryRun: isTest, ...props },
@@ -146,50 +120,26 @@ export class NangoActionRunner extends NangoActionBase {
     }
 
     private async sendLogToPersist(log: MessageRowInsert) {
-        let response: AxiosResponse;
-        try {
-            response = await retryWithBackoff(
-                async () => {
-                    let data = stringifyObject({ activityLogId: this.activityLogId, log });
+        let data = stringifyObject({ activityLogId: this.activityLogId, log });
 
-                    // We try to keep log object under an acceptable size, before reaching network
-                    // The idea is to always log something instead of silently crashing without overloading persist
-                    if (data.length > MAX_LOG_PAYLOAD) {
-                        log.message += ` ... (truncated, payload was too large)`;
-                        // Truncating can remove mandatory field so we only try to truncate meta
-                        if (log.meta) {
-                            data = stringifyObject({
-                                activityLogId: this.activityLogId,
-                                log: { ...log, meta: truncateJson(log.meta) as MessageRowInsert['meta'] }
-                            });
-                        }
-                    }
-
-                    return await this.persistApi({
-                        method: 'POST',
-                        url: `/environment/${this.environmentId}/log`,
-                        headers: {
-                            Authorization: `Bearer ${this.nango.secretKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        data
-                    });
-                },
-                { retry: httpRetryStrategy }
-            );
-        } catch (err) {
-            logger.error('Failed to log to persist, due to an internal error', err instanceof AxiosError ? err.code : err);
-            // We don't want to block a sync because logging failed, so we fail silently until we have a way to report error
-            // TODO: find a way to report that
-            return;
+        // We try to keep log object under an acceptable size, before reaching network
+        // The idea is to always log something instead of silently crashing without overloading persist
+        if (data.length > MAX_LOG_PAYLOAD) {
+            log.message += ` ... (truncated, payload was too large)`;
+            // Truncating can remove mandatory field so we only try to truncate meta
+            if (log.meta) {
+                data = stringifyObject({
+                    activityLogId: this.activityLogId,
+                    log: { ...log, meta: truncateJson(log.meta) as MessageRowInsert['meta'] }
+                });
+            }
         }
-
-        if (response.status > 299) {
-            logger.error(
-                `Request to persist API (log) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}' log=${JSON.stringify(log)}`,
-                this.stringify()
-            );
-            throw new Error(`Failed to log: ${JSON.stringify(response.data)}`);
+        const res = await this.persistClient.saveLog({
+            environmentId: this.environmentId,
+            data
+        });
+        if (res.isErr()) {
+            throw res.error;
         }
     }
 
@@ -238,13 +188,14 @@ export class NangoActionRunner extends NangoActionBase {
 export class NangoSyncRunner extends NangoSyncBase {
     nango: Nango;
 
-    protected persistApi: AxiosInstance;
+    protected persistClient: PersistClient;
     private batchSize = 1000;
+    private mergingByModel = new Map<string, MergingStrategy>();
 
-    constructor(props: NangoProps, runnerProps?: { persistApi?: AxiosInstance }) {
+    constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
         super(props);
 
-        this.persistApi = runnerProps?.persistApi || defaultPersistApi;
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.nango = new Nango(
             { isSync: true, dryRun: isTest, ...props },
             {
@@ -262,6 +213,58 @@ export class NangoSyncRunner extends NangoSyncBase {
     triggerSync = NangoActionRunner['prototype']['triggerSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
+
+    public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
+        const now = new Date();
+        if (this.mergingByModel.has(model)) {
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'warn',
+                source: 'user',
+                message: `Merging strategy for model ${model} is already set. Skipping`,
+                createdAt: now.toISOString(),
+                environmentId: this.environmentId,
+                meta: { model, merging }
+            });
+            return;
+        }
+        switch (merging.strategy) {
+            case 'ignore_if_modified_after': {
+                const res = await this.persistClient.getCursor({
+                    environmentId: this.environmentId,
+                    nangoConnectionId: this.nangoConnectionId!,
+                    model: model,
+                    offset: 'last'
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                this.mergingByModel.set(model, { strategy: 'ignore_if_modified_after_cursor', ...(res.value ? { cursor: res.value.cursor } : {}) });
+                break;
+            }
+            case 'override':
+                this.mergingByModel.set(model, { strategy: 'override' });
+                break;
+            default:
+                throw new Error(`Unsupported merging strategy: ${merging.strategy}`);
+        }
+        await this.sendLogToPersist({
+            type: 'log',
+            level: 'info',
+            source: 'user',
+            message: `Merging strategy set to '${merging.strategy}' for model ${model}.`,
+            createdAt: now.toISOString(),
+            environmentId: this.environmentId
+        });
+    }
+
+    private getMergingStategy(model: string): MergingStrategy {
+        return this.mergingByModel.get(model) || { strategy: 'override' };
+    }
+
+    private setMergingStategyByModel(model: string, merging: MergingStrategy): void {
+        this.mergingByModel.set(model, merging);
+    }
 
     public async batchSave<T = any>(results: T[], model: string) {
         this.throwIfAborted();
@@ -292,41 +295,22 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            let response: AxiosResponse;
-            try {
-                response = await retryWithBackoff(
-                    () => {
-                        return this.persistApi({
-                            method: 'POST',
-                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                            headers: {
-                                Authorization: `Bearer ${this.nango.secretKey}`
-                            },
-                            data: {
-                                model,
-                                records: batch,
-                                providerConfigKey: this.providerConfigKey,
-                                connectionId: this.connectionId,
-                                activityLogId: this.activityLogId
-                            }
-                        });
-                    },
-                    { retry: httpRetryStrategy }
-                );
-            } catch (err) {
-                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
-                throw new Error('Failed to save records due to an internal error', { cause: err });
+            const res = await this.persistClient.saveRecords({
+                model,
+                records: batch,
+                environmentId: this.environmentId,
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                nangoConnectionId: this.nangoConnectionId!,
+                syncId: this.syncId!,
+                syncJobId: this.syncJobId!,
+                activityLogId: this.activityLogId!,
+                merging: this.getMergingStategy(model)
+            });
+            if (res.isErr()) {
+                throw res.error;
             }
-
-            if (response.status > 299) {
-                logger.error(
-                    `Request to persist API (batchSave) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    this.stringify()
-                );
-
-                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
-                throw new Error(message);
-            }
+            this.setMergingStategyByModel(model, res.value.nextMerging);
         }
         return true;
     }
@@ -339,40 +323,22 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            let response: AxiosResponse;
-            try {
-                response = await retryWithBackoff(
-                    async () => {
-                        return await this.persistApi({
-                            method: 'DELETE',
-                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                            headers: {
-                                Authorization: `Bearer ${this.nango.secretKey}`
-                            },
-                            data: {
-                                model,
-                                records: batch,
-                                providerConfigKey: this.providerConfigKey,
-                                connectionId: this.connectionId,
-                                activityLogId: this.activityLogId
-                            }
-                        });
-                    },
-                    { retry: httpRetryStrategy }
-                );
-            } catch (err) {
-                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
-                throw new Error('Failed to delete records due to an internal error', { cause: err });
+            const res = await this.persistClient.deleteRecords({
+                model,
+                records: batch,
+                environmentId: this.environmentId,
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                nangoConnectionId: this.nangoConnectionId!,
+                syncId: this.syncId!,
+                syncJobId: this.syncJobId!,
+                activityLogId: this.activityLogId!,
+                merging: this.getMergingStategy(model)
+            });
+            if (res.isErr()) {
+                throw res.error;
             }
-
-            if (response.status > 299) {
-                logger.error(
-                    `Request to persist API (batchDelete) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    this.stringify()
-                );
-                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
-                throw new Error(message);
-            }
+            this.setMergingStategyByModel(model, res.value.nextMerging);
         }
 
         return true;
@@ -386,40 +352,22 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         for (let i = 0; i < results.length; i += this.batchSize) {
             const batch = results.slice(i, i + this.batchSize);
-            let response: AxiosResponse;
-            try {
-                response = await retryWithBackoff(
-                    async () => {
-                        return await this.persistApi({
-                            method: 'PUT',
-                            url: `/environment/${this.environmentId}/connection/${this.nangoConnectionId}/sync/${this.syncId}/job/${this.syncJobId}/records`,
-                            headers: {
-                                Authorization: `Bearer ${this.nango.secretKey}`
-                            },
-                            data: {
-                                model,
-                                records: batch,
-                                providerConfigKey: this.providerConfigKey,
-                                connectionId: this.connectionId,
-                                activityLogId: this.activityLogId
-                            }
-                        });
-                    },
-                    { retry: httpRetryStrategy }
-                );
-            } catch (err) {
-                logger.error('Internal error', err instanceof AxiosError ? err.code : err);
-                throw new Error('Failed to update records due to an internal error', { cause: err });
+            const res = await this.persistClient.updateRecords({
+                model,
+                records: batch,
+                environmentId: this.environmentId,
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                nangoConnectionId: this.nangoConnectionId!,
+                syncId: this.syncId!,
+                syncJobId: this.syncJobId!,
+                activityLogId: this.activityLogId!,
+                merging: this.getMergingStategy(model)
+            });
+            if (res.isErr()) {
+                throw res.error;
             }
-
-            if (response.status > 299) {
-                logger.error(
-                    `Request to persist API (batchUpdate) failed: errorCode=${response.status} response='${JSON.stringify(response.data)}'`,
-                    this.stringify()
-                );
-                const message = 'error' in response.data && 'message' in response.data.error ? response.data.error.message : JSON.stringify(response.data);
-                throw new Error(message);
-            }
+            this.setMergingStategyByModel(model, res.value.nextMerging);
         }
         return true;
     }

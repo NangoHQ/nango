@@ -27,10 +27,6 @@ import { errorManager } from '@nangohq/shared';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getOperation } from './controllers/v1/logs/getOperation.js';
-import { postSettings as postOtlpSettings } from './controllers/v1/environment/otlp/postSettings.js';
-import { patchSettings as patchWebhookSettings } from './controllers/v1/environment/webhook/patchSettings.js';
-import { updatePrimaryUrl } from './controllers/v1/environment/webhook/updatePrimaryUrl.js';
-import { updateSecondaryUrl } from './controllers/v1/environment/webhook/updateSecondaryUrl.js';
 import {
     getEmailByUuid,
     resendVerificationEmailByUuid,
@@ -110,6 +106,10 @@ import { postRollout } from './controllers/fleet/postRollout.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
+import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
+import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
+import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
+import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 
 export const router = express.Router();
 
@@ -179,11 +179,15 @@ publicAPI.options('*', publicAPICorsHandler); // Pre-flight
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
+publicAPI.use('/oauth', jsonContentTypeMiddleware);
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
 publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.use('/api-auth', jsonContentTypeMiddleware);
 publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
+publicAPI.use('/app-store-auth', jsonContentTypeMiddleware);
 publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAppStoreAuthorization);
+publicAPI.use('/auth', jsonContentTypeMiddleware);
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
 publicAPI.route('/auth/tableau/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTableauAuthorization);
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
@@ -192,23 +196,29 @@ publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
+publicAPI.use('/unauth', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
 
 // API Admin routes
+publicAPI.use('/admin', jsonContentTypeMiddleware);
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (Secret key auth).
+publicAPI.use('/provider', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
 // @deprecated
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
+
+publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, getPublicProvider);
 
+publicAPI.use('/config', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/config').get(apiAuth, getPublicListIntegrationsLegacy);
 // @deprecated
@@ -216,9 +226,12 @@ publicAPI.route('/config/:providerConfigKey').get(apiAuth, configController.getP
 publicAPI.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 publicAPI.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
 publicAPI.route('/config/:providerConfigKey').delete(apiAuth, deletePublicIntegration);
+
+publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI.route('/integrations').get(connectSessionOrApiAuth, getPublicListIntegrations);
 publicAPI.route('/integrations/:uniqueKey').get(apiAuth, getPublicIntegration);
 
+publicAPI.use('/connection', jsonContentTypeMiddleware);
 publicAPI.route('/connection/:connectionId').get(apiAuth, getPublicConnection);
 publicAPI.route('/connection').get(apiAuth, getPublicConnections);
 publicAPI.route('/connection/:connectionId').delete(apiAuth, deletePublicConnection);
@@ -227,28 +240,44 @@ publicAPI.route('/connection/:connectionId/metadata').patch(apiAuth, connectionC
 publicAPI.route('/connection/metadata').post(apiAuth, postPublicMetadata);
 publicAPI.route('/connection/metadata').patch(apiAuth, patchPublicMetadata);
 publicAPI.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
+
+publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
+
+publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
+
+publicAPI.use('/records', jsonContentTypeMiddleware);
 publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
+
+publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 publicAPI.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 publicAPI.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
+
+publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+
+publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+
+publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
+publicAPI.use('/connect', jsonContentTypeMiddleware);
 publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 
+publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
 publicAPI.route('/proxy/*').all(apiAuth, upload.any(), proxyController.routeCall.bind(proxyController));
@@ -277,6 +306,7 @@ const webCorsHandler = cors({
 });
 web.use(webCorsHandler);
 web.options('*', webCorsHandler); // Pre-flight
+web.use('/api/v1', jsonContentTypeMiddleware);
 
 // Webapp routes (no auth).
 if (flagHasAuth) {
@@ -311,19 +341,15 @@ web.route('/api/v1/invite/:id').delete(webAuth, declineInvite);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
 web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
+
 web.route('/api/v1/environments').post(webAuth, postEnvironment);
-web.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
-web.route('/api/v1/environment/webhook/primary-url').patch(webAuth, updatePrimaryUrl);
-web.route('/api/v1/environment/webhook/secondary-url').patch(webAuth, updateSecondaryUrl);
+web.route('/api/v1/environments/').patch(webAuth, patchEnvironment);
+web.route('/api/v1/environments/webhook').patch(webAuth, patchWebhook);
+web.route('/api/v1/environments/variables').post(webAuth, postEnvironmentVariables);
+
 web.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
-web.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
-web.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
-web.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 web.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 web.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
-web.route('/api/v1/environment/webhook/settings').patch(webAuth, patchWebhookSettings);
-web.route('/api/v1/environment/otlp/settings').post(webAuth, postOtlpSettings);
 web.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 

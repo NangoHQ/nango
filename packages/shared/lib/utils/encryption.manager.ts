@@ -98,7 +98,7 @@ export class EncryptionManager extends Encryption {
         return decryptedConnection as Connection;
     }
 
-    public encryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[]): DBEnvironmentVariable[] {
+    public encryptEnvironmentVariables(environmentVariables: Omit<DBEnvironmentVariable, 'id'>[]): Omit<DBEnvironmentVariable, 'id'>[] {
         if (!this.shouldEncrypt()) {
             return environmentVariables;
         }
@@ -286,10 +286,7 @@ export class EncryptionManager extends Encryption {
             environmentVariable.value_iv = iv;
             environmentVariable.value_tag = authTag;
 
-            await db.knex
-                .from<DBEnvironmentVariable>(`_nango_environment_variables`)
-                .where({ id: environmentVariable.id as number })
-                .update(environmentVariable);
+            await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ id: environmentVariable.id }).update(environmentVariable);
         }
 
         logger.info('🔐✅ Encryption of database complete!');
