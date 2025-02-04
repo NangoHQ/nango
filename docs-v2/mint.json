@@ -16,6 +16,9 @@
             "to": "#012AC3"
         }
     },
+    "modeToggle": {
+        "default": "dark"
+    },
     "feedback": {
         "suggestEdit": true,
         "raiseIssue": true,
@@ -143,7 +146,8 @@
                         "guides/api-authorization/configuration",
                         "guides/api-authorization/authorize-in-your-app-default-ui",
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
-                        "guides/api-authorization/whitelabel-the-oauth-flow"
+                        "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/public-key-deprecation"
                     ]
                 },
                 "guides/new-api-support",
@@ -284,6 +288,7 @@
                 "integrations/all/cloudentity",
                 "integrations/all/codeclimate",
                 "integrations/all/coda",
+                "integrations/all/commercetools",
                 "integrations/all/connectwise-psa",
                 "integrations/all/confluence",
                 "integrations/all/contentful",
@@ -303,6 +308,7 @@
                 "integrations/all/document360",
                 "integrations/all/docusign",
                 "integrations/all/dropbox",
+                "integrations/all/drupal",
                 "integrations/all/e-conomic",
                 "integrations/all/ebay",
                 "integrations/all/elevio",
@@ -351,7 +357,13 @@
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+                "integrations/all/greenhouse-assessment",
+                "integrations/all/greenhouse-harvest",
+                "integrations/all/greenhouse-job-board",
+                "integrations/all/greenhouse-onboarding",
+                "integrations/all/greenhouse-ingestion",
                 "integrations/all/grain",
+                "integrations/all/grafana",
                 "integrations/all/gumroad",
                 "integrations/all/guru",
                 "integrations/all/gusto",
@@ -448,6 +460,7 @@
                 "integrations/all/recharge",
                 "integrations/all/refiner",
                 "integrations/all/replicate",
+                "integrations/all/retell-ai",
                 "integrations/all/ring-central",
                 "integrations/all/sage",
                 "integrations/all/salesforce",
@@ -515,6 +528,7 @@
                 "integrations/all/workable",
                 "integrations/all/workday",
                 "integrations/all/wrike",
+                "integrations/all/xai",
                 "integrations/all/xero",
                 "integrations/all/yahoo",
                 "integrations/all/yandex",
@@ -532,7 +546,8 @@
                 "integrations/all/zoho-mail",
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
-                "integrations/all/zoominfo"
+                "integrations/all/zoominfo",
+                "integrations/all/zuora"
             ]
         },
         {

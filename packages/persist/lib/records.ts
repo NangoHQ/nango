@@ -6,6 +6,7 @@ import type { Span } from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import type { MergingStrategy } from '@nangohq/types';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -20,7 +21,8 @@ export async function persistRecords({
     syncJobId,
     model,
     records,
-    activityLogId
+    activityLogId,
+    merging = { strategy: 'override' }
 }: {
     persistType: PersistType;
     environmentId: number;
@@ -32,7 +34,8 @@ export async function persistRecords({
     model: string;
     records: Record<string, any>[];
     activityLogId: string;
-}): Promise<Result<void>> {
+    merging?: MergingStrategy;
+}): Promise<Result<MergingStrategy>> {
     const active = tracer.scope().active();
     const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
     const span = tracer.startSpan('persistRecords', {
@@ -58,17 +61,17 @@ export async function persistRecords({
         case 'save':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete });
+                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete, merging });
             break;
         case 'delete':
             softDelete = true;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete });
+                recordsService.upsert({ records, connectionId: nangoConnectionId, environmentId, model, softDelete, merging });
             break;
         case 'update':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) => {
-                return recordsService.update({ records, connectionId: nangoConnectionId, model });
+                return recordsService.update({ records, connectionId: nangoConnectionId, model, merging });
             };
             break;
     }
@@ -124,7 +127,7 @@ export async function persistRecords({
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
 
         span.finish();
-        return Ok(void 0);
+        return Ok(persistResult.value.nextMerging);
     } else {
         const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;
 

@@ -52,7 +52,7 @@ Nango is built with a different mindset: **to unleash integration creativity.** 
 
 For a full comparison, read [How is Nango different from embedded iPaaS and Unified APIs?](https://www.nango.dev/blog/how-is-nango-different-from-embedded-ipaas-or-unified-api)
 
-# 5-step integration workflow
+# 3 steps to integrate Nango
 
 <Frame caption="The steps to integrate Nango.">
   <img src="/images/integrate-nango.png" />
@@ -74,7 +74,7 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
         onEvent: (event) {
             if (event.type === 'connect') {
                 // The auth flow succeeded. The user is connected!
-                saveToDatabase(connectionId, integrationId);
+                saveToDatabase(event.payload.connectionId, event.payload.providerConfigKey);
             }
         }
     });
@@ -84,7 +84,7 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
     When a new user connects your integration, Nango automatically starts fetching their data (e.g. issues, contacts, files, etc.) in the background.
     </Tip>
   </Step>
-  <Step title="Receive data update notifications">
+  <Step title="Receive updates & fetch the new data">
     Nango uses webhooks to notify your backend when external user data has been added, updated or deleted. Nango will only notify you when there are actual changes.
 
     ```json Backend: Webhook payload with new data
@@ -96,8 +96,7 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
         "modifiedAfter": "2023-05-31T11:46:13.390Z"
     }
     ```
-  </Step>
-  <Step title="Collect and save the new data">
+
     When you receive a Nango webhook, fetch the most recent data from Nango using the backend SDK or API.
 
     Nango returns the data in the schema of your choice, which can be standardized across different APIs.
@@ -116,11 +115,7 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
     ```
   </Step>
   <Step title="Write back to external APIs">
-    Push updates back to external APIs in a way that is:
-
-    - **Synchronous:** Have your changes immediately reflected.
-    - **Unified:** Benefit from standardized schemas across different APIs.
-    - **Customizable:** Support intricate workflows and composed API calls.
+    Push updates back to external APIs with standardized schemas across different APIs. 
 
     ```ts Backend: Write back to external APIs.
     const result = await nango.triggerAction({
@@ -131,8 +126,10 @@ For a full comparison, read [How is Nango different from embedded iPaaS and Unif
     });
     ```
   </Step>
-  <Step title="Customize integrations">
-    Nango stands out in its ability to let you create custom integrations through code. 
+  <Step title="Optional: Customize integrations">
+    Nango stands out in its ability to let you create [custom integrations](/guides/custom-integrations/overview) through code. 
+
+    Support intricate workflows with composed API calls, custom schemas & complex transformations.
     
     Your custom integration code is deployed and run by Nango, similarly to lambda functions.
 

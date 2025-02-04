@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, DeleteRecordsSuccess, Endpoint, MergingStrategy } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
 import { validateRecords } from './validate.js';
@@ -18,9 +18,10 @@ type DeleteRecords = Endpoint<{
         providerConfigKey: string;
         connectionId: string;
         activityLogId: string;
+        merging: MergingStrategy;
     };
     Error: ApiError<'delete_records_failed'>;
-    Success: never;
+    Success: DeleteRecordsSuccess;
 }>;
 
 const path = recordsPath;
@@ -29,10 +30,8 @@ const method = 'DELETE';
 const validate = validateRecords<DeleteRecords>();
 
 const handler = async (req: EndpointRequest<DeleteRecords>, res: EndpointResponse<DeleteRecords>) => {
-    const {
-        params: { environmentId, nangoConnectionId, syncId, syncJobId },
-        body: { model, records, providerConfigKey, connectionId, activityLogId }
-    } = req;
+    const { environmentId, nangoConnectionId, syncId, syncJobId }: DeleteRecords['Params'] = req.params;
+    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: DeleteRecords['Body'] = req.body;
     const result = await persistRecords({
         persistType: 'delete',
         environmentId,
@@ -43,10 +42,11 @@ const handler = async (req: EndpointRequest<DeleteRecords>, res: EndpointRespons
         syncJobId,
         model,
         records,
-        activityLogId
+        activityLogId,
+        merging
     });
     if (result.isOk()) {
-        res.status(204).send();
+        res.status(200).send({ nextMerging: result.value });
     } else {
         res.status(500).json({ error: { code: 'delete_records_failed', message: `Failed to delete records: ${result.error.message}` } });
     }

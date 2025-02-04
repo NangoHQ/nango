@@ -12,32 +12,12 @@ export declare const oldLevelToNewLevel: {
     readonly http: 'info';
 };
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
-type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
-interface GenericFormData {
-    append(name: string, value: any, options?: any): any;
-}
-type SerializerVisitor = (this: GenericFormData, value: any, key: string | number, path: null | (string | number)[], helpers: FormDataVisitorHelpers) => boolean;
-type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
-interface FormDataVisitorHelpers {
-    defaultVisitor: SerializerVisitor;
-    convertValue: (value: any) => any;
-    isVisitable: (value: any) => boolean;
-}
-interface SerializerOptions {
-    visitor?: SerializerVisitor;
-    dots?: boolean;
-    metaTokens?: boolean;
-    indexes?: boolean | null;
-}
-interface ParamsSerializerOptions extends SerializerOptions {
-    encode?: ParamEncoder;
-    serialize?: CustomParamsSerializer;
-}
 interface Pagination {
     type: string;
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 interface CursorPagination extends Pagination {
     cursor_path_in_response: string;
@@ -63,7 +43,6 @@ export interface ProxyConfiguration {
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
@@ -234,9 +213,6 @@ interface RunArgs {
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
 }
-export interface DryRunServiceInterface {
-    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
-}
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
@@ -269,7 +245,6 @@ export interface NangoProps {
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
@@ -304,7 +279,6 @@ export declare class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
     syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
     connectionId: string;
@@ -411,6 +385,7 @@ export declare class NangoSync extends NangoAction {
     batchDelete<T = any>(results: T[], model: string): Promise<boolean | null>;
     batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
+    setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
 }
 /**
  * @internal

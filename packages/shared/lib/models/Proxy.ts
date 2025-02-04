@@ -1,4 +1,3 @@
-import type { ParamsSerializerOptions } from 'axios';
 import type { HTTP_METHOD } from './Generic.js';
 import type {
     BasicApiCredentials,
@@ -33,7 +32,6 @@ interface BaseProxyConfiguration {
     files?: File[];
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
     baseUrlOverride?: string;
     responseType?: ResponseType;
     retryHeader?: RetryHeaderConfig;
@@ -90,6 +88,7 @@ export interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 
 export interface CursorPagination extends Pagination {

@@ -11,13 +11,4 @@ export class FleetRunner implements Runner {
     ) {
         this.client = getRunnerClient(this.url);
     }
-
-    // TODO: DEPRECATE
-    suspend() {}
-    toJSON() {
-        return {};
-    }
-    static fromJSON(obj: any): FleetRunner {
-        throw new Error(`'fromJSON(${obj})' not implemented`);
-    }
 }

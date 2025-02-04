@@ -10,12 +10,12 @@ import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 import { Cursor } from '../cursor.js';
+import { deepMergeRecordData } from '../helpers/merge.js';
+import type { MergingStrategy, CursorOffset } from '@nangohq/types';
 
 dayjs.extend(utc);
 
 const BATCH_SIZE = 1000;
-
-export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor: string };
 
 export async function getRecordCountsByModel({
     connectionId,
@@ -202,7 +202,7 @@ export async function getCursor({
 }: {
     connectionId: number;
     model: string;
-    offset: 'first' | 'last';
+    offset: CursorOffset;
 }): Promise<Result<string | undefined>> {
     try {
         const query = db
@@ -259,7 +259,7 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -300,10 +300,10 @@ export async function upsert({
                     .with('upsert', (qb) => {
                         qb.insert(encryptedRecords)
                             .into(RECORDS_TABLE)
-                            .returning(['external_id', 'data_hash', 'deleted_at'])
+                            .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at'])
                             .onConflict(['connection_id', 'external_id', 'model'])
                             .merge();
-                        if (merging.strategy === 'ignore_if_modified_after_cursor') {
+                        if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
                             const cursor = Cursor.from(merging.cursor);
                             if (cursor) {
                                 qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
@@ -313,22 +313,30 @@ export async function upsert({
                             }
                         }
                     })
-                    .select<{ external_id: string; status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged' }[]>(
-                        'upsert.external_id',
+                    .select<
+                        { external_id: string; id: string; last_modified_at: string; status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged' }[]
+                    >(
                         trx.raw(`
-                                CASE
-                                    WHEN existing.external_id IS NULL THEN 'inserted'
-                                    ELSE
-                                        CASE
-                                            WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
-                                            WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
-                                            WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
-                                            ELSE 'unchanged'
-                                        END
-                                END as status`)
+                            upsert.id as id,
+                            upsert.external_id as external_id,
+                            to_json(upsert.updated_at) as last_modified_at,
+                            CASE
+                                WHEN existing.external_id IS NULL THEN 'inserted'
+                                ELSE
+                                    CASE
+                                        WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
+                                        WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
+                                        WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
+                                        ELSE 'unchanged'
+                                    END
+                            END as status`)
                     )
                     .from('upsert')
-                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id');
+                    .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
+                    .orderBy([
+                        { column: 'updated_at', order: 'asc' },
+                        { column: 'id', order: 'asc' }
+                    ]);
                 const updatedRes = await withRetry(query);
 
                 const inserted = updatedRes.filter((r) => r.status === 'inserted').map((r) => r.external_id);
@@ -341,6 +349,14 @@ export async function upsert({
                 } else {
                     summary.addedKeys.push(...inserted.concat(undeleted));
                     summary.updatedKeys.push(...updated);
+                }
+
+                const lastRecord = updatedRes[updatedRes.length - 1];
+                if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
+                    summary.nextMerging = {
+                        strategy: merging.strategy,
+                        cursor: Cursor.new(lastRecord)
+                    };
                 }
             }
             const delta = summary.addedKeys.length - (summary.deletedKeys?.length ?? 0);
@@ -397,6 +413,7 @@ export async function update({
     model: string;
     merging?: MergingStrategy;
 }): Promise<Result<UpsertSummary>> {
+    let nextMerging = merging;
     const { records: recordsWithoutDuplicates, nonUniqueKeys } = removeDuplicateKey(records);
 
     if (!recordsWithoutDuplicates || recordsWithoutDuplicates.length === 0) {
@@ -427,37 +444,62 @@ export async function update({
                         continue;
                     }
 
-                    const { json: newRecordData, ...newRecordRest } = inputRecord;
+                    const { json, ...newRecordRest } = inputRecord;
+                    const newRecordData = decryptRecordData(inputRecord);
 
                     const newRecord: FormattedRecord = {
                         ...newRecordRest,
-                        json: {
-                            ...oldRecordData,
-                            ...newRecordData
-                        },
+                        json: deepMergeRecordData(oldRecordData, newRecordData),
                         updated_at: new Date()
                     };
                     recordsToUpdate.push(newRecord);
                 }
                 if (recordsToUpdate.length > 0) {
                     const encryptedRecords = encryptRecords(recordsToUpdate);
-                    const q = trx
-                        .from<{ external_id: string }>(RECORDS_TABLE)
-                        .insert(encryptedRecords)
-                        .returning('external_id')
-                        .onConflict(['connection_id', 'external_id', 'model'])
-                        .merge();
-                    if (merging.strategy === 'ignore_if_modified_after_cursor') {
-                        const cursor = Cursor.from(merging.cursor);
-                        if (cursor) {
-                            q.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
-                                `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
-                                [cursor.sort, cursor.id]
-                            );
-                        }
-                    }
-                    const updated = await q;
+                    const query = trx
+                        .with('upsert', (qb) => {
+                            qb.from<{ external_id: string; id: string; last_modified_at: string }>(RECORDS_TABLE)
+                                .insert(encryptedRecords)
+                                .returning(['external_id', 'id', 'updated_at'])
+                                .onConflict(['connection_id', 'external_id', 'model'])
+                                .merge();
+                            if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
+                                const cursor = Cursor.from(merging.cursor);
+                                if (cursor) {
+                                    qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
+                                        `${RECORDS_TABLE}.updated_at = ? AND ${RECORDS_TABLE}.id <= ?`,
+                                        [cursor.sort, cursor.id]
+                                    );
+                                }
+                            }
+                        })
+                        .select<
+                            {
+                                external_id: string;
+                                id: string;
+                                last_modified_at: string;
+                            }[]
+                        >(
+                            trx.raw(`
+                            upsert.id as id,
+                            upsert.external_id as external_id,
+                            to_json(upsert.updated_at) as last_modified_at`)
+                        )
+                        .from('upsert')
+                        .orderBy([
+                            { column: 'updated_at', order: 'asc' },
+                            { column: 'id', order: 'asc' }
+                        ]);
+                    const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
+
+                    const lastRecord = updated[updated.length - 1];
+                    if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
+                        nextMerging = {
+                            strategy: merging.strategy,
+                            cursor: Cursor.new(lastRecord)
+                        };
+                    }
                 }
             }
         });
@@ -465,7 +507,8 @@ export async function update({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
-            nonUniqueKeys
+            nonUniqueKeys,
+            nextMerging
         });
     } catch (err: any) {
         let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;

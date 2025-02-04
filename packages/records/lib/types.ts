@@ -1,3 +1,5 @@
+import type { MergingStrategy } from '@nangohq/types';
+
 type RecordValue = string | number | boolean | null | undefined | object | Record<string, string | boolean | number>;
 
 export interface RecordInput {
@@ -55,6 +57,7 @@ export interface UpsertSummary {
     updatedKeys: string[];
     deletedKeys?: string[];
     nonUniqueKeys: string[];
+    nextMerging: MergingStrategy;
 }
 
 export interface RecordCount {

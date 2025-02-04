@@ -106,15 +106,6 @@ export abstract class NangoActionBase {
         }
     }
 
-    protected stringify(): string {
-        return JSON.stringify(this, (key, value) => {
-            if (key === 'secretKey') {
-                return '********';
-            }
-            return value;
-        });
-    }
-
     protected proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
@@ -332,7 +323,7 @@ export abstract class NangoActionBase {
         config.method = config.method || 'GET';
 
         const configMethod = config.method.toLocaleLowerCase();
-        const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
+        const passPaginationParamsInBody: boolean = config.paginate?.in_body ?? ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
         const limitParameterName: string = paginationConfig.limit_name_in_request;

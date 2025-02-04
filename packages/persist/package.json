@@ -29,7 +29,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "@types/node": "20.12.2",
         "node-fetch": "^3.3.2",
         "typescript": "5.7.3",
         "vitest": "2.1.8"

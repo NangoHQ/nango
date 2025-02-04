@@ -59,7 +59,6 @@
         "@types/js-yaml": "^4.0.5",
         "@types/json-schema": "7.0.15",
         "@types/lodash-es": "^4.17.10",
-        "@types/node": "20.12.2",
         "@types/parse-link-header": "^2.0.0",
         "@types/uuid": "^9.0.0",
         "express": "^4.20.0",

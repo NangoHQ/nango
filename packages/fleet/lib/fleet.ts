@@ -14,6 +14,7 @@ import type { FleetId } from './instances.js';
 import { envs } from './env.js';
 import { withPgLock } from './utils/locking.js';
 import { noopNodeProvider } from './node-providers/noop.js';
+import { waithUntilHealthy } from './utils/url.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
@@ -85,16 +86,16 @@ export class Fleet {
             if (search.isErr()) {
                 return Err(search.error);
             }
-            const running = search.value.nodes.get(routingId)?.RUNNING || [];
+            const running = search.value.get(routingId)?.RUNNING || [];
             if (running[0]) {
                 return Ok(running[0]);
             }
-            const outdated = search.value.nodes.get(routingId)?.OUTDATED || [];
+            const outdated = search.value.get(routingId)?.OUTDATED || [];
             if (outdated[0]) {
                 return Ok(outdated[0]);
             }
-            const starting = search.value.nodes.get(routingId)?.STARTING || [];
-            const pending = search.value.nodes.get(routingId)?.PENDING || [];
+            const starting = search.value.get(routingId)?.STARTING || [];
+            const pending = search.value.get(routingId)?.PENDING || [];
 
             if (!starting[0] && !pending[0]) {
                 await withPgLock({
@@ -125,6 +126,12 @@ export class Fleet {
         const valid = await this.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
             return Err(valid.error);
+        }
+        // in Render, network configuration can take a long time to be applied and accessible to other services
+        // we therefore wait until the health url is reachable
+        const healthy = await waithUntilHealthy({ url: `${url}/health`, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
+        if (healthy.isErr()) {
+            return Err(healthy.error);
         }
         return await nodes.register(this.dbClient.db, { nodeId, url });
     }
