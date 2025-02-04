@@ -341,6 +341,14 @@ export class DryRunService {
             }
             console.log('---');
 
+            if (options.saveResponses && stubbedMetadata) {
+                const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
+                const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
+                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
+                const filePath = `${directoryName}/mocks/nango/getMetadata.json`;
+                fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
+            }
+
             const results = await this.runScript({
                 syncName,
                 nangoProps,

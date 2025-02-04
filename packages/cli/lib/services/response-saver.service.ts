@@ -143,10 +143,11 @@ export function onAxiosRequestRejected({
 
 function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
     const method = config.method?.toLowerCase() || 'get';
-    const params = sortEntries(Object.entries(config.params || {}));
 
     const url = new URL(config.url!);
     const endpoint = url.pathname.replace(/^\/proxy\//, '');
+
+    const params = sortEntries(Array.from(url.searchParams.entries()).map(([key, value]) => [key, String(value)]));
 
     const dataIdentity = computeDataIdentity(config);
 
