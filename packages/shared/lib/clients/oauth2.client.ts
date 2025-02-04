@@ -44,16 +44,11 @@ export function getSimpleOAuth2ClientConfig(
         }
     };
 
-    // make sure agents aren't enumerable so they don't get cloned in simple-oauth2
-    const httpConfig = { headers };
-    Object.defineProperty(httpConfig, 'agents', {
-        value: {
-            http: httpAgent,
-            https: httpsAgent,
-            httpsAllowUnauthorized: httpsAgent
-        },
-        enumerable: false
-    });
+    // define getters for agents so that they aren't clone within simple-oauth2
+    const httpConfig = { headers, agents: {} };
+    Object.defineProperty(httpConfig.agents, 'http', { get: () => httpAgent, enumerable: true });
+    Object.defineProperty(httpConfig.agents, 'https', { get: () => httpsAgent, enumerable: true });
+    Object.defineProperty(httpConfig.agents, 'httpsAllowUnauthorized', { get: () => httpsAgent, enumerable: true });
 
     clientConfig.http = httpConfig;
     return clientConfig;
