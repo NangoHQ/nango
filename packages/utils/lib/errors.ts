@@ -4,7 +4,7 @@ import { serializeError } from 'serialize-error';
  * Transform any Error or primitive to a json object
  */
 export function errorToObject(err: unknown) {
-    return serializeError(err);
+    return serializeError(err, { maxDepth: 5 });
 }
 
 /**

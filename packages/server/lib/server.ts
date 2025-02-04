@@ -22,6 +22,16 @@ import { refreshConnectionsCron } from './refreshConnections.js';
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
 
+process.on('unhandledRejection', (reason) => {
+    logger.error('Received unhandledRejection...', reason);
+    // not closing on purpose
+});
+
+process.on('uncaughtException', (e) => {
+    logger.error('Received uncaughtException...', e);
+    // not closing on purpose
+});
+
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
