@@ -71,7 +71,7 @@
         "esbuild": "^0.17.19",
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     },
     "engines": {
         "node": ">=18.0"

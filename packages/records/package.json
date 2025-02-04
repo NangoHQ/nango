@@ -27,6 +27,6 @@
     },
     "devDependencies": {
         "@types/md5": "2.3.2",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     }
 }
