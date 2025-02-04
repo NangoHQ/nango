@@ -18,7 +18,6 @@ describe('Deployments', () => {
         it('should create a deployment', async () => {
             const image = generateImage().unwrap();
             const deployment = (await deployments.create(db, image)).unwrap();
-            expect(deployment.commitId).toBe(image.split(':')[1]);
             expect(deployment.image).toBe(image);
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);

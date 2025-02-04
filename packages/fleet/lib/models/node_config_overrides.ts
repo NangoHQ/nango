@@ -10,10 +10,10 @@ export const NODE_CONFIG_OVERRIDES_TABLE = 'node_config_overrides';
 interface DBNodeConfigOverride {
     readonly id: number;
     readonly routing_id: RoutingId;
-    readonly image: string;
-    readonly cpu_milli: number;
-    readonly memory_mb: number;
-    readonly storage_mb: number;
+    readonly image: string | null;
+    readonly cpu_milli: number | null;
+    readonly memory_mb: number | null;
+    readonly storage_mb: number | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }

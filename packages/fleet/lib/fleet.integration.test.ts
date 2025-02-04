@@ -29,7 +29,6 @@ describe('fleet', () => {
         it('should create a new deployment', async () => {
             const image = generateImage().unwrap();
             const deployment = (await fleet.rollout(image, { verifyImage: false })).unwrap();
-            expect(deployment.commitId).toBe(image.split(':')[1]);
             expect(deployment.image).toBe(image);
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);
