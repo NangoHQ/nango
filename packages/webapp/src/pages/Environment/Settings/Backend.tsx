@@ -1,4 +1,4 @@
-import { IconKey, IconServer, IconTrash } from '@tabler/icons-react';
+import { IconKey, IconServer } from '@tabler/icons-react';
 import { useStore } from '../../../store';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import SecretInput from '../../../components/ui/input/SecretInput';
@@ -102,32 +102,6 @@ export const BackendSettings: React.FC = () => {
                             name="secretKey"
                             value={environmentAndAccount.environment.secret_key}
                         />
-
-                        {hasNewSecretKey && (
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant={'icon'} size="lg">
-                                        <IconTrash stroke={1} />
-                                    </Button>
-                                </DialogTrigger>
-
-                                <DialogContent>
-                                    <DialogTitle>Rotate secret key?</DialogTitle>
-                                    <DialogDescription>
-                                        This key will be deleted and the new key will be activated. Only do this when the new key is in production. This
-                                        operation is not reversible.
-                                    </DialogDescription>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant={'tertiary'}>Cancel</Button>
-                                        </DialogClose>
-                                        <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
-                                            Rotate
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        )}
                     </div>
                     {!hasNewSecretKey && (
                         <div className="">
@@ -142,19 +116,60 @@ export const BackendSettings: React.FC = () => {
                             <label htmlFor="secretKey" className={'text-s'}>
                                 New secret
                             </label>
-                            <div className="flex gap-2">
-                                <SecretInput
-                                    view={false}
-                                    inputSize={'lg'}
-                                    copy={true}
-                                    variant={'black'}
-                                    name="pendingSecretKey"
-                                    value={environmentAndAccount.environment.pending_secret_key!}
-                                />
-                                <Button variant={'icon'} size="lg" onClick={onRevert}>
-                                    <IconTrash stroke={1} />
-                                </Button>
-                            </div>
+                            <SecretInput
+                                view={false}
+                                inputSize={'lg'}
+                                copy={true}
+                                variant={'black'}
+                                name="pendingSecretKey"
+                                value={environmentAndAccount.environment.pending_secret_key!}
+                            />
+                        </div>
+                    )}
+
+                    {hasNewSecretKey && (
+                        <div className="flex gap-2 justify-end">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant={'emptyFaded'}>Cancel key rotation</Button>
+                                </DialogTrigger>
+
+                                <DialogContent>
+                                    <DialogTitle>Cancel key rotation?</DialogTitle>
+                                    <DialogDescription>
+                                        The new key will be deactivated. Only do this when the old key is used in production. This is not reversible.
+                                    </DialogDescription>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button variant={'tertiary'}>Abort</Button>
+                                        </DialogClose>
+                                        <Button variant={'danger'} onClick={onRevert} isLoading={loading}>
+                                            Cancel
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant={'secondary'}>Confirm key rotation</Button>
+                                </DialogTrigger>
+
+                                <DialogContent>
+                                    <DialogTitle>Confirm key rotation?</DialogTitle>
+                                    <DialogDescription>
+                                        The old key will be deactivated. Only do this when the new key is used in production. This is not reversible.
+                                    </DialogDescription>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button variant={'tertiary'}>Abort</Button>
+                                        </DialogClose>
+                                        <Button variant={'danger'} onClick={onRotate} isLoading={loading}>
+                                            Rotate
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     )}
                 </fieldset>
