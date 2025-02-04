@@ -16,8 +16,8 @@ describe('Nodes', () => {
     let activeDeployment: Deployment;
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(db, generateImage().unwrap())).unwrap();
-        activeDeployment = (await deployments.create(db, generateImage().unwrap())).unwrap();
+        previousDeployment = (await deployments.create(db, generateImage())).unwrap();
+        activeDeployment = (await deployments.create(db, generateImage())).unwrap();
     });
 
     afterEach(async () => {

@@ -78,12 +78,7 @@ try {
         // when running locally, the runners (running as processes) are being killed
         // when the main process is killed and the fleet entries are therefore not associated with any running process
         // we then must fake a new deployment so fleet replaces runners with new ones
-        const image = generateImage();
-        if (image.isErr()) {
-            logger.error(`Unable to generate commit hash`, image.error);
-        } else {
-            await runnersFleet.rollout(image.value, { verifyImage: false });
-        }
+        await runnersFleet.rollout(generateImage(), { verifyImage: false });
     }
     runnersFleet.start();
 
