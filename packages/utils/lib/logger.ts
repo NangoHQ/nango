@@ -3,7 +3,6 @@ import winston from 'winston';
 import type { Logform, Logger } from 'winston';
 import colors from '@colors/colors';
 import { isCloud, isEnterprise, isTest } from './environment/detection.js';
-import { nanoid } from 'nanoid';
 
 const SPLAT = Symbol.for('splat');
 const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
@@ -42,7 +41,11 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
-    const instanceId = isCloud ? ` ${nanoid(6)}` : '';
+    let instanceId = '';
+    if (isCloud && process.env['RENDER_INSTANCE_ID']) {
+        const parts = process.env['RENDER_INSTANCE_ID'].split('-');
+        instanceId = parts[parts.length - 1] ? ` ${parts[parts.length - 1]}` : '';
+    }
 
     formatters = [
         winston.format.printf((info) => {

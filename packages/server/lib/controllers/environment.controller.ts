@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { DBEnvironment, DBEnvironmentVariable, ExternalWebhook } from '@nangohq/types';
+import type { ApiEnvironment, ApiEnvironmentVariable, ApiWebhooks } from '@nangohq/types';
 import { isCloud, baseUrl } from '@nangohq/utils';
 import {
     accountService,
@@ -14,11 +14,13 @@ import {
 } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import type { RequestLocals } from '../utils/express.js';
+import { webhooksToApi } from '../formatters/webhooks.js';
+import { environmentToApi } from '../formatters/environment.js';
 
 export interface EnvironmentAndAccount {
-    environment: DBEnvironment;
-    env_variables: DBEnvironmentVariable[];
-    webhook_settings: ExternalWebhook | null;
+    environment: ApiEnvironment;
+    env_variables: ApiEnvironmentVariable[];
+    webhook_settings: ApiWebhooks;
     host: string;
     uuid: string;
     name: string;
@@ -73,9 +75,25 @@ class EnvironmentController {
 
             res.status(200).send({
                 environmentAndAccount: {
-                    environment,
-                    env_variables: environmentVariables || [],
-                    webhook_settings: webhookSettings,
+                    environment: environmentToApi(environment),
+                    env_variables:
+                        environmentVariables?.map((envVar) => {
+                            return { name: envVar.name, value: envVar.value };
+                        }) || [],
+                    webhook_settings: webhooksToApi(
+                        webhookSettings || {
+                            id: 0,
+                            environment_id: 0,
+                            created_at: new Date(),
+                            updated_at: new Date(),
+                            on_auth_creation: false,
+                            on_auth_refresh_error: false,
+                            on_sync_completion_always: false,
+                            on_sync_error: false,
+                            primary_url: null,
+                            secondary_url: null
+                        }
+                    ),
                     host: baseUrl,
                     uuid: account.uuid,
                     name: account.name,
@@ -147,75 +165,6 @@ class EnvironmentController {
         }
     }
 
-    async updateCallback(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (req.body == null) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            if (req.body['callback_url'] == null) {
-                errorManager.errRes(res, 'missing_callback_url');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateHmacEnabled(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateSlackNotificationsEnabled(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editSlackNotifications(req.body['slack_notifications'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateHmacKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async getEnvironmentVariables(_req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
@@ -234,22 +183,6 @@ class EnvironmentController {
             });
 
             res.status(200).send(envs);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async updateEnvironmentVariables(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            await environmentService.editEnvironmentVariable(environment.id, req.body);
-            res.status(200).send();
         } catch (err) {
             next(err);
         }

@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.52.4] - 2025-02-03
+
+### Added
+
+- *(persist)* Deep merge records in batchUpdate (#3386) by @nalanj
+- Add support for merging strategy into the runner sdk (#3420) by @TBonnin
+- *(support)* Adds support for xAI Integration (#3345) by @Maina-Francis
+- *(integrations)* Added provider support for commercetools (#3347) by @AndrewKaranja
+- *(retell-ai)* Added retell ai support (#3365) by @AndrewKaranja
+- *(integrations)* Add support for drupal (#3378) by @hassan254-prog
+
+### Changed
+
+- Improve diagrams + add one for auth (#3431) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7fec650269eb82e8cf775a7dcb010b715a8a0e06 by nalanj. Commit message: fix: Update basecamp docs to fix mintlify error (#209) by @github-actions[bot]
+- *(api)* Better check for json content-type  (#3428) by @bodinsamuel
+- *(api)* Req.is is not as reliable as expected by @bodinsamuel
+- *(dependencies)* Upgrade frontend dependencies (#3418) by @bodinsamuel
+
 ## [v0.52.3] - 2025-01-31
 
 ### Added
@@ -2932,6 +2954,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4
 [v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
 [v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
 [v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1

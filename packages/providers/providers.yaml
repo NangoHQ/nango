@@ -1783,6 +1783,45 @@ codeclimate:
             title: API Key
             description: The API key for your Code Climate account
 
+commercetools:
+    display_name: Commercetools
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/oauth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/${connectionConfig.projectKey}
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://docs.nango.dev/integrations/all/commercetools
+    docs_connect: https://docs.nango.dev/integrations/all/commercetools/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region of your Commercetools account. Use the full region identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
+            example: us-central1
+            pattern: '^[a-z]+-[a-z0-9-]+$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
+        projectKey:
+            type: string
+            title: Project Key
+            description: The project key of your Commercetools account
+            example: demo-project-slug
+            pattern: '^[a-zA-Z0-9-_]+$'
+            doc_section: '#step-2-save-the-api-environment-variables'
+        cloudProvider:
+            type: string
+            title: Cloud Provider
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
+            example: gcp
+            pattern: '^(gcp|aws)$'
+            doc_section: '#step-3-identify-your-region-and-cloud-provider'
+
 copper:
     display_name: Copper
     categories:
@@ -2125,8 +2164,8 @@ deel:
     categories:
         - hr
     auth_mode: OAUTH2
-    authorization_url: https://auth.letsdeel.com/oauth2/authorize
-    token_url: https://auth.letsdeel.com/oauth2/tokens
+    authorization_url: https://app.deel.com/oauth2/authorize
+    token_url: https://app.deel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -2141,8 +2180,8 @@ deel:
 deel-sandbox:
     display_name: Deel (sandbox)
     auth_mode: OAUTH2
-    authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
-    token_url: https://auth-demo.letsdeel.com/oauth2/tokens
+    authorization_url: https://demo.deel.com/oauth2/authorize
+    token_url: https://demo.deel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -2151,7 +2190,7 @@ deel-sandbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api-staging.letsdeel.com
+        base_url: https://api-sandbox.demo.deel.com
     docs: https://docs.nango.dev/integrations/all/deel
 
 dialpad:
@@ -2340,6 +2379,60 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+
+drupal:
+    display_name: Drupal
+    categories:
+        - dev-tools
+        - design
+        - cms
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.baseUrl}/rest_api/access_token
+    token_params:
+        client_id: ${credential.clientId}
+        client_secret: ${credential.clientSecret}
+        username: ${credential.userName}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+    docs: https://docs.nango.dev/integrations/all/drupal
+    docs_connect: https://docs.nango.dev/integrations/all/drupal/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Client ID
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Client Secret
+            secret: true
+            doc_section: '#step-3-generating-your-drupal-client-credentials'
+        userName:
+            type: string
+            title: User Name
+            description: Your Drupal User Name
+            doc_section: '#step-2-finding-your-drupal-user-name'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base Url
+            description: Your Drupal base url
+            example: example.drupal.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-drupal-base-url'
 
 emarsys:
     display_name: Emarsys Core API (WSSE)
@@ -6168,6 +6261,27 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+retell-ai:
+    display_name: Retell AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retellai.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/retell-ai
+    docs_connect: https://docs.nango.dev/integrations/all/retell-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for Retell AI
+            example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            doc_section: '#step-1-finding-your-retell-ai-api-key'
+
 ring-central:
     display_name: RingCentral
     categories:
@@ -8049,6 +8163,31 @@ wrike:
             description: The domain of your Wrike account
             format: hostname
             prefix: https://
+
+xai:
+    display_name: xAI
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.x.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/api-key
+    docs: https://docs.nango.dev/integrations/all/xai
+    docs_connect: https://docs.nango.dev/integrations/all/xai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your xAI account
+            example: xai-******************************************************
+            pattern: 'xai-[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 xero:
     display_name: Xero
