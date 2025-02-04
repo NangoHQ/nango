@@ -190,6 +190,7 @@
                         "guides/webhooks/webhooks-from-apis"
                     ]
                 },
+                "guides/data-conflicts",
                 "guides/customer-configuration",
                 "guides/api-unification",
                 {
