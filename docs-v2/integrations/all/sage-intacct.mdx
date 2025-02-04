@@ -1,0 +1,53 @@
+---
+title: Sage Intacct
+sidebarTitle: Sage Intacct
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sage-intacct/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sage-intacct/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register an Application](https://developer.sage.com/accounting/guides/getting-started/client_app_registration/)
+-   [OAuth-related docs](https://developer.sage.com/accounting/guides/authenticating/authentication/)
+-   [API](https://developer.sage.com/accounting/reference/)
+-   [Sage Intacct Auth docs](https://developer.intacct.com/web-services/your-first-api-calls/)
+-   [Sage Intacct API docs](https://developer.intacct.com/api/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct.mdx)</Note>
+
+## API gotchas
+
+-   Sage OAuth scopes can only be `readonly` or `full_access`.
+-   Sage also supports XML integration. When creating a new connection on Nango for Sage Intacct, please provide your web service `senderId` and `password`, as well as credentials to access the target company. These credentials include `userId`, `companyId`, and `userPassword`. Additionally, the target company must [authorize your sender ID]https://developer.intacct.com/support/faq/#why-am-i-getting-an-error-about-an-invalid-web-services-authorization to allow API calls.
+-   After successfully creating a new connection, you can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve the `sessionId`, for subsequent api calls.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct.mdx)</Note>
+
+<Card title="Connect to sage-intacct" icon="link" href="/integrations/all/sage-intacct/connect" horizontal>
+  Guide to connect to sage-intacct using Nango Connect.
+</Card>

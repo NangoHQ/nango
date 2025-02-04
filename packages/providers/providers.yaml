@@ -74,7 +74,7 @@ adobe-umapi:
         retry:
             after: 'retry-after'
         base_url: https://usermanagement.adobe.io
-    docs: https://docs.nango.dev/integrations/all/adobe
+    docs: https://docs.nango.dev/integrations/all/adobe-umapi
     post_connection_script: adobeUmapiPostConnection
     docs_connect: https://docs.nango.dev/integrations/all/adobe-umapi/connect
     connection_config:
@@ -181,7 +181,7 @@ aircall-basic:
             link_path_in_response_body: meta.next_page_link
             response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
-    docs: https://docs.nango.dev/integrations/all/aircall
+    docs: https://docs.nango.dev/integrations/all/aircall-basic
 
 airtable:
     display_name: Airtable
@@ -1148,7 +1148,7 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
-    docs: https://docs.nango.dev/integrations/all/brevo
+    docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
             type: string
@@ -1225,7 +1225,7 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/builder-io
+    docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
         domain:
@@ -1256,7 +1256,7 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/builder-io
+    docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
         domain:
@@ -1349,7 +1349,7 @@ cal-com-v1:
         verification:
             method: GET
             endpoint: /me
-    docs: https://docs.nango.dev/integrations/all/cal-com
+    docs: https://docs.nango.dev/integrations/all/cal-com-v1
     docs_connect: https://docs.nango.dev/integrations/all/cal-com-v1/connect
     credentials:
         apiKey:
@@ -1378,7 +1378,7 @@ cal-com-v2:
         verification:
             method: GET
             endpoint: /me
-    docs: https://docs.nango.dev/integrations/all/cal-com
+    docs: https://docs.nango.dev/integrations/all/cal-com-v2
     docs_connect: https://docs.nango.dev/integrations/all/cal-com-v2/connect
     credentials:
         apiKey:
@@ -1445,7 +1445,7 @@ canva-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/canva
+    docs: https://docs.nango.dev/integrations/all/canva-scim
     credentials:
         apiKey:
             type: string
@@ -2064,7 +2064,7 @@ databricks-account:
         grant_type: client_credentials
     proxy:
         base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
-    docs: https://docs.nango.dev/integrations/all/databricks
+    docs: https://docs.nango.dev/integrations/all/databricks-account
     connection_config:
         accountId:
             type: string
@@ -2083,7 +2083,7 @@ databricks-workspace:
         grant_type: client_credentials
     proxy:
         base_url: https://${connectionConfig.databricksInstance}/api/2.0/
-    docs: https://docs.nango.dev/integrations/all/databricks
+    docs: https://docs.nango.dev/integrations/all/databricks-workspace
     connection_config:
         databricksInstance:
             type: string
@@ -3346,7 +3346,7 @@ ghost-admin:
             accept: application/json
             accept-version: ${connectionConfig.version}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
-    docs: https://docs.nango.dev/integrations/all/ghost
+    docs: https://docs.nango.dev/integrations/all/ghost-admin
     connection_config:
         adminDomain:
             type: string
@@ -3377,7 +3377,7 @@ ghost-content:
         verification:
             method: GET
             endpoint: /tags
-    docs: https://docs.nango.dev/integrations/all/ghost
+    docs: https://docs.nango.dev/integrations/all/ghost-content
     connection_config:
         version:
             type: string
@@ -3979,7 +3979,7 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
-    docs: https://docs.nango.dev/integrations/all/healthgorilla
+    docs: https://docs.nango.dev/integrations/all/health-gorilla
 
 hibob-service-user:
     display_name: Hibob Service User
@@ -4006,7 +4006,7 @@ hibob-service-user:
             default_value: ''
             hidden: true
             doc_section: '#step-2-finding-your-hibob-token'
-    docs: https://docs.nango.dev/integrations/all/hibob
+    docs: https://docs.nango.dev/integrations/all/hibob-service-user
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
 
 highlevel:
@@ -4287,7 +4287,7 @@ helpscout-docs:
         verification:
             method: GET
             endpoint: /v1/sites
-    docs: https://docs.nango.dev/integrations/all/helpscout
+    docs: https://docs.nango.dev/integrations/all/helpscout-docs
     docs_connect: https://docs.nango.dev/integrations/all/helpscout-docs/connect
     credentials:
         username:
@@ -4318,7 +4318,7 @@ helpscout-mailbox:
         retry:
             after: 'x-ratelimit-retry-after'
         base_url: https://api.helpscout.net
-    docs: https://docs.nango.dev/integrations/all/helpscout
+    docs: https://docs.nango.dev/integrations/all/helpscout-mailbox
 
 keap:
     display_name: Keap
@@ -4349,7 +4349,7 @@ keeper-scim:
         verification:
             method: GET
             endpoint: /Users
-    docs: https://docs.nango.dev/integrations/all/keeper
+    docs: https://docs.nango.dev/integrations/all/keeper-scim
     docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
     credentials:
         apiKey:
@@ -4689,7 +4689,7 @@ lucid-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/lucid
+    docs: https://docs.nango.dev/integrations/all/lucid-scim
     docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
     credentials:
         apiKey:
@@ -5285,7 +5285,7 @@ next-cloud-ocs:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
         headers:
             'ocs-apirequest': 'true'
-    docs: http://docs.nango.dev/integrations/all/next-cloud
+    docs: http://docs.nango.dev/integrations/all/next-cloud-ocs
     docs_connect: https://docs.nango.dev/integrations/all/next-cloud-ocs/connect
     connection_config:
         domain:
@@ -6926,7 +6926,7 @@ smartrecruiters-api-key:
         verification:
             method: GET
             endpoint: /feed/publications
-    docs: https://docs.nango.dev/integrations/all/smartrecruiters
+    docs: https://docs.nango.dev/integrations/all/smartrecruiters-api-key
     credentials:
         apiKey:
             type: string
@@ -7375,7 +7375,7 @@ thrivecart-oauth:
     scope_separator: ' '
     proxy:
         base_url: https://thrivecart.com/api/external
-    docs: https://docs.nango.dev/integrations/all/thrivecart
+    docs: https://docs.nango.dev/integrations/all/thrivecart-oauth
 
 thrivecart-api-key:
     display_name: ThriveCart (api key)
@@ -7390,7 +7390,7 @@ thrivecart-api-key:
         verification:
             method: GET
             endpoint: /ping
-    docs: https://docs.nango.dev/integrations/all/thrivecart
+    docs: https://docs.nango.dev/integrations/all/thrivecart-api-key
     credentials:
         apiKey:
             type: string
