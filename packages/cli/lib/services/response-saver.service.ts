@@ -179,7 +179,19 @@ function computeConfigIdentity(config: AxiosRequestConfig): ConfigIdentity {
 }
 
 function sortEntries(entries: [string, unknown][]): [string, unknown][] {
-    return entries.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    // @ts-ignore
+  return entries.map(([key, value]) => {
+    // If the value is a comma-separated string, sort its parts
+    if (typeof value === "string" && value.includes(",")) {
+      const sortedValue = value
+        .split(",")
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .join(",");
+      return [key, sortedValue];
+    }
+    return [key, value];
+    // @ts-ignore
+  }).sort((a, b) => a[0].localeCompare(b[0]));
 }
 
 function computeDataIdentity(config: AxiosRequestConfig): string | undefined {
