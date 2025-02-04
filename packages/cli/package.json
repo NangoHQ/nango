@@ -28,6 +28,7 @@
         "@nangohq/node": "0.52.2",
         "@nangohq/runner-sdk": "0.52.2",
         "@swc/core": "^1.5.25",
+        "@types/unzipper": "^0.10.10",
         "ajv": "^8.17.1",
         "ajv-errors": "^3.0.0",
         "axios": "^1.7.9",
@@ -50,6 +51,7 @@
         "ts-node": "^10.9.1",
         "tsup": "^8.1.0",
         "typescript": "5.7.3",
+        "unzipper": "^0.12.3",
         "zod": "3.24.1"
     },
     "devDependencies": {

@@ -19,9 +19,9 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/node": "file:../node-client",
+        "@nangohq/providers": "file:../providers",
         "@nangohq/runner-sdk": "file:../runner-sdk",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "^10.45.1",
         "@trpc/server": "^10.45.1",
@@ -33,13 +33,15 @@
         "soap": "1.1.2",
         "superjson": "2.2.1",
         "undici": "6.21.1",
+        "unzipper": "^0.12.3",
         "zod": "3.24.1"
     },
     "devDependencies": {
-        "@nangohq/types": "file:../types",
         "@nangohq/database": "file:../database",
+        "@nangohq/types": "file:../types",
         "@types/connect-timeout": "0.0.39",
         "@types/node": "20.12.2",
+        "@types/unzipper": "^0.10.10",
         "typescript": "5.7.3",
         "vitest": "2.1.8"
     }
