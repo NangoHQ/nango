@@ -1,7 +1,7 @@
 import type {
     NangoAuthWebhookBodySuccess,
     NangoAuthWebhookBodyError,
-    ExternalWebhook,
+    DBExternalWebhook,
     Connection,
     WebhookTypes,
     AuthModeType,
@@ -29,7 +29,7 @@ export async function sendAuth({
 }: {
     connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
     environment: DBEnvironment;
-    webhookSettings: ExternalWebhook | null;
+    webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
     endUser?: EndUser | undefined;
@@ -75,10 +75,13 @@ export async function sendAuth({
         };
     }
 
-    const webhooks = [
-        { url: webhookSettings.primary_url, type: 'webhook url' },
-        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
-    ].filter((webhook) => webhook.url);
+    const webhooks: { url: string; type: string }[] = [];
+    if (webhookSettings.primary_url) {
+        webhooks.push({ url: webhookSettings.primary_url, type: 'webhook url' });
+    }
+    if (webhookSettings.secondary_url) {
+        webhooks.push({ url: webhookSettings.secondary_url, type: 'secondary webhook url' });
+    }
 
     await deliver({
         webhooks,
