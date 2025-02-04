@@ -1,4 +1,4 @@
-import { IconEdit, IconServer, IconTrash } from '@tabler/icons-react';
+import { IconCode, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useStore } from '../../../store';
 import { apiPostVariables, useEnvironment } from '../../../hooks/useEnvironment';
 import { useState } from 'react';
@@ -8,6 +8,7 @@ import { cn } from '../../../utils/utils';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 import { useToast } from '../../../hooks/useToast';
+import { Link } from 'react-router-dom';
 
 export const VariablesSettings: React.FC = () => {
     const { toast } = useToast();
@@ -113,12 +114,12 @@ export const VariablesSettings: React.FC = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10">
+            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#script" id="script">
                 <div>
-                    <IconServer stroke={1} size={18} />
+                    <IconCode stroke={1} size={18} />
                 </div>
                 <h3 className="uppercase text-sm">Script Settings</h3>
-            </div>
+            </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <fieldset className="flex flex-col gap-2">
                     <label htmlFor="envvar" className="font-semibold mb-2">
