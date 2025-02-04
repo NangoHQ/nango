@@ -25,7 +25,7 @@ export function getSimpleOAuth2ClientConfig(
 
     const authConfig = provider as ProviderOAuth2;
 
-    return {
+    const clientConfig: Merge<ModuleOptions, { http: WreckHttpOptions }> = {
         client: {
             id: providerConfig.oauth_client_id,
             secret: providerConfig.oauth_client_secret
@@ -36,18 +36,6 @@ export function getSimpleOAuth2ClientConfig(
             authorizeHost: authorizeUrl.origin,
             authorizePath: authorizeUrl.pathname
         },
-        http: {
-            headers,
-            // @ts-expect-error badly documented feature https://github.com/hapijs/wreck/blob/ba28b0420d6b0998cd8e61be7f3f8822129c88fe/lib/index.js#L34-L40
-            agents:
-                httpAgent && httpsAgent
-                    ? {
-                          http: httpAgent,
-                          https: httpsAgent,
-                          httpsAllowUnauthorized: httpsAgent
-                      }
-                    : undefined
-        },
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format || 'form',
@@ -55,6 +43,20 @@ export function getSimpleOAuth2ClientConfig(
             scopeSeparator: provider.scope_separator || ' '
         }
     };
+
+    // make sure agents aren't enumerable so they don't get cloned in simple-oauth2
+    const httpConfig = { headers };
+    Object.defineProperty(httpConfig, 'agents', {
+        value: {
+            http: httpAgent,
+            https: httpsAgent,
+            httpsAllowUnauthorized: httpsAgent
+        },
+        enumerable: false
+    });
+
+    clientConfig.http = httpConfig;
+    return clientConfig;
 }
 
 export async function getFreshOAuth2Credentials(
