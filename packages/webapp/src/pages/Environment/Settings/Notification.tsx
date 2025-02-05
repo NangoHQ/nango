@@ -1,4 +1,4 @@
-import { IconServer } from '@tabler/icons-react';
+import { IconBell } from '@tabler/icons-react';
 import { useStore } from '../../../store';
 import { apiPatchEnvironment, apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
 import { Button } from '../../../components/ui/button/Button';
@@ -9,6 +9,7 @@ import { connectSlack } from '../../../utils/slack-connection';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { WebhookCheckboxes } from './WebhookCheckboxes';
 import { EditableInput } from './EditableInput';
+import { Link } from 'react-router-dom';
 
 export const NotificationSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -60,12 +61,12 @@ export const NotificationSettings: React.FC = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10">
+            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#notification" id="notification">
                 <div>
-                    <IconServer stroke={1} size={18} />
+                    <IconBell stroke={1} size={18} />
                 </div>
                 <h3 className="uppercase text-sm">Notification Settings</h3>
-            </div>
+            </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <div className="flex flex-col gap-4">
                     <label className="font-semibold">Webhooks URLs</label>

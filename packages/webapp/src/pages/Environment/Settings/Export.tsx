@@ -1,4 +1,4 @@
-import { IconEdit, IconServer, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconPackageExport, IconTrash } from '@tabler/icons-react';
 import { useStore } from '../../../store';
 import { apiPatchEnvironment, useEnvironment } from '../../../hooks/useEnvironment';
 import { Input } from '../../../components/ui/input/Input';
@@ -8,6 +8,7 @@ import { useToast } from '../../../hooks/useToast';
 import { Button } from '../../../components/ui/button/Button';
 import SecretInput from '../../../components/ui/input/SecretInput';
 import { EditableInput } from './EditableInput';
+import { Link } from 'react-router-dom';
 
 export const ExportSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -100,12 +101,12 @@ export const ExportSettings: React.FC = () => {
 
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10">
+            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#export" id="export">
                 <div>
-                    <IconServer stroke={1} size={18} />
+                    <IconPackageExport stroke={1} size={18} />
                 </div>
                 <h3 className="uppercase text-sm">Export Settings</h3>
-            </div>
+            </Link>
             <div className="px-8 flex flex-col gap-4 w-3/5">
                 <fieldset className="flex flex-col">
                     <label className="font-semibold">OpenTelemetry</label>
