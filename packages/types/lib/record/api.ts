@@ -1,6 +1,7 @@
 import type { ApiError, Endpoint } from '../api';
 
 export type RecordLastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
+export type CombinedFilterAction = `${RecordLastAction},${RecordLastAction}`;
 
 export interface RecordMetadata {
     first_seen_at: string;
@@ -33,7 +34,7 @@ export type GetPublicRecords = Endpoint<{
         delta?: string | undefined;
         modified_after?: string | undefined;
         limit?: number | undefined;
-        filter?: 'added' | 'updated' | 'deleted' | undefined;
+        filter?: RecordLastAction | CombinedFilterAction | undefined;
         cursor?: string | undefined;
     };
     Success: {
