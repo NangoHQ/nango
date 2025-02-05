@@ -821,6 +821,7 @@ basecamp:
             type: string
             title: Account ID
             description: Your Account ID
+            optional: true
             example: '5899981'
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
