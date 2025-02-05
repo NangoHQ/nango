@@ -9,7 +9,7 @@ import { Err, errorToObject, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from '../utils/errors.js';
 import type { Node, NodeConfigOverride } from '../types.js';
-import type { Deployment } from '@nangohq/types';
+import type { Deployment, NodeConfig } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from '../node-providers/node_provider.js';
 import { envs } from '../env.js';
@@ -182,15 +182,21 @@ export class Supervisor {
                     if (!configOverride) {
                         return false;
                     }
-                    // image override might have a commitId
-                    // so we need to check if the image override with commitId is the same as the node's image
-                    // or if the image override (without commitId) + current deployment commitId is the same as the node's image
-                    return !(
-                        (configOverride.image === node.image || `${configOverride.image}:${deployment.commitId}` === node.image) &&
-                        node.cpuMilli === configOverride.cpuMilli &&
-                        node.memoryMb === configOverride.memoryMb &&
-                        node.storageMb === configOverride.storageMb
-                    );
+                    // TODO: remove once values in node_config_overrides are updated to NULL in the db
+                    const imageOverride = configOverride.image?.includes(':') ? configOverride.image : undefined;
+                    if (imageOverride && imageOverride !== node.image) {
+                        return true;
+                    }
+                    if (configOverride.cpuMilli && configOverride.cpuMilli !== node.cpuMilli) {
+                        return true;
+                    }
+                    if (configOverride.memoryMb && configOverride.memoryMb !== node.memoryMb) {
+                        return true;
+                    }
+                    if (configOverride.storageMb && configOverride.storageMb !== node.storageMb) {
+                        return true;
+                    }
+                    return false;
                 };
                 plan.push(
                     ...(nodes.RUNNING || []).flatMap<Operation>((node) => {
@@ -319,21 +325,37 @@ export class Supervisor {
             deployment: Deployment;
         }
     ): Promise<Result<Node>> {
-        let newNodeConfig = this.nodeProvider.defaultNodeConfig;
+        let newNodeConfig: NodeConfig = {
+            ...this.nodeProvider.defaultNodeConfig,
+            image: deployment.image
+        };
 
         const nodeConfigOverride = await nodeConfigOverrides.search(db, { routingIds: [routingId] });
         if (nodeConfigOverride.isErr()) {
             return Err(nodeConfigOverride.error);
         }
-        const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
+        let nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
         if (nodeConfigOverrideValue) {
-            newNodeConfig = nodeConfigOverrideValue;
+            // TODO: remove once values in node_config_overrides are updated to NULL in the db
+            // to indicate image is not overriden
+            if (!nodeConfigOverrideValue.image?.includes(':')) {
+                nodeConfigOverrideValue = {
+                    ...nodeConfigOverrideValue,
+                    image: null
+                };
+            }
+            newNodeConfig = {
+                image: nodeConfigOverrideValue.image || newNodeConfig.image,
+                cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,
+                memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
+                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb
+            };
         }
 
         return nodes.create(db, {
             routingId,
             deploymentId: deployment.id,
-            image: newNodeConfig.image.includes(':') ? newNodeConfig.image : `${newNodeConfig.image}:${deployment.commitId}`,
+            image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
             memoryMb: newNodeConfig.memoryMb,
             storageMb: newNodeConfig.storageMb

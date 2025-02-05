@@ -23,6 +23,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     }
 }

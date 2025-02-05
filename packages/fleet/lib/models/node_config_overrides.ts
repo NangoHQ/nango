@@ -10,10 +10,10 @@ export const NODE_CONFIG_OVERRIDES_TABLE = 'node_config_overrides';
 interface DBNodeConfigOverride {
     readonly id: number;
     readonly routing_id: RoutingId;
-    readonly image: string;
-    readonly cpu_milli: number;
-    readonly memory_mb: number;
-    readonly storage_mb: number;
+    readonly image: string | null;
+    readonly cpu_milli: number | null;
+    readonly memory_mb: number | null;
+    readonly storage_mb: number | null;
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -131,17 +131,17 @@ export async function search(
     }
 }
 
-export async function resetImage(db: knex.Knex, props: Pick<NodeConfigOverride, 'image'>): Promise<Result<NodeConfigOverride[], FleetError>> {
+export async function resetImage(db: knex.Knex): Promise<Result<NodeConfigOverride[], FleetError>> {
     try {
         const toUpdate: Partial<DBNodeConfigOverride> = {
-            image: props.image
+            image: null
         };
         const updated = await db.from<DBNodeConfigOverride>(NODE_CONFIG_OVERRIDES_TABLE).update(toUpdate).returning('*');
         if (!updated) {
-            return Err(new FleetError('node_config_override_reset_image_failed', { context: props }));
+            return Err(new FleetError('node_config_override_reset_image_failed'));
         }
         return Ok(updated.map(DBNodeConfigOverride.from));
     } catch (err) {
-        return Err(new FleetError('node_config_override_reset_image_failed', { cause: err, context: props }));
+        return Err(new FleetError('node_config_override_reset_image_failed', { cause: err }));
     }
 }
