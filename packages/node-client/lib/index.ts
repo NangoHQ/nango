@@ -27,7 +27,8 @@ import type {
     GetPublicConnections,
     SignatureCredentials,
     PostPublicConnectSessionsReconnect,
-    GetPublicConnection
+    GetPublicConnection,
+    NangoRecord
 } from '@nangohq/types';
 import type {
     CreateConnectionOAuth1,
@@ -39,7 +40,6 @@ import type {
     MetadataChangeResponse,
     NangoProps,
     ProxyConfiguration,
-    RecordMetadata,
     StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
@@ -524,7 +524,7 @@ export class Nango {
      */
     public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
-    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
         const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 

@@ -110,6 +110,7 @@ import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
+import { getPublicRecords } from './controllers/records/getRecords.js';
 
 export const router = express.Router();
 
@@ -251,7 +252,7 @@ publicAPI.route('/sync/deploy/internal').post(apiAuth, postDeployInternal);
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, syncController.updateFrequencyForConnection.bind(syncController));
 
 publicAPI.use('/records', jsonContentTypeMiddleware);
-publicAPI.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
+publicAPI.route('/records').get(apiAuth, getPublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
