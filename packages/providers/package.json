@@ -12,7 +12,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "0.52.4",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     },
     "files": [
         "dist/**/*",
