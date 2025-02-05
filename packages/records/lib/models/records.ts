@@ -56,7 +56,8 @@ export async function getRecords({
     modifiedAfter,
     limit,
     filter,
-    cursor
+    cursor,
+    externalIds
 }: {
     connectionId: number;
     model: string;
@@ -64,6 +65,7 @@ export async function getRecords({
     limit?: number | string | undefined;
     filter?: CombinedFilterAction | LastAction | undefined;
     cursor?: string | undefined;
+    externalIds?: string[] | undefined;
 }): Promise<Result<GetRecordsResponse>> {
     try {
         if (!model) {
@@ -96,6 +98,10 @@ export async function getRecords({
                         .where('updated_at', '>', decodedCursor.sort)
                         .orWhere((builder) => void builder.where('updated_at', '=', decodedCursor.sort).andWhere('id', '>', decodedCursor.id))
             );
+        }
+
+        if (externalIds) {
+            query = query.whereIn('external_id', externalIds);
         }
 
         if (limit) {
