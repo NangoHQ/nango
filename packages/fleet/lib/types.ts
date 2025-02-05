@@ -21,10 +21,10 @@ export interface Node {
 export interface NodeConfigOverride {
     readonly id: number;
     readonly routingId: Node['routingId'];
-    readonly image: NodeConfig['image'];
-    readonly cpuMilli: NodeConfig['cpuMilli'];
-    readonly memoryMb: NodeConfig['memoryMb'];
-    readonly storageMb: NodeConfig['storageMb'];
+    readonly image: NodeConfig['image'] | null;
+    readonly cpuMilli: NodeConfig['cpuMilli'] | null;
+    readonly memoryMb: NodeConfig['memoryMb'] | null;
+    readonly storageMb: NodeConfig['storageMb'] | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }
