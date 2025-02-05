@@ -10,11 +10,11 @@ export interface RecordMetadata {
     cursor: string;
 }
 
-export interface NangoRecord {
+export type NangoRecord<T extends Record<string, any> = Record<string, any>> = {
     [key: string]: any;
     id: string | number;
     _nango_metadata: RecordMetadata;
-}
+} & T;
 
 export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor?: string };
 
