@@ -1,7 +1,7 @@
 import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as deployments from './deployments.js';
 import { getTestDbClient } from '../db/helpers.test.js';
-import { generateCommitHash } from './helpers.js';
+import { generateImage } from './helpers.js';
 
 describe('Deployments', () => {
     const dbClient = getTestDbClient('deployments');
@@ -16,19 +16,20 @@ describe('Deployments', () => {
 
     describe('create', () => {
         it('should create a deployment', async () => {
-            const commitId = generateCommitHash().unwrap();
-            const deployment = (await deployments.create(db, commitId)).unwrap();
-            expect(deployment.commitId).toBe(commitId);
+            const image = generateImage().unwrap();
+            const deployment = (await deployments.create(db, image)).unwrap();
+            expect(deployment.commitId).toBe(image.split(':')[1]);
+            expect(deployment.image).toBe(image);
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);
         });
 
         it('should supersede any active deployments', async () => {
-            const commitId1 = generateCommitHash().unwrap();
-            const commitId2 = generateCommitHash().unwrap();
+            const image1 = generateImage().unwrap();
+            const image2 = generateImage().unwrap();
 
-            const deployment1 = (await deployments.create(db, commitId1)).unwrap();
-            const deployment2 = (await deployments.create(db, commitId2)).unwrap();
+            const deployment1 = (await deployments.create(db, image1)).unwrap();
+            const deployment2 = (await deployments.create(db, image2)).unwrap();
 
             expect((await deployments.get(db, deployment1.id)).unwrap().supersededAt).not.toBe(null);
             expect((await deployments.get(db, deployment2.id)).unwrap().supersededAt).toBe(null);
