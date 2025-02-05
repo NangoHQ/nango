@@ -5,7 +5,7 @@ import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import type { Node } from './types.js';
-import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
+import type { Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
 import { Supervisor } from './supervisor/supervisor.js';
@@ -57,15 +57,26 @@ export class Fleet {
         }
     }
 
-    public async rollout(commitId: CommitHash): Promise<Result<Deployment>> {
+    public async rollout(image: string, options?: { verifyImage?: boolean }): Promise<Result<Deployment>> {
+        if (options?.verifyImage !== false) {
+            const [name, tag] = image.split(':');
+            if (!name || !tag) {
+                return Err(new FleetError('fleet_rollout_invalid_image', { context: { image } }));
+            }
+            const res = await fetch(`https://hub.docker.com/v2/repositories/${name}/tags/${tag}`);
+            if (!res.ok) {
+                return Err(new FleetError('fleet_rollout_image_not_found', { context: { image } }));
+            }
+        }
+
         return this.dbClient.db.transaction(async (trx) => {
-            const deployment = await deployments.create(trx, commitId);
+            const deployment = await deployments.create(trx, image);
             if (deployment.isErr()) {
                 throw deployment.error;
             }
 
             // rolling out cancels all nodeConfigOverrides images
-            await nodeConfigOverrides.resetImage(trx, { image: this.nodeProvider.defaultNodeConfig.image });
+            await nodeConfigOverrides.resetImage(trx, { image });
 
             return deployment;
         });

@@ -9,7 +9,7 @@ import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { otlp } from '@nangohq/logs';
 import { runnersFleet } from './runner/fleet.js';
-import { generateCommitHash } from '@nangohq/fleet';
+import { generateImage } from '@nangohq/fleet';
 
 const logger = getLogger('Jobs');
 
@@ -78,11 +78,11 @@ try {
         // when running locally, the runners (running as processes) are being killed
         // when the main process is killed and the fleet entries are therefore not associated with any running process
         // we then must fake a new deployment so fleet replaces runners with new ones
-        const commitHash = generateCommitHash();
-        if (commitHash.isErr()) {
-            logger.error(`Unable to generate commit hash`, commitHash.error);
+        const image = generateImage();
+        if (image.isErr()) {
+            logger.error(`Unable to generate commit hash`, image.error);
         } else {
-            await runnersFleet.rollout(commitHash.value);
+            await runnersFleet.rollout(image.value, { verifyImage: false });
         }
     }
     runnersFleet.start();

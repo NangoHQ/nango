@@ -1,0 +1,88 @@
+---
+title: AWS IAM
+sidebarTitle: AWS IAM
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/aws-iam/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/aws-iam/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-iam.mdx)</Note>
+
+
+## Useful links
+
+-   [How to create a user pool](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-as-user-directory.html)
+-   [OAuth-related docs](https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html)
+-   [List of OAuth scopes](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-define-resource-servers.html)
+-   [IAM API reference](https://docs.aws.amazon.com/IAM/latest/APIReference/welcome.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-iam.mdx)</Note>
+
+## Connection configuration in Nango
+
+- AWS uses different domain extensions codes for different regions, i.e `us-east-2` for the US East (Ohio) region, `us-east-1` for the US East (N. Virginia) region, or `eu-west-1` for Europe (Ireland) region.It also uses different subdomains for different `user pools`.
+- Please provide your `apiSubdomain`, which is the endpoint subdomain to the specific Amazon Cognito API. For example, for the `US East (Ohio)` region (user) pools, the subdomain would be `idp.us-east-2`. You can reference the Amazon Cognito [Service Endpoints](https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html#cognito_identity_region) documentation to find the appropriate endpoint for your specific use case.
+
+## API gotchas
+- To create a new connection in Nango for AWS IAM, you'll need an Access Key ID and a Secret Access Key. Use these to set up your connection, with the Access Key ID as the username and the Secret Access Key as the password. For more details on generating these keys, visit [Create an access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-key-self-managed.html#Using_CreateAccessKey).
+- With this you can now use your basic auth credentials to sign you requests as follows. For more on how to sign your requests, please vist [AWS signature version 4 for API requests](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv.html)
+
+```js
+    if ('username' in connection.credentials && 'password' in connection.credentials && 'region' in connection.connection_config) {
+        const accessKeyId = connection.credentials['username'];
+        const secretAccessKey = connection.credentials['password'];
+        const region = connection.connection_config['region'];
+        const host = 'iam.amazonaws.com';
+
+        const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
+        const payloadHash = crypto.createHash('sha256').update('').digest('hex');
+        const canonicalHeaders = `host:${host}\nx-amz-date:${date}\n`;
+        const signedHeaders = 'host;x-amz-date';
+
+        const canonicalRequest = `${method}\n${path}\n${querystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+        const credentialScope = `${date.substr(0, 8)}/${region}/${service}/aws4_request`;
+        const stringToSign = `AWS4-HMAC-SHA256\n${date}\n${credentialScope}\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
+
+        const getSignatureKey = (key: string, dateStamp: string, regionName: string, serviceName: string) => {
+            const kDate = crypto.createHmac('sha256', `AWS4${key}`).update(dateStamp).digest();
+            const kRegion = crypto.createHmac('sha256', kDate).update(regionName).digest();
+            const kService = crypto.createHmac('sha256', kRegion).update(serviceName).digest();
+            return crypto.createHmac('sha256', kService).update('aws4_request').digest();
+        };
+
+        const signingKey = getSignatureKey(secretAccessKey, date.substr(0, 8), region, service);
+        const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
+
+        const authorizationHeader = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+        return { authorizationHeader, date };
+```
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws-iam.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to AWS-IAM" icon="link" href="/integrations/all/aws-iam/connect" horizontal>
+  Guide to connect to AWS-IAM using Connect UI
+</Card>

@@ -5,7 +5,7 @@ import { getTestDbClient } from '../db/helpers.test.js';
 import * as deployments from '../models/deployments.js';
 import * as nodes from '../models/nodes.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { generateCommitHash } from '../models/helpers.js';
+import { generateImage } from '../models/helpers.js';
 import { createNodeWithAttributes } from '../models/helpers.test.js';
 import type { Deployment } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
@@ -34,8 +34,8 @@ describe('Supervisor', () => {
 
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
-        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
+        previousDeployment = (await deployments.create(dbClient.db, generateImage().unwrap())).unwrap();
+        activeDeployment = (await deployments.create(dbClient.db, generateImage().unwrap())).unwrap();
     });
 
     afterEach(async () => {

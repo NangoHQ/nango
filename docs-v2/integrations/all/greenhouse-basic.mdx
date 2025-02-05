@@ -1,0 +1,53 @@
+---
+title: Greenhouse Basic Auth
+sidebarTitle: Greenhouse Basic Auth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/greenhouse-basic/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/greenhouse-basic/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-basic.mdx)</Note>
+
+
+## Useful links
+Greenhouse offers both `Basic` and `OAuth` as authentication and Nango implements both.
+
+-   [How to register an Application](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
+-   [OAuth-related docs](https://developers.greenhouse.io/candidate-ingestion.html#introduction)
+-   [List of OAuth scopes](https://developers.greenhouse.io/candidate-ingestion.html#oauth-scopes)
+-   [API](https://developers.greenhouse.io)
+-   [Harvest API authentication](https://developers.greenhouse.io/harvest.html#authentication)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-basic.mdx)</Note>
+
+## API gotchas
+
+- For `Basic` auth pass Greenhouse API token as username and the password should be blank.
+- If you need to use the proxy, it is important to provide the resource that you will be calling in the config (as green house has many forms for API resource). Please see [here](https://developers.greenhouse.io/) for different types of resources. Once confirmed, you have to add `resource` as a config.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-basic.mdx)</Note>
+
+<Card title="Connect to Grennhouse" icon="link" href="/integrations/all/greenhouse-basic/connect" horizontal>
+  Guide to connect to Greenhouse API using Nango Connect.
+</Card>
