@@ -182,9 +182,7 @@ export class Supervisor {
                     if (!configOverride) {
                         return false;
                     }
-                    // TODO: remove once values in node_config_overrides are updated to NULL in the db
-                    const imageOverride = configOverride.image?.includes(':') ? configOverride.image : undefined;
-                    if (imageOverride && imageOverride !== node.image) {
+                    if (configOverride.image && configOverride.image !== node.image) {
                         return true;
                     }
                     if (configOverride.cpuMilli && configOverride.cpuMilli !== node.cpuMilli) {
@@ -334,16 +332,8 @@ export class Supervisor {
         if (nodeConfigOverride.isErr()) {
             return Err(nodeConfigOverride.error);
         }
-        let nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
+        const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
         if (nodeConfigOverrideValue) {
-            // TODO: remove once values in node_config_overrides are updated to NULL in the db
-            // to indicate image is not overriden
-            if (!nodeConfigOverrideValue.image?.includes(':')) {
-                nodeConfigOverrideValue = {
-                    ...nodeConfigOverrideValue,
-                    image: null
-                };
-            }
             newNodeConfig = {
                 image: nodeConfigOverrideValue.image || newNodeConfig.image,
                 cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,

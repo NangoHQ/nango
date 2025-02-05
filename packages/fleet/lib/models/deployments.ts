@@ -1,14 +1,13 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import type { CommitHash, Deployment } from '@nangohq/types';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
 interface DBDeployment {
     readonly id: number;
-    readonly commit_id: CommitHash;
     readonly image: string;
     readonly created_at: Date;
     readonly superseded_at: Date | null;
@@ -27,7 +26,6 @@ const DBDeployment = {
         return {
             id: deployment.id,
             image: deployment.image,
-            commit_id: '0000000000000000000000000000000000000000' as CommitHash, //TODO: remove
             created_at: deployment.createdAt,
             superseded_at: deployment.supersededAt
         };
@@ -56,7 +54,6 @@ export async function create(db: knex.Knex, image: string): Promise<Result<Deplo
                 .update({ superseded_at: now });
             // insert new deployment
             const dbDeployment: Omit<DBDeployment, 'id'> = {
-                commit_id: '0000000000000000000000000000000000000000' as CommitHash, // TODO remove
                 image,
                 created_at: now,
                 superseded_at: null

@@ -16,7 +16,7 @@ describe('Deployments', () => {
 
     describe('create', () => {
         it('should create a deployment', async () => {
-            const image = generateImage().unwrap();
+            const image = generateImage();
             const deployment = (await deployments.create(db, image)).unwrap();
             expect(deployment.image).toBe(image);
             expect(deployment.createdAt).toBeInstanceOf(Date);
@@ -24,8 +24,8 @@ describe('Deployments', () => {
         });
 
         it('should supersede any active deployments', async () => {
-            const image1 = generateImage().unwrap();
-            const image2 = generateImage().unwrap();
+            const image1 = generateImage();
+            const image2 = generateImage();
 
             const deployment1 = (await deployments.create(db, image1)).unwrap();
             const deployment2 = (await deployments.create(db, image2)).unwrap();

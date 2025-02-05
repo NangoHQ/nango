@@ -1,5 +1,3 @@
-export type CommitHash = string & { readonly length: 40 };
-
 export interface Deployment {
     readonly id: number;
     readonly image: string;
