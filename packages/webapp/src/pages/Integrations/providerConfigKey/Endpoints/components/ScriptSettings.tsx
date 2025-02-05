@@ -217,7 +217,7 @@ export const ScriptSettings: React.FC<{
                                 </div>
                             </InfoBloc>
                         ) : (
-                            <InfoBloc title="Source">Custom template - v{flow.version}</InfoBloc>
+                            <InfoBloc title="Source">Custom script - v{flow.version}</InfoBloc>
                         )}
                         <InfoBloc title="Script Type">
                             <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md uppercase">{isSync ? 'Sync' : 'Action'}</code>
