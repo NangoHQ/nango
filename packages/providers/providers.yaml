@@ -810,6 +810,7 @@ basecamp:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/basecamp
     docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    post_connection_script: basecampPostConnection
     connection_config:
         appDetails:
             type: string
@@ -820,6 +821,7 @@ basecamp:
             type: string
             title: Account ID
             description: Your Account ID
+            optional: true
             example: '5899981'
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
@@ -5134,6 +5136,38 @@ mindbody:
             example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
             doc_section: '#step-3-obtain-site-id-and-staff-user-token'
 
+minimax:
+    display_name: MiniMax
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.minimaxi.chat
+        headers:
+            authorization: Bearer ${apiKey}
+            group-id: ${connectionConfig.groupId}
+        query:
+            GroupId: ${connectionConfig.groupId}
+    docs: https://docs.nango.dev/integrations/all/minimax
+    docs_connect: https://docs.nango.dev/integrations/all/minimax/connect
+    connection_config:
+        groupId:
+            type: string
+            title: Group ID
+            description: The unique identifier for your MiniMax account, linked to your account's privileges.
+            example: '1234567890123456789'
+            pattern: '^\d{19}$'
+            doc_section: '#step-1-retrieve-your-group-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for securely accessing the MiniMax API.
+            doc_section: '#step-2-generate-an-api-key'
+            example: 'your-api-key-here'
+            pattern: '^[a-zA-Z0-9-]+$'
+
 mixpanel:
     display_name: Mixpanel
     categories:
@@ -6016,7 +6050,6 @@ posthog:
             title: API Key
             description: The API key for your PostHog account
             doc_section: '#step-1-finding-your-posthog-api-key'
-
 prive:
     display_name: Prive
     categories:

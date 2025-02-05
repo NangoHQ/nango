@@ -107,6 +107,10 @@ const seen: string[] = [];
 for (const [slug, provider] of Object.entries(neededProviders)) {
     seen.push(slug);
 
+    const fullLogoPath = await fs.realpath(path.join('packages', 'webapp', 'public', 'images', 'template-logos', `${slug}.svg`));
+    const logoPath = path.relative(process.cwd(), fullLogoPath);
+    const logo = `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/${logoPath}`;
+
     if (apiItemsBySlug[slug]) {
         const item = apiItemsBySlug[slug];
         if (!item.id) {
@@ -133,6 +137,9 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
         };
 
         if (!util.isDeepStrictEqual(previous, update)) {
+            // always update logo, just in case
+            (update.fieldData as any).logo = logo;
+
             try {
                 if (!dryRun) {
                     await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
@@ -155,7 +162,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                         name: provider.display_name,
                         slug: slug,
                         documentation: provider.docs,
-                        logo: `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/packages/webapp/public/images/template-logos/${slug}.svg`,
+                        logo,
                         'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
                     }
                 });

@@ -77,12 +77,12 @@ export const BackendSettings: React.FC = () => {
     const hasNewSecretKey = environmentAndAccount.environment.pending_secret_key;
     return (
         <div className="text-grayscale-100 flex flex-col gap-10">
-            <div className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10">
+            <Link className="flex gap-2 items-center rounded-md bg-grayscale-900 px-8 h-10" to="#backend" id="backend">
                 <div>
                     <IconServer stroke={1} size={18} />
                 </div>
                 <h3 className="uppercase text-sm">Backend Settings</h3>
-            </div>
+            </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <fieldset className="flex flex-col gap-2">
                     <label htmlFor="secretKey" className="font-semibold mb-2">
@@ -104,9 +104,9 @@ export const BackendSettings: React.FC = () => {
                         />
                     </div>
                     {!hasNewSecretKey && (
-                        <div className="">
+                        <div className="flex justify-end">
                             <Button variant={'secondary'} onClick={onGenerate} isLoading={loading}>
-                                <IconKey stroke={1} />
+                                <IconKey stroke={1} size={18} />
                                 Generate new secret key
                             </Button>
                         </div>
