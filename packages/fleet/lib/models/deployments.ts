@@ -1,14 +1,13 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import type { CommitHash, Deployment } from '@nangohq/types';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
 interface DBDeployment {
     readonly id: number;
-    readonly commit_id: CommitHash;
     readonly image: string;
     readonly created_at: Date;
     readonly superseded_at: Date | null;
@@ -18,7 +17,6 @@ const DBDeployment = {
     to(dbDeployment: DBDeployment): Deployment {
         return {
             id: dbDeployment.id,
-            commitId: dbDeployment.commit_id,
             image: dbDeployment.image,
             createdAt: dbDeployment.created_at,
             supersededAt: dbDeployment.superseded_at
@@ -28,7 +26,6 @@ const DBDeployment = {
         return {
             id: deployment.id,
             image: deployment.image,
-            commit_id: deployment.commitId,
             created_at: deployment.createdAt,
             superseded_at: deployment.supersededAt
         };
@@ -56,12 +53,7 @@ export async function create(db: knex.Knex, image: string): Promise<Result<Deplo
                 })
                 .update({ superseded_at: now });
             // insert new deployment
-            const commitId = image.split(':')[1];
-            if (!commitId || commitId.length !== 40) {
-                return Err(new Error(`Error: invalid image '${image}'`));
-            }
             const dbDeployment: Omit<DBDeployment, 'id'> = {
-                commit_id: commitId as CommitHash,
                 image,
                 created_at: now,
                 superseded_at: null

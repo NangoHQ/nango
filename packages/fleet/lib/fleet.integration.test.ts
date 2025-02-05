@@ -27,9 +27,8 @@ describe('fleet', () => {
 
     describe('rollout', () => {
         it('should create a new deployment', async () => {
-            const image = generateImage().unwrap();
+            const image = generateImage();
             const deployment = (await fleet.rollout(image, { verifyImage: false })).unwrap();
-            expect(deployment.commitId).toBe(image.split(':')[1]);
             expect(deployment.image).toBe(image);
             expect(deployment.createdAt).toBeInstanceOf(Date);
             expect(deployment.supersededAt).toBe(null);
@@ -44,13 +43,13 @@ describe('fleet', () => {
                 storageMb: 100
             };
             await nodeConfigOverrides.create(dbClient.db, props);
-            const image = generateImage().unwrap();
+            const image = generateImage();
             await fleet.rollout(image, { verifyImage: false });
             const nodeConfigOverride = (await nodeConfigOverrides.search(dbClient.db, { routingIds: [props.routingId] })).unwrap();
             expect(nodeConfigOverride.get('test')).toStrictEqual({
                 id: expect.any(Number),
                 routingId: props.routingId,
-                image,
+                image: null,
                 cpuMilli: props.cpuMilli,
                 memoryMb: props.memoryMb,
                 storageMb: props.storageMb,
@@ -62,7 +61,7 @@ describe('fleet', () => {
 
     describe('getRunningNode', () => {
         it('should return a running node', async () => {
-            const image = generateImage().unwrap();
+            const image = generateImage();
             const deployment = (await fleet.rollout(image, { verifyImage: false })).unwrap();
             const routingId = nanoid();
             const runningNode = await createNodeWithAttributes(dbClient.db, {
@@ -74,7 +73,7 @@ describe('fleet', () => {
             expect(res.unwrap()).toStrictEqual(runningNode);
         });
         it('should return an outdated node', async () => {
-            const image = generateImage().unwrap();
+            const image = generateImage();
             const deployment = (await fleet.rollout(image, { verifyImage: false })).unwrap();
             const routingId = nanoid();
             await createNodeWithAttributes(dbClient.db, {

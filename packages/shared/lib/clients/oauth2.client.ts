@@ -12,6 +12,20 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { httpAgent, httpsAgent } from '@nangohq/utils';
 import type { Merge } from 'type-fest';
 
+// we specify these agents as getters so that they aren't cloned by simple-oauth2,
+// because as agent objects grow during usage the clone operation becomes very slow
+const agentConfig = {
+    get http() {
+        return httpAgent;
+    },
+    get https() {
+        return httpsAgent;
+    },
+    get httpsAllowUnauthorized() {
+        return httpsAgent;
+    }
+};
+
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
     provider: Provider,
@@ -30,23 +44,16 @@ export function getSimpleOAuth2ClientConfig(
             id: providerConfig.oauth_client_id,
             secret: providerConfig.oauth_client_secret
         },
+        http: {
+            headers,
+            // @ts-expect-error agents are not specified in the types, but are available as an option
+            agents: agentConfig
+        },
         auth: {
             tokenHost: tokenUrl.origin,
             tokenPath: tokenUrl.pathname,
             authorizeHost: authorizeUrl.origin,
             authorizePath: authorizeUrl.pathname
-        },
-        http: {
-            headers,
-            // @ts-expect-error badly documented feature https://github.com/hapijs/wreck/blob/ba28b0420d6b0998cd8e61be7f3f8822129c88fe/lib/index.js#L34-L40
-            agents:
-                httpAgent && httpsAgent
-                    ? {
-                          http: httpAgent,
-                          https: httpsAgent,
-                          httpsAllowUnauthorized: httpsAgent
-                      }
-                    : undefined
         },
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
