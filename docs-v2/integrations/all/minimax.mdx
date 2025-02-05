@@ -1,0 +1,59 @@
+---
+title: MiniMax
+sidebarTitle: MiniMax
+provider: minimax
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/minimax/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/minimax/PreBuiltUseCases.mdx";
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Required for API access. |
+| Paid test account | ✅ | Available for testing purposes. |
+| Partnership | ❌ | Not required for API access. |
+| App review | ❌ | No app review process. |
+| Security audit | ❌ | Not required for API access. |
+
+## Setup guide
+
+1. **Obtain your Group ID**:
+   - Log in to your MiniMax account.
+   - Navigate to the **Account** tab and select **Your Profile** from the left menu.
+   - Locate the **GroupID** field in the basic information. This is a 19-digit number. Copy it for use in your API requests.
+
+2. **Generate an API Key**:
+   - In the left menu, click on **API Keys**, then select **Create New Secret Key**.
+   - Enter a name for the key in the provided field, then click **Create**.
+   - A dialog box will appear. Use the copy icon to securely save the API key, as it will not be displayed again.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/minimax.mdx)</Note>
+
+## Useful links
+
+-   [MiniMax API Documentation](https://api.minimaxi.com/docs)
+-   [How to Generate an API Key](https://api.minimaxi.com/docs/api-keys)
+-   [MiniMax Developer Quickstart](https://api.minimaxi.com/docs/quickstart)
+-   [MiniMax Models and Capabilities](https://api.minimaxi.com/docs/models)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/minimax.mdx)</Note>
+
+## API gotchas
+
+-   **Group ID is required**: Every API request must include the Group ID in the headers.
+-   **API key security**: Ensure your API key is stored securely, as it cannot be retrieved after creation.
+-   **Rate limits**: MiniMax enforces rate limits on API requests. Check the [API documentation](https://api.minimaxi.com/docs/rate-limits) for details.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/minimax.mdx)</Note>
+
+<Card title="Connect to minimax" icon="link" href="/integrations/all/minimax/connect" horizontal>
+  Guide to connect to minimax using Nango Connect.
+</Card>
