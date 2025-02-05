@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.52.5] - 2025-02-05
+
+### Added
+
+- *(ui)* Environment settings revamp (#3432) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/184791e39a290d706aaf92b04042f0bc7feb9d31 by Khaliq. Commit message: fix(recharge): add subscription id (#211) by @github-actions[bot]
+- *(docs)* Backfill missing docs due to multiple providers for same API (#3403) by @nalanj
+- *(minimax)* Added minimax support (#3364) by @AndrewKaranja
+- *(basecamp)* Store basecamp response in the connection config (#3455) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/08cd7cb0ea8fb6a1908fe8b645f67abf27a0af67 by Khaliq. Commit message: feat(basecamp): add action to do a user lookup (#212) by @github-actions[bot]
+
+### Changed
+
+- Cleanup legacy runner management (#3425) by @TBonnin
+- Clarify integration steps (#3435) by @bastienbeurier
+- Show connect UI gif (#3436) by @bastienbeurier
+- Be more explicit about callback URL redirect safeguards (#3439) by @bastienbeurier
+- Fleet improvements (#3438) by @TBonnin
+- Bump vitest to 2.1.9 (#3449) by @nalanj
+
+### Fixed
+
+- Fleet to fetch all nodes at once (#3429) by @TBonnin
+- Deel provider (#3434) by @TBonnin
+- *(server)* Log instance id from render instead of random id and catch unhandled (#3433) by @nalanj
+- *(tests)* Test forwardWebhook (#3424) by @nalanj
+- *(server)* Only log last part of instance id for render (#3437) by @nalanj
+- *(server)* Put whitespace in front of instance id, if it's there (#3440) by @nalanj
+- *(server)* Override agent toJSON (#3441) by @nalanj
+- *(ui)* Env settings should reset on switching env (#3442) by @bodinsamuel
+- *(docs)* PauseSync fix (#3443) by @khaliqgant
+- Set Slack scope_separator to comma (#3430) by @mpotter
+- Always update logo when updating apis in webflow (#3446) by @nalanj
+- *(ui)* Feedback env settings page (#3444) by @bodinsamuel
+- *(cli)* Fix dryrun bug after shared removal (#3452) by @nalanj
+
 ## [v0.52.4] - 2025-02-03
 
 ### Added
@@ -2954,6 +2990,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5
 [v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4
 [v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
 [v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
