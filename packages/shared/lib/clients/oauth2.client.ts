@@ -12,6 +12,20 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { httpAgent, httpsAgent } from '@nangohq/utils';
 import type { Merge } from 'type-fest';
 
+// we specify these agents as getters so that they aren't cloned by simple-oauth2,
+// because as agent objects grow during usage the clone operation becomes very slow
+const agentConfig = {
+    get http() {
+        return httpAgent;
+    },
+    get https() {
+        return httpsAgent;
+    },
+    get httpsAllowUnauthorized() {
+        return httpsAgent;
+    }
+};
+
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
     provider: Provider,
@@ -25,10 +39,15 @@ export function getSimpleOAuth2ClientConfig(
 
     const authConfig = provider as ProviderOAuth2;
 
-    const clientConfig: Merge<ModuleOptions, { http: WreckHttpOptions }> = {
+    return {
         client: {
             id: providerConfig.oauth_client_id,
             secret: providerConfig.oauth_client_secret
+        },
+        http: {
+            headers,
+            // @ts-expect-error agents are not specified in the types, but are available as an option
+            agents: agentConfig
         },
         auth: {
             tokenHost: tokenUrl.origin,
@@ -43,15 +62,6 @@ export function getSimpleOAuth2ClientConfig(
             scopeSeparator: provider.scope_separator || ' '
         }
     };
-
-    // define getters for agents so that they aren't clone within simple-oauth2
-    const httpConfig = { headers, agents: {} };
-    Object.defineProperty(httpConfig.agents, 'http', { get: () => httpAgent, enumerable: true });
-    Object.defineProperty(httpConfig.agents, 'https', { get: () => httpsAgent, enumerable: true });
-    Object.defineProperty(httpConfig.agents, 'httpsAllowUnauthorized', { get: () => httpsAgent, enumerable: true });
-
-    clientConfig.http = httpConfig;
-    return clientConfig;
 }
 
 export async function getFreshOAuth2Credentials(
