@@ -524,7 +524,7 @@ describe('Records service', () => {
             expect(allFetchedRecords.length).toBe(numOfRecords);
         });
 
-        it('Should retreive records by external_id', async () => {
+        it('Should retrieve records by external_id', async () => {
             const { connectionId, model } = await upsertNRecords(10);
 
             const response = await Records.getRecords({
