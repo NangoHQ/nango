@@ -34,6 +34,7 @@ import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getInterval } from '@nangohq/nango-yaml';
+import { getPublicRecords } from './records/getRecords.js';
 
 const orchestrator = getOrchestrator();
 
@@ -189,8 +190,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                // TODO: fix this
-                // await this.getAllRecords(req, res, next);
+                getPublicRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
