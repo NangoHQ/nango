@@ -6483,6 +6483,38 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+
+sap-concur:
+    display_name: SAP Concur
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.region}.api.concursolutions.com/oauth2/v0/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.region}.api.concursolutions.com
+    docs: https://docs.nango.dev/integrations/all/sap-concur
+    docs_connect: https://docs.nango.dev/integrations/all/sap-concur/connect
+    connection_config:
+        companyUUID:
+            type: string
+            title: Company UUID
+            description: The unique identifier for your SAP Concur company
+            doc_section: '#step-2-generate-company-request-token'
+        companyRequestToken:
+            type: string
+            title: Company Request Token
+            description: The request token generated for the company
+            doc_section: '#step-2-generate-company-request-token'
+        region:
+            type: string
+            title: Region
+            description: The SAP Concur Data Center region (e.g., `us`, `eu`, `cn`)
+            example: us
+            doc_section: '#step-3-determine-your-region'
+
 sap-success-factors:
     display_name: SAP SuccessFactors
     categories:
