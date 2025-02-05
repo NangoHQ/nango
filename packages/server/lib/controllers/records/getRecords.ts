@@ -12,7 +12,12 @@ export const validationQuery = z
         delta: z.string().datetime().optional(),
         modified_after: z.string().datetime().optional(),
         limit: z.coerce.number().min(1).max(10000).default(100).optional(),
-        filter: z.enum(['added', 'updated', 'deleted']).optional(),
+        filter: z
+            .string()
+            .transform((value) => value.split(','))
+            .pipe(z.array(z.enum(['added', 'updated', 'deleted', 'ADDED', 'UPDATED', 'DELETED'])))
+            .transform<GetPublicRecords['Querystring']['filter']>((value) => value.join(',') as GetPublicRecords['Querystring']['filter'])
+            .optional(),
         cursor: z.string().min(1).max(1000).optional()
     })
     .strict();
