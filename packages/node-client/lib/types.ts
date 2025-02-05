@@ -40,7 +40,8 @@ import type {
     GetPublicConnections,
     GetPublicConnection,
     PostConnectSessions,
-    PostPublicConnectSessionsReconnect
+    PostPublicConnectSessionsReconnect,
+    GetPublicRecords
 } from '@nangohq/types';
 
 export type {
@@ -87,7 +88,8 @@ export type {
     GetPublicConnections,
     GetPublicConnection,
     PostConnectSessions,
-    PostPublicConnectSessionsReconnect
+    PostPublicConnectSessionsReconnect,
+    GetPublicRecords
 };
 
 export interface NangoProps {
