@@ -5,6 +5,8 @@ import { EditableInput } from './EditableInput';
 
 import { useToast } from '../../../hooks/useToast';
 import { Switch } from '../../../components/ui/Switch';
+import { useState } from 'react';
+import Spinner from '../../../components/ui/Spinner';
 
 export const AuthorizationSettings: React.FC = () => {
     const { toast } = useToast();
@@ -12,10 +14,14 @@ export const AuthorizationSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount, mutate } = useEnvironment(env);
 
+    const [loading, setLoading] = useState(false);
+
     const onHmacEnabled = async (isChecked: boolean) => {
+        setLoading(true);
         const res = await apiPatchEnvironment(env, {
             hmac_enabled: isChecked
         });
+        setLoading(false);
 
         if ('error' in res.json) {
             toast({ title: 'There was an issue updating the HMAC', variant: 'error' });
@@ -57,11 +63,14 @@ export const AuthorizationSettings: React.FC = () => {
                         <label htmlFor={'hmac_enabled'} className={`text-s`}>
                             Enabled
                         </label>
-                        <Switch
-                            name="hmac_enabled"
-                            checked={environmentAndAccount.environment.hmac_enabled}
-                            onCheckedChange={(checked) => onHmacEnabled(!!checked)}
-                        />
+                        <div className="flex gap-2 items-center">
+                            {loading && <Spinner size={1} />}
+                            <Switch
+                                name="hmac_enabled"
+                                checked={environmentAndAccount.environment.hmac_enabled}
+                                onCheckedChange={(checked) => onHmacEnabled(!!checked)}
+                            />
+                        </div>
                     </div>
 
                     <EditableInput
