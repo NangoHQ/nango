@@ -86,7 +86,7 @@ export const NotificationSettings: React.FC = () => {
                         placeholder="https://example.com/webhooks_from_nango"
                         subTitle={true}
                         originalValue={environmentAndAccount.webhook_settings.secondary_url || ''}
-                        apiCall={(value) => apiPatchWebhook(env, { primary_url: value })}
+                        apiCall={(value) => apiPatchWebhook(env, { secondary_url: value })}
                         onSuccess={() => void mutate()}
                     />
                     <WebhookCheckboxes env={env} checkboxState={environmentAndAccount.webhook_settings} mutate={mutate} />
