@@ -18,7 +18,7 @@ type GetCursor = Endpoint<{
     Success: GetCursorSuccess;
 }>;
 
-export const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
+export const path = '/environment/:environmentId/connection/:nangoConnectionId/records';
 const method = 'GET';
 
 const validate = validateCursor<GetCursor>();
@@ -28,7 +28,7 @@ const handler = async (req: EndpointRequest<GetCursor>, res: EndpointResponse<Ge
         params: { nangoConnectionId },
         query: { model, offset }
     } = req;
-    const result = await records.getCursor({
+    const result = await records.getRecords({
         connectionId: nangoConnectionId,
         model,
         offset
