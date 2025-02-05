@@ -810,6 +810,7 @@ basecamp:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/basecamp
     docs_connect: https://docs.nango.dev/integrations/all/basecamp/connect
+    post_connection_script: basecampPostConnection
     connection_config:
         appDetails:
             type: string
@@ -2329,7 +2330,7 @@ document360:
             type: string
             title: API Key
             description: The API key for your Document360 account
-            
+
 docusign:
     display_name: DocuSign
     categories:
@@ -6066,7 +6067,7 @@ prive:
             title: API Key
             description: The API key for your Prive account
             doc_section: '#step-1-requesting-your-prive-api-key'
-           
+
 productboard:
     display_name: Productboard
     categories:
