@@ -10,10 +10,32 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useStore } from '../../../store';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { useEffect, useState } from 'react';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { environmentAndAccount } = useEnvironment(env);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        if (!environmentAndAccount || scrolled) {
+            return;
+        }
+
+        setScrolled(true);
+        const hash = window.location.hash.slice(1); // Remove the '#' character from the hash
+        if (!hash) {
+            return;
+        }
+
+        const element = document.getElementById(hash);
+        if (!element) {
+            return;
+        }
+
+        element.scrollIntoView({ behavior: 'smooth' });
+    }, [environmentAndAccount]);
+
     if (!environmentAndAccount) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.EnvironmentSettings} className="p-6">
@@ -47,7 +69,7 @@ export const EnvironmentSettings: React.FC = () => {
                 <VariablesSettings />
                 <ExportSettings />
                 <Accordion type="single" collapsible>
-                    <AccordionItem value="item-1">
+                    <AccordionItem value="item-1" id="authorization">
                         <AccordionTrigger>Deprecated authorization settings</AccordionTrigger>
                         <AccordionContent>
                             <AuthorizationSettings />
