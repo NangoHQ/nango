@@ -3,6 +3,7 @@ import type { ApiWebhooks } from '@nangohq/types';
 import { useToast } from '../../../hooks/useToast';
 import { apiPatchWebhook } from '../../../hooks/useEnvironment';
 import { Switch } from '../../../components/ui/Switch';
+import Spinner from '../../../components/ui/Spinner';
 
 interface CheckboxConfig {
     label: string;
@@ -42,14 +43,14 @@ interface CheckboxFormProps {
 export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState, mutate }) => {
     const { toast } = useToast();
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState<string | false>();
 
     const handleCheckboxChange = async (name: string, checked: boolean) => {
-        if (isLoading) {
+        if (loading) {
             return;
         }
 
-        setIsLoading(true);
+        setLoading(name);
         const res = await apiPatchWebhook(env, {
             on_auth_creation: checkboxState['on_auth_creation'],
             on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
@@ -57,34 +58,36 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
             on_sync_error: checkboxState['on_sync_error'],
             [name]: checked
         });
+        setLoading(false);
 
         if ('error' in res.json) {
             toast({ title: 'There was an issue updating the webhook settings', variant: 'error' });
-            setIsLoading(false);
             return;
         }
 
-        toast({ title: 'Webhook settings updated successfully!', variant: 'success' });
         mutate();
 
-        setIsLoading(false);
+        toast({ title: 'Webhook settings updated successfully!', variant: 'success' });
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-5 mt-1">
+        <div className="flex flex-col gap-5 mt-1">
             {checkboxesConfig.map(({ label, stateKey }) => (
                 <div className="flex items-center justify-between" key={stateKey}>
                     <label htmlFor={stateKey} className={`text-sm font-medium`}>
                         {label}
                     </label>
 
-                    <Switch
-                        name="hmac_enabled"
-                        checked={checkboxState[stateKey] as boolean}
-                        onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
-                    />
+                    <div className="flex gap-2 items-center">
+                        {loading === stateKey && <Spinner size={1} />}
+                        <Switch
+                            name="hmac_enabled"
+                            checked={checkboxState[stateKey] as boolean}
+                            onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
+                        />
+                    </div>
                 </div>
             ))}
-        </form>
+        </div>
     );
 };
