@@ -59,7 +59,6 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
     });
 
     if (result.isErr()) {
-        console.log(result.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
         return;
     }
