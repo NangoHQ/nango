@@ -3,10 +3,9 @@ import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
 import type { Provider } from '../providers/provider';
 import type { AuthModeType, AuthModes } from '../auth/api';
-import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '../nangoYaml';
+import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
 import type { JSONSchema7 } from 'json-schema';
-import type { SyncType } from '../scripts/syncs/api';
 
 export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
     logo: string;
@@ -154,7 +153,7 @@ export interface NangoSyncConfig {
     last_deployed?: string | null;
     id?: number;
     input?: NangoModel | LegacySyncModelSchema;
-    sync_type?: SyncType;
+    sync_type?: SyncTypeLiteral;
     webhookSubscriptions?: string[];
     enabled?: boolean;
     json_schema: JSONSchema7 | null;

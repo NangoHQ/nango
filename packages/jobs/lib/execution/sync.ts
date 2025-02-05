@@ -13,7 +13,7 @@ import {
     telemetry,
     LogTypes,
     errorNotificationService,
-    SyncType,
+    SyncJobsType,
     updateSyncJobResult,
     setLastSyncDate,
     NangoError,
@@ -96,7 +96,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
-            type: syncType === 'full' ? SyncType.FULL : SyncType.INCREMENTAL,
+            type: syncType === 'full' ? SyncJobsType.FULL : SyncJobsType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
@@ -189,7 +189,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
-    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental';
+    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type === 'full' ? 'full' : 'incremental';
 
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -322,7 +322,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                     updated,
                                     deleted
                                 },
-                                operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
                             });
 
                             if (res.isErr()) {
@@ -694,7 +694,7 @@ async function onFailure({
                             description: error.message
                         },
                         now: lastSyncDate,
-                        operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
                     });
 
                     if (res.isErr()) {

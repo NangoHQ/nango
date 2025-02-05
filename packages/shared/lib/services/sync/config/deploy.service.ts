@@ -6,7 +6,7 @@ import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyn
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import type { SyncModelSchema, SyncConfig, SyncType, Sync } from '../../../models/Sync.js';
+import type { SyncModelSchema, Sync } from '../../../models/Sync.js';
 import type {
     DBEnvironment,
     DBTeam,
@@ -19,7 +19,10 @@ import type {
     HTTP_METHOD,
     SyncDeploymentResult,
     DBSyncEndpointCreate,
-    DBSyncEndpoint
+    DBSyncEndpoint,
+    SyncTypeLiteral,
+    DBSyncConfig,
+    DBSyncConfigInsert
 } from '@nangohq/types';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { NangoError } from '../../../utils/error.js';
@@ -100,7 +103,7 @@ export async function deploy({
     const deployResults: SyncDeploymentResult[] = [];
     const flowsWithoutScript: FlowWithoutScript[] = [];
     const idsToMarkAsInactive: number[] = [];
-    const syncConfigs: SyncConfig[] = [];
+    const syncConfigs: DBSyncConfigInsert[] = [];
     for (const flow of flows) {
         const flowParsed: FlowParsed = {
             ...flow,
@@ -131,7 +134,7 @@ export async function deploy({
         const deployResult: SyncDeploymentResult = {
             name: flow.syncName,
             models: flow.models,
-            version: response.syncConfig.version as string,
+            version: response.syncConfig.version,
             providerConfigKey: flow.providerConfigKey,
             type: flow.type
         };
@@ -156,7 +159,7 @@ export async function deploy({
 
     try {
         const flowIds = await db.knex
-            .from<SyncConfig>(TABLE)
+            .from<DBSyncConfig>(TABLE)
             .insert(
                 syncConfigs.map((syncConfig) => {
                     // We need to stringify before inserting
@@ -172,7 +175,7 @@ export async function deploy({
                 continue;
             }
 
-            endpoints.push(...endpointToSyncEndpoint(flow, row.id!));
+            endpoints.push(...endpointToSyncEndpoint(flow, row.id));
         }
 
         if (endpoints.length > 0) {
@@ -257,7 +260,7 @@ export async function upgradePreBuilt({
     account: DBTeam;
     config: Config;
     // The current sync config
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     // The new version of the flow
     flow: NangoSyncConfig;
     logContextGetter: LogContextGetter;
@@ -292,8 +295,9 @@ export async function upgradePreBuilt({
 
     const now = new Date();
 
-    const flowData: SyncConfig = {
-        ...syncConfig,
+    const { id, ...restWithoutId } = syncConfig;
+    const flowData: DBSyncConfigInsert = {
+        ...restWithoutId,
         created_at: now,
         updated_at: now,
         version: flow.version!,
@@ -304,10 +308,9 @@ export async function upgradePreBuilt({
         track_deletes: flow.track_deletes === true,
         models: flow.returns
     };
-    delete flowData.id;
 
     try {
-        const [newSyncConfig] = await db.knex.from<SyncConfig>(TABLE).insert(flowData).returning('*');
+        const [newSyncConfig] = await db.knex.from<DBSyncConfig>(TABLE).insert(flowData).returning('*');
 
         if (!newSyncConfig?.id) {
             throw new NangoError('error_creating_sync_config');
@@ -341,7 +344,7 @@ export async function upgradePreBuilt({
             await db.knex.from<DBSyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
         }
 
-        await db.knex.from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
+        await db.knex.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
 
         await logCtx.info('Successfully deployed', { nameOfType, configs: name });
         await logCtx.success();
@@ -411,7 +414,7 @@ export async function deployPreBuilt({
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
 
     const idsToMarkAsInactive = [];
-    const insertData: SyncConfig[] = [];
+    const insertData: DBSyncConfigInsert[] = [];
     let nango_config_id: number;
     let provider_config_key: string;
 
@@ -566,7 +569,7 @@ export async function deployPreBuilt({
         const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, nango_config_id, sync_name);
 
         if (oldConfigs.length > 0) {
-            const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
+            const ids = oldConfigs.map((oldConfig: DBSyncConfig) => oldConfig.id);
             idsToMarkAsInactive.push(...ids);
         }
 
@@ -582,7 +585,7 @@ export async function deployPreBuilt({
             model_schema.push(input);
         }
 
-        const flowData: SyncConfig = {
+        const flowData: DBSyncConfigInsert = {
             created_at,
             sync_name,
             nango_config_id,
@@ -591,7 +594,7 @@ export async function deployPreBuilt({
             models: flowModels,
             active: true,
             runs,
-            input: input && typeof input !== 'string' ? String(input.name) : input,
+            input: (input && typeof input !== 'string' ? String(input.name) : input) || null,
             model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[],
             environment_id: environment.id,
             deleted: false,
@@ -605,7 +608,8 @@ export async function deployPreBuilt({
             enabled: true,
             webhook_subscriptions: null,
             models_json_schema: flowJsonSchema,
-            updated_at: new Date()
+            updated_at: new Date(),
+            sync_type: 'sync_type' in config ? (config.sync_type as SyncTypeLiteral) : null
         };
 
         insertData.push(flowData);
@@ -623,7 +627,7 @@ export async function deployPreBuilt({
     const isPublic = configs.every((config) => config.is_public);
 
     try {
-        const syncConfigs = await db.knex.from<SyncConfig>(TABLE).insert(insertData).returning('*');
+        const syncConfigs = await db.knex.from<DBSyncConfig>(TABLE).insert(insertData).returning('*');
 
         flowReturnData.forEach((flow, index) => {
             const row = syncConfigs[index];
@@ -639,7 +643,7 @@ export async function deployPreBuilt({
                 continue;
             }
 
-            endpoints.push(...endpointToSyncEndpoint(flow, row.id!));
+            endpoints.push(...endpointToSyncEndpoint(flow, row.id));
         }
 
         if (endpoints.length > 0) {
@@ -725,7 +729,7 @@ async function compileDeployInfo({
     debug: boolean;
     logCtx: LogContext;
     orchestrator: Orchestrator;
-}): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: SyncConfig }>> {
+}): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
     const {
         syncName,
         providerConfigKey,
@@ -812,7 +816,7 @@ async function compileDeployInfo({
     let lastSyncWasEnabled = true;
 
     if (oldConfigs.length > 0) {
-        const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
+        const ids = oldConfigs.map((oldConfig: DBSyncConfig) => oldConfig.id);
         idsToMarkAsInactive.push(...ids);
         const lastConfig = oldConfigs[oldConfigs.length - 1];
         if (lastConfig) {
@@ -868,6 +872,8 @@ async function compileDeployInfo({
         response: {
             idsToMarkAsInactive,
             syncConfig: {
+                is_public: false,
+                pre_built: false,
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,
@@ -882,8 +888,8 @@ async function compileDeployInfo({
                 runs,
                 active: true,
                 model_schema: model_schema as unknown as SyncModelSchema[],
-                input: typeof flow.input === 'string' ? flow.input : flow.input ? flow.input.name : undefined,
-                sync_type: flow.sync_type as SyncType,
+                input: typeof flow.input === 'string' ? flow.input : flow.input ? flow.input.name : null,
+                sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,
                 models_json_schema: jsonSchema ? flowJsonSchema : null,
@@ -897,7 +903,7 @@ async function compileDeployInfo({
 async function switchActiveSyncConfig(oldSyncConfigId: number): Promise<void> {
     await db.knex.transaction(async (trx) => {
         // mark sync config as inactive
-        await trx.from<SyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
+        await trx.from<DBSyncConfig>(TABLE).update({ active: false }).where({ id: oldSyncConfigId });
 
         // update sync_config_id in syncs table to point to active sync config
         await trx.raw(

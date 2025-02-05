@@ -4,10 +4,11 @@ import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
 import type { TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
+import type { Connection, Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 import { envs } from '../env.js';
+import type { DBSyncConfig } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 
@@ -173,7 +174,7 @@ const runJob = async (
     rawRecords: UnencryptedRecordData[],
     connection: Connection,
     sync: Sync,
-    syncConfig: SyncConfig,
+    syncConfig: DBSyncConfig,
     softDelete: boolean
 ): Promise<SyncResult> => {
     const task: TaskSync = {
@@ -263,7 +264,7 @@ const verifySyncRun = async (
     expectedResult: SyncResult,
     trackDeletes: boolean,
     softDelete = false
-): Promise<{ connection: Connection; model: string; sync: Sync; syncConfig: SyncConfig; records: ReturnedRecord[] }> => {
+): Promise<{ connection: Connection; model: string; sync: Sync; syncConfig: DBSyncConfig; records: ReturnedRecord[] }> => {
     // Write initial records
     const { connection, model, sync, syncConfig } = await populateRecords(initialRecords, trackDeletes);
 
@@ -291,7 +292,7 @@ async function populateRecords(
     connection: Connection;
     model: string;
     sync: Sync;
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     syncJob: SyncJob;
 }> {
     const {

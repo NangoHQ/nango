@@ -882,7 +882,7 @@ paths:
                                                                             example: 'string'
                                                 sync_type:
                                                     type: string
-                                                    example: 'INCREMENTAL'
+                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
