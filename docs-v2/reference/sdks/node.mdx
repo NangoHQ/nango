@@ -817,10 +817,6 @@ const records = await nango.listRecords<ModelName>({
 });
 ```
 
-<Warning>
-`nango.getRecords()` is deprecated and will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
-</Warning>
-
 **Parameters**
 
 <Expandable>
@@ -860,6 +856,10 @@ const records = await nango.listRecords<ModelName>({
 
       <ResponseField name="modifiedAfter" type="string">
         Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+      </ResponseField>
+
+      <ResponseField name="ids" type="string[]">
+        An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
       </ResponseField>
 
       <ResponseField name="delta" type="string">
