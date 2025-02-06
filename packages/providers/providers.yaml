@@ -3189,6 +3189,32 @@ gebruder-weiss:
         base_url: https://my.api.gw-world.com
     docs: https://docs.nango.dev/integrations/all/gebruder-weiss
 
+google-gemini:
+    display_name: Google Gemini
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://generativelanguage.googleapis.com
+        query:
+            key: ${apiKey}
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/models
+    docs: https://docs.nango.dev/integrations/all/google-gemini
+    docs_connect: https://docs.nango.dev/integrations/all/google-gemini/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Gemini account
+            doc_section: '#step-1-generating-your-api-key'
+            example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
+            pattern: '^[0-9A-Za-z_-]+$'
+
 gerrit:
     display_name: Gerrit
     categories:
