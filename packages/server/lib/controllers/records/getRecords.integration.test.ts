@@ -260,4 +260,49 @@ describe(`GET ${route}`, () => {
         isSuccess(resMultiple.json);
         expect(resMultiple.json.records).toHaveLength(3);
     });
+
+    it('should query by id', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        await records.upsert({
+            records: format
+                .formatRecords({
+                    data: [
+                        { id: 'record1', foo: 'bar' },
+                        { id: 'record2', foo: 'bar' },
+                        { id: 'record3', foo: 'bar' }
+                    ],
+                    syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
+                    syncJobId: 1,
+                    connectionId: conn.id!,
+                    model: 'Ticket'
+                })
+                .unwrap(),
+            connectionId: conn.id!,
+            environmentId: env.id,
+            model: 'Ticket'
+        });
+
+        // One ID
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', ids: ['record2'] },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(res.json);
+        expect(res.json.records).toHaveLength(1);
+        expect(res.json.records[0]?.id).toEqual('record2');
+
+        // Multiple ID
+        const resMulti = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', ids: ['record2', 'record3'] },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(resMulti.json);
+        expect(resMulti.json.records).toHaveLength(2);
+    });
 });
