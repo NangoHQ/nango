@@ -1,7 +1,7 @@
 import type {
     SyncResult,
     ErrorPayload,
-    SyncType,
+    SyncOperationType,
     DBExternalWebhook,
     NangoSyncWebhookBody,
     NangoSyncWebhookBodyBase,
@@ -42,7 +42,7 @@ export const sendSync = async ({
     syncConfig: DBSyncConfig;
     model: string;
     now: Date | undefined;
-    operation: SyncType;
+    operation: SyncOperationType;
     error?: ErrorPayload;
     responseResults?: SyncResult;
     success: boolean;

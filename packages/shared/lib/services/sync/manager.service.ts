@@ -14,7 +14,7 @@ import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { SyncWithConnectionId, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
-import { SyncType, SyncStatus } from '../../models/Sync.js';
+import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -459,6 +459,7 @@ export class SyncManagerService {
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }
+
         const recordCount: Record<string, number> =
             syncConfig?.models.reduce(
                 (acc, model) => {
@@ -471,7 +472,7 @@ export class SyncManagerService {
         return {
             id: sync.id,
             connection_id: sync.connection_id,
-            type: latestJob?.type === SyncType.INCREMENTAL ? latestJob.type : 'INITIAL',
+            type: latestJob?.type === SyncJobsType.INCREMENTAL ? latestJob.type : 'INITIAL',
             finishedAt: latestJob?.updated_at,
             nextScheduledSyncAt: schedule.nextDueDate,
             name: sync.name,

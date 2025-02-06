@@ -9,7 +9,7 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     nango_config_id: number;
     file_location: string;
     version: string;
-    models: string[] | null; // TODO: remove nullable NAN-2527
+    models: string[];
     active: boolean;
     runs: string | null;
     model_schema: LegacySyncModelSchema[] | NangoModel[] | null;
@@ -27,3 +27,4 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     enabled: boolean;
     models_json_schema: JSONSchema7 | null;
 }
+export type DBSyncConfigInsert = Omit<DBSyncConfig, 'id'>;

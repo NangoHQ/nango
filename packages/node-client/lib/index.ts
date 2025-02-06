@@ -53,11 +53,6 @@ export { getUserAgent } from './utils.js';
 
 type CustomHeaders = Record<string, string | number | boolean>;
 
-export enum SyncType {
-    INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
-}
-
 const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export interface AdminAxiosProps {

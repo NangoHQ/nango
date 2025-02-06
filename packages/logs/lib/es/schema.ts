@@ -84,8 +84,7 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     response: {
         properties: {
             code: { type: 'integer' },
-            headers: { type: 'object', enabled: false },
-            body: { type: 'keyword', index: false, doc_values: false }
+            headers: { type: 'object', enabled: false }
         }
     },
 

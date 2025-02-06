@@ -17,6 +17,7 @@ const FILTER_HEADERS = [
     'nango-is-dry-run',
     'nango-activity-log-id',
     'content-type',
+    'content-length',
     'accept',
     'base-url-override'
 ];

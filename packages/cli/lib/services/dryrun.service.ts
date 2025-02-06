@@ -389,7 +389,7 @@ export class DryRunService {
                         responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
                         const filePath = `${directoryName}/mocks/${syncName}/output.json`;
                         const { nango, ...responseWithoutNango } = results.response;
-                        fs.writeFileSync(filePath, JSON.stringify(responseWithoutNango, null, 2));
+                        fs.writeFileSync(filePath, JSON.stringify(responseWithoutNango.output, null, 2));
                     }
                     resultOutput.push(JSON.stringify(results.response, null, 2));
                 }
