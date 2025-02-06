@@ -1,0 +1,58 @@
+---
+title: Salesforce (Data Cloud)
+sidebarTitle: Salesforce (Data Cloud)
+provider: salesforce-cdp
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/salesforce-cdp/PreBuiltTooling.mdx";
+
+import PreBuiltUseCases from "/snippets/generated/salesforce-cdp/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ✅ | Requires an active Salesforce Data Cloud subscription. |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
+
+
+## Useful links
+-   [Salesforce Data Cloud OAuth documentation](https://developer.salesforce.com/docs/marketing/marketing-cloud-growth/guide/mc-connect-apis-data-cloud.html)
+-   [Web API docs (their REST API)](https://developer.salesforce.com/docs/marketing/marketing-cloud-growth/references/mc-summary/mc-summary.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce-cdp.mdx)</Note>
+
+## Connection Configuration in Nango
+
+-   Salesforce (Data Cloud) uses a different API base URL, called the `instance_url`, for each customer.
+
+-   Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization) for you.
+
+-   If you use the Nango Proxy, it is automatically using the correct API base URL. But, if needed, you can retrieve the `instance_url` with the [backend SDK](/reference/sdks/node#get-a-connection-with-credentials) or [Connections API](/reference/api/connection/get).
+
+## API gotchas
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce-cdp.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Salesforce (Data Cloud)" icon="link" href="/integrations/all/salesforce-cdp/connect" horizontal>
+  Guide to connect to Salesforce (Data Cloud) using Connect UI
+</Card>
+
