@@ -25,6 +25,7 @@ export const renderNodeProvider: NodeProvider = {
         if (!envs.RUNNER_OWNER_ID) {
             throw new Error('RUNNER_OWNER_ID is not set');
         }
+
         const ownerId = envs.RUNNER_OWNER_ID;
         const name = serviceName(node);
         const res = await withRateLimitHandling<{ service: { id: string; suspended: string } }>('create', () =>
@@ -34,8 +35,11 @@ export const renderNodeProvider: NodeProvider = {
                 ownerId,
                 image: { ownerId, imagePath: node.image },
                 serviceDetails: {
-                    env: 'image',
-                    plan: getPlan(node)
+                    runtime: 'docker',
+                    plan: getPlan(node),
+                    ...(node.image.includes('-runner')
+                        ? {}
+                        : { envSpecificDetails: { dockerCommand: 'node packages/runner/dist/app.js 80 dockerized-runner' } })
                 },
                 envVars: [
                     { key: 'PORT', value: '80' },
