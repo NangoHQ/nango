@@ -6549,21 +6549,20 @@ salesforce-cdp:
     auth_mode: TWO_STEP
     token_url: https://login.salesforce.com/services/oauth2/token
     body_format: form
-    second_request: true
     token_params:
         grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
         assertion: ${credential.jwt}
     token_headers:
         content-type: application/x-www-form-urlencoded
-    second_request_params:
-        body_format: form
-        token_params:
-            grant_type: urn:salesforce:grant-type:external:cdp
-            subject_token: ${tokenResponse.access_token}
-            subject_token_type: urn:ietf:params:oauth:token-type:access_token
-        token_headers:
-            content-type: application/x-www-form-urlencoded
-        token_url: ${tokenResponse.instance_url}/services/a360/token
+    additional_steps:
+        - body_format: form
+          token_params:
+              grant_type: urn:salesforce:grant-type:external:cdp
+              subject_token: ${step1.access_token}
+              subject_token_type: urn:ietf:params:oauth:token-type:access_token
+          token_headers:
+              content-type: application/x-www-form-urlencoded
+          token_url: ${step1.instance_url}/services/a360/token
     token_response_metadata:
         - instance_url
     proxy:

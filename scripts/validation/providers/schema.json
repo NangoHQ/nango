@@ -333,11 +333,8 @@
                 "request_url": {
                     "type": "string"
                 },
-                "second_request": {
-                    "type": "boolean"
-                },
-                "second_request_params": {
-                    "type": "object",
+                "additional_steps": {
+                    "type": "array",
                     "additionalProperties": true,
                     "properties": {
                         "body_format": {

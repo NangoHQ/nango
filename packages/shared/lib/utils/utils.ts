@@ -221,19 +221,37 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
-export function stripTokenResponse(obj: any, tokenResponse: Record<string, any>): any {
+export function stripStepesponse(obj: any, step: Record<string, any>): any {
     if (typeof obj === 'string') {
-        return obj.replace(/\${tokenResponse\.(.*?)}/g, (_, key) => {
-            return tokenResponse[key] || '';
+        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
+            return step[key] || '';
         });
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
-            strippedObject[key] = stripTokenResponse(value, tokenResponse);
+            strippedObject[key] = stripStepesponse(value, step);
         }
         return strippedObject;
     }
     return obj;
+}
+
+export function extractStepNumber(str: string): number | null {
+    const match = str.match(/\${step(\d+)\..*?}/);
+
+    if (match && match[1]) {
+        const stepNumber = parseInt(match[1], 10);
+        return stepNumber;
+    }
+
+    return null;
+}
+
+export function getStepResponse(stepNumber: number, stepResponses: any[]): Record<string, any> {
+    if (stepResponses && stepResponses.length > stepNumber - 1 && stepResponses[stepNumber - 1]) {
+        return stepResponses[stepNumber - 1];
+    }
+    return {};
 }
 
 export function extractValueByPath(obj: Record<string, any>, path: string): any {
