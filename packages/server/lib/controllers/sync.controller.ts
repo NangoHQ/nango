@@ -730,7 +730,12 @@ class SyncController {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;
                 }
-                newFrequency = syncConfigs[0]!.runs;
+                const selected = syncConfigs[0];
+                if (!selected || !selected.runs) {
+                    res.status(400).send({ message: 'failed to find sync' });
+                    return;
+                }
+                newFrequency = selected.runs;
             }
 
             await setFrequency(syncId, frequency);

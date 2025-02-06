@@ -231,11 +231,12 @@ class ConfigController {
             }
 
             const syncConfigs = await getUniqueSyncsByProviderConfig(environmentId, providerConfigKey);
-            const syncs = syncConfigs.map((sync) => {
-                const { metadata, ...config } = sync;
+            const syncs: ProviderIntegration['syncs'] = syncConfigs.map((sync) => {
                 return {
-                    ...config,
-                    description: metadata?.description
+                    name: sync.sync_name,
+                    created_at: sync.created_at,
+                    updated_at: sync.updated_at,
+                    description: sync.metadata?.description || null
                 };
             });
 
@@ -266,10 +267,10 @@ class ConfigController {
                       connections,
                       docs: provider.docs,
                       connection_count,
-                      has_webhook_user_defined_secret: provider.webhook_user_defined_secret,
+                      has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,
                       webhook_url: webhookUrl
-                  } as IntegrationWithCreds)
-                : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
+                  } satisfies IntegrationWithCreds)
+                : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } satisfies ProviderIntegration);
 
             if (includeFlows && !isHosted) {
                 const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
