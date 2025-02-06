@@ -3,9 +3,9 @@ import proxyService from './proxy.service.js';
 import type { UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
 import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { Connection, MessageRowInsert, Provider } from '@nangohq/types';
+import type { DBConnectionDecrypted, MessageRowInsert, Provider } from '@nangohq/types';
 
-function getDefaultConnection(): Connection {
+function getDefaultConnection(): DBConnectionDecrypted {
     return {
         connection_id: 'a',
         created_at: new Date(),
@@ -14,7 +14,15 @@ function getDefaultConnection(): Connection {
         environment_id: 1,
         provider_config_key: 'foobar',
         updated_at: new Date(),
-        connection_config: {}
+        connection_config: {},
+        config_id: 1,
+        credentials_iv: null,
+        credentials_tag: null,
+        deleted: false,
+        deleted_at: null,
+        id: -1,
+        last_fetched_at: null,
+        metadata: null
     };
 }
 function getDefaultProxy(
@@ -708,7 +716,8 @@ describe('Proxy service configure', () => {
             connection: {
                 connection_id: 'connection-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                metadata: null
             },
             existingActivityLogId: '1'
         };
@@ -738,7 +747,8 @@ describe('Proxy service configure', () => {
             connection: {
                 connection_id: 'connection-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                metadata: null
             },
             existingActivityLogId: '1'
         };
@@ -769,7 +779,8 @@ describe('Proxy service configure', () => {
             connection: {
                 connection_id: 'connection-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                metadata: null
             },
             existingActivityLogId: '1'
         };
@@ -800,7 +811,8 @@ describe('Proxy service configure', () => {
             connection: {
                 connection_id: 'connection-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                metadata: null
             },
             existingActivityLogId: '1'
         };
@@ -837,7 +849,8 @@ describe('Proxy service configure', () => {
             connection: {
                 connection_id: 'connection-1',
                 credentials: {} as OAuth2Credentials,
-                connection_config: {}
+                connection_config: {},
+                metadata: null
             },
             existingActivityLogId: '1'
         };

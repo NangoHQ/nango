@@ -26,7 +26,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
@@ -213,7 +213,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             throw new Error('connectionId is required to update sync status');
         }
         const lastSyncDate = await getLastSyncDate(nangoProps.syncId);
-        const connection: NangoConnection = {
+        const connection: ConnectionJobs = {
             id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
             environment_id: nangoProps.environmentId,
@@ -605,7 +605,7 @@ async function onFailure({
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
-    connection: NangoConnection;
+    connection: ConnectionJobs;
     provider: string;
     providerConfig: Config | null;
     syncId: string;
@@ -755,7 +755,7 @@ async function onFailure({
         action: 'run',
         type: 'sync',
         sync_id: syncId,
-        connection_id: connection.id!,
+        connection_id: connection.id,
         log_id: logCtx.id,
         active: true
     });

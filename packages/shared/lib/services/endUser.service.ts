@@ -1,5 +1,5 @@
 import type { Knex } from '@nangohq/database';
-import type { ConnectSessionInput, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser, StoredConnection } from '@nangohq/types';
+import type { ConnectSessionInput, DBConnection, DBEndUser, DBEnvironment, DBInsertEndUser, DBTeam, EndUser } from '@nangohq/types';
 import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
@@ -151,12 +151,12 @@ export async function deleteEndUser(
     return Ok(undefined);
 }
 
-export async function linkConnection(db: Knex, { endUserId, connection }: { endUserId: number; connection: Pick<StoredConnection, 'id'> }) {
-    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: endUserId });
+export async function linkConnection(db: Knex, { endUserId, connection }: { endUserId: number; connection: Pick<DBConnection, 'id'> }) {
+    await db<DBConnection>('_nango_connections').where({ id: connection.id }).update({ end_user_id: endUserId });
 }
 
-export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<StoredConnection, 'id'> }) {
-    await db<StoredConnection>('_nango_connections').where({ id: connection.id! }).update({ end_user_id: null });
+export async function unlinkConnection(db: Knex, { connection }: { connection: Pick<DBConnection, 'id'> }) {
+    await db<DBConnection>('_nango_connections').where({ id: connection.id }).update({ end_user_id: null });
 }
 
 export async function getEndUserByConnectionId(db: Knex, props: { connectionId: number }): Promise<Result<EndUser, EndUserError>> {

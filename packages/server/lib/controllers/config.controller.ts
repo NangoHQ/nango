@@ -264,7 +264,9 @@ class ConfigController {
                       actions,
                       has_webhook: Boolean(hasWebhook),
                       webhook_secret,
-                      connections,
+                      connections: connections.map(({ connection_config, connection_id, environment_id, id, provider_config_key }) => {
+                          return { connection_config, connection_id, environment_id, id, provider_config_key };
+                      }),
                       docs: provider.docs,
                       connection_count,
                       has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,

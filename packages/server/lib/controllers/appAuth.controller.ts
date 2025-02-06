@@ -210,7 +210,7 @@ class AppAuthController {
                 await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
             }
 
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,

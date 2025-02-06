@@ -1,9 +1,9 @@
 import db, { schema, dbNamespace } from '@nangohq/database';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
-import type { NangoConnection } from '../../models/Connection.js';
 import type { Job as SyncJob, SyncResultByModel, SyncJobsType } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
+import type { ConnectionJobs } from '@nangohq/types';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
@@ -21,7 +21,7 @@ export async function createSyncJob({
     type: SyncJobsType;
     status: SyncStatus;
     job_id: string;
-    nangoConnection: NangoConnection | null;
+    nangoConnection: ConnectionJobs | null;
     sync_config_id?: number;
     run_id?: string;
     log_id?: string;

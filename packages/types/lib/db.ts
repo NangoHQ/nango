@@ -7,5 +7,10 @@ export interface Deleted {
     deleted_at?: Date | null;
     deleted?: boolean;
 }
+export interface DeletedCorrect {
+    deleted_at: Date | null;
+    deleted: boolean;
+}
 
 export interface TimestampsAndDeleted extends Timestamps, Deleted {}
+export interface TimestampsAndDeletedCorrect extends Timestamps, DeletedCorrect {}

@@ -8,8 +8,7 @@ import type {
     JwtCredentials,
     SignatureCredentials
 } from './Auth.js';
-import type { Connection } from './Connection.js';
-import type { Provider, TwoStepCredentials } from '@nangohq/types';
+import type { DBConnectionDecrypted, Provider, TwoStepCredentials } from '@nangohq/types';
 
 export interface File {
     fieldname: string;
@@ -59,14 +58,14 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
         | TwoStepCredentials
         | SignatureCredentials;
     provider: Provider;
-    connection: Pick<Connection, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
+    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
     providerName: string;
-    connection: Pick<Connection, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
+    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
     existingActivityLogId?: string | null | undefined;
 }
 

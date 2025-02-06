@@ -1,5 +1,4 @@
-import type { AuthModeType, DBSyncConfig } from '@nangohq/types';
-import type { NangoConnection } from './Connection.js';
+import type { AuthModeType, DBConnection, DBSyncConfig } from '@nangohq/types';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { Action } from './Sync.js';
 
@@ -32,7 +31,7 @@ export interface IntegrationWithCreds extends Integration {
     syncs: (Pick<DBSyncConfig, 'created_at' | 'updated_at'> & { name: string; description: string | null })[];
     actions: Action[];
     created_at: Date;
-    connections: NangoConnection[];
+    connections: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config'>[];
     docs: string;
     connection_count: number;
 }

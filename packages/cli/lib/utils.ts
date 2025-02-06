@@ -12,7 +12,7 @@ import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 import { state } from './state.js';
 import https from 'node:https';
-import type { NangoConnection } from '@nangohq/types';
+import type { GetPublicConnection } from '@nangohq/types';
 import { NANGO_VERSION } from './version.js';
 import { cloudHost } from './constants.js';
 import type { PackageJson } from 'type-fest';
@@ -179,7 +179,7 @@ export async function getConnection(
     connectionId: string,
     setHeaders?: Record<string, string | boolean>,
     debug = false
-): Promise<NangoConnection | undefined> {
+): Promise<GetPublicConnection['Success'] | undefined> {
     const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
     const headers = enrichHeaders(setHeaders);
     if (debug) {
