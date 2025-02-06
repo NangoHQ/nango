@@ -36,6 +36,7 @@ export type GetPublicRecords = Endpoint<{
         limit?: number | undefined;
         filter?: RecordLastAction | CombinedFilterAction | undefined;
         cursor?: string | undefined;
+        ids?: string[] | undefined;
     };
     Success: {
         next_cursor: string | null;
