@@ -39,9 +39,20 @@ for (const file of files) {
 
         await fs.mkdir(snippetPath, { recursive: true });
 
-        const providerConfig: Provider | undefined = providers[(providers[provider] as any)?.['alias']] || providers[provider];
+        const maybeAliased: Provider | undefined = providers[provider];
+        if (!maybeAliased) {
+            throw new Error(`Couldn't find provider config for  ${provider}`);
+        }
+
+        const providerConfig: Provider | undefined = (maybeAliased as any)['alias'] ? providers[(maybeAliased as any)['alias']] : maybeAliased;
         if (!providerConfig) {
-            throw new Error("Couldn't find provider config for " + provider);
+            throw new Error(`Couldn't find provider alias for ${(maybeAliased as any)['alias']}`);
+        }
+
+        const docLink = maybeAliased.docs.split('/').slice(-1)[0];
+        if (docLink !== provider) {
+            // eslint-disable-next-line no-console
+            console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
         }
 
         const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
