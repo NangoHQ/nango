@@ -371,12 +371,21 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
         return true;
     }
+
+    public async getObjectsByIds<T = any>(ids: string[], model: string): Promise<Record<string, T>> {
+        this.throwIfAborted();
+
+        await this.log(`Fetching objects by ids`, { ids, model }, { level: 'debug' });
+        return {};
+    }
 }
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'batchDelete',
     'batchSave',
+    'batchUpdate',
     'batchSend',
+    'getObjectsByIds',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',

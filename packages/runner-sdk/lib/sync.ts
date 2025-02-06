@@ -32,6 +32,8 @@ export abstract class NangoSyncBase extends NangoActionBase {
 
     public abstract batchUpdate<T = any>(results: T[], model: string): MaybePromise<boolean>;
 
+    public abstract getObjectsByIds<T = any>(ids: string[], model: string): MaybePromise<Record<string, T>>;
+
     protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
         // Validate records
         const hasErrors: { data: any; validation: ValidateDataError[] }[] = [];
