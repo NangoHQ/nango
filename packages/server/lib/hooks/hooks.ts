@@ -13,20 +13,22 @@ import {
     AnalyticsTypes,
     syncManager
 } from '@nangohq/shared';
-import type {
-    ApplicationConstructedProxyConfiguration,
-    InternalProxyConfiguration,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    RecentlyCreatedConnection,
-    Connection,
-    ConnectionConfig,
-    RecentlyFailedConnection,
-    Config
-} from '@nangohq/shared';
+import type { ApplicationConstructedProxyConfiguration, InternalProxyConfiguration, ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials, SignatureCredentials, MessageRowInsert } from '@nangohq/types';
+import type {
+    TbaCredentials,
+    IntegrationConfig,
+    DBEnvironment,
+    Provider,
+    JwtCredentials,
+    SignatureCredentials,
+    MessageRowInsert,
+    RecentlyFailedConnection,
+    RecentlyCreatedConnection,
+    ConnectionConfig,
+    DBConnectionDecrypted
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
@@ -83,7 +85,7 @@ export const connectionCreated = async (
     }
 
     if (options.initiateSync === true && !isHosted) {
-        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
+        await syncManager.createSyncForConnection(connection.id, logContextGetter, orchestrator);
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -128,7 +130,7 @@ export const connectionRefreshSuccess = async ({
     environment,
     config
 }: {
-    connection: Connection;
+    connection: DBConnectionDecrypted;
     environment: DBEnvironment;
     config: IntegrationConfig;
 }): Promise<void> => {
@@ -161,7 +163,7 @@ export const connectionRefreshFailed = async ({
     config,
     action
 }: {
-    connection: Connection;
+    connection: DBConnectionDecrypted;
     environment: DBEnvironment;
     provider: Provider;
     config: IntegrationConfig;
@@ -172,7 +174,7 @@ export const connectionRefreshFailed = async ({
     await errorNotificationService.auth.create({
         type: 'auth',
         action,
-        connection_id: connection.id!,
+        connection_id: connection.id,
         log_id: logCtx.id,
         active: true
     });
@@ -228,7 +230,7 @@ export async function connectionTest({
 
     const { method, endpoint, base_url_override: baseUrlOverride, headers } = providerVerification;
 
-    const connection: Connection = {
+    const connection: DBConnectionDecrypted = {
         id: -1,
         end_user_id: null,
         provider_config_key: config.unique_key,
@@ -237,7 +239,14 @@ export async function connectionTest({
         connection_config: connectionConfig,
         environment_id: config.environment_id,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
+        config_id: -1,
+        credentials_iv: null,
+        credentials_tag: null,
+        deleted: false,
+        deleted_at: null,
+        last_fetched_at: null,
+        metadata: null
     };
 
     const configBody: ApplicationConstructedProxyConfiguration = {

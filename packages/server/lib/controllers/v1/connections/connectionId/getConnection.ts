@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { DBConnection, GetConnection } from '@nangohq/types';
+import type { GetConnection } from '@nangohq/types';
 import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
@@ -87,12 +87,12 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     if (credentialResponse.isOk()) {
         connection = credentialResponse.value;
     }
-    const errorLog = await errorNotificationService.auth.get(connection.id!);
+    const errorLog = await errorNotificationService.auth.get(connection.id);
 
     res.status(200).send({
         data: {
             provider: integration.provider,
-            connection: connectionFullToApi(connection as DBConnection),
+            connection: connectionFullToApi(connection),
             endUser: endUserToApi(endUser),
             errorLog
         }

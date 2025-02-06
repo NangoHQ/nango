@@ -2,7 +2,7 @@ import { configService, onEventScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { defaultOperationExpiration } from '@nangohq/logs';
 import { getOrchestrator } from '../../../utils/utils.js';
-import type { DBTeam, DBEnvironment, Connection } from '@nangohq/types';
+import type { DBTeam, DBEnvironment, DBConnection } from '@nangohq/types';
 
 export async function preConnectionDeletion({
     team,
@@ -12,7 +12,7 @@ export async function preConnectionDeletion({
 }: {
     team: DBTeam;
     environment: DBEnvironment;
-    connection: Connection;
+    connection: DBConnection;
     logContextGetter: LogContextGetter;
 }): Promise<void> {
     if (!connection.config_id || !connection.id) {

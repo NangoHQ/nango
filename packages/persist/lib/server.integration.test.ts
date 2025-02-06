@@ -293,7 +293,7 @@ describe('Persist API', () => {
             });
             const allRecords = (
                 await records.getRecords({
-                    connectionId: seed.connection.id!,
+                    connectionId: seed.connection.id,
                     model
                 })
             ).unwrap();
@@ -336,7 +336,7 @@ describe('Persist API', () => {
             });
             const allRecords = (
                 await records.getRecords({
-                    connectionId: seed.connection.id!,
+                    connectionId: seed.connection.id,
                     model
                 })
             ).unwrap();

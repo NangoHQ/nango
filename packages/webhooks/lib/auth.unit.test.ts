@@ -1,12 +1,12 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, DBExternalWebhook, DBEnvironment } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, DBExternalWebhook, DBEnvironment, DBConnection } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
-const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
+const connection: Pick<DBConnection, 'connection_id' | 'provider_config_key'> = {
     connection_id: '1',
     provider_config_key: 'providerkey'
 };

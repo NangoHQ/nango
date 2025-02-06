@@ -4,11 +4,11 @@ import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
 import type { TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Connection, Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
+import type { Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 import { envs } from '../env.js';
-import type { DBSyncConfig } from '@nangohq/types';
+import type { ConnectionJobs, DBSyncConfig } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 
@@ -172,7 +172,7 @@ const initDb = async () => {
 
 const runJob = async (
     rawRecords: UnencryptedRecordData[],
-    connection: Connection,
+    connection: ConnectionJobs,
     sync: Sync,
     syncConfig: DBSyncConfig,
     softDelete: boolean
@@ -187,7 +187,7 @@ const runJob = async (
         state: 'CREATED',
         debug: false,
         connection: {
-            id: connection.id!,
+            id: connection.id,
             environment_id: connection.environment_id,
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
@@ -213,7 +213,7 @@ const runJob = async (
     // format and upsert records
     const formatting = recordsFormatter.formatRecords({
         data: rawRecords,
-        connectionId: connection.id as number,
+        connectionId: connection.id,
         model: model,
         syncId: sync.id,
         syncJobId: syncJob.id,
@@ -224,7 +224,7 @@ const runJob = async (
     }
     const upserting = await recordsService.upsert({
         records: formatting.value,
-        connectionId: connection.id as number,
+        connectionId: connection.id,
         environmentId: connection.environment_id,
         model,
         softDelete
@@ -264,7 +264,7 @@ const verifySyncRun = async (
     expectedResult: SyncResult,
     trackDeletes: boolean,
     softDelete = false
-): Promise<{ connection: Connection; model: string; sync: Sync; syncConfig: DBSyncConfig; records: ReturnedRecord[] }> => {
+): Promise<{ connection: ConnectionJobs; model: string; sync: Sync; syncConfig: DBSyncConfig; records: ReturnedRecord[] }> => {
     // Write initial records
     const { connection, model, sync, syncConfig } = await populateRecords(initialRecords, trackDeletes);
 
@@ -277,8 +277,8 @@ const verifySyncRun = async (
     return { connection, model, sync, syncConfig, records };
 };
 
-const getRecords = async (connection: Connection, model: string) => {
-    const res = await recordsService.getRecords({ connectionId: connection.id!, model });
+const getRecords = async (connection: ConnectionJobs, model: string) => {
+    const res = await recordsService.getRecords({ connectionId: connection.id, model });
     if (res.isOk()) {
         return res.value.records;
     }
@@ -289,7 +289,7 @@ async function populateRecords(
     toInsert: UnencryptedRecordData[],
     trackDeletes: boolean
 ): Promise<{
-    connection: Connection;
+    connection: ConnectionJobs;
     model: string;
     sync: Sync;
     syncConfig: DBSyncConfig;
@@ -304,7 +304,7 @@ async function populateRecords(
     for (let i = 0; i < records.length; i += chunkSize) {
         const res = await recordsService.upsert({
             records: records.slice(i, i + chunkSize),
-            connectionId: connection.id!,
+            connectionId: connection.id,
             environmentId: connection.environment_id,
             model
         });
@@ -313,7 +313,7 @@ async function populateRecords(
         }
     }
     return {
-        connection: connection as Connection,
+        connection,
         model,
         sync,
         syncConfig,

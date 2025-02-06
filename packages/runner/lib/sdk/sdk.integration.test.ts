@@ -1,6 +1,5 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '@nangohq/database';
-import type { Connection } from '@nangohq/shared';
 import { connectionService, environmentService, seeders } from '@nangohq/shared';
 import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 import { NangoActionRunner } from './sdk.js';
@@ -57,10 +56,9 @@ describe('Connection service integration tests', () => {
 
             const nango = new NangoActionRunner(nangoProps);
 
-            // @ts-expect-error we are overriding a private method here
             nango.nango.getConnection = async (providerConfigKey: string, connectionId: string) => {
                 const { response } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-                return response as Connection;
+                return response;
             };
 
             const connection = await nango.getConnection();
