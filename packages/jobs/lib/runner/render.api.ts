@@ -22,7 +22,7 @@ export class RenderAPI {
         name: string;
         ownerId: string;
         image: { ownerId: string; imagePath: string };
-        serviceDetails: { env: string; plan: 'starter' | 'standard' | 'pro' };
+        serviceDetails: { runtime: 'image'; plan: 'starter' | 'standard' | 'pro' };
         envVars: { key: string; value: string }[];
     }): Promise<AxiosResponse> {
         return await this.httpClient.post('/services', data);
