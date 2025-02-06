@@ -14,6 +14,7 @@ import { setTimeout } from 'node:timers/promises';
 const logger = getLogger('Render');
 
 const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
+const runnerPort = '80';
 
 export const renderNodeProvider: NodeProvider = {
     defaultNodeConfig: {
@@ -39,10 +40,10 @@ export const renderNodeProvider: NodeProvider = {
                     plan: getPlan(node),
                     ...(node.image.includes('-runner')
                         ? {}
-                        : { envSpecificDetails: { dockerCommand: 'node packages/runner/dist/app.js 80 dockerized-runner' } })
+                        : { envSpecificDetails: { dockerCommand: `node packages/runner/dist/app.js ${runnerPort} dockerized-runner` } })
                 },
                 envVars: [
-                    { key: 'PORT', value: '80' },
+                    { key: 'PORT', value: runnerPort },
                     { key: 'NODE_ENV', value: envs.NODE_ENV },
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
