@@ -133,6 +133,20 @@ module.exports = {
             },
             boxShadow: {
                 card: '0px 2px 50px 5px rgba(51, 51, 51, 0.30), 0px 8px 10px 0px rgba(0, 0, 0, 0.30)'
+            },
+            keyframes: {
+                'accordion-down': {
+                    from: { height: '0' },
+                    to: { height: 'var(--radix-accordion-content-height)' }
+                },
+                'accordion-up': {
+                    from: { height: 'var(--radix-accordion-content-height)' },
+                    to: { height: '0' }
+                }
+            },
+            animation: {
+                'accordion-down': 'accordion-down 0.2s ease-out',
+                'accordion-up': 'accordion-up 0.2s ease-out'
             }
         }
     },

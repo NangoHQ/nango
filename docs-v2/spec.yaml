@@ -882,7 +882,7 @@ paths:
                                                                             example: 'string'
                                                 sync_type:
                                                     type: string
-                                                    example: 'INCREMENTAL'
+                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
@@ -1107,14 +1107,9 @@ paths:
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/trigger:
         post:

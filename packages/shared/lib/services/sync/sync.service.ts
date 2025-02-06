@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, SyncWithConnectionId, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
+import type { Sync, SyncWithConnectionId, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { ActiveLog, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
+import type { ActiveLog, DBSyncConfig, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -46,7 +46,7 @@ export const getById = async (id: string): Promise<Sync | null> => {
     return result[0];
 };
 
-export const createSync = async (nangoConnectionId: number, syncConfig: SyncConfig): Promise<Sync | null> => {
+export const createSync = async (nangoConnectionId: number, syncConfig: DBSyncConfig): Promise<Sync | null> => {
     const existingSync = await getSyncByIdAndName(nangoConnectionId, syncConfig.sync_name);
 
     if (existingSync || !syncConfig.id) {

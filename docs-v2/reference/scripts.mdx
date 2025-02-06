@@ -200,7 +200,120 @@ await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });
 
 # Paginate through API responses
 
-_TbD_
+Nango provides a helper to automatically paginate endpoint responses. 
+
+Similar to [HTTP requests](/reference/scripts#http-requests), the `nango.paginate()` method takes in a `ProxyConfiguration` parameter.
+
+Use the `paginate` field to of the `ProxyConfiguration` to specify how the endpoint's pagination work. Here's an example for a Jira endpoint:
+
+```ts
+const config: ProxyConfiguration = {
+    // https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
+    endpoint: `/ex/jira/${cloud.cloudId}/rest/api/3/project/search`,
+    params: {
+        properties: properties
+    },
+    paginate: {
+        type: 'offset',
+        offset_name_in_request: 'startAt',
+        response_path: 'values',
+        limit_name_in_request: 'maxResults',
+        limit: 50
+    },
+    headers: {
+        'X-Atlassian-Token': 'no-check'
+    },
+    retries: 10
+};
+
+for await (const projects of nango.paginate<JiraProjectResponse>(config)) {
+    const projectsToSave = toProjects(projects, cloud.baseUrl);
+    await nango.batchSave(projectsToSave, 'Project');
+}
+```
+
+As shown in the example above, use a `for` loop to iterate through the paginated results.
+
+<Tip>
+    Nango has pre-configured the pagination settings for some popular APIs, so you don't have to specify them in scripts. 
+
+    You can view the pre-configured pagination settings for all APIs in the [providers.yaml](https://nango.dev/providers.yaml) file. 
+
+    Please note that some APIs have diverging pagination strategies per endpoint, so you might still need to override pre-configured pagination settings at times.
+</Tip>
+
+The pagination helper supports 3 types of pagination: `cursor`, `link` or `offset` with the following settings:
+
+<Expandable>
+    <ResponseField name="config" type="object" required>
+        <Expandable title="config" defaultOpen>
+            <ResponseField name="paginate" type="object" required>
+                <Expandable title="paginate" defaultOpen>
+                    <ResponseField name="limit_name_in_request" type="string" required>
+                        _For all pagination types._
+                        
+                        The name of the parameter containing the number of items per page, in the request. Inserted in the query parameters for `GET`/`DELETE`, in the body for `POST`/`PUT`/`PATCH`.
+                    </ResponseField>
+                    <ResponseField name="limit" type="number">
+                        _For all pagination types._
+
+                        The maximum number of items per page. If omitted, no limit will be sent to the external endpoint, relying on the endpoint's default limit.
+                    </ResponseField>
+                    <ResponseField name="response_path" type="string">
+                        _For all pagination types._
+                        
+                        The path of the field containing the results, in the response. If omitted or empty string, it defaults to the root. Use `.` for nested fields, e.g. `"results.contacts"`.
+                    </ResponseField>
+                    <ResponseField name="type" type="'cursor' | 'link' | 'offset'" required>
+                        _For all pagination types._
+                        
+                        The pagination strategy.
+                    </ResponseField>
+                    <ResponseField name="cursor_path_in_response" type="string">
+                        _For cursor pagination only (required)._
+
+                        The path of the field containing the cursor for the next page, in the response. Use `.` for nested fields, e.g. `"pagination.cursor"`.
+                    </ResponseField>
+                    <ResponseField name="cursor_name_in_request" type="string">
+                        _For cursor pagination only (required)._
+
+                        The name of the parameter containing the cursor for the next page, in the request. Inserted in the query parameters for `GET`/`DELETE`, in the body for `POST`/`PUT`/`PATCH`.
+                    </ResponseField>
+                    <ResponseField name="link_rel_in_response_header" type="string">
+                        _For link pagination (required unless `link_path_in_response_body` is specified)._
+
+                        The header containing the link to the next page, in the response.
+                    </ResponseField>
+                    <ResponseField name="link_path_in_response_body" type="string">
+                        _For link pagination (required unless `link_rel_in_response_header` is specified)._
+
+                        The path of the field containing the link to the next page, in the response. Use `.` for nested fields, e.g. `"pagination.link"`.
+                    </ResponseField>
+                    <ResponseField name="offset_name_in_request" type="string">
+                        _For offset pagination only (required)._
+
+                        The name of the parameter containing the offset for the next page, in the request. Inserted in the query parameters for `GET`/`DELETE`, in the body for `POST`/`PUT`/`PATCH`.
+                    </ResponseField>
+                    <ResponseField name="offset_start_value" type="number">
+                        _For offset pagination only (optional)._
+
+                        The initial offset. Defaults to 0, but some APIs start at 1.
+                    </ResponseField>
+                    <ResponseField name="offset_calculation_method" type="'per-page' | 'by-response-size'">
+                        _For offset pagination only (optional)._
+
+                        The offset calculation method. `by-response-size` (default) means the offset is incremented by the number of results. `per-page` means the offset is incremented by one for each page. 
+                    </ResponseField>
+                </Expandable>
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+
+    <Info>
+        You can find details on the pagination [types](https://github.com/NangoHQ/nango/blob/master/packages/runner-sdk/models.d.ts) and [logic](https://github.com/NangoHQ/nango/blob/master/packages/runner-sdk/lib/paginate.service.ts) in the code.
+    </Info>
+
+</Expandable>
 
 # Get Integration
 
@@ -412,6 +525,46 @@ await nango.batchDelete(githubIssuesToDelete, 'GitHubIssue');
     </ResponseField>
 </Expandable>
 
+### Update records
+
+Updates records in the Nango cache by merging the given data into the existing record. The `id` field is required in each record and used to determine what existing record to merge into.
+
+`batchUpdate` is primarily useful in webhook sync scripts, where you receive partial updates from a webhook and want to merge them into the existing records.
+
+The merge algorithm used is a deep merge. Nested objects are merged recursively, while arrays always use the new value for the array. Any fields not present in the update record are left unchanged.
+
+```ts
+// Create partial GitHub Issue update records with only id and state.
+const githubIssues: Pick<GitHubIssue, "id" | "state">[] = ...; 
+
+await nango.batchUpdate(githubIssues, 'GitHubIssue');
+```
+
+**Take special care when using `batchUpdate` with records containing arrays.** The merge algorithm does not attempt to merge arrays, but rather always uses the value of the new array.
+
+```ts
+// given a an existing record: 
+// { id: '1', tags: [{id: 12, name: 'Dev'}, {id: 13, name: "QA"}] }
+const updates: Pick<Issue, "id" | "tags">[] = [
+    { id: '1', tags: [{id: 14, name: 'UX'}] }
+];
+
+// after the update, the record will be: 
+// { id: '1', tags: [{id: 14, name: "UX"}] }
+await nango.batchUpdate(updates, 'Issue');
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="recordList" type="Pick<Model, 'id' | ...>[]" required>
+        The list of partial records to persist.
+    </ResponseField>
+
+    <ResponseField name="modelType" type="string" required>
+        The model type of the records to persist.
+    </ResponseField>
+</Expandable>
 
 # Action-specific helper methods
 
@@ -425,7 +578,6 @@ export default async function runAction(nango: NangoAction): Promise<Response> {
 
     throw new ActionError({ any_key: 'any_value' });
 }
-
 ```
 
 In this case, the response to the trigger action call will be:

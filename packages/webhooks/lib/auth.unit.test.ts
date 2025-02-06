@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, ExternalWebhook, DBEnvironment } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, Connection, DBExternalWebhook, DBEnvironment } from '@nangohq/types';
 import * as logPackage from '@nangohq/logs';
 
 const spy = vi.spyOn(axiosInstance, 'post');
@@ -12,7 +11,7 @@ const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
     provider_config_key: 'providerkey'
 };
 
-const webhookSettings: ExternalWebhook = {
+const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
     primary_url: 'http://example.com/webhook',

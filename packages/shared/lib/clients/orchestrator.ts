@@ -23,14 +23,14 @@ import type {
     OrchestratorSchedule,
     TaskType
 } from '@nangohq/nango-orchestrator';
-import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
+import type { NangoIntegrationData, Sync } from '../models/index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
 import type { JsonValue } from 'type-fest';
 
@@ -265,7 +265,7 @@ export class Orchestrator {
         integration: ProviderConfig;
         connection: NangoConnection;
         webhookName: string;
-        syncConfig: SyncConfig;
+        syncConfig: DBSyncConfig;
         input: object;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
@@ -289,7 +289,7 @@ export class Orchestrator {
                 environment,
                 integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
                 connection: { id: connection.id!, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
             }
         );
 
@@ -687,7 +687,7 @@ export class Orchestrator {
                 }
             );
 
-            const frequencyMs = this.getFrequencyMs(syncData.runs);
+            const frequencyMs = this.getFrequencyMs(syncData.runs!);
 
             if (frequencyMs.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;

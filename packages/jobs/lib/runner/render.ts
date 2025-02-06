@@ -17,7 +17,6 @@ const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
 
 export const renderNodeProvider: NodeProvider = {
     defaultNodeConfig: {
-        image: 'nangohq/nango-runner',
         cpuMilli: 500,
         memoryMb: 512,
         storageMb: 20000

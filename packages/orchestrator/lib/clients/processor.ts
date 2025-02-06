@@ -41,6 +41,10 @@ export class OrchestratorProcessor {
         }
     }
 
+    public queueSize() {
+        return this.queue.size;
+    }
+
     private async processingLoop(ctx: { tracer: Tracer }) {
         while (!this.stopped) {
             // wait for the queue to have space before dequeuing more tasks

@@ -113,7 +113,7 @@ export const ScriptSettings: React.FC<{
     return (
         <Drawer
             direction="right"
-            snapPoints={open ? [drawerWidth] : []}
+            snapPoints={[drawerWidth]}
             handleOnly={true}
             noBodyStyles={true}
             dismissible={true}
@@ -217,7 +217,7 @@ export const ScriptSettings: React.FC<{
                                 </div>
                             </InfoBloc>
                         ) : (
-                            <InfoBloc title="Source">Custom v{flow.version}</InfoBloc>
+                            <InfoBloc title="Source">Custom script - v{flow.version}</InfoBloc>
                         )}
                         <InfoBloc title="Script Type">
                             <code className="font-code text-text-light-gray text-s bg-dark-600 px-2 rounded-md uppercase">{isSync ? 'Sync' : 'Action'}</code>
@@ -232,7 +232,7 @@ export const ScriptSettings: React.FC<{
                         )}
                         {isSync && (
                             <>
-                                <InfoBloc title="Sync Type">{flow.sync_type === 'FULL' ? 'Full refresh only' : 'Incremental sync'}</InfoBloc>
+                                <InfoBloc title="Sync Type">{flow.sync_type === 'full' ? 'Full refresh only' : 'Incremental sync'}</InfoBloc>
                                 <InfoBloc title="Sync Frequency">
                                     <div className="capitalize">{flow.runs}</div>
                                     {!flow.is_public && (

@@ -1,0 +1,47 @@
+---
+title: Grain API Key
+sidebarTitle: Grain API Key
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/grain-api-key/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/grain-api-key/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/grain-api-key.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate Grain Personal Access Token in your Grain account](https://grain.com/app/settings/integrations?tab=api)
+-   [OAuth related docs](https://grainhq.notion.site/Grain-Public-API-877184aa82b54c77a875083c1b560de9#ab27886a23424857b732e8079c03c5d7)
+-   [Grain API docs](https://grainhq.notion.site/Grain-Public-API-877184aa82b54c77a875083c1b560de9#d2601dd1162b46f782f4e1f8e5c5ef6b)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/grain-api-key.mdx)</Note>
+
+## API gotchas
+
+- Grain offers both OAuth and API_KEY authentication modes. For the API_KEY auth mode, `Authorization: Bearer apiKey` is passed in the request header to access different endpoints, where `apiKey` is your account's personal access token.
+- The Grain Public API is still in beta. Developer access is limited to select partners. Please reach out to Grain's support for more questions.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/grain-api-key.mdx)</Note>

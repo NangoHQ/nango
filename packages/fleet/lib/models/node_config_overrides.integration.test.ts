@@ -2,7 +2,7 @@ import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import * as node_config_overrides from './node_config_overrides.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 
-describe('Nodes', () => {
+describe('NodeConfgOverrides', () => {
     const dbClient = getTestDbClient('nodes');
 
     beforeEach(async () => {
@@ -30,6 +30,28 @@ describe('Nodes', () => {
             cpuMilli: props.cpuMilli,
             memoryMb: props.memoryMb,
             storageMb: props.storageMb,
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date)
+        });
+    });
+
+    it('should accept null attributes', async () => {
+        const nodeConfigOverride = (
+            await node_config_overrides.create(dbClient.db, {
+                routingId: 'routing-id',
+                image: null,
+                cpuMilli: null,
+                memoryMb: null,
+                storageMb: null
+            })
+        ).unwrap();
+        expect(nodeConfigOverride).toStrictEqual({
+            id: expect.any(Number),
+            routingId: props.routingId,
+            image: null,
+            cpuMilli: null,
+            memoryMb: null,
+            storageMb: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });

@@ -4,41 +4,41 @@ sidebarTitle: 'Infrastructure'
 description: 'Learn more about the infrastructure of Nango.'
 ---
 
-<Frame>
-  <img src="/images/architecture.png" />
+<Frame caption="Architecture overview.">
+  <img src="/images/architecture.png"/>
 </Frame>
 
 **API**
 
-The API layer, developed with Node.js, serves as the front door to Nango, handling requests from customer applications. It processes operations related to integrations, connections, actions, and syncs, offering a unified interface for developers.
+The API layer, developed with Node, serves as the front door to Nango, handling requests from customer applications. It processes operations related to integrations, connections, actions, and syncs, offering a unified interface for developers.
 
-**Control Plane Storage**
+**Control plane store**
 
-This component stores configuration data for users, integrations, connections, and integration scripts. It uses Postgres.
+This Control plane store, running on Postgres, handles configuration data for users, integrations, connections, and integration scripts.
 
-**Orchestrator Service**
+**Jobs queue**
 
-The Orchestrator service manages the scheduling of script executions. It’s responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+The Jobs queue, running on Postgres, manages the scheduling of script executions (along with the Orchestrator Node service). It’s responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
 
-**Jobs Service**
+**Jobs service**
 
 The Jobs Service dispatches jobs to runner services. It acts as the central manager that allocates integration script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
 
-**Runner Services**
+**Runner service**
 
-Runner services, built on Node, are isolated per customer and responsible for running the integration scripts. These services directly interact with external APIs, executing the custom logic defined in action, sync, and webhook scripts. 
+Runner services, running on Node, are isolated per customer and responsible for running the integration scripts. These services directly interact with external APIs, executing the custom logic defined in action, sync, and webhook scripts. When self-hosting Nango, there is only one runner.
 
-**Records Storage**
+**Records store**
 
-This storage component persists the records by syncs being executed in the runners.
+This Records storage, running on Postgres, component persists the records by syncs being executed in the runners.
 
-**Script Storage**
+**Script store**
 
-Integration scripts, whether provided by Nango as [templates](/guides/pre-built-integrations/overview) or developed by customers ([step-by-step guide](/guides/custom-integrations/overview)), are stored in blob storage. This provides a scalable, secure storage solution that ensures integration scripts are readily accessible for execution by the runner services.
+Integration scripts, whether provided by Nango as [templates](/guides/pre-built-integrations/overview) or developed by customers ([step-by-step guide](/guides/custom-integrations/overview)), are stored in blob storage (S3). This provides a scalable, secure storage solution that ensures integration scripts are readily accessible for execution by the runner services.
 
-**Logs Storage**
+**Logs store**
 
-Logs are critical to have observability over how your integration scripts are run. Nango automatically generates logs, but you can add custom logs in your integration scripts as well. Logs are surfaced and searchable in the Nango UI. 
+Logs are critical to have observability over how your integration scripts are run. Nango automatically generates logs, but you can add custom logs in your integration scripts as well. Logs are surfaced and searchable in the Nango UI. The Logs store runs on ElasticSearch.
 
 # Self-hosting
 

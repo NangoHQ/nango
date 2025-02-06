@@ -1,0 +1,48 @@
+---
+title: Greenhouse (Job Board API)
+sidebarTitle: Greenhouse (Job Board API)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/greenhouse-job-board/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/greenhouse-job-board/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-job-board.mdx)</Note>
+
+
+## Useful links
+-   [Authentication docs](https://developers.greenhouse.io/job-board.html#authentication)
+-   [API Docs](https://developers.greenhouse.io/job-board.html#introduction)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-job-board.mdx)</Note>
+
+## API gotchas
+
+- Job Board data is publicly available, so authentication is not required for any GET endpoints. Only the application submission endpoint `(POST https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs/{id})` which requires [Basic](https://developers.greenhouse.io/job-board.html#submit-an-application) Authentication.
+- The `Basic` auth can be achieved by passing the Greenhouse (Job Board API) as the username and leaving the password field blank.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/greenhouse-job-board.mdx)</Note>
+
+<Card title="Connect to Greenhouse (Job Board API)" icon="link" href="/integrations/all/greenhouse-job-board/connect" horizontal>
+  Guide to connect to Greenhouse (Job Board API) using Nango Connect.
+</Card>

@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint, RunnerOutputError } from '@nangohq/types';
+import type { ApiError, Endpoint, NangoProps, RunnerOutputError } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { handleError, handleSuccess } from '../../execution/operations/output.js';
 import type { JsonValue } from 'type-fest';
-import type { NangoProps } from '@nangohq/shared';
 
 const path = '/tasks/:taskId';
 const method = 'PUT';
@@ -62,7 +61,7 @@ const nangoPropsSchema = z
                 pre_built: z.boolean(),
                 is_public: z.boolean(),
                 input: z.string().nullable(),
-                sync_type: z.enum(['full', 'incremental', 'FULL', 'INCREMENTAL']).nullable(),
+                sync_type: z.enum(['full', 'incremental']).nullable(),
                 metadata: z.record(z.string(), z.any())
             })
             .passthrough(),

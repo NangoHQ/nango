@@ -131,11 +131,11 @@ export interface MessageRow {
         url: string;
         method: string;
         headers: Record<string, string>;
+        body?: unknown;
     } | null;
     response: {
         code: number;
         headers: Record<string, string>;
-        body?: unknown;
     } | null;
     meta: MessageMeta | null;
 

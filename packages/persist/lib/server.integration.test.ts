@@ -1,22 +1,22 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Sync, SyncConfig, Job as SyncJob } from '@nangohq/shared';
+import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import {
     environmentService,
     connectionService,
     createSync,
     createSyncJob,
-    SyncType,
+    SyncJobsType,
     SyncStatus,
     accountService,
     configService,
     getProvider
 } from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
-import { migrate as migrateRecords } from '@nangohq/records';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import { migrate as migrateRecords, records } from '@nangohq/records';
+import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
@@ -137,7 +137,8 @@ describe('Persist API', () => {
                         records: records,
                         providerConfigKey: seed.connection.provider_config_key,
                         connectionId: seed.connection.connection_id,
-                        activityLogId: seed.activityLogId
+                        activityLogId: seed.activityLogId,
+                        merging: { strategy: 'override' }
                     }),
                     headers: {
                         Authorization: `Bearer ${mockSecretKey}`,
@@ -145,7 +146,7 @@ describe('Persist API', () => {
                     }
                 }
             );
-            expect(response.status).toEqual(204);
+            expect(response.status).toEqual(200);
         });
     });
 
@@ -172,7 +173,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(204);
+        expect(response.status).toEqual(200);
     });
 
     it('should update records ', async () => {
@@ -198,7 +199,7 @@ describe('Persist API', () => {
                 }
             }
         );
-        expect(response.status).toEqual(204);
+        expect(response.status).toEqual(200);
     });
 
     it('should fail if passing incorrect authorization header ', async () => {
@@ -253,6 +254,108 @@ describe('Persist API', () => {
             }
         });
     });
+
+    describe('getCursor', () => {
+        it('should return an empty response if no records', async () => {
+            const model = 'does-not-exist';
+            const cursorUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/cursor?model=${model}&offset=last`;
+            const response = await fetch(cursorUrl, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({});
+        });
+        it('should return first cursor', async () => {
+            const model = 'ModelFirstCursor';
+
+            // Save records
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model,
+                    records: [
+                        { id: 1, name: 'r1' },
+                        { id: 2, name: 'r2' },
+                        { id: 3, name: 'r3' }
+                    ],
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const allRecords = (
+                await records.getRecords({
+                    connectionId: seed.connection.id!,
+                    model
+                })
+            ).unwrap();
+            const firstRecord = allRecords.records[0];
+
+            const cursorUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/cursor?model=${model}&offset=first`;
+            const response = await fetch(cursorUrl, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({
+                cursor: firstRecord?._nango_metadata.cursor
+            });
+        });
+        it('should return last cursor', async () => {
+            const model = 'ModelLastCursor';
+
+            // Save records
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model,
+                    records: [
+                        { id: 1, name: 'r1' },
+                        { id: 2, name: 'r2' },
+                        { id: 3, name: 'r3' }
+                    ],
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const allRecords = (
+                await records.getRecords({
+                    connectionId: seed.connection.id!,
+                    model
+                })
+            ).unwrap();
+            const lastRecord = allRecords.records[allRecords.records.length - 1];
+
+            const cursorUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/cursor?model=${model}&offset=last`;
+            const response = await fetch(cursorUrl, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({
+                cursor: lastRecord?._nango_metadata.cursor
+            });
+        });
+    });
 });
 
 const initDb = async () => {
@@ -284,13 +387,13 @@ const initDb = async () => {
     if (!providerConfig) throw new Error('Provider config not created');
 
     const [syncConfig] = await db.knex
-        .from<SyncConfig>(`_nango_sync_configs`)
+        .from<DBSyncConfig>(`_nango_sync_configs`)
         .insert({
             environment_id: env.id,
             sync_name: Math.random().toString(36).substring(7),
             type: 'sync',
             file_location: 'file_location',
-            nango_config_id: providerConfig.id,
+            nango_config_id: providerConfig.id!,
             version: '1',
             active: true,
             runs: 'runs',
@@ -301,8 +404,9 @@ const initDb = async () => {
             created_at: now,
             updated_at: now,
             models: ['model'],
-            model_schema: []
-        } as SyncConfig)
+            model_schema: [],
+            sync_type: 'full'
+        })
         .returning('*');
     if (!syncConfig) throw new Error('Sync config not created');
 
@@ -326,7 +430,7 @@ const initDb = async () => {
 
     const syncJob = await createSyncJob({
         sync_id: sync.id,
-        type: SyncType.FULL,
+        type: SyncJobsType.FULL,
         status: SyncStatus.RUNNING,
         job_id: `job-test`,
         nangoConnection: connection

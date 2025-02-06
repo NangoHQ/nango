@@ -15,9 +15,6 @@
             "path": "../nango-yaml"
         },
         {
-            "path": "../node-client"
-        },
-        {
             "path": "../types"
         },
         {

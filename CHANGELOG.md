@@ -2,6 +2,155 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.52.5] - 2025-02-05
+
+### Added
+
+- *(ui)* Environment settings revamp (#3432) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/184791e39a290d706aaf92b04042f0bc7feb9d31 by Khaliq. Commit message: fix(recharge): add subscription id (#211) by @github-actions[bot]
+- *(docs)* Backfill missing docs due to multiple providers for same API (#3403) by @nalanj
+- *(minimax)* Added minimax support (#3364) by @AndrewKaranja
+- *(basecamp)* Store basecamp response in the connection config (#3455) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/08cd7cb0ea8fb6a1908fe8b645f67abf27a0af67 by Khaliq. Commit message: feat(basecamp): add action to do a user lookup (#212) by @github-actions[bot]
+
+### Changed
+
+- Cleanup legacy runner management (#3425) by @TBonnin
+- Clarify integration steps (#3435) by @bastienbeurier
+- Show connect UI gif (#3436) by @bastienbeurier
+- Be more explicit about callback URL redirect safeguards (#3439) by @bastienbeurier
+- Fleet improvements (#3438) by @TBonnin
+- Bump vitest to 2.1.9 (#3449) by @nalanj
+
+### Fixed
+
+- Fleet to fetch all nodes at once (#3429) by @TBonnin
+- Deel provider (#3434) by @TBonnin
+- *(server)* Log instance id from render instead of random id and catch unhandled (#3433) by @nalanj
+- *(tests)* Test forwardWebhook (#3424) by @nalanj
+- *(server)* Only log last part of instance id for render (#3437) by @nalanj
+- *(server)* Put whitespace in front of instance id, if it's there (#3440) by @nalanj
+- *(server)* Override agent toJSON (#3441) by @nalanj
+- *(ui)* Env settings should reset on switching env (#3442) by @bodinsamuel
+- *(docs)* PauseSync fix (#3443) by @khaliqgant
+- Set Slack scope_separator to comma (#3430) by @mpotter
+- Always update logo when updating apis in webflow (#3446) by @nalanj
+- *(ui)* Feedback env settings page (#3444) by @bodinsamuel
+- *(cli)* Fix dryrun bug after shared removal (#3452) by @nalanj
+
+## [v0.52.4] - 2025-02-03
+
+### Added
+
+- *(persist)* Deep merge records in batchUpdate (#3386) by @nalanj
+- Add support for merging strategy into the runner sdk (#3420) by @TBonnin
+- *(support)* Adds support for xAI Integration (#3345) by @Maina-Francis
+- *(integrations)* Added provider support for commercetools (#3347) by @AndrewKaranja
+- *(retell-ai)* Added retell ai support (#3365) by @AndrewKaranja
+- *(integrations)* Add support for drupal (#3378) by @hassan254-prog
+
+### Changed
+
+- Improve diagrams + add one for auth (#3431) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7fec650269eb82e8cf775a7dcb010b715a8a0e06 by nalanj. Commit message: fix: Update basecamp docs to fix mintlify error (#209) by @github-actions[bot]
+- *(api)* Better check for json content-type  (#3428) by @bodinsamuel
+- *(api)* Req.is is not as reliable as expected by @bodinsamuel
+- *(dependencies)* Upgrade frontend dependencies (#3418) by @bodinsamuel
+
+## [v0.52.3] - 2025-01-31
+
+### Added
+
+- *(pagination)* Add flag to optionally add params to body (#3404) by @hassan254-prog
+- *(integrations)* Split greenhouse apis into seperate providers (#3331) by @hassan254-prog
+- *(integrations)* Add support for grafana (#3422) by @hassan254-prog
+
+### Changed
+
+- Revamp design of older changelog assets (#3416) by @bastienbeurier
+- Public key deprecation guide (#3421) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Fix link for zapier connect (#3414) by @khaliqgant
+- *(api)* Enforce content-type when possible (#3410) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/58c8dad986716d17821d17a7b452ea9d28f2d007 by Khaliq. Commit message: fix(optionals): chaining (#208) by @github-actions[bot]
+- *(webapp)* Fix code generation for two_step (#3415) by @hassan254-prog
+
+## [v0.52.2] - 2025-01-30
+
+### Fixed
+
+- *(auth)* Reup connectionId check (#3413) by @bodinsamuel
+- *(ui)* Properly debounce/abort logs search (#3412) by @bodinsamuel
+- Eslint pass (#3406) by @bodinsamuel
+- *(cli)* Remove directory requirement in verification service (#3417) by @nalanj
+
+## [v0.52.1] - 2025-01-30
+
+### Added
+
+- *(integrations)* Add support for document360  (#3340) by @miles-kt-inkeep
+- *(integration)* Set scope separator for instagram (#3390) by @jape-dev
+- *(runner)* Use new SDK (#3297) by @bodinsamuel
+- *(calendly)* Add  webhook routing scripts and update latest providers.yaml (#3381) by @viictoo
+- Adds documents access requirements and setup guide for Slack integration (#3327) by @Maina-Francis
+- *(integrations)* Add support for Twilio (#3393) by @bodinsamuel
+- *(integrations)* Add support for Zuora (#3388) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/02abedc52f79adfeddab977a1aaff45aaaa92fe0 by Khaliq. Commit message: feat(whoami): add whoami endpoint for intercom (#206) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d5fb82cc3d8f080ac157ac0b783f979358b3ec40 by Khaliq. Commit message: feat(recharge): add next_charge_scheduled_at (#207) by @github-actions[bot]
+- Add changelog assets (#3398) by @bastienbeurier
+- *(persist)* Add support for merging strategy (#3389) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5f6b7afb40a161e3c7b09bdb17764c0a099744cd by Francis Maina. Commit message: feat(google): adds fetch-documents actions for Google Docs and Google Sheets (#204) by @github-actions[bot]
+- *(zapier-scim)* Add integration guide and configuration for Zapier SCIM (#3400) by @viictoo
+- *(cli)* Allow init to create any directory name (#3338) by @nalanj
+
+### Changed
+
+- Remove Kapa from docs (#3391) by @bastienbeurier
+- Move changelog to Mintlify (#3392) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bbb59c9daf078b41c0f6c37dc19f1d2c108ba496 by Victor Lang'at. Commit message: feat(gorgias):  implement gorgias user provisioning using only the necessary User fields and add corresponding tests: (#199) by @github-actions[bot]
+- Document simpler way to retrieve connection ID in dev (#3395) by @bastienbeurier
+- Default to dark theme (#3396) by @bastienbeurier
+- Nango webhook ref (#3394) by @bastienbeurier
+- Pagination reference (#3405) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f922ae99610d196540aa0790465d507567e22c82 by Andrew Karanja. Commit message: feat(basecamp): todos sync (#205) by @github-actions[bot]
+- Compress changelog images + update changelog format (#3408) by @bastienbeurier
+- *(logs)* Bump elasticsearch to 8.17.0 (#3399) by @nalanj
+
+### Fixed
+
+- *(jobs)* Wait until runner is reachable before registering (#3397) by @TBonnin
+- *(persist)* Fix express.json limit (#3401) by @TBonnin
+- *(webhooks)* Regression where body wasn't logged after webhook log enrichment (#3402) by @nalanj
+- *(proxy)* Apply query params outside axios (#3361) by @bodinsamuel
+- *(cli)* Update dry run to exclude nango prop on output.json files (#3411) by @nalanj
+- *(ui)* Change copy for connection create (#3407) by @bodinsamuel
+- *(ui)* Copy snippets with secrets (#3409) by @bodinsamuel
+
+## [v0.51.0] - 2025-01-28
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ef41e344c36cc7f3252d6e9b10734175d143e9d7 by Hassan_Wari. Commit message: feat(recharge): add upsert and customers sync (#203) by @github-actions[bot]
+- *(records)* Add upserting/updating records merging strategy (#3379) by @TBonnin
+
+### Changed
+
+- Improve publish script (#3383) by @bodinsamuel
+
+### Fixed
+
+- Package.json by @bodinsamuel
+- *(node-client)* UpdateSyncConnectionFrequency parameters (#3380) by @TBonnin
+- *(docs)* Make webflow sync more graceful (#3382) by @nalanj
+- *(docs)* Fix provider line parsing in webflow sync. (#3384) by @nalanj
+- Fix list connections params in Node SDK (#3372) by @bastienbeurier
+- *(tests)* Fix a few flaky tests (#3385) by @nalanj
+
 ## [v0.50.0] - 2025-01-28
 
 ### Added
@@ -2841,6 +2990,12 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5
+[v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4
+[v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
+[v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
+[v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1
+[v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0
 [v0.50.0]: https://github.com/NangoHQ/nango/compare/v0.49.0..v0.50.0
 [v0.49.0]: https://github.com/NangoHQ/nango/compare/v0.48.4..v0.49.0
 [v0.48.4]: https://github.com/NangoHQ/nango/compare/v0.48.3..v0.48.4

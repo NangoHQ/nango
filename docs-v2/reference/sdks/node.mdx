@@ -348,16 +348,20 @@ await nango.listConnections();
 
 <Expandable>
     <ResponseField name="connectionId" type="string">
-        Filter the list of connections based on this connection ID.
+        Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
     </ResponseField>
     <ResponseField name="search" type="string">
-        Will partially match connection IDs or end user profiles.
+        Optional. Search connections. Will search in connection ID or end user profile.
     </ResponseField>
-    <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on the given end user id.
-    </ResponseField>
-    <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on the given end user's organization id.
+    <ResponseField name="queries" type="object">
+        <Expandable title="queries" defaultOpen>
+            <ResponseField name="endUserId" type="string">
+                Optional. Will exactly match a given end user ID.
+            </ResponseField>
+            <ResponseField name="endUserOrganizationId" type="string">
+                Optional. Will exactly match a given end organization ID.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -951,7 +955,7 @@ Empty response.
 Pauses the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
 ```js
-await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+await nango.pauseSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
 ```
 
 **Parameters**

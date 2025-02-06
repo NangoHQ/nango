@@ -1,4 +1,3 @@
-import type { ParamsSerializerOptions } from 'axios';
 import type { EndpointMethod } from '../api.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../auth/api.js';
 import type { Connection } from '../connection/db.js';
@@ -12,7 +11,6 @@ export interface BaseProxyConfiguration {
     data?: unknown;
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
     baseUrlOverride?: string;
     responseType?: ResponseType;
     retryHeader?: RetryHeaderConfig;
@@ -59,6 +57,7 @@ export interface PaginationBase {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
 }
 
 export type Pagination = CursorPagination | LinkPagination | OffsetPagination;

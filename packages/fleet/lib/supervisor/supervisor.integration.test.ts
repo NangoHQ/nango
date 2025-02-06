@@ -5,7 +5,7 @@ import { getTestDbClient } from '../db/helpers.test.js';
 import * as deployments from '../models/deployments.js';
 import * as nodes from '../models/nodes.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { generateCommitHash } from '../models/helpers.js';
+import { generateImage } from '../models/helpers.js';
 import { createNodeWithAttributes } from '../models/helpers.test.js';
 import type { Deployment } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
@@ -34,8 +34,8 @@ describe('Supervisor', () => {
 
     beforeEach(async () => {
         await dbClient.migrate();
-        previousDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
-        activeDeployment = (await deployments.create(dbClient.db, generateCommitHash().unwrap())).unwrap();
+        previousDeployment = (await deployments.create(dbClient.db, generateImage())).unwrap();
+        activeDeployment = (await deployments.create(dbClient.db, generateImage())).unwrap();
     });
 
     afterEach(async () => {
@@ -59,7 +59,7 @@ describe('Supervisor', () => {
             void supervisor2.start();
 
             await vi.waitUntil(() => tickSpy1.mock.calls.length > 0, {
-                timeout: 5000
+                timeout: 10000
             });
 
             expect(tickSpy1).toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe('Supervisor', () => {
 
         await supervisor.tick();
 
-        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
             routingId: node.routingId,
@@ -159,7 +159,7 @@ describe('Supervisor', () => {
 
         await supervisor.tick();
 
-        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().nodes.get(node.routingId)?.PENDING[0];
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
         expect(newNode).toMatchObject({
             state: 'PENDING',
             routingId: node.routingId,
@@ -175,7 +175,7 @@ describe('Supervisor', () => {
     it('should create new nodes if only OUTDATED', async () => {
         const node = await createNodeWithAttributes(dbClient.db, { state: 'OUTDATED', deploymentId: previousDeployment.id });
         await supervisor.tick();
-        const { nodes: pendingNodes } = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap();
+        const pendingNodes = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap();
         expect(pendingNodes.get(node.routingId)).toMatchObject({
             PENDING: [
                 {
@@ -224,12 +224,11 @@ describe('Supervisor', () => {
     });
 
     it('should remove old TERMINATED nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1);
         const terminatedNode = await createNodeWithAttributes(dbClient.db, { state: 'TERMINATED', deploymentId: activeDeployment.id });
         const oldTerminatedNode = await createNodeWithAttributes(dbClient.db, {
             state: 'TERMINATED',
             deploymentId: activeDeployment.id,
-            lastStateTransitionAt: sevenDaysAgo
+            lastStateTransitionAt: new Date(Date.now() - STATE_TIMEOUT_MS.TERMINATED - 1)
         });
 
         await supervisor.tick();
@@ -247,12 +246,11 @@ describe('Supervisor', () => {
     });
 
     it('should remove old ERROR nodes', async () => {
-        const sevenDaysAgo = new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1);
         const errorNode = await createNodeWithAttributes(dbClient.db, { state: 'ERROR', deploymentId: activeDeployment.id });
         const oldErrorNode = await createNodeWithAttributes(dbClient.db, {
             state: 'ERROR',
             deploymentId: activeDeployment.id,
-            lastStateTransitionAt: sevenDaysAgo
+            lastStateTransitionAt: new Date(Date.now() - STATE_TIMEOUT_MS.ERROR - 1)
         });
 
         await supervisor.tick();

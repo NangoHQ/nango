@@ -1,8 +1,8 @@
 import type {
     SyncResult,
     ErrorPayload,
-    SyncType,
-    ExternalWebhook,
+    SyncOperationType,
+    DBExternalWebhook,
     NangoSyncWebhookBody,
     NangoSyncWebhookBodyBase,
     DBEnvironment,
@@ -38,11 +38,11 @@ export const sendSync = async ({
     environment: DBEnvironment;
     account: DBTeam;
     providerConfig: IntegrationConfig;
-    webhookSettings: ExternalWebhook | null;
+    webhookSettings: DBExternalWebhook | null;
     syncConfig: DBSyncConfig;
     model: string;
     now: Date | undefined;
-    operation: SyncType;
+    operation: SyncOperationType;
     error?: ErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
