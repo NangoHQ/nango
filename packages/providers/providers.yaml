@@ -5191,8 +5191,6 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
-            example: 'your-api-key-here'
-            pattern: '^[a-zA-Z0-9-]+$'
 
 mixpanel:
     display_name: Mixpanel
