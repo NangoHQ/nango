@@ -2,7 +2,7 @@ import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { records } from '@nangohq/records';
 import { validateGetRecords } from './validate.js';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContextStateless } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 
 type GetRecords = Endpoint<{
@@ -34,7 +34,7 @@ const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<G
         query: { model, externalIds, cursor, limit, activityLogId }
     } = req;
 
-    const logCtx: LogContext | undefined = undefined;
+    let logCtx: LogContextStateless | undefined = undefined;
     if (activityLogId) {
         logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
     }
