@@ -6011,11 +6011,13 @@ plain:
             method: GET
             endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/plain
+    docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Plain account
+            doc_section: '#step-1-generating-your-api-key'
 
 podium:
     display_name: Podium
