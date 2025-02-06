@@ -14,6 +14,7 @@ type GetRecords = Endpoint<{
         model: string;
         externalIds: string[];
         cursor: string;
+        limit: number;
     };
     Error: ApiError<'get_records_failed'>;
     Success: GetRecordsSuccess;
