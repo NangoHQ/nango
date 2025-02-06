@@ -21,3 +21,31 @@ export const validateCursor = <E extends Endpoint<any>>() =>
                 .strict()
                 .parse(data)
     });
+
+export const validateGetRecords = <E extends Endpoint<any>>() =>
+    validateRequest<E>({
+        parseQuery: (data: unknown) =>
+            z
+                .object({
+                    model: z.string(),
+                    cursor: z.string().optional(),
+                    limit: z.coerce.number().int().positive().default(100),
+                    externalIds: z
+                        .union([
+                            z.string().min(1).max(256), // There is no diff between a normal query param and an array with one item
+                            z.array(z.string().min(1).max(256)).max(100)
+                        ])
+                        .transform((val) => (Array.isArray(val) ? val : [val]))
+                        .optional()
+                })
+                .strict()
+                .parse(data),
+        parseParams: (data: unknown) =>
+            z
+                .object({
+                    environmentId: z.coerce.number().int().positive(),
+                    nangoConnectionId: z.coerce.number().int().positive()
+                })
+                .strict()
+                .parse(data)
+    });
