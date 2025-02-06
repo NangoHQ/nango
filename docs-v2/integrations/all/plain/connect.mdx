@@ -1,0 +1,44 @@
+---
+title: Plain - How do I link my account?
+sidebarTitle: Plain
+---
+
+
+# Overview
+
+To authenticate with Plain, you will need:
+1. **API Key** - A key that grants secure access to the API, enabling authorized applications to interact with Plain resources and services.
+
+This guide will walk you through generating your **API Key** within Plain.
+
+### Prerequisites:
+
+- You must have an account with Plain.
+
+<Note>Machine Users can have multiple API Keys to make it easy to rotate keys. Every API key also has fine grained permissions.</Note>
+
+
+### Instructions:
+
+#### Step 1: Generating Your API Key
+1. Login to your [Plain](https://app.plain.com/) account.
+
+2. Go to **Settings → Machine Users**. If you already have a Machine User created, you can skip this step. Otherwise, click **Add Machine User**.
+
+A Machine User has two fields:
+
+- **Name**: This is just visible to you and could indicate the usage e.g. “Autoresponder”
+- **Public name**: This is the name visible to customers (if the Machine User interacts with customers) e.g. “Mr Robot”
+3. Click **Add API Key**, select the required permissions, please refer to the documentation for required permissions for each feature, copy the key, and store it safely since it won’t be visible again.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with Plain.
+2. Enter the **API Key** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/plain/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Plain.
