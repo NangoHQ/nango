@@ -35,7 +35,7 @@ export const renderNodeProvider: NodeProvider = {
                 ownerId,
                 image: { ownerId, imagePath: node.image },
                 serviceDetails: {
-                    runtime: 'docker',
+                    runtime: 'image',
                     plan: getPlan(node),
                     ...(node.image.includes('-runner')
                         ? {}
