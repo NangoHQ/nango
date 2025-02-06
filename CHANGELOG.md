@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.53.0] - 2025-02-06
+
+### Added
+
+- *(persist)* Enable filtering records by external id (#3458) by @nalanj
+- *(sap-concur)* SAP Concur provider support (#3453) by @AndrewKaranja
+- *(support)* Add support for Gemini integration (#3336) by @Maina-Francis
+- *(api)* Get records by IDs (#3466) by @bodinsamuel
+
+### Changed
+
+- *(fleet)* Simplify node config overrides (#3450) by @TBonnin
+- *(fleet)* Remove deployment commit_id column (#3451) by @TBonnin
+- *(plain)* Connect ui docs for plain (#3465) by @hassan254-prog
+- *(minimax)* Updated minimax provider yaml. (#3464) by @AndrewKaranja
+- Node client get records by ids (#3471) by @bodinsamuel
+
+### Fixed
+
+- *(shared)* Keep agents from cloning in simple-oauth2 (#3447) by @nalanj
+- *(ui)* Display correct sync type  (#3454) by @bodinsamuel
+- *(db)* Sync_type casing (#3456) by @bodinsamuel
+- *(shared)* Clean up agent config stuff (#3457) by @nalanj
+- *(api)* GET /records new format (#3448) by @bodinsamuel
+- *(api)* Get records filter should accept uppercase and combined (#3460) by @bodinsamuel
+- *(webhooks)* Remove webhook response body from webhook logging (#3462) by @nalanj
+- *(ui)* Correct field when updating webhooks secondary url (#3461) by @bodinsamuel
+- *(types)* SyncConfig -> DBSyncConfig (#3459) by @bodinsamuel
+- *(integration-template-tests)* Remove output and content length header (#3467) by @khaliqgant
+- *(docs)* Warn on docs mismatch, and update providers to remove all warnings (#3469) by @nalanj
+- *(npm)* Put types pkg as prod dependency (#3473) by @bodinsamuel
+- *(cron)* Automatic refresh token was not passing decrypted connection (#3472) by @bodinsamuel
+
 ## [v0.52.5] - 2025-02-05
 
 ### Added
@@ -2990,6 +3023,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.53.0]: https://github.com/NangoHQ/nango/compare/v0.52.5..v0.53.0
 [v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5
 [v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4
 [v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
