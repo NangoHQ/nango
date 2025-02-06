@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, axiosInstance as axios, retryWithBackoff, redactHeaders } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
+import type { WebhookTypes, SyncOperationType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -29,8 +29,7 @@ export const NON_FORWARDABLE_HEADERS = [
 function formatLogResponse(response: AxiosResponse): MessageRow['response'] {
     return {
         code: response.status,
-        headers: response.headers ? redactHeaders({ headers: response.headers }) : {},
-        body: response.data
+        headers: response.headers ? redactHeaders({ headers: response.headers }) : {}
     };
 }
 
@@ -84,7 +83,7 @@ export const shouldSend = ({
     webhookSettings: DBExternalWebhook;
     success: boolean;
     type: 'auth' | 'sync' | 'forward';
-    operation: SyncType | AuthOperationType | 'incoming_webhook';
+    operation: SyncOperationType | AuthOperationType | 'incoming_webhook';
 }): boolean => {
     const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 

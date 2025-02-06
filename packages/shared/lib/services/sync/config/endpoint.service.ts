@@ -1,8 +1,8 @@
 import { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
-import type { SyncConfig } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { HTTP_METHOD } from '../../../models/Generic.js';
+import type { DBSyncConfig } from '@nangohq/types';
 
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
@@ -19,7 +19,7 @@ export async function getActionOrModelByEndpoint(nangoConnection: NangoConnectio
     }
     const result = await schema()
         .select(`${SYNC_CONFIG_TABLE}.sync_name`, `${ENDPOINT_TABLE}.model as model`, `${SYNC_CONFIG_TABLE}.type`)
-        .from<SyncConfig>(SYNC_CONFIG_TABLE)
+        .from<DBSyncConfig>(SYNC_CONFIG_TABLE)
         .join(ENDPOINT_TABLE, `${SYNC_CONFIG_TABLE}.id`, `${ENDPOINT_TABLE}.sync_config_id`)
         .where({
             [`${SYNC_CONFIG_TABLE}.environment_id`]: nangoConnection.environment_id,
