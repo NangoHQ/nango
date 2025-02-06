@@ -1,24 +1,24 @@
 import db from '@nangohq/database';
 import * as syncService from '../services/sync/sync.service.js';
-import type { Sync, SyncConfig } from '../models/Sync.js';
-import type { DBSyncEndpoint, NangoSyncEndpointV2 } from '@nangohq/types';
+import type { Sync } from '../models/Sync.js';
+import type { DBSyncConfig, DBSyncEndpoint, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
 export async function createSyncSeeds({
     connectionId,
     endpoints,
     ...syncData
-}: SetRequired<Partial<SyncConfig>, 'environment_id' | 'nango_config_id' | 'sync_name'> & {
+}: SetRequired<Partial<DBSyncConfig>, 'environment_id' | 'nango_config_id' | 'sync_name'> & {
     connectionId: number;
     endpoints?: NangoSyncEndpointV2[];
 }): Promise<{
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     sync: Sync;
 }> {
     const now = new Date();
 
     const [syncConfig] = await db.knex
-        .from<SyncConfig>(`_nango_sync_configs`)
+        .from<DBSyncConfig>(`_nango_sync_configs`)
         .insert({
             environment_id: syncData.environment_id,
             sync_name: syncData.sync_name,
@@ -54,7 +54,7 @@ export async function createSyncSeeds({
                     method: endpoint.method,
                     path: endpoint.path,
                     group_name: endpoint.group || null,
-                    sync_config_id: syncConfig.id!
+                    sync_config_id: syncConfig.id
                 };
             })
         );

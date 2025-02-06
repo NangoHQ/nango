@@ -1,0 +1,71 @@
+---
+title: SAP Concur - How do I link my account?
+sidebarTitle: SAP Concur
+---
+
+# Overview
+
+To connect to SAP Concur's API, you'll need:
+1. **Client ID** - Unique identifier for your OAuth 2.0 application
+2. **Client Secret** - Secret key paired with your Client ID
+3. **Company UUID** - Unique identifier for your company account
+4. **Company Request Token** - Temporary token for authentication
+5. **Region** - Region based on your company's account geolocation
+
+This guide walks through obtaining these credentials in the SAP Concur platform.
+
+### Prerequisites:
+- Administrator access to SAP Concur
+- Registered company account with SAP Concur
+
+---
+
+## Instructions
+
+### Step 1: Create an OAuth 2.0 Application
+1. Log in to your [SAP Concur admin panel](https://www.concursolutions.com/nui/ocstool)
+2. Navigate to **Administration** > **OAuth 2.0 Application Management**
+3. Click **Create New App**
+4. Fill in required fields including:
+   - Application Name
+   - Grant Types (add all of the grants-most important being client credentials)
+   - Required API Scopes(add all of the scopes you have access to)
+5. Click **Submit**
+
+<img src="/integrations/all/sap-concur/create-app.png" width="600" />
+
+6. Copy and save the generated **Client ID** and **Client Secret**  
+<img src="/integrations/all/sap-concur/client-credentials.png" width="450" />
+
+---
+
+### Step 2: Generate Company Request Token
+1. In the admin panel, go to[Company Request Tokens]/(https://www.concursolutions.com/nui/authadmin/companytokens)
+2. Enter your App ID (Client ID from previous step)
+3. Click **Submit** to generate tokens
+4. Save the displayed **Company UUID** and **Company Request Token**  
+<img src="/integrations/all/sap-concur/company-tokens.png" width="600" />
+
+---
+
+### Step 3: Determine Your Region
+Use one of these regions based on your company's account location:
+- **us**: `https://us.api.concursolutions.com`
+- **eu**: `https://eu.api.concursolutions.com` 
+- **cn**: `https://cn.api.concursolutions.com`
+From the examples above please note the region is in the url once you are logged into your application
+Represented by the first section after // and before .api
+---
+
+### Step 4: Enter Credentials in Connect UI
+1. In Nango connection form:
+   - **Client ID**: Paste your OAuth application Client ID
+   - **Client Secret**: Paste your OAuth application Client Secret
+   - **Company UUID**: Paste your company's unique identifier
+   - **Company Request Token**: Paste generated request token
+   - **Region**: Select appropriate region based on your url
+
+
+2. Click **Connect** to establish the connection
+
+---

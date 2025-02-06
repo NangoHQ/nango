@@ -136,7 +136,6 @@ export interface MessageRow {
     response: {
         code: number;
         headers: Record<string, string>;
-        body?: unknown;
     } | null;
     meta: MessageMeta | null;
 

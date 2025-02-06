@@ -1,0 +1,59 @@
+---
+title: Gong OAuth
+sidebarTitle: Gong OAuth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/gong-oauth/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/gong-oauth/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong-oauth.mdx)</Note>
+
+
+## Useful links
+
+Gong offers both Basic auth (API key) and OAuth as authentication. Nango implements both. To register an OAuth app, you need to request a developer account. At first, the OAuth app will be private (only for test) and you need an additional approval to make it public.
+
+-   [How to find API credentials (for end-users)](https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API)
+-   [Request a developer account to create an OAuth app](https://app.gong.io/welcome/developer/sign-up)
+-   [API Docs](https://app.gong.io/settings/api/documentation#overview)
+-   [Oauth-related docs](https://help.gong.io/hc/en-us/articles/13944551222157-Create-an-app-for-Gong)
+-   [API rate limiting](https://app.gong.io/settings/api/documentation#overview)
+-   [SCIM API Docs](https://help.gong.io/docs/provision-team-members-from-a-custom-source-scim)
+-   [Retrieve Access Key and Access Key Secret](https://help.gong.io/docs/receive-access-to-the-api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong-oauth.mdx)</Note>
+
+## API gotchas
+
+- End users can generate API keys [on the Gong API page](https://app.gong.io/company/api). They must have the "technical administrator" user role to do this.
+- Gong uses BASIC auth for their API, but doesn't call them username and password: `Access Key` is the username in Nango and `Access Key Secret` is the password in Nango.
+- [Gong rate-limits](https://app.gong.io/settings/api/documentation#overview) are per second and a total of 10k requests a day.
+- Gong-oauth uses `api_base_url_for_customer`, which varies for each customer, as its `base_url` for proxy requests. This parameter is returned in the response of `generate-customer-token`.
+- By default Gong limits your company's access to the service to 3 API calls per second, and 10,000 API calls per day. You may however change this rates by contacting [help](https://help.gong.io/).
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong-oauth.mdx)</Note>
+
+<Card title="Connect to Gong" icon="link" href="/integrations/all/gong/connect" horizontal>
+  Guide to connect to Gong API using Nango Connect.
+</Card>

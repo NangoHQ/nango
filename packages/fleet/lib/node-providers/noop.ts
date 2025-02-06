@@ -3,7 +3,6 @@ import type { NodeProvider } from './node_provider';
 
 export const noopNodeProvider: NodeProvider = {
     defaultNodeConfig: {
-        image: 'nangohq/nango-runner',
         cpuMilli: 1000,
         memoryMb: 1000,
         storageMb: 1000

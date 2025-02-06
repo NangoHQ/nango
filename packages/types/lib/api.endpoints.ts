@@ -59,7 +59,10 @@ import type {
 import type { GetMeta } from './meta/api';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
 import type { PostPublicWebhook } from './webhooks/http.api';
-import type { PostEnvironment } from './environment/api';
+import type { PatchEnvironment, PostEnvironment } from './environment/api';
+import type { PatchWebhook } from './environment/api/webhook';
+import type { PostEnvironmentVariables } from './environment/variable/api';
+import type { GetPublicRecords } from './record/api';
 
 export type PublicApiEndpoints =
     | SetMetadata
@@ -90,7 +93,9 @@ export type PublicApiEndpoints =
     | DeletePublicConnection
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
-    | PostPublicWebhook;
+    | PostPublicWebhook
+    | GetPublicRecords;
+
 export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin
@@ -130,7 +135,11 @@ export type PrivateApiEndpoints =
     | PostConnectionRefresh
     | PostManagedSignup
     | PostPreBuiltDeploy
-    | PostEnvironment;
+    | PostEnvironment
+    | PatchEnvironment
+    | PatchWebhook
+    | PostEnvironmentVariables;
+
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 
 /**

@@ -35,22 +35,10 @@ const files = await fs.readdir(docsPath);
 // we only need a subset of providers based on how our docs are written
 const neededProviders: Record<string, Provider> = {};
 
-const providerLineRegex = /^provider: ([^\s]+)\s*$/m;
-
 let hasWarnings = false;
 for (const file of files) {
     if (file.endsWith('.mdx')) {
-        const filePath = path.join(docsPath, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-
-        const providerMatch = content.match(providerLineRegex);
-        if (!providerMatch?.[1]) {
-            // eslint-disable-next-line no-console
-            console.warn(`No provider line found in ${file}`);
-            hasWarnings = true;
-            continue;
-        }
-        const provider = providerMatch[1];
+        const provider = path.basename(file, '.mdx');
 
         if (!providers[provider]) {
             // eslint-disable-next-line no-console
@@ -119,6 +107,10 @@ const seen: string[] = [];
 for (const [slug, provider] of Object.entries(neededProviders)) {
     seen.push(slug);
 
+    const fullLogoPath = await fs.realpath(path.join('packages', 'webapp', 'public', 'images', 'template-logos', `${slug}.svg`));
+    const logoPath = path.relative(process.cwd(), fullLogoPath);
+    const logo = `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/${logoPath}`;
+
     if (apiItemsBySlug[slug]) {
         const item = apiItemsBySlug[slug];
         if (!item.id) {
@@ -145,6 +137,9 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
         };
 
         if (!util.isDeepStrictEqual(previous, update)) {
+            // always update logo, just in case
+            (update.fieldData as any).logo = logo;
+
             try {
                 if (!dryRun) {
                     await webflow.collections.items.updateItem(apiCollectionId, item.id, update);
@@ -167,7 +162,7 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                         name: provider.display_name,
                         slug: slug,
                         documentation: provider.docs,
-                        logo: `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/packages/webapp/public/images/template-logos/${slug}.svg`,
+                        logo,
                         'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
                     }
                 });

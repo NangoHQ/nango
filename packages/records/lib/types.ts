@@ -38,6 +38,7 @@ export type ReturnedRecord = {
 } & Record<string, RecordValue> & { id: string };
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
+export type CombinedFilterAction = `${LastAction},${LastAction}`;
 
 interface RecordMetadata {
     first_seen_at: string;

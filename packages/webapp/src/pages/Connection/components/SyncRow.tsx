@@ -30,7 +30,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
 
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
-    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental');
+    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type === 'full' ? 'full' : 'incremental');
     const [deleteRecords, setDeleteRecords] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);

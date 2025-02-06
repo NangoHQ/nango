@@ -1,0 +1,24 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Teams">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /teams-list` | Fetch teams in an organisation in Jira | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira-basic/actions/fetch-teams.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /users` | Creates a user in Jira. Note that this endpoint is marked as experimental and could <br />be deprecated in the future. Products are optional and allowed params are<br />jira-core, jira-servicedesk, jira-product-discovery, jira-software. Defaults to <br />jira-software. Note that the last name isn't able to be set via the API and <br />the first name defaults to the email address. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira-basic/actions/create-user.md) |
+| `DELETE /users` | Deletes a user in Jira. Note that this endpoint is marked as experimental and could <br />be deprecated in the future. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira-basic/actions/delete-user.md) |
+| `GET /users` | Fetches a list of users from Jira | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira-basic/syncs/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>
