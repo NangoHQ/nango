@@ -374,6 +374,7 @@
                 "integrations/all/front",
                 "integrations/all/gainsight-cc",
                 "integrations/all/garmin",
+                "integrations/all/google-gemini",
                 "integrations/all/gebruder-weiss",
                 "integrations/all/gerrit",
                 "integrations/all/ghost-admin",
