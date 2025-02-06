@@ -29,11 +29,13 @@ export const validateGetRecords = <E extends Endpoint<any>>() =>
                 .object({
                     model: z.string(),
                     cursor: z.string().optional(),
-                    activityLogId: z.string(),
                     externalIds: z
-                        .string()
-                        .transform((v) => v.split(','))
-                        .pipe(z.string().trim().array())
+                        .union([
+                            z.string().min(1).max(256), // There is no diff between a normal query param and an array with one item
+                            z.array(z.string().min(1).max(256)).max(100)
+                        ])
+                        .transform((val) => (Array.isArray(val) ? val : [val]))
+                        .optional()
                 })
                 .strict()
                 .parse(data),

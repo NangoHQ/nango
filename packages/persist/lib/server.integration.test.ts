@@ -356,6 +356,98 @@ describe('Persist API', () => {
             });
         });
     });
+
+    describe('getRecords', () => {
+        it('should 400 if no model given', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            expect(response.status).toEqual(400);
+        });
+
+        it('should return records for a model', async () => {
+            const model = 'GetRecordsModel';
+            const records = [
+                { id: 1, name: 'new1' },
+                { id: 2, name: 'new2' }
+            ];
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model,
+                    records: records,
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records?model=${model}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            expect(response.status).toEqual(200);
+            const body = await response.json();
+            expect(body).toMatchObject({
+                records: expect.arrayContaining([expect.objectContaining(records[0]), expect.objectContaining(records[1])]),
+                next_cursor: null
+            });
+        });
+
+        it('should filter records by id', async () => {
+            const model = 'GetRecordsFilteredModel';
+            const records = [
+                { id: 1, name: 'new1' },
+                { id: 2, name: 'new2' },
+                { id: 3, name: 'new3' }
+            ];
+            await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model,
+                    records: records,
+                    providerConfigKey: seed.connection.provider_config_key,
+                    connectionId: seed.connection.connection_id,
+                    activityLogId: seed.activityLogId
+                }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records?model=${model}&externalIds=1&externalIds=3`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            expect(response.status).toEqual(200);
+            const body = await response.json();
+            expect(body).toMatchObject({
+                records: expect.arrayContaining([expect.objectContaining(records[0]), expect.objectContaining(records[2])]),
+                next_cursor: null
+            });
+        });
+    });
 });
 
 const initDb = async () => {
