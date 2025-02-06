@@ -1,14 +1,14 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
 import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Sync, SyncConfig, Job as SyncJob } from '@nangohq/shared';
+import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
 import db, { multipleMigrations } from '@nangohq/database';
 import {
     environmentService,
     connectionService,
     createSync,
     createSyncJob,
-    SyncType,
+    SyncJobsType,
     SyncStatus,
     accountService,
     configService,
@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { migrate as migrateRecords, records } from '@nangohq/records';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
 
@@ -387,13 +387,13 @@ const initDb = async () => {
     if (!providerConfig) throw new Error('Provider config not created');
 
     const [syncConfig] = await db.knex
-        .from<SyncConfig>(`_nango_sync_configs`)
+        .from<DBSyncConfig>(`_nango_sync_configs`)
         .insert({
             environment_id: env.id,
             sync_name: Math.random().toString(36).substring(7),
             type: 'sync',
             file_location: 'file_location',
-            nango_config_id: providerConfig.id,
+            nango_config_id: providerConfig.id!,
             version: '1',
             active: true,
             runs: 'runs',
@@ -404,8 +404,9 @@ const initDb = async () => {
             created_at: now,
             updated_at: now,
             models: ['model'],
-            model_schema: []
-        } as SyncConfig)
+            model_schema: [],
+            sync_type: 'full'
+        })
         .returning('*');
     if (!syncConfig) throw new Error('Sync config not created');
 
@@ -429,7 +430,7 @@ const initDb = async () => {
 
     const syncJob = await createSyncJob({
         sync_id: sync.id,
-        type: SyncType.FULL,
+        type: SyncJobsType.FULL,
         status: SyncStatus.RUNNING,
         job_id: `job-test`,
         nangoConnection: connection

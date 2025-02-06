@@ -1,7 +1,7 @@
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, DBSyncConfig } from '@nangohq/types';
 import type { NangoConnection } from './Connection.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { SyncConfig, Action } from './Sync.js';
+import type { Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number | undefined;
@@ -21,12 +21,15 @@ export interface Config extends TimestampsAndDeleted {
 export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
-    scopes: string;
+    scopes: string | undefined;
     auth_mode: AuthModeType;
-    app_link?: string;
+    custom: any;
+    app_link: string | null | undefined;
     has_webhook: boolean;
-    webhook_url?: string;
-    syncs: SyncConfig[];
+    webhook_url: string | null;
+    webhook_secret: string | null;
+    has_webhook_user_defined_secret: boolean;
+    syncs: (Pick<DBSyncConfig, 'created_at' | 'updated_at'> & { name: string; description: string | null })[];
     actions: Action[];
     created_at: Date;
     connections: NangoConnection[];
@@ -37,6 +40,6 @@ export interface IntegrationWithCreds extends Integration {
 export interface Integration {
     unique_key: string;
     provider: string;
-    syncs: SyncConfig[];
+    syncs: (Pick<DBSyncConfig, 'created_at' | 'updated_at'> & { name: string; description: string | null })[];
     actions: Action[];
 }

@@ -6,7 +6,7 @@ import type { Config, Job, NangoConnection, Sync } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
-    SyncType,
+    SyncJobsType,
     configService,
     createSyncJob,
     environmentService,
@@ -79,7 +79,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         syncJob = await createSyncJob({
             sync_id: sync.id,
-            type: SyncType.INCREMENTAL,
+            type: SyncJobsType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,

@@ -232,9 +232,7 @@ export const ScriptSettings: React.FC<{
                         )}
                         {isSync && (
                             <>
-                                <InfoBloc title="Sync Type">
-                                    {flow.sync_type?.toLocaleLowerCase() === 'full' ? 'Full refresh only' : 'Incremental sync'}
-                                </InfoBloc>
+                                <InfoBloc title="Sync Type">{flow.sync_type === 'full' ? 'Full refresh only' : 'Incremental sync'}</InfoBloc>
                                 <InfoBloc title="Sync Frequency">
                                     <div className="capitalize">{flow.runs}</div>
                                     {!flow.is_public && (

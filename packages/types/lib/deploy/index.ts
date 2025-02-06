@@ -7,7 +7,7 @@ export interface SyncDeploymentResult {
     providerConfigKey: string;
     type: ScriptTypeLiteral;
     last_deployed?: Date;
-    input?: string | LegacySyncModelSchema | undefined;
+    input?: string | LegacySyncModelSchema | undefined | null;
     models: string | string[];
     id?: number | undefined;
 
