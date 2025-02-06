@@ -82,8 +82,9 @@ export async function sendAuth({
         webhooks.push({ url: webhookSettings.secondary_url, type: 'secondary webhook url' });
     }
 
+    const action = operation === 'creation' ? 'connection_create' : 'connection_refresh_failed';
     const logCtx = await logContextGetter.create(
-        { operation: { type: 'webhook', action: 'sync' } },
+        { operation: { type: 'webhook', action } },
         {
             account,
             environment,
