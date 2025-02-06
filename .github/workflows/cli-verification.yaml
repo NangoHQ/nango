@@ -29,10 +29,12 @@ jobs:
                   registry-url: 'https://npm.pkg.github.com'
                   scope: '@nangohq'
                   always-auth: true
+
             - name: Build
               run: |
                   npm ci
                   npm run ts-build
+
             - name: Publish packages to github registry so they can be bumped
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,17 +65,18 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
-              continue-on-error: true
               run: |
                   GIT_HASH=$(git rev-parse HEAD)
                   echo "hash=${GIT_HASH}" >> "$GITHUB_OUTPUT"
-                  bash ./scripts/publish.sh 0.0.1-$GIT_HASH
+                  npx zx ./scripts/publish.mjs --version=0.0.1-$GIT_HASH --skip-cli
 
             - name: Publish the cli privately under the correct scope
               working-directory: packages/cli
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
+                  GIT_HASH=$(git rev-parse HEAD)
+                  npm version "0.0.1-$GIT_HASH" --no-git-tag-version --allow-same-version
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
                   npm publish
     verify:
@@ -102,6 +105,7 @@ jobs:
                   EXPECTED_VERSION="Nango CLI version: 0.0.1-$GIT_HASH"
                   [ "$VERSION_OUTPUT" = "$EXPECTED_VERSION" ] || { echo "Version mismatch. Expected: $EXPECTED_VERSION, got: $VERSION_OUTPUT"; exit 1; }
                   npx nango version --debug
-                  npx nango init --debug
+                  npx nango init nango-integrations --debug
                   cd nango-integrations
                   npx nango generate --debug
+                  npx nango compile --debug

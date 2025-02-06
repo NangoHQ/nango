@@ -60,6 +60,7 @@ class ParserService {
             'setFieldMapping',
             'getMetadata',
             'setMetadata',
+            'proxy',
             'get',
             'post',
             'put',
@@ -70,7 +71,7 @@ class ParserService {
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
@@ -78,7 +79,12 @@ class ParserService {
             setFieldMapping: 'setMetadata'
         };
 
-        const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
+        const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
+        const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
+        const callsReferencingModelsToCheck = callsBatchingRecords.concat('setMergingStrategy');
+        const proxyLines: number[] = [];
+        const batchingRecordsLines: number[] = [];
+        const setMergingStrategyLines: number[] = [];
 
         traverseFn(ast, {
             CallExpression(path: NodePath<t.CallExpression>) {
@@ -117,20 +123,23 @@ class ParserService {
 
                     if (callsReferencingModelsToCheck.includes(callee.property.name)) {
                         const args = path.node.arguments as t.Expression[];
-                        const modelArg = args[args.length - 1];
-                        if (t.isStringLiteral(modelArg) && !modelNames.includes(modelArg.value)) {
-                            console.log(
-                                chalk.red(
-                                    `"${
-                                        modelArg.value
-                                    }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
-                                        ', '
-                                    )}`
-                                )
-                            );
-                            usedCorrectly = false;
+                        if (args.length > 1) {
+                            const modelArg = args[args.length - 1];
+                            if (t.isStringLiteral(modelArg) && !modelNames.includes(modelArg.value)) {
+                                console.log(
+                                    chalk.red(
+                                        `"${
+                                            modelArg.value
+                                        }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(
+                                            ', '
+                                        )}`
+                                    )
+                                );
+                                usedCorrectly = false;
+                            }
                         }
                     }
+
                     const callArguments = path.node.arguments;
                     if (callArguments.length > 0 && t.isObjectExpression(callArguments[0])) {
                         let retriesPropertyFound = false;
@@ -155,6 +164,16 @@ class ParserService {
                             );
                             retryOnUsedCorrectly = false;
                         }
+                    }
+
+                    if (callsProxy.includes(callee.property.name)) {
+                        proxyLines.push(lineNumber);
+                    }
+                    if (callsBatchingRecords.includes(callee.property.name)) {
+                        batchingRecordsLines.push(lineNumber);
+                    }
+                    if (callee.property.name === 'setMergingStrategy') {
+                        setMergingStrategyLines.push(lineNumber);
                     }
                 }
             },
@@ -198,6 +217,21 @@ class ParserService {
                 }
             }
         });
+
+        if (
+            batchingRecordsLines.length > 0 &&
+            setMergingStrategyLines.length > 0 &&
+            setMergingStrategyLines.some((line) => line > Math.min(...batchingRecordsLines))
+        ) {
+            console.log(
+                chalk.red(`setMergingStrategy should be called before any batching records function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`)
+            );
+            usedCorrectly = false;
+        }
+        if (proxyLines.length > 0 && setMergingStrategyLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...proxyLines))) {
+            console.log(chalk.red(`setMergingStrategy should be called before any proxy function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`));
+            usedCorrectly = false;
+        }
 
         return areAwaited && usedCorrectly && noReturnUsed && retryOnUsedCorrectly;
     }

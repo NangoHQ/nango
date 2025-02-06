@@ -882,7 +882,7 @@ paths:
                                                                             example: 'string'
                                                 sync_type:
                                                     type: string
-                                                    example: 'INCREMENTAL'
+                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
@@ -1107,14 +1107,9 @@ paths:
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/trigger:
         post:
@@ -1433,6 +1428,45 @@ paths:
                                 properties:
                                     message:
                                         type: string
+
+                '424':
+                    description: Action http error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
+                                            upstream:
+                                                type: object
+                                                properties:
+                                                    status_code:
+                                                        type: integer
+                                                    headers:
+                                                        type: object
+                                                        properties:
+                                                            content-type:
+                                                                type: string
+                                                        patternProperties:
+                                                            '^x-rate':
+                                                                type: string
+                                                    body:
+                                                        type: object
+                                                        additionalProperties: true
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
+                                    required:
+                                        - error
 
     /environment-variables:
         get:

@@ -1,12 +1,10 @@
 ---
 title: Slack
 sidebarTitle: Slack
-provider: slack
 ---
 
-import Overview from "/snippets/overview.mdx";
-import PreBuiltTooling from "/snippets/generated/slack/PreBuiltTooling.mdx";
-
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/slack/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/slack/PreBuiltUseCases.mdx"
 
 <Overview />
@@ -16,16 +14,47 @@ import PreBuiltUseCases from "/snippets/generated/slack/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup [here](https://api.slack.com/developer-program). |
+| Paid test account | ✅ Not required | Provision a sandbox for free from your developer account. Note that you will need to provide a payment method. The payment method is used for identity verification purposes only; you will not be charged. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required if you intend to list your app in the Slack Marketplace |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
+<Steps>
+  <Step title="Create a developer account">
+    Go to [Slack Developer Program signup page](https://api.slack.com/developer-program) and click Join the Program. 
+  </Step>
+  <Step title="Create & configure a Slack app">
+    Start creating a Slack app by clicking on the _Your Apps_ button then _Create New App_.
 
-_No setup guide yet._
+    Choose how you'd like to configure your app's scopes and settings. You can do this using a manifest file or starting from scratch. 
+    
+    After choosing how you'd like to configure your app, add your app's name and pick a workspace to develop your app in.
+
+    In the _Basic Information_ tab, copy/paste your app's `Client ID` and `Client Secret`, you will need to specify it in Nango later on.
+    </Step>
+
+    <Step title="Set up the OAuth scopes">
+
+    In the _OAuth & Permissions_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+
+    Still in the _OAuth & Permissions_ tab, under _Scopes_, add the scopes that are relevant to how you want to consume Slack's API.
+
+    There are 2 types of scopes, `Bot Token Scopes` and `User Token Scopes`. Bot tokens represent a bot associated with an app installed in a workspace. They govern what your app can access. They will be added to Nango when creating a Slack integration.
+    
+    User Token Scopes access user data and act on behalf of users that authorize them. They will be added to Nango when creating a Slack connection.
+  </Step>
+
+  <Step title="Create a Slack Developer Sandbox">
+    If you don't have a Slack Developer Sandbox already, head over to Slack's [Developer Program dashboard](https://api.slack.com/developer-program/dashboard) and provision one to test your integration. 
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 

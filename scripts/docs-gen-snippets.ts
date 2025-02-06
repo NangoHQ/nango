@@ -30,23 +30,11 @@ for (const [integration, config] of Object.entries<any>(flows.integrations)) {
     useCases[integration] = buildEndpoints('action', config.actions, integration).concat(buildEndpoints('sync', config.syncs, integration));
 }
 
+const providersHandled: string[] = [];
 const files = await fs.readdir(docsPath);
 for (const file of files) {
     if (file.endsWith('.mdx')) {
-        const filePath = path.join(docsPath, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const lines = content.split('\n');
-
-        // find the integration line
-        const providerLine = lines.find((line) => line.startsWith('provider: '));
-        if (!providerLine) {
-            throw new Error(`No provider line found in ${file}`);
-        }
-
-        const provider = providerLine.split('provider: ')[1]?.trim();
-        if (!provider) {
-            throw new Error(`Couldn't parse provider from ${file}`);
-        }
+        const provider = path.basename(file, '.mdx');
         const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
 
         await fs.mkdir(snippetPath, { recursive: true });
@@ -61,7 +49,17 @@ for (const file of files) {
 
         const casesSnippet = useCasesSnippet(useCases[provider]);
         await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
+
+        providersHandled.push(provider);
     }
+}
+
+const allProviders = Object.keys(providers);
+const missingDocs = allProviders.filter((provider) => !providersHandled.includes(provider));
+
+if (missingDocs.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 
 function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {

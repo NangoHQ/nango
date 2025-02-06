@@ -1,7 +1,7 @@
 import type { OnEventType } from '../scripts/on-events/api';
 
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-export type SyncTypeLiteral = 'incremental' | 'full' | 'FULL' | 'INCREMENTAL'; // TODO: There has been some mixed type in the DB, fix casing
+export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
 export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
 

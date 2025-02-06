@@ -2,12 +2,11 @@ import { orchestratorClient } from '../../clients.js';
 import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
 import { NangoError } from '@nangohq/shared';
-import type { NangoProps } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
-import type { ApiError, RunnerOutputError } from '@nangohq/types';
+import type { ApiError, NangoProps, RunnerOutputError } from '@nangohq/types';
 import type { ClientError } from '@nangohq/nango-orchestrator';
 import { toNangoError } from './utils/errors.js';
 

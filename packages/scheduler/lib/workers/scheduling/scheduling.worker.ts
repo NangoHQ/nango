@@ -82,7 +82,7 @@ export class SchedulingChild {
 
     async start(): Promise<void> {
         logger.info('Starting scheduling...');
-        // eslint-disable-next-line no-constant-condition
+
         while (!this.cancelled) {
             await this.schedule();
             await setTimeout(this.tickIntervalMs);

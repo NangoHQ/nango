@@ -140,6 +140,7 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'sync:unpause': 'Sync schedule started',
     'webhook:incoming': 'Received a webhook',
     'webhook:forward': 'Forwarding Webhook',
+    'webhook:sync': 'Delivering Webhook from Sync',
     'events:post_connection_creation': 'Post connection creation script execution',
     'events:pre_connection_deletion': 'Pre connection creation script execution'
 };

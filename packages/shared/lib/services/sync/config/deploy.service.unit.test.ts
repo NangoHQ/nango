@@ -5,12 +5,10 @@ import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
-import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { DBTeam, DBEnvironment, CleanedIncomingFlowConfig } from '@nangohq/types';
-import type { SyncConfig } from '../../../models/Sync.js';
 import db from '@nangohq/database';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
@@ -121,8 +119,6 @@ describe('Sync config create', () => {
             }
         ];
 
-        mockErrorManagerReport();
-
         vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
             return Promise.resolve({
                 id: 1,
@@ -155,9 +151,18 @@ describe('Sync config create', () => {
                     track_deletes: false,
                     version: '1',
                     enabled: true,
-                    webhook_subscriptions: null
+                    webhook_subscriptions: null,
+                    attributes: {},
+                    pre_built: false,
+                    is_public: false,
+                    metadata: {},
+                    input: null,
+                    sync_type: 'full',
+                    models_json_schema: null,
+                    created_at: new Date(),
+                    updated_at: new Date()
                 }
-            ] as SyncConfig[]);
+            ]);
         });
 
         vi.spyOn(SyncConfigService, 'getSyncConfigByParams').mockImplementation(() => {
@@ -176,8 +181,17 @@ describe('Sync config create', () => {
                 track_deletes: false,
                 version: '1',
                 enabled: true,
-                webhook_subscriptions: null
-            } as SyncConfig);
+                webhook_subscriptions: null,
+                attributes: {},
+                pre_built: false,
+                is_public: false,
+                metadata: {},
+                input: null,
+                sync_type: 'full',
+                models_json_schema: null,
+                created_at: new Date(),
+                updated_at: new Date()
+            });
         });
 
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockImplementation(() => {
@@ -196,8 +210,17 @@ describe('Sync config create', () => {
                 track_deletes: false,
                 version: '1',
                 enabled: true,
-                webhook_subscriptions: null
-            } as SyncConfig);
+                webhook_subscriptions: null,
+                attributes: {},
+                pre_built: false,
+                is_public: false,
+                metadata: {},
+                input: null,
+                sync_type: 'full',
+                models_json_schema: null,
+                created_at: new Date(),
+                updated_at: new Date()
+            });
         });
 
         vi.spyOn(connectionService, 'shouldCapUsage').mockImplementation(() => {

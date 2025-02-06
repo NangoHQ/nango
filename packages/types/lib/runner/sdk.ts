@@ -17,10 +17,6 @@ export interface RunArgs {
     optionalProviderConfigKey?: string;
 }
 
-export interface DryRunServiceInterface {
-    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
-}
-
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;

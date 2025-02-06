@@ -86,13 +86,11 @@ jobs:
                   RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
                   INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
               run: |
-                  bash ./scripts/deploy/runners.bash
-
                   NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev" }')[inputs.stage] }}
                   curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners/rollout" \
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
-                    --data "{ \"commitHash\": \"${{ github.sha }}\" }"
+                    --data "{ \"image\": \"nangohq/nango-runner:${{ github.sha }}\" }"
 
     deploy_persist:
         if: inputs.service == 'persist'

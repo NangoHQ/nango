@@ -3,7 +3,6 @@ exports.config = { transaction: false };
 exports.up = async function (knex) {
     let id = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
         const environments = await knex.select('*').from('_nango_environments').where('id', '>', id).orderBy('id').limit(100);
 

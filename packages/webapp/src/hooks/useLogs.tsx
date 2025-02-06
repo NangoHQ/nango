@@ -17,7 +17,9 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
         }
 
         setLoading(true);
-        signal.current = new AbortController();
+        const mySignal = new AbortController();
+        mySignal.signal.throwIfAborted();
+        signal.current = mySignal;
         try {
             let period = body.period;
             // Slide the window automatically when live
@@ -30,7 +32,7 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
             const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({ ...body, period, cursor }),
-                signal: signal.current.signal
+                signal: mySignal.signal
             });
             if (res.status !== 200) {
                 return { error: (await res.json()) as SearchOperations['Errors'] };
@@ -70,9 +72,7 @@ export function useSearchOperations(env: string, body: SearchOperations['Body'],
     // }, [enabled, env, body.limit, body.states, body.integrations, body.period, body.types, body.connections, body.syncs]);
 
     function trigger(cursor?: SearchOperations['Body']['cursor']) {
-        if (!loading) {
-            void fetchData(cursor);
-        }
+        void fetchData(cursor);
     }
 
     return { data, error, loading, trigger, manualFetch };

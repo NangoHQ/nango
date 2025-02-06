@@ -7,7 +7,8 @@ sidebarTitle: Greenhouse
 # Overview
 
 To authenticate with Greenhouse, you need one key piece of information:
-1. **API key** - Your Greenhouse Access Key
+1. **API Key** - Your Greenhouse Access Key.
+2. **Greenhouse API Domain** - This is the domain to the Greenhouse API you would wish to connect to.
 
 This guide will walk you through finding or creating those credentials within Greenhouse.
 
@@ -15,40 +16,34 @@ This guide will walk you through finding or creating those credentials within Gr
 
 - You must set up an account with Greenhouse.
 
-#### Step 1: Finding Greenhouse API Key
+#### Step 1: Finding your Greenhouse API Domain
+- Your **API domain** is the resource domain for the API you wish to connect to. For example: `harvest` for Greenhouse (Harvest API).
 
-1. Log into your Greenhouse account and click the `Configure` ⚙️ icon on your navigation bar, then click Dev Center.
-2. Click API Credential Management.
 
+#### Step 2: Finding Your Greenhouse API Key
+
+1. Log into your Greenhouse account and click the **Configure** ⚙️ icon on your navigation bar, then click Dev Center.
 <img src="/integrations/all/greenhouse-basic/greenhouse_1.png" />
-
+2. Click **API Credential Management**.
 <img src="/integrations/all/greenhouse-basic/greenhouse_2.png" />
-
-3. Click Create New API Key.
-
+3. Click **Create New API Key**.
+<img src="/integrations/all/greenhouse-basic/greenhouse_3.png" />
 4. Make the following selections:
     - API type: Job board
-    - Description: Give your API key a descriptive name
+    - Description: Give your API Key a descriptive name
 
-5. When finished, click `Create` to generate the API key.
+5. When finished, click **Create** to generate the API Key.
 
-6. After the key is created, click `Copy`. Paste the API key in a secure location.
+6. After the key is created, click **Copy**. Paste the API Key in a secure location.
 
-7. Click `I have stored the API Key`.
+7. Click **I have stored the API Key**.
 
 8. Note your greenhouse.io domain in your browser.
 
-
-#### Step 2: Finding your Greenhouse domain
-1. Your domain is available in your browser
-
 #### Step 3: Connect Your Greenhouse Account
+Once you have your **API Key** and **Greenhouse API Domain**:
+1. Open the form where you need to authenticate with Greenhouse (basic auth).
+2. Enter the **API Key** and **Greenhouse API Domain** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/greenhouse-basic/nango_connect_ui.png" />
-
-To authenticate using your API credentials, navigate to the Greenhouse authentication form.
-Enter your credentials as follows:
-- Greenhouse Domain: Your Greenhouse Domain in the browser
-- API key: Your Greenhouse API key
-
-Click "Connect" to complete the authentication.

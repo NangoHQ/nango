@@ -1,14 +1,14 @@
 import type knex from 'knex';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
-import type { CommitHash, Deployment } from '@nangohq/types';
+import type { Deployment } from '@nangohq/types';
 import { FleetError } from '../utils/errors.js';
 
 export const DEPLOYMENTS_TABLE = 'deployments';
 
 interface DBDeployment {
     readonly id: number;
-    readonly commit_id: CommitHash;
+    readonly image: string;
     readonly created_at: Date;
     readonly superseded_at: Date | null;
 }
@@ -17,7 +17,7 @@ const DBDeployment = {
     to(dbDeployment: DBDeployment): Deployment {
         return {
             id: dbDeployment.id,
-            commitId: dbDeployment.commit_id,
+            image: dbDeployment.image,
             createdAt: dbDeployment.created_at,
             supersededAt: dbDeployment.superseded_at
         };
@@ -25,22 +25,22 @@ const DBDeployment = {
     from(deployment: Deployment): DBDeployment {
         return {
             id: deployment.id,
-            commit_id: deployment.commitId,
+            image: deployment.image,
             created_at: deployment.createdAt,
             superseded_at: deployment.supersededAt
         };
     }
 };
 
-export async function create(db: knex.Knex, commitId: CommitHash): Promise<Result<Deployment>> {
+export async function create(db: knex.Knex, image: string): Promise<Result<Deployment>> {
     try {
         return await db.transaction(async (trx) => {
-            // do nothing if commitId is already active deployment
+            // do nothing if already active deployment
             const active = await getActive(db);
             if (active.isErr()) {
                 return Err(active.error);
             }
-            if (active.value?.commitId === commitId) {
+            if (active.value?.image === image) {
                 return Ok(active.value);
             }
 
@@ -54,18 +54,18 @@ export async function create(db: knex.Knex, commitId: CommitHash): Promise<Resul
                 .update({ superseded_at: now });
             // insert new deployment
             const dbDeployment: Omit<DBDeployment, 'id'> = {
-                commit_id: commitId,
+                image,
                 created_at: now,
                 superseded_at: null
             };
             const [inserted] = await trx.into<DBDeployment>(DEPLOYMENTS_TABLE).insert(dbDeployment).returning('*');
             if (!inserted) {
-                return Err(new Error(`Error: no deployment '${commitId}' created`));
+                return Err(new Error(`Error: no deployment for '${image}' created`));
             }
             return Ok(DBDeployment.to(inserted));
         });
     } catch (err) {
-        return Err(new FleetError(`deployment_creation_failed`, { cause: err, context: { commitId } }));
+        return Err(new FleetError(`deployment_creation_failed`, { cause: err, context: { image } }));
     }
 }
 

@@ -24,71 +24,21 @@ import {
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    trackFetch,
     syncCommandToOperation,
     getSyncConfigRaw
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
-import type { LastAction } from '@nangohq/records';
 import { getHeaders, isHosted, truncateJson } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getInterval } from '@nangohq/nango-yaml';
+import { getPublicRecords } from './records/getRecords.js';
 
 const orchestrator = getOrchestrator();
 
 class SyncController {
-    public async getAllRecords(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
-            const environmentId = res.locals['environment'].id;
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
-
-            if (modifiedAfter) {
-                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
-
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            if (next_cursor) {
-                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
-
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
-
-            if (error || !connection) {
-                const nangoError = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentId });
-                errorManager.errResFromNangoErr(res, nangoError);
-                return;
-            }
-
-            const result = await recordsService.getRecords({
-                connectionId: connection.id as number,
-                model: model as string,
-                modifiedAfter: (delta || modified_after) as string,
-                limit: limit as string,
-                filter: filter as LastAction,
-                cursor: cursor as string
-            });
-
-            if (result.isErr()) {
-                errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.error));
-                return;
-            }
-            await trackFetch(connection.id as number);
-            res.send(result.value);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment } = res.locals;
@@ -240,7 +190,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getAllRecords(req, res, next);
+                getPublicRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
@@ -337,7 +287,20 @@ class SyncController {
                 span.setTag('nango.error', actionResponse.error);
                 await logCtx.failed();
 
-                errorManager.errResFromNangoErr(res, actionResponse.error);
+                if (actionResponse.error.type === 'script_http_error') {
+                    res.status(424).json({
+                        error: {
+                            payload: actionResponse.error.payload,
+                            code: actionResponse.error.type,
+                            ...(actionResponse.error.additional_properties && 'upstream_response' in actionResponse.error.additional_properties
+                                ? { upstream: actionResponse.error.additional_properties['upstream_response'] }
+                                : {})
+                        }
+                    });
+                } else {
+                    errorManager.errResFromNangoErr(res, actionResponse.error);
+                }
+
                 span.finish();
                 return;
             }
@@ -767,7 +730,12 @@ class SyncController {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;
                 }
-                newFrequency = syncConfigs[0]!.runs;
+                const selected = syncConfigs[0];
+                if (!selected || !selected.runs) {
+                    res.status(400).send({ message: 'failed to find sync' });
+                    return;
+                }
+                newFrequency = selected.runs;
             }
 
             await setFrequency(syncId, frequency);

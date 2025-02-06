@@ -38,7 +38,7 @@ export const GettingStarted: React.FC = () => {
         try {
             analyticsTrack('web:getting_started:video:play');
             // @ts-expect-error I don't understand
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             new window.YT.Player('player', {
                 height: '100%',
                 width: '100%',

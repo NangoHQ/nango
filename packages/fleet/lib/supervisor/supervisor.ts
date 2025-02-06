@@ -9,7 +9,7 @@ import { Err, errorToObject, Ok, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from '../utils/errors.js';
 import type { Node, NodeConfigOverride } from '../types.js';
-import type { Deployment } from '@nangohq/types';
+import type { Deployment, NodeConfig } from '@nangohq/types';
 import { setTimeout } from 'node:timers/promises';
 import type { NodeProvider } from '../node-providers/node_provider.js';
 import { envs } from '../env.js';
@@ -121,7 +121,7 @@ export class Supervisor {
         this.state = 'stopped';
     }
 
-    private async plan(cursor?: number): Promise<Result<Operation[]>> {
+    private async plan(): Promise<Result<Operation[]>> {
         const activeSpan = tracer.scope().active();
         return tracer.trace('fleet.supervisor.plan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (span) => {
             const getDeployment = await deployments.getActive(this.dbClient.db);
@@ -138,22 +138,20 @@ export class Supervisor {
             const plan: Operation[] = [];
 
             const search = await nodes.search(this.dbClient.db, {
-                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR'],
-                ...(cursor ? { cursor } : {})
+                states: ['PENDING', 'STARTING', 'RUNNING', 'OUTDATED', 'FINISHING', 'IDLE', 'TERMINATED', 'ERROR']
             });
             if (search.isErr()) {
                 span?.setTag('error', search.error);
                 return Err(search.error);
             }
-
-            const routingIds = Array.from(search.value.nodes.keys());
+            const routingIds = Array.from(search.value.keys());
             const configOverrides = await nodeConfigOverrides.search(this.dbClient.db, { routingIds });
             if (configOverrides.isErr()) {
                 span?.setTag('error', configOverrides.error);
                 return Err(configOverrides.error);
             }
 
-            for (const [routingId, nodes] of search.value.nodes) {
+            for (const [routingId, nodes] of search.value) {
                 // Start pending nodes
                 plan.push(...(nodes.PENDING || []).map<Operation>((node) => ({ type: 'START', node })));
 
@@ -184,15 +182,19 @@ export class Supervisor {
                     if (!configOverride) {
                         return false;
                     }
-                    // image override might have a commitId
-                    // so we need to check if the image override with commitId is the same as the node's image
-                    // or if the image override (without commitId) + current deployment commitId is the same as the node's image
-                    return !(
-                        (configOverride.image === node.image || `${configOverride.image}:${deployment.commitId}` === node.image) &&
-                        node.cpuMilli === configOverride.cpuMilli &&
-                        node.memoryMb === configOverride.memoryMb &&
-                        node.storageMb === configOverride.storageMb
-                    );
+                    if (configOverride.image && configOverride.image !== node.image) {
+                        return true;
+                    }
+                    if (configOverride.cpuMilli && configOverride.cpuMilli !== node.cpuMilli) {
+                        return true;
+                    }
+                    if (configOverride.memoryMb && configOverride.memoryMb !== node.memoryMb) {
+                        return true;
+                    }
+                    if (configOverride.storageMb && configOverride.storageMb !== node.storageMb) {
+                        return true;
+                    }
+                    return false;
                 };
                 plan.push(
                     ...(nodes.RUNNING || []).flatMap<Operation>((node) => {
@@ -262,17 +264,6 @@ export class Supervisor {
                     })
                 );
             }
-
-            // Recursively fetch next page of nodes
-            if (search.value.nextCursor) {
-                const nextPagePlan = await this.plan(search.value.nextCursor);
-                if (nextPagePlan.isErr()) {
-                    logger.error('Failed to get next plan:', nextPagePlan.error);
-                } else {
-                    plan.push(...nextPagePlan.value);
-                }
-            }
-
             return Ok(plan);
         });
     }
@@ -332,7 +323,10 @@ export class Supervisor {
             deployment: Deployment;
         }
     ): Promise<Result<Node>> {
-        let newNodeConfig = this.nodeProvider.defaultNodeConfig;
+        let newNodeConfig: NodeConfig = {
+            ...this.nodeProvider.defaultNodeConfig,
+            image: deployment.image
+        };
 
         const nodeConfigOverride = await nodeConfigOverrides.search(db, { routingIds: [routingId] });
         if (nodeConfigOverride.isErr()) {
@@ -340,13 +334,18 @@ export class Supervisor {
         }
         const nodeConfigOverrideValue = nodeConfigOverride.value.get(routingId);
         if (nodeConfigOverrideValue) {
-            newNodeConfig = nodeConfigOverrideValue;
+            newNodeConfig = {
+                image: nodeConfigOverrideValue.image || newNodeConfig.image,
+                cpuMilli: nodeConfigOverrideValue.cpuMilli || newNodeConfig.cpuMilli,
+                memoryMb: nodeConfigOverrideValue.memoryMb || newNodeConfig.memoryMb,
+                storageMb: nodeConfigOverrideValue.storageMb || newNodeConfig.storageMb
+            };
         }
 
         return nodes.create(db, {
             routingId,
             deploymentId: deployment.id,
-            image: newNodeConfig.image.includes(':') ? newNodeConfig.image : `${newNodeConfig.image}:${deployment.commitId}`,
+            image: newNodeConfig.image,
             cpuMilli: newNodeConfig.cpuMilli,
             memoryMb: newNodeConfig.memoryMb,
             storageMb: newNodeConfig.storageMb

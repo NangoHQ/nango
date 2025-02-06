@@ -5,7 +5,7 @@ import * as deployments from './models/deployments.js';
 import * as nodes from './models/nodes.js';
 import * as nodeConfigOverrides from './models/node_config_overrides.js';
 import type { Node } from './types.js';
-import type { CommitHash, Deployment, RoutingId } from '@nangohq/types';
+import type { Deployment, RoutingId } from '@nangohq/types';
 import { FleetError } from './utils/errors.js';
 import { setTimeout } from 'node:timers/promises';
 import { Supervisor } from './supervisor/supervisor.js';
@@ -14,6 +14,7 @@ import type { FleetId } from './instances.js';
 import { envs } from './env.js';
 import { withPgLock } from './utils/locking.js';
 import { noopNodeProvider } from './node-providers/noop.js';
+import { waithUntilHealthy } from './utils/url.js';
 
 const defaultDbUrl =
     envs.NANGO_DATABASE_URL ||
@@ -56,15 +57,26 @@ export class Fleet {
         }
     }
 
-    public async rollout(commitId: CommitHash): Promise<Result<Deployment>> {
+    public async rollout(image: string, options?: { verifyImage?: boolean }): Promise<Result<Deployment>> {
+        if (options?.verifyImage !== false) {
+            const [name, tag] = image.split(':');
+            if (!name || !tag) {
+                return Err(new FleetError('fleet_rollout_invalid_image', { context: { image } }));
+            }
+            const res = await fetch(`https://hub.docker.com/v2/repositories/${name}/tags/${tag}`);
+            if (!res.ok) {
+                return Err(new FleetError('fleet_rollout_image_not_found', { context: { image } }));
+            }
+        }
+
         return this.dbClient.db.transaction(async (trx) => {
-            const deployment = await deployments.create(trx, commitId);
+            const deployment = await deployments.create(trx, image);
             if (deployment.isErr()) {
                 throw deployment.error;
             }
 
             // rolling out cancels all nodeConfigOverrides images
-            await nodeConfigOverrides.resetImage(trx, { image: this.nodeProvider.defaultNodeConfig.image });
+            await nodeConfigOverrides.resetImage(trx);
 
             return deployment;
         });
@@ -85,16 +97,16 @@ export class Fleet {
             if (search.isErr()) {
                 return Err(search.error);
             }
-            const running = search.value.nodes.get(routingId)?.RUNNING || [];
+            const running = search.value.get(routingId)?.RUNNING || [];
             if (running[0]) {
                 return Ok(running[0]);
             }
-            const outdated = search.value.nodes.get(routingId)?.OUTDATED || [];
+            const outdated = search.value.get(routingId)?.OUTDATED || [];
             if (outdated[0]) {
                 return Ok(outdated[0]);
             }
-            const starting = search.value.nodes.get(routingId)?.STARTING || [];
-            const pending = search.value.nodes.get(routingId)?.PENDING || [];
+            const starting = search.value.get(routingId)?.STARTING || [];
+            const pending = search.value.get(routingId)?.PENDING || [];
 
             if (!starting[0] && !pending[0]) {
                 await withPgLock({
@@ -125,6 +137,12 @@ export class Fleet {
         const valid = await this.nodeProvider.verifyUrl(url);
         if (valid.isErr()) {
             return Err(valid.error);
+        }
+        // in Render, network configuration can take a long time to be applied and accessible to other services
+        // we therefore wait until the health url is reachable
+        const healthy = await waithUntilHealthy({ url: `${url}/health`, timeoutMs: envs.FLEET_TIMEOUT_HEALTHY_MS });
+        if (healthy.isErr()) {
+            return Err(healthy.error);
         }
         return await nodes.register(this.dbClient.db, { nodeId, url });
     }
