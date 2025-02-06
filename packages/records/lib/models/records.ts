@@ -1,7 +1,16 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { db } from '../db/client.js';
-import type { FormattedRecord, FormattedRecordWithMetadata, GetRecordsResponse, LastAction, RecordCount, ReturnedRecord, UpsertSummary } from '../types.js';
+import type {
+    CombinedFilterAction,
+    FormattedRecord,
+    FormattedRecordWithMetadata,
+    GetRecordsResponse,
+    LastAction,
+    RecordCount,
+    ReturnedRecord,
+    UpsertSummary
+} from '../types.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
 import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { removeDuplicateKey, getUniqueId } from '../helpers/uniqueKey.js';
@@ -47,14 +56,16 @@ export async function getRecords({
     modifiedAfter,
     limit,
     filter,
-    cursor
+    cursor,
+    externalIds
 }: {
     connectionId: number;
     model: string;
     modifiedAfter?: string | undefined;
     limit?: number | string | undefined;
-    filter?: LastAction | undefined;
+    filter?: CombinedFilterAction | LastAction | undefined;
     cursor?: string | undefined;
+    externalIds?: string[] | undefined;
 }): Promise<Result<GetRecordsResponse>> {
     try {
         if (!model) {
@@ -87,6 +98,10 @@ export async function getRecords({
                         .where('updated_at', '>', decodedCursor.sort)
                         .orWhere((builder) => void builder.where('updated_at', '=', decodedCursor.sort).andWhere('id', '>', decodedCursor.id))
             );
+        }
+
+        if (externalIds) {
+            query = query.whereIn('external_id', externalIds);
         }
 
         if (limit) {

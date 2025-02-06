@@ -532,6 +532,7 @@
                 "integrations/all/salesforce-experience-cloud",
                 "integrations/all/salesforce-sandbox",
                 "integrations/all/salesloft",
+                "integrations/all/sap-concur",
                 "integrations/all/sap-success-factors",
                 "integrations/all/scrapedo",
                 "integrations/all/sedna",

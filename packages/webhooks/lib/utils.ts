@@ -29,8 +29,7 @@ export const NON_FORWARDABLE_HEADERS = [
 function formatLogResponse(response: AxiosResponse): MessageRow['response'] {
     return {
         code: response.status,
-        headers: response.headers ? redactHeaders({ headers: response.headers }) : {},
-        body: response.data
+        headers: response.headers ? redactHeaders({ headers: response.headers }) : {}
     };
 }
 

@@ -180,4 +180,84 @@ describe(`GET ${route}`, () => {
             ]
         });
     });
+
+    it('should filter', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        await records.upsert({
+            records: format
+                .formatRecords({
+                    data: [
+                        { id: 'record1', foo: 'bar' },
+                        { id: 'record2', foo: 'bar' },
+                        { id: 'record3', foo: 'bar' }
+                    ],
+                    syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
+                    syncJobId: 1,
+                    connectionId: conn.id!,
+                    model: 'Ticket'
+                })
+                .unwrap(),
+            connectionId: conn.id!,
+            environmentId: env.id,
+            model: 'Ticket'
+        });
+
+        // Added
+        const resAdded = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', filter: 'added' },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(resAdded.json);
+        expect(resAdded.json.records).toHaveLength(3);
+
+        await records.upsert({
+            records: format
+                .formatRecords({
+                    data: [{ id: 'record1', foo: 'bar2' }],
+                    syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
+                    syncJobId: 2,
+                    connectionId: conn.id!,
+                    model: 'Ticket'
+                })
+                .unwrap(),
+            connectionId: conn.id!,
+            environmentId: env.id,
+            model: 'Ticket'
+        });
+
+        // Updated
+        const resUpdated = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', filter: 'UPDATED' },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(resUpdated.json);
+        expect(resUpdated.json.records).toHaveLength(1);
+
+        // Deleted
+        const resDeleted = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', filter: 'deleted' },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(resDeleted.json);
+        expect(resDeleted.json.records).toHaveLength(0);
+
+        // Multiple filters
+        const resMultiple = await api.fetch(route, {
+            method: 'GET',
+            token: env.secret_key,
+            query: { model: 'Ticket', filter: 'added,UPDATED' },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+
+        isSuccess(resMultiple.json);
+        expect(resMultiple.json.records).toHaveLength(3);
+    });
 });
