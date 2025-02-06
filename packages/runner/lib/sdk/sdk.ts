@@ -375,8 +375,34 @@ export class NangoSyncRunner extends NangoSyncBase {
     public async getObjectsByIds<T = any>(ids: string[], model: string): Promise<Record<string, T>> {
         this.throwIfAborted();
 
-        await this.log(`Fetching objects by ids`, { ids, model }, { level: 'debug' });
-        return {};
+        const objects: Record<string, T> = {};
+
+        // load records in batches of 100
+        let cursor: string | undefined = undefined;
+        for (let i = 0; i < ids.length; i += 100) {
+            const res = await this.persistClient.getRecords({
+                model,
+                externalIds: ids.slice(i, i + 100),
+                environmentId: this.environmentId,
+                nangoConnectionId: this.nangoConnectionId!,
+                cursor
+            });
+
+            if (res.isErr()) {
+                throw res.error;
+            }
+
+            const { nextCursor, records } = res.unwrap();
+            cursor = nextCursor;
+
+            for (const record of records) {
+                const id = String(record.id);
+                const { _nango_metadata, ...recordWithoutMetadata } = record;
+                objects[id] = recordWithoutMetadata as T;
+            }
+        }
+
+        return objects;
     }
 }
 
