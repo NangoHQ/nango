@@ -101,10 +101,10 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     operation: res.operation,
                     endUser: undefined // TODO fix this
                 },
-                integration.provider,
+                account,
+                integration,
                 logContextGetter,
-                { initiateSync: true, runPostConnectionScript: false },
-                logCtx
+                { initiateSync: true, runPostConnectionScript: false }
             );
         };
 

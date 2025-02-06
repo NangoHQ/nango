@@ -238,7 +238,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -302,7 +303,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -352,7 +354,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -396,7 +399,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -438,7 +442,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -587,7 +592,8 @@ class ConnectionController {
                         operation: updatedConnection.operation || 'unknown',
                         endUser: undefined
                     },
-                    providerName,
+                    account,
+                    integration,
                     logContextGetter
                 );
             }
