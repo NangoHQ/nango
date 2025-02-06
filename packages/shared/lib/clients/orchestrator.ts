@@ -385,7 +385,7 @@ export class Orchestrator {
         fileLocation,
         logCtx
     }: {
-        connection: DBConnection;
+        connection: ConnectionJobs;
         version: string;
         name: string;
         fileLocation: string;

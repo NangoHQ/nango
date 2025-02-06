@@ -86,7 +86,7 @@ export function connectionFullToPublicApi({
         connection_config: data.connection_config || {},
         created_at: String(data.created_at),
         updated_at: String(data.updated_at),
-        last_fetched_at: String(data.last_fetched_at),
+        last_fetched_at: data.last_fetched_at ? String(data.last_fetched_at) : null,
         credentials: data.credentials
     };
 }

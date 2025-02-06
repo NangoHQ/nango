@@ -58,7 +58,18 @@ describe('Connection service integration tests', () => {
 
             nango.nango.getConnection = async (providerConfigKey: string, connectionId: string) => {
                 const { response } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-                return response;
+                if (!response) {
+                    throw new Error('missing connection');
+                }
+                return {
+                    ...response,
+                    end_user: null,
+                    provider: 'hubspot',
+                    errors: [],
+                    created_at: response.created_at.toISOString(),
+                    updated_at: response.updated_at.toISOString(),
+                    last_fetched_at: response.last_fetched_at?.toISOString() || null
+                };
             };
 
             const connection = await nango.getConnection();

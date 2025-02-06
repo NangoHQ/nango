@@ -82,7 +82,7 @@ export type GetConnection = Endpoint<{
 export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'connection_config'> & {
     created_at: string;
     updated_at: string;
-    last_fetched_at: string;
+    last_fetched_at: string | null;
     metadata: Record<string, unknown> | null;
     provider: string;
     errors: { type: string; log_id: string }[];
