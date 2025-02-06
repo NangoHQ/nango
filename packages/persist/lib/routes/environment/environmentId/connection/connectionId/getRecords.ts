@@ -2,6 +2,8 @@ import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { records } from '@nangohq/records';
 import { validateGetRecords } from './validate.js';
+import type { LogContext } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 
 type GetRecords = Endpoint<{
     Method: typeof method;
@@ -15,6 +17,7 @@ type GetRecords = Endpoint<{
         externalIds: string[];
         cursor: string;
         limit: number;
+        activityLogId: string;
     };
     Error: ApiError<'get_records_failed'>;
     Success: GetRecordsSuccess;
@@ -28,17 +31,28 @@ const validate = validateGetRecords<GetRecords>();
 const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<GetRecords>) => {
     const {
         params: { nangoConnectionId },
-        query: { model, externalIds, cursor }
+        query: { model, externalIds, cursor, limit, activityLogId }
     } = req;
+
+    const logCtx: LogContext | undefined = undefined;
+    if (activityLogId) {
+        logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
+    }
+
     const result = await records.getRecords({
         connectionId: nangoConnectionId,
         model,
         cursor,
         externalIds,
-        limit: 100
+        limit
     });
 
     if (result.isOk()) {
+        await logCtx?.info(`Successfully found ${result.value.records.length} records`, {
+            model,
+            externalIds,
+            limit
+        });
         res.json(result.value);
     } else {
         res.status(500).json({ error: { code: 'get_records_failed', message: `Failed to get records: ${result.error.message}` } });
