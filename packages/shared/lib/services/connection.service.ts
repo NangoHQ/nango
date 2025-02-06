@@ -871,6 +871,10 @@ class ConnectionService {
 
         const copy = { ...connection };
 
+        if (!connection.credentials || 'encrypted_credentials' in connection.credentials) {
+            return Err(new NangoError('invalid_crypted_connection'));
+        }
+
         if (
             connection?.credentials?.type === 'OAUTH2' ||
             connection?.credentials?.type === 'APP' ||
