@@ -135,6 +135,12 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_expiration: string;
         token_expiration_strategy: 'expireAt' | 'expireIn';
     };
+    additional_steps?: {
+        body_format?: 'json' | 'form';
+        token_params?: Record<string, string>;
+        token_headers?: Record<string, string>;
+        token_url: string;
+    }[];
     token_expires_in_ms?: number;
     proxy_header_authorization?: string;
     body_format?: 'xml' | 'json' | 'form';

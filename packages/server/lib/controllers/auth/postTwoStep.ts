@@ -12,7 +12,8 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     getProvider,
-    linkConnection
+    linkConnection,
+    getConnectionMetadataFromTokenResponse
 } from '@nangohq/shared';
 import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -68,7 +69,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
     const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    let connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -153,6 +154,13 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
 
             return;
         }
+
+        const tokenMetadata = getConnectionMetadataFromTokenResponse(credentials.raw, provider);
+
+        connectionConfig = {
+            ...connectionConfig,
+            ...tokenMetadata
+        };
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
