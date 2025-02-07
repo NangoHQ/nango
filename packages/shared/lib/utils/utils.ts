@@ -221,7 +221,7 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
-export function stripStepesponse(obj: any, step: Record<string, any>): any {
+export function stripStepResponse(obj: any, step: Record<string, any>): any {
     if (typeof obj === 'string') {
         return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
             return step[key] || '';
@@ -229,7 +229,7 @@ export function stripStepesponse(obj: any, step: Record<string, any>): any {
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
-            strippedObject[key] = stripStepesponse(value, step);
+            strippedObject[key] = stripStepResponse(value, step);
         }
         return strippedObject;
     }

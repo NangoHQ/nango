@@ -60,7 +60,7 @@ import {
     extractValueByPath,
     stripCredential,
     interpolateObjectValues,
-    stripStepesponse,
+    stripStepResponse,
     extractStepNumber,
     getStepResponse
 } from '../utils/utils.js';
@@ -1787,7 +1787,7 @@ class ConnectionService {
                             const stepNumber = extractStepNumber(value);
                             const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
 
-                            const strippedValue = stripStepesponse(value, stepResponsesObj);
+                            const strippedValue = stripStepResponse(value, stepResponsesObj);
                             if (typeof strippedValue === 'object' && strippedValue !== null) {
                                 stepPostBody[key] = interpolateObject(strippedValue, dynamicCredentials);
                             } else if (typeof strippedValue === 'string') {
@@ -1801,7 +1801,7 @@ class ConnectionService {
 
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
-                    const interpolatedTokenUrl = stripStepesponse(step.token_url, stepResponsesObjForURL);
+                    const interpolatedTokenUrl = stripStepResponse(step.token_url, stepResponsesObjForURL);
                     const stepUrl = new URL(interpolatedTokenUrl).toString();
 
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
