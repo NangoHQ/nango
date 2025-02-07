@@ -34,7 +34,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'operation',
         header: 'Type',
-        size: 100,
+        size: 140,
         cell: ({ row }) => {
             return <OperationTag message={row.original.message} operation={row.original.operation} />;
         }
