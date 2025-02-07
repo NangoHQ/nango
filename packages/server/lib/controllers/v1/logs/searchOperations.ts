@@ -35,7 +35,7 @@ const validation = z
                     'webhook:forward',
                     'webhook:sync',
                     'webhook:connection_create',
-                    'webhook:connection_refresh_failed'
+                    'webhook:connection_refresh'
                 ])
             )
             .max(20)
