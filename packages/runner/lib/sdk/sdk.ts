@@ -376,17 +376,19 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async getObjectsByIds<T = any>(ids: any[], model: string): Promise<Record<string, T>> {
+    public async getObjectsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAborted();
 
-        const objects: Record<string, T> = {};
+        const objects = new Map<K, T>();
 
         // load records in batches of 100
         let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += 100) {
+            const externalIdMap = new Map<string, K>(ids.slice(i, i + 100).map((id) => [String(id), id]));
+
             const res = await this.persistClient.getRecords({
                 model,
-                externalIds: ids.slice(i, i + 100).map((id) => String(id)),
+                externalIds: Array.from(externalIdMap.keys()),
                 environmentId: this.environmentId,
                 nangoConnectionId: this.nangoConnectionId!,
                 cursor
@@ -400,9 +402,12 @@ export class NangoSyncRunner extends NangoSyncBase {
             cursor = nextCursor;
 
             for (const record of records) {
-                const id = String(record.id);
-                const { _nango_metadata, ...recordWithoutMetadata } = record;
-                objects[id] = recordWithoutMetadata as T;
+                const stringId = String(record.id);
+                const realId = externalIdMap.get(stringId);
+                if (realId) {
+                    const { _nango_metadata, ...recordWithoutMetadata } = record;
+                    objects.set(realId, recordWithoutMetadata as T);
+                }
             }
         }
 
