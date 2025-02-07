@@ -194,6 +194,7 @@ export class NangoSyncRunner extends NangoSyncBase {
 
     protected persistClient: PersistClient;
     private batchSize = 1000;
+    private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
 
     constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
@@ -381,10 +382,13 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         const objects = new Map<K, T>();
 
-        // load records in batches of 100
+        if (ids.length === 0) {
+            return objects;
+        }
+
         let cursor: string | undefined = undefined;
-        for (let i = 0; i < ids.length; i += 100) {
-            const externalIdMap = new Map<string, K>(ids.slice(i, i + 100).map((id) => [String(id), id]));
+        for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
             const res = await this.persistClient.getRecords({
                 model,
@@ -404,7 +408,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             for (const record of records) {
                 const stringId = String(record.id);
                 const realId = externalIdMap.get(stringId);
-                if (realId) {
+                if (realId !== undefined) {
                     const { _nango_metadata, ...recordWithoutMetadata } = record;
                     objects.set(realId, recordWithoutMetadata as T);
                 }
