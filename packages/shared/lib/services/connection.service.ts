@@ -70,6 +70,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { locking } from '../clients/locking.js';
 import type { Lock, Locking } from '../utils/lock/locking.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
+import tracer from 'dd-trace';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -841,6 +842,7 @@ class ConnectionService {
             environment: DBEnvironment;
             provider: Provider;
             config: ProviderConfig;
+            account: DBTeam;
             action: 'token_refresh' | 'connection_test';
         }) => Promise<void>;
         connectionTestHook?:
@@ -853,95 +855,43 @@ class ConnectionService {
               }) => Promise<Result<{ logs: MessageRowInsert[] }, NangoError>>)
             | undefined;
     }): Promise<Result<Connection, NangoError>> {
-        const provider = getProvider(integration.provider);
-        if (!provider) {
-            const error = new NangoError('unknown_provider_config');
-            return Err(error);
-        }
-
-        const copy = { ...connection };
-
-        if (!connection.credentials || 'encrypted_credentials' in connection.credentials) {
-            return Err(new NangoError('invalid_crypted_connection'));
-        }
-
-        if (
-            connection?.credentials?.type === 'OAUTH2' ||
-            connection?.credentials?.type === 'APP' ||
-            connection?.credentials?.type === 'OAUTH2_CC' ||
-            connection?.credentials?.type === 'TABLEAU' ||
-            connection?.credentials?.type === 'JWT' ||
-            connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'TWO_STEP' ||
-            connection?.credentials?.type === 'SIGNATURE'
-        ) {
-            const { success, error, response } = await this.refreshCredentialsIfNeeded({
-                connectionId: connection.connection_id,
-                environmentId: environment.id,
-                providerConfig: integration as ProviderConfig,
-                provider: provider as ProviderOAuth2,
-                environment_id: environment.id,
-                instantRefresh
-            });
-
-            if ((!success && error) || !response) {
-                const logCtx = await logContextGetter.create(
-                    { operation: { type: 'auth', action: 'refresh_token' } },
-                    {
-                        account,
-                        environment,
-                        integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
-                        connection: { id: connection.id!, name: connection.connection_id }
-                    }
-                );
-
-                await logCtx.error('Failed to refresh credentials', error);
-                await logCtx.failed();
-
-                if (logCtx) {
-                    await onRefreshFailed({
-                        connection,
-                        logCtx,
-                        authError: {
-                            type: error!.type,
-                            description: error!.message
-                        },
-                        environment,
-                        provider,
-                        config: integration as ProviderConfig,
-                        action: 'token_refresh'
-                    });
-                }
-
-                const { credentials, ...connectionWithoutCredentials } = copy;
-                const errorWithPayload = new NangoError(error!.type, { connection: connectionWithoutCredentials });
-
-                // there was an attempt to refresh the token so clear it from the queue
-                // of connections to refresh if it failed
-                await this.updateLastFetched(connection.id!);
-
-                return Err(errorWithPayload);
-            } else if (response.refreshed) {
-                await onRefreshSuccess({
-                    connection,
-                    environment,
-                    config: integration as ProviderConfig
-                });
+        return await tracer.trace('nango.connection.refreshCredentials', async (span) => {
+            const provider = getProvider(integration.provider);
+            if (!provider) {
+                const error = new NangoError('unknown_provider_config');
+                return Err(error);
             }
 
-            copy.credentials = response.credentials as OAuth2Credentials;
-        } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
-            if (connectionTestHook) {
-                const result = await connectionTestHook({
-                    config: integration as ProviderConfig,
-                    provider,
-                    connectionConfig: connection.connection_config,
+            const copy = { ...connection };
+
+            if (!connection.credentials || 'encrypted_credentials' in connection.credentials) {
+                return Err(new NangoError('invalid_crypted_connection'));
+            }
+
+            span.setTag('connectionId', connection.connection_id).setTag('authType', connection?.credentials?.type);
+
+            if (
+                connection?.credentials?.type === 'OAUTH2' ||
+                connection?.credentials?.type === 'APP' ||
+                connection?.credentials?.type === 'OAUTH2_CC' ||
+                connection?.credentials?.type === 'TABLEAU' ||
+                connection?.credentials?.type === 'JWT' ||
+                connection?.credentials?.type === 'BILL' ||
+                connection?.credentials?.type === 'TWO_STEP' ||
+                connection?.credentials?.type === 'SIGNATURE'
+            ) {
+                const { success, error, response } = await this.refreshCredentialsIfNeeded({
                     connectionId: connection.connection_id,
-                    credentials: connection.credentials
+                    environmentId: environment.id,
+                    providerConfig: integration as ProviderConfig,
+                    provider: provider as ProviderOAuth2,
+                    environment_id: environment.id,
+                    instantRefresh
                 });
-                if (result.isErr()) {
+
+                if ((!success && error) || !response) {
                     const logCtx = await logContextGetter.create(
-                        { operation: { type: 'auth', action: 'connection_test' } },
+                        { operation: { type: 'auth', action: 'refresh_token' } },
                         {
                             account,
                             environment,
@@ -949,49 +899,108 @@ class ConnectionService {
                             connection: { id: connection.id!, name: connection.connection_id }
                         }
                     );
-                    if ('logs' in result.error.payload) {
-                        await Promise.all(
-                            (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
-                                await logCtx.log(log);
-                            })
-                        );
+
+                    await logCtx.error('Failed to refresh credentials', error);
+                    await logCtx.failed();
+
+                    if (logCtx) {
+                        await onRefreshFailed({
+                            connection,
+                            logCtx,
+                            authError: {
+                                type: error!.type,
+                                description: error!.message
+                            },
+                            environment,
+                            provider,
+                            account,
+                            config: integration as ProviderConfig,
+                            action: 'token_refresh'
+                        });
                     }
 
-                    await logCtx.error('Failed to verify connection', result.error);
-                    await logCtx.failed();
-                    await onRefreshFailed({
-                        connection,
-                        logCtx,
-                        authError: {
-                            type: result.error.type,
-                            description: result.error.message
-                        },
-                        environment,
-                        provider,
-                        config: integration as ProviderConfig,
-                        action: 'connection_test'
-                    });
-
-                    // there was an attempt to test the credentials
-                    // so clear it from the queue if it failed
-                    await this.updateLastFetched(connection.id!);
-
                     const { credentials, ...connectionWithoutCredentials } = copy;
-                    const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
+                    const errorWithPayload = new NangoError(error!.type, { connection: connectionWithoutCredentials });
+
+                    // there was an attempt to refresh the token so clear it from the queue
+                    // of connections to refresh if it failed
+                    await this.updateLastFetched(connection.id!);
+                    span.setTag('error', error!.type);
                     return Err(errorWithPayload);
-                } else {
+                } else if (response.refreshed) {
                     await onRefreshSuccess({
                         connection,
                         environment,
                         config: integration as ProviderConfig
                     });
                 }
+
+                copy.credentials = response.credentials as OAuth2Credentials;
+            } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
+                if (connectionTestHook) {
+                    const result = await connectionTestHook({
+                        config: integration as ProviderConfig,
+                        provider,
+                        connectionConfig: connection.connection_config,
+                        connectionId: connection.connection_id,
+                        credentials: connection.credentials
+                    });
+                    if (result.isErr()) {
+                        const logCtx = await logContextGetter.create(
+                            { operation: { type: 'auth', action: 'connection_test' } },
+                            {
+                                account,
+                                environment,
+                                integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
+                                connection: { id: connection.id!, name: connection.connection_id }
+                            }
+                        );
+                        if ('logs' in result.error.payload) {
+                            await Promise.all(
+                                (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
+                                    await logCtx.log(log);
+                                })
+                            );
+                        }
+
+                        await logCtx.error('Failed to verify connection', result.error);
+                        await logCtx.failed();
+                        await onRefreshFailed({
+                            connection,
+                            logCtx,
+                            authError: {
+                                type: result.error.type,
+                                description: result.error.message
+                            },
+                            environment,
+                            provider,
+                            account,
+                            config: integration as ProviderConfig,
+                            action: 'connection_test'
+                        });
+
+                        // there was an attempt to test the credentials
+                        // so clear it from the queue if it failed
+                        await this.updateLastFetched(connection.id!);
+
+                        const { credentials, ...connectionWithoutCredentials } = copy;
+                        const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
+                        span.setTag('error', result.error.type);
+                        return Err(errorWithPayload);
+                    } else {
+                        await onRefreshSuccess({
+                            connection,
+                            environment,
+                            config: integration as ProviderConfig
+                        });
+                    }
+                }
             }
-        }
 
-        await this.updateLastFetched(connection.id!);
+            await this.updateLastFetched(connection.id!);
 
-        return Ok(copy);
+            return Ok(copy);
+        });
     }
 
     public async updateLastFetched(id: number) {

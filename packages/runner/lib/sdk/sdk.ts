@@ -177,7 +177,11 @@ export class NangoActionRunner extends NangoActionBase {
                 }
             },
             { level: res.status > 299 ? 'error' : 'info' }
-        );
+        ).catch(() => {
+            // this.log can throw when the script is aborted
+            // since it is not awaited, the exception might not be caught
+            // we therefore swallow the exception here to avoid an unhandledRejection error
+        });
         return res;
     }
 }

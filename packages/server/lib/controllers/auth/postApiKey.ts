@@ -195,10 +195,9 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
-            logContextGetter,
-            undefined,
-            logCtx
+            account,
+            config,
+            logContextGetter
         );
 
         res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -218,8 +217,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                account
             );
             await logCtx.error('Error during API key auth', { error: err });
             await logCtx.failed();

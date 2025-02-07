@@ -141,6 +141,8 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:incoming': 'Received a webhook',
     'webhook:forward': 'Forwarding Webhook',
     'webhook:sync': 'Delivering Webhook from Sync',
+    'webhook:connection_create': 'Connection creation webhook',
+    'webhook:connection_refresh': 'Connection refresh webhook',
     'events:post_connection_creation': 'Post connection creation script execution',
     'events:pre_connection_deletion': 'Pre connection creation script execution'
 };
