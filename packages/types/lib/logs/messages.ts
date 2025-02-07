@@ -60,7 +60,7 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh_failed';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
 }
 
 export interface OperationDeploy {

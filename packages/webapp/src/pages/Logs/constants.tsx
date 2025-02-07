@@ -114,11 +114,11 @@ export const typesOptions = [
         value: 'webhook',
         name: 'Webhook',
         childs: [
-            { name: 'Incoming', value: 'webhook:incoming' },
-            { name: 'Forwarded', value: 'webhook:forward' },
-            { name: 'Sync', value: 'webhook:sync' },
-            { name: 'Connection Created', value: 'webhook:connection_create' },
-            { name: 'Connection Refresh Failed', value: 'webhook:connection_refresh_failed' }
+            { name: 'External webhook executed', value: 'webhook:incoming' },
+            { name: 'External webhook forwarded', value: 'webhook:forward' },
+            { name: 'Connection creation webhooks', value: 'webhook:connection_create' },
+            { name: 'Sync completion webhooks', value: 'webhook:sync' },
+            { name: 'Token refresh webhooks', value: 'webhook:connection_refresh' }
         ]
     }
 ];
