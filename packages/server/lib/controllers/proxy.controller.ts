@@ -134,7 +134,7 @@ class ProxyController {
                 integrationId: integration.id!,
                 integrationName: integration.unique_key,
                 providerName: integration.provider,
-                connectionId: connection.id!,
+                connectionId: connection.id,
                 connectionName: connection.connection_id
             });
 

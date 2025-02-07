@@ -1,6 +1,6 @@
 import type { EndpointMethod } from '../api.js';
 import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../auth/api.js';
-import type { Connection } from '../connection/db.js';
+import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { Provider } from '../providers/provider.js';
 
 export interface BaseProxyConfiguration {
@@ -29,14 +29,14 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     providerName: string;
     token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
     provider: Provider;
-    connection: Connection;
+    connection: DBConnectionDecrypted;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
     providerName: string;
-    connection: Connection;
+    connection: DBConnectionDecrypted;
     existingActivityLogId?: string | null | undefined;
 }
 

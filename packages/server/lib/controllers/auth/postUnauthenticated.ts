@@ -133,7 +133,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 

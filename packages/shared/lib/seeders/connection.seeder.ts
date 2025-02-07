@@ -1,8 +1,7 @@
 import db from '@nangohq/database';
 import connectionService from '../services/connection.service.js';
-import type { NangoConnection } from '../models/Connection.js';
 import type { AuthCredentials } from '../models/Auth.js';
-import type { ConnectionConfig, DBEnvironment, EndUser } from '@nangohq/types';
+import type { ConnectionConfig, DBConnection, DBEnvironment, EndUser } from '@nangohq/types';
 import { linkConnection } from '../services/endUser.service.js';
 
 export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
@@ -45,7 +44,7 @@ export const createConnectionSeed = async ({
     connectionId?: string;
     rawCredentials?: AuthCredentials;
     connectionConfig?: ConnectionConfig;
-}): Promise<NangoConnection> => {
+}): Promise<DBConnection> => {
     const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
@@ -64,7 +63,7 @@ export const createConnectionSeed = async ({
         await linkConnection(db.knex, { endUserId: endUser.id, connection: result[0].connection });
     }
 
-    return { id: result[0].connection.id, connection_id: name, provider_config_key: provider, environment_id: env.id };
+    return result[0].connection;
 };
 
 export const deleteAllConnectionSeeds = async (): Promise<void> => {

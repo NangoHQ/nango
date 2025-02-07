@@ -7,9 +7,9 @@ import type {
     NangoSyncWebhookBodyBase,
     DBEnvironment,
     DBTeam,
-    Connection,
     DBSyncConfig,
-    IntegrationConfig
+    IntegrationConfig,
+    ConnectionJobs
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -34,7 +34,7 @@ export const sendSync = async ({
     operation,
     error
 }: {
-    connection: Connection | Pick<Connection, 'id' | 'connection_id' | 'provider_config_key'>;
+    connection: ConnectionJobs;
     environment: DBEnvironment;
     account: DBTeam;
     providerConfig: IntegrationConfig;
@@ -61,7 +61,7 @@ export const sendSync = async ({
             account,
             environment,
             integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-            connection: { id: connection.id!, name: connection.connection_id },
+            connection: { id: connection.id, name: connection.connection_id },
             syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
             meta: { scriptVersion: syncConfig.version }
         }

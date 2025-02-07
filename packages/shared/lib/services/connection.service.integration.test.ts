@@ -1,8 +1,7 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import connectionService from './connection.service.js';
-import type { Connection } from '../models/Connection.js';
-import type { Metadata } from '@nangohq/types';
+import type { DBConnection, Metadata } from '@nangohq/types';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
 import { createConnectionSeeds, createConnectionSeed } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
@@ -31,10 +30,10 @@ describe('Connection service integration tests', () => {
             };
 
             const [connectionId] = connections;
-            const connection = { id: connectionId } as Connection;
+            const connection = { id: connectionId } as DBConnection;
             await db.knex.transaction(async (trx) => {
-                await connectionService.replaceMetadata([connection.id as number], initialMetadata, trx);
-                await connectionService.replaceMetadata([connection.id as number], newMetadata, trx);
+                await connectionService.replaceMetadata([connection.id], initialMetadata, trx);
+                await connectionService.replaceMetadata([connection.id], newMetadata, trx);
             });
 
             const dbConnection = await connectionService.getConnectionById(connectionId as number);
@@ -58,12 +57,12 @@ describe('Connection service integration tests', () => {
             };
 
             const connectionId = connections[1];
-            const dbConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
+            const dbConnection = (await connectionService.getConnectionById(connectionId as number))!;
             await db.knex.transaction(async (trx) => {
-                await connectionService.replaceMetadata([dbConnection.id as number], initialMetadata, trx);
+                await connectionService.replaceMetadata([dbConnection.id], initialMetadata, trx);
             });
 
-            const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number)) as Connection;
+            const updatedMetadataConnection = (await connectionService.getConnectionById(connectionId as number))!;
             await connectionService.updateMetadata([updatedMetadataConnection], newMetadata);
 
             const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
@@ -171,7 +170,7 @@ describe('Connection service integration tests', () => {
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
-                connection_id: notionError.id!,
+                connection_id: notionError.id,
                 log_id: Math.random().toString(36).substring(7),
                 active: true
             });
@@ -195,7 +194,7 @@ describe('Connection service integration tests', () => {
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
-                connection_id: notionError.id!,
+                connection_id: notionError.id,
                 log_id: Math.random().toString(36).substring(7),
                 active: true
             });
@@ -223,14 +222,14 @@ describe('Connection service integration tests', () => {
             await errorNotificationService.auth.create({
                 type: 'auth',
                 action: 'connection_test',
-                connection_id: notionAuthError.id!,
+                connection_id: notionAuthError.id,
                 log_id: Math.random().toString(36).substring(7),
                 active: true
             });
 
             const notionSyncError = await createConnectionSeed({ env, provider: 'notion' });
             const sync = await createSyncSeeds({
-                connectionId: notionSyncError.id!,
+                connectionId: notionSyncError.id,
                 environment_id: env.id,
                 nango_config_id: config.id!,
                 sync_name: 'test'
@@ -238,7 +237,7 @@ describe('Connection service integration tests', () => {
             await errorNotificationService.sync.create({
                 type: 'sync',
                 action: 'sync_test',
-                connection_id: notionSyncError.id!,
+                connection_id: notionSyncError.id,
                 log_id: Math.random().toString(36).substring(7),
                 active: true,
                 sync_id: sync.sync.id

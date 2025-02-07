@@ -357,6 +357,7 @@ web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 web.route('/api/v1/connect/sessions').post(webAuth, postInternalConnectSessions);
 
 web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+// TODO: delete this unused routes
 web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 web.route('/api/v1/integrations').post(webAuth, postIntegration);
 web.route('/api/v1/integrations/:providerConfigKey').get(webAuth, getIntegration);

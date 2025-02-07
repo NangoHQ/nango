@@ -64,7 +64,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
     }
 
     const result = await records.getRecords({
-        connectionId: connection.id!,
+        connectionId: connection.id,
         model: query.model,
         modifiedAfter: query.delta || query.modified_after,
         limit: query.limit,
@@ -78,7 +78,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    await trackFetch(connection.id!);
+    await trackFetch(connection.id);
     res.send({
         next_cursor: result.value.next_cursor || null,
         records: result.value.records

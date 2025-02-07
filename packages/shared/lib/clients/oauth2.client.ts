@@ -1,5 +1,5 @@
-import type { Config as ProviderConfig, OAuth2Credentials, Connection } from '../models/index.js';
-import type { Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
+import type { DBConnectionDecrypted, Provider, ProviderOAuth2 } from '@nangohq/types';
 import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
@@ -65,7 +65,7 @@ export function getSimpleOAuth2ClientConfig(
 }
 
 export async function getFreshOAuth2Credentials(
-    connection: Connection,
+    connection: DBConnectionDecrypted,
     config: ProviderConfig,
     provider: ProviderOAuth2
 ): Promise<ServiceResponse<OAuth2Credentials>> {

@@ -1,10 +1,10 @@
 import type {
-    AllAuthCredentials,
     ApiConnectionFull,
     ApiConnectionSimple,
     ApiPublicConnection,
     ApiPublicConnectionFull,
     DBConnection,
+    DBConnectionDecrypted,
     DBEndUser
 } from '@nangohq/types';
 import { endUserToApi } from './endUser.js';
@@ -31,7 +31,7 @@ export function connectionSimpleToApi({
         updated_at: String(data.updated_at)
     };
 }
-export function connectionFullToApi(connection: DBConnection): ApiConnectionFull {
+export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConnectionFull {
     return {
         ...connection,
         id: connection.id,
@@ -70,7 +70,7 @@ export function connectionFullToPublicApi({
     activeLog,
     endUser
 }: {
-    data: DBConnection;
+    data: DBConnectionDecrypted;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
@@ -86,7 +86,7 @@ export function connectionFullToPublicApi({
         connection_config: data.connection_config || {},
         created_at: String(data.created_at),
         updated_at: String(data.updated_at),
-        last_fetched_at: String(data.last_fetched_at),
-        credentials: data.credentials as AllAuthCredentials
+        last_fetched_at: data.last_fetched_at ? String(data.last_fetched_at) : null,
+        credentials: data.credentials
     };
 }

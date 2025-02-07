@@ -1,6 +1,5 @@
-import type { AuthModeType, AuthOperationType } from '@nangohq/types';
+import type { AuthModeType, AuthOperationType, DBConnection } from '@nangohq/types';
 import type { ServiceResponse } from './Generic.js';
-import type { StoredConnection } from './Connection.js';
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -13,7 +12,7 @@ export enum OAuthBodyFormat {
 }
 
 export interface ConnectionUpsertResponse {
-    connection: StoredConnection;
+    connection: DBConnection;
     operation: AuthOperationType;
 }
 

@@ -81,7 +81,7 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
         onRefreshFailed: connectionRefreshFailedHook
     });
     if (credentialResponse.isErr()) {
-        const errorLog = await errorNotificationService.auth.get(connection.id!);
+        const errorLog = await errorNotificationService.auth.get(connection.id);
 
         res.status(400).send({
             error: {
@@ -102,7 +102,7 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
             account,
             environment,
             integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-            connection: { id: connection.id!, name: connection.connection_id }
+            connection: { id: connection.id, name: connection.connection_id }
         }
     );
     await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);

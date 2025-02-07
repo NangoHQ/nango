@@ -89,7 +89,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
             endUserId: endUser.id,
             accountId: account.id,
             environmentId: environment.id,
-            connectionId: connection.id!,
+            connectionId: connection.id,
             allowedIntegrations: [body.integration_id],
             integrationsConfigDefaults: body.integrations_config_defaults
                 ? Object.fromEntries(

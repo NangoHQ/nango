@@ -87,7 +87,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
-            connectionId: connection.id!,
+            connectionId: connection.id,
             environment_id: env.id,
             nango_config_id: config.id!,
             sync_name: 'write-file',
