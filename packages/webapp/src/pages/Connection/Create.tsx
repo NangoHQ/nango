@@ -212,7 +212,7 @@ export const ConnectionCreate: React.FC = () => {
                                     </PopoverContent>
                                 </Popover>
 
-                                <Button onClick={onClickConnectUI} size="lg" disabled={!integration}>
+                                <Button onClick={onClickConnectUI} size="lg">
                                     Authorize
                                 </Button>
                             </div>

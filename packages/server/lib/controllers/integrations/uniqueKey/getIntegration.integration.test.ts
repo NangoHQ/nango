@@ -71,7 +71,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 provider: 'github',
                 unique_key: 'github',
-                display_name: 'GitHub',
+                display_name: 'GitHub (User OAuth)',
                 logo: 'http://localhost:3003/images/template-logos/github.svg',
                 created_at: expect.toBeIsoDate(),
                 updated_at: expect.toBeIsoDate()
