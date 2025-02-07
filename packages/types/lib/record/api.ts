@@ -17,7 +17,7 @@ export type NangoRecord<T extends Record<string, any> = Record<string, any>> = {
     _nango_metadata: RecordMetadata;
 } & T;
 
-export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor?: string };
+export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_modified_after_cursor'; cursor?: string | undefined };
 
 export type CursorOffset = 'first' | 'last';
 

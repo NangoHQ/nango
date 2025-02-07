@@ -318,7 +318,7 @@ export async function upsert({
                             .returning(['id', 'external_id', 'data_hash', 'deleted_at', 'updated_at'])
                             .onConflict(['connection_id', 'external_id', 'model'])
                             .merge();
-                        if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
+                        if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                             const cursor = Cursor.from(merging.cursor);
                             if (cursor) {
                                 qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(
@@ -478,7 +478,7 @@ export async function update({
                                 .returning(['external_id', 'id', 'updated_at'])
                                 .onConflict(['connection_id', 'external_id', 'model'])
                                 .merge();
-                            if (merging.strategy === 'ignore_if_modified_after_cursor' && 'cursor' in merging) {
+                            if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                 const cursor = Cursor.from(merging.cursor);
                                 if (cursor) {
                                     qb.whereRaw(`${RECORDS_TABLE}.updated_at < ?`, [cursor.sort]).orWhereRaw(

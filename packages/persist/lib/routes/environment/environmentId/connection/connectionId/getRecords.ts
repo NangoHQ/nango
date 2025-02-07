@@ -1,7 +1,8 @@
 import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
+import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { records } from '@nangohq/records';
-import { validateGetRecords } from './validate.js';
+import { getRecordsRequestParser } from './validate.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 
@@ -14,10 +15,10 @@ type GetRecords = Endpoint<{
     };
     Querystring: {
         model: string;
-        externalIds: string[];
-        cursor: string | undefined;
+        externalIds?: string[] | undefined;
+        cursor?: string | undefined;
         limit: number;
-        activityLogId: string | undefined;
+        activityLogId?: string | undefined;
     };
     Error: ApiError<'get_records_failed'>;
     Success: GetRecordsSuccess;
@@ -26,7 +27,7 @@ type GetRecords = Endpoint<{
 export const path = '/environment/:environmentId/connection/:nangoConnectionId/records';
 const method = 'GET';
 
-const validate = validateGetRecords<GetRecords>();
+const validate = validateRequest<GetRecords>(getRecordsRequestParser);
 
 const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<GetRecords>) => {
     const {

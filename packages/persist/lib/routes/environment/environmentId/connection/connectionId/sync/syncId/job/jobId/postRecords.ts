@@ -1,7 +1,8 @@
 import type { ApiError, Endpoint, MergingStrategy, PostRecordsSuccess } from '@nangohq/types';
+import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
-import { validateRecords } from './validate.js';
+import { recordsRequestParser } from './validate.js';
 
 type PostRecords = Endpoint<{
     Method: typeof method;
@@ -27,7 +28,7 @@ type PostRecords = Endpoint<{
 const path = recordsPath;
 const method = 'POST';
 
-const validate = validateRecords<PostRecords>();
+const validate = validateRequest<PostRecords>(recordsRequestParser);
 
 const handler = async (req: EndpointRequest<PostRecords>, res: EndpointResponse<PostRecords>) => {
     const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = req.params;
