@@ -871,19 +871,15 @@ class ConnectionService {
 
         const copy = { ...connection };
 
-        if (!connection.credentials || 'encrypted_credentials' in connection.credentials) {
-            return Err(new NangoError('invalid_crypted_connection'));
-        }
-
         if (
-            connection?.credentials?.type === 'OAUTH2' ||
-            connection?.credentials?.type === 'APP' ||
-            connection?.credentials?.type === 'OAUTH2_CC' ||
-            connection?.credentials?.type === 'TABLEAU' ||
-            connection?.credentials?.type === 'JWT' ||
-            connection?.credentials?.type === 'BILL' ||
-            connection?.credentials?.type === 'TWO_STEP' ||
-            connection?.credentials?.type === 'SIGNATURE'
+            connection.credentials.type === 'OAUTH2' ||
+            connection.credentials.type === 'APP' ||
+            connection.credentials.type === 'OAUTH2_CC' ||
+            connection.credentials.type === 'TABLEAU' ||
+            connection.credentials.type === 'JWT' ||
+            connection.credentials.type === 'BILL' ||
+            connection.credentials.type === 'TWO_STEP' ||
+            connection.credentials.type === 'SIGNATURE'
         ) {
             const { success, error, response } = await this.refreshCredentialsIfNeeded({
                 connectionId: connection.connection_id,
@@ -940,7 +936,7 @@ class ConnectionService {
             }
 
             copy.credentials = response.credentials as OAuth2Credentials;
-        } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
+        } else if (connection.credentials.type === 'BASIC' || connection.credentials.type === 'API_KEY' || connection.credentials.type === 'TBA') {
             if (connectionTestHook) {
                 const result = await connectionTestHook({
                     config: integration as ProviderConfig,
@@ -1427,7 +1423,7 @@ class ConnectionService {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP'] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
+        const privateKeyBase64 = config.custom ? config.custom['private_key'] : config.oauth_client_secret;
 
         const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
 
@@ -1441,7 +1437,7 @@ class ConnectionService {
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: (config?.custom ? config.custom['app_id'] : config.oauth_client_id) as string
+            iss: (config.custom ? config.custom['app_id'] : config.oauth_client_id) as string
         };
 
         if (!payload['iss'] && connectionConfig['app_id']) {
@@ -1909,7 +1905,7 @@ class ConnectionService {
         let tokenExpirationCondition =
             refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || 15 * 60));
 
-        if ((provider.auth_mode === 'OAUTH2' || credentials?.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
+        if ((provider.auth_mode === 'OAUTH2' || credentials.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
             tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
         }
 
@@ -1969,7 +1965,7 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection?.credentials?.type !== 'OAUTH2')) {
+        } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
             const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {
