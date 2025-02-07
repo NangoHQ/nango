@@ -17,7 +17,7 @@ type GetRecords = Endpoint<{
         externalIds: string[];
         cursor: string;
         limit: number;
-        activityLogId: string;
+        activityLogId: string | undefined;
     };
     Error: ApiError<'get_records_failed'>;
     Success: GetRecordsSuccess;
