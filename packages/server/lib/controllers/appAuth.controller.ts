@@ -168,8 +168,8 @@ class AppAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    account,
+                    config
                 );
 
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
@@ -220,10 +220,10 @@ class AppAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
-                session.provider,
+                account,
+                config,
                 logContextGetter,
-                undefined,
-                logCtx
+                undefined
             );
 
             await logCtx.info('App connection was successful and credentials were saved');
@@ -266,8 +266,7 @@ class AppAuthController {
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                account
             );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));
