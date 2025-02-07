@@ -15,7 +15,7 @@ type GetRecords = Endpoint<{
     Querystring: {
         model: string;
         externalIds: string[];
-        cursor: string;
+        cursor: string | undefined;
         limit: number;
         activityLogId: string | undefined;
     };
