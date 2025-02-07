@@ -1,0 +1,82 @@
+---
+title: 'Preventing data conflicts'
+sidebarTitle: 'Data conflicts'
+description: 'How to prevent data conflicts between webhooks and sync scripts'
+---
+
+<Tip>
+Merging strategies help maintain data consistency when multiple sync/webhooks attempt to modify the same records simultaneously.
+</Tip>
+
+Nango provides built-in protection against data conflicts that can occur when webhooks and sync scripts run concurrently. The `setMergingStrategy` function allows you to define how Nango should handle concurrent modifications to the same records.
+
+# Key Concepts
+
+- **Race Conditions:** When webhooks and sync scripts run simultaneously, they might try to modify the same records, potentially leading to data inconsistencies.
+- **Modification Tracking:** Nango tracks when records were last modified to help prevent unintended overwrites.
+- **Configurable Behavior:** You can choose whether newer modifications should be preserved or overwritten.
+
+# Available Strategies
+
+The `setMergingStrategy` function supports two strategies:
+
+1. **override (default)**: Always updates records regardless of their last modification time
+2. **ignore_if_modified_after**: Prevents newer records from being overwritten by older batching operations
+
+# Usage Example
+
+Here's how to implement a merging strategy in your script:
+
+<Tabs>
+<Tab title="TypeScript">
+```typescript
+export default async function fetchData(nango: NangoSync) {
+    // Set merging strategy at the start of the script
+    await nango.setMergingStrategy(
+        { strategy: 'ignore_if_modified_after' },
+        'Contact'
+    );
+
+    // Persist records to the Nango cache.
+    const contacts: Contact[] = ...
+    await nango.batchSave(contacts, 'Contact');
+}
+```
+</Tab>
+</Tabs>
+
+# Strategy Details
+
+## override (default)
+- Forces updates regardless of modification time
+- Use when sync script data should always take precedence
+- Caution: May overwrite more recent changes from webhooks
+
+```typescript
+// This is the default behavior if no merging strategy is set in the script
+await nango.setMergingStrategy(
+    { strategy: 'override' },
+    'Contact'
+);
+```
+
+## ignore_if_modified_after
+- Preserves records that were modified after the last batching operation.
+- Ideal when webhooks provide real-time updates that shouldn't be overwritten
+
+```typescript
+await nango.setMergingStrategy(
+    { strategy: 'ignore_if_modified_after' },
+    'Contact'
+);
+```
+
+# Best Practices
+
+1. **Batch records sequentially**: batchSave, batchUpdate or batchDelete operations must run sequentially
+2. **Batch records frequently**: All fetched data must be persisted in the next batchSave, batchUpdate or batchDelete operation
+3. **No concurrent data fetch**: No data must be fetched concurrently to setMergingStrategy or any batch operations
+
+<Tip>
+**Need help?** Join our [Slack community](https://nango.dev/slack) for support and discussions about merging strategies.
+</Tip>
