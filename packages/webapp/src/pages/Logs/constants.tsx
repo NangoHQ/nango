@@ -34,7 +34,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'operation',
         header: 'Type',
-        size: 100,
+        size: 140,
         cell: ({ row }) => {
             return <OperationTag message={row.original.message} operation={row.original.operation} />;
         }
@@ -93,23 +93,26 @@ export const typesDefaultOptions: SearchOperationsType[] = ['all'];
 export const typesOptions = [
     { value: 'all', name: 'All' },
     {
+        value: 'auth',
+        name: 'Auth',
+        childs: [
+            { name: 'Connection created', value: 'auth:create_connection' },
+            { name: 'Token refreshed', value: 'auth:refresh_token' }
+        ]
+    },
+    {
         value: 'sync',
         name: 'Sync',
         childs: [
-            { name: 'Execution', value: 'sync:run' },
-            { name: 'Pause Schedule', value: 'sync:pause' },
-            { name: 'Resume Schedule', value: 'sync:unpause' },
-            { name: 'Trigger Incremental Execution', value: 'sync:request_run' },
-            { name: 'Trigger Full Execution', value: 'sync:request_run_full' },
-            { name: 'Sync Init', value: 'sync:init' },
-            { name: 'Cancel Execution', value: 'sync:cancel' }
+            { name: 'Sync initialized', value: 'sync:init' },
+            { name: 'Sync executed', value: 'sync:run' },
+            { name: 'Incremental execution triggered', value: 'sync:request_run' },
+            { name: 'Full execution triggered', value: 'sync:request_run_full' },
+            { name: 'Sync execution cancelled', value: 'sync:cancel' },
+            { name: 'Sync schedule paused', value: 'sync:pause' },
+            { name: 'Sync schedule resumed', value: 'sync:unpause' }
         ]
     },
-    { value: 'action', name: 'Action' },
-    { value: 'events', name: 'Events' },
-    { value: 'proxy', name: 'Proxy' },
-    { value: 'deploy', name: 'Deploy' },
-    { value: 'auth', name: 'Auth' },
     {
         value: 'webhook',
         name: 'Webhook',
@@ -120,7 +123,11 @@ export const typesOptions = [
             { name: 'Sync completion webhooks', value: 'webhook:sync' },
             { name: 'Token refresh webhooks', value: 'webhook:connection_refresh' }
         ]
-    }
+    },
+    { value: 'action', name: 'Actions' },
+    { value: 'events', name: 'Event-based executions' },
+    { value: 'proxy', name: 'Proxy' },
+    { value: 'deploy', name: 'Deploys' }
 ];
 
 export const integrationsDefaultOptions: SearchOperationsIntegration[] = ['all'];

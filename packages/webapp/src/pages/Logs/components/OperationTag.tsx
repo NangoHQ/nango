@@ -5,10 +5,12 @@ import {
     IconClockPlay,
     IconClockPause,
     IconRefresh,
-    IconUserPlus,
-    IconCircleKey,
     IconSettingsAutomation,
-    IconClockPlus
+    IconSettings,
+    IconArrowForward,
+    IconLink,
+    IconLock,
+    IconPlus
 } from '@tabler/icons-react';
 import { Tag } from '../../../components/ui/label/Tag';
 import * as Tooltip from '../../../components/ui/Tooltip';
@@ -22,7 +24,7 @@ export const OperationTag: React.FC<{ message: string; operation: Exclude<Search
                     {operation.type === 'sync' && (
                         <Tag>
                             {operation.action === 'cancel' && <IconX className="w-3.5 h-3.5" />}
-                            {operation.action === 'init' && <IconClockPlus className="w-3.5 h-3.5" />}
+                            {operation.action === 'init' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'pause' && <IconClockPause className="w-3.5 h-3.5" />}
                             {operation.action === 'request_run' && <IconPlayerPlay className="w-3.5 h-3.5" />}
                             {operation.action === 'request_run_full' && <IconPlayerPlay className="w-3.5 h-3.5" />}
@@ -33,9 +35,19 @@ export const OperationTag: React.FC<{ message: string; operation: Exclude<Search
 
                     {operation.type === 'auth' && (
                         <Tag>
-                            {operation.action === 'create_connection' && <IconUserPlus className="w-3.5 h-3.5" />}
+                            {operation.action === 'create_connection' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'post_connection' && <IconSettingsAutomation className="w-3.5 h-3.5" />}
-                            {operation.action === 'refresh_token' && <IconCircleKey className="w-3.5 h-3.5" />}
+                            {operation.action === 'refresh_token' && <IconRefresh className="w-3.5 h-3.5" />}
+                        </Tag>
+                    )}
+
+                    {operation.type === 'webhook' && (
+                        <Tag>
+                            {operation.action === 'forward' && <IconSettings className="w-3.5 h-3.5" />}
+                            {operation.action === 'incoming' && <IconArrowForward className="w-3.5 h-3.5" />}
+                            {operation.action === 'connection_create' && <IconLink className="w-3.5 h-3.5" />}
+                            {operation.action === 'sync' && <IconRefresh className="w-3.5 h-3.5" />}
+                            {operation.action === 'connection_refresh' && <IconLock className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
                 </div>
