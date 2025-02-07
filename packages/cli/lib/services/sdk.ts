@@ -208,7 +208,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
-    public override getObjectsByIds<T = any>(_ids: string[], _model: string): Promise<Record<string, T>> {
+    public override getObjectsByIds<T = any>(_ids: any[], _model: string): Promise<Record<string, T>> {
         return Promise.resolve({});
     }
 }

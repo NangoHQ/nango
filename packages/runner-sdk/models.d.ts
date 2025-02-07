@@ -386,7 +386,7 @@ export declare class NangoSync extends NangoAction {
     batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
-    getObjectsByIds<T = any>(ids: string[], model: string): Promise<Record<string, T>>;
+    getObjectsByIds<T = any>(ids: any[], model: string): Promise<Record<string, T>>;
 }
 /**
  * @internal

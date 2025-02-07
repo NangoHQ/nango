@@ -376,7 +376,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async getObjectsByIds<T = any>(ids: string[], model: string): Promise<Record<string, T>> {
+    public async getObjectsByIds<T = any>(ids: any[], model: string): Promise<Record<string, T>> {
         this.throwIfAborted();
 
         const objects: Record<string, T> = {};
@@ -386,7 +386,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         for (let i = 0; i < ids.length; i += 100) {
             const res = await this.persistClient.getRecords({
                 model,
-                externalIds: ids.slice(i, i + 100),
+                externalIds: ids.slice(i, i + 100).map((id) => String(id)),
                 environmentId: this.environmentId,
                 nangoConnectionId: this.nangoConnectionId!,
                 cursor
