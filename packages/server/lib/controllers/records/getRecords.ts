@@ -18,7 +18,16 @@ export const validationQuery = z
             .pipe(z.array(z.enum(['added', 'updated', 'deleted', 'ADDED', 'UPDATED', 'DELETED'])))
             .transform<GetPublicRecords['Querystring']['filter']>((value) => value.join(',') as GetPublicRecords['Querystring']['filter'])
             .optional(),
-        cursor: z.string().min(1).max(1000).optional()
+        cursor: z.string().min(1).max(1000).optional(),
+        // It's an array because external ids can contain any string which makes them more susceptible to bad encoding/decoding
+        // Also it's easier to validate
+        ids: z
+            .union([
+                z.string().min(1).max(256), // There is no diff between a normal query param and an array with one item
+                z.array(z.string().min(1).max(256)).max(100)
+            ])
+            .transform((val) => (Array.isArray(val) ? val : [val]))
+            .optional()
     })
     .strict();
 export const validationHeaders = z
@@ -60,7 +69,8 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         modifiedAfter: query.delta || query.modified_after,
         limit: query.limit,
         filter: query.filter,
-        cursor: query.cursor
+        cursor: query.cursor,
+        externalIds: query.ids
     });
 
     if (result.isErr()) {

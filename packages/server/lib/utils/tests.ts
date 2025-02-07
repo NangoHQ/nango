@@ -47,7 +47,7 @@ export function apiFetch(baseUrl: string) {
             Object.entries(query).forEach(([name, value]) => {
                 if (Array.isArray(value)) {
                     for (const el of value) {
-                        url.searchParams.set(name, el);
+                        url.searchParams.append(name, el);
                     }
                 } else {
                     url.searchParams.set(name, value || '');

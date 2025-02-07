@@ -145,6 +145,7 @@ export interface ListRecordsRequestConfig {
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
+    ids?: string[];
 }
 
 export type Metadata = Record<string, unknown>;

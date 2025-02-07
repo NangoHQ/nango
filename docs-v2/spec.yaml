@@ -1046,6 +1046,15 @@ paths:
                   schema:
                       type: string
                   description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+                - name: ids
+                  in: query
+                  required: false
+                  description: An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                      max: 100
                 - name: Connection-Id
                   in: header
                   required: true
