@@ -109,11 +109,11 @@ describe(`GET ${route}`, () => {
                     ],
                     syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
                     syncJobId: 1,
-                    connectionId: conn.id!,
+                    connectionId: conn.id,
                     model: 'Ticket'
                 })
                 .unwrap(),
-            connectionId: conn.id!,
+            connectionId: conn.id,
             environmentId: env.id,
             model: 'Ticket'
         });
@@ -195,11 +195,11 @@ describe(`GET ${route}`, () => {
                     ],
                     syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
                     syncJobId: 1,
-                    connectionId: conn.id!,
+                    connectionId: conn.id,
                     model: 'Ticket'
                 })
                 .unwrap(),
-            connectionId: conn.id!,
+            connectionId: conn.id,
             environmentId: env.id,
             model: 'Ticket'
         });
@@ -220,11 +220,11 @@ describe(`GET ${route}`, () => {
                     data: [{ id: 'record1', foo: 'bar2' }],
                     syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
                     syncJobId: 2,
-                    connectionId: conn.id!,
+                    connectionId: conn.id,
                     model: 'Ticket'
                 })
                 .unwrap(),
-            connectionId: conn.id!,
+            connectionId: conn.id,
             environmentId: env.id,
             model: 'Ticket'
         });
@@ -275,11 +275,11 @@ describe(`GET ${route}`, () => {
                     ],
                     syncId: '695a23e3-64aa-4978-87bf-2cfc9044e675',
                     syncJobId: 1,
-                    connectionId: conn.id!,
+                    connectionId: conn.id,
                     model: 'Ticket'
                 })
                 .unwrap(),
-            connectionId: conn.id!,
+            connectionId: conn.id,
             environmentId: env.id,
             model: 'Ticket'
         });

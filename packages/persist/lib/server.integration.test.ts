@@ -500,14 +500,14 @@ const clearDb = async () => {
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {
     const formatted = formatRecords({
         data: toInsert,
-        connectionId: seed.connection.id!,
+        connectionId: seed.connection.id,
         model,
         syncId: seed.sync.id,
         syncJobId: seed.syncJob.id
     }).unwrap();
 
     await records.upsert({
-        connectionId: seed.connection.id!,
+        connectionId: seed.connection.id,
         environmentId: seed.env.id,
         model,
         records: formatted

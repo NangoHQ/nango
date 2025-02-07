@@ -72,7 +72,7 @@ export async function exec(): Promise<void> {
                             account,
                             environment,
                             integration,
-                            connection: decrypted!,
+                            connection: decrypted,
                             logContextGetter,
                             instantRefresh: false,
                             onRefreshSuccess: connectionRefreshSuccessHook,
