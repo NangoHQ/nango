@@ -5683,6 +5683,26 @@ payfit:
         base_url: https://partner-api.payfit.com
     docs: https://docs.nango.dev/integrations/all/payfit
 
+paylocity:
+    display_name: Paylocity
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://${connectionConfig.environment}.paylocity.com
+    token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/paylocity
+    docs_connect: https://docs.nango.dev/integrations/all/paylocity/connect
+    connection_config:
+        environment:
+            type: string
+            title: Paylocity Environment
+            description: Select the Paylocity environment for this integration.
+            doc_section: '#step-1-select-the-correct-paylocity-environment'
+
 paypal:
     display_name: Paypal
     categories:
