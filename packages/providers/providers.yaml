@@ -4683,6 +4683,37 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
 
+loom-scim:
+    display_name: Loom SCIM
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/scim
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/loom-scim
+    docs_connect: https://docs.nango.dev/integrations/all/loom-scim/connect
+    connection_config:
+        domain:
+            type: string
+            title: Loom SCIM Bridge URL
+            description: The domain for your Loom SCIM Bridge
+            example: scim.example.com
+            pattern: '^[a-zA-Z0-9.-]+$'
+            prefix: https://
+            doc_section: '#step-4-get-your-scim-bridge-url'
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Key
+            description: Your Loom SCIM API Key
+            secret: true
+            doc_section: '#step-3-retrieve-your-loom-scim-api-key'
+
 loops-so:
     display_name: Loops.so
     categories:
