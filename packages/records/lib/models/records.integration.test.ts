@@ -217,6 +217,80 @@ describe('Records service', () => {
                     }
                 });
             });
+            it('when strategy = ignore_if_modified_after_cursor and saving same record', async () => {
+                const environmentId = rnd.number();
+                const connectionId = 1;
+                const model = 'my-model';
+                const syncId = uuid.v4();
+                const records = [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' }
+                ];
+                // insert initial records
+                const inserted = await upsertRecords({
+                    records,
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 1,
+                    merging: {
+                        strategy: 'ignore_if_modified_after_cursor'
+                    }
+                });
+
+                // upsert records with the same values
+                const sameRecords = [
+                    { id: '1', name: 'John Doe' }, // same
+                    { id: '2', name: 'Jane Doe' } // same
+                ];
+                const result1 = await upsertRecords({
+                    records: sameRecords,
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 2,
+                    merging: inserted.nextMerging
+                });
+
+                expect(result1).toStrictEqual({
+                    addedKeys: [],
+                    updatedKeys: [],
+                    deletedKeys: [],
+                    nonUniqueKeys: [],
+                    nextMerging: {
+                        strategy: 'ignore_if_modified_after_cursor',
+                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                    }
+                });
+
+                // upsert records with new values
+                const modifiedRecords = [
+                    { id: '3', name: 'Matt Doe' } // NOT the same
+                ];
+                const result2 = await upsertRecords({
+                    records: modifiedRecords,
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId,
+                    syncJobId: 2,
+                    merging: result1.nextMerging
+                });
+
+                expect(result2).toStrictEqual({
+                    addedKeys: [],
+                    updatedKeys: ['3'],
+                    deletedKeys: [],
+                    nonUniqueKeys: [],
+                    nextMerging: {
+                        strategy: 'ignore_if_modified_after_cursor',
+                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                    }
+                });
+            });
         });
 
         it('Should return correct added records count when upserting concurrently', async () => {
