@@ -101,7 +101,8 @@ export async function getRecords({
         }
 
         if (externalIds) {
-            query = query.whereIn('external_id', externalIds);
+            const cleanIds = externalIds.map((id) => id.replaceAll('\x00', ''));
+            query = query.whereIn('external_id', cleanIds);
         }
 
         if (limit) {

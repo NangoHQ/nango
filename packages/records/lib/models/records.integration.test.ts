@@ -542,6 +542,23 @@ describe('Records service', () => {
             expect(records).toContainEqual(expect.objectContaining({ id: '5' }));
         });
 
+        it('should filter out 0x00 in ids', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const toInsert = [{ id: '1', name: 'John Doe' }];
+            await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+            const response = await Records.getRecords({ connectionId, model, externalIds: ['\x001'] });
+
+            expect(response.isOk()).toBe(true);
+            const { records } = response.unwrap();
+
+            expect(records.length).toBe(1);
+            expect(records).toContainEqual(expect.objectContaining({ id: '1', name: 'John Doe' }));
+        });
+
         it('Should be able to retrieve 20K records in under 5s with a cursor', async () => {
             const numOfRecords = 20000;
             const limit = 1000;
