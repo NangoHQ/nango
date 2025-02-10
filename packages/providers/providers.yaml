@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
 1password-scim:
-    display_name: 1Password SCIM
+    display_name: 1Password (SCIM)
     categories:
         - other
     auth_mode: API_KEY
