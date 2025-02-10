@@ -59,8 +59,8 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
     "end_user": {
-      "id": "<END-USER-ID>",
-      "email": "<END-USER-EMAIL>",
+      "id": "<REQUIRED-END-USER-ID>",
+      "email": "<OPTIONAL-END-USER-EMAIL>",
       "display_name": "<OPTIONAL-END-USER-DISPLAY-NAME>"
     },
     "organization": {
@@ -81,16 +81,35 @@ curl --request POST \
 <Accordion title="ℹ️ Details on end user and organization information">
   The `end_user` and `organization` information fields help identify which connection belongs to which end user and organization. This information is also used for display purposes in the Nango UI and, in some cases, for custom billing plans.
 
-  Required field:
-  - `end_user.id`: Your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are crucial for reconciling the connection details that your backend receives from Nango once the connection is successfully created (as described in the [section 3](#3-listen-for-webhoooks-and-save-the-connection-id-backend)).
+  <Info>
+    The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhoooks-and-save-the-connection-id-backend)).
+  </Info>
+
+  <Info>
+    It's possible that the end use's email in your app will not match the email they use to connect their external account, which is fine.
+  </Info>
 
   <Info>
   **Organization-level connections**
 
-  In some cases, a connection belongs to an organization rather than a user. In such cases, fill in the relevant organization information, in additional to the required end user information (based on the user who initiated the authorization flow). Sometimes, the user email in your app will not match the email they use to connect their external account, which is fine. If you really cannot provide a user ID and email, you can use placeholders without affecting how Nango operates.
-  </Info>
+  In some cases, a connection belongs to an organization rather than a user. In such cases, fill in the relevant organization information and use a place holder for the required `end_user.id` (or use the information of the user who initiated the authorization flow). 
+  </Info>  
 
 </Accordion>
+
+<Tip>
+  Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from: 
+
+  <Frame caption="Nango's default authorization UI.">
+    <img src="/images/connect-integration-list.png" />
+  </Frame>
+
+  Passing a single integration ID in `allowed_integrations` will send the end user directly to this integration's authorization flow:
+
+  <Frame caption="Nango's default authorization UI.">
+    <img src="/images/connect-linear-only.png" />
+  </Frame>
+</Tip>
 
 ## 2. Trigger the auth flow (frontend)
 
