@@ -46,7 +46,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
 
     const connectionConfig = useMemo(() => JSON.stringify(connection.connection_config, null, 4) || '{}', [connection.connection_config]);
     const connectionMetadata = useMemo(() => JSON.stringify(connection.metadata, null, 4) || '{}', [connection.metadata]);
-    const rawTokenResponse = useMemo(() => JSON.stringify(connection.credentials.raw, null, 4) || '{}', [connection.credentials.raw]);
+    const rawTokenResponse = useMemo(
+        () => ('raw' in connection.credentials ? JSON.stringify(connection.credentials.raw, null, 4) : '{}'),
+        [connection.credentials]
+    );
 
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
@@ -120,7 +123,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 {'expires_at' in connection.credentials && connection.credentials.expires_at && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
-                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at.toString())}</span>
+                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at as unknown as string)}</span>
                     </div>
                 )}
             </div>

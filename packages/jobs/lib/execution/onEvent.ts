@@ -1,10 +1,10 @@
 import { Err, metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
 import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
@@ -185,7 +185,7 @@ async function onFailure({
     error,
     endUser
 }: {
-    connection: NangoConnection;
+    connection: ConnectionJobs;
     team?: { id: number; name: string };
     environment: { id: number; name: string };
     syncName: string;
