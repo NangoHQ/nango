@@ -23,7 +23,7 @@ Loom requires **SSO to be enabled** before generating SCIM credentials. Ensure y
 
 ---
 
-## **Step 1: Verify Your Domain**
+## Step 1: Verify Your Domain
 Before configuring SSO or SCIM, an **Admin must verify the domain**.
 
 1. Log in to the **Loom Admin Console**.
@@ -39,7 +39,7 @@ Ensure no users with **unverified domains** are already invited to your workspac
 
 ---
 
-## **Step 2: Configure SSO**
+## Step 2: Configure SSO
 Once your domain is verified, follow these steps to enable **Single Sign-On (SSO)**.
 
 1. Log in to **Loom Admin Console**.
@@ -47,7 +47,7 @@ Once your domain is verified, follow these steps to enable **Single Sign-On (SSO
 3. Click **Configure SSO** and follow the step-by-step guide.
 4. Set the **Default Role** for newly provisioned users.
 
-### **Testing SSO Before Enforcing**
+### Testing SSO Before Enforcing
 Loom provides an **Enforce SSO** setting:
 - **Toggle OFF** → Users can continue logging in with email/password.
 - **Toggle ON** → Users **must** authenticate using SSO.
@@ -57,7 +57,7 @@ After enabling SSO, existing users must **log out and log back in** via SSO to b
 
 ---
 
-## **Step 3: Retrieve Your Loom SCIM API Key**
+## Step 3: Retrieve Your Loom SCIM API Key
 
 1. Log in to the [Loom Admin Console](https://www.loom.com/admin/security).
 2. Navigate to **Security** → **Directory Sync (SCIM)**.
@@ -67,7 +67,7 @@ After enabling SSO, existing users must **log out and log back in** via SSO to b
 
 ---
 
-## **Step 4: Get Your SCIM Bridge URL**
+## Step 4: Get Your SCIM Bridge URL
 Your **SCIM Bridge URL** is typically provided in **WorkOS** or Loom's SCIM setup guide. It should follow this format:
 
 https://scim.yourdomain.com
@@ -78,7 +78,7 @@ If you're unsure of your SCIM Bridge URL:
 
 ---
 
-## **Step 5: Enable Domain Capture**
+## Step 5: Enable Domain Capture
 Loom’s **Domain Capture** setting ensures that all users with your **verified domain** automatically join your **Enterprise workspace**.
 
 1. Log in to **Loom Admin Console**.
@@ -94,7 +94,7 @@ If **Directory Sync (SCIM)** is enabled, users are provisioned **immediately** w
 
 ---
 
-## **Step 6: Connect Your Loom SCIM Account**
+## Step 6: Connect Your Loom SCIM Account
 To authenticate with Loom SCIM, follow these steps:
 
 1. Open the **Loom SCIM integration setup** in Nango.
