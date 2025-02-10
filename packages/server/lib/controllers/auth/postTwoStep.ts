@@ -190,10 +190,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            account,
+            config,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -212,8 +212,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            account
         );
         if (logCtx) {
             await logCtx.error('Error during TwoStep credentials creation', { error: err });

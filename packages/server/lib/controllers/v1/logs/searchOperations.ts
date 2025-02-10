@@ -30,7 +30,12 @@ const validation = z
                     'deploy',
                     'auth',
                     'admin',
-                    'webhook'
+                    'webhook',
+                    'webhook:incoming',
+                    'webhook:forward',
+                    'webhook:sync',
+                    'webhook:connection_create',
+                    'webhook:connection_refresh'
                 ])
             )
             .max(20)

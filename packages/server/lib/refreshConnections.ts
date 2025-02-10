@@ -65,14 +65,25 @@ export async function exec(): Promise<void> {
                     }
 
                     const { connection, account, environment, integration } = staleConnection;
-                    const decrypted = encryptionManager.decryptConnection(connection);
-                    logger.info(`${cronName} refreshing connection '${connection.connection_id}' for accountId '${account.id}'`);
+
+                    const decryptedConnection = encryptionManager.decryptConnection(connection);
+                    if (!decryptedConnection) {
+                        logger.error(`${cronName} failed to decrypt stale connection '${connection.id}'`);
+                        continue;
+                    }
+
+                    const decryptedIntegration = encryptionManager.decryptProviderConfig(integration);
+                    if (!decryptedIntegration) {
+                        logger.error(`${cronName} failed to decrypt integration '${integration.id} for stale connection '${connection.id}'`);
+                        continue;
+                    }
+
                     try {
                         const credentialResponse = await connectionService.refreshOrTestCredentials({
                             account,
                             environment,
-                            integration,
-                            connection: decrypted,
+                            integration: decryptedIntegration,
+                            connection: decryptedConnection,
                             logContextGetter,
                             instantRefresh: false,
                             onRefreshSuccess: connectionRefreshSuccessHook,
