@@ -208,7 +208,34 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
-    public override getObjectsByIds<K = any, T = any>(_ids: K[], _model: string): Promise<Map<K, T>> {
-        return Promise.resolve(new Map<K, T>());
+    public override async getObjectsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+        const objects = new Map<K, T>();
+
+        if (ids.length === 0) {
+            return objects;
+        }
+
+        const externalIds = ids.map((id) => String(id).replaceAll('\x00', ''));
+        const externalIdMap = new Map<string, K>(ids.map((id) => [String(id), id]));
+
+        const response = await this.nango.listRecords<any>({
+            providerConfigKey: this.providerConfigKey,
+            connectionId: this.connectionId,
+            model,
+            ids: externalIds
+        });
+
+        const records = response.records;
+
+        for (const record of records) {
+            const stringId = String(record.id);
+            const realId = externalIdMap.get(stringId);
+            if (realId !== undefined) {
+                const { _nango_metadata, ...recordWithoutMetadata } = record;
+                objects.set(realId, recordWithoutMetadata as T);
+            }
+        }
+
+        return objects;
     }
 }
