@@ -186,7 +186,7 @@ class ConnectionService {
         environment: DBEnvironment;
         account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
-        const encryptedConnection = encryptionManager.encryptConnection({
+        const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config.id as number,
