@@ -29,6 +29,8 @@ const validation = z
                     'proxy',
                     'deploy',
                     'auth',
+                    'auth:create_connection',
+                    'auth:refresh_token',
                     'admin',
                     'webhook',
                     'webhook:incoming',

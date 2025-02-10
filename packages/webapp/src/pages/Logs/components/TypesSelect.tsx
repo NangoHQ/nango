@@ -67,7 +67,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-0 text-white bg-active-gray">
+            <PopoverContent className="w-80 p-0 text-white bg-active-gray">
                 <Command>
                     <CommandList className="max-h-none h-[415px]">
                         <CommandEmpty>No framework found.</CommandEmpty>
