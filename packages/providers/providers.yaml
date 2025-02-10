@@ -4684,7 +4684,7 @@ linkhut:
     docs: https://docs.nango.dev/integrations/all/linkhut
 
 loom-scim:
-    display_name: Loom SCIM
+    display_name: Loom (SCIM)
     categories:
         - other
     auth_mode: API_KEY
