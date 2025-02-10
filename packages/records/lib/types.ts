@@ -57,6 +57,7 @@ export interface UpsertSummary {
     addedKeys: string[];
     updatedKeys: string[];
     deletedKeys?: string[];
+    unchangedKeys: string[];
     nonUniqueKeys: string[];
     nextMerging: MergingStrategy;
 }

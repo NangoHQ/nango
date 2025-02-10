@@ -4,7 +4,7 @@ import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
 import type { TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
+import type { Sync, SyncResult, Job as SyncJob, SyncResultByModel } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 import { envs } from '../env.js';
@@ -29,7 +29,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
-            const expectedResult = { added: 0, updated: 0, deleted: 0 };
+            const expectedResult = { added: 0, updated: 0, deleted: 0, unchanged: 2 };
             const { records } = await verifySyncRun(rawRecords, rawRecords, expectedResult, trackDeletes);
             records.forEach((record) => {
                 expect(record._nango_metadata.first_seen_at).toEqual(record._nango_metadata.last_modified_at);
@@ -47,7 +47,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'A' },
                 { id: '3', name: 'c' }
             ];
-            const expectedResult = { added: 1, updated: 1, deleted: 0 };
+            const expectedResult = { added: 1, updated: 1, deleted: 0, unchanged: 0 };
             const { records } = await verifySyncRun(rawRecords, newRecords, expectedResult, trackDeletes);
 
             const record1 = records.find((record) => record.id == '1');
@@ -75,7 +75,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
-            const expectedResult = { added: 0, updated: 0, deleted: 0 };
+            const expectedResult = { added: 0, updated: 0, deleted: 0, unchanged: 2 };
             const { records } = await verifySyncRun(rawRecords, rawRecords, expectedResult, trackDeletes);
             expect(records).lengthOf(2);
             records.forEach((record) => {
@@ -94,7 +94,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'A' },
                 { id: '3', name: 'c' }
             ];
-            const expectedResult = { added: 1, updated: 1, deleted: 1 };
+            const expectedResult = { added: 1, updated: 1, deleted: 1, unchanged: 0 };
             const { records } = await verifySyncRun(rawRecords, newRecords, expectedResult, trackDeletes);
             const record1 = records.find((record) => record.id == '1');
             if (!record1) throw new Error('record1 is not defined');
@@ -118,7 +118,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
-            const expectedResult = { added: 0, updated: 0, deleted: 0 };
+            const expectedResult = { added: 0, updated: 0, deleted: 0, unchanged: 2 };
             const { connection, sync, model, syncConfig } = await verifySyncRun(initialRecords, initialRecords, expectedResult, trackDeletes);
 
             // records '2' is going to be deleted
@@ -134,7 +134,7 @@ describe('Running sync', () => {
 
             // records '2' should be back
             const result = await runJob(initialRecords, connection, sync, syncConfig, false);
-            expect(result).toEqual({ added: 1, updated: 0, deleted: 0 });
+            expect(result).toEqual({ added: 1, updated: 0, deleted: 0, unchanged: 1 });
 
             const recordsAfter = await getRecords(connection, model);
             const recordAfter = recordsAfter.find((record) => record.id == '2');
@@ -153,7 +153,7 @@ describe('Running sync', () => {
                 { id: '1', name: 'a' },
                 { id: '2', name: 'b' }
             ];
-            const expectedResult = { added: 0, updated: 0, deleted: 2 };
+            const expectedResult = { added: 0, updated: 0, deleted: 2, unchanged: 0 };
             const { records } = await verifySyncRun(rawRecords, rawRecords, expectedResult, trackDeletes, softDelete);
             expect(records).lengthOf(2);
             records.forEach((record) => {
@@ -233,11 +233,12 @@ const runJob = async (
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
     }
     const summary = upserting.value;
-    const updatedResults = {
+    const updatedResults: SyncResultByModel = {
         [model]: {
             added: summary.addedKeys.length,
             updated: summary.updatedKeys.length,
-            deleted: summary.deletedKeys?.length || 0
+            deleted: summary.deletedKeys?.length || 0,
+            unchanged: summary.unchangedKeys.length
         }
     };
     await updateSyncJobResult(syncJob.id, updatedResults, model);
@@ -254,7 +255,8 @@ const runJob = async (
     return {
         added: latestSyncJob.result?.[model]?.added || 0,
         updated: latestSyncJob.result?.[model]?.updated || 0,
-        deleted: latestSyncJob.result?.[model]?.deleted || 0
+        deleted: latestSyncJob.result?.[model]?.deleted || 0,
+        unchanged: latestSyncJob.result?.[model]?.unchanged || 0
     };
 };
 

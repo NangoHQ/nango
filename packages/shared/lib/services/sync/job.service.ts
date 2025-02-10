@@ -130,14 +130,15 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 
             return updatedRow as SyncJob;
         } else {
-            const { added, updated, deleted } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
+            const { added, updated, deleted, unchanged } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
 
             const incomingResult = result[model];
             const finalResult = {
                 ...existingResult,
                 [model]: {
                     added: Number(added) + Number(incomingResult?.added),
-                    updated: Number(updated) + Number(incomingResult?.updated)
+                    updated: Number(updated) + Number(incomingResult?.updated),
+                    unchanged: Number(unchanged) + Number(incomingResult?.unchanged)
                 }
             };
 

@@ -21,6 +21,7 @@ export interface SyncResult {
     added: number;
     updated: number;
     deleted: number;
+    unchanged: number;
 }
 
 export type SyncResultByModel = Record<string, SyncResult>;

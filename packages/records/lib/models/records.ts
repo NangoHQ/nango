@@ -274,7 +274,7 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], unchangedKeys: [], nonUniqueKeys, nextMerging: merging };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -358,6 +358,7 @@ export async function upsert({
                 const undeleted = updatedRes.filter((r) => r.status === 'undeleted').map((r) => r.external_id);
                 const deleted = updatedRes.filter((r) => r.status === 'deleted').map((r) => r.external_id);
                 const updated = updatedRes.filter((r) => r.status === 'changed').map((r) => r.external_id);
+                const unchanged = updatedRes.filter((r) => r.status === 'unchanged').map((r) => r.external_id);
 
                 if (softDelete) {
                     summary.deletedKeys?.push(...deleted);
@@ -365,6 +366,7 @@ export async function upsert({
                     summary.addedKeys.push(...inserted.concat(undeleted));
                     summary.updatedKeys.push(...updated);
                 }
+                summary.unchangedKeys = unchanged;
 
                 const lastRecord = updatedRes[updatedRes.length - 1];
                 if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
@@ -522,6 +524,7 @@ export async function update({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
+            unchangedKeys: [],
             nonUniqueKeys,
             nextMerging
         });

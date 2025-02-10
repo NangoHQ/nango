@@ -229,7 +229,7 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
                         model,
                         now: nangoProps.startedAt,
                         success: true,
-                        responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0 },
+                        responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0, unchanged: 0 },
                         operation: 'WEBHOOK'
                     });
 

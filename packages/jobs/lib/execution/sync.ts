@@ -245,7 +245,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                 [model]: {
                     added: 0,
                     updated: 0,
-                    deleted: deletedKeys.length
+                    deleted: deletedKeys.length,
+                    unchanged: 0
                 }
             };
 
@@ -277,20 +278,23 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             let added = 0;
             let updated = 0;
             let deleted = 0;
+            let unchanged = 0;
 
             if (result && result[model]) {
                 const modelResult = result[model] as SyncResult;
                 added = modelResult.added;
                 updated = modelResult.updated;
                 deleted = modelResult.deleted;
+                unchanged = modelResult.unchanged;
             } else {
                 // legacy json structure
                 added = (result?.['added'] as unknown as number) ?? 0;
                 updated = (result?.['updated'] as unknown as number) ?? 0;
                 deleted = (result?.['deleted'] as unknown as number) ?? 0;
+                unchanged = (result?.['unchanged'] as unknown as number) ?? 0;
             }
 
-            syncPayload.records[model] = { added, updated, deleted };
+            syncPayload.records[model] = { added, updated, deleted, unchanged };
 
             if (webhookSettings && environment) {
                 const span = tracer.startSpan('jobs.sync.webhook', {
@@ -320,7 +324,8 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 responseResults: {
                                     added,
                                     updated,
-                                    deleted
+                                    deleted,
+                                    unchanged
                                 },
                                 operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
                             });

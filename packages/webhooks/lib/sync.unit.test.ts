@@ -80,7 +80,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
-        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const responseResults = { added: 10, updated: 0, deleted: 0, unchanged: 0 };
 
         await sendSync({
             account,
@@ -104,7 +104,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is not present even if always send is checked', async () => {
-        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const responseResults = { added: 10, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -127,7 +127,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should not send a sync webhook if the webhook url is present but if always send is not checked and there were no sync changes', async () => {
-        const responseResults = { added: 0, updated: 0, deleted: 0 };
+        const responseResults = { added: 0, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -149,7 +149,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is not checked and there were sync changes', async () => {
-        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const responseResults = { added: 10, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -171,7 +171,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is checked and there were sync changes', async () => {
-        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const responseResults = { added: 10, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -193,7 +193,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should send an sync webhook if the webhook url is present and if always send is checked and there were no sync changes', async () => {
-        const responseResults = { added: 0, updated: 0, deleted: 0 };
+        const responseResults = { added: 0, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -215,7 +215,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should send an sync webhook twice if the webhook url and secondary are present and if always send is checked and there were no sync changes', async () => {
-        const responseResults = { added: 0, updated: 0, deleted: 0 };
+        const responseResults = { added: 0, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,
@@ -238,7 +238,7 @@ describe('Webhooks: sync notification tests', () => {
     it('Should send a webhook with the correct body on sync success', async () => {
         const now = new Date();
 
-        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const responseResults = { added: 10, updated: 0, deleted: 0, unchanged: 0 };
         await sendSync({
             account,
             connection,

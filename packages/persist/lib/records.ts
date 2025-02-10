@@ -1,5 +1,6 @@
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
+import type { SyncResultByModel } from '@nangohq/shared';
 import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
@@ -105,18 +106,19 @@ export async function persistRecords({
     const persistResult = await persistFunction(formatting.value);
     if (persistResult.isOk()) {
         const summary = persistResult.value;
-        const updatedResults = {
+        const updatedResults: SyncResultByModel = {
             [model]: {
                 added: summary.addedKeys.length,
                 updated: summary.updatedKeys.length,
-                deleted: summary.deletedKeys?.length || 0
+                deleted: summary.deletedKeys?.length || 0,
+                unchanged: summary.unchangedKeys.length
             }
         };
         for (const nonUniqueKey of summary.nonUniqueKeys) {
             await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`);
         }
 
-        const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
+        const total = summary.addedKeys.length + summary.unchangedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
         await logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
             persistType,
             updatedResults

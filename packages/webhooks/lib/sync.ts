@@ -98,15 +98,13 @@ export const sendSync = async ({
             responseResults: {
                 added: responseResults.added,
                 updated: responseResults.updated,
-                deleted: 0
+                deleted: responseResults.deleted,
+                unchanged: responseResults.unchanged
             },
             modifiedAfter: dayjs(now).toDate().toISOString(),
             queryTimeStamp: now as unknown as string // Deprecated
         };
 
-        if (responseResults.deleted && responseResults.deleted > 0) {
-            finalBody.responseResults.deleted = responseResults.deleted;
-        }
         endingMessage = noChanges ? 'with no data changes as per your environment settings.' : 'with data changes.';
     } else {
         finalBody = {
