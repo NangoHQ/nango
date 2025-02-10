@@ -1,7 +1,7 @@
 import { vi, expect, describe, it, beforeEach } from 'vitest';
 import { sendAuth } from './auth.js';
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, Connection, DBExternalWebhook, DBEnvironment, DBTeam, IntegrationConfig } from '@nangohq/types';
+import type { NangoAuthWebhookBodySuccess, DBExternalWebhook, DBEnvironment, DBConnection, IntegrationConfig, DBTeam } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
@@ -14,7 +14,8 @@ const account: DBTeam = {
     updated_at: new Date()
 };
 
-const connection: Pick<Connection, 'connection_id' | 'provider_config_key'> = {
+const connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key'> = {
+    id: 1,
     connection_id: '1',
     provider_config_key: 'providerkey'
 };

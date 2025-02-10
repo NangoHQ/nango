@@ -1,8 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import type { Connection } from '../models/Connection.js';
 import get from 'lodash-es/get.js';
+import type { DBConnection } from '@nangohq/types';
 
 export enum UserType {
     Local = 'localhost',
@@ -224,7 +224,7 @@ export function extractValueByPath(obj: Record<string, any>, path: string): any 
     return get(obj, path);
 }
 
-export function connectionCopyWithParsedConnectionConfig(connection: Pick<Connection, 'connection_config'>) {
+export function connectionCopyWithParsedConnectionConfig(connection: Pick<DBConnection, 'connection_config'>) {
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;

@@ -57,7 +57,7 @@ describe(`GET ${endpoint}`, () => {
                     created: expect.toBeIsoDateTimezone(),
                     end_user: null,
                     errors: [],
-                    id: conn.id!,
+                    id: conn.id,
                     metadata: null,
                     provider: 'github',
                     provider_config_key: 'github'
@@ -103,7 +103,7 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json).toMatchObject({
             connections: [
                 {
-                    id: conn.id!,
+                    id: conn.id,
                     provider_config_key: 'github',
                     connection_id: conn.connection_id,
                     end_user: {
