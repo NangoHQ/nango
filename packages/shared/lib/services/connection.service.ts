@@ -13,7 +13,6 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { ConnectionConfig, Connection, StoredConnection, NangoConnection } from '../models/Connection.js';
 import type {
     Metadata,
     Provider,
@@ -34,7 +33,10 @@ import type {
     ProviderTwoStep,
     ProviderSignature,
     SignatureCredentials,
-    MessageRowInsert
+    MessageRowInsert,
+    DBConnectionDecrypted,
+    ConnectionConfig,
+    ConnectionInternal
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -114,6 +116,7 @@ class ConnectionService {
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
+                ...storedConnection,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
@@ -123,11 +126,9 @@ class ConnectionService {
                 metadata: metadata || storedConnection.metadata || null
             });
 
-            (encryptedConnection as Connection).updated_at = new Date();
-
             const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
+                .from<DBConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection)
                 .returning('*');
 
@@ -136,20 +137,22 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
-        const connection = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .insert(
-                encryptionManager.encryptConnection({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    config_id: config_id as number,
-                    credentials: parsedRawCredentials,
-                    connection_config: connectionConfig || {},
-                    environment_id: environmentId,
-                    metadata: metadata || null
-                })
-            )
-            .returning('*');
+        const { id, ...data } = encryptionManager.encryptConnection({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            config_id: config_id as number,
+            credentials: parsedRawCredentials,
+            connection_config: connectionConfig || {},
+            environment_id: environmentId,
+            metadata: metadata || null,
+            created_at: new Date(),
+            updated_at: new Date(),
+            id: -1,
+            last_fetched_at: null,
+            deleted: false,
+            deleted_at: null
+        });
+        const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
         void analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
@@ -190,15 +193,29 @@ class ConnectionService {
             credentials,
             connection_config: connectionConfig || {},
             environment_id: environment.id,
-            metadata: metadata || null
+            metadata: metadata || null,
+            created_at: new Date(),
+            updated_at: new Date(),
+            id: -1,
+            last_fetched_at: null,
+            deleted: false,
+            deleted_at: null
         });
 
         const [connection] = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .insert(encryptedConnection)
             .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
             .merge({
-                ...encryptedConnection,
+                connection_id: encryptedConnection.connection_id,
+                provider_config_key: encryptedConnection.provider_config_key,
+                config_id: encryptedConnection.config_id,
+                credentials: encryptedConnection.credentials,
+                credentials_iv: encryptedConnection.credentials_iv,
+                credentials_tag: encryptedConnection.credentials_tag,
+                connection_config: encryptedConnection.connection_config,
+                environment_id: encryptedConnection.environment_id,
+                metadata: encryptedConnection.connection_config,
                 updated_at: new Date()
             })
             .returning('*');
@@ -238,8 +255,8 @@ class ConnectionService {
 
         if (storedConnection) {
             const connection = await db.knex
-                .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id!, deleted: false })
+                .from<DBConnection>(`_nango_connections`)
+                .where({ id: storedConnection.id, deleted: false })
                 .update({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
@@ -255,7 +272,7 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
         const connection = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .insert({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -356,25 +373,16 @@ class ConnectionService {
         return [importedConnection];
     }
 
-    public async getConnectionById(
-        id: number
-    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config' | 'metadata'> | null> {
-        const result = await db.knex
-            .from<StoredConnection>('_nango_connections')
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata')
-            .where({ id: id, deleted: false });
+    public async getConnectionById(id: number): Promise<DBConnection | null> {
+        const result = await db.knex.from<DBConnection>('_nango_connections').select<DBConnection>('*').where({ id: id, deleted: false }).first();
 
-        if (!result || result.length == 0 || !result[0]) {
-            return null;
-        }
-
-        return result[0];
+        return result || null;
     }
 
-    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | StoredConnection> {
+    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | DBConnection> {
         const result = await db.knex
-            .select<StoredConnection>('*')
-            .from<StoredConnection>('_nango_connections')
+            .select<DBConnection>('*')
+            .from<DBConnection>('_nango_connections')
             .where({
                 connection_id,
                 provider_config_key,
@@ -386,10 +394,10 @@ class ConnectionService {
         return result || null;
     }
 
-    public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {
+    public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<DBConnectionDecrypted>> {
         const rawConnection = await db.knex
             .from(`_nango_connections`)
-            .select<StoredConnection[]>('*')
+            .select<DBConnection[]>('*')
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id, deleted: false })
             .limit(1)
             .first();
@@ -407,7 +415,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection)!;
+        const connection = encryptionManager.decryptConnection(rawConnection);
 
         // Parse the token expiration date.
         const credentials = connection.credentials;
@@ -428,7 +436,7 @@ class ConnectionService {
         connectionId: string;
         providerConfigKey: string;
         environmentId: number;
-    }): Promise<Result<{ connection: Connection; end_user: DBEndUser }>> {
+    }): Promise<Result<{ connection: DBConnectionDecrypted; end_user: DBEndUser }>> {
         const result = await db.knex
             .select<{
                 connection: DBConnection;
@@ -442,12 +450,12 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection)!, end_user: result.end_user });
+        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: Connection) {
+    public async updateConnection(connection: DBConnectionDecrypted) {
         await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
                 provider_config_key: connection.provider_config_key,
@@ -457,8 +465,8 @@ class ConnectionService {
             .update(encryptionManager.encryptConnection(connection));
     }
 
-    public async getMetadata(connection: Connection): Promise<Record<string, string>> {
-        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('metadata').where({
+    public async getMetadata(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<Record<string, string>> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('metadata').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
             environment_id: connection.environment_id,
@@ -472,8 +480,8 @@ class ConnectionService {
         return result[0].metadata;
     }
 
-    public async getConnectionConfig(connection: Pick<Connection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
-        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('connection_config').where({
+    public async getConnectionConfig(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('connection_config').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
             environment_id: connection.environment_id,
@@ -489,7 +497,7 @@ class ConnectionService {
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
         const res = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .where({ environment_id: environmentId, provider_config_key: providerConfigKey, deleted: false })
             .count<{ count: string }>('*')
             .first();
@@ -497,10 +505,12 @@ class ConnectionService {
         return res?.count ? Number(res.count) : 0;
     }
 
-    public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
+    public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<ConnectionInternal[]> {
         const result = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
+            .from<DBConnection>(`_nango_connections`)
+            .select<
+                Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config'>[]
+            >('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
@@ -510,8 +520,8 @@ class ConnectionService {
         return result;
     }
 
-    public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<StoredConnection[]> {
-        const result = await db.knex.from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
+    public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<DBConnection[]> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
             return [];
@@ -520,7 +530,7 @@ class ConnectionService {
         return result;
     }
 
-    public async copyConnections(connections: StoredConnection[], environment_id: number, config_id: number) {
+    public async copyConnections(connections: DBConnection[], environment_id: number, config_id: number) {
         const newConnections = connections.map((connection) => {
             return {
                 ...connection,
@@ -541,14 +551,14 @@ class ConnectionService {
         days: number;
         limit: number;
         cursor?: number | undefined;
-    }): Promise<{ connection: Connection; account: DBTeam; environment: DBEnvironment; cursor: number; integration: ProviderConfig }[]> {
+    }): Promise<{ connection: DBConnection; account: DBTeam; environment: DBEnvironment; cursor: number; integration: ProviderConfig }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
         type T = Awaited<ReturnType<ConnectionService['getStaleConnections']>>;
 
         const query = db
-            .knex<StoredConnection>(`_nango_connections`)
+            .knex<DBConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
@@ -572,26 +582,26 @@ class ConnectionService {
     }
 
     public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
-        await trx.from<StoredConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
+        await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
-    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
-        await db.knex
-            .from<StoredConnection>(`_nango_connections`)
-            .where({ id: connection.id as number, deleted: false })
-            .update({ connection_config: config });
+    public async replaceConnectionConfig(connection: Pick<DBConnection, 'id'>, config: ConnectionConfig) {
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id: connection.id, deleted: false }).update({ connection_config: config });
     }
 
-    public async updateMetadata(connections: Connection[], metadata: Metadata): Promise<void> {
+    public async updateMetadata(connections: Pick<DBConnection, 'id' | 'metadata'>[], metadata: Metadata): Promise<void> {
         await db.knex.transaction(async (trx) => {
             for (const connection of connections) {
                 const newMetadata = { ...connection.metadata, ...metadata };
-                await this.replaceMetadata([connection.id as number], newMetadata, trx);
+                await this.replaceMetadata([connection.id], newMetadata, trx);
             }
         });
     }
 
-    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
+    public async updateConnectionConfig(
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>,
+        config: ConnectionConfig
+    ): Promise<ConnectionConfig> {
         const existingConfig = await this.getConnectionConfig(connection);
         const newConfig = { ...existingConfig, ...config };
         await this.replaceConnectionConfig(connection, newConfig);
@@ -599,9 +609,9 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<Connection[] | null> {
+    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
@@ -610,7 +620,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
+        return result.map((connection) => encryptionManager.decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -623,13 +633,13 @@ class ConnectionService {
         payloadIdentifier: string;
         configId: number | undefined;
         environmentId: number;
-    }): Promise<Connection[] | null> {
+    }): Promise<DBConnectionDecrypted[] | null> {
         if (!configId) {
             return null;
         }
 
         const result = await db.knex
-            .from<StoredConnection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId, config_id: configId })
             // escape the question mark so it doesn't try to bind it as a parameter
@@ -640,11 +650,11 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
+        return result.map((connection) => encryptionManager.decryptConnection(connection));
     }
 
-    public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<Connection[] | null> {
-        let query = db.knex.from<StoredConnection>(`_nango_connections`).select('*').where({ environment_id: environmentId });
+    public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
+        let query = db.knex.from<DBConnection>(`_nango_connections`).select('*').where({ environment_id: environmentId });
 
         Object.entries(keyValuePairs).forEach(([key, value]) => {
             query = query.andWhereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
@@ -656,7 +666,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection) as Connection);
+        return result.map((connection) => encryptionManager.decryptConnection(connection));
     }
 
     public async count({
@@ -720,7 +730,7 @@ class ConnectionService {
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.knex
-            .from<Connection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
@@ -789,7 +799,7 @@ class ConnectionService {
         logContextGetter,
         preDeletionHook
     }: {
-        connection: Connection;
+        connection: DBConnectionDecrypted;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
@@ -799,7 +809,7 @@ class ConnectionService {
         await preDeletionHook();
 
         const del = await db.knex
-            .from<Connection>(`_nango_connections`)
+            .from(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
                 provider_config_key: providerConfigKey,
@@ -812,7 +822,7 @@ class ConnectionService {
         // so we can remove the orchestrator and logContextGetter dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         const slackService = new SlackService({ logContextGetter, orchestrator });
-        await slackService.closeOpenNotificationForConnection({ connectionId: connection.id!, environmentId });
+        await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;
     }
@@ -830,13 +840,13 @@ class ConnectionService {
     }: {
         account: DBTeam;
         environment: DBEnvironment;
-        connection: Connection;
+        connection: DBConnectionDecrypted;
         integration: IntegrationConfig;
         logContextGetter: LogContextGetter;
         instantRefresh: boolean;
-        onRefreshSuccess: (args: { connection: Connection; environment: DBEnvironment; config: ProviderConfig }) => Promise<void>;
+        onRefreshSuccess: (args: { connection: DBConnectionDecrypted; environment: DBEnvironment; config: ProviderConfig }) => Promise<void>;
         onRefreshFailed: (args: {
-            connection: Connection;
+            connection: DBConnectionDecrypted;
             logCtx: LogContext;
             authError: { type: string; description: string };
             environment: DBEnvironment;
@@ -854,7 +864,7 @@ class ConnectionService {
                   connectionConfig: ConnectionConfig;
               }) => Promise<Result<{ logs: MessageRowInsert[] }, NangoError>>)
             | undefined;
-    }): Promise<Result<Connection, NangoError>> {
+    }): Promise<Result<DBConnectionDecrypted, NangoError>> {
         return await tracer.trace('nango.connection.refreshCredentials', async (span) => {
             const provider = getProvider(integration.provider);
             if (!provider) {
@@ -896,7 +906,7 @@ class ConnectionService {
                             account,
                             environment,
                             integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
-                            connection: { id: connection.id!, name: connection.connection_id }
+                            connection: { id: connection.id, name: connection.connection_id }
                         }
                     );
 
@@ -924,7 +934,7 @@ class ConnectionService {
 
                     // there was an attempt to refresh the token so clear it from the queue
                     // of connections to refresh if it failed
-                    await this.updateLastFetched(connection.id!);
+                    await this.updateLastFetched(connection.id);
                     span.setTag('error', error!.type);
                     return Err(errorWithPayload);
                 } else if (response.refreshed) {
@@ -952,7 +962,7 @@ class ConnectionService {
                                 account,
                                 environment,
                                 integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
-                                connection: { id: connection.id!, name: connection.connection_id }
+                                connection: { id: connection.id, name: connection.connection_id }
                             }
                         );
                         if ('logs' in result.error.payload) {
@@ -981,7 +991,7 @@ class ConnectionService {
 
                         // there was an attempt to test the credentials
                         // so clear it from the queue if it failed
-                        await this.updateLastFetched(connection.id!);
+                        await this.updateLastFetched(connection.id);
 
                         const { credentials, ...connectionWithoutCredentials } = copy;
                         const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
@@ -997,14 +1007,14 @@ class ConnectionService {
                 }
             }
 
-            await this.updateLastFetched(connection.id!);
+            await this.updateLastFetched(connection.id);
 
             return Ok(copy);
         });
     }
 
     public async updateLastFetched(id: number) {
-        await db.knex.from<Connection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
@@ -1202,7 +1212,7 @@ class ConnectionService {
 
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
-            connection: Connection;
+            connection: DBConnectionDecrypted;
             freshCredentials:
                 | OAuth2Credentials
                 | AppCredentials
@@ -1256,7 +1266,7 @@ class ConnectionService {
             const ttlInMs = 10000;
             const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
 
-            let connectionToRefresh: Connection;
+            let connectionToRefresh: DBConnectionDecrypted;
             try {
                 const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
                 lock = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
@@ -1334,7 +1344,7 @@ class ConnectionService {
 
     public async getAppStoreCredentials(
         provider: Provider,
-        connectionConfig: Connection['connection_config'],
+        connectionConfig: DBConnection['connection_config'],
         privateKey: string
     ): Promise<ServiceResponse<AppStoreCredentials>> {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP_STORE'] as string);
@@ -1421,12 +1431,12 @@ class ConnectionService {
     public async getAppCredentials(
         provider: Provider,
         config: ProviderConfig,
-        connectionConfig: Connection['connection_config']
+        connectionConfig: DBConnection['connection_config']
     ): Promise<ServiceResponse<AppCredentials>> {
         const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['APP'] as string);
 
         const tokenUrl = interpolateStringFromObject(templateTokenUrl, { connectionConfig });
-        const privateKeyBase64 = config?.custom ? config.custom['private_key'] : config.oauth_client_secret;
+        const privateKeyBase64 = config.custom ? config.custom['private_key'] : config.oauth_client_secret;
 
         const privateKey = Buffer.from(privateKeyBase64 as string, 'base64').toString('utf8');
 
@@ -1440,7 +1450,7 @@ class ConnectionService {
         const payload: Record<string, string | number> = {
             iat: now,
             exp: expiration,
-            iss: (config?.custom ? config.custom['app_id'] : config.oauth_client_id) as string
+            iss: (config.custom ? config.custom['app_id'] : config.oauth_client_id) as string
         };
 
         if (!payload['iss'] && connectionConfig['app_id']) {
@@ -1895,7 +1905,7 @@ class ConnectionService {
     }
 
     private async shouldRefreshCredentials(
-        connection: Connection,
+        connection: DBConnectionDecrypted,
         credentials: OAuth2Credentials,
         providerConfig: ProviderConfig,
         provider: ProviderOAuth2,
@@ -1908,7 +1918,7 @@ class ConnectionService {
         let tokenExpirationCondition =
             refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || 15 * 60));
 
-        if ((provider.auth_mode === 'OAUTH2' || credentials?.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
+        if ((provider.auth_mode === 'OAUTH2' || credentials.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
             tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
         }
 
@@ -1916,7 +1926,7 @@ class ConnectionService {
     }
 
     private async getNewCredentials(
-        connection: Connection,
+        connection: DBConnectionDecrypted,
         providerConfig: ProviderConfig,
         provider: Provider
     ): Promise<
@@ -1968,7 +1978,7 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection?.credentials?.type !== 'OAUTH2')) {
+        } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
             const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
 
             if (!success || !credentials) {

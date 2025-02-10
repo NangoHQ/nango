@@ -1,5 +1,4 @@
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { Connection } from '../models/Connection.js';
 import db from '@nangohq/database';
 import { isCloud, nanoid } from '@nangohq/utils';
 import { NangoError } from '../utils/error.js';
@@ -8,7 +7,7 @@ import syncManager from './sync/manager.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
-import type { AuthModeType, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
+import type { AuthModeType, DBConnection, DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface ValidationRule {
@@ -135,7 +134,7 @@ class ConfigService {
         }
 
         await db.knex
-            .from<Connection>(`_nango_connections`)
+            .from<DBConnection>(`_nango_connections`)
             .where({ provider_config_key: providerConfigKey, environment_id: environmentId, deleted: false })
             .update({ deleted: true, deleted_at: new Date() });
         return true;

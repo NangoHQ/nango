@@ -1,9 +1,9 @@
 import get from 'lodash-es/get.js';
 import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, LogActionEnum, LogTypes } from '@nangohq/shared';
-import type { Config as ProviderConfig, Connection } from '@nangohq/shared';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { getOrchestrator } from '../utils/utils.js';
-import type { DBSyncConfig } from '@nangohq/types';
+import type { DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<DBSyncConfig[]>;
@@ -46,7 +46,7 @@ export const internalNango: InternalNango = {
             return { connectionIds: [] };
         }
 
-        let connections: Connection[] | null = null;
+        let connections: DBConnectionDecrypted[] | null = null;
         if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(
                 get(body, connectionIdentifier),
