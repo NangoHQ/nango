@@ -1,4 +1,34 @@
 # yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
+1password-scim:
+    display_name: 1Password (SCIM)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/scim
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/1password-scim
+    docs_connect: https://docs.nango.dev/integrations/all/1password-scim/connect
+    connection_config:
+        domain:
+            type: string
+            title: 1Password SCIM Bridge URL
+            description: The domain for your 1Password SCIM Bridge
+            example: scim.example.com
+            pattern: '^[a-zA-Z0-9.-]+$'
+            prefix: https://
+            doc_section: '#step-2-get-your-scim-bridge-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your 1Password SCIM API Key
+            secret: true
+            doc_section: '#step-1-retrieve-your-1password-scim-api-key'
 accelo:
     display_name: Accelo
     categories:
@@ -6610,7 +6640,44 @@ salesforce-experience-cloud:
             format: uri
             pattern: '^https?://.*$'
             automated: true
-
+salesforce-cdp:
+    display_name: Salesforce (Data Cloud)
+    categories:
+        - storage
+    auth_mode: TWO_STEP
+    token_url: https://login.salesforce.com/services/oauth2/token
+    body_format: form
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${credential.jwt}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    additional_steps:
+        - body_format: form
+          token_params:
+              grant_type: urn:salesforce:grant-type:external:cdp
+              subject_token: ${step1.access_token}
+              subject_token_type: urn:ietf:params:oauth:token-type:access_token
+          token_headers:
+              content-type: application/x-www-form-urlencoded
+          token_url: ${step1.instance_url}/services/a360/token
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://docs.nango.dev/integrations/all/salesforce-cdp
+    docs_connect: https://docs.nango.dev/integrations/all/salesforce-cdp/connect
+    credentials:
+        jwt:
+            type: string
+            title: Encoded JWT
+            description: This is your pre-generated, encoded JSON Web Token (JWT)
+            secret: true
+            doc_section: '#step-1-generating-your-encoded-jwt'
 sap-concur:
     display_name: SAP Concur
     categories:

@@ -230,6 +230,7 @@
         {
             "group": "APIs & Integrations",
             "pages": [
+                "integrations/all/1password-scim",
                 "integrations/all/accelo",
                 "integrations/all/acuity-scheduling",
                 "integrations/all/adobe",
@@ -535,6 +536,7 @@
                 "integrations/all/sage-intacct",
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
+                "integrations/all/salesforce-cdp",
                 "integrations/all/salesforce-sandbox",
                 "integrations/all/salesloft",
                 "integrations/all/sap-concur",

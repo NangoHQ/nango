@@ -186,7 +186,7 @@ class ProxyController {
                 },
                 response: {
                     code: res.statusCode,
-                    headers: getHeaders(res.getHeaders())
+                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
                 }
             });
         }
@@ -251,7 +251,7 @@ class ProxyController {
             },
             response: {
                 code: responseStream.status,
-                headers: responseStream.headers as Record<string, string>
+                headers: redactHeaders({ headers: responseStream.headers as Record<string, string> })
             }
         });
 
