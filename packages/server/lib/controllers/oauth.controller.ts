@@ -7,7 +7,6 @@ import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    getConnectionMetadataFromTokenResponse,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
 import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
@@ -30,7 +29,8 @@ import {
     ErrorSourceEnum,
     interpolateObjectValues,
     getProvider,
-    linkConnection
+    linkConnection,
+    getConnectionMetadataFromTokenResponse
 } from '@nangohq/shared';
 import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
