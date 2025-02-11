@@ -204,53 +204,9 @@ You can now test the authorization flow directly from your app and verify that a
 
 If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
 
-## Reconnect an existing connection
+## Re-authorize an existing connection
 
-When testing or troubleshooting an issue, you may need a user to re-authorize an API. Nango allows you to do this without deleting and recreating the connection. Instead, you can reconnect an existing connection while preserving its metadata and configuration.
-
-In **your backend**, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a session token specifically for reconnecting a user. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
-
-<Tabs>
-
-<Tab title="Node">
-
-```ts
-import { Nango } from '@nangohq/node';
-
-const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
-
-api.post('/sessionToken', (req, res) => {
-  // Ask Nango for a secure token to reconnect
-  const res = await nango.createReconnectSession({
-    connection_id: "<CONNECTION-ID>",
-    integration_id: '<INTEGRATION-ID>',
-  });
-
-  // Send this token back to your frontend
-  res.status(200).send({
-    sessionToken: res.data.token
-  });
-});
-```
-</Tab>
-
-<Tab title="cURL">
-
-```bash
-curl --request POST \
-  --url https://api.nango.dev/connect/sessions/reconnect \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "connection_id": "<CONNECTION-ID>",
-    "integration_id": "<INTEGRATION-ID>"
-  }'
-
-```
-
-</Tab>
-
-</Tabs>
+Details in this [guide](/guides/api-authorization/re-authorize-a-connection).
 
 ## Next
 

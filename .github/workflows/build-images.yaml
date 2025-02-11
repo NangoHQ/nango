@@ -12,13 +12,6 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    nango-runner:
-        uses: ./.github/workflows/push-container.yaml
-        secrets: inherit
-        with:
-            package: runner
-            run-cmd: ts-build
-            tags: -t nangohq/nango-runner:${{ github.event.pull_request.head.sha || github.sha }}
     nango-server:
         uses: ./.github/workflows/push-container.yaml
         secrets: inherit

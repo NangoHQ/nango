@@ -2,7 +2,6 @@ import type {
     NangoAuthWebhookBodySuccess,
     NangoAuthWebhookBodyError,
     DBExternalWebhook,
-    Connection,
     AuthModeType,
     ErrorPayload,
     AuthOperationType,
@@ -10,7 +9,8 @@ import type {
     DBEnvironment,
     EndUser,
     IntegrationConfig,
-    DBTeam
+    DBTeam,
+    DBConnection
 } from '@nangohq/types';
 import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
@@ -27,7 +27,7 @@ export async function sendAuth({
     providerConfig,
     account
 }: {
-    connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
+    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key'>; // Either a true connection or a fake one
     environment: DBEnvironment;
     webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
