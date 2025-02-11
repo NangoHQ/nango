@@ -117,8 +117,12 @@ export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncSta
  */
 export const updateSyncJobResult = async (id: number, result: SyncResultByModel, model: string): Promise<SyncJob> => {
     return await db.knex.transaction(async (trx) => {
-        const { result: existingResult } = await trx.from<SyncJob>(SYNC_JOB_TABLE).select('result').forUpdate().where({ id }).first();
+        const row = await trx.from<SyncJob>(SYNC_JOB_TABLE).select<Pick<SyncJob, 'result'>>('result').forUpdate().where({ id }).first();
+        if (!row) {
+            throw new Error('Failed to query sync job');
+        }
 
+        const { result: existingResult } = row;
         if (!existingResult || Object.keys(existingResult).length === 0) {
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)
@@ -133,20 +137,16 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
             const { added, updated, deleted } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
 
             const incomingResult = result[model];
-            const finalResult = {
+            const deletedValue = Number(deleted) || 0;
+            const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
+            const finalResult: SyncResultByModel = {
                 ...existingResult,
                 [model]: {
                     added: Number(added) + Number(incomingResult?.added),
-                    updated: Number(updated) + Number(incomingResult?.updated)
+                    updated: Number(updated) + Number(incomingResult?.updated),
+                    deleted: deletedValue + incomingDeletedValue
                 }
             };
-
-            const deletedValue = Number(deleted) || 0;
-            const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
-
-            if (deletedValue !== 0 || incomingDeletedValue !== 0) {
-                finalResult[model].deleted = deletedValue + incomingDeletedValue;
-            }
 
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)

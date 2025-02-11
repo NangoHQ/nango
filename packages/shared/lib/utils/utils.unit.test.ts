@@ -1,5 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import * as utils from './utils.js';
+import type { Provider } from '@nangohq/types';
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly return true if the url is valid', () => {
@@ -70,4 +71,71 @@ describe('interpolateIfNeeded', () => {
         });
         expect(result).toBe('MyAppDetails');
     });
+});
+
+it('Should extract metadata from token response based on provider', () => {
+    const provider: Provider = {
+        display_name: 'test',
+        docs: '',
+        auth_mode: 'OAUTH2',
+        token_response_metadata: ['incoming_webhook.url', 'ok', 'bot_user_id', 'scope']
+    };
+
+    const params = {
+        ok: true,
+        scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook',
+        token_type: 'bot',
+        bot_user_id: 'abcd',
+        enterprise: null,
+        is_enterprise_install: false,
+        incoming_webhook: {
+            channel_id: 'foo',
+            configuration_url: 'https://nangohq.slack.com',
+            url: 'https://hooks.slack.com'
+        }
+    };
+
+    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    expect(result).toEqual({
+        'incoming_webhook.url': 'https://hooks.slack.com',
+        ok: true,
+        bot_user_id: 'abcd',
+        scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook'
+    });
+});
+
+it('Should extract metadata from token response based on template and if it does not exist not fail', () => {
+    const provider: Provider = {
+        display_name: 'test',
+        docs: '',
+        auth_mode: 'OAUTH2',
+        token_response_metadata: ['incoming_webhook.url', 'ok']
+    };
+
+    const params = {
+        scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook',
+        token_type: 'bot',
+        enterprise: null,
+        is_enterprise_install: false,
+        incoming_webhook: {
+            configuration_url: 'foo.bar'
+        }
+    };
+
+    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    expect(result).toEqual({});
+});
+
+it('Should not extract metadata from an empty token response', () => {
+    const provider: Provider = {
+        display_name: 'test',
+        docs: '',
+        auth_mode: 'OAUTH2',
+        token_response_metadata: ['incoming_webhook.url', 'ok']
+    };
+
+    const params = {};
+
+    const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
+    expect(result).toEqual({});
 });
