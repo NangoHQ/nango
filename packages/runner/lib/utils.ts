@@ -2,13 +2,24 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 
 export const logger = getLogger('Runner');
 
-export async function httpFetch({ method, url, data = undefined }: { method: string; url: string; data?: string }): Promise<void> {
+export async function httpFetch({
+    method,
+    url,
+    headers = undefined,
+    data = undefined
+}: {
+    method: string;
+    url: string;
+    headers?: Record<string, string>;
+    data?: string;
+}): Promise<void> {
     try {
         const res = await fetch(url, {
             method: method,
             headers: {
                 Accept: 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...(headers ?? {})
             },
             ...(data && { body: data })
         });
