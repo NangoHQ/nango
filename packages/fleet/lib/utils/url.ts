@@ -2,18 +2,25 @@ import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
 
-export async function waithUntilHealthy({ url, timeoutMs }: { url: string; timeoutMs: number }): Promise<Result<void>> {
+export async function waitUntilHealthy({ url, timeoutMs }: { url: string; timeoutMs: number }): Promise<Result<void>> {
     const startTime = Date.now();
     const waitMs = 1000;
+    const requiredSuccesses = 10;
+    let successCount = 0;
     while (Date.now() - startTime < timeoutMs) {
         try {
             const res = await fetch(url);
             if (res.ok) {
-                return Ok(undefined);
+                successCount++;
+                if (successCount >= requiredSuccesses) {
+                    return Ok(undefined);
+                }
             } else {
-                await setTimeout(waitMs);
+                successCount = 0;
             }
+            await setTimeout(waitMs);
         } catch {
+            successCount = 0;
             await setTimeout(waitMs);
         }
     }
