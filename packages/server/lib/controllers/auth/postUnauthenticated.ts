@@ -4,7 +4,7 @@ import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -47,6 +47,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     const { account, environment } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -117,6 +118,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             connectionId,
             providerConfigKey,
             provider: config.provider,
+            connectionConfig,
             environment,
             account
         });
