@@ -230,6 +230,7 @@
         {
             "group": "APIs & Integrations",
             "pages": [
+                "integrations/all/1password-scim",
                 "integrations/all/accelo",
                 "integrations/all/acuity-scheduling",
                 "integrations/all/adobe",
