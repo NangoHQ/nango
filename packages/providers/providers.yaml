@@ -6426,6 +6426,23 @@ ring-central-sandbox:
         base_url: https://platform.devtest.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central-sandbox
 
+rippling:
+    display_name: Rippling
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://rest.ripplingapis.com
+    docs: https://docs.nango.dev/integrations/all/rippling
+    docs_connect: https://docs.nango.dev/integrations/all/rippling/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Rippling account
+            doc_section: '#step-1-generating-your-api-token'
 segment:
     display_name: Segment
     categories:
