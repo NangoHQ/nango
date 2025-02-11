@@ -1,7 +1,8 @@
 import type { ApiError, Endpoint, CursorOffset, GetCursorSuccess } from '@nangohq/types';
+import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { records } from '@nangohq/records';
-import { validateCursor } from './validate.js';
+import { getCursorRequestParser } from './validate.js';
 
 type GetCursor = Endpoint<{
     Method: typeof method;
@@ -21,7 +22,7 @@ type GetCursor = Endpoint<{
 export const path = '/environment/:environmentId/connection/:nangoConnectionId/cursor';
 const method = 'GET';
 
-const validate = validateCursor<GetCursor>();
+const validate = validateRequest<GetCursor>(getCursorRequestParser);
 
 const handler = async (req: EndpointRequest<GetCursor>, res: EndpointResponse<GetCursor>) => {
     const {

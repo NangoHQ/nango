@@ -61,7 +61,10 @@ import {
     interpolateObject,
     extractValueByPath,
     stripCredential,
-    interpolateObjectValues
+    interpolateObjectValues,
+    stripStepResponse,
+    extractStepNumber,
+    getStepResponse
 } from '../utils/utils.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
@@ -186,7 +189,7 @@ class ConnectionService {
         environment: DBEnvironment;
         account: DBTeam;
     }): Promise<ConnectionUpsertResponse[]> {
-        const encryptedConnection = encryptionManager.encryptConnection({
+        const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config.id as number,
@@ -1788,7 +1791,59 @@ class ConnectionService {
                 responseData = parser.parse(response.data);
             }
 
-            const parsedCreds = this.parseRawCredentials(responseData, 'TWO_STEP', provider) as TwoStepCredentials;
+            const stepResponses: any[] = [responseData];
+            if (provider.additional_steps) {
+                for (let stepIndex = 1; stepIndex <= provider.additional_steps.length; stepIndex++) {
+                    const step = provider.additional_steps[stepIndex - 1];
+                    if (!step) {
+                        continue;
+                    }
+
+                    let stepPostBody: Record<string, any> = {};
+
+                    if (step.token_params) {
+                        for (const [key, value] of Object.entries(step.token_params)) {
+                            const stepNumber = extractStepNumber(value);
+                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
+
+                            const strippedValue = stripStepResponse(value, stepResponsesObj);
+                            if (typeof strippedValue === 'object' && strippedValue !== null) {
+                                stepPostBody[key] = interpolateObject(strippedValue, dynamicCredentials);
+                            } else if (typeof strippedValue === 'string') {
+                                stepPostBody[key] = interpolateString(strippedValue, dynamicCredentials);
+                            } else {
+                                stepPostBody[key] = strippedValue;
+                            }
+                        }
+                        stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
+                    }
+
+                    const stepNumberForURL = extractStepNumber(step.token_url);
+                    const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
+                    const interpolatedTokenUrl = stripStepResponse(step.token_url, stepResponsesObjForURL);
+                    const stepUrl = new URL(interpolatedTokenUrl).toString();
+
+                    const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
+
+                    const stepHeaders: Record<string, string> = {};
+
+                    if (step.token_headers) {
+                        for (const [key, value] of Object.entries(step.token_headers)) {
+                            stepHeaders[key] = interpolateString(value, dynamicCredentials);
+                        }
+                    }
+
+                    const stepRequestOptions = { headers: stepHeaders };
+                    const stepResponse = await axios.post(stepUrl, stepBodyContent, stepRequestOptions);
+
+                    if (stepResponse.status !== 200) {
+                        return { success: false, error: new NangoError(`invalid_two_step_credentials_step_${stepIndex}`), response: null };
+                    }
+
+                    stepResponses.push(stepResponse.data);
+                }
+            }
+            const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {

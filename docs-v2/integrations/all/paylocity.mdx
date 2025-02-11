@@ -1,0 +1,47 @@
+---
+title: Paylocity
+sidebarTitle: Paylocity
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/paylocity/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/paylocity/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paylocity API Access | ✅ | You must be an existing Paylocity customer or have a customer sponsor. |
+| Paylocity Sandbox Access | ✅ | Required for testing API calls. |
+| Approval from Paylocity | ✅ | Required before going live. |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/paylocity.mdx)</Note>
+
+## Useful links
+
+- [Paylocity Authentication](https://developer.paylocity.com/integrations/docs/getting-started)
+- [Paylocity API Use Policy](https://www.paylocity.com/terms-and-conditions/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/paylocity.mdx)</Note>
+
+## API gotchas
+
+- Paylocity uses **OAuth 2.0 Client Credentials Flow** (`client_id` & `client_secret`).
+- Access tokens are **short-lived** and expire **every 1 hour**.
+- Tokens must be **refreshed before expiry** to avoid `401 Unauthorized` errors.
+- **Secret Rotation:** Paylocity requires API secrets to be **rotated every 365 days**.
+- Paylocity APIs **do not require OAuth scopes**—they are managed internally.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/paylocity.mdx)</Note>
+
+## Going further
+<Card title="Connect to Paylocity" icon="link" href="/integrations/all/paylocity/connect" horizontal> Guide to connect to Paylocity using Nango Connect. </Card>
