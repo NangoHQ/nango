@@ -101,7 +101,9 @@ export async function getRecords({
         }
 
         if (externalIds) {
-            query = query.whereIn('external_id', externalIds);
+            // postgresql does not support null bytes in strings
+            const cleanIds = externalIds.map((id) => id.replaceAll('\x00', ''));
+            query = query.whereIn('external_id', cleanIds);
         }
 
         if (limit) {
