@@ -4683,6 +4683,37 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://docs.nango.dev/integrations/all/linkhut
 
+loom-scim:
+    display_name: Loom (SCIM)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/scim
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /Users
+    docs: https://docs.nango.dev/integrations/all/loom-scim
+    docs_connect: https://docs.nango.dev/integrations/all/loom-scim/connect
+    connection_config:
+        domain:
+            type: string
+            title: Loom SCIM Bridge URL
+            description: The domain for your Loom SCIM Bridge
+            example: scim.example.com
+            pattern: '^[a-zA-Z0-9.-]+$'
+            prefix: https://
+            doc_section: '#step-4-get-your-scim-bridge-url'
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM API Key
+            description: Your Loom SCIM API Key
+            secret: true
+            doc_section: '#step-3-retrieve-your-loom-scim-api-key'
+
 loops-so:
     display_name: Loops.so
     categories:
@@ -5683,6 +5714,26 @@ payfit:
         base_url: https://partner-api.payfit.com
     docs: https://docs.nango.dev/integrations/all/payfit
 
+paylocity:
+    display_name: Paylocity
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    proxy:
+        base_url: https://${connectionConfig.environment}.paylocity.com
+    token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    docs: https://docs.nango.dev/integrations/all/paylocity
+    docs_connect: https://docs.nango.dev/integrations/all/paylocity/connect
+    connection_config:
+        environment:
+            type: string
+            title: Paylocity Environment
+            description: Select the Paylocity environment for this integration.
+            doc_section: '#step-1-select-the-correct-paylocity-environment'
+
 paypal:
     display_name: Paypal
     categories:
@@ -6375,6 +6426,23 @@ ring-central-sandbox:
         base_url: https://platform.devtest.ringcentral.com
     docs: https://docs.nango.dev/integrations/all/ring-central-sandbox
 
+rippling:
+    display_name: Rippling
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://rest.ripplingapis.com
+    docs: https://docs.nango.dev/integrations/all/rippling
+    docs_connect: https://docs.nango.dev/integrations/all/rippling/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API Token for your Rippling account
+            doc_section: '#step-1-generating-your-api-token'
 segment:
     display_name: Segment
     categories:

@@ -12816,13 +12816,14 @@ integrations:
                 runs: every 1 hour
                 output: Customer
                 scopes: read_customers, read_subscriptions
-                version: 1.0.1
+                version: 1.0.2
         models:
             Customer:
                 id: string
                 phone_number: string | null
                 first_name: string | null
                 last_name: string | null
+                email: string | null
                 subscriptions:
                     - id: string
                       type: string

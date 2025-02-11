@@ -127,6 +127,16 @@ Note that all HTTP requests benefit from automatic credential injection. Because
 </Tip>
 </Expandable>
 
+# HTTP request retries
+
+To configure retries when HTTP requests fail, use the `retries` and `retryOn` parameters in your [HTTP requests](#http-requests).
+
+The following will apply: 
+- By default, retries are performed for `5xx` & `429` statuses, as well as `ECONNRESET`, `ETIMEDOUT`, and `ECONNABORTED`. 
+- Use the `retryOn` parameter to specify an array of additional status codes to retry on.
+- By default, no retries are performed: `retries` default to `0`
+- The retry starting delay is `100ms`, the delay between attempts is multiplied by `2` each time (exponential backoff) and there is `no maximum delay` between retries. 
+
 # Logging
 
 You can collect logs in integration scripts. This is particularly useful when:

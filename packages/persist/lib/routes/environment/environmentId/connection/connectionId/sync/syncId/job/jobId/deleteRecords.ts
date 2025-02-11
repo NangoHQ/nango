@@ -1,7 +1,8 @@
 import type { ApiError, DeleteRecordsSuccess, Endpoint, MergingStrategy } from '@nangohq/types';
+import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
-import { validateRecords } from './validate.js';
+import { recordsRequestParser } from './validate.js';
 
 type DeleteRecords = Endpoint<{
     Method: typeof method;
@@ -27,7 +28,7 @@ type DeleteRecords = Endpoint<{
 const path = recordsPath;
 const method = 'DELETE';
 
-const validate = validateRecords<DeleteRecords>();
+const validate = validateRequest<DeleteRecords>(recordsRequestParser);
 
 const handler = async (req: EndpointRequest<DeleteRecords>, res: EndpointResponse<DeleteRecords>) => {
     const { environmentId, nangoConnectionId, syncId, syncJobId }: DeleteRecords['Params'] = req.params;

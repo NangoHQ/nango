@@ -4,7 +4,6 @@ import { useStore } from '../../store';
 import { useSearchOperations } from '../../hooks/useLogs';
 import * as Table from '../../components/ui/Table';
 import { getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
-
 import { MultiSelect } from '../../components/MultiSelect';
 import {
     columns,
@@ -26,8 +25,6 @@ import type {
     SearchOperationsType
 } from '@nangohq/types';
 import Spinner from '../../components/ui/Spinner';
-// import { Input } from '../../components/ui/input/Input';
-// import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { formatQuantity, stringArrayEqual } from '../../utils/utils';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDebounce, useIntersection, useInterval, usePreviousDistinct } from 'react-use';

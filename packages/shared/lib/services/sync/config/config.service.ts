@@ -4,11 +4,10 @@ import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
+import type { DBConnection, DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -70,7 +69,7 @@ export async function getSyncConfig({
     syncName,
     isAction = false
 }: {
-    nangoConnection: NangoConnection;
+    nangoConnection: DBConnection;
     syncName?: string;
     isAction?: boolean;
 }): Promise<NangoConfigV1 | null> {
