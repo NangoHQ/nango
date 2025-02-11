@@ -131,13 +131,13 @@ export const ExportSettings: React.FC = () => {
                             const errorValue = errors.find((err) => err.index === i && err.key === 'value');
                             return (
                                 <div key={i} className="flex flex-col gap-0.5">
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-4">
                                         <Input
                                             value={header.name}
                                             onChange={(e) => onUpdate('name', e.target.value, i)}
                                             inputSize={'lg'}
                                             variant={'black'}
-                                            className={cn('w-[225px]', errorName && 'border-alert-400')}
+                                            className={cn('w-[200px]', errorName && 'border-alert-400')}
                                             placeholder="MY_HEADER"
                                             disabled={!editHeaders || loading}
                                         />
@@ -146,12 +146,12 @@ export const ExportSettings: React.FC = () => {
                                             onChange={(e) => onUpdate('value', e.target.value, i)}
                                             inputSize={'lg'}
                                             variant={'black'}
-                                            className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
+                                            className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
                                             placeholder="value"
                                             disabled={!editHeaders || loading}
                                         />
                                         {editHeaders && (
-                                            <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
+                                            <Button variant={'danger'} size="lg" onClick={() => !loading && onRemove(i)}>
                                                 <IconTrash stroke={1} />
                                             </Button>
                                         )}
@@ -167,7 +167,7 @@ export const ExportSettings: React.FC = () => {
                             );
                         })}
                     </div>
-                    <div className="flex justify-end gap-2 mt-1">
+                    <div className="flex justify-end gap-3 mt-4">
                         {!editHeaders && (
                             <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>
                                 <IconEdit stroke={1} size={18} /> Edit
@@ -176,9 +176,9 @@ export const ExportSettings: React.FC = () => {
                         {editHeaders && (
                             <>
                                 <Button variant={'tertiary'} onClick={onCancelHeaders} size={'sm'}>
-                                    cancel
+                                    Cancel
                                 </Button>
-                                <Button variant={'primary'} onClick={onSaveHeaders} isLoading={loading} size={'sm'}>
+                                <Button variant={'secondary'} onClick={onSaveHeaders} isLoading={loading} size={'sm'}>
                                     Save
                                 </Button>
                             </>

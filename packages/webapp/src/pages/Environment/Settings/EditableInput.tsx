@@ -7,7 +7,6 @@ import { Button } from '../../../components/ui/button/Button';
 import { IconEdit } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
 import type { ApiError } from '@nangohq/types';
-import SecretInput from '../../../components/ui/input/SecretInput';
 
 export const EditableInput: React.FC<
     {
@@ -48,30 +47,31 @@ export const EditableInput: React.FC<
         setError(null);
     };
 
-    const TInput = (secret ? SecretInput : Input) as typeof Input;
-
     return (
-        <fieldset className={cn('flex flex-col gap-2')}>
-            <label htmlFor={name} className={cn(!subTitle ? 'font-semibold mb-2' : 'text-s')}>
+        <fieldset className={cn('flex flex-col gap-4')}>
+            <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s')}>
                 {title}
             </label>
-            <TInput
+            <Input
                 inputSize={'lg'}
                 variant={'black'}
                 name={name}
-                value={value}
+                value={secret && !edit ? '*'.repeat(value.length) : value}
                 onChange={(e) => setValue(e.target.value)}
                 disabled={loading || !edit}
                 className={cn(error && 'border-alert-400')}
+                after={
+                    !edit && (
+                        <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
+                            <IconEdit stroke={1} size={18} />
+                        </Button>
+                    )
+                }
                 {...rest}
             />
             {error && <div className="text-alert-400 text-s">{error}</div>}
-            <div className="flex justify-end gap-2">
-                {!edit && (
-                    <Button variant={'secondary'} size={'sm'} onClick={() => setEdit(true)}>
-                        <IconEdit stroke={1} size={18} /> Edit
-                    </Button>
-                )}
+            {edit && editInfo}
+            <div className="flex justify-end gap-3">
                 {edit && (
                     <>
                         <Button
@@ -83,15 +83,14 @@ export const EditableInput: React.FC<
                                 setError(null);
                             }}
                         >
-                            cancel
+                            Cancel
                         </Button>
-                        <Button variant={'primary'} size={'sm'} onClick={onSave} isLoading={loading}>
+                        <Button variant={'secondary'} size={'sm'} onClick={onSave} isLoading={loading}>
                             Save
                         </Button>
                     </>
                 )}
             </div>
-            {edit && editInfo}
         </fieldset>
     );
 };
