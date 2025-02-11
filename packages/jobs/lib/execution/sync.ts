@@ -239,6 +239,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
+                await logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
             const updatedResults: Record<string, SyncResult> = {
