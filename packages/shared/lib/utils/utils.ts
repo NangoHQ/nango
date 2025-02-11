@@ -2,7 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
 import get from 'lodash-es/get.js';
-import type { Provider } from '@nangohq/types';
+import type { Provider, DBConnection } from '@nangohq/types';
 
 export enum UserType {
     Local = 'localhost',
