@@ -496,6 +496,7 @@
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
                 "integrations/all/payfit",
+                "integrations/all/paylocity",
                 "integrations/all/paypal",
                 "integrations/all/paypal-sandbox",
                 "integrations/all/pendo",
