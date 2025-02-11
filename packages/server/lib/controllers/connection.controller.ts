@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { OAuth2Credentials, AuthCredentials, ConnectionList, ConnectionUpsertResponse } from '@nangohq/shared';
+import type { OAuth2Credentials, AuthCredentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
 import { configService, connectionService, errorManager, NangoError, accountService, SlackService, getProvider } from '@nangohq/shared';
@@ -9,8 +9,6 @@ import type { RequestLocals } from '../utils/express.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
-
-export type { ConnectionList };
 
 const orchestrator = getOrchestrator();
 
@@ -97,7 +95,7 @@ class ConnectionController {
             }
 
             await db.knex.transaction(async (trx) => {
-                await connectionService.replaceMetadata([connection.id as number], req.body, trx);
+                await connectionService.replaceMetadata([connection.id], req.body, trx);
             });
 
             res.status(201).send(req.body);
@@ -238,7 +236,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -302,7 +301,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -352,7 +352,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -396,7 +397,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -438,7 +440,8 @@ class ConnectionController {
                             operation: res.operation,
                             endUser: undefined
                         },
-                        providerName,
+                        account,
+                        integration,
                         logContextGetter
                     );
                 };
@@ -587,7 +590,8 @@ class ConnectionController {
                         operation: updatedConnection.operation || 'unknown',
                         endUser: undefined
                     },
-                    providerName,
+                    account,
+                    integration,
                     logContextGetter
                 );
             }

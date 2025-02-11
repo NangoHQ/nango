@@ -203,7 +203,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('JWT connection creation was successful');
         await logCtx.success();
 
@@ -216,10 +216,9 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
-            logContextGetter,
-            undefined,
-            logCtx
+            account,
+            config,
+            logContextGetter
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -238,8 +237,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            account
         );
         if (logCtx) {
             await logCtx.error('Error during JWT credentials creation', { error: err });

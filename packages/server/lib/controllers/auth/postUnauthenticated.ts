@@ -133,7 +133,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
@@ -146,10 +146,10 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            account,
+            config,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -165,8 +165,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
                 error: { type: 'unknown', description: `Error during Unauth create: ${prettyError}` },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            account
         );
         if (logCtx) {
             await logCtx.error('Error during Unauthenticated connection creation', { error: err });

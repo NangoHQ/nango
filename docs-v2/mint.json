@@ -149,6 +149,7 @@
                         "guides/api-authorization/configuration",
                         "guides/api-authorization/authorize-in-your-app-default-ui",
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
+                        "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/public-key-deprecation"
                     ]
@@ -448,6 +449,7 @@
                 "integrations/all/linkedin",
                 "integrations/all/linkhut",
                 "integrations/all/listmonk",
+                "integrations/all/loom-scim",
                 "integrations/all/loops-so",
                 "integrations/all/lucid-scim",
                 "integrations/all/luma",
@@ -494,6 +496,7 @@
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
                 "integrations/all/payfit",
+                "integrations/all/paylocity",
                 "integrations/all/paypal",
                 "integrations/all/paypal-sandbox",
                 "integrations/all/pendo",
@@ -527,6 +530,7 @@
                 "integrations/all/retell-ai",
                 "integrations/all/ring-central",
                 "integrations/all/ring-central-sandbox",
+                "integrations/all/rippling",
                 "integrations/all/sage",
                 "integrations/all/sage-intacct",
                 "integrations/all/salesforce",

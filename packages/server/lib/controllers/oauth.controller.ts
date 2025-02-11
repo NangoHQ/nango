@@ -9,15 +9,8 @@ import {
     missesInterpolationParam,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
-import type { DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
-import type {
-    Config as ProviderConfig,
-    OAuthSession,
-    OAuth1RequestTokenResult,
-    OAuth2Credentials,
-    ConnectionConfig,
-    ConnectionUpsertResponse
-} from '@nangohq/shared';
+import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig, OAuthSession, OAuth1RequestTokenResult, OAuth2Credentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import {
     getConnectionConfig,
     interpolateStringFromObject,
@@ -434,7 +427,7 @@ class OAuthController {
                 await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
             }
 
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             await logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
             void connectionCreatedHook(
@@ -446,10 +439,9 @@ class OAuthController {
                     operation: updatedConnection.operation,
                     endUser: isConnectSession ? res.locals['endUser'] : undefined
                 },
-                config.provider,
-                logContextGetter,
-                undefined,
-                logCtx
+                account,
+                config,
+                logContextGetter
             );
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
@@ -468,8 +460,7 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                account
             );
             if (logCtx) {
                 await logCtx.error('Error during OAuth2 client credentials creation', { error: err });
@@ -954,8 +945,8 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                account,
+                config
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1081,15 +1072,15 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    account,
+                    config
                 );
 
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError());
                 return;
             }
 
-            let connectionConfig = {
+            let connectionConfig: ConnectionConfig = {
                 ...tokenMetadata,
                 ...callbackMetadata,
                 ...Object.keys(session.connectionConfig).reduce<Record<string, any>>((acc, key) => {
@@ -1209,7 +1200,7 @@ class OAuthController {
                 }
             );
 
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             // don't initiate a sync if custom because this is the first step of the oauth flow
             const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
             const runPostConnectionScript = true;
@@ -1222,10 +1213,10 @@ class OAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
-                session.provider,
+                account,
+                config,
                 logContextGetter,
-                { initiateSync, runPostConnectionScript },
-                logCtx
+                { initiateSync, runPostConnectionScript }
             );
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
@@ -1240,20 +1231,13 @@ class OAuthController {
                             operation: res.operation,
                             endUser: connectSession?.endUser
                         },
-                        config.provider,
+                        account,
+                        config,
                         logContextGetter,
-                        { initiateSync: true, runPostConnectionScript: false },
-                        logCtx
+                        { initiateSync: true, runPostConnectionScript: false }
                     );
                 };
-                await connectionService.getAppCredentialsAndFinishConnection(
-                    connectionId,
-                    config,
-                    provider,
-                    connectionConfig as ConnectionConfig,
-                    logCtx,
-                    connCreatedHook
-                );
+                await connectionService.getAppCredentialsAndFinishConnection(connectionId, config, provider, connectionConfig, logCtx, connCreatedHook);
             }
 
             await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
@@ -1305,8 +1289,8 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                account,
+                config
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1346,8 +1330,8 @@ class OAuthController {
                     },
                     operation: 'unknown'
                 },
-                session.provider,
-                logCtx
+                account,
+                config
             );
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
@@ -1418,7 +1402,7 @@ class OAuthController {
                 });
 
                 await logCtx.enrichOperation({
-                    connectionId: updatedConnection.connection.id!,
+                    connectionId: updatedConnection.connection.id,
                     connectionName: updatedConnection.connection.connection_id
                 });
                 // syncs not support for oauth1
@@ -1433,10 +1417,10 @@ class OAuthController {
                         operation: updatedConnection.operation,
                         endUser: connectSession?.endUser
                     },
-                    session.provider,
+                    account,
+                    config,
                     logContextGetter,
-                    { initiateSync, runPostConnectionScript },
-                    logCtx
+                    { initiateSync, runPostConnectionScript }
                 );
                 await logCtx.success();
 
@@ -1480,8 +1464,8 @@ class OAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    account,
+                    config
                 );
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

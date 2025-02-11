@@ -1,0 +1,102 @@
+---
+title: Loom SCIM - How to Connect Your Account
+sidebarTitle: Loom SCIM
+---
+
+# Overview
+
+To connect your **Loom SCIM** account, you need to authenticate using an **API Key** and a **SCIM Bridge URL**. This allows Nango to securely manage user provisioning, deprovisioning, and access control through the Loom SCIM API.
+
+This guide will help you retrieve your SCIM credentials, configure **SSO**, enable **domain capture**, and set up **user deprovisioning**.
+
+---
+
+### Prerequisites
+
+- A **Loom Enterprise** account.
+- **SAML SSO enabled** (SCIM cannot be configured without SSO).
+- A **SCIM API Key** generated from the **Loom Admin Console**.
+- The **SCIM Bridge URL** (e.g., `https://scim.example.com`).
+
+🚨 **Important**:  
+Loom requires **SSO to be enabled** before generating SCIM credentials. Ensure your workspace has been configured accordingly.
+
+---
+
+## Step 1: Verify Your Domain
+Before configuring SSO or SCIM, an **Admin must verify the domain**.
+
+1. Log in to the **Loom Admin Console**.
+2. Go to **Workspace Settings** → **Security Tab**.
+3. Find the **Authorize Domains** section and add your domain.
+4. Choose a verification method:
+   - **Email Verification** → Sends an email to a specified admin inbox.
+   - **DNS TXT Record** → Requires adding a TXT record to your domain's DNS settings.
+5. After verifying, your domain will be listed as **authorized**.
+
+🚨 **Check Existing Users:**  
+Ensure no users with **unverified domains** are already invited to your workspace. If they exist, they will be **blocked** from logging into Loom.
+
+---
+
+## Step 2: Configure SSO
+Once your domain is verified, follow these steps to enable **Single Sign-On (SSO)**.
+
+1. Log in to **Loom Admin Console**.
+2. Go to **Workspace Settings** → **Security Tab** → **SSO & Directory Sync**.
+3. Click **Configure SSO** and follow the step-by-step guide.
+4. Set the **Default Role** for newly provisioned users.
+
+### Testing SSO Before Enforcing
+Loom provides an **Enforce SSO** setting:
+- **Toggle OFF** → Users can continue logging in with email/password.
+- **Toggle ON** → Users **must** authenticate using SSO.
+
+🚨 **Important:**  
+After enabling SSO, existing users must **log out and log back in** via SSO to be recognized as workspace members.
+
+---
+
+## Step 3: Retrieve Your Loom SCIM API Key
+
+1. Log in to the [Loom Admin Console](https://www.loom.com/admin/security).
+2. Navigate to **Security** → **Directory Sync (SCIM)**.
+3. Click **Configure Directory Sync**.
+4. Copy the **SCIM Endpoint** and **Bearer Token**.
+5. Store the API Key securely; it will not be shown again.
+
+---
+
+## Step 4: Get Your SCIM Bridge URL
+Your **SCIM Bridge URL** is typically provided in **WorkOS** or Loom's SCIM setup guide. It should follow this format:
+
+https://scim.yourdomain.com
+
+If you're unsure of your SCIM Bridge URL:
+- Check with your **IT team** or **Loom administrator**.
+- Look in the **Loom SCIM configuration settings**.
+
+---
+
+## Step 5: Enable Domain Capture
+Loom’s **Domain Capture** setting ensures that all users with your **verified domain** automatically join your **Enterprise workspace**.
+
+1. Log in to **Loom Admin Console**.
+2. Go to **Workspace Settings** → **Security Tab**.
+3. Scroll down to **Domain Capture** settings.
+
+There are **two options**:
+- **Off (Manual Management)** → New users must be invited or provisioned via SCIM.
+- **Capture New Users in My Domain (Recommended)** → All users with your domain **automatically join** your Loom workspace.
+
+🚨 **Note:**  
+If **Directory Sync (SCIM)** is enabled, users are provisioned **immediately** when added to the **Loom app** in your IdP.
+
+---
+
+## Step 6: Connect Your Loom SCIM Account
+To authenticate with Loom SCIM, follow these steps:
+
+1. Open the **Loom SCIM integration setup** in Nango.
+2. Enter your **SCIM Bridge URL** and **API Key**.
+3. Click **Connect** to validate the credentials and establish the connection.

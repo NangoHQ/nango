@@ -168,8 +168,8 @@ class AppAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    account,
+                    config
                 );
 
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
@@ -210,7 +210,7 @@ class AppAuthController {
                 await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
             }
 
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -220,10 +220,10 @@ class AppAuthController {
                     operation: updatedConnection.operation,
                     endUser: connectSession?.endUser
                 },
-                session.provider,
+                account,
+                config,
                 logContextGetter,
-                undefined,
-                logCtx
+                undefined
             );
 
             await logCtx.info('App connection was successful and credentials were saved');
@@ -266,8 +266,7 @@ class AppAuthController {
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                account
             );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));

@@ -1,5 +1,4 @@
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { NangoConnection } from '../../models/Connection.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
 import { basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
@@ -7,7 +6,7 @@ import connectionService from '../connection.service.js';
 import accountService from '../account.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { DBSlackNotification } from '@nangohq/types';
+import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSlackNotification } from '@nangohq/types';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -94,7 +93,7 @@ export class SlackService {
      * @desc get the admin connection information to be able to send a duplicate
      * notification to the Nango admin account
      */
-    private async getNangoAdminConnection(): Promise<NangoConnection | null> {
+    private async getNangoAdminConnection(): Promise<DBConnectionDecrypted | null> {
         const info = await accountService.getAccountAndEnvironmentIdByUUID(this.nangoAdminUUID as string, this.env);
 
         const { success, response: slackConnection } = await connectionService.getConnection(
@@ -195,7 +194,7 @@ export class SlackService {
      *      3) Send a duplicate notification to the Nango Admins
      *      4) Add an activity log entry for the notification to the admin account
      */
-    async reportFailure(nangoConnection: NangoConnection, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
+    async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
         const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
         if (!slackNotificationsEnabled) {
             return;
@@ -266,8 +265,8 @@ export class SlackService {
             {
                 account: adminEnvironment.account,
                 environment: adminEnvironment.environment,
-                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
-                connection: { id: slackConnection.id!, name: slackConnection.connection_id },
+                integration: { id: slackConnection.config_id, name: slackConnection.provider_config_key, provider: 'slack' },
+                connection: { id: slackConnection.id, name: slackConnection.connection_id },
                 meta: truncateJson({ input: payload })
             }
         );
@@ -287,7 +286,7 @@ export class SlackService {
 
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
-                connection: slackConnection as NangoConnection,
+                connection: slackConnection,
                 actionName: this.actionName,
                 input: payload,
                 logCtx
@@ -339,7 +338,7 @@ export class SlackService {
      *
      */
     async reportResolution(
-        nangoConnection: NangoConnection,
+        nangoConnection: ConnectionJobs,
         syncName: string,
         type: string,
         originalActivityLogId: string | null,
@@ -421,8 +420,8 @@ export class SlackService {
             {
                 account: adminEnvironment.account,
                 environment: adminEnvironment.environment,
-                integration: { id: slackConnection.config_id!, name: slackConnection.provider_config_key, provider: 'slack' },
-                connection: { id: slackConnection.id!, name: slackConnection.connection_id },
+                integration: { id: slackConnection.config_id, name: slackConnection.provider_config_key, provider: 'slack' },
+                connection: { id: slackConnection.id, name: slackConnection.connection_id },
                 meta: truncateJson({ input: payload })
             }
         );
@@ -431,7 +430,7 @@ export class SlackService {
 
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
-                connection: slackConnection as NangoConnection,
+                connection: slackConnection,
                 actionName: this.actionName,
                 input: payload,
                 logCtx
@@ -469,7 +468,12 @@ export class SlackService {
      * and environment id and if so return the necessary information to be able
      * to update the notification.
      */
-    async hasOpenNotification(nangoConnection: NangoConnection, name: string, type: string, trx = db.knex): Promise<DBSlackNotification | null> {
+    async hasOpenNotification(
+        nangoConnection: Pick<DBConnection, 'environment_id'>,
+        name: string,
+        type: string,
+        trx = db.knex
+    ): Promise<DBSlackNotification | null> {
         const hasOpenNotification = await trx
             .select<DBSlackNotification>('*')
             .from<DBSlackNotification>(TABLE)
@@ -490,7 +494,12 @@ export class SlackService {
      * @desc create a new notification for the given name and environment id
      * and return the id of the created notification.
      */
-    async createNotification(nangoConnection: NangoConnection, name: string, type: string, trx = db.knex): Promise<Pick<DBSlackNotification, 'id'> | null> {
+    async createNotification(
+        nangoConnection: Pick<DBConnection, 'id' | 'environment_id'>,
+        name: string,
+        type: string,
+        trx = db.knex
+    ): Promise<Pick<DBSlackNotification, 'id'> | null> {
         const result = await trx
             .from<DBSlackNotification>(TABLE)
             .insert({
@@ -498,7 +507,7 @@ export class SlackService {
                 environment_id: nangoConnection.environment_id,
                 name,
                 type,
-                connection_list: [nangoConnection.id as number]
+                connection_list: [nangoConnection.id]
             })
             .returning('id');
 
@@ -514,7 +523,7 @@ export class SlackService {
      * @desc check if there is an open notification for the given name and environment id
      * and if so add the connection id to the connection list.
      */
-    async addFailingConnection(nangoConnection: NangoConnection, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
+    async addFailingConnection(nangoConnection: ConnectionJobs, name: string, type: string): Promise<ServiceResponse<NotificationResponse>> {
         return await db.knex.transaction(async (trx) => {
             const lockKey = stringToHash(`${nangoConnection.environment_id}-${name}-${type}-add`);
 
@@ -556,7 +565,7 @@ export class SlackService {
 
             const { id, connection_list } = isOpen;
 
-            if (connection_list.includes(nangoConnection.id as number)) {
+            if (connection_list.includes(nangoConnection.id)) {
                 return {
                     success: true,
                     error: null,
@@ -570,7 +579,7 @@ export class SlackService {
                 };
             }
 
-            connection_list.push(nangoConnection.id as number);
+            connection_list.push(nangoConnection.id);
 
             await trx.from<DBSlackNotification>(TABLE).where({ id }).update({
                 connection_list,
@@ -606,7 +615,7 @@ export class SlackService {
         environment_id,
         provider
     }: {
-        connection: NangoConnection;
+        connection: ConnectionJobs;
         name: string;
         type: string;
         originalActivityLogId: string | null;
@@ -638,7 +647,7 @@ export class SlackService {
 
             const { id, connection_list, slack_timestamp, admin_slack_timestamp } = isOpen;
 
-            const index = connection_list.indexOf(nangoConnection.id as number);
+            const index = connection_list.indexOf(nangoConnection.id);
             if (index === -1) {
                 return;
             }

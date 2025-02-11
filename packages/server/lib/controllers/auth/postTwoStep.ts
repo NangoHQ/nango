@@ -185,7 +185,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('TwoStep connection creation was successful');
         await logCtx.success();
 
@@ -198,10 +198,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            account,
+            config,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -220,8 +220,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            account
         );
         if (logCtx) {
             await logCtx.error('Error during TwoStep credentials creation', { error: err });

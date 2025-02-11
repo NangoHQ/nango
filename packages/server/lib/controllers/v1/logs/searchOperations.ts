@@ -29,8 +29,15 @@ const validation = z
                     'proxy',
                     'deploy',
                     'auth',
+                    'auth:create_connection',
+                    'auth:refresh_token',
                     'admin',
-                    'webhook'
+                    'webhook',
+                    'webhook:incoming',
+                    'webhook:forward',
+                    'webhook:sync',
+                    'webhook:connection_create',
+                    'webhook:connection_refresh'
                 ])
             )
             .max(20)

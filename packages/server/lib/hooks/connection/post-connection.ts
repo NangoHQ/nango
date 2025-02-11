@@ -1,10 +1,10 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import type { RecentlyCreatedConnection, Connection, ConnectionConfig, UserProvidedProxyConfiguration } from '@nangohq/shared';
+import type { UserProvidedProxyConfiguration } from '@nangohq/shared';
 import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import type { InternalProxyConfiguration } from '@nangohq/types';
+import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, RecentlyCreatedConnection } from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -13,7 +13,7 @@ type PostConnectionHandlersMap = Record<string, PostConnectionHandler>;
 const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
 export interface InternalNango {
-    getConnection: () => Promise<Connection>;
+    getConnection: () => Promise<DBConnectionDecrypted>;
     proxy: <T = any>({ method, endpoint, data }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
     updateConnectionConfig: (config: ConnectionConfig) => Promise<ConnectionConfig>;
 }
@@ -50,7 +50,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                     environment.id
                 );
 
-                return connection as Connection;
+                return connection!;
             },
             proxy: async ({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
@@ -95,8 +95,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 {
                     account,
                     environment,
-                    integration: { id: upsertedConnection.config_id!, name: upsertedConnection.provider_config_key, provider: providerName },
-                    connection: { id: upsertedConnection.id!, name: upsertedConnection.connection_id }
+                    integration: { id: upsertedConnection.config_id, name: upsertedConnection.provider_config_key, provider: providerName },
+                    connection: { id: upsertedConnection.id, name: upsertedConnection.connection_id }
                 }
             );
 
