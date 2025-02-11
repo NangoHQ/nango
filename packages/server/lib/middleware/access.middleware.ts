@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { Result } from '@nangohq/utils';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok, stringTimingSafeEqual } from '@nangohq/utils';
+import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok, stringTimingSafeEqual, tagTraceUser } from '@nangohq/utils';
 import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
 import db from '@nangohq/database';
 import * as connectSessionService from '../services/connectSession.service.js';
@@ -63,7 +63,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
-            tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
+            tagTraceUser(result.value);
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
@@ -229,11 +229,7 @@ export class AccessMiddleware {
             res.locals['environment'] = result.value.environment;
             res.locals['connectSession'] = result.value.connectSession;
             res.locals['endUser'] = result.value.endUser;
-            tracer.setUser({
-                id: String(result.value.account.id),
-                environmentId: String(result.value.environment.id),
-                connectSessionId: String(result.value.connectSession.id)
-            });
+            tagTraceUser(result.value);
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
@@ -285,21 +281,15 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
-                tracer.setUser({
-                    id: String(secretKeyResult.value.account.id),
-                    environmentId: String(secretKeyResult.value.environment.id)
-                });
+
+                tagTraceUser(secretKeyResult.value);
             } else {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                tracer.setUser({
-                    id: String(connectSessionResult.value.account.id),
-                    environmentId: String(connectSessionResult.value.environment.id),
-                    connectSessionId: String(connectSessionResult.value.connectSession.id)
-                });
+                tagTraceUser(connectSessionResult.value);
             }
             next();
         } catch (err) {
@@ -332,11 +322,7 @@ export class AccessMiddleware {
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                tracer.setUser({
-                    id: String(connectSessionResult.value.account.id),
-                    environmentId: String(connectSessionResult.value.environment.id),
-                    connectSessionId: String(connectSessionResult.value.connectSession.id)
-                });
+                tagTraceUser(connectSessionResult.value);
             } else {
                 const publicKey = req.query['public_key'] as string;
 
@@ -356,7 +342,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
-                tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
+                tagTraceUser(result.value);
             }
             next();
         } catch (err) {
@@ -448,6 +434,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         res.locals['account'] = result.account;
         res.locals['environment'] = result.environment;
+        tagTraceUser(result);
         next();
     } catch (err) {
         errorManager.report(err);
