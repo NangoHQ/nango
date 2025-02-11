@@ -449,6 +449,7 @@
                 "integrations/all/linkedin",
                 "integrations/all/linkhut",
                 "integrations/all/listmonk",
+                "integrations/all/loom-scim",
                 "integrations/all/loops-so",
                 "integrations/all/lucid-scim",
                 "integrations/all/luma",
