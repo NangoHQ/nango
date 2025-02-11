@@ -1,8 +1,8 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow } from '@nangohq/types';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
-import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
-import { isCli, logger } from './utils.js';
+import { metrics, stringifyError } from '@nangohq/utils';
+import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
 import { envs } from './env.js';
 import { OtlpSpan } from './otlp/otlpSpan.js';
 
@@ -26,11 +26,15 @@ export class LogContextStateless {
     }
 
     async log(data: MessageRowInsert): Promise<boolean> {
+        if (data.error && data.error.constructor.name !== 'Object') {
+            data.error = errorToDocument(data.error);
+        }
+
         if (this.logToConsole) {
             const obj: Record<string, any> = {};
             if (data.error) obj['error'] = data.error;
             if (data.meta) obj['meta'] = data.meta;
-            logger[data.level!](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
+            logger[logLevelToLogger[data.level!]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
         }
         if (this.dryRun) {
             return true;
@@ -63,19 +67,11 @@ export class LogContextStateless {
 
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
         const { error, ...rest } = meta || {};
-        const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
         return await this.log({
             type: 'log',
             level: 'error',
             message,
-            error: err
-                ? {
-                      name: error instanceof Error ? error.constructor.name : err.name,
-                      message: err.message,
-                      type: 'type' in err ? (err.type as string) : null,
-                      payload: 'payload' in err ? err.payload : null
-                  }
-                : null,
+            error: errorToDocument(error),
             meta: Object.keys(rest).length > 0 ? rest : null,
             source: 'internal'
         });
@@ -83,14 +79,19 @@ export class LogContextStateless {
 
     async http(
         message: string,
-        data: {
+        {
+            error,
+            ...data
+        }: {
             request: MessageRow['request'];
             response: MessageRow['response'];
+            error?: unknown;
             meta?: MessageRow['meta'];
+            level?: MessageRow['level'];
         }
     ): Promise<boolean> {
-        const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
-        return await this.log({ type: 'http', level, message, ...data, source: 'internal' });
+        const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
+        return await this.log({ type: 'http', level, message, ...data, error: errorToDocument(error), source: 'internal' });
     }
 
     /**
