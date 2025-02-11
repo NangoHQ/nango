@@ -18,7 +18,7 @@ This is the recommended way to re-authorize **production** connections, so custo
 
 You can implement the re-authorization flow in your app by having your backend call a different endpoint when the connection already exists.
 
-Instead of generating the [default endpoint](/guides/api-authorization/authorize-in-your-app-default-ui#1-generate-a-session-token-backend) to generate a session token, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a rsession token meant for reconnection. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
+Instead of generating the [default endpoint](/guides/api-authorization/authorize-in-your-app-default-ui#1-generate-a-session-token-backend) to generate a session token, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a session token meant for reconnection. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
 
 <Tabs>
 
