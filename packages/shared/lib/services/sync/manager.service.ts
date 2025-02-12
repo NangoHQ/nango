@@ -8,7 +8,8 @@ import {
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName,
     getSyncNamesByConnectionId,
-    softDeleteSync
+    softDeleteSync,
+    getSyncsBySyncConfigId
 } from './sync.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
@@ -77,6 +78,12 @@ export class SyncManagerService {
             if (!syncConfig) {
                 continue;
             }
+
+            const existingSync = await getSyncByIdAndName(nangoConnectionId, syncConfig.sync_name);
+            if (existingSync) {
+                await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: nangoConnection.environment_id });
+                continue;
+            }
             const sync = await createSync(nangoConnectionId, syncConfig);
             if (sync) {
                 await orchestrator.scheduleSync({
@@ -96,7 +103,7 @@ export class SyncManagerService {
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
-        sync: IncomingFlowConfig,
+        flowConfig: IncomingFlowConfig,
         logContextGetter: LogContextGetter,
         orchestrator: Orchestrator,
         debug = false,
@@ -115,19 +122,23 @@ export class SyncManagerService {
                 if (!syncConfig) {
                     continue;
                 }
-                const createdSync = await createSync(connection.id, syncConfig);
-                if (!createdSync) {
+                const existingSync = await getSyncByIdAndName(connection.id, syncConfig.sync_name);
+                if (existingSync) {
+                    await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: connection.environment_id });
                     continue;
                 }
-                await orchestrator.scheduleSync({
-                    nangoConnection: connection,
-                    sync: createdSync,
-                    providerConfig: providerConfig,
-                    syncName,
-                    syncData: { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
-                    logContextGetter,
-                    debug
-                });
+                const sync = await createSync(connection.id, syncConfig);
+                if (sync) {
+                    await orchestrator.scheduleSync({
+                        nangoConnection: connection,
+                        sync: sync,
+                        providerConfig: providerConfig,
+                        syncName,
+                        syncData: { ...flowConfig, returns: flowConfig.models, input: '' } as NangoIntegrationData,
+                        logContextGetter,
+                        debug
+                    });
+                }
             }
             if (debug) {
                 await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
@@ -421,6 +432,23 @@ export class SyncManagerService {
                 orchestrator,
                 false
             );
+        }
+    }
+    public async pauseSchedules({
+        syncConfigId,
+        environmentId,
+        orchestrator
+    }: {
+        syncConfigId: number;
+        environmentId: number;
+        orchestrator: Orchestrator;
+    }): Promise<void> {
+        const syncs = await getSyncsBySyncConfigId(environmentId, syncConfigId);
+        for (const sync of syncs) {
+            const res = await orchestrator.pauseSync({ syncId: sync.id, environmentId });
+            if (res.isErr()) {
+                logger.error('Failed to delete schedule for sync', { syncId: sync.id, error: res.error });
+            }
         }
     }
 
