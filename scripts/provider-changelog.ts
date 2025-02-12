@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 const primaryBranch = (await $`git remote show origin | grep \"HEAD branch\" | sed \"s/.*: //\"`.text()).trim();
 const commits = await $`git log ${primaryBranch} --date=iso-strict --format=%cd`.lines();
 let date = new Date(commits[commits.length - 1] as string);
-const until = new Date();
+const until = new Date(new Date().getTime());
 
 let previousProviders: Record<string, Provider> | undefined = undefined;
 const months: [Date, string[]][] = [];
@@ -33,8 +33,9 @@ while (true) {
         break;
     }
 
-    date = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
-    if (date > until) {
+    // add two months since we drop back one second
+    date = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 2, 1) - 1);
+    if (date >= until) {
         date = until;
     }
 }
@@ -50,7 +51,7 @@ console.log(`Nango suppors ${Object.keys(previousProviders).length} providers`);
 console.log();
 
 for (const [date, added] of months) {
-    console.log(`## ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}:`);
+    console.log(`## ${date.toLocaleString('default', { timeZone: 'UTC', month: 'long', year: 'numeric' })}:`);
     console.log();
     console.log(`${added.length} new providers`);
     console.log();
