@@ -1531,7 +1531,7 @@ paths:
                       type: string
                   description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
                 - in: header
-                  name: Retry On
+                  name: Retry-On
                   schema:
                       type: string
                   description: Comma separated status codes to explicitly retry on in addition to the default 5xx and 429.

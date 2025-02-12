@@ -5,6 +5,7 @@ import * as crypto from 'node:crypto';
 import { axiosInstance as axios, SIGNATURE_METHOD, redactHeaders, redactURL } from '@nangohq/utils';
 import { backOff } from 'exponential-backoff';
 import FormData from 'form-data';
+import { setTimeout } from 'node:timers/promises';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_METHOD, ServiceResponse } from '../models/Generic.js';
 import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
@@ -193,16 +194,14 @@ class ProxyService {
                 if (retryAtEpoch > currentEpochTime) {
                     const waitDuration = retryAtEpoch - currentEpochTime;
 
-                    const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
-
                     logs.push({
-                        type: 'http',
-                        level: 'error',
+                        type: 'log',
+                        level: 'warn',
                         createdAt: new Date().toISOString(),
-                        message: content
+                        message: `Rate limit reset time was parsed successfully, retrying after "${waitDuration}" seconds`
                     });
 
-                    await new Promise((resolve) => setTimeout(resolve, waitDuration * 1000));
+                    await setTimeout(waitDuration * 1000);
 
                     return { shouldRetry: true, logs };
                 }
@@ -214,16 +213,15 @@ class ProxyService {
 
             if (retryHeaderVal) {
                 const retryAfter = Number(retryHeaderVal);
-                const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
 
                 logs.push({
-                    type: 'http',
-                    level: 'error',
+                    type: 'log',
+                    level: 'warn',
                     createdAt: new Date().toISOString(),
-                    message: content
+                    message: `Retry header was parsed successfully, retrying after "${retryAfter}" seconds`
                 });
 
-                await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+                await setTimeout(retryAfter * 1000);
 
                 return { shouldRetry: true, logs };
             }
@@ -257,7 +255,7 @@ class ProxyService {
                 const retryHeader = config.retryHeader.at ? config.retryHeader.at : config.retryHeader.after;
 
                 const { shouldRetry, logs: retryActivityLogs } = await this.retryHandler(error, type, retryHeader as string);
-                retryActivityLogs.forEach((l: MessageRowInsert) => logs.push(l));
+                retryActivityLogs.forEach((l) => logs.push(l));
                 return shouldRetry;
             }
 
@@ -266,22 +264,25 @@ class ProxyService {
                 const retryHeader = config.provider.proxy.retry.at ? config.provider.proxy.retry.at : config.provider.proxy.retry.after;
 
                 const { shouldRetry, logs: retryActivityLogs } = await this.retryHandler(error, type, retryHeader as string);
-                retryActivityLogs.forEach((l: MessageRowInsert) => logs.push(l));
+                retryActivityLogs.forEach((l) => logs.push(l));
                 return shouldRetry;
             }
 
-            const content = `API received an ${error.response?.status || error.code} error, ${
-                config.retries && config.retries > 0
-                    ? `retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
-                    : 'but no retries will occur because retries defaults to 0 or were set to 0'
-            }`;
-
-            logs.push({
-                type: 'http',
-                level: 'error',
-                createdAt: new Date().toISOString(),
-                message: content
-            });
+            if (!config.retries || config.retries <= 0) {
+                logs.push({
+                    type: 'log',
+                    level: 'warn',
+                    createdAt: new Date().toISOString(),
+                    message: `Received an "${error.response?.status || error.code}" error, but no retries will occur because retries defaults to 0 or were set to 0`
+                });
+            } else {
+                logs.push({
+                    type: 'log',
+                    level: 'warn',
+                    createdAt: new Date().toISOString(),
+                    message: `Received an "${error.response?.status || error.code}" error, retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
+                });
+            }
 
             return true;
         }
@@ -337,8 +338,14 @@ class ProxyService {
         const logs: MessageRowInsert[] = [];
         try {
             const response: AxiosResponse = await backOff(
-                () => {
-                    return axios.request(options);
+                async () => {
+                    try {
+                        return await axios.request(options);
+                    } catch (err) {
+                        const handling = this.logErrorResponse({ error: err, requestConfig: options, config });
+                        logs.push(...handling.logs);
+                        throw err;
+                    }
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, config, logs) }
             );
@@ -346,8 +353,8 @@ class ProxyService {
             const handling = this.handleResponse({ response, config, requestConfig: options });
             return { response, logs: [...logs, ...handling.logs] };
         } catch (err) {
-            const handling = this.handleErrorResponse({ error: err, requestConfig: options, config });
-            return { response: err as any, logs: [...logs, ...handling.logs] };
+            // Already handled
+            return { response: err as any, logs };
         }
     }
 
@@ -544,7 +551,7 @@ class ProxyService {
                     type: 'http',
                     level: 'info',
                     createdAt: new Date().toISOString(),
-                    message: `${config.method} ${redactedURL} was successful`,
+                    message: `${config.method} ${redactedURL}`,
                     request: {
                         method: config.method,
                         url: redactedURL,
@@ -552,14 +559,14 @@ class ProxyService {
                     },
                     response: {
                         code: response.status,
-                        headers: (response.headers || {}) as Record<string, string>
+                        headers: redactHeaders({ headers: response.headers })
                     }
                 }
             ]
         };
     }
 
-    private handleErrorResponse({
+    public logErrorResponse({
         error,
         requestConfig,
         config
@@ -579,7 +586,7 @@ class ProxyService {
                 type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${config.method} request to ${redactedURL} failed`,
+                message: `${config.method} ${redactedURL}`,
                 request: {
                     method: config.method,
                     url: redactedURL,
@@ -587,19 +594,14 @@ class ProxyService {
                 },
                 response: {
                     code: error.response?.status || 500,
-                    headers: (error.response?.headers || {}) as Record<string, string>
+                    headers: redactHeaders({ headers: error.response?.headers })
                 },
                 error: {
                     name: error.name,
                     message: error.message,
                     payload: {
-                        method: config.method,
-                        stack: error.stack,
-                        code: error.code,
-                        status: error.status,
-                        url: redactedURL,
-                        data: error.response?.data,
-                        safeHeaders
+                        code: error.code
+                        // data: error.response?.data, contains too much data
                     }
                 }
             });
@@ -608,7 +610,7 @@ class ProxyService {
                 type: 'http',
                 level: 'error',
                 createdAt: new Date().toISOString(),
-                message: `${config.method} request to ${redactedURL} failed`,
+                message: `${config.method} ${redactedURL}`,
                 error: error as any
             });
         }

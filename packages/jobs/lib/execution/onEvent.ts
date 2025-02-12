@@ -1,4 +1,4 @@
-import { Err, metrics, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
@@ -24,6 +24,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         }
         account = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {

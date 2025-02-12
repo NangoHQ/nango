@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.53.0",
+    "version": "0.53.1",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -46,7 +46,8 @@
         "docs": "tsx scripts/docs-gen-snippets.ts && cd ./docs-v2 && npx mintlify dev --port 3033",
         "docs:generate": "tsx scripts/docs-gen-snippets.ts",
         "nango": "cd ./packages/server && npm run nango",
-        "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d"
+        "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
+        "changelog:providers": "tsx scripts/package-changelog.ts"
     },
     "devDependencies": {
         "@eslint/js": "9.17.0",

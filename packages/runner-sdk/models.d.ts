@@ -380,10 +380,10 @@ export declare class NangoSync extends NangoAction {
     /**
      * @deprecated please use batchSave
      */
-    batchSend<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchSave<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchDelete<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
+    batchSend<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchSave<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchDelete<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
     getObjectsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>>;

@@ -119,8 +119,8 @@ export const sendSync = async ({
     }
 
     const webhooks = [
-        { url: webhookSettings.primary_url, type: 'webhook url' },
-        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
+        { url: webhookSettings.primary_url, type: 'primary' },
+        { url: webhookSettings.secondary_url, type: 'secondary' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     const result = await deliver({
