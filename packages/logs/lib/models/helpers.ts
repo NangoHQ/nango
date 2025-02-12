@@ -122,29 +122,29 @@ export function parseCursor(str: string): any[] {
 }
 
 export const operationTypeToMessage: Record<ConcatOperationList, string> = {
-    'action:run': 'Action execution',
+    'action:run': 'Action',
     'admin:impersonation': 'Admin logged into another account',
-    'auth:create_connection': 'Create connection',
+    'auth:create_connection': 'Connection created',
     'auth:post_connection': 'post connection execution',
-    'auth:refresh_token': 'Token refresh',
+    'auth:refresh_token': 'Token refreshed',
     'auth:connection_test': 'Connection test',
-    'deploy:custom': 'Deploying custom scripts',
-    'deploy:prebuilt': 'Deploying pre-built flow',
-    'proxy:call': 'Proxy call',
+    'deploy:custom': 'Deploys',
+    'deploy:prebuilt': 'Deploys',
+    'proxy:call': 'Proxy',
     'sync:cancel': 'Sync execution canceled',
-    'sync:init': 'Sync initialization',
+    'sync:init': 'Sync initialized',
     'sync:pause': 'Sync schedule paused',
-    'sync:request_run_full': 'Sync execution triggered (full)',
-    'sync:request_run': 'Sync execution triggered (incremental)',
-    'sync:run': 'Sync execution',
-    'sync:unpause': 'Sync schedule started',
-    'webhook:incoming': 'Received a webhook',
-    'webhook:forward': 'Forwarding Webhook',
-    'webhook:sync': 'Delivering Webhook from Sync',
-    'webhook:connection_create': 'Connection creation webhook',
-    'webhook:connection_refresh': 'Connection refresh webhook',
-    'events:post_connection_creation': 'Post connection creation script execution',
-    'events:pre_connection_deletion': 'Pre connection creation script execution'
+    'sync:request_run_full': 'Full execution triggered',
+    'sync:request_run': 'Incremental execution triggered',
+    'sync:run': 'Sync executed',
+    'sync:unpause': 'Sync schedule resumed',
+    'webhook:incoming': 'External webhook executed',
+    'webhook:forward': 'External webhook forwarded',
+    'webhook:sync': 'Sync completion webhooks',
+    'webhook:connection_create': 'Connection creation webhooks',
+    'webhook:connection_refresh': 'Token refresh webhooks',
+    'events:post_connection_creation': 'Event-based executions',
+    'events:pre_connection_deletion': 'Event-based executions'
 };
 
 /**
