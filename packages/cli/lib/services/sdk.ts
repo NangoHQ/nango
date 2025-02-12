@@ -130,14 +130,16 @@ export class NangoSyncCLI extends NangoSyncBase {
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
 
-    public batchSave<T = any>(results: T[], model: string) {
+    public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchSave received an empty array. No records to save.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         // Validate records
-        const hasErrors = this.validateRecords(model, results);
+        const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
 
         if (hasErrors.length > 0) {
             this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
@@ -147,7 +149,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         }
 
         this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
@@ -162,14 +164,16 @@ export class NangoSyncCLI extends NangoSyncBase {
         return true;
     }
 
-    public batchDelete<T = any>(results: T[], model: string) {
+    public batchDelete<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchDelete received an empty array. No records to delete.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
@@ -184,14 +188,16 @@ export class NangoSyncCLI extends NangoSyncBase {
         return true;
     }
 
-    public batchUpdate<T = any>(results: T[], model: string) {
+    public batchUpdate<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchUpdate received an empty array. No records to update.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
