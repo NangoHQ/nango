@@ -47,7 +47,7 @@ if (!previousProviders) {
 
 console.log('# Provider Changelog');
 console.log();
-console.log(`Nango suppors ${Object.keys(previousProviders).length} providers`);
+console.log(`Nango supports ${Object.keys(previousProviders).length} providers`);
 console.log();
 
 for (const [date, added] of months) {
