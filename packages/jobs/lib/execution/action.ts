@@ -1,4 +1,4 @@
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
@@ -35,6 +35,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
         account = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
