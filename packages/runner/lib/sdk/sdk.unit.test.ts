@@ -486,12 +486,12 @@ describe('Aborted script', () => {
     });
 });
 
-describe('getObjectsById', () => {
+describe('getRecordsById', () => {
     it('show throw if aborted', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
         ac.abort();
-        expect(nango.getObjectsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
+        expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
     });
 
     it('should return empty map if no ids', async () => {
@@ -499,7 +499,7 @@ describe('getObjectsById', () => {
         mockPersistClient.getRecords = vi.fn();
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
-        const result = await nango.getObjectsByIds([], 'Wello');
+        const result = await nango.getRecordsByIds([], 'Wello');
         expect(result).toEqual(new Map());
         expect(mockPersistClient.getRecords).not.toHaveBeenCalled();
     });
@@ -514,7 +514,7 @@ describe('getObjectsById', () => {
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
-        const result = await nango.getObjectsByIds(Array.from(records.keys()), 'Whatever');
+        const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
@@ -534,7 +534,7 @@ describe('getObjectsById', () => {
             .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
-        const result = await nango.getObjectsByIds(Array.from(records.keys()), 'Whatever');
+        const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);

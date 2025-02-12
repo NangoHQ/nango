@@ -383,7 +383,7 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async getObjectsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+    public async getRecordsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         this.throwIfAborted();
 
         const objects = new Map<K, T>();
@@ -430,7 +430,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'batchSave',
     'batchUpdate',
     'batchSend',
-    'getObjectsByIds',
+    'getRecordsByIds',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',
