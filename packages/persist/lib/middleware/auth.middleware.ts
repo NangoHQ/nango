@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { environmentService } from '@nangohq/shared';
-import { stringifyError } from '@nangohq/utils';
+import { stringifyError, tagTraceUser } from '@nangohq/utils';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authorizationHeader = req.get('authorization');
@@ -28,6 +28,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
             if (!result || result.environment.id !== environmentId) {
                 throw new Error('Cannot find matching environment');
             }
+            tagTraceUser(result);
             next();
         })
         .catch((err: unknown) => {

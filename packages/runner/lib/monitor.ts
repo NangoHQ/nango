@@ -2,9 +2,8 @@ import os from 'os';
 import fs from 'fs';
 import { httpFetch, logger } from './utils.js';
 import { idle } from './idle.js';
+import { envs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
-
-const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
 
 export class RunnerMonitor {
     private runnerId: number;
@@ -60,7 +59,7 @@ export class RunnerMonitor {
             const rss = process.memoryUsage().rss;
             const total = getTotalMemoryInBytes();
             const memoryUsagePercentage = (rss / total) * 100;
-            if (memoryUsagePercentage > MEMORY_WARNING_PERCENTAGE_THRESHOLD) {
+            if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage(memoryUsagePercentage);
             }
         }, 1000);
@@ -76,17 +75,20 @@ export class RunnerMonitor {
             }
         }
         this.lastMemoryReportDate = new Date();
-        for (const { environmentId, activityLogId } of this.tracked.values()) {
+        for (const { environmentId, activityLogId, secretKey } of this.tracked.values()) {
             if (!environmentId || !activityLogId) {
                 continue;
             }
             await httpFetch({
                 method: 'post',
                 url: `${this.persistServiceUrl}/environment/${environmentId}/log`,
+                headers: {
+                    Authorization: `Bearer ${secretKey}`
+                },
                 data: JSON.stringify({
                     activityLogId: activityLogId,
                     level: 'warn',
-                    msg: `Memory usage of nango scripts is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`
+                    msg: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`
                 })
             });
         }

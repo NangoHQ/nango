@@ -18,7 +18,7 @@ export const oldLevelToNewLevel = {
     http: 'info'
 } as const;
 
-const RECORDS_VALIDATION_SAMPLE = 5;
+const RECORDS_VALIDATION_SAMPLE = 1;
 
 /**
  * Action SDK
@@ -262,11 +262,11 @@ export class NangoSyncRunner extends NangoSyncBase {
         });
     }
 
-    private getMergingStategy(model: string): MergingStrategy {
+    private getMergingStrategy(model: string): MergingStrategy {
         return this.mergingByModel.get(model) || { strategy: 'override' };
     }
 
-    private setMergingStategyByModel(model: string, merging: MergingStrategy): void {
+    private setMergingStrategyByModel(model: string, merging: MergingStrategy): void {
         this.mergingByModel.set(model, merging);
     }
 
@@ -309,12 +309,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStategy(model)
+                merging: this.getMergingStrategy(model)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(model, res.value.nextMerging);
         }
         return true;
     }
@@ -337,12 +337,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStategy(model)
+                merging: this.getMergingStrategy(model)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(model, res.value.nextMerging);
         }
 
         return true;
@@ -366,12 +366,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStategy(model)
+                merging: this.getMergingStrategy(model)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(model, res.value.nextMerging);
         }
         return true;
     }
