@@ -7,6 +7,7 @@ on:
         paths:
             - packages/providers/providers.yaml
             - docs-v2/integrations/all/*.md
+            - packages/shared/flows.yaml
     workflow_dispatch:
 
 concurrency:

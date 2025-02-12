@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.53.1] - 2025-02-11
+
+### Added
+
+- *(persist)* Add endpoint to get records (#3463) by @nalanj
+- Runner use new image (#3468) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5ccdb8a0cfc1f9d972bd25aee1dbb4a1efa97dc2 by Andrew Karanja. Commit message: feat(basecamp): added fetch-todolists action (#213) by @github-actions[bot]
+- *(server)* Separate auth related webhooks into their own log context (#3427) by @nalanj
+- *(persist)* Add support for activityLogId to get records endpoint (#3476) by @nalanj
+- *(connection)* Add span on refresh credentials (#3482) by @bodinsamuel
+- *(web)* Refine logs display in UI (#3481) by @nalanj
+- *(loom-scim)* Provider support (#3488) by @AndrewKaranja
+- *(paylocity)* Paylocity support (#3492) by @AndrewKaranja
+- *(integrations)* Add support for rippling (#3501) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7fa2654b348debd340494149baab849011692b00 by Khaliq. Commit message: feat(recharge): add email (#215) by @github-actions[bot]
+- *(integrations)* Add support for salesforce cdp (#3363) by @hassan254-prog
+- *(1password-scim)* Support for 1password-scim (#3486) by @AndrewKaranja
+
+### Changed
+
+- New Slack channel to request new APIs (#3477) by @bastienbeurier
+- Standardize providers.yaml display names (#3478) by @bastienbeurier
+- Document how to show list of integrations in the Connect UI (#3480) by @bastienbeurier
+- Document HTTP request retry behavior (#3489) by @bastienbeurier
+- *(zapier)* Broken image link (#3495) by @viictoo
+- Document re-authorization flow (#3491) by @bastienbeurier
+- *(deps-dev)* Bump esbuild from 0.17.19 to 0.25.0 (#3500) by @dependabot[bot]
+- Typographical error (#3502) by @clarencepenz
+
+### Fixed
+
+- *(runner-sdk)* Catch void this.log (#3474) by @TBonnin
+- *(ui)* Connection create, re-up integration list (#3479) by @bodinsamuel
+- Decrypt provider config in refreshConnections (#3485) by @TBonnin
+- Fix typographical error (#3487) by @clarencepenz
+- *(types)* Connection -> DBConnection (#3470) by @bodinsamuel
+- *(connection)* Incorrect connection id (#3497) by @bodinsamuel
+- Fix typo in frontend.mdx (#3494) by @spookyuser
+- *(docker)* Stop building runner (#3490) by @bodinsamuel
+- *(persist)* Correct validation and types (#3483) by @TBonnin
+- *(jobs)* Logs track_deletes results (#3493) by @bodinsamuel
+
 ## [v0.53.0] - 2025-02-06
 
 ### Added
@@ -3023,6 +3065,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.53.1]: https://github.com/NangoHQ/nango/compare/v0.53.0..v0.53.1
 [v0.53.0]: https://github.com/NangoHQ/nango/compare/v0.52.5..v0.53.0
 [v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5
 [v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4

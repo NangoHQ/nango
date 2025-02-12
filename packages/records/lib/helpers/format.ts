@@ -46,7 +46,8 @@ export const formatRecords = ({
         const formattedRecord: FormattedRecord = {
             id: stableId(datum),
             json: datum,
-            external_id: String(datum['id']),
+            // postgresql does not support null bytes in strings
+            external_id: String(datum['id']).replaceAll('\x00', ''),
             data_hash,
             model,
             connection_id: connectionId,
