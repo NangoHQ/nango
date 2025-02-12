@@ -415,8 +415,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 const stringId = String(record.id);
                 const realId = externalIdMap.get(stringId);
                 if (realId !== undefined) {
-                    const { _nango_metadata, ...recordWithoutMetadata } = record;
-                    objects.set(realId, recordWithoutMetadata as T);
+                    objects.set(realId, record as T);
                 }
             }
         }
