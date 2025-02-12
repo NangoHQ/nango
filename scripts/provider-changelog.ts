@@ -2,18 +2,13 @@ import { $ } from 'zx';
 import type { Provider } from '@nangohq/types';
 import yaml from 'js-yaml';
 
-interface ProviderSummary {
-    name: string;
-    provider: Provider;
-}
-
 const primaryBranch = (await $`git remote show origin | grep \"HEAD branch\" | sed \"s/.*: //\"`.text()).trim();
 const commits = await $`git log ${primaryBranch} --date=iso-strict --format=%cd`.lines();
 let date = new Date(commits[commits.length - 1] as string);
 const until = new Date();
 
 let previousProviders: Record<string, Provider> | undefined = undefined;
-const months: [Date, ProviderSummary[]][] = [];
+const months: [Date, string[]][] = [];
 
 while (true) {
     const sha = await $`git log ${primaryBranch} --until='${date.toISOString()}' -1 --format=format:%H`.text();
@@ -29,13 +24,7 @@ while (true) {
 
         const added = current.filter((provider) => !previous.includes(provider));
 
-        months.unshift([
-            date,
-            added.map((provider) => ({
-                name: provider,
-                provider: (providers[provider] as any)['alias'] ? providers[(providers[provider] as any)['alias']]! : providers[provider]!
-            }))
-        ]);
+        months.unshift([date, added]);
     }
 
     previousProviders = providers;
@@ -50,13 +39,25 @@ while (true) {
     }
 }
 
-for (const [date, providerSummaries] of months) {
+if (!previousProviders) {
+    console.log('No providers were loaded');
+    process.exit(1);
+}
+
+console.log('# Provider Changelog');
+console.log();
+console.log(`Nango suppors ${Object.keys(previousProviders).length} providers`);
+console.log();
+
+for (const [date, added] of months) {
     console.log(`## ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}:`);
     console.log();
-    console.log(`${providerSummaries.length} new providers`);
+    console.log(`${added.length} new providers`);
     console.log();
-    for (const providerSummary of providerSummaries) {
-        console.log(`- [${providerSummary.provider.display_name || providerSummary.name}](/integrations/all/${providerSummary.name})`);
+    for (const providerKey of added) {
+        const provider = previousProviders[providerKey];
+
+        console.log(`- [${provider?.display_name || providerKey}](/integrations/all/${providerKey})`);
     }
     console.log();
 }
