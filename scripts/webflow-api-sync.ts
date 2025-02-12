@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 import { setTimeout } from 'node:timers/promises';
 import util from 'node:util';
 import type { CollectionItem, CollectionItemList } from 'webflow-api/api';
-import type { Provider } from '@nangohq/types';
+import type { Provider, FlowsYaml } from '@nangohq/types';
 
 const rateLimitSleep = 1000;
 
@@ -28,6 +28,10 @@ const webflow = new WebflowClient({ accessToken: process.env['WEBFLOW_CMS_API_TO
 const providersPath = 'packages/providers/providers.yaml';
 // eslint-disable-next-line import/no-named-as-default-member
 const providers = yaml.load(await fs.readFile(providersPath, 'utf8')) as Record<string, Provider>;
+
+const flowsPath = 'packages/shared/flows.yaml';
+// eslint-disable-next-line import/no-named-as-default-member
+const flows = yaml.load(await fs.readFile(flowsPath, 'utf8')) as FlowsYaml;
 
 const docsPath = 'docs-v2/integrations/all';
 const files = await fs.readdir(docsPath);
@@ -111,6 +115,17 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
     const logoPath = path.relative(process.cwd(), fullLogoPath);
     const logo = `https://raw.githubusercontent.com/NangoHQ/nango/refs/heads/master/${logoPath}`;
 
+    let preBuiltCount = 0;
+    if (flows.integrations[slug]) {
+        if (flows.integrations[slug].actions) {
+            preBuiltCount += Object.keys(flows.integrations[slug].actions).length;
+        }
+
+        if (flows.integrations[slug].syncs) {
+            preBuiltCount += Object.keys(flows.integrations[slug].syncs).length;
+        }
+    }
+
     if (apiItemsBySlug[slug]) {
         const item = apiItemsBySlug[slug];
         if (!item.id) {
@@ -121,7 +136,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
             fieldData: {
                 name: item.fieldData.name,
                 documentation: item.fieldData['documentation'],
-                'api-categories': item.fieldData['api-categories']
+                'api-categories': item.fieldData['api-categories'],
+                'pre-built-integrations-count': item.fieldData['pre-built-integrations-count']
             }
         };
 
@@ -132,7 +148,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
             fieldData: {
                 name: provider.display_name,
                 documentation: provider.docs,
-                'api-categories': apiCategories
+                'api-categories': apiCategories,
+                'pre-built-integrations-count': preBuiltCount
             }
         };
 
@@ -163,7 +180,8 @@ for (const [slug, provider] of Object.entries(neededProviders)) {
                         slug: slug,
                         documentation: provider.docs,
                         logo,
-                        'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id)
+                        'api-categories': providerCategories.map((category) => categoriesBySlug[category]?.id),
+                        'pre-built-integrations-count': preBuiltCount
                     }
                 });
             }
