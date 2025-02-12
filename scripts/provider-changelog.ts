@@ -13,7 +13,7 @@ let date = new Date(commits[commits.length - 1] as string);
 const until = new Date();
 
 let previousProviders: Record<string, Provider> | undefined = undefined;
-const months = new Map<Date, ProviderSummary[]>();
+const months: [Date, ProviderSummary[]][] = [];
 
 while (true) {
     const sha = await $`git log ${primaryBranch} --until='${date.toISOString()}' -1 --format=format:%H`.text();
@@ -29,10 +29,13 @@ while (true) {
 
         const added = current.filter((provider) => !previous.includes(provider));
 
-        months.set(
+        months.unshift([
             date,
-            added.map((provider) => ({ name: provider, provider: providers[provider]! }))
-        );
+            added.map((provider) => ({
+                name: provider,
+                provider: (providers[provider] as any)['alias'] ? providers[(providers[provider] as any)['alias']]! : providers[provider]!
+            }))
+        ]);
     }
 
     previousProviders = providers;
@@ -47,11 +50,13 @@ while (true) {
     }
 }
 
-for (const [date, providers] of months.entries()) {
+for (const [date, providerSummaries] of months) {
     console.log(`## ${date.toLocaleString('default', { month: 'long', year: 'numeric' })}:`);
     console.log();
-    for (const provider of providers) {
-        console.log(`- [${provider.provider.display_name}](/integrations/all/${provider.name})`);
+    console.log(`${providerSummaries.length} new providers`);
+    console.log();
+    for (const providerSummary of providerSummaries) {
+        console.log(`- [${providerSummary.provider.display_name || providerSummary.name}](/integrations/all/${providerSummary.name})`);
     }
     console.log();
 }
