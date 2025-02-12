@@ -4,9 +4,11 @@ import type { InputProps } from '../../../components/ui/input/Input';
 import { Input } from '../../../components/ui/input/Input';
 import { cn } from '../../../utils/utils';
 import { Button } from '../../../components/ui/button/Button';
-import { IconEdit } from '@tabler/icons-react';
+import { IconEdit, IconExternalLink } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
 import type { ApiError } from '@nangohq/types';
+import { Link } from 'react-router-dom';
+import { CopyButton } from '../../../components/ui/button/CopyButton';
 
 export const EditableInput: React.FC<
     {
@@ -15,11 +17,12 @@ export const EditableInput: React.FC<
         secret?: boolean;
         name: string;
         originalValue: string;
+        docs?: string;
         editInfo?: ReactNode;
         apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
         onSuccess: () => void;
     } & InputProps
-> = ({ title, subTitle, secret, name, originalValue, editInfo, apiCall, onSuccess, ...rest }) => {
+> = ({ title, subTitle, secret, name, originalValue, docs, editInfo, apiCall, onSuccess, ...rest }) => {
     const { toast } = useToast();
 
     const [value, setValue] = useState<string>(() => originalValue);
@@ -48,10 +51,19 @@ export const EditableInput: React.FC<
     };
 
     return (
-        <fieldset className={cn('flex flex-col gap-4')}>
-            <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s')}>
-                {title}
-            </label>
+        <fieldset className={cn('flex flex-col gap-2.5')}>
+            {docs ? (
+                <Link to={docs} className="flex gap-2 items-center" target="_blank">
+                    <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s -mb-2')}>
+                        {title}
+                    </label>
+                    <IconExternalLink stroke={1} size={18} />
+                </Link>
+            ) : (
+                <label htmlFor={name} className={cn(!subTitle ? 'font-semibold' : 'text-s -mb-2')}>
+                    {title}
+                </label>
+            )}
             <Input
                 inputSize={'lg'}
                 variant={'black'}
@@ -62,9 +74,12 @@ export const EditableInput: React.FC<
                 className={cn(error && 'border-alert-400')}
                 after={
                     !edit && (
-                        <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
-                            <IconEdit stroke={1} size={18} />
-                        </Button>
+                        <div className="flex">
+                            {secret && <CopyButton text={value} />}
+                            <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
+                                <IconEdit stroke={1} size={18} />
+                            </Button>
+                        </div>
                     )
                 }
                 {...rest}
@@ -76,7 +91,6 @@ export const EditableInput: React.FC<
                     <>
                         <Button
                             variant={'tertiary'}
-                            size={'sm'}
                             onClick={() => {
                                 setValue(originalValue);
                                 setEdit(false);
@@ -85,7 +99,7 @@ export const EditableInput: React.FC<
                         >
                             Cancel
                         </Button>
-                        <Button variant={'secondary'} size={'sm'} onClick={onSave} isLoading={loading}>
+                        <Button variant={'primary'} onClick={onSave} isLoading={loading}>
                             Save
                         </Button>
                     </>

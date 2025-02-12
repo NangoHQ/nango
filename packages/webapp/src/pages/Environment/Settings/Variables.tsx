@@ -121,7 +121,7 @@ export const VariablesSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Script Settings</h3>
             </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
+                <fieldset className="flex flex-col gap-2.5">
                     <label htmlFor="envvar" className="font-semibold">
                         Environment variables
                     </label>
@@ -168,18 +168,18 @@ export const VariablesSettings: React.FC = () => {
                             </div>
                         );
                     })}
-                    <div className="flex justify-end gap-3 mt-2">
+                    <div className="flex justify-end gap-3">
                         {!edit && (
-                            <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>
+                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
                                 <IconEdit stroke={1} size={18} /> Edit
                             </Button>
                         )}
                         {edit && (
                             <>
-                                <Button variant={'tertiary'} onClick={onCancel} size={'sm'}>
+                                <Button variant={'tertiary'} onClick={onCancel}>
                                     Cancel
                                 </Button>
-                                <Button variant={'secondary'} onClick={onSave} isLoading={loading} size={'sm'}>
+                                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
                                     Save
                                 </Button>
                             </>

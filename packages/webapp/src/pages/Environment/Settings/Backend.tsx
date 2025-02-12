@@ -84,7 +84,7 @@ export const BackendSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Backend Settings</h3>
             </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-4">
+                <fieldset className="flex flex-col gap-2.5">
                     <label htmlFor="secretKey" className="font-semibold mb-2">
                         Secret Key
                     </label>
@@ -137,7 +137,7 @@ export const BackendSettings: React.FC = () => {
                         <div className="flex gap-3 justify-end">
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant={'emptyFaded'}>Cancel key rotation</Button>
+                                    <Button variant={'tertiary'}>Cancel key rotation</Button>
                                 </DialogTrigger>
 
                                 <DialogContent>
@@ -158,7 +158,7 @@ export const BackendSettings: React.FC = () => {
 
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant={'secondary'}>Confirm key rotation</Button>
+                                    <Button variant={'primary'}>Confirm key rotation</Button>
                                 </DialogTrigger>
 
                                 <DialogContent>
@@ -185,6 +185,7 @@ export const BackendSettings: React.FC = () => {
                     title="Callback URL"
                     placeholder="https://api.nango.dev/oauth/callback"
                     originalValue={environmentAndAccount.environment.callback_url}
+                    docs="https://docs.nango.dev/guides/api-authorization/configuration#2-create-an-integration"
                     editInfo={
                         <Info>
                             Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API providers.
