@@ -4,7 +4,8 @@ tracer.init({
     service: 'nango',
     samplingRules: [
         { service: 'server-net', sampleRate: 0.01, name: '*' },
-        { service: 'nango-elasticsearch', sampleRate: 0.1, name: '*' }
+        { service: 'nango-elasticsearch', sampleRate: 0.1, name: '*' },
+        { service: 'nango-redis', sampleRate: 0.1, name: '*' }
     ]
 });
 tracer.use('pg', {

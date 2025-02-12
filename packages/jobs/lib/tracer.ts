@@ -4,7 +4,8 @@ tracer.init({
     service: 'nango-jobs',
     samplingRules: [
         { service: 'jobs-net', sampleRate: 0.1, name: '*' },
-        { service: 'nango-elasticsearch', sampleRate: 0.1, name: '*' }
+        { service: 'nango-elasticsearch', sampleRate: 0.1, name: '*' },
+        { service: 'nango-redis', sampleRate: 0.1, name: '*' }
     ]
 });
 tracer.use('pg', {
