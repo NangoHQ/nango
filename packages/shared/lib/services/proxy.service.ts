@@ -55,7 +55,7 @@ class ProxyService {
                 level: 'error',
                 source: 'internal',
                 createdAt: new Date().toISOString(),
-                message: 'Proxy: a API URL endpoint is missing.'
+                message: 'Proxy: an API URL endpoint is missing.'
             });
             return { success: false, error: new NangoError('missing_endpoint'), response: null, logs };
         }
