@@ -1,5 +1,5 @@
 import tracer from 'dd-trace';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
@@ -42,6 +42,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
