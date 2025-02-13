@@ -485,3 +485,58 @@ describe('Aborted script', () => {
         expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
     });
 });
+
+describe('getRecordsById', () => {
+    it('show throw if aborted', () => {
+        const ac = new AbortController();
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
+        ac.abort();
+        expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
+    });
+
+    it('should return empty map if no ids', async () => {
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn();
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const result = await nango.getRecordsByIds([], 'Wello');
+        expect(result).toEqual(new Map());
+        expect(mockPersistClient.getRecords).not.toHaveBeenCalled();
+    });
+
+    it('should call getRecords once for less than the batch size', async () => {
+        const records = new Map<number, { id: string }>();
+        for (let i = 0; i < 10; i++) {
+            records.set(i, { id: i.toString() });
+        }
+
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
+
+        expect(result).toEqual(records);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
+    });
+
+    it("should call getRecords multiple times if there's more than the batch size", async () => {
+        const records = new Map<number, { id: string }>();
+        for (let i = 0; i < 200; i++) {
+            records.set(i, { id: i.toString() });
+        }
+
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        const recordsArray = Array.from(records.values());
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: 'next' }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
+
+        expect(result).toEqual(records);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+    });
+});
