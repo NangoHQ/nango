@@ -212,7 +212,21 @@ aircall-basic:
             response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall-basic
-
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: Your Aircall Application ID (API ID)
+            pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
+        password:
+            type: string
+            title: API Token
+            description: Your Aircall Admin API Key (API Token)
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true # TODO: check usage
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
+            # TODO: Add Updated Screenshot to connect UI
 airtable:
     display_name: Airtable
     categories:
@@ -1106,6 +1120,16 @@ booking-com:
             example: secure-supply|supply
             suffix: -xml.booking.com
             prefix: https://
+    # TODO: validate
+    credentials:
+        username:
+            type: string
+            title: Machine Account Username
+            description: The username for your Booking.com machine account
+        password:
+            type: string
+            title: Machine Account Password
+            description: The password for your Booking.com machine account
 
 braintree:
     display_name: Braintree
@@ -1549,6 +1573,22 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+    # TODO: validate
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API Key of your Chargebee account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://apidocs.chargebee.com/docs/api/auth?lang=curl
+            # Chargebee is using basic auth with an api key
+            default_value: ''
+            hidden: true
 
 chattermill:
     display_name: Chattermill
@@ -1933,6 +1973,16 @@ connectwise-psa:
             type: string
             title: Client ID
             description: The Client ID assigned to your integration
+    # TODO: VALIDATE
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The ConnectWise PSA CompanyId followed by either the public key, integrator username, or MemberId
+        password:
+            type: string
+            title: Password
+            description: Your ConnectWise PSA private key, integrator password, or member hash
 
 connectwise-psa-staging:
     display_name: ConnectWise PSA (Staging)
@@ -2559,6 +2609,16 @@ e-conomic:
         headers:
             content-type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
+    # TODO: Validate
+    credentials:
+        username:
+            type: string
+            title: Private Token
+            description: The private token for your e-conomic account
+        password:
+            type: string
+            title: Agreement Grant Token
+            description: The Agreement Grant Token for your e-conomic account
 
 egnyte:
     display_name: Egnyte
@@ -2696,6 +2756,18 @@ evaluagent:
             description: The region of your EvaluAgent account
             example: eu
             pattern: '^[a-z]+$'
+    # TODO: validate
+    credentials:
+        username:
+            type: string
+            title: Access Key Id
+            description: The Access Key ID for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
+        password:
+            type: string
+            title: Secret Key
+            description: The Secret Key for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
 
 eventbrite:
     display_name: Eventbrite
