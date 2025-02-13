@@ -1,7 +1,7 @@
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config, NangoConnection } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -15,7 +15,7 @@ import {
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';
@@ -35,6 +35,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
         account = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -125,7 +126,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     }
 }
 export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
-    const connection: NangoConnection = {
+    const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId!,
         connection_id: nangoProps.connectionId,
         environment_id: nangoProps.environmentId,
@@ -195,7 +196,7 @@ async function onFailure({
     error,
     endUser
 }: {
-    connection: NangoConnection;
+    connection: ConnectionJobs;
     team?: { id: number; name: string };
     environment: { id: number; name: string };
     syncName: string;

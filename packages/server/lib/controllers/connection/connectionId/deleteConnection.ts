@@ -39,7 +39,6 @@ export const deletePublicConnection = asyncWrapper<DeletePublicConnection>(async
     const query: DeletePublicConnection['Querystring'] = valQuery.data;
 
     const { success, response: connection } = await connectionService.getConnection(params.connectionId, query.provider_config_key, environment.id);
-
     if (!success || !connection) {
         res.status(400).send({ error: { code: 'unknown_connection' } });
         return;

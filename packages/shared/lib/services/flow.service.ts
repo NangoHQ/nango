@@ -4,7 +4,6 @@ import fs from 'fs';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
 import type { StandardNangoConfig } from '../models/NangoConfig.js';
-import type { SyncType } from '../index.js';
 import { errorManager } from '../index.js';
 import { stringifyError } from '@nangohq/utils';
 import type { FlowsYaml, ScriptTypeLiteral } from '@nangohq/types';
@@ -95,7 +94,7 @@ class FlowService {
                         description: item.description,
                         track_deletes: item.track_deletes,
                         auto_start: item.auto_start,
-                        sync_type: item.sync_type as SyncType,
+                        sync_type: item.sync_type,
                         attributes: {},
                         scopes: item.scopes,
                         version: item.version || null,

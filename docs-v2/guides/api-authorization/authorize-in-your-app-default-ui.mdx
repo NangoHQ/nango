@@ -8,6 +8,10 @@ description: 'Guide to letting your users authorize an external API from your ap
 Pre-requisite: complete the [Configuration](/guides/api-authorization/configuration) guide.
 </Info>
 
+<Frame caption="Authorization overview.">
+  <img src="/images/auth.png"/>
+</Frame>
+
 # 1. Generate a session token (backend)
 
 In **your backend**, set up an API endpoint that your frontend will call before each authorization attempt to retrieve a session token from Nango.
@@ -55,8 +59,8 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
     "end_user": {
-      "id": "<END-USER-ID>",
-      "email": "<END-USER-EMAIL>",
+      "id": "<REQUIRED-END-USER-ID>",
+      "email": "<OPTIONAL-END-USER-EMAIL>",
       "display_name": "<OPTIONAL-END-USER-DISPLAY-NAME>"
     },
     "organization": {
@@ -77,22 +81,52 @@ curl --request POST \
 <Accordion title="ℹ️ Details on end user and organization information">
   The `end_user` and `organization` information fields help identify which connection belongs to which end user and organization. This information is also used for display purposes in the Nango UI and, in some cases, for custom billing plans.
 
-  Required field:
-  - `end_user.id`: Your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are crucial for reconciling the connection details that your backend receives from Nango once the connection is successfully created (as described in the [section 3](#3-listen-for-webhoooks-and-save-the-connection-id-backend)).
+  <Info>
+    The `end_user.id` is required. Pass in your internal ID of the user who initiated the authorization flow. This ID, and potentially the `organization.id`, are necessary for reconciling the connection details that your backend receives from Nango after the connection is created (as described in the [section 3](#3-listen-for-webhooks-and-save-the-connection-id-backend)).
+  </Info>
+
+  <Info>
+    It's possible that the end use's email in your app will not match the email they use to connect their external account, which is fine.
+  </Info>
 
   <Info>
   **Organization-level connections**
 
-  In some cases, a connection belongs to an organization rather than a user. In such cases, fill in the relevant organization information, in additional to the required end user information (based on the user who initiated the authorization flow). Sometimes, the user email in your app will not match the email they use to connect their external account, which is fine. If you really cannot provide a user ID and email, you can use placeholders without affecting how Nango operates.
-  </Info>
+  In some cases, a connection belongs to an organization rather than a user. In such cases, fill in the relevant organization information and use a place holder for the required `end_user.id` (or use the information of the user who initiated the authorization flow). 
+  </Info>  
 
 </Accordion>
+
+<Tip>
+  Passing a list of integration IDs in `allowed_integrations` will display a list of integrations that the end user can pick from: 
+
+  <Frame caption="Nango's default authorization UI.">
+    <img src="/images/connect-integration-list.png" />
+  </Frame>
+
+  Passing a single integration ID in `allowed_integrations` will send the end user directly to this integration's authorization flow:
+
+  <Frame caption="Nango's default authorization UI.">
+    <img src="/images/connect-linear-only.png" />
+  </Frame>
+</Tip>
 
 ## 2. Trigger the auth flow (frontend)
 
 In **your frontend**, load the Nango frontend SDK, retrieve the session token from the backend, and trigger the authorization flow.
 
 ### Option 1: Use the default UI (Nango Connect)
+
+<Tip>
+  Nango's default authorization UI comes with pre-built features:
+  - Displays the necessary input fields, validates their format & provides end-user instructions
+  - Authorizes a specific integration or can display a list of integrations to choose from
+  - Is fully whitelabel, without any Nango branding
+</Tip>
+
+<Frame caption="Nango's default authorization UI.">
+  <img src="/images/connect-ui.gif" />
+</Frame>
 
 ```js
 import Nango from '@nangohq/frontend';
@@ -108,7 +142,7 @@ const connect = nango.openConnectUI({
   },
 });
 
-const res = await fetch('/sessionToken', { method: 'POST' }); // Retrieve the session roken from your backend.
+const res = await fetch('/sessionToken', { method: 'POST' }); // Retrieve the session token from your backend.
 connect.setSessionToken(res.sessionToken); // A loading indicator is shown until this is set.
 ```
 
@@ -118,9 +152,9 @@ connect.setSessionToken(res.sessionToken); // A loading indicator is shown until
 
 Refer to the [Authorize in your app (custom UI)](/guides/api-authorization/authorize-in-your-app-custom-ui) guide.
 
-## 3. Listen for webhoooks & save the Connection ID (backend)
+## 3. Listen for webhooks & save the Connection ID (backend)
 
-<Accordion title="👩🏻‍💻 Simplified flow during development">
+<Accordion title="👩🏻‍💻 Simplified flow for development">
   In development, you can retrieve the connection ID without relying on webhooks.
 
 	When using the `nango.openConnectUI()` method in the frontend SDK, the connection ID is available in the `event` parameter of the callback:
@@ -170,53 +204,9 @@ You can now test the authorization flow directly from your app and verify that a
 
 If an authorization request fails, you can analyze the relevant log in the _Logs_ tab of the Nango UI.
 
-## Reconnect an existing connection
+## Re-authorize an existing connection
 
-When testing or troubleshooting an issue, you may need a user to re-authorize an API. Nango allows you to do this without deleting and recreating the connection. Instead, you can reconnect an existing connection while preserving its metadata and configuration.
-
-In **your backend**, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a session token specifically for reconnecting a user. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
-
-<Tabs>
-
-<Tab title="Node">
-
-```ts
-import { Nango } from '@nangohq/node';
-
-const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
-
-api.post('/sessionToken', (req, res) => {
-  // Ask Nango for a secure token to reconnect
-  const res = await nango.createReconnectSession({
-    connection_id: "<CONNECTION-ID>",
-    integration_id: '<INTEGRATION-ID>',
-  });
-
-  // Send this token back to your frontend
-  res.status(200).send({
-    sessionToken: res.data.token
-  });
-});
-```
-</Tab>
-
-<Tab title="cURL">
-
-```bash
-curl --request POST \
-  --url https://api.nango.dev/connect/sessions/reconnect \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "connection_id": "<CONNECTION-ID>",
-    "integration_id": "<INTEGRATION-ID>"
-  }'
-
-```
-
-</Tab>
-
-</Tabs>
+Details in this [guide](/guides/api-authorization/re-authorize-a-connection).
 
 ## Next
 

@@ -1,8 +1,8 @@
-import type { RecentlyCreatedConnection } from '@nangohq/shared';
 import { onEventScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { defaultOperationExpiration } from '@nangohq/logs';
 import { getOrchestrator } from '../../../utils/utils.js';
+import type { RecentlyCreatedConnection } from '@nangohq/types';
 
 export async function postConnectionCreation(
     createdConnection: RecentlyCreatedConnection,

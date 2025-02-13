@@ -1,12 +1,10 @@
 ---
 title: BambooHR
 sidebarTitle: BambooHR
-provider: bamboohr
 ---
 
-import Overview from "/snippets/overview.mdx";
-import PreBuiltTooling from "/snippets/generated/bamboohr/PreBuiltTooling.mdx";
-
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/bamboohr/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/bamboohr/PreBuiltUseCases.mdx"
 
 <Overview />
@@ -48,8 +46,6 @@ BambooHR requires a user specific subdomain to authenticate
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
-// oAuth
-nango.auth('bamboohr', '<CONNECTION-ID>', {params: {subdomain: '<bamboohr-subdomain>'}});
 // API key
 nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
         credentials: {

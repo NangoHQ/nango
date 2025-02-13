@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/frontend",
-    "version": "0.52.2",
+    "version": "0.53.1",
     "description": "Nango's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
@@ -14,8 +14,8 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {},
-    "devDependencies": {
-        "@nangohq/types": "0.52.2"
+    "dependencies": {
+        "@nangohq/types": "0.53.1"
     },
     "files": [
         "dist/**/*.js",

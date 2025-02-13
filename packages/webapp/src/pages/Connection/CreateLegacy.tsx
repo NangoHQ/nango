@@ -570,13 +570,14 @@ export const ConnectionCreateLegacy: React.FC = () => {
             const credentialEntries = Object.entries(credentialsState);
 
             if (credentialEntries.length > 0) {
-                const credentialsString = credentialEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n        ');
+                const credentialsString = credentialEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n      ');
 
                 twoStepCredentialsString = `
-        credentials: {
-            ${credentialsString}
-        }
-        `;
+    credentials: {
+      ${credentialsString},
+      type: 'TWO_STEP'
+    }
+  `;
             }
         }
         const connectionConfigStr =

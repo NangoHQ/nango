@@ -60,7 +60,7 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward' | 'sync';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
 }
 
 export interface OperationDeploy {
@@ -136,7 +136,6 @@ export interface MessageRow {
     response: {
         code: number;
         headers: Record<string, string>;
-        body?: unknown;
     } | null;
     meta: MessageMeta | null;
 

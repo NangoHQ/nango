@@ -882,7 +882,7 @@ paths:
                                                                             example: 'string'
                                                 sync_type:
                                                     type: string
-                                                    example: 'INCREMENTAL'
+                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
@@ -1046,6 +1046,15 @@ paths:
                   schema:
                       type: string
                   description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+                - name: ids
+                  in: query
+                  required: false
+                  description: An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                      max: 100
                 - name: Connection-Id
                   in: header
                   required: true
@@ -1107,14 +1116,9 @@ paths:
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/trigger:
         post:
@@ -1527,7 +1531,7 @@ paths:
                       type: string
                   description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
                 - in: header
-                  name: Retry On
+                  name: Retry-On
                   schema:
                       type: string
                   description: Comma separated status codes to explicitly retry on in addition to the default 5xx and 429.

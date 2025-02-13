@@ -13,7 +13,7 @@ import {
     telemetry,
     LogTypes,
     errorNotificationService,
-    SyncType,
+    SyncJobsType,
     updateSyncJobResult,
     setLastSyncDate,
     NangoError,
@@ -24,9 +24,9 @@ import {
     getEndUserByConnectionId,
     featureFlags
 } from '@nangohq/shared';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoConnection, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps, SyncResult, SyncTypeLiteral } from '@nangohq/types';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
@@ -74,6 +74,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
         if (getEndUser.isOk()) {
@@ -96,7 +97,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
-            type: syncType === 'full' ? SyncType.FULL : SyncType.INCREMENTAL,
+            type: syncType === 'full' ? SyncJobsType.FULL : SyncJobsType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
@@ -189,7 +190,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
-    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type?.toLocaleLowerCase() === 'full' ? 'full' : 'incremental';
+    const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type === 'full' ? 'full' : 'incremental';
 
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -213,7 +214,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             throw new Error('connectionId is required to update sync status');
         }
         const lastSyncDate = await getLastSyncDate(nangoProps.syncId);
-        const connection: NangoConnection = {
+        const connection: ConnectionJobs = {
             id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
             environment_id: nangoProps.environmentId,
@@ -239,6 +240,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
+                await logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
             const updatedResults: Record<string, SyncResult> = {
@@ -322,7 +324,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                     updated,
                                     deleted
                                 },
-                                operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
                             });
 
                             if (res.isErr()) {
@@ -605,7 +607,7 @@ async function onFailure({
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
-    connection: NangoConnection;
+    connection: ConnectionJobs;
     provider: string;
     providerConfig: Config | null;
     syncId: string;
@@ -694,7 +696,7 @@ async function onFailure({
                             description: error.message
                         },
                         now: lastSyncDate,
-                        operation: lastSyncDate ? SyncType.INCREMENTAL : SyncType.FULL
+                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
                     });
 
                     if (res.isErr()) {
@@ -755,7 +757,7 @@ async function onFailure({
         action: 'run',
         type: 'sync',
         sync_id: syncId,
-        connection_id: connection.id!,
+        connection_id: connection.id,
         log_id: logCtx.id,
         active: true
     });

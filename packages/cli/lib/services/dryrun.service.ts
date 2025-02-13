@@ -310,12 +310,12 @@ export class DryRunService {
                 scriptType: scriptInfo?.type || 'sync',
                 host: process.env['NANGO_HOSTPORT'],
                 connectionId: nangoConnection.connection_id,
-                environmentId: nangoConnection.environment_id,
+                environmentId: -1,
                 environmentName: environment,
                 providerConfigKey: nangoConnection.provider_config_key,
                 provider,
                 secretKey: process.env['NANGO_SECRET_KEY'] || '',
-                nangoConnectionId: nangoConnection.id as number,
+                nangoConnectionId: nangoConnection.id,
                 syncId: 'dryrun-sync',
                 lastSyncDate: lastSyncDate as Date,
                 syncConfig,
@@ -340,6 +340,14 @@ export class DryRunService {
                 };
             }
             console.log('---');
+
+            if (options.saveResponses && stubbedMetadata) {
+                const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
+                const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
+                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
+                const filePath = `${directoryName}/mocks/nango/getMetadata.json`;
+                fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
+            }
 
             const results = await this.runScript({
                 syncName,
@@ -381,7 +389,7 @@ export class DryRunService {
                         responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
                         const filePath = `${directoryName}/mocks/${syncName}/output.json`;
                         const { nango, ...responseWithoutNango } = results.response;
-                        fs.writeFileSync(filePath, JSON.stringify(responseWithoutNango, null, 2));
+                        fs.writeFileSync(filePath, JSON.stringify(responseWithoutNango.output, null, 2));
                     }
                     resultOutput.push(JSON.stringify(results.response, null, 2));
                 }

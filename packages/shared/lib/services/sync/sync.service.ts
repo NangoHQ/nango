@@ -1,9 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, SyncWithConnectionId, SyncConfig, Job as SyncJob } from '../../models/Sync.js';
+import type { Sync, SyncWithConnectionId, Job as SyncJob } from '../../models/Sync.js';
 import { SyncStatus } from '../../models/Sync.js';
-import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { ActiveLog, IncomingFlowConfig, SlimAction, SlimSync, SyncAndActionDifferences, SyncTypeLiteral } from '@nangohq/types';
+import type {
+    ActiveLog,
+    ConnectionInternal,
+    DBConnection,
+    DBConnectionDecrypted,
+    DBSyncConfig,
+    IncomingFlowConfig,
+    SlimAction,
+    SlimSync,
+    SyncAndActionDifferences,
+    SyncTypeLiteral
+} from '@nangohq/types';
 import {
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey,
@@ -46,7 +56,7 @@ export const getById = async (id: string): Promise<Sync | null> => {
     return result[0];
 };
 
-export const createSync = async (nangoConnectionId: number, syncConfig: SyncConfig): Promise<Sync | null> => {
+export const createSync = async (nangoConnectionId: number, syncConfig: DBSyncConfig): Promise<Sync | null> => {
     const existingSync = await getSyncByIdAndName(nangoConnectionId, syncConfig.sync_name);
 
     if (existingSync || !syncConfig.id) {
@@ -158,7 +168,7 @@ export const getSyncByIdAndName = async (nangoConnectionId: number, name: string
  * the latest sync and its result and the next sync based on the schedule
  */
 export const getSyncs = async (
-    nangoConnection: Connection,
+    nangoConnection: DBConnection | DBConnectionDecrypted,
     orchestrator: Orchestrator
 ): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'>; models: string[] })[]> => {
     const q = db.knex
@@ -412,7 +422,7 @@ export const getAndReconcileDifferences = async ({
     const syncsToCreate: CreateSyncArgs[] = [];
 
     const existingSyncsByProviderConfig: Record<string, SlimSync[]> = {};
-    const existingConnectionsByProviderConfig: Record<string, NangoConnection[]> = {};
+    const existingConnectionsByProviderConfig: Record<string, ConnectionInternal[]> = {};
 
     for (const flow of flows) {
         const { syncName: flowName, providerConfigKey, type } = flow;
@@ -438,7 +448,7 @@ export const getAndReconcileDifferences = async ({
         const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
         const exists = currentSync?.find((existingSync) => existingSync.name === flowName);
-        const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
+        const connections = existingConnectionsByProviderConfig[providerConfigKey]!;
 
         let isNew = false;
 
@@ -452,7 +462,7 @@ export const getAndReconcileDifferences = async ({
         let syncsByConnection: Sync[] = [];
         if (exists && exists.enabled && connections.length > 0) {
             syncsByConnection = await findSyncByConnections(
-                connections.map((connection) => connection.id as number),
+                connections.map((connection) => connection.id),
                 flowName
             );
             isNew = syncsByConnection.length === 0;
@@ -538,7 +548,7 @@ export const getAndReconcileDifferences = async ({
 
                     if (existingSync.type === 'sync') {
                         for (const connection of connections) {
-                            const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
+                            const syncId = await getSyncByIdAndName(connection.id, existingSync.sync_name);
                             if (syncId) {
                                 await syncManager.softDeleteSync(syncId.id, environmentId, orchestrator);
                             }

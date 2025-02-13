@@ -2,6 +2,159 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.53.1] - 2025-02-11
+
+### Added
+
+- *(persist)* Add endpoint to get records (#3463) by @nalanj
+- Runner use new image (#3468) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5ccdb8a0cfc1f9d972bd25aee1dbb4a1efa97dc2 by Andrew Karanja. Commit message: feat(basecamp): added fetch-todolists action (#213) by @github-actions[bot]
+- *(server)* Separate auth related webhooks into their own log context (#3427) by @nalanj
+- *(persist)* Add support for activityLogId to get records endpoint (#3476) by @nalanj
+- *(connection)* Add span on refresh credentials (#3482) by @bodinsamuel
+- *(web)* Refine logs display in UI (#3481) by @nalanj
+- *(loom-scim)* Provider support (#3488) by @AndrewKaranja
+- *(paylocity)* Paylocity support (#3492) by @AndrewKaranja
+- *(integrations)* Add support for rippling (#3501) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7fa2654b348debd340494149baab849011692b00 by Khaliq. Commit message: feat(recharge): add email (#215) by @github-actions[bot]
+- *(integrations)* Add support for salesforce cdp (#3363) by @hassan254-prog
+- *(1password-scim)* Support for 1password-scim (#3486) by @AndrewKaranja
+
+### Changed
+
+- New Slack channel to request new APIs (#3477) by @bastienbeurier
+- Standardize providers.yaml display names (#3478) by @bastienbeurier
+- Document how to show list of integrations in the Connect UI (#3480) by @bastienbeurier
+- Document HTTP request retry behavior (#3489) by @bastienbeurier
+- *(zapier)* Broken image link (#3495) by @viictoo
+- Document re-authorization flow (#3491) by @bastienbeurier
+- *(deps-dev)* Bump esbuild from 0.17.19 to 0.25.0 (#3500) by @dependabot[bot]
+- Typographical error (#3502) by @clarencepenz
+
+### Fixed
+
+- *(runner-sdk)* Catch void this.log (#3474) by @TBonnin
+- *(ui)* Connection create, re-up integration list (#3479) by @bodinsamuel
+- Decrypt provider config in refreshConnections (#3485) by @TBonnin
+- Fix typographical error (#3487) by @clarencepenz
+- *(types)* Connection -> DBConnection (#3470) by @bodinsamuel
+- *(connection)* Incorrect connection id (#3497) by @bodinsamuel
+- Fix typo in frontend.mdx (#3494) by @spookyuser
+- *(docker)* Stop building runner (#3490) by @bodinsamuel
+- *(persist)* Correct validation and types (#3483) by @TBonnin
+- *(jobs)* Logs track_deletes results (#3493) by @bodinsamuel
+
+## [v0.53.0] - 2025-02-06
+
+### Added
+
+- *(persist)* Enable filtering records by external id (#3458) by @nalanj
+- *(sap-concur)* SAP Concur provider support (#3453) by @AndrewKaranja
+- *(support)* Add support for Gemini integration (#3336) by @Maina-Francis
+- *(api)* Get records by IDs (#3466) by @bodinsamuel
+
+### Changed
+
+- *(fleet)* Simplify node config overrides (#3450) by @TBonnin
+- *(fleet)* Remove deployment commit_id column (#3451) by @TBonnin
+- *(plain)* Connect ui docs for plain (#3465) by @hassan254-prog
+- *(minimax)* Updated minimax provider yaml. (#3464) by @AndrewKaranja
+- Node client get records by ids (#3471) by @bodinsamuel
+
+### Fixed
+
+- *(shared)* Keep agents from cloning in simple-oauth2 (#3447) by @nalanj
+- *(ui)* Display correct sync type  (#3454) by @bodinsamuel
+- *(db)* Sync_type casing (#3456) by @bodinsamuel
+- *(shared)* Clean up agent config stuff (#3457) by @nalanj
+- *(api)* GET /records new format (#3448) by @bodinsamuel
+- *(api)* Get records filter should accept uppercase and combined (#3460) by @bodinsamuel
+- *(webhooks)* Remove webhook response body from webhook logging (#3462) by @nalanj
+- *(ui)* Correct field when updating webhooks secondary url (#3461) by @bodinsamuel
+- *(types)* SyncConfig -> DBSyncConfig (#3459) by @bodinsamuel
+- *(integration-template-tests)* Remove output and content length header (#3467) by @khaliqgant
+- *(docs)* Warn on docs mismatch, and update providers to remove all warnings (#3469) by @nalanj
+- *(npm)* Put types pkg as prod dependency (#3473) by @bodinsamuel
+- *(cron)* Automatic refresh token was not passing decrypted connection (#3472) by @bodinsamuel
+
+## [v0.52.5] - 2025-02-05
+
+### Added
+
+- *(ui)* Environment settings revamp (#3432) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/184791e39a290d706aaf92b04042f0bc7feb9d31 by Khaliq. Commit message: fix(recharge): add subscription id (#211) by @github-actions[bot]
+- *(docs)* Backfill missing docs due to multiple providers for same API (#3403) by @nalanj
+- *(minimax)* Added minimax support (#3364) by @AndrewKaranja
+- *(basecamp)* Store basecamp response in the connection config (#3455) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/08cd7cb0ea8fb6a1908fe8b645f67abf27a0af67 by Khaliq. Commit message: feat(basecamp): add action to do a user lookup (#212) by @github-actions[bot]
+
+### Changed
+
+- Cleanup legacy runner management (#3425) by @TBonnin
+- Clarify integration steps (#3435) by @bastienbeurier
+- Show connect UI gif (#3436) by @bastienbeurier
+- Be more explicit about callback URL redirect safeguards (#3439) by @bastienbeurier
+- Fleet improvements (#3438) by @TBonnin
+- Bump vitest to 2.1.9 (#3449) by @nalanj
+
+### Fixed
+
+- Fleet to fetch all nodes at once (#3429) by @TBonnin
+- Deel provider (#3434) by @TBonnin
+- *(server)* Log instance id from render instead of random id and catch unhandled (#3433) by @nalanj
+- *(tests)* Test forwardWebhook (#3424) by @nalanj
+- *(server)* Only log last part of instance id for render (#3437) by @nalanj
+- *(server)* Put whitespace in front of instance id, if it's there (#3440) by @nalanj
+- *(server)* Override agent toJSON (#3441) by @nalanj
+- *(ui)* Env settings should reset on switching env (#3442) by @bodinsamuel
+- *(docs)* PauseSync fix (#3443) by @khaliqgant
+- Set Slack scope_separator to comma (#3430) by @mpotter
+- Always update logo when updating apis in webflow (#3446) by @nalanj
+- *(ui)* Feedback env settings page (#3444) by @bodinsamuel
+- *(cli)* Fix dryrun bug after shared removal (#3452) by @nalanj
+
+## [v0.52.4] - 2025-02-03
+
+### Added
+
+- *(persist)* Deep merge records in batchUpdate (#3386) by @nalanj
+- Add support for merging strategy into the runner sdk (#3420) by @TBonnin
+- *(support)* Adds support for xAI Integration (#3345) by @Maina-Francis
+- *(integrations)* Added provider support for commercetools (#3347) by @AndrewKaranja
+- *(retell-ai)* Added retell ai support (#3365) by @AndrewKaranja
+- *(integrations)* Add support for drupal (#3378) by @hassan254-prog
+
+### Changed
+
+- Improve diagrams + add one for auth (#3431) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7fec650269eb82e8cf775a7dcb010b715a8a0e06 by nalanj. Commit message: fix: Update basecamp docs to fix mintlify error (#209) by @github-actions[bot]
+- *(api)* Better check for json content-type  (#3428) by @bodinsamuel
+- *(api)* Req.is is not as reliable as expected by @bodinsamuel
+- *(dependencies)* Upgrade frontend dependencies (#3418) by @bodinsamuel
+
+## [v0.52.3] - 2025-01-31
+
+### Added
+
+- *(pagination)* Add flag to optionally add params to body (#3404) by @hassan254-prog
+- *(integrations)* Split greenhouse apis into seperate providers (#3331) by @hassan254-prog
+- *(integrations)* Add support for grafana (#3422) by @hassan254-prog
+
+### Changed
+
+- Revamp design of older changelog assets (#3416) by @bastienbeurier
+- Public key deprecation guide (#3421) by @bastienbeurier
+
+### Fixed
+
+- *(docs)* Fix link for zapier connect (#3414) by @khaliqgant
+- *(api)* Enforce content-type when possible (#3410) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/58c8dad986716d17821d17a7b452ea9d28f2d007 by Khaliq. Commit message: fix(optionals): chaining (#208) by @github-actions[bot]
+- *(webapp)* Fix code generation for two_step (#3415) by @hassan254-prog
+
 ## [v0.52.2] - 2025-01-30
 
 ### Fixed
@@ -2912,6 +3065,11 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.53.1]: https://github.com/NangoHQ/nango/compare/v0.53.0..v0.53.1
+[v0.53.0]: https://github.com/NangoHQ/nango/compare/v0.52.5..v0.53.0
+[v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5
+[v0.52.4]: https://github.com/NangoHQ/nango/compare/v0.52.3..v0.52.4
+[v0.52.3]: https://github.com/NangoHQ/nango/compare/v0.52.2..v0.52.3
 [v0.52.2]: https://github.com/NangoHQ/nango/compare/v0.52.1..v0.52.2
 [v0.52.1]: https://github.com/NangoHQ/nango/compare/v0.51.0..v0.52.1
 [v0.51.0]: https://github.com/NangoHQ/nango/compare/v0.50.0..v0.51.0

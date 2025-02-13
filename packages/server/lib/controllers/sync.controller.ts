@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { NangoConnection, HTTP_METHOD, Connection, Sync } from '@nangohq/shared';
+import type { HTTP_METHOD, Sync } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import {
@@ -24,71 +24,22 @@ import {
     findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
-    trackFetch,
     syncCommandToOperation,
     getSyncConfigRaw
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
-import type { LastAction } from '@nangohq/records';
 import { getHeaders, isHosted, truncateJson } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { getInterval } from '@nangohq/nango-yaml';
+import { getPublicRecords } from './records/getRecords.js';
+import type { DBConnectionDecrypted } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
 class SyncController {
-    public async getAllRecords(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { model, delta, modified_after, modifiedAfter, limit, filter, cursor, next_cursor } = req.query;
-            const environmentId = res.locals['environment'].id;
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
-
-            if (modifiedAfter) {
-                const error = new NangoError('incorrect_param', { incorrect: 'modifiedAfter', correct: 'modified_after' });
-
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            if (next_cursor) {
-                const error = new NangoError('incorrect_param', { incorrect: 'next_cursor', correct: 'cursor' });
-
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            const { error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
-
-            if (error || !connection) {
-                const nangoError = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentId });
-                errorManager.errResFromNangoErr(res, nangoError);
-                return;
-            }
-
-            const result = await recordsService.getRecords({
-                connectionId: connection.id as number,
-                model: model as string,
-                modifiedAfter: (delta || modified_after) as string,
-                limit: limit as string,
-                filter: filter as LastAction,
-                cursor: cursor as string
-            });
-
-            if (result.isErr()) {
-                errorManager.errResFromNangoErr(res, new NangoError('pass_through_error', result.error));
-                return;
-            }
-            await trackFetch(connection.id as number);
-            res.send(result.value);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { environment } = res.locals;
@@ -119,7 +70,7 @@ class SyncController {
             }
 
             const rawSyncs = await getSyncs(connection, orchestrator);
-            const syncs = await this.addRecordCount(rawSyncs, connection.id!, environment.id);
+            const syncs = await this.addRecordCount(rawSyncs, connection.id, environment.id);
             res.send(syncs);
         } catch (err) {
             next(err);
@@ -226,12 +177,12 @@ class SyncController {
             }
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
-            if (!success) {
+            if (!success || !connection) {
                 errorManager.errResFromNangoErr(res, error);
                 return;
             }
 
-            const { action, model } = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_METHOD, path);
+            const { action, model } = await getActionOrModelByEndpoint(connection, req.method as HTTP_METHOD, path);
             if (action) {
                 const input = req.body || req.params[1];
                 req.body = {};
@@ -240,7 +191,7 @@ class SyncController {
                 await this.triggerAction(req, res, next);
             } else if (model) {
                 req.query['model'] = model;
-                await this.getAllRecords(req, res, next);
+                getPublicRecords(req, res, next);
             } else {
                 res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
@@ -314,7 +265,7 @@ class SyncController {
                     account,
                     environment,
                     integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
-                    connection: { id: connection.id!, name: connection.connection_id },
+                    connection: { id: connection.id, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
                     meta: truncateJson({ input })
                 }
@@ -503,7 +454,7 @@ class SyncController {
 
             const environmentId = res.locals['environment'].id;
 
-            let connection: Connection | null = null;
+            let connection: DBConnectionDecrypted | null = null;
 
             if (connection_id) {
                 const connectionResult = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
@@ -584,7 +535,7 @@ class SyncController {
                     account,
                     environment,
                     integration: { id: config.id!, name: config.unique_key, provider: config.provider },
-                    connection: { id: connection.id!, name: connection.connection_id },
+                    connection: { id: connection.id, name: connection.connection_id },
                     syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
                 }
             );
@@ -598,7 +549,7 @@ class SyncController {
             }
 
             const result = await orchestrator.runSyncCommand({
-                connectionId: connection.id!,
+                connectionId: connection.id,
                 syncId: sync_id,
                 command,
                 environmentId: environment.id,
@@ -780,7 +731,12 @@ class SyncController {
                     res.status(400).send({ message: 'Invalid sync_name' });
                     return;
                 }
-                newFrequency = syncConfigs[0]!.runs;
+                const selected = syncConfigs[0];
+                if (!selected || !selected.runs) {
+                    res.status(400).send({ message: 'failed to find sync' });
+                    return;
+                }
+                newFrequency = selected.runs;
             }
 
             await setFrequency(syncId, frequency);

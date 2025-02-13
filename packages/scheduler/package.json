@@ -24,6 +24,6 @@
     },
     "devDependencies": {
         "type-fest": "4.32.0",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     }
 }

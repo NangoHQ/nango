@@ -14,10 +14,10 @@ import { setTimeout } from 'node:timers/promises';
 const logger = getLogger('Render');
 
 const render: RenderAPI = new RenderAPI(envs.RENDER_API_KEY || '');
+const runnerPort = '80';
 
 export const renderNodeProvider: NodeProvider = {
     defaultNodeConfig: {
-        image: 'nangohq/nango-runner',
         cpuMilli: 500,
         memoryMb: 512,
         storageMb: 20000
@@ -26,6 +26,7 @@ export const renderNodeProvider: NodeProvider = {
         if (!envs.RUNNER_OWNER_ID) {
             throw new Error('RUNNER_OWNER_ID is not set');
         }
+
         const ownerId = envs.RUNNER_OWNER_ID;
         const name = serviceName(node);
         const res = await withRateLimitHandling<{ service: { id: string; suspended: string } }>('create', () =>
@@ -35,11 +36,14 @@ export const renderNodeProvider: NodeProvider = {
                 ownerId,
                 image: { ownerId, imagePath: node.image },
                 serviceDetails: {
-                    env: 'image',
-                    plan: getPlan(node)
+                    runtime: 'image',
+                    plan: getPlan(node),
+                    ...(node.image.includes('-runner')
+                        ? {}
+                        : { envSpecificDetails: { dockerCommand: `node packages/runner/dist/app.js ${runnerPort} dockerized-runner` } })
                 },
                 envVars: [
-                    { key: 'PORT', value: '80' },
+                    { key: 'PORT', value: runnerPort },
                     { key: 'NODE_ENV', value: envs.NODE_ENV },
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },

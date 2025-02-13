@@ -5,7 +5,6 @@ import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils'
 import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
 import telemetry, { LogTypes } from '../utils/telemetry.js';
-import type { NangoConnection } from '../models/Connection.js';
 import { v4 as uuid } from 'uuid';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -23,14 +22,14 @@ import type {
     OrchestratorSchedule,
     TaskType
 } from '@nangohq/nango-orchestrator';
-import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
+import type { NangoIntegrationData, Sync } from '../models/index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
 import type { JsonValue } from 'type-fest';
 
@@ -105,7 +104,7 @@ export class Orchestrator {
         input,
         logCtx
     }: {
-        connection: NangoConnection;
+        connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
         logCtx: LogContext;
@@ -263,9 +262,9 @@ export class Orchestrator {
         account: DBTeam;
         environment: DBEnvironment;
         integration: ProviderConfig;
-        connection: NangoConnection;
+        connection: ConnectionJobs;
         webhookName: string;
-        syncConfig: SyncConfig;
+        syncConfig: DBSyncConfig;
         input: object;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
@@ -288,8 +287,8 @@ export class Orchestrator {
                 account,
                 environment,
                 integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id!, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
             }
         );
 
@@ -308,7 +307,7 @@ export class Orchestrator {
                 webhookName,
                 parentSyncName: syncConfig.sync_name,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -386,7 +385,7 @@ export class Orchestrator {
         fileLocation,
         logCtx
     }: {
-        connection: NangoConnection;
+        connection: ConnectionJobs;
         version: string;
         name: string;
         fileLocation: string;
@@ -411,7 +410,7 @@ export class Orchestrator {
             const args = {
                 onEventName: name,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -656,7 +655,7 @@ export class Orchestrator {
         logContextGetter,
         debug = false
     }: {
-        nangoConnection: NangoConnection;
+        nangoConnection: ConnectionInternal;
         sync: Sync;
         providerConfig: ProviderConfig;
         syncName: string;
@@ -682,12 +681,12 @@ export class Orchestrator {
                     account,
                     environment,
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
+                    connection: { id: nangoConnection.id, name: nangoConnection.connection_id },
                     syncConfig: { id: syncConfig!.id, name: syncConfig!.sync_name }
                 }
             );
 
-            const frequencyMs = this.getFrequencyMs(syncData.runs);
+            const frequencyMs = this.getFrequencyMs(syncData.runs!);
 
             if (frequencyMs.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;
@@ -732,7 +731,7 @@ export class Orchestrator {
                     syncName,
                     debug,
                     connection: {
-                        id: nangoConnection.id!,
+                        id: nangoConnection.id,
                         provider_config_key: nangoConnection.provider_config_key,
                         environment_id: nangoConnection.environment_id,
                         connection_id: nangoConnection.connection_id

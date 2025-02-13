@@ -1,0 +1,51 @@
+---
+title: Miro SCIM
+sidebarTitle: Miro SCIM
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/miro-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/miro-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/miro-scim.mdx)</Note>
+
+
+## Useful links
+
+-   [Registering an App](https://developers.miro.com/docs/rest-api-build-your-first-hello-world-app#step-1-create-your-app-in-miro)
+-   [OAuth-related docs](https://developers.miro.com/docs/getting-started-with-oauth)
+-   [List of OAuth scopes](https://developers.miro.com/reference/scopes)
+-   [API reference](https://developers.miro.com/reference/api-reference)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/miro-scim.mdx)</Note>
+
+## API gotchas
+
+-   An access token expires in an hour and a refresh token expires in 60 days.
+-   You can use the `nango.getConnection('<CONFIG-KEY>', '<CONNECTION-ID>')` to refresh the token, and the token will be refreshed if it is expired.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/miro-scim.mdx)</Note>
+
+<Card title="Connect to miro-scim" icon="link" href="/integrations/all/miro-scim/connect" horizontal>
+  Guide to connect to miro-scim using Nango Connect.
+</Card>

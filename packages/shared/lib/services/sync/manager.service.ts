@@ -12,9 +12,8 @@ import {
 } from './sync.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
-import type { Connection, NangoConnection } from '../../models/Connection.js';
 import type { SyncWithConnectionId, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
-import { SyncType, SyncStatus } from '../../models/Sync.js';
+import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -23,7 +22,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import type { DBEnvironment, IncomingFlowConfig, SyncDeploymentResult } from '@nangohq/types';
+import type { ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, IncomingFlowConfig, SyncDeploymentResult } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -35,7 +34,7 @@ export const syncCommandToOperation = {
 } as const;
 
 export interface CreateSyncArgs {
-    connections: Connection[];
+    connections: ConnectionInternal[];
     providerConfigKey: string;
     environmentId: number;
     sync: IncomingFlowConfig;
@@ -46,7 +45,7 @@ const logger = getLogger('sync.manager');
 
 export class SyncManagerService {
     public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
-        const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
+        const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId))!;
         const nangoConfig = await getSyncConfig({ nangoConnection });
         if (!nangoConfig) {
             logger.error(
@@ -93,7 +92,7 @@ export class SyncManagerService {
     }
 
     public async createSyncForConnections(
-        connections: Connection[],
+        connections: ConnectionInternal[],
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
@@ -116,7 +115,7 @@ export class SyncManagerService {
                 if (!syncConfig) {
                     continue;
                 }
-                const createdSync = await createSync(connection.id as number, syncConfig);
+                const createdSync = await createSync(connection.id, syncConfig);
                 if (!createdSync) {
                     continue;
                 }
@@ -188,8 +187,8 @@ export class SyncManagerService {
         await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
-    public async softDeleteSyncsByConnection(connection: Connection, orchestrator: Orchestrator) {
-        const syncs = await getSyncsByConnectionId(connection.id!);
+    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {
+        const syncs = await getSyncsByConnectionId(connection.id);
 
         if (!syncs) {
             return;
@@ -251,17 +250,17 @@ export class SyncManagerService {
             let syncs = syncNames;
 
             if (syncs.length === 0) {
-                syncs = await getSyncNamesByConnectionId(connection.id as number);
+                syncs = await getSyncNamesByConnectionId(connection.id);
             }
 
             for (const syncName of syncs) {
-                const sync = await getSyncByIdAndName(connection.id as number, syncName);
+                const sync = await getSyncByIdAndName(connection.id, syncName);
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
 
                 await orchestrator.runSyncCommand({
-                    connectionId: connection.id!,
+                    connectionId: connection.id,
                     syncId: sync.id,
                     command,
                     environmentId: environment.id,
@@ -289,7 +288,7 @@ export class SyncManagerService {
                 }
 
                 await orchestrator.runSyncCommand({
-                    connectionId: connection.id!,
+                    connectionId: connection.id,
                     syncId: sync.id,
                     command,
                     environmentId: environment.id,
@@ -314,7 +313,7 @@ export class SyncManagerService {
         recordsService: RecordsServiceInterface,
         connectionId?: string,
         includeJobStatus = false,
-        optionalConnection?: Connection | null
+        optionalConnection?: DBConnectionDecrypted | null
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
@@ -329,7 +328,7 @@ export class SyncManagerService {
 
         if (connection) {
             for (const syncName of syncNames) {
-                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                const sync = await getSyncByIdAndName(connection.id, syncName);
                 if (!sync) {
                     continue;
                 }
@@ -413,7 +412,7 @@ export class SyncManagerService {
             const name = flow.name || flow.syncName;
 
             await this.createSyncForConnections(
-                existingConnections as Connection[],
+                existingConnections,
                 name as string,
                 providerConfigKey,
                 environmentId,
@@ -459,6 +458,7 @@ export class SyncManagerService {
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }
+
         const recordCount: Record<string, number> =
             syncConfig?.models.reduce(
                 (acc, model) => {
@@ -471,7 +471,7 @@ export class SyncManagerService {
         return {
             id: sync.id,
             connection_id: sync.connection_id,
-            type: latestJob?.type === SyncType.INCREMENTAL ? latestJob.type : 'INITIAL',
+            type: latestJob?.type === SyncJobsType.INCREMENTAL ? latestJob.type : 'INITIAL',
             finishedAt: latestJob?.updated_at,
             nextScheduledSyncAt: schedule.nextDueDate,
             name: sync.name,

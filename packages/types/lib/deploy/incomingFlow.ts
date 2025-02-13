@@ -35,7 +35,7 @@ export interface LegacySyncModelSchema {
 interface InternalIncomingPreBuiltFlowConfig {
     type: ScriptTypeLiteral;
     models: string[];
-    runs: string;
+    runs: string | null;
     auto_start?: boolean;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;

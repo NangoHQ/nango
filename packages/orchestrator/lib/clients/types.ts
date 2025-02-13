@@ -4,6 +4,7 @@ import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { Result } from '@nangohq/utils';
 import type { ScheduleState, TaskState } from '@nangohq/scheduler';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
+import type { ConnectionJobs } from '@nangohq/types';
 
 export type ImmediateProps = PostImmediate['Body'];
 export type RecurringProps = PostRecurring['Body'];
@@ -12,12 +13,7 @@ interface SyncArgs {
     syncId: string;
     syncName: string;
     debug: boolean;
-    connection: {
-        id: number;
-        provider_config_key: string;
-        environment_id: number;
-        connection_id: string;
-    };
+    connection: ConnectionJobs;
 }
 interface AbortArgs {
     abortedTask: {
@@ -28,36 +24,21 @@ interface AbortArgs {
 }
 interface ActionArgs {
     actionName: string;
-    connection: {
-        id: number;
-        provider_config_key: string;
-        environment_id: number;
-        connection_id: string;
-    };
+    connection: ConnectionJobs;
     activityLogId: string;
     input: JsonValue;
 }
 interface WebhookArgs {
     webhookName: string;
     parentSyncName: string;
-    connection: {
-        id: number;
-        connection_id: string;
-        provider_config_key: string;
-        environment_id: number;
-    };
+    connection: ConnectionJobs;
     activityLogId: string;
     input: JsonValue;
 }
 
 interface OnEventArgs {
     onEventName: string;
-    connection: {
-        id: number;
-        connection_id: string;
-        provider_config_key: string;
-        environment_id: number;
-    };
+    connection: ConnectionJobs;
     version: string;
     fileLocation: string;
     activityLogId: string;

@@ -24,6 +24,8 @@ type FleetErrorCode =
     | 'supervisor_unknown_action'
     | 'supervisor_tick_failed'
     | 'fleet_misconfigured'
+    | 'fleet_rollout_invalid_image'
+    | 'fleet_rollout_image_not_found'
     | 'fleet_node_not_ready_timeout'
     | 'fleet_node_url_not_found'
     | 'fleet_node_outdate_failed'

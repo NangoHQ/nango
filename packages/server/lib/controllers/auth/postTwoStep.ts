@@ -12,7 +12,8 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     getProvider,
-    linkConnection
+    linkConnection,
+    getConnectionMetadataFromTokenResponse
 } from '@nangohq/shared';
 import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
@@ -68,7 +69,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     const bodyData: PostPublicTwoStepAuthorization['Body'] = val.data;
     const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    let connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -154,6 +155,13 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             return;
         }
 
+        const tokenMetadata = getConnectionMetadataFromTokenResponse(credentials.raw, provider);
+
+        connectionConfig = {
+            ...connectionConfig,
+            ...tokenMetadata
+        };
+
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
             providerConfigKey,
@@ -177,7 +185,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
         }
 
-        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
         await logCtx.info('TwoStep connection creation was successful');
         await logCtx.success();
 
@@ -190,10 +198,10 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 operation: updatedConnection.operation,
                 endUser: isConnectSession ? res.locals['endUser'] : undefined
             },
-            config.provider,
+            account,
+            config,
             logContextGetter,
-            undefined,
-            logCtx
+            undefined
         );
 
         res.status(200).send({ providerConfigKey, connectionId });
@@ -212,8 +220,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
                 },
                 operation: 'unknown'
             },
-            'unknown',
-            logCtx
+            account
         );
         if (logCtx) {
             await logCtx.error('Error during TwoStep credentials creation', { error: err });

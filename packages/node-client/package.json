@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/node",
-    "version": "0.52.2",
+    "version": "0.53.1",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
@@ -25,6 +25,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@nangohq/types": "0.53.1",
         "axios": "^1.7.9"
     },
     "engines": {
@@ -36,8 +37,7 @@
         "README.md"
     ],
     "devDependencies": {
-        "@nangohq/types": "0.52.2",
         "tsup": "^8.2.4",
-        "vitest": "2.1.8"
+        "vitest": "2.1.9"
     }
 }

@@ -134,7 +134,7 @@ class ProxyController {
                 integrationId: integration.id!,
                 integrationName: integration.unique_key,
                 providerName: integration.provider,
-                connectionId: connection.id!,
+                connectionId: connection.id,
                 connectionName: connection.connection_id
             });
 
@@ -186,7 +186,7 @@ class ProxyController {
                 },
                 response: {
                     code: res.statusCode,
-                    headers: getHeaders(res.getHeaders())
+                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
                 }
             });
         }
@@ -243,7 +243,7 @@ class ProxyController {
         const valuesToFilter = Object.values(config.connection.credentials);
         const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
         const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
-        await logCtx.http(`${config.method} ${redactedURL} was successful`, {
+        await logCtx.http(`${config.method} ${redactedURL}`, {
             request: {
                 method: config.method,
                 url: redactedURL,
@@ -251,7 +251,7 @@ class ProxyController {
             },
             response: {
                 code: responseStream.status,
-                headers: responseStream.headers as Record<string, string>
+                headers: redactHeaders({ headers: responseStream.headers as Record<string, string> })
             }
         });
 
@@ -321,19 +321,7 @@ class ProxyController {
         });
     }
 
-    private async handleErrorResponse({
-        res,
-        e,
-        config,
-        requestConfig,
-        logCtx
-    }: {
-        res: Response;
-        e: unknown;
-        config: ApplicationConstructedProxyConfiguration;
-        requestConfig: AxiosRequestConfig;
-        logCtx: LogContext;
-    }) {
+    private async handleErrorResponse({ res, e, requestConfig, logCtx }: { res: Response; e: unknown; requestConfig: AxiosRequestConfig; logCtx: LogContext }) {
         const error = e as AxiosError;
 
         if (!error.response?.data && error.toJSON) {
@@ -344,8 +332,6 @@ class ProxyController {
                 code,
                 status
             } = error.toJSON() as any;
-
-            await this.reportError({ error, config, requestConfig, errorContent: message, logCtx });
 
             const errorObject = { message, stack, code, status, url: requestConfig.url, method };
 
@@ -388,11 +374,12 @@ class ProxyController {
                         // Intentionally left blank - errorData will be a string
                     }
                 }
-                void this.reportError({ error, config, requestConfig, errorContent: errorData, logCtx });
+                void logCtx.error('Failed with this body', { body: errorData });
             });
         } else {
-            await logCtx.error('Unknown error');
+            await logCtx.error('Unknown error', { error });
             await logCtx.failed();
+            res.status(500).send();
         }
     }
 
@@ -434,53 +421,26 @@ class ProxyController {
                 requestConfig.data = data;
             }
             const responseStream: AxiosResponse = await backOff(
-                () => {
-                    return axios(requestConfig);
+                async () => {
+                    try {
+                        return await axios(requestConfig);
+                    } catch (err) {
+                        const handling = proxyService.logErrorResponse({ error: err, requestConfig, config });
+                        logs.push(...handling.logs);
+                        throw err;
+                    }
                 },
                 { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, config, logs) }
             );
 
             await flushLogsBuffer(logs, logCtx);
-
             await this.handleResponse({ res, responseStream, config, requestConfig, logCtx });
         } catch (err) {
-            await this.handleErrorResponse({ res, e: err, requestConfig, config, logCtx });
+            await flushLogsBuffer(logs, logCtx);
+            await this.handleErrorResponse({ res, e: err, requestConfig, logCtx });
+            await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
-    }
-
-    private async reportError({
-        error,
-        config,
-        requestConfig,
-        errorContent,
-        logCtx
-    }: {
-        error: AxiosError;
-        config: ApplicationConstructedProxyConfiguration;
-        requestConfig: AxiosRequestConfig;
-        errorContent: string | Record<string, string>;
-        logCtx: LogContext;
-    }) {
-        const valuesToFilter = Object.values(config.connection.credentials);
-        const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
-        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
-
-        await logCtx.http(`${requestConfig.method} ${redactedURL} failed with status '${error.response?.status}'`, {
-            meta: {
-                content: errorContent
-            },
-            request: {
-                method: config.method,
-                url: redactedURL,
-                headers: safeHeaders
-            },
-            response: {
-                code: error.response?.status || 500,
-                headers: error.response?.headers as Record<string, string>
-            }
-        });
-        await logCtx.failed();
     }
 }
 

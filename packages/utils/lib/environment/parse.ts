@@ -53,16 +53,16 @@ export const ENVS = z.object({
     RUNNER_SERVICE_URL: z.string().url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
-    RUNNER_ID: z.string().optional(), // TODO: remove once fleet is fully released
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().optional(),
     RUNNER_URL: z.string().url().optional(),
+    RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
 
     // FLEET
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()
-        .default(15 * 60 * 1000), // 15 minutes
+        .default(60 * 60 * 1000), // 1 hour
     FLEET_TIMEOUT_STARTING_MS: z.coerce
         .number()
         .optional()

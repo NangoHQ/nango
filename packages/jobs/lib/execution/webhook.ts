@@ -1,12 +1,12 @@
 import tracer from 'dd-trace';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, NangoConnection, Sync } from '@nangohq/shared';
+import type { Config, Job, Sync } from '@nangohq/shared';
 import {
     NangoError,
     SyncStatus,
-    SyncType,
+    SyncJobsType,
     configService,
     createSyncJob,
     environmentService,
@@ -20,7 +20,7 @@ import {
 } from '@nangohq/shared';
 import { bigQueryClient } from '../clients.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import db from '@nangohq/database';
@@ -42,6 +42,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         }
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
+        tagTraceUser(accountAndEnv);
 
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
@@ -79,7 +80,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         syncJob = await createSyncJob({
             sync_id: sync.id,
-            type: SyncType.INCREMENTAL,
+            type: SyncJobsType.INCREMENTAL,
             status: SyncStatus.RUNNING,
             job_id: task.name,
             nangoConnection: task.connection,
@@ -298,7 +299,7 @@ async function onFailure({
     error,
     endUser
 }: {
-    connection: NangoConnection;
+    connection: ConnectionJobs;
     team: DBTeam | undefined;
     environment: DBEnvironment | undefined;
     syncId: string;

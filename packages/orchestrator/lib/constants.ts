@@ -1,1 +1,1 @@
-export const serverRequestSizeLimit = '30mb';
+export const serverRequestSizeLimit = '10mb';

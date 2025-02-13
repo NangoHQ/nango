@@ -1,11 +1,12 @@
 import { records as recordsService, format as recordsFormatter } from '@nangohq/records';
-import type { FormattedRecord, UnencryptedRecordData, UpsertSummary, MergingStrategy } from '@nangohq/records';
+import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import { errorManager, ErrorSourceEnum, LogActionEnum, updateSyncJobResult, getSyncConfigByJobId } from '@nangohq/shared';
 import tracer from 'dd-trace';
 import type { Span } from 'dd-trace';
 import { logContextGetter } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import type { MergingStrategy } from '@nangohq/types';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -93,7 +94,7 @@ export async function persistRecords({
     }
 
     const syncConfig = await getSyncConfigByJobId(syncJobId);
-    if (syncConfig && !syncConfig?.models.includes(model)) {
+    if (syncConfig && !syncConfig.models.includes(model)) {
         const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models.join(', ')}.`);
         await logCtx.error(`The model '${model}' is not included in the declared sync models`);
 

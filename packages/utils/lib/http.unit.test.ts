@@ -27,4 +27,15 @@ describe('redactHeaders', () => {
             'sensitive-token': 'REDACTED'
         });
     });
+
+    it('should remove ignored headers', () => {
+        expect(
+            redactHeaders({
+                headers: { Authorization: 'hello', 'access-control-allow-headers': 'foobar', 'x-hubspot-correlation-id': 'test', 'x-not-filtered': 'hello' }
+            })
+        ).toStrictEqual({
+            authorization: 'REDACTED',
+            'x-not-filtered': 'hello'
+        });
+    });
 });

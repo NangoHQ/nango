@@ -1,8 +1,8 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import type { Connection } from '../models/Connection.js';
 import get from 'lodash-es/get.js';
+import type { Provider, DBConnection } from '@nangohq/types';
 
 export enum UserType {
     Local = 'localhost',
@@ -220,11 +220,44 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
+export function stripStepResponse(obj: any, step: Record<string, any>): any {
+    if (typeof obj === 'string') {
+        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
+            return step[key] || '';
+        });
+    } else if (typeof obj === 'object' && obj !== null) {
+        const strippedObject: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            strippedObject[key] = stripStepResponse(value, step);
+        }
+        return strippedObject;
+    }
+    return obj;
+}
+
+export function extractStepNumber(str: string): number | null {
+    const match = str.match(/\${step(\d+)\..*?}/);
+
+    if (match && match[1]) {
+        const stepNumber = parseInt(match[1], 10);
+        return stepNumber;
+    }
+
+    return null;
+}
+
+export function getStepResponse(stepNumber: number, stepResponses: any[]): Record<string, any> {
+    if (stepResponses && stepResponses.length > stepNumber - 1 && stepResponses[stepNumber - 1]) {
+        return stepResponses[stepNumber - 1];
+    }
+    return {};
+}
+
 export function extractValueByPath(obj: Record<string, any>, path: string): any {
     return get(obj, path);
 }
 
-export function connectionCopyWithParsedConnectionConfig(connection: Pick<Connection, 'connection_config'>) {
+export function connectionCopyWithParsedConnectionConfig(connection: Pick<DBConnection, 'connection_config'>) {
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;
@@ -275,4 +308,44 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 
 export function encodeParameters(params: Record<string, any>): Record<string, string> {
     return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(String(value))]));
+}
+
+/**
+ * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ * It can parse booleans or strings only
+ */
+export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
+    if (!params || !provider.token_response_metadata) {
+        return {};
+    }
+
+    const whitelistedKeys = provider.token_response_metadata;
+
+    const getValueFromDotNotation = (obj: any, key: string): any => {
+        return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
+    };
+
+    // Filter out non-strings, non-booleans & non-whitelisted keys.
+    const arr = Object.entries(params).filter(([k, v]) => {
+        const isStringValueOrBoolean = typeof v === 'string' || typeof v === 'boolean';
+        if (isStringValueOrBoolean && whitelistedKeys.includes(k)) {
+            return true;
+        }
+        // Check for dot notation keys
+        const dotNotationValue = getValueFromDotNotation(params, k);
+        return isStringValueOrBoolean && whitelistedKeys.includes(dotNotationValue);
+    });
+
+    // Add support for dot notation keys
+    const dotNotationArr = whitelistedKeys
+        .map((key) => {
+            const value = getValueFromDotNotation(params, key);
+            const isStringValueOrBoolean = typeof value === 'string' || typeof value === 'boolean';
+            return isStringValueOrBoolean ? [key, value] : null;
+        })
+        .filter(Boolean);
+
+    const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
+
+    return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }

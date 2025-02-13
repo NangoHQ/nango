@@ -31,7 +31,7 @@ export const buttonStyles = cva(
                 link: 'text-grayscale-400 hover:text-white focus:text-white',
                 select: 'bg-grayscale-900 text-grayscale-400 border border-grayscale-900 hover:text-white focus:text-white hover:border-grayscale-600',
                 popoverItem: 'w-full rounded hover:bg-grayscale-900 text-grayscale-300 focus:bg-grayscale-900',
-                secondary: 'bg-grayscale-900 text-grayscale-400 border border-grayscale-700 hover:text-white focus:text-white hover:border-grayscale-600',
+                secondary: 'bg-grayscale-800 text-grayscale-400 border border-transparent hover:text-white focus:text-white hover:border-grayscale-600',
                 tertiary: 'bg-grayscale-800 text-grayscale-100 border border-transparent hover:text-white focus:text-white hover:border-grayscale-600'
             },
             size: {

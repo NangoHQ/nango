@@ -1,8 +1,8 @@
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { ApiError, Endpoint, MergingStrategy, PostRecordsSuccess } from '@nangohq/types';
+import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
-import { validateRecords } from './validate.js';
-import type { MergingStrategy } from '@nangohq/records';
+import { recordsRequestParser } from './validate.js';
 
 type PostRecords = Endpoint<{
     Method: typeof method;
@@ -22,21 +22,17 @@ type PostRecords = Endpoint<{
         merging: MergingStrategy;
     };
     Error: ApiError<'post_records_failed'>;
-    Success: {
-        nextMerging: MergingStrategy;
-    };
+    Success: PostRecordsSuccess;
 }>;
 
 const path = recordsPath;
 const method = 'POST';
 
-const validate = validateRecords<PostRecords>();
+const validate = validateRequest<PostRecords>(recordsRequestParser);
 
 const handler = async (req: EndpointRequest<PostRecords>, res: EndpointResponse<PostRecords>) => {
-    const {
-        params: { environmentId, nangoConnectionId, syncId, syncJobId },
-        body: { model, records, providerConfigKey, connectionId, activityLogId, merging }
-    } = req;
+    const { environmentId, nangoConnectionId, syncId, syncJobId }: PostRecords['Params'] = req.params;
+    const { model, records, providerConfigKey, connectionId, activityLogId, merging }: PostRecords['Body'] = req.body;
     const result = await persistRecords({
         persistType: 'save',
         environmentId,

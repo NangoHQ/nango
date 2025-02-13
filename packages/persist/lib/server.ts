@@ -8,6 +8,7 @@ import { routeHandler as postRecordsHandler } from './routes/environment/environ
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
 import { routeHandler as getCursorHandler, path as cursorPath } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
+import { routeHandler as getRecordsHandler, path as getRecordsPath } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
 import { recordsPath } from './records.js';
 
 const logger = getLogger('Persist');
@@ -25,6 +26,7 @@ server.use('/environment/:environmentId/*', authMiddleware);
 server.use(logsPath, express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(cursorPath, express.json());
+server.use(getRecordsPath, express.json());
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
@@ -32,6 +34,7 @@ createRoute(server, postRecordsHandler);
 createRoute(server, deleteRecordsHandler);
 createRoute(server, putRecordsHandler);
 createRoute(server, getCursorHandler);
+createRoute(server, getRecordsHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

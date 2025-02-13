@@ -107,15 +107,6 @@ export abstract class NangoActionBase {
         }
     }
 
-    protected stringify(): string {
-        return JSON.stringify(this, (key, value) => {
-            if (key === 'secretKey') {
-                return '********';
-            }
-            return value;
-        });
-    }
-
     protected proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;

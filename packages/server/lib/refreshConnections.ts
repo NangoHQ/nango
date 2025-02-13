@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import type { Lock } from '@nangohq/shared';
-import { errorManager, ErrorSourceEnum, connectionService, locking } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, connectionService, locking, encryptionManager } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import {
@@ -65,13 +65,25 @@ export async function exec(): Promise<void> {
                     }
 
                     const { connection, account, environment, integration } = staleConnection;
-                    logger.info(`${cronName} refreshing connection '${connection.connection_id}' for accountId '${account.id}'`);
+
+                    const decryptedConnection = encryptionManager.decryptConnection(connection);
+                    if (!decryptedConnection) {
+                        logger.error(`${cronName} failed to decrypt stale connection '${connection.id}'`);
+                        continue;
+                    }
+
+                    const decryptedIntegration = encryptionManager.decryptProviderConfig(integration);
+                    if (!decryptedIntegration) {
+                        logger.error(`${cronName} failed to decrypt integration '${integration.id} for stale connection '${connection.id}'`);
+                        continue;
+                    }
+
                     try {
                         const credentialResponse = await connectionService.refreshOrTestCredentials({
                             account,
                             environment,
-                            integration,
-                            connection,
+                            integration: decryptedIntegration,
+                            connection: decryptedConnection,
                             logContextGetter,
                             instantRefresh: false,
                             onRefreshSuccess: connectionRefreshSuccessHook,
