@@ -214,7 +214,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
-    public override async getRecordsByIds<K = any, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+    public override async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         const objects = new Map<K, T>();
 
         if (ids.length === 0) {
