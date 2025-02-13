@@ -57,12 +57,6 @@ export const getById = async (id: string): Promise<Sync | null> => {
 };
 
 export const createSync = async (nangoConnectionId: number, syncConfig: DBSyncConfig): Promise<Sync | null> => {
-    const existingSync = await getSyncByIdAndName(nangoConnectionId, syncConfig.sync_name);
-
-    if (existingSync || !syncConfig.id) {
-        return null;
-    }
-
     const sync: Omit<Sync, 'created_at' | 'updated_at'> = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,

@@ -181,7 +181,7 @@ interface JwtCredentials {
     type: AuthModes['Jwt'];
     privateKeyId?: string;
     issuerId?: string;
-    privateKey:{
+    privateKey: {
         id: string;
         secret: string;
     } | string;
@@ -275,15 +275,15 @@ export interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
     logMessages?:
-        | {
-              counts: {
-                  updated: number;
-                  added: number;
-                  deleted: number;
-              };
-              messages: unknown[];
-          }
-        | undefined;
+    | {
+        counts: {
+            updated: number;
+            added: number;
+            deleted: number;
+        };
+        messages: unknown[];
+    }
+    | undefined;
     rawSaveOutput?: Map<string, unknown[]> | undefined;
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
@@ -378,12 +378,12 @@ export declare class NangoAction {
         message: any,
         options?:
             | {
-                  level?: LogLevel;
-              }
+                level?: LogLevel;
+            }
             | {
-                  [key: string]: any;
-                  level?: never;
-              }
+                [key: string]: any;
+                level?: never;
+            }
     ): Promise<void>;
     log(
         message: string,
@@ -408,13 +408,13 @@ export declare class NangoSync extends NangoAction {
     track_deletes: boolean;
     logMessages?:
         | {
-              counts: {
-                  updated: number;
-                  added: number;
-                  deleted: number;
-              };
-              messages: unknown[];
-          }
+            counts: {
+                updated: number;
+                added: number;
+                deleted: number;
+            };
+            messages: unknown[];
+        }
         | undefined;
     rawSaveOutput?: Map<string, unknown[]>;
     rawDeleteOutput?: Map<string, unknown[]>;
@@ -424,10 +424,10 @@ export declare class NangoSync extends NangoAction {
     /**
      * @deprecated please use batchSave
      */
-    batchSend<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchSave<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchDelete<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
+    batchSend<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchSave<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchDelete<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
     setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
 }
@@ -438,7 +438,7 @@ export declare class NangoSync extends NangoAction {
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */
 export declare function instrumentSDK(rawNango: NangoAction | NangoSync): NangoAction | NangoSync;
-export {};
+export { };
 
 
 

@@ -103,7 +103,7 @@ describe('GET /logs/operations/:operationId', () => {
                 id: logCtx.id,
                 jobId: null,
                 level: 'info',
-                message: 'Proxy call',
+                message: 'Proxy',
                 meta: null,
                 operation: {
                     type: 'proxy',
