@@ -40,13 +40,23 @@ export interface CreateSyncArgs {
     environmentId: number;
     sync: IncomingFlowConfig;
     syncName: string;
-    variant: string;
+    syncVariant: string;
 }
 
 const logger = getLogger('sync.manager');
 
 export class SyncManagerService {
-    public async createSyncForConnection(connectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
+    public async createSyncForConnection({
+        connectionId,
+        syncVariant,
+        logContextGetter,
+        orchestrator
+    }: {
+        connectionId: number;
+        syncVariant: string;
+        logContextGetter: LogContextGetter;
+        orchestrator: Orchestrator;
+    }): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(connectionId))!;
         const nangoConfig = await getSyncConfig({ nangoConnection });
         if (!nangoConfig) {
@@ -80,18 +90,19 @@ export class SyncManagerService {
                 continue;
             }
 
-            const existingSync = await getSync({ connectionId, name: syncName, variant: 'base' });
+            const existingSync = await getSync({ connectionId, name: syncName, variant: syncVariant });
             if (existingSync) {
                 await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: nangoConnection.environment_id });
                 continue;
             }
-            const sync = await createSync({ connectionId, syncConfig, variant: 'base' });
+            const sync = await createSync({ connectionId, syncConfig, variant: syncVariant });
             if (sync) {
                 await orchestrator.scheduleSync({
                     nangoConnection,
                     sync,
                     providerConfig,
                     syncName,
+                    syncVariant,
                     syncData,
                     logContextGetter
                 });
@@ -99,18 +110,29 @@ export class SyncManagerService {
         }
     }
 
-    public async createSyncForConnections(
-        connections: ConnectionInternal[],
-        syncName: string,
-        variant: string,
-        providerConfigKey: string,
-        environmentId: number,
-        flowConfig: IncomingFlowConfig,
-        logContextGetter: LogContextGetter,
-        orchestrator: Orchestrator,
+    public async createSyncForConnections({
+        connections,
+        syncName,
+        syncVariant,
+        providerConfigKey,
+        environmentId,
+        flowConfig,
+        logContextGetter,
+        orchestrator,
         debug = false,
-        logCtx?: LogContext
-    ): Promise<boolean> {
+        logCtx
+    }: {
+        connections: ConnectionInternal[];
+        syncName: string;
+        syncVariant: string;
+        providerConfigKey: string;
+        environmentId: number;
+        flowConfig: IncomingFlowConfig;
+        logContextGetter: LogContextGetter;
+        orchestrator: Orchestrator;
+        debug: boolean;
+        logCtx?: LogContext | undefined;
+    }): Promise<boolean> {
         try {
             const providerConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
             if (!providerConfig) {
@@ -121,18 +143,19 @@ export class SyncManagerService {
                 if (!syncConfig) {
                     continue;
                 }
-                const existingSync = await getSync({ connectionId: connection.id, name: syncName, variant });
+                const existingSync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (existingSync) {
                     await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: connection.environment_id });
                     continue;
                 }
-                const sync = await createSync({ connectionId: connection.id, syncConfig, variant });
+                const sync = await createSync({ connectionId: connection.id, syncConfig, variant: syncVariant });
                 if (sync) {
                     await orchestrator.scheduleSync({
                         nangoConnection: connection,
                         sync: sync,
                         providerConfig: providerConfig,
                         syncName,
+                        syncVariant,
                         syncData: { ...flowConfig, returns: flowConfig.models, input: '' } as NangoIntegrationData,
                         logContextGetter,
                         debug
@@ -160,19 +183,19 @@ export class SyncManagerService {
     ): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
-            const { connections, providerConfigKey, environmentId, sync, syncName, variant } = syncToCreate;
-            const result = await this.createSyncForConnections(
+            const { connections, providerConfigKey, environmentId, sync: flowConfig, syncName, syncVariant } = syncToCreate;
+            const result = await this.createSyncForConnections({
                 connections,
                 syncName,
-                variant,
+                syncVariant,
                 providerConfigKey,
                 environmentId,
-                sync,
+                flowConfig,
                 logContextGetter,
                 orchestrator,
                 debug,
                 logCtx
-            );
+            });
             if (!result) {
                 success = false;
             }
@@ -428,17 +451,17 @@ export class SyncManagerService {
             const { providerConfigKey } = flow;
             const name = flow.name || flow.syncName;
 
-            await this.createSyncForConnections(
-                existingConnections,
-                name as string,
-                variant,
+            await this.createSyncForConnections({
+                connections: existingConnections,
+                syncName: name as string,
+                syncVariant: variant,
                 providerConfigKey,
                 environmentId,
-                flow as unknown as IncomingFlowConfig,
+                flowConfig: flow as unknown as IncomingFlowConfig,
                 logContextGetter,
                 orchestrator,
-                false
-            );
+                debug: false
+            });
         }
     }
     public async pauseSchedules({
