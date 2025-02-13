@@ -56,11 +56,20 @@ export const getById = async (id: string): Promise<Sync | null> => {
     return result[0];
 };
 
-export const createSync = async (nangoConnectionId: number, syncConfig: DBSyncConfig): Promise<Sync | null> => {
+export const createSync = async ({
+    connectionId,
+    syncConfig,
+    variant
+}: {
+    connectionId: number;
+    syncConfig: DBSyncConfig;
+    variant: string;
+}): Promise<Sync | null> => {
     const sync: Omit<Sync, 'created_at' | 'updated_at'> = {
         id: uuidv4(),
-        nango_connection_id: nangoConnectionId,
+        nango_connection_id: connectionId,
         name: syncConfig.sync_name,
+        variant,
         frequency: null,
         last_sync_date: null,
         last_fetched_at: null,
@@ -142,10 +151,11 @@ export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> 
     return updated_at;
 };
 
-export const getSyncByIdAndName = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
+export const getSync = async ({ connectionId, name, variant }: { connectionId: number; name: string; variant: string }): Promise<Sync | null> => {
     const result = await db.knex.select('*').from<Sync>(TABLE).where({
-        nango_connection_id: nangoConnectionId,
+        nango_connection_id: connectionId,
         name,
+        variant,
         deleted: false
     });
 
@@ -209,7 +219,10 @@ export const getSyncs = async (
             [`${SYNC_CONFIG_TABLE}.nango_config_id`]: nangoConnection.config_id,
             [`${TABLE}.deleted`]: false
         })
-        .orderBy(`${TABLE}.name`, 'asc');
+        .orderBy([
+            { column: `${TABLE}.name`, order: 'asc' },
+            { column: `${TABLE}.variant`, order: 'asc' }
+        ]);
 
     const result = await q;
 
@@ -473,7 +486,7 @@ export const getAndReconcileDifferences = async ({
                 if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
-                syncsToCreate.push({ connections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections, syncName: flowName, variant: 'base', sync: flow, providerConfigKey, environmentId });
             }
         }
 
@@ -487,7 +500,7 @@ export const getAndReconcileDifferences = async ({
                 if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
-                syncsToCreate.push({ connections: missingConnections, syncName: flowName, sync: flow, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections: missingConnections, syncName: flowName, variant: 'base', sync: flow, providerConfigKey, environmentId });
             }
         }
     }
@@ -542,7 +555,7 @@ export const getAndReconcileDifferences = async ({
 
                     if (existingSync.type === 'sync') {
                         for (const connection of connections) {
-                            const syncId = await getSyncByIdAndName(connection.id, existingSync.sync_name);
+                            const syncId = await getSync({ connectionId: connection.id, name: existingSync.sync_name, variant: 'base' });
                             if (syncId) {
                                 await syncManager.softDeleteSync(syncId.id, environmentId, orchestrator);
                             }

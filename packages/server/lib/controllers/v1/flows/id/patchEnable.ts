@@ -56,12 +56,12 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });
 
     if (updated > 0) {
-        await syncManager.triggerIfConnectionsExist(
-            [{ ...syncConfig, name: syncConfig.sync_name, providerConfigKey: body.providerConfigKey }],
-            environment.id,
+        await syncManager.triggerIfConnectionsExist({
+            flows: [{ ...syncConfig, name: syncConfig.sync_name, providerConfigKey: body.providerConfigKey }],
+            environmentId: environment.id,
             logContextGetter,
             orchestrator
-        );
+        });
         res.status(200).send({ data: { success: true } });
     } else {
         res.status(400).send({ data: { success: false } });
