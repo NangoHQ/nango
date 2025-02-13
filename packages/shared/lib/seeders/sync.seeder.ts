@@ -42,7 +42,7 @@ export async function createSyncSeeds({
         throw new Error('Sync config not created');
     }
 
-    const sync = await syncService.createSync(connectionId, syncConfig);
+    const sync = await syncService.createSync({ connectionId, syncConfig, variant: 'base' });
     if (!sync) {
         throw new Error('Sync not created');
     }

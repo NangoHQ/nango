@@ -716,6 +716,7 @@ class SyncController {
             }
             const connection = getConnection.response;
 
+            // TODO: handle variant
             const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
             if (syncs.length <= 0) {
                 res.status(400).send({ message: 'Invalid sync_name' });
