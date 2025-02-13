@@ -1,7 +1,7 @@
 import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import type { AdminAxiosProps } from '@nangohq/node';
+import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { DryRunService } from './dryrun.service';
@@ -212,5 +212,46 @@ export class NangoSyncCLI extends NangoSyncBase {
         }
 
         return super.getMetadata<TMetadata>();
+    }
+
+    public override async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+        const objects = new Map<K, T>();
+
+        if (ids.length === 0) {
+            return objects;
+        }
+
+        const externalIds = ids.map((id) => String(id).replaceAll('\x00', ''));
+        const externalIdMap = new Map<string, K>(ids.map((id) => [String(id), id]));
+
+        let cursor: string | null = null;
+        for (let i = 0; i < ids.length; i += 100) {
+            const batchIds = externalIds.slice(i, i + 100);
+
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model,
+                ids: batchIds
+            };
+            if (cursor) {
+                props.cursor = cursor;
+            }
+
+            const response = await this.nango.listRecords<any>(props);
+
+            const batchRecords = response.records;
+            cursor = response.next_cursor;
+
+            for (const record of batchRecords) {
+                const stringId = String(record.id);
+                const realId = externalIdMap.get(stringId);
+                if (realId !== undefined) {
+                    objects.set(realId, record as T);
+                }
+            }
+        }
+
+        return objects;
     }
 }
