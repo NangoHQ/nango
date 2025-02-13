@@ -5647,6 +5647,21 @@ integrations:
                     method: GET
                     path: /properties
                     group: Properties
+                scopes:
+                    - oauth
+                    - media_bridge.read
+                    - crm.objects.marketing_events.write
+                    - crm.schemas.custom.read
+                    - crm.pipelines.orders.read
+                    - tickets
+                    - crm.objects.feedback_submissions.read
+                    - crm.objects.goals.read
+                    - crm.objects.custom.write
+                    - crm.objects.custom.read
+                    - crm.objects.marketing_events.read
+                    - timeline
+                    - e-commerce
+                    - automation
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
