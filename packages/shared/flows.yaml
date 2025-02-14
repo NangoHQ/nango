@@ -4792,7 +4792,7 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 1.0.3
+                version: 1.0.4
                 output: Document
                 sync_type: full
                 endpoint:
@@ -4826,6 +4826,7 @@ integrations:
                 id: string
                 url: string
                 title: string
+                mimeType: string
     google-mail:
         syncs:
             emails:
