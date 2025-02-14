@@ -17,6 +17,7 @@ interface RunScriptRow {
     providerConfigKey: string;
     status: string;
     syncId: string;
+    syncVariant: string;
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
@@ -37,6 +38,7 @@ const fields = [
     { name: 'providerConfigKey', type: 'STRING' },
     { name: 'status', type: 'STRING' },
     { name: 'syncId', type: 'STRING' },
+    { name: 'syncVariant', type: 'STRING' },
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
@@ -141,6 +143,7 @@ class BigQueryClient {
                 accountId: data.accountId,
                 accountName: data.accountName,
                 scriptName: data.scriptName,
+                syncVariant: data.syncVariant,
                 scriptType: data.scriptType,
                 environmentId: data.environmentId,
                 environmentName: data.environmentName,

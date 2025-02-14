@@ -486,7 +486,7 @@ export const getAndReconcileDifferences = async ({
                 if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
-                syncsToCreate.push({ connections, syncName: flowName, variant: 'base', sync: flow, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections, syncName: flowName, syncVariant: 'base', sync: flow, providerConfigKey, environmentId });
             }
         }
 
@@ -500,7 +500,7 @@ export const getAndReconcileDifferences = async ({
                 if (debug) {
                     await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
-                syncsToCreate.push({ connections: missingConnections, syncName: flowName, variant: 'base', sync: flow, providerConfigKey, environmentId });
+                syncsToCreate.push({ connections: missingConnections, syncName: flowName, syncVariant: 'base', sync: flow, providerConfigKey, environmentId });
             }
         }
     }
