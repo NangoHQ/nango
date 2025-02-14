@@ -469,7 +469,7 @@ const initDb = async () => {
     const connection = await connectionService.getConnectionById(connectionId);
     if (!connection) throw new Error('Connection not found');
 
-    const sync = await createSync(connectionId, syncConfig);
+    const sync = await createSync({ connectionId, syncConfig, variant: 'base' });
     if (!sync?.id) throw new Error('Sync not created');
 
     const syncJob = await createSyncJob({

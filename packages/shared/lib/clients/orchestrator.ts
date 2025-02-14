@@ -645,12 +645,38 @@ export class Orchestrator {
         }
         return res;
     }
+    async pauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.pauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
 
     async scheduleSync({
         nangoConnection,
         sync,
         providerConfig,
         syncName,
+        syncVariant,
         syncData,
         logContextGetter,
         debug = false
@@ -659,6 +685,7 @@ export class Orchestrator {
         sync: Sync;
         providerConfig: ProviderConfig;
         syncName: string;
+        syncVariant: string;
         syncData: NangoIntegrationData;
         logContextGetter: LogContextGetter;
         debug?: boolean;
@@ -704,6 +731,7 @@ export class Orchestrator {
                         connectionDetails: nangoConnection,
                         providerConfig,
                         syncName,
+                        syncVariant,
                         sync,
                         syncData
                     }
@@ -729,6 +757,7 @@ export class Orchestrator {
                     type: 'sync',
                     syncId: sync.id,
                     syncName,
+                    syncVariant,
                     debug,
                     connection: {
                         id: nangoConnection.id,
@@ -753,6 +782,7 @@ export class Orchestrator {
                 environmentId: nangoConnection.environment_id,
                 metadata: {
                     syncName,
+                    syncVariant,
                     connectionDetails: JSON.stringify(nangoConnection),
                     syncId: sync.id,
                     providerConfig,

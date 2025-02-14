@@ -12,6 +12,7 @@ export type RecurringProps = PostRecurring['Body'];
 interface SyncArgs {
     syncId: string;
     syncName: string;
+    syncVariant: string;
     debug: boolean;
     connection: ConnectionJobs;
 }
@@ -86,6 +87,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         attempt: props.attempt,
         syncId: props.syncId,
         syncName: props.syncName,
+        syncVariant: props.syncVariant,
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,
@@ -107,6 +109,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         attempt: props.attempt,
         syncId: props.syncId,
         syncName: props.syncName,
+        syncVariant: props.syncVariant,
         debug: props.debug,
         connection: props.connection,
         groupKey: props.groupKey,

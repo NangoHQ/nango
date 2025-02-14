@@ -1,0 +1,56 @@
+---
+title: 'Webhooks from APIs - Overview'
+sidebarTitle: 'Overview'
+description: 'Guide on how to process webhooks form external APIs.'
+---
+
+<Note>
+Receiving webhooks in Nango is currently only available on the [Scale plan](https://www.nango.dev/pricing).
+</Note>
+
+Nango makes it easy to process webhooks coming from external APIs. If your API doesn't have off-the-shelf support, simply request it in the [community](https://nango.dev/slack); we can deliver them fast.
+
+# Supported APIs
+
+Nango currently has off-the-shelf support for the webhooks listed in this [folder](https://github.com/NangoHQ/nango/tree/master/packages/server/lib/webhook).
+
+# Pre-requisite: Configure webhooks in the external API portal
+
+To send webhooks from an external API to Nango, configure webhooks on the external API portal, specifying the Nango URL to receive webhooks, which is accessible in your integration settings in the Nango UI (_Integrations_ tab > pick an integration > _Settings_ sub-tab).
+
+<Frame caption="Where to find the URL to receive external webhooks for a given integration.">
+  <img src="/images/configure-webhooks-in-external-api-portal.png" />
+</Frame>
+
+# Handle external webhooks in Nango
+
+There are two ways to handle webhooks from APIs in Nango: 
+1. Forward them to your app as is ([guide](/guides/webhooks/webhooks-from-apis/webhook-forwarding))
+2. Use them for real-time syncing ([guide](/guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks))
+
+# Understand how Nango handles external webhooks
+
+When Nango receives a webhook from an external API, it first reconciles the webhook with the appropriate integration and connection.
+
+<Frame caption="How Nango routes webhooks from external APIs.">
+  <img src="/images/external-webhook-routing.png" />
+</Frame>
+
+Each external webhook is received on a unique Nango URL that corresponds to a specific integration. Here’s an example webhook URL:
+```
+https://api.nango.dev/webhook/d91981c1-257a-4a42-adb3-a849da15f0dc/hubspot
+```
+
+In this URL:
+- The UUID (`d91981c1-257a-4a42-adb3-a849da15f0dc`) is specific to your Nango account.
+- The integration ID (hubspot) identifies the integration receiving the webhook.
+
+Once the integration is determined, Nango attributes the webhook to the correct connection. Each supported API has specific routing logic ([code](https://github.com/NangoHQ/nango/tree/master/packages/server/lib/webhook)) to extract identifying details from the webhook payload, which allows Nango to match it with a corresponding connection.
+
+The same routing code contains the logic to verify the provenance of webhooks, for security purposes. 
+
+Based on your configuration, Nango will either [forward the webhook](/guides/webhooks/webhooks-from-apis/webhook-forwarding) to your app as is, use it for [real-time syncing](/guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks), or both. 
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
