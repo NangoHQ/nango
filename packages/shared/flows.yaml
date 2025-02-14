@@ -4813,7 +4813,7 @@ integrations:
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
-                input: DocumentId
+                input: IdEntity
                 description: >
                     Fetches the content of a file given its ID, processes the data using
 
@@ -4822,15 +4822,44 @@ integrations:
 
                     string can be used to recreate the file in its original format using
                     an external tool.
+
+                    If this is a native google file type then use the fetch-google-sheet
+                    or fetch-google-doc
+
+                    actions.
                 output: string
-                version: 2.0.0
+                version: 2.0.1
                 endpoint:
                     method: GET
                     path: /fetch-document
                     group: Documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-sheet:
+                input: IdEntity
+                description: >
+                    Fetches the content of a native google spreadsheet given its ID.
+                    Outputs
+
+                    a JSON representation of a google sheet.
+                output: JSONSpreadsheet
+                endpoint:
+                    method: GET
+                    path: /fetch-google-sheet
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-doc:
+                input: IdEntity
+                description: |
+                    Fetches the content of a native google document given its ID. Outputs 
+                    a JSON reprensentation of a google doc.
+                output: JSONDocument
+                endpoint:
+                    method: GET
+                    path: /fetch-google-document
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
         models:
-            DocumentId:
+            IdEntity:
                 id: string
             DocumentMetadata:
                 files: string[] | undefined
@@ -4845,6 +4874,34 @@ integrations:
                 url: string
                 title: string
                 mimeType: string
+            JSONSpreadsheet:
+                spreadsheetId: string
+                properties: object
+                sheets: object[]
+                namedRanges: object[]
+                spreadsheetUrl: string
+                developerMetadata: object[]
+                dataSources: object[]
+                dataSourceSchedules: object[]
+            JSONDocument:
+                documentId: string
+                title: string
+                url: string
+                tabs: object[]
+                revisionId: string
+                suggestionsViewMode: "DEFAULT_FOR_CURRENT_ACCESS | SUGGESTIONS_INLINE | PREVIEW_SUGGESTIONS_ACCEPTED\t| PREVIEW_WITHOUT_SUGGESTIONS"
+                body: object
+                headers: object
+                footers: object
+                footnotes: object
+                documentStyle: object
+                suggestedDocumentStyleChanges: object
+                namedStyles: object
+                suggestedNamedStylesChanges: object
+                lists: object
+                namedRanges: object
+                inlineObjects: object
+                positionedObjects: object
     google-mail:
         syncs:
             emails:
