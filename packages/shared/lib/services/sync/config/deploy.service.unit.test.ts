@@ -227,7 +227,7 @@ describe('Sync config create', () => {
             return Promise.resolve(false);
         });
 
-        vi.spyOn(SyncService, 'getSyncsByProviderConfigAndSyncName').mockImplementation(() => {
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockImplementation(() => {
             return Promise.resolve([]);
         });
 
