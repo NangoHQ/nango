@@ -50,13 +50,20 @@ class ProxyService {
         const { connection, providerName } = internalConfig;
 
         if (!passedEndpoint && !baseUrlOverride) {
-            logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: 'Proxy: a API URL endpoint is missing.' });
+            logs.push({
+                type: 'log',
+                level: 'error',
+                source: 'internal',
+                createdAt: new Date().toISOString(),
+                message: 'Proxy: an API URL endpoint is missing.'
+            });
             return { success: false, error: new NangoError('missing_endpoint'), response: null, logs };
         }
         if (!connectionId) {
             logs.push({
                 type: 'log',
                 level: 'error',
+                source: 'internal',
                 createdAt: new Date().toISOString(),
                 message: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
             });
@@ -66,6 +73,7 @@ class ProxyService {
             logs.push({
                 type: 'log',
                 level: 'error',
+                source: 'internal',
                 createdAt: new Date().toISOString(),
                 message: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
             });
@@ -114,7 +122,13 @@ class ProxyService {
 
         const provider = getProvider(providerName);
         if (!provider) {
-            logs.push({ type: 'log', level: 'error', createdAt: new Date().toISOString(), message: `Provider ${providerName} does not exist` });
+            logs.push({
+                type: 'log',
+                level: 'error',
+                source: 'internal',
+                createdAt: new Date().toISOString(),
+                message: `Provider ${providerName} does not exist`
+            });
             return { success: false, error: new NangoError('unknown_provider_template'), response: null, logs };
         }
 
@@ -122,6 +136,7 @@ class ProxyService {
             logs.push({
                 type: 'log',
                 level: 'error',
+                source: 'internal',
                 createdAt: new Date().toISOString(),
                 message: `The proxy is either not supported for the provider ${providerName} or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).`
             });
@@ -197,6 +212,7 @@ class ProxyService {
                     logs.push({
                         type: 'log',
                         level: 'warn',
+                        source: 'internal',
                         createdAt: new Date().toISOString(),
                         message: `Rate limit reset time was parsed successfully, retrying after "${waitDuration}" seconds`
                     });
@@ -217,6 +233,7 @@ class ProxyService {
                 logs.push({
                     type: 'log',
                     level: 'warn',
+                    source: 'internal',
                     createdAt: new Date().toISOString(),
                     message: `Retry header was parsed successfully, retrying after "${retryAfter}" seconds`
                 });
@@ -272,6 +289,7 @@ class ProxyService {
                 logs.push({
                     type: 'log',
                     level: 'warn',
+                    source: 'internal',
                     createdAt: new Date().toISOString(),
                     message: `Received an "${error.response?.status || error.code}" error, but no retries will occur because retries defaults to 0 or were set to 0`
                 });
@@ -279,6 +297,7 @@ class ProxyService {
                 logs.push({
                     type: 'log',
                     level: 'warn',
+                    source: 'internal',
                     createdAt: new Date().toISOString(),
                     message: `Received an "${error.response?.status || error.code}" error, retrying with exponential backoffs for a total of ${attemptNumber} out of ${config.retries} times`
                 });
@@ -585,6 +604,7 @@ class ProxyService {
             logs.push({
                 type: 'http',
                 level: 'error',
+                source: 'internal',
                 createdAt: new Date().toISOString(),
                 message: `${config.method} ${redactedURL}`,
                 request: {
@@ -609,6 +629,7 @@ class ProxyService {
             logs.push({
                 type: 'http',
                 level: 'error',
+                source: 'internal',
                 createdAt: new Date().toISOString(),
                 message: `${config.method} ${redactedURL}`,
                 error: error as any

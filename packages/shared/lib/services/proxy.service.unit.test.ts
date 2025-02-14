@@ -730,6 +730,7 @@ describe('Proxy service configure', () => {
         expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
+            source: 'internal',
             createdAt: expect.any(String),
             message: 'Proxy: a API URL endpoint is missing.'
         });
@@ -761,6 +762,7 @@ describe('Proxy service configure', () => {
         expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
+            source: 'internal',
             createdAt: expect.any(String),
             message:
                 "The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified."
@@ -793,6 +795,7 @@ describe('Proxy service configure', () => {
         expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
+            source: 'internal',
             createdAt: expect.any(String),
             message:
                 "The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified."
@@ -825,6 +828,7 @@ describe('Proxy service configure', () => {
         expect(logs[0]).toStrictEqual<MessageRowInsert>({
             type: 'log',
             level: 'error',
+            source: 'internal',
             createdAt: expect.any(String),
             message: 'Provider unknown does not exist'
         });
