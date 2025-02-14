@@ -3,13 +3,14 @@ import { createClient } from 'redis';
 import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, getLogger } from '@nangohq/utils';
+import type { RequestLocals } from '../utils/express';
 
 const logger = getLogger('RateLimiter');
 
 const rateLimiter = await (async () => {
     const opts = {
         keyPrefix: 'middleware',
-        points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 2400,
+        points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 3500,
         duration: 60,
         blockDuration: 0
     };
@@ -40,7 +41,7 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
         res.setHeader('X-RateLimit-Reset', resetEpoch);
     };
     const key = getKey(req, res);
-    const pointsToConsume = getPointsToConsume(req);
+    const pointsToConsume = getPointsToConsume(req, res);
     rateLimiter
         .consume(key, pointsToConsume)
         .then((rateLimiterRes) => {
@@ -61,21 +62,25 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
         });
 };
 
-function getKey(req: Request, res: Response): string {
+function getKey(req: Request, res: Response<any, RequestLocals>): string {
     if ('account' in res.locals) {
-        return `account-${res.locals['account'].id}`;
+        // We have one for the secret key usage (customers or syncs) and one for the rest (dashboard, public key, session token)
+        // To avoid syncs bringing down dashboard and reverse
+        return `account-${res.locals.authType === 'secretKey' ? 'secret' : 'global'}-${res.locals['account'].id}`;
     } else if (req.user) {
         return `user-${req.user.id}`;
     }
     return `ip-${req.ip}`;
 }
 
-function getPointsToConsume(req: Request): number {
-    const paths = ['/api/v1/account'];
-
-    if (paths.some((path) => req.path.startsWith(path))) {
+const specialPaths = ['/api/v1/account'];
+function getPointsToConsume(req: Request, res: Response<any, RequestLocals>): number {
+    if (specialPaths.some((path) => req.path.startsWith(path))) {
         // limiting to 6 requests per period to avoid brute force attacks
         return Math.floor(rateLimiter.points / 6);
+    } else if (!res.locals.account || res.locals.account.is_capped) {
+        // Free account get way less requests
+        return 10;
     }
     return 1;
 }
