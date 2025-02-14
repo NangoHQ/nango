@@ -1,6 +1,6 @@
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from './Toast';
 import { useToast } from '../../../hooks/useToast';
-import { CheckIcon, Cross1Icon } from '@radix-ui/react-icons';
+import { IconCheck, IconX } from '@tabler/icons-react';
 
 export function Toaster() {
     const { toasts } = useToast();
@@ -13,13 +13,17 @@ export function Toaster() {
                         <div className="flex gap-2 items-center mr-2">
                             <div>
                                 {props.variant === 'success' && (
-                                    <div className="bg-green-base text-green-dark rounded-full border-2 border-green-base-35">
-                                        <CheckIcon className="w-2.5 h-2.5" />
+                                    <div className="bg-success-400 bg-opacity-40 rounded-full p-1">
+                                        <div className="bg-success-400 text-success-500 rounded-full">
+                                            <IconCheck stroke={1} size={10} />
+                                        </div>
                                     </div>
                                 )}
                                 {props.variant === 'error' && (
-                                    <div className="bg-red-base bg-opacity-35 rounded-full">
-                                        <Cross1Icon />
+                                    <div className="bg-alert-400 bg-opacity-40 rounded-full p-1">
+                                        <div className="bg-alert-400 text-alert-500 rounded-full">
+                                            <IconX stroke={1} size={10} />
+                                        </div>
                                     </div>
                                 )}
                             </div>

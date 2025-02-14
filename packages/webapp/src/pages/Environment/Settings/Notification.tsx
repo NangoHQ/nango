@@ -1,4 +1,4 @@
-import { IconBell } from '@tabler/icons-react';
+import { IconBell, IconExternalLink } from '@tabler/icons-react';
 import { useStore } from '../../../store';
 import { apiPatchEnvironment, apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
 import { Button } from '../../../components/ui/button/Button';
@@ -69,7 +69,9 @@ export const NotificationSettings: React.FC = () => {
             </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
                 <div className="flex flex-col gap-4">
-                    <label className="font-semibold">Webhooks URLs</label>
+                    <Link to="https://docs.nango.dev/guides/webhooks/webhooks-from-nango" className="flex gap-2 items-center" target="_blank">
+                        <label className="font-semibold">Webhooks URLs</label> <IconExternalLink stroke={1} size={18} />
+                    </Link>
 
                     <EditableInput
                         name="primary_url"
@@ -96,7 +98,7 @@ export const NotificationSettings: React.FC = () => {
                     <label htmlFor="envvar" className="font-semibold">
                         Slack alerts
                     </label>
-                    <Button disabled={slackIsConnecting} variant={isConnected ? 'primary' : 'tertiary'} onClick={isConnected ? slackDisconnect : slackConnect}>
+                    <Button disabled={slackIsConnecting} variant={isConnected ? 'primary' : 'primary'} onClick={isConnected ? slackDisconnect : slackConnect}>
                         <IntegrationLogo provider="slack" />
                         {isConnected ? `Disconnect ${environmentAndAccount.slack_notifications_channel}` : 'Connect to Slack'}
                     </Button>
