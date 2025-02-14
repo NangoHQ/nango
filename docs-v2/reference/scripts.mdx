@@ -576,6 +576,23 @@ await nango.batchUpdate(updates, 'Issue');
     </ResponseField>
 </Expandable>
 
+### Get records
+
+Fetches records from the Nango cache by id. Records are returned as a `Map` keyed the requested ids. Any records not found will not be present in the resulting map.
+
+This is especially useful in cases where a webhook sync script receives a partial record and needs to fetch the existing data to merge.
+
+```ts
+const records = await nango.getRecordsById<string, Issue>(['1', '2', '3'], 'Issue');
+
+if (records.has('1')) {
+    const record = records.get('1');
+    await nango.log(record.title);
+} else {
+    await nango.log('Record with id 1 not found.');
+}
+```
+
 # Action-specific helper methods
 
 ### `ActionError`
