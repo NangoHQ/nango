@@ -43,8 +43,8 @@ export const OperationTag: React.FC<{ message: string; operation: Exclude<Search
 
                     {operation.type === 'webhook' && (
                         <Tag>
-                            {operation.action === 'forward' && <IconSettings className="w-3.5 h-3.5" />}
-                            {operation.action === 'incoming' && <IconArrowForward className="w-3.5 h-3.5" />}
+                            {operation.action === 'forward' && <IconArrowForward className="w-3.5 h-3.5" />}
+                            {operation.action === 'incoming' && <IconSettings className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_create' && <IconLink className="w-3.5 h-3.5" />}
                             {operation.action === 'sync' && <IconRefresh className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_refresh' && <IconLock className="w-3.5 h-3.5" />}
