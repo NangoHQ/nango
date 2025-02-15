@@ -191,7 +191,14 @@
                     "group": "Webhooks",
                     "pages": [
                         "guides/webhooks/webhooks-from-nango",
-                        "guides/webhooks/webhooks-from-apis"
+                        {
+                            "group": "Webhooks from APIs",
+                            "pages": [
+                                "guides/webhooks/webhooks-from-apis/overview",
+                                "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
+                                "guides/webhooks/webhooks-from-apis/webhook-forwarding"
+                            ]
+                        }
                     ]
                 },
                 "guides/customer-configuration",

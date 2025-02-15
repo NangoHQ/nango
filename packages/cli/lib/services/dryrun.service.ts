@@ -16,6 +16,7 @@ import * as vm from 'node:vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
 import * as zod from 'zod';
+import * as unzipper from 'unzipper';
 import { Buffer } from 'buffer';
 import { serializeError } from 'serialize-error';
 import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
@@ -513,6 +514,8 @@ export class DryRunService {
                                 return crypto;
                             case 'zod':
                                 return zod;
+                            case 'unzipper':
+                                return unzipper;
                             case 'soap':
                             case 'botbuilder':
                                 throw new Error(`Module '${moduleName}' not available in dry run. Please test the integration using the Nango dashboard`);

@@ -7183,7 +7183,7 @@ shortcut:
             shortcut-token: ${apiKey}
         verification:
             method: GET
-            endpoint: /v3/member
+            endpoint: /api/v3/member
     docs: https://docs.nango.dev/integrations/all/shortcut
     credentials:
         apiKey:

@@ -576,6 +576,28 @@ await nango.batchUpdate(updates, 'Issue');
     </ResponseField>
 </Expandable>
 
+### Get records
+
+Fetches records from the Nango cache by ID. Returns a Map where the keys are the requested IDs, and the values are the corresponding records. Any records that are not found will simply be absent from the map.
+
+Example usage:
+```ts
+const records = await nango.getRecordsById<string, Issue>(['1', '2', '3'], 'Issue');
+
+if (records.has('1')) {
+    const record = records.get('1');
+    await nango.log(record.title);
+} else {
+    await nango.log('Record with id 1 not found.');
+}
+```
+
+<Tip>
+Fetching records by ID is useful when you need to update specific records with a more granular approach than [`nango.batchUpdate()`](/reference/scripts#update-records), which performs a deep merge. Note that `nango.batchUpdate()` is more performant than using `nango.getRecordsById()`, followed by `nango.batchSave()`. 
+
+A common use case is when handling external webhooks, where only a partial update of a record is received from an API.
+</Tip>
+
 # Action-specific helper methods
 
 ### `ActionError`

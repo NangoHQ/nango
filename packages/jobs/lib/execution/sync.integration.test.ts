@@ -182,6 +182,7 @@ const runJob = async (
         name: 'task-name',
         syncId: sync.id,
         syncName: sync.name,
+        syncVariant: 'base',
         groupKey: 'group-key',
         attempt: 0,
         state: 'CREATED',

@@ -20,6 +20,7 @@ export const syncArgsSchema = z.object({
     type: z.literal('sync'),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
+    syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
     debug: z.boolean(),
     ...commonSchemaArgsFields
 });
@@ -33,6 +34,7 @@ export const syncAbortArgsSchema = z.object({
     reason: z.string().min(1),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
+    syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
     debug: z.boolean(),
     ...commonSchemaArgsFields
 });
@@ -100,6 +102,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: sync.data.retryCount + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
+                syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
                 debug: sync.data.payload.debug
@@ -117,6 +120,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: syncAbort.data.retryCount + 1,
                 syncId: syncAbort.data.payload.syncId,
                 syncName: syncAbort.data.payload.syncName,
+                syncVariant: syncAbort.data.payload.syncVariant,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
                 reason: syncAbort.data.payload.reason,
