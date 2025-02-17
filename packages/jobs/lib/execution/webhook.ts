@@ -14,7 +14,7 @@ import {
     featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncByIdAndName,
+    getSync,
     getSyncConfigRaw,
     updateSyncJobStatus
 } from '@nangohq/shared';
@@ -49,7 +49,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        sync = await getSyncByIdAndName(task.connection.id, task.parentSyncName);
+        sync = await getSync({ connectionId: task.connection.id, name: task.parentSyncName, variant: 'base' }); // webhooks are always executed against the 'base' sync
         if (!sync) {
             throw new Error(`Sync not found for connection: ${task.connection.connection_id}`);
         }
@@ -143,6 +143,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
                 provider_config_key: task.connection.provider_config_key
             },
             syncId: sync?.id as string,
+            syncVariant: sync?.variant as string,
             syncName: task.parentSyncName,
             syncJobId: syncJob?.id,
             providerConfigKey: task.connection.provider_config_key,
@@ -173,6 +174,7 @@ export async function handleWebhookSuccess({ nangoProps }: { nangoProps: NangoPr
         providerConfigKey: nangoProps.providerConfigKey,
         status: 'success',
         syncId: nangoProps.syncId!,
+        syncVariant: nangoProps.syncVariant!,
         content,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
@@ -271,6 +273,7 @@ export async function handleWebhookError({ nangoProps, error }: { nangoProps: Na
             provider_config_key: nangoProps.providerConfigKey
         },
         syncId: nangoProps.syncId!,
+        syncVariant: nangoProps.syncVariant!,
         syncName: nangoProps.syncConfig.sync_name,
         syncJobId: nangoProps.syncJobId!,
         providerConfigKey: nangoProps.providerConfigKey,
@@ -289,6 +292,7 @@ async function onFailure({
     team,
     environment,
     syncId,
+    syncVariant,
     syncName,
     syncJobId,
     syncConfig,
@@ -303,6 +307,7 @@ async function onFailure({
     team: DBTeam | undefined;
     environment: DBEnvironment | undefined;
     syncId: string;
+    syncVariant: string;
     syncJobId?: number | undefined;
     syncName: string;
     syncConfig: DBSyncConfig | null;
@@ -322,6 +327,7 @@ async function onFailure({
             accountId: team.id,
             accountName: team.name,
             scriptName: syncName,
+            syncVariant: syncVariant,
             scriptType: 'webhook',
             environmentId: environment.id,
             environmentName: environment.name,

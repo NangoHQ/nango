@@ -3,8 +3,11 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import type { PatchFlowDisable } from '@nangohq/types';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { flowConfig } from '../../../sync/deploy/validation.js';
-import { configService, disableScriptConfig, errorNotificationService } from '@nangohq/shared';
+import { configService, disableScriptConfig, errorNotificationService, syncManager } from '@nangohq/shared';
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
+
+const orchestrator = getOrchestrator();
 
 export const validationBody = z
     .object({
@@ -56,6 +59,7 @@ export const patchFlowDisable = asyncWrapper<PatchFlowDisable>(async (req, res) 
     await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id });
 
     if (updated > 0) {
+        await syncManager.pauseSchedules({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
         res.status(200).send({ data: { success: true } });
     } else {
         res.status(400).send({ data: { success: false } });
