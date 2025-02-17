@@ -5671,7 +5671,7 @@ integrations:
                 company_admin: boolean
                 team_admin: boolean
                 company_id: string
-                teams: []
+                teams: any[]
                 activated: boolean
                 last_activity_time: date
             HackerRankWorkCreateTestInput:
@@ -15538,7 +15538,7 @@ integrations:
                 state: string
                 sample: boolean
                 department: string
-                department_hierarchy: []
+                department_hierarchy: any[]
                 url: string
                 application_url: string
                 shortlink: string
@@ -15552,7 +15552,7 @@ integrations:
                     zip_code: string
                     telecommuting: boolean
                     workplace_type: string
-                locations: []
+                locations: any[]
                 salary:
                     salary_from: number
                     salary_to: number
@@ -15567,7 +15567,7 @@ integrations:
                 choices:
                     id: string
                     body: string
-                supported_file_types: []
+                supported_file_types: any[]
                 max_file_size: number
             WorkableMember:
                 id: string
@@ -15584,12 +15584,12 @@ integrations:
                     uploader_id: string
                     cover_letter: string
                     summary: string
-                    education_entries: []
-                    experience_entries: []
-                    skills: []
-                    answers: []
+                    education_entries: any[]
+                    experience_entries: any[]
+                    skills: any[]
+                    answers: any[]
                     resume_url: string
-                    tags: []
+                    tags: any[]
                     location:
                         location_str: string
                         country: string
