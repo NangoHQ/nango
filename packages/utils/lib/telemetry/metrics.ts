@@ -36,6 +36,7 @@ export enum Types {
     REFRESH_CONNECTIONS_FAILED = 'nango.server.refreshConnections.failed',
     REFRESH_CONNECTIONS_SUCCESS = 'nango.server.refreshConnections.success',
     REFRESH_CONNECTIONS_FRESH = 'nango.server.refreshConnections.fresh',
+    REFRESH_CONNECTIONS_UNKNOWN = 'nango.server.refreshConnections.unknown',
 
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',

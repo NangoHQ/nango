@@ -881,7 +881,7 @@ class ConnectionService {
                 return Err(new NangoError('invalid_crypted_connection'));
             }
 
-            span.setTag('connectionId', connection.connection_id).setTag('authType', connection?.credentials?.type);
+            span.setTag('connectionId', connection.connection_id).setTag('authType', connection.credentials.type);
 
             if (
                 connection.credentials.type === 'OAUTH2' ||
@@ -1014,10 +1014,16 @@ class ConnectionService {
                             config: integration as ProviderConfig
                         });
                     } else {
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH);
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
                     }
                 }
-            } else if (connection.credentials.type === 'APP_STORE' || connection.credentials.type === 'CUSTOM' || connection.credentials.type === 'OAUTH1') {
+            } else if (
+                connection.credentials.type === 'APP_STORE' ||
+                connection.credentials.type === 'CUSTOM' ||
+                connection.credentials.type === 'OAUTH1' ||
+                !connection.credentials.type
+            ) {
+                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
                 // Do nothing
             } else {
                 throw new Error('Unsupported credentials type');
