@@ -156,6 +156,6 @@ export type OperationRow = Merge<Required<OperationRowInsert>, { message: string
 /**
  * What is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
 
 export type MessageOrOperationRow = MessageRow | OperationRow;
