@@ -32,7 +32,7 @@ export const AuthorizationSettings: React.FC = () => {
 
         void mutate();
 
-        toast({ title: 'HMAC updated successfully!', variant: 'error' });
+        toast({ title: 'HMAC updated successfully!', variant: 'success' });
     };
 
     if (!environmentAndAccount) {
