@@ -175,7 +175,8 @@ export class NangoActionRunner extends NangoActionBase {
             response: {
                 code: res.status,
                 headers: redactHeaders({ headers: res.headers, valuesToFilter })
-            }
+            },
+            createdAt: new Date().toISOString()
         }).catch(() => {
             // this.log can throw when the script is aborted
             // since it is not awaited, the exception might not be caught
@@ -294,12 +295,19 @@ export class NangoSyncRunner extends NangoSyncBase {
                     type: 'log',
                     message: `Invalid records: ${hasErrors.length} failed ${sampled ? `(sampled to ${RECORDS_VALIDATION_SAMPLE})` : ''}`,
                     source: 'internal',
-                    level: 'warn'
+                    level: 'warn',
+                    createdAt: new Date().toISOString()
                 });
             }
             await Promise.all(
                 sample.map((log) => {
-                    return this.sendLogToPersist({ type: 'log', message: `Invalid record payload`, meta: { ...log, model }, level: 'warn' });
+                    return this.sendLogToPersist({
+                        type: 'log',
+                        message: `Invalid record payload`,
+                        meta: { ...log, model },
+                        level: 'warn',
+                        createdAt: new Date().toISOString()
+                    });
                 })
             );
         }
