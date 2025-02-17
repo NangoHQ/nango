@@ -4,7 +4,7 @@ import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger, axiosInstance as axios } from '@nangohq/utils';
+import { getLogger, axiosInstance as axios, stringifyError } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
@@ -512,9 +512,9 @@ class ProviderClient {
 
             return isTokenExpired(expireDate, 15 * 60);
         } catch (err) {
-            logger.error(err);
+            logger.error('introspectSalesforce', stringifyError(err));
             // TODO add observability
-            return false;
+            return true;
         }
     }
 }
