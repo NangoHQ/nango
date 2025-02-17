@@ -355,6 +355,7 @@ export declare class NangoAction {
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
+    zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<void>;
     triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
     private sendLogToPersist;
     private logAPICall;
