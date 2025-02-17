@@ -1,7 +1,7 @@
 import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import type { AdminAxiosProps } from '@nangohq/node';
+import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { DryRunService } from './dryrun.service';
@@ -130,14 +130,16 @@ export class NangoSyncCLI extends NangoSyncBase {
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
 
-    public batchSave<T = any>(results: T[], model: string) {
+    public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchSave received an empty array. No records to save.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         // Validate records
-        const hasErrors = this.validateRecords(model, results);
+        const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
 
         if (hasErrors.length > 0) {
             this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
@@ -147,7 +149,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         }
 
         this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
@@ -162,14 +164,16 @@ export class NangoSyncCLI extends NangoSyncBase {
         return true;
     }
 
-    public batchDelete<T = any>(results: T[], model: string) {
+    public batchDelete<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchDelete received an empty array. No records to delete.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         this.logMessages?.messages.push(`A batch delete call would delete the following data:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
@@ -184,14 +188,16 @@ export class NangoSyncCLI extends NangoSyncBase {
         return true;
     }
 
-    public batchUpdate<T = any>(results: T[], model: string) {
+    public batchUpdate<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {
             console.info('batchUpdate received an empty array. No records to update.');
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
-        for (const msg of results) {
+        for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
@@ -206,5 +212,46 @@ export class NangoSyncCLI extends NangoSyncBase {
         }
 
         return super.getMetadata<TMetadata>();
+    }
+
+    public override async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+        const objects = new Map<K, T>();
+
+        if (ids.length === 0) {
+            return objects;
+        }
+
+        const externalIds = ids.map((id) => String(id).replaceAll('\x00', ''));
+        const externalIdMap = new Map<string, K>(ids.map((id) => [String(id), id]));
+
+        let cursor: string | null = null;
+        for (let i = 0; i < ids.length; i += 100) {
+            const batchIds = externalIds.slice(i, i + 100);
+
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model,
+                ids: batchIds
+            };
+            if (cursor) {
+                props.cursor = cursor;
+            }
+
+            const response = await this.nango.listRecords<any>(props);
+
+            const batchRecords = response.records;
+            cursor = response.next_cursor;
+
+            for (const record of batchRecords) {
+                const stringId = String(record.id);
+                const realId = externalIdMap.get(stringId);
+                if (realId !== undefined) {
+                    objects.set(realId, record as T);
+                }
+            }
+        }
+
+        return objects;
     }
 }

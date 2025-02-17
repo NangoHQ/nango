@@ -136,6 +136,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             secretKey: environment.secret_key,
             nangoConnectionId: task.connection.id,
             syncId: task.syncId,
+            syncVariant: task.syncVariant,
             syncJobId: syncJob.id,
             attributes: syncConfig.attributes,
             track_deletes: syncConfig.track_deletes,
@@ -170,6 +171,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             provider: providerConfig?.provider || 'unknown',
             providerConfig: providerConfig,
             syncId: task.syncId,
+            syncVariant: task.syncVariant,
             syncName: syncConfig?.sync_name || 'unknown',
             syncType: syncType,
             syncJobId: syncJob?.id || -1,
@@ -260,6 +262,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     provider: nangoProps.provider,
                     providerConfig,
                     syncId: nangoProps.syncId,
+                    syncVariant: nangoProps.syncVariant || 'base',
                     syncName: nangoProps.syncConfig.sync_name,
                     syncType,
                     syncJobId: nangoProps.syncJobId,
@@ -421,6 +424,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             providerConfigKey: nangoProps.providerConfigKey,
             status: 'success',
             syncId: nangoProps.syncId,
+            syncVariant: nangoProps.syncVariant!,
             content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
@@ -445,6 +449,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             provider: nangoProps.provider,
             providerConfig,
             syncId: nangoProps.syncId!,
+            syncVariant: nangoProps.syncVariant!,
             syncName: nangoProps.syncConfig.sync_name,
             syncType,
             syncJobId: nangoProps.syncJobId!,
@@ -490,6 +495,7 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
         provider: nangoProps.provider,
         providerConfig,
         syncId: nangoProps.syncId!,
+        syncVariant: nangoProps.syncVariant!,
         syncName: nangoProps.syncConfig.sync_name,
         syncType: nangoProps.syncConfig.sync_type!,
         syncJobId: nangoProps.syncJobId!,
@@ -552,6 +558,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             provider: providerConfig.provider,
             providerConfig,
             syncId: task.syncId,
+            syncVariant: task.syncVariant,
             syncType: syncConfig.sync_type!,
             syncName: syncConfig.sync_name,
             syncJobId: syncJob.id,
@@ -591,6 +598,7 @@ async function onFailure({
     provider,
     providerConfig,
     syncId,
+    syncVariant,
     syncName,
     syncType,
     syncJobId,
@@ -611,6 +619,7 @@ async function onFailure({
     provider: string;
     providerConfig: Config | null;
     syncId: string;
+    syncVariant: string;
     syncName: string;
     syncType: SyncTypeLiteral;
     syncJobId: number;
@@ -639,6 +648,7 @@ async function onFailure({
             providerConfigKey: connection.provider_config_key,
             status: 'failed',
             syncId: syncId,
+            syncVariant: syncVariant || 'base',
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),

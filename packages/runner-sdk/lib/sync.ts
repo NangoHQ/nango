@@ -22,15 +22,17 @@ export abstract class NangoSyncBase extends NangoActionBase {
     /**
      * @deprecated please use batchSave
      */
-    public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+    public async batchSend<T extends object>(results: T[], model: string): Promise<boolean | null> {
         return this.batchSave(results, model);
     }
 
-    public abstract batchSave<T = any>(results: T[], model: string): MaybePromise<boolean>;
+    public abstract batchSave<T extends object>(results: T[], model: string): MaybePromise<boolean>;
 
-    public abstract batchDelete<T = any>(results: T[], model: string): MaybePromise<boolean>;
+    public abstract batchDelete<T extends object>(results: T[], model: string): MaybePromise<boolean>;
 
-    public abstract batchUpdate<T = any>(results: T[], model: string): MaybePromise<boolean>;
+    public abstract batchUpdate<T extends object>(results: T[], model: string): MaybePromise<boolean>;
+
+    public abstract getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): MaybePromise<Map<K, T>>;
 
     protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
         // Validate records
@@ -54,5 +56,15 @@ export abstract class NangoSyncBase extends NangoActionBase {
         }
 
         return hasErrors;
+    }
+
+    protected removeMetadata<T extends object>(results: T[]) {
+        return results.map((result) => {
+            if ('_nango_metadata' in result) {
+                delete result._nango_metadata;
+            }
+
+            return result;
+        });
     }
 }
