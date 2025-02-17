@@ -193,6 +193,7 @@ export class NangoSyncRunner extends NangoSyncBase {
 
     protected persistClient: PersistClient;
     private batchSize = 1000;
+    private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
 
     constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
@@ -269,14 +270,16 @@ export class NangoSyncRunner extends NangoSyncBase {
         this.mergingByModel.set(model, merging);
     }
 
-    public async batchSave<T = any>(results: T[], model: string) {
+    public async batchSave<T extends object>(results: T[], model: string) {
         this.throwIfAborted();
         if (!results || results.length === 0) {
             return true;
         }
 
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
         // Validate records
-        const hasErrors = this.validateRecords(model, results);
+        const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
 
         if (hasErrors.length > 0) {
             metrics.increment(metrics.Types.RUNNER_INVALID_SYNCS_RECORDS, hasErrors.length);
@@ -301,8 +304,8 @@ export class NangoSyncRunner extends NangoSyncBase {
             );
         }
 
-        for (let i = 0; i < results.length; i += this.batchSize) {
-            const batch = results.slice(i, i + this.batchSize);
+        for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
+            const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.saveRecords({
                 model,
                 records: batch,
@@ -323,14 +326,16 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async batchDelete<T = any>(results: T[], model: string) {
+    public async batchDelete<T extends object>(results: T[], model: string) {
         this.throwIfAborted();
         if (!results || results.length === 0) {
             return true;
         }
 
-        for (let i = 0; i < results.length; i += this.batchSize) {
-            const batch = results.slice(i, i + this.batchSize);
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
+        for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
+            const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.deleteRecords({
                 model,
                 records: batch,
@@ -352,14 +357,16 @@ export class NangoSyncRunner extends NangoSyncBase {
         return true;
     }
 
-    public async batchUpdate<T = any>(results: T[], model: string) {
+    public async batchUpdate<T extends object>(results: T[], model: string) {
         this.throwIfAborted();
         if (!results || results.length === 0) {
             return true;
         }
 
-        for (let i = 0; i < results.length; i += this.batchSize) {
-            const batch = results.slice(i, i + this.batchSize);
+        const resultsWithoutMetadata = this.removeMetadata(results);
+
+        for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
+            const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.updateRecords({
                 model,
                 records: batch,
@@ -379,12 +386,54 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
         return true;
     }
+
+    public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+        this.throwIfAborted();
+
+        const objects = new Map<K, T>();
+
+        if (ids.length === 0) {
+            return objects;
+        }
+
+        let cursor: string | undefined = undefined;
+        for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
+
+            const res = await this.persistClient.getRecords({
+                model,
+                externalIds: Array.from(externalIdMap.keys()),
+                environmentId: this.environmentId,
+                nangoConnectionId: this.nangoConnectionId!,
+                cursor
+            });
+
+            if (res.isErr()) {
+                throw res.error;
+            }
+
+            const { nextCursor, records } = res.unwrap();
+            cursor = nextCursor;
+
+            for (const record of records) {
+                const stringId = String(record.id);
+                const realId = externalIdMap.get(stringId);
+                if (realId !== undefined) {
+                    objects.set(realId, record as T);
+                }
+            }
+        }
+
+        return objects;
+    }
 }
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'batchDelete',
     'batchSave',
+    'batchUpdate',
     'batchSend',
+    'getRecordsByIds',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',
