@@ -191,7 +191,14 @@
                     "group": "Webhooks",
                     "pages": [
                         "guides/webhooks/webhooks-from-nango",
-                        "guides/webhooks/webhooks-from-apis"
+                        {
+                            "group": "Webhooks from APIs",
+                            "pages": [
+                                "guides/webhooks/webhooks-from-apis/overview",
+                                "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
+                                "guides/webhooks/webhooks-from-apis/webhook-forwarding"
+                            ]
+                        }
                     ]
                 },
                 "guides/customer-configuration",
@@ -430,6 +437,7 @@
                 "integrations/all/intuit",
                 "integrations/all/jira",
                 "integrations/all/jira-basic",
+                "integrations/all/jira-data-center-api-key",
                 "integrations/all/jira-data-center",
                 "integrations/all/jotform",
                 "integrations/all/keap",

@@ -85,7 +85,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         return;
     }
 
-    await syncManager.triggerIfConnectionsExist(response.result, environmentId, logContextGetter, orchestrator);
+    await syncManager.triggerIfConnectionsExist({ flows: response.result, environmentId, logContextGetter, orchestrator });
 
     res.status(201).send({ data: { id: response.result[0]!.id! } });
 });

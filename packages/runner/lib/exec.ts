@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import * as zod from 'zod';
 import * as soap from 'soap';
 import * as botbuilder from 'botbuilder';
+import * as unzipper from 'unzipper';
 import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
 import { logger } from './utils.js';
@@ -71,6 +72,8 @@ export async function exec(
                             return botbuilder;
                         case 'soap':
                             return soap;
+                        case 'unzipper':
+                            return unzipper;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }

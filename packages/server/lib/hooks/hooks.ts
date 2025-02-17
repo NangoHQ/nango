@@ -86,7 +86,7 @@ export const connectionCreated = async (
     }
 
     if (options.initiateSync === true && !isHosted) {
-        await syncManager.createSyncForConnection(connection.id, logContextGetter, orchestrator);
+        await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);

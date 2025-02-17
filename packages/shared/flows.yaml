@@ -2163,6 +2163,240 @@ integrations:
                 id: string
                 force?: boolean
                 notify?: boolean
+    brightcrowd:
+        syncs:
+            books:
+                runs: every day
+                description: |
+                    Fetches a list of all books in an account from Brightcrowd.
+                output: Book
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /books
+                    group: Books
+                scopes: bcb.partner/book.read
+            books-by-id:
+                runs: every day
+                description: |
+                    Fetches a list of specified books from Brightcrowd.
+                input: Metadata
+                output: BookById
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /books-by-Id
+                    group: Books
+                scopes: bcb.partner/book.read
+            book-analytics:
+                runs: every day
+                description: |
+                    Fetches analytics for a specified list of books from Brightcrowd.
+                output: BookAnalytics
+                input: Metadata
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /book-analytics
+                    group: Books
+                scopes: bcb.partner/book.read
+            pages:
+                runs: every day
+                description: |
+                    Fetches a list of all pages in a book from Brightcrowd.
+                input: Metadata
+                output: Page
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /pages
+                    group: Books
+                scopes: bcb.partner/page.read
+        models:
+            Metadata:
+                bookIds: string[]
+                timeframe?: 7days | 30days | 90days | all
+            BookById:
+                id: string
+                alias: string
+                name: string
+                pictureId: string | null
+                config: string | null
+                coverPictureId: string | null
+                bannerPictureId: string | null
+                affiliation: Affiliation | null
+                questions: Question[]
+                flags: string[]
+                publishedAt?: string | null
+                closedAt?: string | null
+                lockedAt?: string | null
+                created: string
+                modified: string
+                frontMatter: FrontMatter | null
+                preface?: Preface | null
+            Book:
+                id: string
+                alias: string
+                name: string
+                pictureId: string | null
+                config: string | null
+                coverPictureId: string | null
+                bannerPictureId: string | null
+                affiliation: Affiliation | null
+                questions: Question[]
+                flags: string[]
+                publishedAt?: string | null
+                closedAt?: string | null
+                lockedAt?: string | null
+                created: string
+                modified: string
+                frontMatter: FrontMatter | null
+                preface?: Preface | null
+            Preface:
+                text: string | null
+                docId?: string | null
+                video?: string | null
+                pictures?: string[] | null
+            FrontMatter:
+                sections: FrontMatterSection[]
+            FrontMatterSection:
+                uri: string
+                title: string
+                snippet: string
+                disabled?: boolean
+            Instruction:
+                addPage: string | null
+                editPage: string | null
+                requestAccess: string | null
+            Question:
+                id: string
+                type: string | null
+                name: string | null
+                description?: string | null
+                warning?: string | null
+                route: string | null
+                questionHeader: string | null
+                questionSubheader?: string | null
+                headline?: string | null
+                active: boolean
+                required: boolean
+                adminOnly: boolean
+                fields: QuestionField[]
+            QuestionField:
+                id: string
+                label: string
+                type: string
+                headline?: string | null
+                placeholder?: string | null
+                active: boolean
+                required: boolean
+                maxcount?: number | null
+                maxlength?: number | null
+                allowMentions: boolean
+                customizable: boolean
+            Page:
+                id: string
+                alias: string
+                name: string
+                status: draft | published | hidden
+                content:
+                    firstName: string
+                    lastName: string
+                    previousName?: string | null
+                    suffix?: string
+                    partnerFirstName?: string | null
+                    partnerLastName?: string | null
+                    pronouns?: string
+                    pictureId?: string | null
+                    audioId?: string | null
+                pictures?: Picture[] | null
+                videos?: Video[] | null
+                tagUsers?: string[] | null
+                homeTown?: string | null
+                currentCity?: string | null
+                campusResidence?: string | null
+                affiliations?: Affiliation[] | null
+                plan?: school | work | other
+                created: string
+                modifiedByUserAt?: string | null
+                completedByUserAt?: string | null
+                externalId?: string
+            Video:
+                url: string
+                caption?: string | null
+            Picture:
+                type: profile | content | caption
+                id: string
+                caption?: string | null
+            Affiliation:
+                type: OtherAffiliation | UniversityAffiliation | CompanyAffiliation
+                organization?: string | null
+                major?: string | string[]
+                degree?: string | string[]
+                school?: string | string[]
+                graduationYear?: number | null
+                specialty?: string | string[]
+                category?: string | string[]
+                title?: string
+                startYear?: number | null
+                endYear?: number | null
+                office?: string | string[]
+                group?: string | string[]
+            BookAnalytics:
+                id: string
+                email: EmailStats
+                web: WebStats
+                book: BookStats
+            Notification:
+                uri: string
+                topicUri: string
+                status: string
+                messageCount: number
+                openCount: number
+                clickCount: number
+                uniqueOpenCount: number
+                uniqueClickCount: number
+                bounceCount: number
+            Invitations:
+                messageCount: number
+                uniqueOpenCount: number
+                uniqueClickCount: number
+                bounceCount: number
+                uniqueInvitationOpenUserCount: number
+                uniqueInvitationBounceUserCount: number
+            WebStats:
+                dateRange: string
+                values:
+                    visitors: number
+                    totalPageViews: number
+                    sessions: number
+                    socialClicks: number
+                previousValues:
+                    visitors: number
+                    totalPageViews: number
+                    sessions: number
+                    socialClicks: number
+            BookStats:
+                values:
+                    pagesCreated: number
+                    pagesUpdated: number
+                    taggedUsers: number
+                previousValues:
+                    pagesCreated: number
+                    pagesUpdated: number
+                    taggedUsers: number
+            EmailStats:
+                notifications: Notification[]
+                invitations: Invitations
+                web: WebStats
+                book: BookStats
     cal-com-v2:
         syncs:
             events:
@@ -4558,16 +4792,28 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 1.0.3
+                version: 1.0.4
                 output: Document
                 sync_type: full
                 endpoint:
                     method: GET
                     path: /documents
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            folders:
+                runs: every day
+                track_deletes: true
+                sync_type: full
+                description: Sync the folders at the root level of a google drive.
+                output: Folder
+                endpoint:
+                    method: GET
+                    path: /root-folders
+                    group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
-                input: DocumentId
+                input: IdEntity
                 description: >
                     Fetches the content of a file given its ID, processes the data using
 
@@ -4576,14 +4822,44 @@ integrations:
 
                     string can be used to recreate the file in its original format using
                     an external tool.
+
+                    If this is a native google file type then use the fetch-google-sheet
+                    or fetch-google-doc
+
+                    actions.
                 output: string
-                version: 2.0.0
+                version: 2.0.1
                 endpoint:
                     method: GET
                     path: /fetch-document
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-sheet:
+                input: IdEntity
+                description: >
+                    Fetches the content of a native google spreadsheet given its ID.
+                    Outputs
+
+                    a JSON representation of a google sheet.
+                output: JSONSpreadsheet
+                endpoint:
+                    method: GET
+                    path: /fetch-google-sheet
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-doc:
+                input: IdEntity
+                description: |
+                    Fetches the content of a native google document given its ID. Outputs 
+                    a JSON reprensentation of a google doc.
+                output: JSONDocument
+                endpoint:
+                    method: GET
+                    path: /fetch-google-document
+                    group: Documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
-            DocumentId:
+            IdEntity:
                 id: string
             DocumentMetadata:
                 files: string[] | undefined
@@ -4592,6 +4868,40 @@ integrations:
                 id: string
                 url: string
                 title: string
+                mimeType: string
+            Folder:
+                id: string
+                url: string
+                title: string
+                mimeType: string
+            JSONSpreadsheet:
+                spreadsheetId: string
+                properties: object
+                sheets: object[]
+                namedRanges: object[]
+                spreadsheetUrl: string
+                developerMetadata: object[]
+                dataSources: object[]
+                dataSourceSchedules: object[]
+            JSONDocument:
+                documentId: string
+                title: string
+                url: string
+                tabs: object[]
+                revisionId: string
+                suggestionsViewMode: "DEFAULT_FOR_CURRENT_ACCESS | SUGGESTIONS_INLINE | PREVIEW_SUGGESTIONS_ACCEPTED\t| PREVIEW_WITHOUT_SUGGESTIONS"
+                body: object
+                headers: object
+                footers: object
+                footnotes: object
+                documentStyle: object
+                suggestedDocumentStyleChanges: object
+                namedStyles: object
+                suggestedNamedStylesChanges: object
+                lists: object
+                namedRanges: object
+                inlineObjects: object
+                positionedObjects: object
     google-mail:
         syncs:
             emails:
@@ -5361,7 +5671,7 @@ integrations:
                 company_admin: boolean
                 team_admin: boolean
                 company_id: string
-                teams: []
+                teams: any[]
                 activated: boolean
                 last_activity_time: date
             HackerRankWorkCreateTestInput:
@@ -5647,6 +5957,21 @@ integrations:
                     method: GET
                     path: /properties
                     group: Properties
+                scopes:
+                    - oauth
+                    - media_bridge.read
+                    - crm.objects.marketing_events.write
+                    - crm.schemas.custom.read
+                    - crm.pipelines.orders.read
+                    - tickets
+                    - crm.objects.feedback_submissions.read
+                    - crm.objects.goals.read
+                    - crm.objects.custom.write
+                    - crm.objects.custom.read
+                    - crm.objects.marketing_events.read
+                    - timeline
+                    - e-commerce
+                    - automation
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
@@ -15213,7 +15538,7 @@ integrations:
                 state: string
                 sample: boolean
                 department: string
-                department_hierarchy: []
+                department_hierarchy: any[]
                 url: string
                 application_url: string
                 shortlink: string
@@ -15227,7 +15552,7 @@ integrations:
                     zip_code: string
                     telecommuting: boolean
                     workplace_type: string
-                locations: []
+                locations: any[]
                 salary:
                     salary_from: number
                     salary_to: number
@@ -15242,7 +15567,7 @@ integrations:
                 choices:
                     id: string
                     body: string
-                supported_file_types: []
+                supported_file_types: any[]
                 max_file_size: number
             WorkableMember:
                 id: string
@@ -15259,12 +15584,12 @@ integrations:
                     uploader_id: string
                     cover_letter: string
                     summary: string
-                    education_entries: []
-                    experience_entries: []
-                    skills: []
-                    answers: []
+                    education_entries: any[]
+                    experience_entries: any[]
+                    skills: any[]
+                    answers: any[]
                     resume_url: string
-                    tags: []
+                    tags: any[]
                     location:
                         location_str: string
                         country: string
