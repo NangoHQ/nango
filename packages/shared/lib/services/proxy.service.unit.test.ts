@@ -732,7 +732,7 @@ describe('Proxy service configure', () => {
             level: 'error',
             source: 'internal',
             createdAt: expect.any(String),
-            message: 'Proxy: a API URL endpoint is missing.'
+            message: 'Proxy: an API URL endpoint is missing.'
         });
     });
 
