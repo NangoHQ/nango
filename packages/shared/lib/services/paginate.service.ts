@@ -1,6 +1,7 @@
 import type { AxiosResponse } from 'axios';
 import parseLinksHeader from 'parse-link-header';
 import get from 'lodash-es/get.js';
+import set from 'lodash-es/set.js';
 import type {
     Pagination,
     UserProvidedProxyConfiguration,
@@ -169,9 +170,19 @@ class PaginationService {
         }
     }
 
+    /*
+     * Update the config object with the updated body or params based on the pagination type
+     * @desc if a pagination type requires the pagination params to be passed in the body,
+     * then the updatedBodyOrParams will be passed in the body of the config object,
+     * with handling for . notation in the keys
+     */
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: UserProvidedProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
         if (passPaginationParamsInBody) {
-            config.data = updatedBodyOrParams;
+            const expandedParams = Object.keys(updatedBodyOrParams).reduce((acc, key) => {
+                set(acc, key, updatedBodyOrParams[key]);
+                return acc;
+            }, {});
+            config.data = expandedParams;
         } else {
             config.params = updatedBodyOrParams;
         }
