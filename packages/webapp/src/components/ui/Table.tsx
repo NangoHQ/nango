@@ -26,7 +26,7 @@ const Row = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowEle
     <tr
         ref={ref}
         className={cn(
-            'text-s transition-colors data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-grayscale-1000 hover:text-white',
+            'text-s transition-colors data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-grayscale-900 hover:text-white',
             className
         )}
         {...props}

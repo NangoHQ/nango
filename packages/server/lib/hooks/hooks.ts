@@ -215,11 +215,11 @@ export async function connectionTest({
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
     connectionId: string;
     connectionConfig: ConnectionConfig;
-}): Promise<Result<{ logs: MessageRowInsert[] }, NangoError>> {
+}): Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>> {
     const providerVerification = provider?.proxy?.verification;
 
     if (!providerVerification) {
-        return Ok({ logs: [] });
+        return Ok({ logs: [], tested: false });
     }
 
     const active = tracer.scope().active();
@@ -305,7 +305,7 @@ export async function connectionTest({
             return Err(error);
         }
 
-        return Ok({ logs });
+        return Ok({ logs, tested: true });
     } catch (err) {
         const error = new NangoError('connection_test_failed', { err, logs });
         span.setTag('nango.error', err);

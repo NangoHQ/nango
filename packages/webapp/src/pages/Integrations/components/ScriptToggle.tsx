@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ToggleButton from '../../../components/ui/button/ToggleButton';
 import type { GetIntegration } from '@nangohq/types';
 import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
@@ -9,6 +8,7 @@ import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../h
 import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
 import Spinner from '../../../components/ui/Spinner';
+import { Switch } from '../../../components/ui/Switch';
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
@@ -108,7 +108,16 @@ export const ScriptToggle: React.FC<{
         >
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <ToggleButton enabled={flow.enabled === true} onChange={() => toggleSync()} />
+                    <div>
+                        <Switch
+                            name="script"
+                            checked={flow.enabled === true}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                toggleSync();
+                            }}
+                        />
+                    </div>
                 </DialogTrigger>
                 <DialogContent>
                     {!flow.enabled && (

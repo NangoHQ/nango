@@ -437,6 +437,7 @@
                 "integrations/all/intuit",
                 "integrations/all/jira",
                 "integrations/all/jira-basic",
+                "integrations/all/jira-data-center-api-key",
                 "integrations/all/jira-data-center",
                 "integrations/all/jotform",
                 "integrations/all/keap",
