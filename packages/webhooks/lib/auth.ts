@@ -14,6 +14,7 @@ import type {
 } from '@nangohq/types';
 import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
+import { metrics } from '@nangohq/utils';
 
 export async function sendAuth({
     connection,
@@ -102,8 +103,10 @@ export async function sendAuth({
     });
 
     if (res.isErr()) {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_FAILED, 1, { type: 'auth', operation });
         await logCtx.failed();
     } else {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_SUCCESS, 1, { type: 'auth', operation });
         await logCtx.success();
     }
 }
