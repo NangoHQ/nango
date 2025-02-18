@@ -54,15 +54,15 @@ export class LogContextStateless {
     }
 
     async debug(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
     async info(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
+        return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
     async warn(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
+        return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
@@ -73,7 +73,8 @@ export class LogContextStateless {
             message,
             error: errorToDocument(error),
             meta: Object.keys(rest).length > 0 ? rest : null,
-            source: 'internal'
+            source: 'internal',
+            createdAt: new Date().toISOString()
         });
     }
 
@@ -91,14 +92,22 @@ export class LogContextStateless {
         }
     ): Promise<boolean> {
         const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
-        return await this.log({ type: 'http', level, message, ...data, error: errorToDocument(error), source: 'internal' });
+        return await this.log({
+            type: 'http',
+            level,
+            message,
+            ...data,
+            error: errorToDocument(error),
+            source: 'internal',
+            createdAt: new Date().toISOString()
+        });
     }
 
     /**
      * @deprecated Only there for retro compat
      */
     async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 }
 

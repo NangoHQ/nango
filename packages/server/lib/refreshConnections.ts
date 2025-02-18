@@ -26,7 +26,7 @@ export function refreshConnectionsCron(): void {
                 });
                 errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
             } finally {
-                metrics.duration(metrics.Types.REFRESH_CONNECTIONS, Date.now() - start);
+                metrics.duration(metrics.Types.CRON_REFRESH_CONNECTIONS, Date.now() - start);
             }
         })().catch((err: unknown) => {
             logger.error('Failed to execute refreshConnections cron job');
@@ -91,13 +91,13 @@ export async function exec(): Promise<void> {
                             connectionTestHook
                         });
                         if (credentialResponse.isOk()) {
-                            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
+                            metrics.increment(metrics.Types.CRON_REFRESH_CONNECTIONS_SUCCESS);
                         } else {
-                            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+                            metrics.increment(metrics.Types.CRON_REFRESH_CONNECTIONS_FAILED);
                         }
                     } catch (err) {
                         logger.error(`${cronName} failed to refresh connection '${connection.connection_id}' ${stringifyError(err)}`);
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+                        metrics.increment(metrics.Types.CRON_REFRESH_CONNECTIONS_FAILED);
                     }
                     cursor = staleConnection.cursor;
                 }

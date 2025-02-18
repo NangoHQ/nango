@@ -3,7 +3,7 @@ import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 import { cn } from '../../../utils/utils';
-import { Cross1Icon } from '@radix-ui/react-icons';
+import { IconX } from '@tabler/icons-react';
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -68,7 +68,7 @@ const ToastClose = forwardRef<React.ElementRef<typeof ToastPrimitives.Close>, Re
             toast-close=""
             {...props}
         >
-            <Cross1Icon className="h-3.5 w-3.5" />
+            <IconX stroke={1} size={16} />
         </ToastPrimitives.Close>
     )
 );
