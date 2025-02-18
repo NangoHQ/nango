@@ -1,18 +1,25 @@
 // Headers that are never relevant to the outcome of the call
 const IGNORED_HEADERS = new Set([
+    'access-control-allow-credentials',
     'access-control-allow-headers',
+    'access-control-allow-methods',
     'access-control-allow-origin',
     'access-control-expose-headers',
+    'alt-svc',
     'cf-ray',
     'cf-cache-status',
     'connection',
     'content-security-policy',
     'content-security-policy-report-only',
     'keep-alive',
+    'nel',
+    'permissions-policy',
     'referrer-policy',
     'report-to',
     'server',
+    'server-timing',
     'set-cookie',
+    'strict-transport-security',
     'timing-allow-origin',
     'vary',
     'x-amzn-trace-id',
@@ -27,6 +34,7 @@ const IGNORED_HEADERS = new Set([
     'x-edge-backend',
     'x-frame-options',
     'x-hubspot-correlation-id',
+    'x-powered-by',
     'x-server',
     'x-xss-protection'
 ]);
