@@ -242,6 +242,8 @@
                 "integrations/all/airtable",
                 "integrations/all/algolia",
                 "integrations/all/amazon",
+                "integrations/all/amazon-selling-partner",
+                "integrations/all/amazon-selling-partner-beta",
                 "integrations/all/amplitude",
                 "integrations/all/anrok",
                 "integrations/all/anthropic",
