@@ -1,6 +1,8 @@
 import { $ } from 'zx';
 import yaml from 'js-yaml';
-import type { Provider } from '@nangohq/types';
+import type { FlowsYaml, Provider } from '@nangohq/types';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { parseEndpoint } from '@nangohq/nango-yaml';
 
 interface FormattedFlow {
     integration: string;
@@ -28,19 +30,19 @@ while (true) {
 
     let canProcess = false;
     if (flows) {
-        const firstFlow = Object.entries(flows['integrations'])[0]?.[1] as any;
+        const firstFlow = Object.entries(flows.integrations)[0]?.[1] as any;
         if (firstFlow && (firstFlow['actions'] || firstFlow['syncs'])) {
             canProcess = true;
         }
     }
 
-    const formattedFlows = canProcess ? formatFlows(flows) : undefined;
+    const formattedFlows = canProcess && flows ? formatFlows(flows) : undefined;
 
     if (formattedFlows && previousFlows) {
         const previous = Object.keys(previousFlows);
         const current = Object.keys(formattedFlows);
         const added = current.filter((provider) => !previous.includes(provider));
-        const vals = added.map((key) => formattedFlows[key]);
+        const vals = added.map((key) => formattedFlows[key]) as FormattedFlow[];
 
         months.unshift([date, vals]);
     }
@@ -95,50 +97,58 @@ for (const [date, added] of months) {
     console.log();
 }
 
-async function getFlows(sha: string): Promise<Record<string, any> | undefined> {
+async function getFlows(sha: string): Promise<FlowsYaml | undefined> {
     const providersPackageYaml = await $`git show ${sha}:packages/shared/flows.yaml`.nothrow().quiet();
     if (providersPackageYaml.exitCode === 0) {
-        return yaml.load(providersPackageYaml.toString()) as Record<string, any>;
+        return yaml.load(providersPackageYaml.toString()) as FlowsYaml;
     }
 
     return undefined;
 }
 
-function formatFlows(flows: any) {
+function formatFlows(flows: FlowsYaml) {
     const out: Record<string, FormattedFlow> = {};
 
-    for (const name of Object.keys(flows['integrations'])) {
-        const integration = flows['integrations'][name];
+    for (const name of Object.keys(flows.integrations)) {
+        const integration = flows.integrations[name];
+        if (!integration) {
+            continue;
+        }
 
-        if (integration['actions']) {
-            for (const actionName of Object.keys(integration['actions'])) {
-                const action = integration['actions'][actionName];
-
-                const endpoints = Array.isArray(action['endpoint']) ? action['endpoint'] : [action['endpoint']];
-                for (const endpoint of endpoints) {
-                    const val = {
-                        integration: name,
-                        name: actionName,
-                        endpoint: endpoint['path'],
-                        method: endpoint['method'],
-                        type: 'actions'
-                    };
-                    out[JSON.stringify(val)] = val;
+        if (integration.actions) {
+            for (const actionName of Object.keys(integration.actions)) {
+                const action = integration.actions[actionName];
+                if (!action) {
+                    continue;
                 }
+
+                const parsed = parseEndpoint(action.endpoint, 'POST');
+                const val = {
+                    integration: name,
+                    name: actionName,
+                    endpoint: parsed.path,
+                    method: parsed.method,
+                    type: 'actions'
+                };
+                out[JSON.stringify(val)] = val;
             }
         }
 
-        if (integration['syncs']) {
-            for (const syncName of Object.keys(integration['syncs'])) {
-                const sync = integration['syncs'][syncName];
+        if (integration.syncs) {
+            for (const syncName of Object.keys(integration.syncs)) {
+                const sync = integration.syncs[syncName];
+                if (!sync) {
+                    continue;
+                }
 
-                const endpoints = Array.isArray(sync['endpoint']) ? sync['endpoint'] : [sync['endpoint']];
+                const endpoints = Array.isArray(sync.endpoint) ? sync.endpoint : [sync.endpoint];
                 for (const endpoint of endpoints) {
+                    const parsed = parseEndpoint(endpoint, 'GET');
                     const val = {
                         integration: name,
                         name: syncName,
-                        endpoint: endpoint['path'],
-                        method: endpoint['method'],
+                        endpoint: parsed.path,
+                        method: parsed.method,
                         type: 'syncs'
                     };
 
