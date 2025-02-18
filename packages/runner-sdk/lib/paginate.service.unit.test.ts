@@ -4,13 +4,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { UserProvidedProxyConfiguration, CursorPagination } from '@nangohq/types';
 import PaginationService from './paginate.service';
-import type { AxiosResponse } from 'axios';
 
 describe('PaginationService', () => {
     describe('cursor pagination', () => {
         let config: UserProvidedProxyConfiguration;
         let paginationConfig: CursorPagination;
-        let proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
+        let proxy: ReturnType<typeof vi.fn>; // Use ReturnType for type inference
 
         beforeEach(() => {
             config = {
@@ -164,7 +163,6 @@ describe('PaginationService', () => {
                     });
 
                 const generator = PaginationService.cursor(config, paginationConfig, { 'pagination.per_page': 150 }, true, proxy);
-
                 await generator.next(); // First page
                 await generator.next(); // Second page
 
