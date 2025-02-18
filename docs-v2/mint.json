@@ -418,6 +418,7 @@
                 "integrations/all/grafana",
                 "integrations/all/gumroad",
                 "integrations/all/guru",
+                "integrations/all/guru-scim",
                 "integrations/all/gusto",
                 "integrations/all/gusto-demo",
                 "integrations/all/hackerrank-work",
