@@ -3360,6 +3360,22 @@ guru:
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-2-generating-your-user-collection-token'
 
+guru-scim:
+    display_name: Guru (SCIM)
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getguru.com/api/scim
+    docs: https://docs.nango.dev/integrations/all/guru-scim
+    docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Guru API Token
+            description: The SCIM API token for your Guru account
+            doc_section: '#step-1-finding-guru-api-token'
+
 github:
     display_name: GitHub (User OAuth)
     categories:
