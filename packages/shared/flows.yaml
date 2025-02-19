@@ -12084,6 +12084,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12340,6 +12360,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -12417,6 +12442,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -12668,6 +12818,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12924,6 +13094,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -13001,6 +13176,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     ramp:
         syncs:
             users:
