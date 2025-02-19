@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
-import { Ok } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
@@ -133,8 +133,10 @@ export const sendSync = async ({
     });
 
     if (result.isErr()) {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_FAILED, 1, { type: 'sync', operation });
         await logCtx.failed();
     } else {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_SUCCESS, 1, { type: 'sync', operation });
         await logCtx.success();
     }
 
