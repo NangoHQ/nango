@@ -138,6 +138,13 @@ export interface MessageRow {
         headers: Record<string, string>;
     } | null;
     meta: MessageMeta | null;
+    retry:
+        | {
+              attempt: number;
+              max: number;
+              waited: number;
+          }
+        | undefined;
 
     // Dates
     createdAt: string;

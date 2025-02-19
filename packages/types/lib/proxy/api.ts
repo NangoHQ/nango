@@ -1,7 +1,28 @@
 import type { EndpointMethod } from '../api.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials } from '../auth/api.js';
+import type {
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    AppCredentials,
+    TbaCredentials,
+    TableauCredentials,
+    JwtCredentials,
+    TwoStepCredentials,
+    SignatureCredentials
+} from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { Provider } from '../providers/provider.js';
+
+export interface ProxyFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    destination: string;
+    filename: string;
+    path: string;
+    buffer: Buffer;
+}
 
 export interface BaseProxyConfiguration {
     providerConfigKey: string;
@@ -9,10 +30,11 @@ export interface BaseProxyConfiguration {
     endpoint: string;
     retries?: number;
     data?: unknown;
+    files?: ProxyFile[];
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
     baseUrlOverride?: string;
-    responseType?: ResponseType;
+    responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
 }
@@ -27,16 +49,25 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     decompress?: boolean;
     method: EndpointMethod;
     providerName: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
+    token:
+        | string
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | TwoStepCredentials
+        | SignatureCredentials;
     provider: Provider;
-    connection: DBConnectionDecrypted;
+    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
     providerName: string;
-    connection: DBConnectionDecrypted;
+    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
     existingActivityLogId?: string | null | undefined;
 }
 

@@ -106,24 +106,12 @@ export abstract class NangoActionBase {
         }
     }
 
-    protected proxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
-        if (!config.connectionId && this.connectionId) {
-            config.connectionId = this.connectionId;
-        }
-        if (!config.providerConfigKey && this.providerConfigKey) {
-            config.providerConfigKey = this.providerConfigKey;
-        }
-        if (!config.connectionId) {
-            throw new Error('Missing connection id');
-        }
-        if (!config.providerConfigKey) {
-            throw new Error('Missing provider config key');
-        }
+    protected getProxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
         return {
             method: 'GET',
             ...config,
-            providerConfigKey: config.providerConfigKey,
-            connectionId: config.connectionId,
+            providerConfigKey: config.providerConfigKey || this.providerConfigKey,
+            connectionId: config.connectionId || this.connectionId,
             headers: {
                 ...(config.headers || {}),
                 'user-agent': this.nango.userAgent
@@ -323,16 +311,16 @@ export abstract class NangoActionBase {
         config.method = config.method || 'GET';
 
         const configMethod = config.method.toLocaleLowerCase();
-        const passPaginationParamsInBody: boolean = config.paginate?.in_body ?? ['post', 'put', 'patch'].includes(configMethod);
+        const passPaginationParamsInBody = config.paginate?.in_body ?? ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
-        const limitParameterName: string = paginationConfig.limit_name_in_request;
+        const limitParameterName = paginationConfig.limit_name_in_request;
 
         if (paginationConfig['limit']) {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
-        const proxyConfig = this.proxyConfig(config);
+        const proxyConfig = this.getProxyConfig(config);
         switch (paginationConfig.type) {
             case 'cursor':
                 return yield* paginateService.cursor<T>(proxyConfig, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));

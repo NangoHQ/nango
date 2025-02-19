@@ -127,7 +127,8 @@ describe('POST /logs/operations', () => {
                     title: null,
                     type: 'log',
                     updatedAt: expect.toBeIsoDate(),
-                    userId: null
+                    userId: null,
+                    retry: undefined
                 }
             ],
             pagination: { total: 1, cursor: null }

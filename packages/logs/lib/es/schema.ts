@@ -80,11 +80,17 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
             headers: { type: 'object', enabled: false }
         }
     },
-
     response: {
         properties: {
             code: { type: 'integer' },
             headers: { type: 'object', enabled: false }
+        }
+    },
+    retry: {
+        properties: {
+            max: { type: 'integer' },
+            attempt: { type: 'integer' },
+            waited: { type: 'integer' }
         }
     },
 
