@@ -3366,7 +3366,7 @@ guru-scim:
         - knowledge-base
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.getguru.com/api/scim/v2
+        base_url: https://api.getguru.com/api/scim
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
