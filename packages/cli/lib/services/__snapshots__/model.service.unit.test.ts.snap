@@ -91,7 +91,7 @@ export interface ProxyConfiguration {
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
     retryHeader?: RetryHeaderConfig;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
     retryOn?: number[] | null;
 }
 export interface AuthModes {
