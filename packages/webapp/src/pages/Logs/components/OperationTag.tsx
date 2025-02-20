@@ -15,7 +15,7 @@ import {
 import { Tag } from '../../../components/ui/label/Tag';
 import * as Tooltip from '../../../components/ui/Tooltip';
 
-export const OperationTag: React.FC<{ message: string; operation: Exclude<SearchOperationsData['operation'], null> }> = ({ message, operation }) => {
+export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
     return (
         <Tooltip.Tooltip delayDuration={0}>
             <Tooltip.TooltipTrigger>

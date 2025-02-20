@@ -1,4 +1,4 @@
-import type { MessageRow, MessageState, OperationRow } from '@nangohq/types';
+import type { OperationState, OperationRow } from '@nangohq/types';
 import { SpanStatusCode } from '@opentelemetry/api';
 import type { Span } from '@opentelemetry/api';
 import { otlp, otlpRoutingAttributeKey } from './otlp.js';
@@ -49,7 +49,7 @@ export class OtlpSpan {
         }
     }
 
-    end(state: MessageState): void {
+    end(state: OperationState): void {
         if (this.span) {
             this.span.setAttribute('nango.operation.status', state);
             this.span.setStatus({ code: ['success', 'waiting', 'running'].includes(state) ? SpanStatusCode.OK : SpanStatusCode.ERROR });
@@ -57,7 +57,7 @@ export class OtlpSpan {
         }
     }
 
-    enrich(data: Partial<MessageRow>): void {
+    enrich(data: Partial<OperationRow>): void {
         if (this.span) {
             const attrs: Record<string, any> = {};
             if (data.error) {

@@ -441,6 +441,10 @@ describe('Log', () => {
 
     const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
 
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     it('should enforce activityLogId when not in dryRun', () => {
         expect(() => {
             new NangoActionRunner({ ...nangoProps, activityLogId: undefined });
@@ -449,6 +453,11 @@ describe('Log', () => {
 
     it('should not fail on null', async () => {
         await nangoAction.log(null);
+
+        expect(persistClient.saveLog).toHaveBeenCalledWith({
+            environmentId: 1,
+            data: expect.stringMatching('{"activityLogId":"1","log":{"createdAt":".*","level":"info","message":"null","source":"user","type":"log"}}')
+        });
     });
 
     it('should allow level', async () => {
@@ -458,9 +467,7 @@ describe('Log', () => {
 
         expect(persistClient.saveLog).toHaveBeenCalledWith({
             environmentId: 1,
-            data: expect.stringMatching(
-                '{"activityLogId":"1","log":{"createdAt":".*","environmentId":1,"level":"error","message":"hello","meta":null,"source":"user","type":"log"}}'
-            )
+            data: expect.stringMatching('{"activityLogId":"1","log":{"createdAt":".*","level":"error","message":"hello","source":"user","type":"log"}}')
         });
     });
 
