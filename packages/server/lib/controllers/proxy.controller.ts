@@ -158,22 +158,16 @@ class ProxyController {
                 providerName: integration.provider
             };
 
-            const computedConfig = getProxyConfiguration({ externalConfig, internalConfig });
-
-            if (computedConfig.isErr()) {
-                await logCtx.error('failed to configure proxy', { error: computedConfig.error });
+            const proxyConfig = getProxyConfiguration({ externalConfig, internalConfig });
+            if (proxyConfig.isErr()) {
+                await logCtx.error('failed to configure proxy', { error: proxyConfig.error });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
                 res.status(400).send({ error: { code: 'server_error', message: 'failed to configure proxy' } });
                 return;
             }
 
-            await this.sendToHttpMethod({
-                res,
-                method: method as HTTP_METHOD,
-                configBody: computedConfig.value,
-                logCtx
-            });
+            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;

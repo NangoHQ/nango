@@ -199,11 +199,10 @@ const hash = crypto.createHash('sha256').update(signature).digest('hex');
 
 ```python
 import hashlib
-import json
 
 secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-signature = f"{secret_key_dev}{json.dumps(payload)}"
-hash = hashlib.sha256(signature.encode('utf-8')).hexdigest()
+signature = secret_key_dev + request.body.decode("utf-8")
+hash = hashlib.sha256(signature.encode("utf-8")).hexdigest()
 ```
 
 </Tab>

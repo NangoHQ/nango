@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import { buildProxyHeaders, buildProxyURL, getProxyConfiguration, ProxyError } from './utils.js';
+import type { UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '@nangohq/types';
 
-import type { InternalProxyConfiguration, OAuth2Credentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 import { getDefaultConnection, getDefaultProxy } from './utils.test.js';
 
 describe('buildProxyHeaders', () => {
@@ -40,11 +40,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                type: 'BASIC',
-                username: 'testuser',
-                password: 'testpassword'
-            }
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
@@ -59,11 +55,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                type: 'BASIC',
-                username: 'testuser',
-                password: ''
-            }
+            token: { type: 'BASIC', username: 'testuser', password: '' }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
@@ -84,11 +76,7 @@ describe('buildProxyHeaders', () => {
                     }
                 }
             },
-            token: {
-                type: 'BASIC',
-                username: 'testuser',
-                password: 'testpassword'
-            }
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
@@ -104,11 +92,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                type: 'BASIC',
-                username: 'testuser',
-                password: 'testpassword'
-            },
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
             headers: {
                 authorization: 'Bearer testtoken'
             }

@@ -47,7 +47,9 @@ export function getFormattedOperation(
         meta: meta || data.meta || null,
 
         userId: user?.id || data.userId || null,
-        parentId: null
+        parentId: null,
+
+        expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
 export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {

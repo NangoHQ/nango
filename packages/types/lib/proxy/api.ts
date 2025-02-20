@@ -30,7 +30,7 @@ export interface BaseProxyConfiguration {
     endpoint: string;
     retries?: number;
     data?: unknown;
-    files?: ProxyFile[];
+    files?: ProxyFile[]; // TODO: only allow this from the API
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
     baseUrlOverride?: string;

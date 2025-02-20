@@ -1,4 +1,4 @@
-import type { Merge } from 'type-fest';
+import type { Merge, SetNonNullable } from 'type-fest';
 
 /**
  * Level of the log and operation
@@ -138,7 +138,7 @@ export interface MessageRow {
         headers: Record<string, string>;
     } | null;
     meta: MessageMeta | null;
-    retry:
+    retry?:
         | {
               attempt: number;
               max: number;
@@ -158,7 +158,12 @@ export interface MessageRow {
  * What is required to insert a Message
  */
 export type OperationRowInsert = Omit<Merge<Partial<MessageRow>, { operation: OperationList }>, 'message'>;
-export type OperationRow = Merge<Required<OperationRowInsert>, { message: string; accountId: number; accountName: string }>;
+export type OperationRow = SetNonNullable<
+    Omit<MessageRow, 'operation'>,
+    'id' | 'message' | 'source' | 'createdAt' | 'accountId' | 'accountName' | 'type' | 'level' | 'expiresAt' | 'state'
+> & {
+    operation: OperationList;
+};
 
 /**
  * What is required to insert a Message

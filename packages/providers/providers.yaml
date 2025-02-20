@@ -212,7 +212,20 @@ aircall-basic:
             response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall-basic
-
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: The Application ID (API ID) for your Aircall account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
+        password:
+            type: string
+            title: API Token
+            description: The Admin API Key (API Token) for your Aircall account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
 airtable:
     display_name: Airtable
     categories:
@@ -227,6 +240,26 @@ airtable:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
+
+airtable-pat:
+    display_name: Airtable (Personal Access Token)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.airtable.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/airtable-pat
+    docs_connect: https://docs.nango.dev/integrations/all/airtable-pat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token for your Airtable account
+            example: 'patoXxYzA1B2C3D4Ef.98a7b6c5d4e3f2g1h0i9j8k7l6m5n4o3p2q1r0s9t8u7v6w5x4y3z2a1b0cdef'
+            pattern: '^[a-zA-Z0-9\.]+$'
+            doc_section: '#step-1-generating-your-personal-access-token'
 
 autodesk:
     display_name: Autodesk
@@ -1106,6 +1139,15 @@ booking-com:
             example: secure-supply|supply
             suffix: -xml.booking.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: Machine Account Username
+            description: The username for your Booking.com machine account
+        password:
+            type: string
+            title: Machine Account Password
+            description: The password for your Booking.com machine account
 
 braintree:
     display_name: Braintree
@@ -1549,6 +1591,21 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API key for your Chargebee account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://apidocs.chargebee.com/docs/api/auth?lang=curl
+            # Chargebee is using basic auth with an api key
+            default_value: ''
+            hidden: true
 
 chattermill:
     display_name: Chattermill
@@ -1933,6 +1990,15 @@ connectwise-psa:
             type: string
             title: Client ID
             description: The Client ID assigned to your integration
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The ConnectWise PSA CompanyId followed by either the Public Key, Integrator Username, or MemberId
+        password:
+            type: string
+            title: Password
+            description: Your ConnectWise PSA private key, integrator password, or member hash
 
 connectwise-psa-staging:
     display_name: ConnectWise PSA (Staging)
@@ -2559,6 +2625,15 @@ e-conomic:
         headers:
             content-type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
+    credentials:
+        username:
+            type: string
+            title: Private Token
+            description: The Private Token for your e-conomic account
+        password:
+            type: string
+            title: Agreement Grant Token
+            description: The Agreement Grant Token for your e-conomic account
 
 egnyte:
     display_name: Egnyte
@@ -2696,6 +2771,17 @@ evaluagent:
             description: The region of your EvaluAgent account
             example: eu
             pattern: '^[a-z]+$'
+    credentials:
+        username:
+            type: string
+            title: Access Key Id
+            description: The Access Key ID for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
+        password:
+            type: string
+            title: Secret Key
+            description: The Secret Key for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
 
 eventbrite:
     display_name: Eventbrite
@@ -3293,6 +3379,22 @@ guru:
             format: uuid
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-2-generating-your-user-collection-token'
+
+guru-scim:
+    display_name: Guru (SCIM)
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getguru.com/api/scim
+    docs: https://docs.nango.dev/integrations/all/guru-scim
+    docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Guru API Token
+            description: The SCIM API token for your Guru account
+            doc_section: '#step-1-finding-guru-api-token'
 
 github:
     display_name: GitHub (User OAuth)
