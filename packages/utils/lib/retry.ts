@@ -57,7 +57,7 @@ export async function retryFlexible<TReturn>(
         onError: (arg: { err: unknown; nextWait: number; attempt: number; max: number }) => MaybePromise<{ retry: boolean; reason: string; wait?: number }>;
     }
 ): Promise<TReturn> {
-    const maxDelay = 60 * 15 * 1000; // 15minutes
+    const maxDelay = 60 * 10 * 1000; // 10minutes
     let attempt = -1;
     let lastWait = 0;
 
@@ -86,10 +86,10 @@ export async function retryFlexible<TReturn>(
 
 /**
  * Get exponential backoff with a cap
- * Base 2, minimum 1000ms
+ * Base 2, minimum 3s
  */
 export function getExponentialBackoff(attempt: number, maxDelay: number): number {
-    return Math.min(1000 * 2 ** attempt, maxDelay);
+    return Math.min(3000 * 2 ** attempt, maxDelay);
 }
 
 export async function retryWithBackoff<T extends () => any>(fn: T, options?: BackoffOptions): Promise<ReturnType<T>> {

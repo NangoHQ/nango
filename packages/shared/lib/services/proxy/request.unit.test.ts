@@ -74,7 +74,7 @@ describe('call', () => {
             2,
             expect.objectContaining({
                 level: 'warn',
-                message: 'Retrying HTTP call (reason: status_code). Waiting for 1000ms [1/1]'
+                message: 'Retrying HTTP call (reason: status_code). Waiting for 3000ms [1/1]'
             })
         );
         expect(fn).toHaveBeenNthCalledWith(
@@ -85,7 +85,7 @@ describe('call', () => {
                 message: 'GET https://httpstatuses.maor.io/500',
                 request: { headers: {}, method: 'GET', url: 'https://httpstatuses.maor.io/500' },
                 response: expect.objectContaining({ code: 500 }),
-                retry: { max: 1, attempt: 1, waited: 1000 }
+                retry: { max: 1, attempt: 1, waited: 3000 }
             })
         );
         expect(fn).toHaveBeenCalledTimes(3);
