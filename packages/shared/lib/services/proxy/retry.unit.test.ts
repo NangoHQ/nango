@@ -1,27 +1,21 @@
-import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
 import { getProxyRetryFromErr, getRetryFromHeader } from './retry.js';
 import { getDefaultProxy } from './utils.test.js';
 import type { Merge } from 'type-fest';
 
 function getDefaultError(value: Merge<Partial<AxiosError>, { response?: Partial<AxiosResponse> }>): AxiosError {
-    return {
-        isAxiosError: true,
-        message: 'test',
-        name: 'test',
-        toJSON() {
-            return {};
-        },
-        ...value,
-        response: {
-            status: 429,
-            data: {},
-            headers: {},
-            statusText: 'Too Many Requests',
-            ...value.response,
-            config: {} as InternalAxiosRequestConfig
-        } as AxiosResponse
-    } satisfies AxiosError;
+    const err = new AxiosError('test');
+    err.response = {
+        status: 429,
+        data: {},
+        headers: {},
+        statusText: 'Too Many Requests',
+        ...value.response,
+        config: {} as InternalAxiosRequestConfig
+    };
+    return err;
 }
 
 describe('getProxyRetryFromErr', () => {
@@ -80,11 +74,9 @@ describe('getProxyRetryFromErr', () => {
     });
 
     it.each(['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'])('should retry network error "%s"', (value) => {
-        const err = new Error();
-        // @ts-expect-error yes I know
-        err.code = value;
+        const err = new AxiosError('', value);
         const res = getProxyRetryFromErr({ err, proxyConfig: getDefaultProxy({}) });
-        expect(res).toStrictEqual({ retry: false, reason: 'unknown_error' });
+        expect(res).toStrictEqual({ retry: true, reason: 'network_error' });
     });
 
     it.each([200, 300, 400])('should not retry some status code "%d"', (value) => {
@@ -99,7 +91,7 @@ describe('getProxyRetryFromErr', () => {
         expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
     });
 
-    it('should retryOn', () => {
+    it('should use retryOn even on valid status code', () => {
         const mockAxiosError = getDefaultError({ response: { status: 200 } });
         const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({ retryOn: [200] }) });
         expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
@@ -113,7 +105,7 @@ describe('getProxyRetryFromErr', () => {
                     err: mockAxiosError,
                     proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { error_code: 200 } } } })
                 });
-                expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
+                expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code' });
             });
         });
 
@@ -124,7 +116,7 @@ describe('getProxyRetryFromErr', () => {
                     err: mockAxiosError,
                     proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } })
                 });
-                expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
+                expect(res).toStrictEqual({ retry: true, reason: 'provider_remaining' });
             });
 
             it('should only work when remaining is 0', () => {

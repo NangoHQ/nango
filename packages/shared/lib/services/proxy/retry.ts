@@ -24,6 +24,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
 
     const status = err.response?.status || 0;
     let isRetryable = status >= 500 || status === 429 || proxyConfig.retryOn?.includes(status);
+    let reason: string | undefined;
 
     if (!isRetryable) {
         const customHeaderConf = proxyConfig.provider.proxy?.retry;
@@ -31,9 +32,11 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
             if (customHeaderConf.error_code && Number(customHeaderConf.error_code) === status) {
                 // Custom status code in providers.yaml
                 isRetryable = true;
+                reason = 'provider_error_code';
             } else if (customHeaderConf.remaining && err.response && err.response.headers[customHeaderConf.remaining] === '0') {
                 // Custom header in providers.yaml
                 isRetryable = true;
+                reason = 'provider_remaining';
             }
         }
     }
@@ -63,7 +66,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
-    return { retry: true, reason: 'status_code' };
+    return { retry: true, reason: reason || 'status_code' };
 }
 
 /**
