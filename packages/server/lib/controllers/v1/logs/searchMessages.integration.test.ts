@@ -132,8 +132,7 @@ describe('POST /logs/messages', () => {
                     title: null,
                     type: 'log',
                     updatedAt: expect.toBeIsoDate(),
-                    userId: null,
-                    retry: undefined
+                    userId: null
                 }
             ],
             pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: null }

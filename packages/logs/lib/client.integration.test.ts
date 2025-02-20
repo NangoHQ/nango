@@ -76,8 +76,7 @@ describe('client', () => {
                     type: 'log',
                     updatedAt: expect.toBeIsoDate(),
                     userId: null,
-                    operation: { action: 'run', type: 'sync' },
-                    retry: undefined
+                    operation: { action: 'run', type: 'sync' }
                 }
             ]
         });

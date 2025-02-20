@@ -149,8 +149,6 @@ export function getProxyConfiguration({
 
 /**
  * Construct URL
- * @param {ApplicationConstructedProxyConfiguration} config
- *
  */
 export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) {
     const { connection } = config;

@@ -167,7 +167,7 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx });
+            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig.value, logCtx });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;

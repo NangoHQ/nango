@@ -120,8 +120,7 @@ describe('GET /logs/operations/:operationId', () => {
                 title: null,
                 type: 'log',
                 updatedAt: expect.toBeIsoDate(),
-                userId: null,
-                retry: undefined
+                userId: null
             }
         });
     });
