@@ -10199,81 +10199,81 @@ integrations:
     netsuite-tba:
         syncs:
             customers:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all customers in Netsuite
                 runs: every hour
                 output: NetsuiteCustomer
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /customers
                     group: Customers
-                track_deletes: true
             payments:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all payments received from customers in Netsuite
                 runs: every hour
                 output: NetsuitePayment
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /payments
                     group: Payments
-                track_deletes: true
             invoices:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all invoices in Netsuite
                 runs: every hour
                 output: NetsuiteInvoice
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /invoices
                     group: Invoices
-                track_deletes: true
             credit-notes:
-                version: 1.0.1
+                version: 1.0.2
                 description: |
                     Fetches all credit notes in Netsuite
                 runs: every hour
                 output: NetsuiteCreditNote
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /credit-notes
                     group: Credit Notes
-                track_deletes: true
             locations:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all locations in Netsuite
                 runs: every hour
                 output: NetsuiteLocation
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /locations
-                track_deletes: true
             general-ledger:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all JournalEntries in Netsuite
                 runs: every hour
                 output: GeneralLedger
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /general-ledger
-                track_deletes: true
         actions:
             customer-create:
                 version: 1.0.0
@@ -10353,6 +10353,8 @@ integrations:
                     path: /credit-notes
                     group: Credit Notes
         models:
+            NetsuiteMetadata:
+                timezone?: string | undefined
             NetsuiteAddress:
                 addressLine1: string | null
                 addressLine2: string | null
