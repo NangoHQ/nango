@@ -38,7 +38,7 @@ import type {
     ConnectionConfig,
     ConnectionInternal
 } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
+import { getLogger, stringifyError, Ok, Err, axiosInstance as axios, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -865,7 +865,7 @@ class ConnectionService {
                   credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
                   connectionId: string;
                   connectionConfig: ConnectionConfig;
-              }) => Promise<Result<{ logs: MessageRowInsert[] }, NangoError>>)
+              }) => Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>>)
             | undefined;
     }): Promise<Result<DBConnectionDecrypted, NangoError>> {
         return await tracer.trace('nango.connection.refreshCredentials', async (span) => {
@@ -881,17 +881,17 @@ class ConnectionService {
                 return Err(new NangoError('invalid_crypted_connection'));
             }
 
-            span.setTag('connectionId', connection.connection_id).setTag('authType', connection?.credentials?.type);
+            span.setTag('connectionId', connection.connection_id).setTag('authType', connection.credentials.type);
 
             if (
-                connection?.credentials?.type === 'OAUTH2' ||
-                connection?.credentials?.type === 'APP' ||
-                connection?.credentials?.type === 'OAUTH2_CC' ||
-                connection?.credentials?.type === 'TABLEAU' ||
-                connection?.credentials?.type === 'JWT' ||
-                connection?.credentials?.type === 'BILL' ||
-                connection?.credentials?.type === 'TWO_STEP' ||
-                connection?.credentials?.type === 'SIGNATURE'
+                connection.credentials.type === 'OAUTH2' ||
+                connection.credentials.type === 'APP' ||
+                connection.credentials.type === 'OAUTH2_CC' ||
+                connection.credentials.type === 'TABLEAU' ||
+                connection.credentials.type === 'JWT' ||
+                connection.credentials.type === 'BILL' ||
+                connection.credentials.type === 'TWO_STEP' ||
+                connection.credentials.type === 'SIGNATURE'
             ) {
                 const { success, error, response } = await this.refreshCredentialsIfNeeded({
                     connectionId: connection.connection_id,
@@ -917,6 +917,7 @@ class ConnectionService {
                     await logCtx.failed();
 
                     if (logCtx) {
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         await onRefreshFailed({
                             connection,
                             logCtx,
@@ -941,11 +942,14 @@ class ConnectionService {
                     span.setTag('error', error!.type);
                     return Err(errorWithPayload);
                 } else if (response.refreshed) {
+                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
                     await onRefreshSuccess({
                         connection,
                         environment,
                         config: integration as ProviderConfig
                     });
+                } else {
+                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH);
                 }
 
                 copy.credentials = response.credentials as OAuth2Credentials;
@@ -978,6 +982,8 @@ class ConnectionService {
 
                         await logCtx.error('Failed to verify connection', result.error);
                         await logCtx.failed();
+
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         await onRefreshFailed({
                             connection,
                             logCtx,
@@ -1000,14 +1006,27 @@ class ConnectionService {
                         const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
                         span.setTag('error', result.error.type);
                         return Err(errorWithPayload);
-                    } else {
+                    } else if (result.value.tested) {
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
                         await onRefreshSuccess({
                             connection,
                             environment,
                             config: integration as ProviderConfig
                         });
+                    } else {
+                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
                     }
                 }
+            } else if (
+                connection.credentials.type === 'APP_STORE' ||
+                connection.credentials.type === 'CUSTOM' ||
+                connection.credentials.type === 'OAUTH1' ||
+                !connection.credentials.type
+            ) {
+                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
+                // Do nothing
+            } else {
+                throw new Error('Unsupported credentials type');
             }
 
             await this.updateLastFetched(connection.id);

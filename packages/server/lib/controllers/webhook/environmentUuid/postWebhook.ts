@@ -63,6 +63,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
+
             const startTime = Date.now();
             const responsePayload = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
             const endTime = Date.now();

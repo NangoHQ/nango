@@ -58,7 +58,12 @@ class FlowController {
                 return;
             }
 
-            await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist({
+                flows: preBuiltResponse.result,
+                environmentId: environment.id,
+                logContextGetter,
+                orchestrator
+            });
 
             res.sendStatus(200);
         } catch (err) {

@@ -162,22 +162,22 @@ export class NangoActionRunner extends NangoActionBase {
         ];
 
         const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
-        void this.log(
-            `${method} ${res.config.url}`,
-            {
-                type: 'http',
-                request: {
-                    method: method,
-                    url: redactURL({ url: res.config.url, valuesToFilter }),
-                    headers: redactHeaders({ headers: res.config.headers, valuesToFilter })
-                },
-                response: {
-                    code: res.status,
-                    headers: redactHeaders({ headers: res.headers, valuesToFilter })
-                }
+        void this.sendLogToPersist({
+            type: 'http',
+            message: `${method} ${res.config.url}`,
+            source: 'internal',
+            level: res.status >= 400 ? 'error' : 'info',
+            request: {
+                method: method || 'GET',
+                url: redactURL({ url: res.config.url, valuesToFilter }),
+                headers: redactHeaders({ headers: res.config.headers, valuesToFilter })
             },
-            { level: res.status > 299 ? 'error' : 'info' }
-        ).catch(() => {
+            response: {
+                code: res.status,
+                headers: redactHeaders({ headers: res.headers, valuesToFilter })
+            },
+            createdAt: new Date().toISOString()
+        }).catch(() => {
             // this.log can throw when the script is aborted
             // since it is not awaited, the exception might not be caught
             // we therefore swallow the exception here to avoid an unhandledRejection error
@@ -194,6 +194,7 @@ export class NangoSyncRunner extends NangoSyncBase {
 
     protected persistClient: PersistClient;
     private batchSize = 1000;
+    private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
 
     constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
@@ -290,11 +291,23 @@ export class NangoSyncRunner extends NangoSyncBase {
             const sampled = hasErrors.length > RECORDS_VALIDATION_SAMPLE;
             const sample = sampled ? hasErrors.slice(0, RECORDS_VALIDATION_SAMPLE) : hasErrors;
             if (sampled) {
-                await this.log(`Invalid records: ${hasErrors.length} failed ${sampled ? `(sampled to ${RECORDS_VALIDATION_SAMPLE})` : ''}`, { level: 'warn' });
+                await this.sendLogToPersist({
+                    type: 'log',
+                    message: `Invalid records: ${hasErrors.length} failed ${sampled ? `(sampled to ${RECORDS_VALIDATION_SAMPLE})` : ''}`,
+                    source: 'internal',
+                    level: 'warn',
+                    createdAt: new Date().toISOString()
+                });
             }
             await Promise.all(
                 sample.map((log) => {
-                    return this.log(`Invalid record payload`, { ...log, model }, { level: 'warn' });
+                    return this.sendLogToPersist({
+                        type: 'log',
+                        message: `Invalid record payload`,
+                        meta: { ...log, model },
+                        level: 'warn',
+                        createdAt: new Date().toISOString()
+                    });
                 })
             );
         }
@@ -381,12 +394,54 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
         return true;
     }
+
+    public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
+        this.throwIfAborted();
+
+        const objects = new Map<K, T>();
+
+        if (ids.length === 0) {
+            return objects;
+        }
+
+        let cursor: string | undefined = undefined;
+        for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
+
+            const res = await this.persistClient.getRecords({
+                model,
+                externalIds: Array.from(externalIdMap.keys()),
+                environmentId: this.environmentId,
+                nangoConnectionId: this.nangoConnectionId!,
+                cursor
+            });
+
+            if (res.isErr()) {
+                throw res.error;
+            }
+
+            const { nextCursor, records } = res.unwrap();
+            cursor = nextCursor;
+
+            for (const record of records) {
+                const stringId = String(record.id);
+                const realId = externalIdMap.get(stringId);
+                if (realId !== undefined) {
+                    objects.set(realId, record as T);
+                }
+            }
+        }
+
+        return objects;
+    }
 }
 
 const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'batchDelete',
     'batchSave',
+    'batchUpdate',
     'batchSend',
+    'getRecordsByIds',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',

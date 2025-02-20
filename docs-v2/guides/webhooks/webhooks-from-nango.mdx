@@ -11,15 +11,25 @@ Nango sends webhook notifications to your backend in different cases:
 - **Authorization webhook**: an authorization flow completes ([guide](/guides/api-authorization/authorize-in-your-app-default-ui#3-listen-for-webhoooks-and-save-the-connection-id-backend))
 - **External API webhook forwarding**: an external API webhook is forwarded to your app ([guide](/guides/webhooks/webhooks-from-apis#forward-external-webhooks-to-your-app))
 
-# Webhook settings
+# Configuring Nango webhooks
 
-Settings related to Nango webhooks can be found in the _Environment Settings_ tab of the Nango UI. It lets you specify webhook URLs as well as the types of webhooks you wish to receive.
+To subscribe to Nango webhooks: 
+1. Set up a `POST` endpoint in your app to receive the Nango webhooks
+2. Input the endpoint's URL in your _Environment Settings_, under _Webhook URLs_
+
+<Frame>
+  <img src="/images/nango-webhook-settings.png" />
+</Frame>
+
+You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
+
+The webhook settings also let you enable or disable the various types of webhooks Nango provides.
+
+# Types of Nango webhooks
 
 <Warning>
 New Nango webhook types are added regularly, without considering this a breaking change. Your webhook handling logic should gracefully support receiving new types of webhooks by simply ignoring them.
 </Warning>
-
-# Types of Nango webhooks
 
 Webhooks from Nango are POST requests. Nango sends multiple types of webhooks to your backend. All webhook types are sent to the same URL(s) configured in your _Environment Settings_. 
 
@@ -189,11 +199,10 @@ const hash = crypto.createHash('sha256').update(signature).digest('hex');
 
 ```python
 import hashlib
-import json
 
 secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-signature = f"{secret_key_dev}{json.dumps(payload)}"
-hash = hashlib.sha256(signature.encode('utf-8')).hexdigest()
+signature = secret_key_dev + request.body.decode("utf-8")
+hash = hashlib.sha256(signature.encode("utf-8")).hexdigest()
 ```
 
 </Tab>

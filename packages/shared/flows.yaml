@@ -2163,6 +2163,240 @@ integrations:
                 id: string
                 force?: boolean
                 notify?: boolean
+    brightcrowd:
+        syncs:
+            books:
+                runs: every day
+                description: |
+                    Fetches a list of all books in an account from Brightcrowd.
+                output: Book
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /books
+                    group: Books
+                scopes: bcb.partner/book.read
+            books-by-id:
+                runs: every day
+                description: |
+                    Fetches a list of specified books from Brightcrowd.
+                input: Metadata
+                output: BookById
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /books-by-Id
+                    group: Books
+                scopes: bcb.partner/book.read
+            book-analytics:
+                runs: every day
+                description: |
+                    Fetches analytics for a specified list of books from Brightcrowd.
+                output: BookAnalytics
+                input: Metadata
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /book-analytics
+                    group: Books
+                scopes: bcb.partner/book.read
+            pages:
+                runs: every day
+                description: |
+                    Fetches a list of all pages in a book from Brightcrowd.
+                input: Metadata
+                output: Page
+                auto_start: false
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /pages
+                    group: Books
+                scopes: bcb.partner/page.read
+        models:
+            Metadata:
+                bookIds: string[]
+                timeframe?: 7days | 30days | 90days | all
+            BookById:
+                id: string
+                alias: string
+                name: string
+                pictureId: string | null
+                config: string | null
+                coverPictureId: string | null
+                bannerPictureId: string | null
+                affiliation: Affiliation | null
+                questions: Question[]
+                flags: string[]
+                publishedAt?: string | null
+                closedAt?: string | null
+                lockedAt?: string | null
+                created: string
+                modified: string
+                frontMatter: FrontMatter | null
+                preface?: Preface | null
+            Book:
+                id: string
+                alias: string
+                name: string
+                pictureId: string | null
+                config: string | null
+                coverPictureId: string | null
+                bannerPictureId: string | null
+                affiliation: Affiliation | null
+                questions: Question[]
+                flags: string[]
+                publishedAt?: string | null
+                closedAt?: string | null
+                lockedAt?: string | null
+                created: string
+                modified: string
+                frontMatter: FrontMatter | null
+                preface?: Preface | null
+            Preface:
+                text: string | null
+                docId?: string | null
+                video?: string | null
+                pictures?: string[] | null
+            FrontMatter:
+                sections: FrontMatterSection[]
+            FrontMatterSection:
+                uri: string
+                title: string
+                snippet: string
+                disabled?: boolean
+            Instruction:
+                addPage: string | null
+                editPage: string | null
+                requestAccess: string | null
+            Question:
+                id: string
+                type: string | null
+                name: string | null
+                description?: string | null
+                warning?: string | null
+                route: string | null
+                questionHeader: string | null
+                questionSubheader?: string | null
+                headline?: string | null
+                active: boolean
+                required: boolean
+                adminOnly: boolean
+                fields: QuestionField[]
+            QuestionField:
+                id: string
+                label: string
+                type: string
+                headline?: string | null
+                placeholder?: string | null
+                active: boolean
+                required: boolean
+                maxcount?: number | null
+                maxlength?: number | null
+                allowMentions: boolean
+                customizable: boolean
+            Page:
+                id: string
+                alias: string
+                name: string
+                status: draft | published | hidden
+                content:
+                    firstName: string
+                    lastName: string
+                    previousName?: string | null
+                    suffix?: string
+                    partnerFirstName?: string | null
+                    partnerLastName?: string | null
+                    pronouns?: string
+                    pictureId?: string | null
+                    audioId?: string | null
+                pictures?: Picture[] | null
+                videos?: Video[] | null
+                tagUsers?: string[] | null
+                homeTown?: string | null
+                currentCity?: string | null
+                campusResidence?: string | null
+                affiliations?: Affiliation[] | null
+                plan?: school | work | other
+                created: string
+                modifiedByUserAt?: string | null
+                completedByUserAt?: string | null
+                externalId?: string
+            Video:
+                url: string
+                caption?: string | null
+            Picture:
+                type: profile | content | caption
+                id: string
+                caption?: string | null
+            Affiliation:
+                type: OtherAffiliation | UniversityAffiliation | CompanyAffiliation
+                organization?: string | null
+                major?: string | string[]
+                degree?: string | string[]
+                school?: string | string[]
+                graduationYear?: number | null
+                specialty?: string | string[]
+                category?: string | string[]
+                title?: string
+                startYear?: number | null
+                endYear?: number | null
+                office?: string | string[]
+                group?: string | string[]
+            BookAnalytics:
+                id: string
+                email: EmailStats
+                web: WebStats
+                book: BookStats
+            Notification:
+                uri: string
+                topicUri: string
+                status: string
+                messageCount: number
+                openCount: number
+                clickCount: number
+                uniqueOpenCount: number
+                uniqueClickCount: number
+                bounceCount: number
+            Invitations:
+                messageCount: number
+                uniqueOpenCount: number
+                uniqueClickCount: number
+                bounceCount: number
+                uniqueInvitationOpenUserCount: number
+                uniqueInvitationBounceUserCount: number
+            WebStats:
+                dateRange: string
+                values:
+                    visitors: number
+                    totalPageViews: number
+                    sessions: number
+                    socialClicks: number
+                previousValues:
+                    visitors: number
+                    totalPageViews: number
+                    sessions: number
+                    socialClicks: number
+            BookStats:
+                values:
+                    pagesCreated: number
+                    pagesUpdated: number
+                    taggedUsers: number
+                previousValues:
+                    pagesCreated: number
+                    pagesUpdated: number
+                    taggedUsers: number
+            EmailStats:
+                notifications: Notification[]
+                invitations: Invitations
+                web: WebStats
+                book: BookStats
     cal-com-v2:
         syncs:
             events:
@@ -4558,16 +4792,28 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 1.0.3
+                version: 1.0.4
                 output: Document
                 sync_type: full
                 endpoint:
                     method: GET
                     path: /documents
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            folders:
+                runs: every day
+                track_deletes: true
+                sync_type: full
+                description: Sync the folders at the root level of a google drive.
+                output: Folder
+                endpoint:
+                    method: GET
+                    path: /root-folders
+                    group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
         actions:
             fetch-document:
-                input: DocumentId
+                input: IdEntity
                 description: >
                     Fetches the content of a file given its ID, processes the data using
 
@@ -4576,14 +4822,44 @@ integrations:
 
                     string can be used to recreate the file in its original format using
                     an external tool.
+
+                    If this is a native google file type then use the fetch-google-sheet
+                    or fetch-google-doc
+
+                    actions.
                 output: string
-                version: 2.0.0
+                version: 2.0.1
                 endpoint:
                     method: GET
                     path: /fetch-document
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-sheet:
+                input: IdEntity
+                description: >
+                    Fetches the content of a native google spreadsheet given its ID.
+                    Outputs
+
+                    a JSON representation of a google sheet.
+                output: JSONSpreadsheet
+                endpoint:
+                    method: GET
+                    path: /fetch-google-sheet
+                    group: Documents
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-google-doc:
+                input: IdEntity
+                description: |
+                    Fetches the content of a native google document given its ID. Outputs 
+                    a JSON reprensentation of a google doc.
+                output: JSONDocument
+                endpoint:
+                    method: GET
+                    path: /fetch-google-document
+                    group: Documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
         models:
-            DocumentId:
+            IdEntity:
                 id: string
             DocumentMetadata:
                 files: string[] | undefined
@@ -4592,6 +4868,40 @@ integrations:
                 id: string
                 url: string
                 title: string
+                mimeType: string
+            Folder:
+                id: string
+                url: string
+                title: string
+                mimeType: string
+            JSONSpreadsheet:
+                spreadsheetId: string
+                properties: object
+                sheets: object[]
+                namedRanges: object[]
+                spreadsheetUrl: string
+                developerMetadata: object[]
+                dataSources: object[]
+                dataSourceSchedules: object[]
+            JSONDocument:
+                documentId: string
+                title: string
+                url: string
+                tabs: object[]
+                revisionId: string
+                suggestionsViewMode: "DEFAULT_FOR_CURRENT_ACCESS | SUGGESTIONS_INLINE | PREVIEW_SUGGESTIONS_ACCEPTED\t| PREVIEW_WITHOUT_SUGGESTIONS"
+                body: object
+                headers: object
+                footers: object
+                footnotes: object
+                documentStyle: object
+                suggestedDocumentStyleChanges: object
+                namedStyles: object
+                suggestedNamedStylesChanges: object
+                lists: object
+                namedRanges: object
+                inlineObjects: object
+                positionedObjects: object
     google-mail:
         syncs:
             emails:
@@ -5361,7 +5671,7 @@ integrations:
                 company_admin: boolean
                 team_admin: boolean
                 company_id: string
-                teams: []
+                teams: any[]
                 activated: boolean
                 last_activity_time: date
             HackerRankWorkCreateTestInput:
@@ -9889,81 +10199,81 @@ integrations:
     netsuite-tba:
         syncs:
             customers:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all customers in Netsuite
                 runs: every hour
                 output: NetsuiteCustomer
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /customers
                     group: Customers
-                track_deletes: true
             payments:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all payments received from customers in Netsuite
                 runs: every hour
                 output: NetsuitePayment
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /payments
                     group: Payments
-                track_deletes: true
             invoices:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all invoices in Netsuite
                 runs: every hour
                 output: NetsuiteInvoice
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /invoices
                     group: Invoices
-                track_deletes: true
             credit-notes:
-                version: 1.0.1
+                version: 1.0.2
                 description: |
                     Fetches all credit notes in Netsuite
                 runs: every hour
                 output: NetsuiteCreditNote
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /credit-notes
                     group: Credit Notes
-                track_deletes: true
             locations:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all locations in Netsuite
                 runs: every hour
                 output: NetsuiteLocation
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /locations
-                track_deletes: true
             general-ledger:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all JournalEntries in Netsuite
                 runs: every hour
                 output: GeneralLedger
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /general-ledger
-                track_deletes: true
         actions:
             customer-create:
                 version: 1.0.0
@@ -10043,6 +10353,8 @@ integrations:
                     path: /credit-notes
                     group: Credit Notes
         models:
+            NetsuiteMetadata:
+                timezone?: string | undefined
             NetsuiteAddress:
                 addressLine1: string | null
                 addressLine2: string | null
@@ -11774,6 +12086,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12030,6 +12362,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -12107,6 +12444,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -12358,6 +12820,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12614,6 +13096,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -12691,6 +13178,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     ramp:
         syncs:
             users:
@@ -15228,7 +15840,7 @@ integrations:
                 state: string
                 sample: boolean
                 department: string
-                department_hierarchy: []
+                department_hierarchy: any[]
                 url: string
                 application_url: string
                 shortlink: string
@@ -15242,7 +15854,7 @@ integrations:
                     zip_code: string
                     telecommuting: boolean
                     workplace_type: string
-                locations: []
+                locations: any[]
                 salary:
                     salary_from: number
                     salary_to: number
@@ -15257,7 +15869,7 @@ integrations:
                 choices:
                     id: string
                     body: string
-                supported_file_types: []
+                supported_file_types: any[]
                 max_file_size: number
             WorkableMember:
                 id: string
@@ -15274,12 +15886,12 @@ integrations:
                     uploader_id: string
                     cover_letter: string
                     summary: string
-                    education_entries: []
-                    experience_entries: []
-                    skills: []
-                    answers: []
+                    education_entries: any[]
+                    experience_entries: any[]
+                    skills: any[]
+                    answers: any[]
                     resume_url: string
-                    tags: []
+                    tags: any[]
                     location:
                         location_str: string
                         country: string
