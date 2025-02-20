@@ -481,6 +481,7 @@
                 "integrations/all/microsoft-tenant-specific",
                 "integrations/all/mindbody",
                 "integrations/all/minimax",
+                "integrations/all/mip",
                 "integrations/all/miro",
                 "integrations/all/miro-scim",
                 "integrations/all/mixpanel",

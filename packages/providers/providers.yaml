@@ -5384,6 +5384,29 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
+mip:
+    display_name: mip
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connection_config.HOST_REST}/api/v1/sso/mipadv/login # TODO
+        headers:
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/mip
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: Your Login ID for MIP Fund Accounting
+        password:
+            type: string
+            title: Password
+            description: Your Password for MIP Fund Accounting.
+        HOST_REST:
+            type: string
+            title: REST Service URL
+            description: The rest service URL for the cloud-based API service
 
 mixpanel:
     display_name: Mixpanel
