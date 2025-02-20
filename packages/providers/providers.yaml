@@ -241,6 +241,26 @@ airtable:
     webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
 
+airtable-pat:
+    display_name: Airtable (Personal Access Token)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.airtable.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/airtable-pat
+    docs_connect: https://docs.nango.dev/integrations/all/airtable-pat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token for your Airtable account
+            example: 'patoXxYzA1B2C3D4Ef.98a7b6c5d4e3f2g1h0i9j8k7l6m5n4o3p2q1r0s9t8u7v6w5x4y3z2a1b0cdef'
+            pattern: '^[a-zA-Z0-9\.]+$'
+            doc_section: '#step-1-generating-your-personal-access-token'
+
 autodesk:
     display_name: Autodesk
     categories:
