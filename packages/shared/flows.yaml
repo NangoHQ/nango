@@ -14801,6 +14801,71 @@ integrations:
             FetchFile:
                 id: string
                 download_url: string | null
+    shopify:
+        syncs:
+            orders:
+                runs: every hour
+                description: |
+                    Fetches a list of orders from Shopify.
+                output: Order
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /orders
+                    group: Orders
+                scopes:
+                    - read_customers
+                    - read_orders
+        models:
+            Order:
+                id: string
+                name: string
+                created_at: string
+                updated_at: string
+                processed_at: string
+                currency_code: string
+                presentment_currency_code: string
+                confirmed: boolean
+                cancelled_at: string | null
+                cancel_reason: string | null
+                closed: boolean
+                closed_at: string | null
+                fully_paid: boolean
+                customer: Customer | null
+                total_price_set:
+                    amount: string
+                    currency_code: string
+                subtotal_price_set:
+                    amount: string
+                    currency_code: string
+                total_tax_set:
+                    amount: string
+                    currency_code: string
+                shipping_address: Address | null
+                billing_address: Address | null
+                line_item:
+                    - id: string
+                      name: string
+                      quantity: number
+                      original_total_set:
+                          amount: string
+                          currency_code: string
+                      discounted_total_set:
+                          amount: string
+                          currency_code: string
+            Address:
+                address1: string
+                address2: string | null
+                city: string
+                country: string
+                province: string | null
+                zip: string | null
+            Customer:
+                first_name: string
+                last_name: string
+                display_name: string
+                email: string | null
+                phone: string | null
     slack:
         syncs:
             users:
