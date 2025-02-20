@@ -247,6 +247,7 @@
                 "integrations/all/aircall",
                 "integrations/all/aircall-basic",
                 "integrations/all/airtable",
+                "integrations/all/airtable-pat",
                 "integrations/all/algolia",
                 "integrations/all/amazon",
                 "integrations/all/amplitude",
