@@ -157,6 +157,7 @@ export const ENVS = z.object({
 
     // Records
     RECORDS_DATABASE_URL: z.string().url().optional(),
+    RECORDS_DATABASE_READ_URL: z.string().url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
 
     // Redis

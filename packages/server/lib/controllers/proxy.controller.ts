@@ -8,14 +8,20 @@ import url from 'url';
 import querystring from 'querystring';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
-import type { HTTP_METHOD, UserProvidedProxyConfiguration, InternalProxyConfiguration, ApplicationConstructedProxyConfiguration, File } from '@nangohq/shared';
 import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
 import { metrics, getLogger, axiosInstance as axios, getHeaders, redactHeaders, redactURL } from '@nangohq/utils';
 import { flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import type { MessageRowInsert } from '@nangohq/types';
+import type {
+    ApplicationConstructedProxyConfiguration,
+    HTTP_METHOD,
+    InternalProxyConfiguration,
+    MessageRowInsert,
+    ProxyFile,
+    UserProvidedProxyConfiguration
+} from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -40,7 +46,6 @@ class ProxyController {
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
-            const isDebug = (req.get('Debug') as string) === 'true';
             const isSync = (req.get('Nango-Is-Sync') as string) === 'true';
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
@@ -65,9 +70,9 @@ class ProxyController {
 
             const rawBodyFlag = await featureFlags.isEnabled('proxy:rawbody', 'global', false);
             const data = rawBodyFlag ? req.rawBody : req.body;
-            let files: File[] = [];
+            let files: ProxyFile[] = [];
             if (Array.isArray(req.files)) {
-                files = req.files as File[];
+                files = req.files as ProxyFile[];
             }
 
             const externalConfig: UserProvidedProxyConfiguration = {
@@ -156,7 +161,7 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx, isDebug });
+            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -199,14 +204,12 @@ class ProxyController {
         res,
         method,
         configBody,
-        logCtx,
-        isDebug
+        logCtx
     }: {
         res: Response;
         method: HTTP_METHOD;
         configBody: ApplicationConstructedProxyConfiguration;
         logCtx: LogContext;
-        isDebug: boolean;
     }) {
         const url = proxyService.constructUrl(configBody);
         let decompress = false;
@@ -222,8 +225,7 @@ class ProxyController {
             config: configBody,
             decompress,
             data: configBody.data,
-            logCtx,
-            isDebug
+            logCtx
         });
     }
 
@@ -390,8 +392,7 @@ class ProxyController {
         config,
         decompress,
         data,
-        logCtx,
-        isDebug
+        logCtx
     }: {
         res: Response;
         method: HTTP_METHOD;
@@ -400,14 +401,9 @@ class ProxyController {
         decompress: boolean;
         data?: unknown;
         logCtx: LogContext;
-        isDebug: boolean;
     }) {
         const logs: MessageRowInsert[] = [];
         const headers = proxyService.constructHeaders(config, method, url);
-
-        if (isDebug) {
-            await logCtx.debug(`${method.toUpperCase()} ${url}`, { headers });
-        }
 
         const requestConfig: AxiosRequestConfig = {
             method,

@@ -13,7 +13,7 @@ import {
     AnalyticsTypes,
     syncManager
 } from '@nangohq/shared';
-import type { ApplicationConstructedProxyConfiguration, InternalProxyConfiguration, ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
 import type {
@@ -28,7 +28,9 @@ import type {
     RecentlyCreatedConnection,
     ConnectionConfig,
     DBConnectionDecrypted,
-    DBTeam
+    DBTeam,
+    ApplicationConstructedProxyConfiguration,
+    InternalProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
