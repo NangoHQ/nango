@@ -312,7 +312,7 @@ amazon-selling-partner:
         - dev-tools
         - e-commerce
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.amazon.${connectionConfig.extension}/authorize/consent
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
     authorization_params:
         application_id: ${connectionConfig.applicationId}
@@ -330,33 +330,25 @@ amazon-selling-partner:
             title: Application ID
             description: The unique identifier for your Amazon Selling Partner application
             example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
-            pattern: '^[a-z0-9.-]+$'
+            pattern: '^[a-zA-Z0-9.-]+$'
             doc_section: '#step-1-finding-your-app-id'
             order: 1
-        subdomain:
+        domain:
             type: string
-            title: Subdomain
-            description: The subdomain representing the Amazon platform you are integrating with
-            example: sellercentral
-            pattern: '^[a-z0-9_-]+$'
-            doc_section: '#step-2-finding-your-subdomain'
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
             order: 2
-        extension:
-            type: string
-            title: Domain Extension
-            description: The domain extension specific to the Amazon marketplace you are connecting to
-            example: com.au
-            pattern: '^[a-z.]+$'
-            doc_section: '#step-3-finding-your-extension'
-            order: 3
         region:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
             example: eu
             pattern: '^[a-z]+$'
-            doc_section: '#step-4-finding-your-proxy-baseurl-region'
-            order: 4
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
 
 amazon-selling-partner-beta:
     display_name: Amazon Selling Partner (Beta)
@@ -364,7 +356,7 @@ amazon-selling-partner-beta:
         - dev-tools
         - e-commerce
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.amazon.${connectionConfig.extension}/authorize/consent
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
     authorization_params:
         application_id: ${connectionConfig.applicationId}
@@ -383,33 +375,25 @@ amazon-selling-partner-beta:
             title: Application ID
             description: The unique identifier for your Amazon Selling Partner application
             example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
-            pattern: '^[a-z0-9.-]+$'
+            pattern: '^[a-zA-Z0-9.-]+$'
             doc_section: '#step-1-finding-your-app-id'
             order: 1
-        subdomain:
+        domain:
             type: string
-            title: Subdomain
-            description: The subdomain representing the Amazon platform you are integrating with
-            example: sellercentral
-            pattern: '^[a-z0-9_-]+$'
-            doc_section: '#step-2-finding-your-subdomain'
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
             order: 2
-        extension:
-            type: string
-            title: Domain Extension
-            description: The domain extension specific to the Amazon marketplace you are connecting to
-            example: com.au
-            pattern: '^[a-z.]+$'
-            doc_section: '#step-3-finding-your-extension'
-            order: 3
         region:
             type: string
-            title: Region
+            title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
             example: eu
             pattern: '^[a-z]+$'
-            doc_section: '#step-4-finding-your-proxy-baseurl-region'
-            order: 4
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
 
 anrok:
     display_name: Anrok
