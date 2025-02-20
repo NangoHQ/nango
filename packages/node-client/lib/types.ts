@@ -41,7 +41,8 @@ import type {
     GetPublicConnection,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
-    GetPublicRecords
+    GetPublicRecords,
+    UserProvidedProxyConfiguration
 } from '@nangohq/types';
 
 export type {
@@ -114,21 +115,10 @@ export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes['OAuth2'];
 }
 
-export interface ProxyConfiguration {
-    endpoint: string;
+export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
-
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
-    headers?: Record<string, string>;
-    params?: string | Record<string, string | number>;
-    data?: unknown;
-    retries?: number;
-    baseUrlOverride?: string;
-    decompress?: boolean | string;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
-    retryOn?: number[] | null;
-}
+};
 
 export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
 export type CombinedFilterAction = `${FilterAction},${FilterAction}`;

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import { db } from '../db/client.js';
+import { db, dbRead } from '../db/client.js';
 import type {
     CombinedFilterAction,
     FormattedRecord,
@@ -50,6 +50,9 @@ export async function getRecordCountsByModel({
     }
 }
 
+/**
+ * Get Records is using the read replicas (when possible)
+ */
 export async function getRecords({
     connectionId,
     model,
@@ -73,7 +76,7 @@ export async function getRecords({
             return Err(error);
         }
 
-        let query = db
+        let query = dbRead
             .from<FormattedRecord>(RECORDS_TABLE)
             .timeout(60000) // timeout after 1 minute
             .where({

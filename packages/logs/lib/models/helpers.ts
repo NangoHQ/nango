@@ -47,7 +47,9 @@ export function getFormattedOperation(
         meta: meta || data.meta || null,
 
         userId: user?.id || data.userId || null,
-        parentId: null
+        parentId: null,
+
+        expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
 export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {
@@ -88,6 +90,7 @@ export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatM
         error: data.error || null,
         request: data.request || null,
         response: data.response || null,
+        retry: data.retry || undefined,
         meta: meta || data.meta || null,
 
         createdAt: data.createdAt || now.toISOString(),
