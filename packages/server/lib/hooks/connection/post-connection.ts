@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
+import { LogActionEnum, LogTypes, connectionService, telemetry, getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
@@ -74,11 +74,10 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                     finalExternalConfig.data = data;
                 }
 
-                const { response } = await proxyService.route(finalExternalConfig, internalConfig);
+                const proxyConfig = getProxyConfiguration({ externalConfig: finalExternalConfig, internalConfig }).unwrap();
+                const proxy = new ProxyRequest({ logger: () => {}, proxyConfig });
+                const response = (await proxy.call()).unwrap();
 
-                if (response instanceof Error) {
-                    throw response;
-                }
                 return response;
             },
             updateConnectionConfig: (connectionConfig: ConnectionConfig) => {

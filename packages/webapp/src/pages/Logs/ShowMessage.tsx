@@ -23,6 +23,9 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         if (message.response) {
             pl.response = message.response;
         }
+        if (message.retry) {
+            pl.retry = message.retry;
+        }
         if (message.error) {
             pl.error = { message: message.error.message };
             if (message.error.payload) {
