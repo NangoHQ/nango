@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { proxyService } from '@nangohq/shared';
+import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 import { PersistClient } from './persist.js';
@@ -56,27 +56,20 @@ export class NangoActionRunner extends NangoActionBase {
             throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
         }
 
-        const proxyConfig = this.proxyConfig(config);
-
-        const { response, logs } = await proxyService.route(proxyConfig, {
-            existingActivityLogId: this.activityLogId as string,
-            connection,
-            providerName: this.provider as string
-        });
-
-        // We batch save, since we have buffered the createdAt it shouldn't impact order
-        await Promise.all(
-            logs.map(async (log) => {
-                if (log.level === 'debug') {
-                    return;
-                }
+        const computedConfig = getProxyConfiguration({
+            externalConfig: this.getProxyConfig(config),
+            internalConfig: {
+                connection,
+                providerName: this.provider!
+            }
+        }).unwrap();
+        const proxy = new ProxyRequest({
+            logger: async (log) => {
                 await this.sendLogToPersist(log);
-            })
-        );
-
-        if (response instanceof Error) {
-            throw response;
-        }
+            },
+            proxyConfig: computedConfig
+        });
+        const response = (await proxy.call()).unwrap();
 
         return response;
     }
