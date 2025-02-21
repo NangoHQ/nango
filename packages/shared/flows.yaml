@@ -1758,6 +1758,7 @@ integrations:
                     path: /projects
                     group: Projects
                 output: BasecampProjectsResponse
+                version: 1.0.0
             fetch-todolists:
                 description: >
                     Fetch all todolists in a project.Fetch your projects via the
@@ -1769,6 +1770,7 @@ integrations:
                     path: /todolists
                     group: Todolists
                 output: BasecampTodolistsResponse
+                version: 1.0.0
             create-todo:
                 description: >-
                     Create a new to-do in a specific project + list. Fetch your todolists
@@ -1780,6 +1782,7 @@ integrations:
                     group: Todos
                 input: BasecampCreateTodoInput
                 output: BasecampTodoResponse
+                version: 1.0.0
         syncs:
             todos:
                 runs: every 1 day
@@ -1796,6 +1799,7 @@ integrations:
                     method: GET
                     path: /todos
                     group: Todos
+                version: 1.0.0
         models:
             UserInformation:
                 identity:
