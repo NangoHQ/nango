@@ -1635,6 +1635,24 @@ chattermill:
             suffix: .chattermill.com
             prefix: https://
 
+check:
+    display_name: Check
+    categories:
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.checkhq.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/check
+    docs_connect: https://docs.nango.dev/integrations/all/check/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Check account
+            doc_section: '#step-1-finding-check-api-token'
+
 checkr-partner:
     display_name: Checkr Partner
     categories:
