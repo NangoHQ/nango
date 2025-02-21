@@ -10360,6 +10360,45 @@ integrations:
                     method: PUT
                     path: /credit-notes
                     group: Credit Notes
+            purchase-order-create:
+                version: 1.0.0
+                description: |
+                    Creates a purchase order in Netsuite
+                input: NetsuitePurchaseOrderCreateInput
+                output: NetsuitePurchaseOrderCreateOutput
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            purchase-order-update:
+                version: 1.0.0
+                description: Updates an existing purchase order in Netsuite.
+                input: NetsuitePurchaseOrderUpdateInput
+                output: NetsuitePurchaseOrderUpdateOutput
+                endpoint:
+                    method: PUT
+                    path: /purchase-orders
+                    group: Purchase Orders
+            bill-create:
+                version: 1.0.0
+                description: |
+                    Creates a vendor bill in Netsuite.
+                input: NetsuiteBillCreateInput
+                output: NetsuiteBillCreateOutput
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
+            bill-update:
+                version: 1.0.0
+                description: |
+                    Updates an existing vendor bill in Netsuite.
+                input: NetsuiteBillUpdateInput
+                output: NetsuiteBillUpdateOutput
+                endpoint:
+                    method: PUT
+                    path: /bills
+                    group: Bills
         models:
             NetsuiteMetadata:
                 timezone?: string | undefined
@@ -10558,6 +10597,145 @@ integrations:
                 credit?: number
                 debit?: number
                 description: string
+            PurchaseOrderLine:
+                itemId: string
+                quantity: number
+                amount: number
+                description?: string
+                locationId?: string
+                rate?: number
+                department?: string
+                class?: string
+                createWorkOrder?: boolean
+                inventoryDetail?: InventoryDetail | null
+            InventoryDetail:
+                binNumber?: string
+                expirationDate?: string
+                quantity?: number
+                serialNumber?: string
+                toBinNumber?: string
+            NetsuitePurchaseOrderCreateInput:
+                vendorId: string
+                currency?: string
+                description?: string
+                status: string
+                tranDate?: string
+                dueDate?: string
+                lines: PurchaseOrderLine[]
+                customForm?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                taxDetails?: TaxDetails | null
+                billingAddress?: Address
+                shippingAddress?: Address
+            TaxDetails:
+                taxCode?: string
+                taxRate?: number
+            Address:
+                addr1?: string
+                addr2?: string
+                addr3?: string
+                city?: string
+                state?: string
+                zip?: string
+                country?: string
+            NetsuitePurchaseOrderCreateOutput:
+                id: string
+            NetsuitePurchaseOrderUpdateInput:
+                id: string
+                vendorId?: string
+                currency?: string
+                description?: string
+                status?: string
+                tranDate?: string
+                dueDate?: string
+                lines?: PurchaseOrderLine[]
+                customForm?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                billingAddress?: Address | null
+                shippingAddress?: Address | null
+                taxDetails?: TaxDetails | null
+            NetsuitePurchaseOrderUpdateOutput:
+                success: boolean
+            NetsuiteBillLine:
+                itemId: string
+                quantity: number
+                amount: number
+                description?: string
+                rate?: number
+                locationId?: string
+                departmentId?: string
+                classId?: string
+                customerId?: string
+                isBillable?: boolean
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+                inventoryDetail?:
+                    binNumber?: string
+                    expirationDate?: string
+                    quantity?: number
+                    serialNumber?: string
+            NetsuiteBillCreateInput:
+                vendorId: string
+                tranDate: string
+                currency: string
+                dueDate?: string
+                status?: string
+                memo?: string
+                externalId?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                terms?: string
+                lines: NetsuiteBillLine[]
+                billingAddress?:
+                    addr1?: string
+                    addr2?: string
+                    addr3?: string
+                    city?: string
+                    state?: string
+                    zip?: string
+                    country?: string
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+            NetsuiteBillCreateOutput:
+                id: string
+            NetsuiteBillUpdateInput:
+                id: string
+                vendorId?: string
+                tranDate?: string
+                currency?: string
+                dueDate?: string
+                status?: string
+                memo?: string
+                externalId?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                terms?: string
+                lines?: NetsuiteBillLine[]
+                billingAddress?:
+                    addr1?: string
+                    addr2?: string
+                    addr3?: string
+                    city?: string
+                    state?: string
+                    zip?: string
+                    country?: string
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+            NetsuiteBillUpdateOutput:
+                success: boolean
     next-cloud-ocs:
         syncs:
             users:
