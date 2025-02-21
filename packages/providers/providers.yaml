@@ -3387,6 +3387,8 @@ guru-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.getguru.com/api/scim
+        headers:
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
