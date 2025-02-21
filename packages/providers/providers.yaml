@@ -3777,6 +3777,14 @@ gorgias-basic:
             description: Your Gorgias API Key
             default_value: ''
             doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        domain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
 
 grafana:
     display_name: Grafana
