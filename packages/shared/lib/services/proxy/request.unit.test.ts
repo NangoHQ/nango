@@ -74,7 +74,7 @@ describe('call', () => {
             2,
             expect.objectContaining({
                 level: 'warn',
-                message: 'Retrying HTTP call (reason: status_code). Waiting for 3000ms [1/1]'
+                message: 'Retrying HTTP call (reason: status_code_500). Waiting for 3000ms [1/1]'
             })
         );
         expect(fn).toHaveBeenNthCalledWith(

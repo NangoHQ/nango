@@ -88,13 +88,13 @@ describe('getProxyRetryFromErr', () => {
     it.each([500, 501, 429])('should retry some status code "%d"', (value) => {
         const mockAxiosError = getDefaultError({ response: { status: value } });
         const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}) });
-        expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
+        expect(res).toStrictEqual({ retry: true, reason: `status_code_${value}` });
     });
 
     it('should use retryOn even on valid status code', () => {
         const mockAxiosError = getDefaultError({ response: { status: 200 } });
         const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({ retryOn: [200] }) });
-        expect(res).toStrictEqual({ retry: true, reason: 'status_code' });
+        expect(res).toStrictEqual({ retry: true, reason: 'retry_on_200' });
     });
 
     describe('provider proxy', () => {

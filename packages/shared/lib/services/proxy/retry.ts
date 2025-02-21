@@ -23,9 +23,15 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
     }
 
     const status = err.response?.status || 0;
-    let isRetryable = status >= 500 || status === 429 || proxyConfig.retryOn?.includes(status);
+    let isRetryable = status >= 500 || status === 429;
     let reason: string | undefined;
 
+    if (!isRetryable && proxyConfig.retryOn) {
+        if (proxyConfig.retryOn?.includes(status)) {
+            isRetryable = true;
+            reason = `retry_on_${status}`;
+        }
+    }
     if (!isRetryable) {
         const customHeaderConf = proxyConfig.provider.proxy?.retry;
         if (customHeaderConf) {
@@ -66,7 +72,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
-    return { retry: true, reason: reason || 'status_code' };
+    return { retry: true, reason: reason || `status_code_${status}` };
 }
 
 /**
