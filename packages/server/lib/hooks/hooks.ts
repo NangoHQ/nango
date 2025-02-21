@@ -1,19 +1,19 @@
-import axios from 'axios';
 import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
     SpanTypes,
-    proxyService,
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
     SlackService,
     externalWebhookService,
     AnalyticsTypes,
-    syncManager
+    syncManager,
+    getProxyConfiguration,
+    ProxyRequest
 } from '@nangohq/shared';
-import type { ApplicationConstructedProxyConfiguration, InternalProxyConfiguration, ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
 import { getOrchestrator } from '../utils/utils.js';
 import type {
@@ -28,7 +28,9 @@ import type {
     RecentlyCreatedConnection,
     ConnectionConfig,
     DBConnectionDecrypted,
-    DBTeam
+    DBTeam,
+    ApplicationConstructedProxyConfiguration,
+    InternalProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
@@ -284,20 +286,14 @@ export async function connectionTest({
         { type: 'log', level: 'info', message: `Running automatic credentials verification`, createdAt: new Date().toISOString() }
     ];
     try {
-        const { response, logs: logsProxy } = await proxyService.route(configBody, internalConfig);
-
-        logs.push(...logsProxy);
-        if (axios.isAxiosError(response)) {
-            const error = new NangoError('connection_test_failed', { response, logs });
-            span.setTag('nango.error', response);
-            return Err(error);
-        }
-
-        if (!response || response instanceof Error) {
-            const error = new NangoError('connection_test_failed', { response, logs });
-            span.setTag('nango.error', response);
-            return Err(error);
-        }
+        const proxyConfig = getProxyConfiguration({ externalConfig: configBody, internalConfig }).unwrap();
+        const proxy = new ProxyRequest({
+            logger: (msg) => {
+                logs.push(msg);
+            },
+            proxyConfig
+        });
+        const response = (await proxy.call()).unwrap();
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
             const error = new NangoError('connection_test_failed', { response, logs });
