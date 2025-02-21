@@ -3,7 +3,6 @@ import * as crypto from 'node:crypto';
 import type { Result } from '@nangohq/utils';
 import { SIGNATURE_METHOD, Err, Ok } from '@nangohq/utils';
 import FormData from 'form-data';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../../models/Auth.js';
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
@@ -50,42 +49,6 @@ export function getProxyConfiguration({
 
     let endpoint = passedEndpoint;
 
-    let token;
-    switch (connection.credentials.type) {
-        case 'OAUTH2':
-        case 'APP': {
-            const credentials = connection.credentials;
-            token = credentials.access_token;
-            break;
-        }
-        case 'OAUTH2_CC':
-        case 'TWO_STEP':
-        case 'TABLEAU':
-        case 'JWT':
-        case 'SIGNATURE': {
-            const credentials = connection.credentials;
-            token = credentials.token;
-            break;
-        }
-        case 'BASIC':
-        case 'API_KEY':
-            token = connection.credentials;
-            break;
-        case 'OAUTH1': {
-            return Err(new ProxyError('unsupported_auth', 'OAuth1 is not supported'));
-        }
-        case 'APP_STORE':
-        case 'CUSTOM':
-        case 'TBA':
-        case undefined:
-        case 'BILL': {
-            break;
-        }
-        default: {
-            return Err(new ProxyError('unsupported_auth', `${(connection.credentials as any).type} is not supported`));
-        }
-    }
-
     const provider = getProvider(providerName);
     if (!provider) {
         return Err(new ProxyError('unknown_provider'));
@@ -126,7 +89,6 @@ export function getProxyConfiguration({
         endpoint,
         method: method?.toUpperCase() as HTTP_METHOD,
         provider,
-        token: token || '',
         providerName,
         providerConfigKey,
         connectionId,
@@ -160,17 +122,13 @@ export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) 
         const connectionConfig = connection.connection_config;
         const splitApiBase = apiBase.split(/\s*\|\|\s*/);
 
-        if (!connectionConfig) {
-            apiBase = splitApiBase[1];
-        } else {
-            const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
-            const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
-            apiBase = splitApiBase[index]?.trim();
-        }
+        const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
+        const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
+        apiBase = splitApiBase[index]?.trim();
     }
 
-    const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-    const endpoint = apiEndpoint.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+    const base = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    const endpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
 
     const fullEndpoint = interpolateIfNeeded(
         `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
@@ -191,10 +149,9 @@ export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) 
         }
     }
 
-    if (config.provider.auth_mode === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
+    if (config.connection.credentials.type === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
         const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
-        const token = config.token as ApiKeyCredentials;
-        url.searchParams.set(apiKeyProp!, token.apiKey);
+        url.searchParams.set(apiKeyProp!, config.connection.credentials.apiKey);
     }
 
     return url.toString();
@@ -204,110 +161,103 @@ export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) 
  * Build Headers for proxy
  */
 export function buildProxyHeaders(config: ApplicationConstructedProxyConfiguration, url: string): Record<string, string> {
-    let headers = {};
+    let headers: Record<Lowercase<string>, string> = {};
 
-    switch (config.provider.auth_mode) {
-        case 'BASIC':
-            {
-                const token = config.token as BasicApiCredentials;
-                headers = {
-                    authorization: `Basic ${Buffer.from(`${token.username}:${token.password ?? ''}`).toString('base64')}`
-                };
-            }
+    const { connection } = config;
+    switch (connection.credentials.type) {
+        case 'BASIC': {
+            headers['authorization'] = `Basic ${Buffer.from(`${connection.credentials.username}:${connection.credentials.password ?? ''}`).toString('base64')}`;
             break;
-        case 'TABLEAU':
-            {
-                const token = config.token as TableauCredentials;
-                headers = {
-                    'x-tableau-auth': token
-                };
-            }
+        }
+        case 'OAUTH2':
+        case 'APP_STORE':
+        case 'APP': {
+            headers['authorization'] = `Bearer ${connection.credentials.access_token}`;
             break;
-        case 'API_KEY':
-            headers = {};
+        }
+        case 'API_KEY': {
+            // A lot of API_KEY provider have a dedicated header so we can't assume a default
             break;
-        default:
-            headers = {
-                authorization: `Bearer ${config.token as string}`
-            };
+        }
+        case 'OAUTH2_CC':
+        case 'SIGNATURE':
+        case 'TWO_STEP':
+        case 'JWT': {
+            headers['authorization'] = `Bearer ${connection.credentials.token}`;
             break;
-    }
+        }
+        case 'TABLEAU': {
+            headers['x-tableau-auth'] = `${connection.credentials.token}`;
+            break;
+        }
+        case 'TBA': {
+            const credentials = connection.credentials;
+            const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
+            const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];
+            const accessToken = credentials['token_id'];
+            const accessTokenSecret = credentials['token_secret'];
 
-    // even if the auth mode isn't api key a header might exist in the proxy
-    // so inject it if so
-    if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
-        headers = Object.entries(config.provider.proxy.headers).reduce<Record<string, string>>(
-            (acc, [key, value]) => {
-                // allows oauth2 accessToken key to be interpolated and injected
-                // into the header in addition to api key values
-                let tokenPair;
-                switch (config.provider.auth_mode) {
-                    case 'OAUTH2':
-                    case 'SIGNATURE':
-                        if (value.includes('connectionConfig')) {
-                            value = value.replace(/connectionConfig\./g, '');
-                            tokenPair = config.connection.connection_config;
-                        } else {
-                            tokenPair = { accessToken: config.token };
-                        }
-                        break;
-                    case 'BASIC':
-                    case 'API_KEY':
-                    case 'OAUTH2_CC':
-                    case 'TABLEAU':
-                    case 'TWO_STEP':
-                    case 'JWT':
-                        if (value.includes('connectionConfig')) {
-                            value = value.replace(/connectionConfig\./g, '');
-                            tokenPair = config.connection.connection_config;
-                        } else {
-                            tokenPair = config.token;
-                        }
-                        break;
-                    default:
-                        tokenPair = config.token;
-                        break;
+            const oauth = new OAuth({
+                consumer: { key: consumerKey, secret: consumerSecret },
+                signature_method: SIGNATURE_METHOD,
+                hash_function(baseString: string, key: string) {
+                    return crypto.createHmac('sha256', key).update(baseString).digest('base64');
                 }
+            });
 
-                acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
-                return acc;
-            },
-            { ...headers }
-        );
+            const requestData = {
+                url,
+                method: config.method
+            };
+
+            const token = {
+                key: accessToken,
+                secret: accessTokenSecret
+            };
+
+            const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
+
+            // splice in the realm into the header
+            let realm = config.connection.connection_config['accountId'];
+            realm = realm.replace('-', '_').toUpperCase();
+
+            headers['authorization'] = authHeaders.Authorization.replace('OAuth ', `OAuth realm="${realm}", `);
+            break;
+        }
+        case 'CUSTOM':
+        case 'BILL': {
+            break;
+        }
+        case 'OAUTH1': {
+            throw new ProxyError('unsupported_auth', 'OAuth1 is not supported');
+        }
+        default: {
+            throw new ProxyError('unsupported_auth', `${(connection.credentials as any).type} is not supported`);
+        }
     }
 
-    if (config.provider.auth_mode === 'TBA') {
-        const credentials = config.connection.credentials as TbaCredentials;
-        const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
-        const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];
-        const accessToken = credentials['token_id'];
-        const accessTokenSecret = credentials['token_secret'];
-
-        const oauth = new OAuth({
-            consumer: { key: consumerKey, secret: consumerSecret },
-            signature_method: SIGNATURE_METHOD,
-            hash_function(baseString: string, key: string) {
-                return crypto.createHmac('sha256', key).update(baseString).digest('base64');
+    // Custom headers handling
+    if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+        for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
+            if (value.includes('connectionConfig')) {
+                headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
+                continue;
             }
-        });
 
-        const requestData = {
-            url,
-            method: config.method
-        };
-
-        const token = {
-            key: accessToken,
-            secret: accessTokenSecret
-        };
-
-        const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
-
-        // splice in the realm into the header
-        let realm = config.connection.connection_config['accountId'];
-        realm = realm.replace('-', '_').toUpperCase();
-
-        headers = { authorization: authHeaders.Authorization.replace('OAuth ', `OAuth realm="${realm}", `) };
+            switch (connection.credentials.type) {
+                case 'OAUTH2': {
+                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.access_token });
+                    break;
+                }
+                case 'SIGNATURE': {
+                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    break;
+                }
+                default:
+                    headers[key] = interpolateIfNeeded(value, connection.credentials as Record<string, string>);
+                    break;
+            }
+        }
     }
 
     if (config.headers) {

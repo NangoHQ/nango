@@ -7,7 +7,6 @@ import { getDefaultConnection, getDefaultProxy } from './utils.test.js';
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             provider: {
                 auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
@@ -15,12 +14,13 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: 'https://api.nangostarter.com',
                     headers: {
-                        'My-Token': '${apiKey}',
-                        'X-Test': 'test'
+                        'my-token': '${apiKey}',
+                        'x-test': 'test'
                     }
                 }
             },
             connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: {
                     instance_url: 'bar'
                 }
@@ -30,17 +30,20 @@ describe('buildProxyHeaders', () => {
         const headers = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(headers).toEqual({
-            'My-Token': 'sweet-secret-token',
-            'X-Test': 'test'
+            'my-token': 'sweet-secret-token',
+            'x-test': 'test'
         });
     });
 
     it('should correctly construct headers for Basic auth', () => {
         const config = getDefaultProxy({
             provider: {
-                auth_mode: 'BASIC'
+                auth_mode: 'BASIC',
+                proxy: { base_url: '' }
             },
-            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            connection: {
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
@@ -53,9 +56,12 @@ describe('buildProxyHeaders', () => {
     it('should correctly construct headers for Basic auth with no password', () => {
         const config = getDefaultProxy({
             provider: {
-                auth_mode: 'BASIC'
+                auth_mode: 'BASIC',
+                proxy: { base_url: '' }
             },
-            token: { type: 'BASIC', username: 'testuser', password: '' }
+            connection: {
+                credentials: { type: 'BASIC', username: 'testuser', password: '' }
+            }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
@@ -72,18 +78,20 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: 'http://example.com',
                     headers: {
-                        'X-Test': 'test'
+                        'x-test': 'test'
                     }
                 }
             },
-            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            connection: {
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
-            'X-Test': 'test'
+            'x-test': 'test'
         });
     });
 
@@ -92,7 +100,9 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+            connection: {
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
+            },
             headers: {
                 authorization: 'Bearer testtoken'
             }
@@ -128,18 +138,20 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: '',
                     headers: {
-                        'X-Access-Token': '${accessToken}'
+                        'x-access-token': '${accessToken}'
                     }
                 }
             },
-            token: 'some-oauth-access-token'
+            connection: {
+                credentials: { type: 'OAUTH2', access_token: 'some-oauth-access-token', raw: {} }
+            }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             authorization: 'Bearer some-oauth-access-token',
-            'X-Access-Token': 'some-oauth-access-token'
+            'x-access-token': 'some-oauth-access-token'
         });
     });
 
@@ -150,11 +162,13 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: '',
                     headers: {
-                        'My-Token': '${apiKey}'
+                        'my-token': '${apiKey}'
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'some-abc-token' },
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'some-abc-token' }
+            },
             headers: {
                 'x-custom-header': 'custom value',
                 'y-custom-header': 'custom values'
@@ -164,7 +178,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(result).toEqual({
-            'My-Token': 'some-abc-token',
+            'my-token': 'some-abc-token',
             'x-custom-header': 'custom value',
             'y-custom-header': 'custom values'
         });
@@ -177,13 +191,13 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: '',
                     headers: {
-                        'X-Api-Key': '${apiKey}',
-                        'X-Api-Password': '${connectionConfig.API_PASSWORD}'
+                        'x-api-key': '${apiKey}',
+                        'x-api-password': '${connectionConfig.API_PASSWORD}'
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'api-key-value' },
             connection: {
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
                 connection_config: {
                     API_PASSWORD: 'api-password-value'
                 }
@@ -193,8 +207,8 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(result).toEqual({
-            'X-Api-Key': 'api-key-value',
-            'X-Api-Password': 'api-password-value'
+            'x-api-key': 'api-key-value',
+            'x-api-password': 'api-password-value'
         });
     });
 
@@ -205,18 +219,20 @@ describe('buildProxyHeaders', () => {
                 proxy: {
                     base_url: 'http://example.com',
                     headers: {
-                        'X-WSSE': '${accessToken}'
+                        'x-wsse': '${accessToken}'
                     }
                 }
             },
-            token: 'some-oauth-access-token'
+            connection: {
+                credentials: { type: 'SIGNATURE', username: 't', password: 'some-oauth-access-token', token: 'some-oauth-access-token' }
+            }
         });
 
         const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
         expect(result).toEqual({
             authorization: 'Bearer some-oauth-access-token',
-            'X-WSSE': 'some-oauth-access-token'
+            'x-wsse': 'some-oauth-access-token'
         });
     });
 
@@ -327,7 +343,9 @@ describe('buildProxyURL', () => {
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            },
             baseUrlOverride: 'https://override.com'
         });
 
@@ -349,7 +367,9 @@ describe('buildProxyURL', () => {
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            },
             baseUrlOverride: 'https://override.com'
         });
 
@@ -369,7 +389,9 @@ describe('buildProxyURL', () => {
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         });
@@ -391,11 +413,13 @@ describe('buildProxyURL', () => {
                     headers: {
                         'x-custom-header': 'custom value',
                         'y-custom-header': 'custom values',
-                        'My-Token': '${apiKey}'
+                        'my-token': '${apiKey}'
                     }
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         });
@@ -408,7 +432,7 @@ describe('buildProxyURL', () => {
         expect(headers).toEqual({
             'x-custom-header': 'custom value',
             'y-custom-header': 'custom values',
-            'My-Token': 'sweet-secret-token'
+            'my-token': 'sweet-secret-token'
         });
     });
 
@@ -420,8 +444,8 @@ describe('buildProxyURL', () => {
                     base_url: 'https://www.zohoapis.${connectionConfig.extension}'
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: { extension: 'eu' }
             }
         });
@@ -439,8 +463,8 @@ describe('buildProxyURL', () => {
                     base_url: '${metadata.instance_url}'
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 metadata: { instance_url: 'https://myinstanceurl.com' }
             }
         });
@@ -458,8 +482,8 @@ describe('buildProxyURL', () => {
                     base_url: '${connectionConfig.api_base_url_for_customer} || https://api.gong.io'
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: { api_base_url_for_customer: 'https://company-17.api.gong.io' }
             }
         });
@@ -477,8 +501,9 @@ describe('buildProxyURL', () => {
                     base_url: '${connectionConfig.api_base_url_for_customer}||https://api.gong.io'
                 }
             },
-            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
-            connection: {}
+            connection: {
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            }
         });
 
         const url = buildProxyURL(config);
@@ -692,7 +717,6 @@ describe('getProxyConfiguration', () => {
                 },
                 docs: 'https://docs.nango.dev/integrations/all/github'
             },
-            token: '',
             providerName: 'github',
             providerConfigKey: 'provider-config-key-1',
             connectionId: 'connection-1',
