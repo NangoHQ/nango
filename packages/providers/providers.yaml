@@ -5527,6 +5527,9 @@ netsuite-tba:
     alias: netsuite
     display_name: NetSuite (TBA)
     auth_mode: TBA
+    categories:
+        - accounting
+        - erp
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
