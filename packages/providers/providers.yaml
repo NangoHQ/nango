@@ -3757,6 +3757,25 @@ gorgias:
             suffix: .gorgias.com
             prefix: https://
 
+gorgias-basic:
+    display_name: Gorgias
+    auth_mode: BASIC
+    proxy:
+        base_url: https://www.hackerrank.com
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+
 grafana:
     display_name: Grafana
     categories:
