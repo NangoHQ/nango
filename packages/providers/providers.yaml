@@ -3760,7 +3760,7 @@ gorgias:
             prefix: https://
 
 gorgias-basic:
-    display_name: Gorgias
+    display_name: Gorgias (Basic Auth)
     auth_mode: BASIC
     categories:
         - e-commerce
