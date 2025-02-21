@@ -115,22 +115,6 @@ describe('buildProxyHeaders', () => {
         });
     });
 
-    it('should correctly construct headers for default auth', () => {
-        const config = getDefaultProxy({
-            provider: {
-                // @ts-expect-error expected error
-                auth_mode: 'SomeOtherMode'
-            },
-            token: 'testtoken'
-        });
-
-        const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
-
-        expect(result).toEqual({
-            authorization: 'Bearer testtoken'
-        });
-    });
-
     it('should correctly insert headers with dynamic values for oauth', () => {
         const config = getDefaultProxy({
             provider: {

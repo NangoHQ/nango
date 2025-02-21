@@ -225,6 +225,7 @@ export function buildProxyHeaders(config: ApplicationConstructedProxyConfigurati
             break;
         }
         case 'CUSTOM':
+        case undefined:
         case 'BILL': {
             break;
         }
@@ -232,7 +233,7 @@ export function buildProxyHeaders(config: ApplicationConstructedProxyConfigurati
             throw new ProxyError('unsupported_auth', 'OAuth1 is not supported');
         }
         default: {
-            throw new ProxyError('unsupported_auth', `${(connection.credentials as any).type} is not supported`);
+            throw new ProxyError('unsupported_auth', `Auth "${(connection.credentials as any).type}" is not supported`);
         }
     }
 

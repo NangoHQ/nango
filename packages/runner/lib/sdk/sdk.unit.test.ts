@@ -131,7 +131,7 @@ describe('Pagination', () => {
         nangoAction = new NangoActionRunner(config);
 
         const nodeClient = (await import('@nangohq/node')).Nango;
-        nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: { type: 'OAUTH2', access_token: 'token' } });
 
         vi.spyOn(ProxyRequest.prototype, 'request').mockImplementation(() => Promise.resolve(Ok({} as AxiosResponse)));
     });
@@ -170,7 +170,7 @@ describe('Pagination', () => {
                 url: 'https://api.github.com/issues',
                 data: { limit: 2 },
                 headers: {
-                    authorization: 'Bearer ',
+                    authorization: 'Bearer token',
                     'user-agent': expect.any(String)
                 }
             }
@@ -204,7 +204,7 @@ describe('Pagination', () => {
                 method: 'GET',
                 url: 'https://api.github.com/issues?per_page=3&offset=3',
                 headers: {
-                    authorization: 'Bearer ',
+                    authorization: 'Bearer token',
                     'user-agent': expect.any(String)
                 }
             }
@@ -338,21 +338,21 @@ describe('Pagination', () => {
             axiosConfig: {
                 method: 'GET',
                 url: 'https://api.github.com/issues',
-                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             }
         });
         expect(spy).toHaveBeenNthCalledWith(2, {
             axiosConfig: {
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=2',
-                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             }
         });
         expect(spy).toHaveBeenNthCalledWith(3, {
             axiosConfig: {
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=3',
-                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             }
         });
         expect(spy).toHaveBeenCalledTimes(3);
