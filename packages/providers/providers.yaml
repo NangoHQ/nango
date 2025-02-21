@@ -5390,10 +5390,11 @@ mip:
         - accounting
     auth_mode: BASIC
     proxy:
-        base_url: https://${connection_config.HOST_REST}/api/v1/sso/mipadv/login
+        base_url: https://${connectionConfig.HOST_REST}/api/v1/sso/mipadv/login
         headers:
             content-type: application/json
     docs: https://docs.nango.dev/integrations/all/mip
+    docs_connect: https://docs.nango.dev/integrations/all/mip/connect
     credentials:
         username:
             type: string
