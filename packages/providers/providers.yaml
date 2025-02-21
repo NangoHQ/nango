@@ -3765,7 +3765,7 @@ gorgias-basic:
     categories:
         - e-commerce
     proxy:
-        base_url: https://${connectionConfig.domain}.gorgias.com/api
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
     docs: https://docs.nango.dev/integrations/all/gorgias-basic
     docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
     credentials:
@@ -3780,7 +3780,7 @@ gorgias-basic:
             default_value: ''
             doc_section: '#step-1-finding-gorgias-api-key-secret'
     connection_config:
-        domain:
+        subdomain:
             type: string
             title: Gorgias Domain
             description: The subdomain of your Gorgias account
