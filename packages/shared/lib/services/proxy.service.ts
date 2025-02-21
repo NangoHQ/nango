@@ -190,7 +190,9 @@ class ProxyService {
             connection,
             params: externalConfig.params as Record<string, string>,
             responseType: externalConfig.responseType as ResponseType,
-            retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+            retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+            includeAuthentication:
+                (externalConfig as UserProvidedProxyConfiguration).includeAuthentication === 'true' || externalConfig.includeAuthentication === true
         };
 
         return { success: true, error: null, response: configBody, logs };
@@ -459,9 +461,11 @@ class ProxyService {
                 headers = {};
                 break;
             default:
-                headers = {
-                    Authorization: `Bearer ${config.token as string}`
-                };
+                if (config.includeAuthentication !== false) {
+                    headers = {
+                        Authorization: `Bearer ${config.token as string}`
+                    };
+                }
                 break;
         }
 

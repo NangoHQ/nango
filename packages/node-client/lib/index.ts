@@ -802,7 +802,17 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
+        const {
+            providerConfigKey,
+            connectionId,
+            method,
+            retries,
+            headers: customHeaders,
+            baseUrlOverride,
+            decompress,
+            retryOn,
+            includeAuthentication
+        } = config;
 
         let url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -834,6 +844,10 @@ export class Nango {
 
         if (decompress) {
             headers['Decompress'] = decompress;
+        }
+
+        if (includeAuthentication) {
+            headers['Include-Authentication'] = includeAuthentication;
         }
 
         if (retryOn) {

@@ -45,6 +45,7 @@ class ProxyController {
             const isDryRun = (req.get('Nango-Is-Dry-Run') as string) === 'true';
             const retryOn = req.get('Retry-On') ? (req.get('Retry-On') as string).split(',').map(Number) : null;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as string;
+            const includeAuthentication = req.get('Include-Authentication') as string;
 
             if (!isSync) {
                 metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
@@ -81,7 +82,8 @@ class ProxyController {
                 baseUrlOverride,
                 decompress: decompress === 'true' ? true : false,
                 method: method.toUpperCase() as HTTP_METHOD,
-                retryOn
+                retryOn,
+                includeAuthentication: includeAuthentication === 'false' ? false : true
             };
 
             const integration = await configService.getProviderConfig(providerConfigKey, environment.id);

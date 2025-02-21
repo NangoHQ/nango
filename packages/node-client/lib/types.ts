@@ -128,6 +128,7 @@ export interface ProxyConfiguration {
     decompress?: boolean | string;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
     retryOn?: number[] | null;
+    includeAuthentication?: boolean | string;
 }
 
 export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';

@@ -35,6 +35,7 @@ interface BaseProxyConfiguration {
     responseType?: ResponseType;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
+    includeAuthentication?: boolean | string;
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
