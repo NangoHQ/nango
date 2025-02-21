@@ -405,6 +405,7 @@
                 "integrations/all/google-play",
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
+                "integrations/all/gorgias-basic",
                 "integrations/all/grain",
                 "integrations/all/grain-api-key",
                 "integrations/all/greenhouse",

@@ -3759,6 +3759,35 @@ gorgias:
             suffix: .gorgias.com
             prefix: https://
 
+gorgias-basic:
+    display_name: Gorgias (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - e-commerce
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
+
 grafana:
     display_name: Grafana
     categories:
