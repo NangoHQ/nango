@@ -846,8 +846,8 @@ export class Nango {
             headers['Decompress'] = decompress;
         }
 
-        if (includeAuthentication != null) {
-            headers['Include-Authentication'] = includeAuthentication;
+        if (includeAuthentication !== undefined) {
+            headers['Include-Authentication'] = String(includeAuthentication);
         }
 
         if (retryOn) {
