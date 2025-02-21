@@ -124,6 +124,23 @@ const adminAuth: RequestHandler[] = [
     authMiddleware.adminKeyAuth.bind(authMiddleware),
     rateLimiterMiddleware
 ];
+const BINARY_CONTENT_TYPES = [
+    'image/png',
+    'video/',
+    'audio/',
+    'application/',
+    'text/',
+    'font/',
+    'model/',
+    'message/',
+    'chemical/',
+    'x-world/',
+    'application/octet-stream'
+];
+const isBinaryContentType = (contentType: string | undefined): boolean => {
+    if (!contentType) return false;
+    return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
+};
 const connectSessionOrPublicAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
     resourceCapping,
@@ -149,7 +166,12 @@ router.use(
         }
     })
 );
-router.use(bodyParser.raw({ type: 'application/octet-stream', limit: bodyLimit }));
+router.use(
+    bodyParser.raw({
+        type: (req) => isBinaryContentType(req.headers['content-type']),
+        limit: bodyLimit
+    })
+);
 router.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 router.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
