@@ -1,4 +1,3 @@
-import type { EndpointMethod } from '../api.js';
 import type {
     BasicApiCredentials,
     ApiKeyCredentials,
@@ -10,6 +9,7 @@ import type {
     SignatureCredentials
 } from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
+import type { HTTP_METHOD } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
 
 export interface ProxyFile {
@@ -48,7 +48,7 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean;
-    method: EndpointMethod;
+    method: HTTP_METHOD;
     providerName: string;
     token:
         | string
