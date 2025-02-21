@@ -6637,6 +6637,24 @@ sage:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
 
+sage-intacct-oauth:
+    display_name: Sage Intacct (OAuth)
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://docs.nango.dev/integrations/all/sage-intacct-oauth
+
 sage-intacct:
     display_name: Sage Intacct
     categories:
