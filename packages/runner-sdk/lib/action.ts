@@ -2,6 +2,7 @@
 import type { Nango } from '@nangohq/node';
 import paginateService from './paginate.service.js';
 import type { AxiosResponse } from 'axios';
+import type { ZodSchema } from 'zod';
 import type {
     ApiKeyCredentials,
     ApiPublicConnectionFull,
@@ -347,6 +348,18 @@ export abstract class NangoActionBase {
 
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    }
+
+    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<void> {
+        const parsedInput = zodSchema.safeParse(input);
+        if (!parsedInput.success) {
+            for (const error of parsedInput.error.errors) {
+                await this.log(`Invalid input provided to create a user: ${error.message} at path ${error.path.join('.')}`, { level: 'error' });
+            }
+            throw new this.ActionError({
+                message: 'Invalid input provided to create a user'
+            });
+        }
     }
 
     public abstract triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;

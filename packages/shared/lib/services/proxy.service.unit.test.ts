@@ -1,9 +1,15 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
-import type { UserProvidedProxyConfiguration, InternalProxyConfiguration, OAuth2Credentials } from '../models/index.js';
-import type { ApplicationConstructedProxyConfiguration } from '../models/Proxy.js';
+import type { OAuth2Credentials } from '../models/index.js';
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { DBConnectionDecrypted, MessageRowInsert, Provider } from '@nangohq/types';
+import type {
+    DBConnectionDecrypted,
+    MessageRowInsert,
+    Provider,
+    ApplicationConstructedProxyConfiguration,
+    UserProvidedProxyConfiguration,
+    InternalProxyConfiguration
+} from '@nangohq/types';
 
 function getDefaultConnection(): DBConnectionDecrypted {
     return {
@@ -53,7 +59,7 @@ function getDefaultProxy(
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             provider: {
                 auth_mode: 'API_KEY',
                 authorization_url: 'https://api.nangostarter.com',
@@ -86,10 +92,7 @@ describe('Proxy service Construct Header Tests', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                username: 'testuser',
-                password: 'testpassword'
-            }
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
         });
 
         const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
@@ -104,10 +107,7 @@ describe('Proxy service Construct Header Tests', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                username: 'testuser',
-                password: ''
-            }
+            token: { type: 'BASIC', username: 'testuser', password: '' }
         });
 
         const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
@@ -128,10 +128,7 @@ describe('Proxy service Construct Header Tests', () => {
                     }
                 }
             },
-            token: {
-                username: 'testuser',
-                password: 'testpassword'
-            }
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
         });
 
         const result = proxyService.constructHeaders(config, 'GET', 'https://api.nangostarter.com');
@@ -147,10 +144,7 @@ describe('Proxy service Construct Header Tests', () => {
             provider: {
                 auth_mode: 'BASIC'
             },
-            token: {
-                username: 'testuser',
-                password: 'testpassword'
-            },
+            token: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
             headers: {
                 Authorization: 'Bearer testtoken'
             }
@@ -212,7 +206,7 @@ describe('Proxy service Construct Header Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'some-abc-token' },
+            token: { type: 'API_KEY', apiKey: 'some-abc-token' },
             headers: {
                 'x-custom-header': 'custom value',
                 'y-custom-header': 'custom values'
@@ -240,7 +234,7 @@ describe('Proxy service Construct Header Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'api-key-value' },
+            token: { type: 'API_KEY', apiKey: 'api-key-value' },
             connection: {
                 connection_config: {
                     API_PASSWORD: 'api-password-value'
@@ -331,7 +325,7 @@ describe('Proxy service Construct URL Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             baseUrlOverride: 'https://override.com'
         });
 
@@ -353,7 +347,7 @@ describe('Proxy service Construct URL Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             baseUrlOverride: 'https://override.com'
         });
 
@@ -373,7 +367,7 @@ describe('Proxy service Construct URL Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         });
@@ -399,7 +393,7 @@ describe('Proxy service Construct URL Tests', () => {
                     }
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         });
@@ -424,7 +418,7 @@ describe('Proxy service Construct URL Tests', () => {
                     base_url: 'https://www.zohoapis.${connectionConfig.extension}'
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
                 connection_config: { extension: 'eu' }
             }
@@ -443,7 +437,7 @@ describe('Proxy service Construct URL Tests', () => {
                     base_url: '${metadata.instance_url}'
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
                 metadata: { instance_url: 'https://myinstanceurl.com' }
             }
@@ -462,7 +456,7 @@ describe('Proxy service Construct URL Tests', () => {
                     base_url: '${connectionConfig.api_base_url_for_customer} || https://api.gong.io'
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {
                 connection_config: { api_base_url_for_customer: 'https://company-17.api.gong.io' }
             }
@@ -481,7 +475,7 @@ describe('Proxy service Construct URL Tests', () => {
                     base_url: '${connectionConfig.api_base_url_for_customer}||https://api.gong.io'
                 }
             },
-            token: { apiKey: 'sweet-secret-token' },
+            token: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
             connection: {}
         });
 

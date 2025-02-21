@@ -8,11 +8,17 @@ import FormData from 'form-data';
 import { setTimeout } from 'node:timers/promises';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, TableauCredentials } from '../models/Auth.js';
 import type { HTTP_METHOD, ServiceResponse } from '../models/Generic.js';
-import type { ResponseType, ApplicationConstructedProxyConfiguration, UserProvidedProxyConfiguration, InternalProxyConfiguration } from '../models/Proxy.js';
+import type { ResponseType } from '../models/Proxy.js';
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import type { MessageRowInsert, RetryHeaderConfig } from '@nangohq/types';
+import type {
+    MessageRowInsert,
+    RetryHeaderConfig,
+    ApplicationConstructedProxyConfiguration,
+    UserProvidedProxyConfiguration,
+    InternalProxyConfiguration
+} from '@nangohq/types';
 import { getProvider } from './providers.js';
 
 interface Logs {

@@ -1,10 +1,15 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import type { UserProvidedProxyConfiguration } from '@nangohq/shared';
 import { LogActionEnum, LogTypes, proxyService, connectionService, telemetry, getProvider } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { stringifyError } from '@nangohq/utils';
-import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, RecentlyCreatedConnection } from '@nangohq/types';
+import type {
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    InternalProxyConfiguration,
+    RecentlyCreatedConnection,
+    UserProvidedProxyConfiguration
+} from '@nangohq/types';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
