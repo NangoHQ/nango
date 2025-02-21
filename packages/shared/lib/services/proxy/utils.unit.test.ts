@@ -712,38 +712,42 @@ describe('getProxyConfiguration', () => {
         });
     });
 
-    it('Should not include Authorization header when includeAuthentication is false', () => {
-        const config: ApplicationConstructedProxyConfiguration = {
+    it('should include authentication headers when includeAuthentication is true', () => {
+        const config = getDefaultProxy({
             provider: { auth_mode: 'OAUTH2' },
-            token: 'test-token',
-            includeAuthentication: false
-        } as ApplicationConstructedProxyConfiguration;
-
-        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
-
-        expect(headers).not.toHaveProperty('Authorization');
-    });
-
-    it('Should include Authorization header when includeAuthentication is not present', () => {
-        const config: ApplicationConstructedProxyConfiguration = {
-            provider: { auth_mode: 'OAUTH2' },
-            token: 'test-token'
-        } as ApplicationConstructedProxyConfiguration;
-
-        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
-
-        expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
-    });
-
-    it('Should include Authorization header when includeAuthentication is true', () => {
-        const config: ApplicationConstructedProxyConfiguration = {
-            provider: { auth_mode: 'OAUTH2' },
-            token: 'test-token',
+            token: 'some-oauth-access-token',
             includeAuthentication: true
-        } as ApplicationConstructedProxyConfiguration;
+        });
 
-        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
+        const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
 
-        expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
+        expect(result).toEqual({
+            authorization: 'Bearer some-oauth-access-token'
+        });
+    });
+
+    it('should exclude authentication headers when includeAuthentication is false', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2' },
+            token: 'some-oauth-access-token',
+            includeAuthentication: false
+        });
+
+        const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
+
+        expect(result).toEqual({});
+    });
+
+    it('should include authentication headers by default when includeAuthentication is undefined', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2' },
+            token: 'some-oauth-access-token'
+        });
+
+        const result = buildProxyHeaders(config, 'https://api.nangostarter.com');
+
+        expect(result).toEqual({
+            authorization: 'Bearer some-oauth-access-token'
+        });
     });
 });
