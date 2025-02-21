@@ -3760,8 +3760,10 @@ gorgias:
 gorgias-basic:
     display_name: Gorgias
     auth_mode: BASIC
+    categories:
+        - e-commerce
     proxy:
-        base_url: https://www.hackerrank.com
+        base_url: https://${connectionConfig.domain}.gorgias.com/api
     docs: https://docs.nango.dev/integrations/all/gorgias-basic
     docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
     credentials:
