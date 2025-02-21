@@ -284,12 +284,6 @@ export class NangoError extends Error {
                 }
                 break;
 
-            case 'missing_base_api_url':
-                this.status = 400;
-                this.message =
-                    'The proxy is either not supported for this provider or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).';
-                break;
-
             case 'provider_config_edit_not_allowed':
                 this.status = 400;
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
@@ -419,11 +413,6 @@ export class NangoError extends Error {
 
             case 'on_event_script_failure':
                 this.message = `The on-event script failed with an error: ${stringifyError(this.payload)}`;
-                break;
-
-            case 'pass_through_error':
-                this.status = 400;
-                this.message = JSON.stringify(this.payload);
                 break;
 
             case 'action_script_runtime_error':

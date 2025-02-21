@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isValidHttpUrl, proxyService } from '@nangohq/shared';
+import { ProxyRequest } from '@nangohq/shared';
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
@@ -45,7 +45,7 @@ describe('cache', () => {
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
         nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
-        vi.spyOn(proxyService, 'route').mockImplementation(() => Promise.resolve({ response: {} as AxiosResponse, logs: [] }));
+        vi.spyOn(ProxyRequest.prototype, 'request').mockImplementation(() => Promise.resolve(Ok({} as AxiosResponse)));
     });
 
     afterEach(() => {
@@ -132,6 +132,8 @@ describe('Pagination', () => {
 
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+
+        vi.spyOn(ProxyRequest.prototype, 'request').mockImplementation(() => Promise.resolve(Ok({} as AxiosResponse)));
     });
 
     afterEach(() => {
@@ -156,35 +158,32 @@ describe('Pagination', () => {
     it('Sends pagination params in body for POST HTTP method', async () => {
         await stubProviderTemplate(cursorPagination);
 
-        const spy = vi.spyOn(proxyService, 'route').mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
+        const spy = vi.spyOn(ProxyRequest.prototype, 'request').mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
 
         const endpoint = '/issues';
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
-        expect(spy).toHaveBeenCalledWith(
-            expect.objectContaining({
+        expect(spy).toHaveBeenCalledWith({
+            axiosConfig: {
                 method: 'POST',
-                endpoint,
-                headers: {
-                    'user-agent': expect.any(String)
-                },
+                url: 'https://api.github.com/issues',
                 data: { limit: 2 },
-                paginate: { limit: 2 },
-                connectionId: 'abc',
-                providerConfigKey: 'github'
-            }),
-            expect.objectContaining({})
-        );
+                headers: {
+                    authorization: 'Bearer ',
+                    'user-agent': expect.any(String)
+                }
+            }
+        });
     });
 
     it('Overrides template pagination params with ones passed in the proxy config', async () => {
         await stubProviderTemplate(cursorPagination);
 
         const spy = vi
-            .spyOn(proxyService, 'route')
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [{}, {}, {}] } } as AxiosResponse }))
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
+            .spyOn(ProxyRequest.prototype, 'request')
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [{}, {}, {}] } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
 
         const endpoint = '/issues';
         const paginationConfigOverride: OffsetPagination = {
@@ -200,20 +199,16 @@ describe('Pagination', () => {
             expect(batch.length).toBe(3);
         }
 
-        expect(spy).toHaveBeenLastCalledWith(
-            {
+        expect(spy).toHaveBeenLastCalledWith({
+            axiosConfig: {
                 method: 'GET',
-                endpoint,
+                url: 'https://api.github.com/issues?per_page=3&offset=3',
                 headers: {
+                    authorization: 'Bearer ',
                     'user-agent': expect.any(String)
-                },
-                params: { offset: '3', per_page: 3 },
-                paginate: paginationConfigOverride,
-                providerConfigKey,
-                connectionId
-            },
-            { connection: { credentials: {} }, existingActivityLogId: '1', providerName: 'github' }
-        );
+                }
+            }
+        });
     });
 
     it('Paginates using offset', async () => {
@@ -222,10 +217,10 @@ describe('Pagination', () => {
         const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
 
-        vi.spyOn(proxyService, 'route')
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: firstBatch } } as AxiosResponse }))
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: secondBatch } } as AxiosResponse }))
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: [] } } as AxiosResponse }));
+        vi.spyOn(ProxyRequest.prototype, 'request')
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
 
         const endpoint = '/issues';
 
@@ -248,20 +243,10 @@ describe('Pagination', () => {
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
         const thirdBatch: any[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
 
-        vi.spyOn(proxyService, 'route')
-            .mockReturnValueOnce(
-                Promise.resolve({
-                    logs: [],
-                    response: { data: { issues: firstBatch, metadata: { next_cursor: '2' } } } as AxiosResponse
-                })
-            )
-            .mockReturnValueOnce(
-                Promise.resolve({
-                    logs: [],
-                    response: { data: { issues: secondBatch, metadata: { next_cursor: '2' } } } as AxiosResponse
-                })
-            )
-            .mockReturnValueOnce(Promise.resolve({ logs: [], response: { data: { issues: thirdBatch } } as AxiosResponse }));
+        vi.spyOn(ProxyRequest.prototype, 'request')
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: '2' } } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch, metadata: { next_cursor: '2' } } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: thirdBatch } } as AxiosResponse)));
 
         const endpoint = '/issues';
 
@@ -282,11 +267,8 @@ describe('Pagination', () => {
 
         const onlyBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
-        vi.spyOn(proxyService, 'route').mockReturnValueOnce(
-            Promise.resolve({
-                logs: [],
-                response: { data: { issues: onlyBatch, metadata: { next_cursor: '' } } } as AxiosResponse
-            })
+        vi.spyOn(ProxyRequest.prototype, 'request').mockReturnValueOnce(
+            Promise.resolve(Ok({ data: { issues: onlyBatch, metadata: { next_cursor: '' } } } as AxiosResponse))
         );
 
         const endpoint = '/issues';
@@ -309,19 +291,9 @@ describe('Pagination', () => {
             const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
             const emptyBatch: any[] = [];
 
-            vi.spyOn(proxyService, 'route')
-                .mockReturnValueOnce(
-                    Promise.resolve({
-                        logs: [],
-                        response: { data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse
-                    })
-                )
-                .mockReturnValueOnce(
-                    Promise.resolve({
-                        logs: [],
-                        response: { data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse
-                    })
-                );
+            vi.spyOn(ProxyRequest.prototype, 'request')
+                .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse)))
+                .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse)));
 
             const endpoint = '/issues';
 
@@ -343,30 +315,15 @@ describe('Pagination', () => {
     ])('Paginates using next URL/path %s from body', async (nextUrlOrPathValue, anotherNextUrlOrPathValue) => {
         await stubProviderTemplate(linkPagination);
 
-        const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
-        const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
-        const thirdBatch: any[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
+        const firstBatch: { id: number }[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
+        const secondBatch: { id: number }[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
+        const thirdBatch: { id: number }[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
 
         const spy = vi
-            .spyOn(proxyService, 'route')
-            .mockReturnValueOnce(
-                Promise.resolve({
-                    logs: [],
-                    response: { data: { issues: firstBatch, metadata: { next_cursor: nextUrlOrPathValue } } } as AxiosResponse
-                })
-            )
-            .mockReturnValueOnce(
-                Promise.resolve({
-                    logs: [],
-                    response: { data: { issues: secondBatch, metadata: { next_cursor: anotherNextUrlOrPathValue } } } as AxiosResponse
-                })
-            )
-            .mockReturnValueOnce(
-                Promise.resolve({
-                    logs: [],
-                    response: { data: { issues: thirdBatch } } as AxiosResponse
-                })
-            );
+            .spyOn(ProxyRequest.prototype, 'request')
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: nextUrlOrPathValue } } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch, metadata: { next_cursor: anotherNextUrlOrPathValue } } } as AxiosResponse)))
+            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: thirdBatch } } as AxiosResponse)));
 
         const endpoint = '/issues';
 
@@ -377,25 +334,31 @@ describe('Pagination', () => {
             actualRecords.push(...batch);
         }
 
-        const expectedRecords = [...firstBatch, ...secondBatch, ...thirdBatch];
-        let expectedEndpoint: string;
-        if (isValidHttpUrl(anotherNextUrlOrPathValue)) {
-            const url: URL = new URL(anotherNextUrlOrPathValue);
-            expectedEndpoint = url.pathname + url.search;
-        } else {
-            expectedEndpoint = anotherNextUrlOrPathValue;
-        }
+        expect(spy).toHaveBeenNthCalledWith(1, {
+            axiosConfig: {
+                method: 'GET',
+                url: 'https://api.github.com/issues',
+                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+            }
+        });
+        expect(spy).toHaveBeenNthCalledWith(2, {
+            axiosConfig: {
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=2',
+                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+            }
+        });
+        expect(spy).toHaveBeenNthCalledWith(3, {
+            axiosConfig: {
+                method: 'GET',
+                url: 'https://api.github.com/issues?page=3',
+                headers: { authorization: 'Bearer ', 'user-agent': expect.any(String) }
+            }
+        });
+        expect(spy).toHaveBeenCalledTimes(3);
 
+        const expectedRecords = [...firstBatch, ...secondBatch, ...thirdBatch];
         expect(actualRecords).toStrictEqual(expectedRecords);
-        expect(spy).toHaveBeenNthCalledWith(
-            3,
-            expect.objectContaining({
-                endpoint: expectedEndpoint
-            }),
-            expect.objectContaining({
-                providerName: 'github'
-            })
-        );
     });
 
     const stubProviderTemplate = async (paginationConfig: Pagination) => {
@@ -478,20 +441,20 @@ describe('Log', () => {
 });
 
 describe('Aborted script', () => {
-    it('show throw', () => {
+    it('show throw', async () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
         ac.abort();
-        expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
     });
 });
 
 describe('getRecordsById', () => {
-    it('show throw if aborted', () => {
+    it('show throw if aborted', async () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
         ac.abort();
-        expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
     });
 
     it('should return empty map if no ids', async () => {

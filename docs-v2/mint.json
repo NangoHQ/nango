@@ -545,6 +545,7 @@
                 "integrations/all/rippling",
                 "integrations/all/sage",
                 "integrations/all/sage-intacct",
+                "integrations/all/sage-intacct-oauth",
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
                 "integrations/all/salesforce-cdp",
