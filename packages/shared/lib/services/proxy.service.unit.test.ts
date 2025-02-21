@@ -946,4 +946,39 @@ describe('Proxy service configure', () => {
             foo: 'Bar'
         });
     });
+
+    it('Should not include Authorization header when includeAuthentication is false', () => {
+        const config: ApplicationConstructedProxyConfiguration = {
+            provider: { auth_mode: 'OAUTH2' },
+            token: 'test-token',
+            includeAuthentication: false
+        } as ApplicationConstructedProxyConfiguration;
+
+        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
+
+        expect(headers).not.toHaveProperty('Authorization');
+    });
+
+    it('Should include Authorization header when includeAuthentication is not present', () => {
+        const config: ApplicationConstructedProxyConfiguration = {
+            provider: { auth_mode: 'OAUTH2' },
+            token: 'test-token'
+        } as ApplicationConstructedProxyConfiguration;
+
+        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
+
+        expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
+    });
+
+    it('Should include Authorization header when includeAuthentication is true', () => {
+        const config: ApplicationConstructedProxyConfiguration = {
+            provider: { auth_mode: 'OAUTH2' },
+            token: 'test-token',
+            includeAuthentication: true
+        } as ApplicationConstructedProxyConfiguration;
+
+        const headers = proxyService.constructHeaders(config, 'GET', 'https://api.example.com');
+
+        expect(headers).toHaveProperty('Authorization', 'Bearer test-token');
+    });
 });
