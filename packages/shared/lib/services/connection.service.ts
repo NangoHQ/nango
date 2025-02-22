@@ -1042,10 +1042,18 @@ class ConnectionService {
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
     public parseRawCredentials(rawCredentials: object, authMode: AuthModeType, template?: ProviderOAuth2 | ProviderTwoStep): AuthCredentials {
-        const rawCreds = rawCredentials as Record<string, any>;
+        let rawCreds = rawCredentials as Record<string, any>;
 
         switch (authMode) {
             case 'OAUTH2': {
+                const isSlackUserToken = !rawCreds['access_token'] && !!rawCreds['authed_user'];
+                if (isSlackUserToken) {
+                    const userTokenData = rawCreds['authed_user'] as Record<string, string>;
+                    rawCreds = {
+                        ...userTokenData,
+                        ...rawCreds
+                    };
+                }
                 if (!rawCreds['access_token']) {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
