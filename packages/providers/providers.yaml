@@ -3387,6 +3387,8 @@ guru-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.getguru.com/api/scim
+        headers:
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
@@ -3756,6 +3758,35 @@ gorgias:
             example: domain
             suffix: .gorgias.com
             prefix: https://
+
+gorgias-basic:
+    display_name: Gorgias (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - e-commerce
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
 
 grafana:
     display_name: Grafana
@@ -5554,6 +5585,9 @@ netsuite-tba:
     alias: netsuite
     display_name: NetSuite (TBA)
     auth_mode: TBA
+    categories:
+        - accounting
+        - erp
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -6658,6 +6692,24 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-intacct-oauth:
+    display_name: Sage Intacct (OAuth)
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://docs.nango.dev/integrations/all/sage-intacct-oauth
 
 sage-intacct:
     display_name: Sage Intacct
