@@ -4,7 +4,7 @@ import type { OAuth2Credentials } from '../models';
 
 describe('Connection service tests', () => {
     describe('parseRawCredentials', () => {
-        it('should extract access_token from authed_user for Slack authed_user', () => {
+        it('should extract access_token from authed_user for Slack user token authentication', () => {
             const rawCredentials = {
                 authed_user: {
                     access_token: 'user_access_token',
