@@ -11,7 +11,8 @@
         "ajv-formats": "3.0.1",
         "axios": "1.7.9",
         "lodash-es": "4.17.21",
-        "parse-link-header": "2.0.0"
+        "parse-link-header": "2.0.0",
+        "undici": "6.21.1"
     },
     "devDependencies": {
         "@nangohq/types": "0.53.2",
