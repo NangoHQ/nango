@@ -259,6 +259,7 @@
                 "integrations/all/apollo",
                 "integrations/all/apollo-oauth",
                 "integrations/all/apple-app-store",
+                "integrations/all/appstle-subscriptions",
                 "integrations/all/asana",
                 "integrations/all/asana-scim",
                 "integrations/all/ashby",
