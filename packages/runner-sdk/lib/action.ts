@@ -14,6 +14,7 @@ import type {
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
+    HTTP_METHOD,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -342,13 +343,36 @@ export abstract class NangoActionBase {
         const parsedInput = zodSchema.safeParse(input);
         if (!parsedInput.success) {
             for (const error of parsedInput.error.errors) {
-                await this.log(`Invalid input provided to create a user: ${error.message} at path ${error.path.join('.')}`, { level: 'error' });
+                await this.log(`Invalid input provided: ${error.message} at path ${error.path.join('.')}`, { level: 'error' });
             }
             throw new this.ActionError({
-                message: 'Invalid input provided to create a user'
+                message: 'Invalid input provided'
             });
         }
     }
 
     public abstract triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+
+    /**
+     * Uncontrolled fetch is a regular fetch without retry or credentials injection.
+     * Only use that method when you want to access resources that are unrelated to the current connection/provider.
+     */
+    public async uncontrolledFetch(options: {
+        url: URL;
+        method?: HTTP_METHOD;
+        headers?: Record<string, string> | undefined;
+        body?: string | null;
+    }): Promise<Response> {
+        const props: RequestInit = {
+            headers: new Headers(options.headers),
+            method: options.method || 'GET'
+            // TODO: use agent
+        };
+
+        if (options.body) {
+            props.body = options.body;
+        }
+
+        return await fetch(options.url);
+    }
 }
