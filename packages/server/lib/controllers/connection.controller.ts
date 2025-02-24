@@ -6,7 +6,11 @@ import { configService, connectionService, errorManager, NangoError, accountServ
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationStartCapCheck as connectionCreationStartCapCheckHook } from '../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
+    connectionRefreshSuccess
+} from '../hooks/hooks.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 
@@ -393,7 +397,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'API_KEY',
+                            auth_mode: 'BASIC',
                             operation: res.operation,
                             endUser: undefined
                         },
@@ -580,7 +584,7 @@ class ConnectionController {
                 return;
             }
 
-            if (updatedConnection && updatedConnection.connection.id && runHook) {
+            if (updatedConnection && runHook) {
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -594,6 +598,11 @@ class ConnectionController {
                     integration,
                     logContextGetter
                 );
+            }
+
+            if (updatedConnection && updatedConnection.operation === 'override') {
+                // If we updated the connection we assume the connection is now correct
+                await connectionRefreshSuccess({ connection: updatedConnection.connection, environment, config: integration });
             }
 
             res.status(201).send({
