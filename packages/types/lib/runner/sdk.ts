@@ -1,21 +1,7 @@
 import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { RunnerFlags } from '.';
-import type { Metadata } from '../connection/db';
 import type { DBTeam } from '../team/db';
 import type { DBSyncConfig } from '../syncConfigs/db';
-
-export interface RunArgs {
-    sync: string;
-    connectionId: string;
-    lastSyncDate?: string;
-    useServerLastSyncDate?: boolean;
-    input?: object;
-    metadata?: Metadata;
-    autoConfirm: boolean;
-    debug: boolean;
-    optionalEnvironment?: string;
-    optionalProviderConfigKey?: string;
-}
 
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';

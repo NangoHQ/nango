@@ -124,10 +124,6 @@ export class Orchestrator {
         });
         const startTime = Date.now();
         try {
-            if (!connection.id) {
-                throw new NangoError('invalid_input', { connection });
-            }
-
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;

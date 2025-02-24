@@ -13848,6 +13848,35 @@ integrations:
                 region?: string
                 postalCode?: string
                 country?: string
+    sage-intacct-oauth:
+        syncs:
+            accounts:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all accounts from your sage intacct account.
+                output: Account
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /accounts
+                    group: Accounts
+        models:
+            Account:
+                id: string
+                key: string
+                name: string
+                account_type: string
+                normal_balance: string
+                status: string
+                disallow_direct_posting: boolean
+                closing_type: string
+                alternative_GLAccount: string
+                audit:
+                    created_date_time: string
+                    modified_date_time: string
+                    created_by: string
+                    modified_by: string
     salesforce:
         actions:
             fetch-fields:

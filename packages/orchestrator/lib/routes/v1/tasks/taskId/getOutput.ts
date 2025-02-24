@@ -51,7 +51,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             cleanupAndRespond((res) => res.status(200).json({ state: completedTask.state, output: completedTask.output }));
         };
         const timeout = setTimeout(() => {
-            cleanupAndRespond((res) => res.status(500).send({ error: { code: 'timeout', message: 'Long polling timeout' } }));
+            cleanupAndRespond((res) => res.status(408).send({ error: { code: 'timeout', message: 'Long polling timeout' } }));
         }, longPollingTimeoutMs);
 
         eventEmitter.once(eventId, onCompletion);
