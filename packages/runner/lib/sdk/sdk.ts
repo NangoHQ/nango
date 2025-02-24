@@ -57,7 +57,6 @@ export class NangoActionRunner extends NangoActionBase {
                 await this.sendLogToPersist(log);
             },
             getProxyConfig: async () => {
-                console.log('prout???');
                 // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
                 const connection = await this.getConnection(providerConfigKey, connectionId);
                 if (!connection) {

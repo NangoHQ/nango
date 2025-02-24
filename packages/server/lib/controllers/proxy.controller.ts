@@ -345,6 +345,7 @@ class ProxyController {
             logger: async (msg) => {
                 await logCtx.log(msg);
             },
+            // TODO: use getProxyConfig to refresh credentials during retries
             proxyConfig: proxyConfig
         });
 
