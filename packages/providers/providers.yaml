@@ -1739,7 +1739,7 @@ checkhq:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Check account
+            description: The API key for your CheckHQ account
             doc_section: '#step-1-finding-check-api-token'
 
 checkr-partner:
