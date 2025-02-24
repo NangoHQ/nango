@@ -2,7 +2,7 @@ import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { Metadata, NangoProps, UserLogParameters, GetPublicConnection } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { DryRunService } from './dryrun.service';
 
@@ -212,6 +212,15 @@ export class NangoSyncCLI extends NangoSyncBase {
         }
 
         return super.getMetadata<TMetadata>();
+    }
+
+    public override async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
+        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride);
+        if (this.stubbedMetadata) {
+            return { ...fetchedConnection, metadata: this.stubbedMetadata };
+        }
+
+        return fetchedConnection;
     }
 
     public override async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
