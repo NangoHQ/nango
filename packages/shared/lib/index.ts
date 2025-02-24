@@ -12,7 +12,6 @@ import userService from './services/user.service.js';
 import remoteFileService from './services/file/remote.service.js';
 import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
-import proxyService from './services/proxy.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import flowService from './services/flow.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
@@ -31,6 +30,8 @@ export * from './services/endUser.service.js';
 export * from './services/onboarding.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
+export * from './services/proxy/utils.js';
+export * from './services/proxy/request.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 
@@ -70,7 +71,6 @@ export {
     localFileService,
     syncManager,
     hmacService,
-    proxyService,
     flowService,
     errorNotificationService,
     analytics,

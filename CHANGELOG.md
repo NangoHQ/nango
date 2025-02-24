@@ -2,6 +2,99 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.54.0] - 2025-02-24
+
+### Added
+
+- *(zod-validation)* Add built in zod validation helper (#3423) by @khaliqgant
+- *(integrations)* Add support for airtable pat (#3545) by @hassan254-prog
+- *(records)* Use read replicas when possible (#3546) by @bodinsamuel
+- *(es)* Add indexed retry object for http logs (#3543) by @bodinsamuel
+- *(proxy)* Full rewrite, controlled backoff, better logging, shared logic, etc. (#3540) by @bodinsamuel
+- Add categories to Netsuite TBA API (#3552) by @bastienbeurier
+- *(guru-scim)* Add missing headers (#3549) by @dannylwe
+- *(integrations)* Add support for sage-intacct-oauth-support (#3547) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5f29fa5fc99c08095484475335272fad17b98ed9 by Victor Lang'at. Commit message: feat(netsuite-tba): add netsuite actions (#226) by @github-actions[bot]
+- *(gorgias-basic)* Add support for gorgias auth (#3554) by @dannylwe
+- *(integrations)* Add support for amazon selling partner api (#3538) by @hassan254-prog
+- *(integrations)* Add support for appstle-subscriptions (#3559) by @hassan254-prog
+- *(sdk)* Add uncontrolledFetch (#3564) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8a200cf137b88e4ff1cea948b24122548cabbe5c by Hassan_Wari. Commit message: feat(netsuite): update syncs to incremental (#225) by @github-actions[bot]
+- *(deps-dev)* Bump vitest from 2.1.8 to 2.1.9 (#3544) by @dependabot[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/9a101f7434dd1ed4a80fb2ccc358db5897fe19bf by Hassan_Wari. Commit message: feat(shopify): orders sync (#227) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/38595e571ef708d7057c2bd674d6cc2cb4967efb by Daniel Roy Lwetabe. Commit message: feat(dropbox): document sync should have modified date (#228) by @github-actions[bot]
+
+### Fixed
+
+- Fix python snippet in webhook verification docs (#3541) by @bastienbeurier
+- Fix frontend docs (#3539) by @bastienbeurier
+- *(types)* Move proxy to pkg  (#3542) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/3fc19d74a8d80c9241765feb77824c5499d2f795 by Khaliq. Commit message: fix(confluence): confluence type issue (#231) by @github-actions[bot]
+- *(basecamp)* Assign accountId if only one (#3555) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/3930f76c4f104c09eb8d696568ab9d00abea8fb7 by Khaliq. Commit message: fix(basecamp): bump versions (#233) by @github-actions[bot]
+- *(metadata-stub)* Override metadata if coming from getConnection (#3565) by @khaliqgant
+
+## [v0.53.2] - 2025-02-19
+
+### Added
+
+- *(sdk)* Ignore _nango_metadata field in batchSave, batchUpdate, batchDelete (#3513) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/120d94fee1f01ecb7dcbfc62d69d5b5093008821 by Khaliq. Commit message: fix(scopes): add more explicit scopes (#216) by @github-actions[bot]
+- *(integrations)* Whitelist unzipper package (#3445) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/430b033a09eaaa10852e517a39513abb4d29454f by Victor Lang'at. Commit message: feat(brightcrowd): add sync  for books and pages (#214) by @github-actions[bot]
+- Add guide to document setMergingStrategy (#3426) by @TBonnin
+- Introduce sync variant (#3521) by @TBonnin
+- *(runner)* GetObjectsById (#3475) by @nalanj
+- *(sync variant)* Add sync variant to schedule and nangoProps (#3522) by @TBonnin
+- *(docs)* Started on docs for getRecordsById (#3525) by @nalanj
+- *(integrations)* Add support for jira data center api key (#3524) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/63f5660d9ea0daaf0eb172cb45a671730c15616d by Khaliq. Commit message: feat(.nango): add .nango directory (#221) by @github-actions[bot]
+- *(pagination)* Add support for dot notation in the body (#3533) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/15f347fc31e313187510eacf64776de1bee25b6a by Victor Lang'at. Commit message: feat(quickbooks): add create bill and create purchase order actions (#223) by @github-actions[bot]
+- *(guru-scim)* Add provider support (#3534) by @dannylwe
+
+### Changed
+
+- Add integration counts to webflow sync (#3506) by @nalanj
+- Add script to automate changelog generation for providers (#3517) by @nalanj
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/faf3fb9c6a79231c7907524dbe13ca724c99423c by Khaliq. Commit message: feat(google-drive): output the mimeType (#218) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/100844ca03f7615d11f115c743294599a7dcdd6a by Khaliq. Commit message: feat(google-drive): Add root level sync (#219) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/be37b30de5b50a93196ab51de9b369c2727d3031 by Khaliq. Commit message: feat(google-docs): update actions (#220) by @github-actions[bot]
+- A patch to fix typographical and grammatical errors (#3527) by @clarencepenz
+- *(dd)* Try to change some spampling (#3518) by @bodinsamuel
+- Integrations changelog (#3526) by @nalanj
+- Update basic auth configuration field names 1 of 3 (#3532) by @viictoo
+
+### Fixed
+
+- *(records)* Wrong nextMerging cursor when last record was not updated (#3499) by @TBonnin
+- *(persist)* Filter external ids to remove 0x00 (#3498) by @nalanj
+- *(logs)* Ignore irrelevant headers in HTTP message (#3504) by @bodinsamuel
+- Set orchestrator and jobs request size limit to 10mb (#3484) by @TBonnin
+- *(logs)* Unify HTTP logs and retry (#3503) by @bodinsamuel
+- Authenticate memory warning logs from runner to persist (#3507) by @TBonnin
+- Wait for 10 successes to consider a runner healthy (#3505) by @TBonnin
+- *(sdk)* Lower sample for validation error (#3508) by @bodinsamuel
+- *(unauthenticated)* Allow connection config to be created (#3512) by @khaliqgant
+- 10 successful reqs to runner /healthy for cloud only (#3510) by @TBonnin
+- *(tracing)* Tag usr across the infra (#3511) by @bodinsamuel
+- *(webapp)* Log operation tooltips (#3514) by @nalanj
+- *(shortcut)* Fix verification link (#3520) by @khaliqgant
+- Pause schedules when disabling integration (#3519) by @TBonnin
+- *(webapp)* Fix mistake where I mixed up icons (#3523) by @nalanj
+- *(rateLimit)* Improve compute strategy (#3516) by @bodinsamuel
+- *(logs)* Correctly identify internal logs (#3515) by @bodinsamuel
+- *(ui)* Env settings design feedback (#3509) by @bodinsamuel
+- *(ui)* Table row hover (#3528) by @bodinsamuel
+- *(ui)* Inline script configuration (#3529) by @bodinsamuel
+- *(logs)* Missing created_at in sdk logs (#3531) by @bodinsamuel
+- *(connectionRefresh)* Force salesforce refresh on error, add metrics (#3530) by @bodinsamuel
+- *(dd)* Track webhook with metrics (#3535) by @bodinsamuel
+- *(logs)* Ignore more headers in http logs (#3536) by @bodinsamuel
+
 ## [v0.53.1] - 2025-02-11
 
 ### Added
@@ -3065,6 +3158,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.54.0]: https://github.com/NangoHQ/nango/compare/v0.53.2..v0.54.0
+[v0.53.2]: https://github.com/NangoHQ/nango/compare/v0.53.1..v0.53.2
 [v0.53.1]: https://github.com/NangoHQ/nango/compare/v0.53.0..v0.53.1
 [v0.53.0]: https://github.com/NangoHQ/nango/compare/v0.52.5..v0.53.0
 [v0.52.5]: https://github.com/NangoHQ/nango/compare/v0.52.4..v0.52.5

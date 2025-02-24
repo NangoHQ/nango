@@ -1,6 +1,7 @@
 import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, RunnerFlags } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags } from '@nangohq/types';
+import { ZodSchema } from 'zod';
 
 export declare const oldLevelToNewLevel: {
     readonly debug: 'debug';
@@ -48,7 +49,7 @@ export interface ProxyConfiguration {
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
     retryHeader?: RetryHeaderConfig;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
     retryOn?: number[] | null;
 }
 export interface AuthModes {
@@ -201,18 +202,6 @@ export declare class ActionError<T = Record<string, unknown>> extends Error {
     payload?: Record<string, unknown>;
     constructor(payload?: T);
 }
-interface RunArgs {
-    sync: string;
-    connectionId: string;
-    lastSyncDate?: string;
-    useServerLastSyncDate?: boolean;
-    input?: object;
-    metadata?: Metadata;
-    autoConfirm: boolean;
-    debug: boolean;
-    optionalEnvironment?: string;
-    optionalProviderConfigKey?: string;
-}
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
@@ -355,7 +344,13 @@ export declare class NangoAction {
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
+    zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<void>;
     triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+    /**
+     * Uncontrolled fetch is a regular fetch without retry or credentials injection.
+     * Only use that method when you want to access resources that are unrelated to the current connection/provider.
+     */
+    uncontrolledFetch(options: { url: URL; method?: HTTP_METHOD; headers?: Record<string, string> | undefined; body?: string | null }): Promise<Response>;
     private sendLogToPersist;
     private logAPICall;
 }

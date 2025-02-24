@@ -115,6 +115,19 @@ exports[`mapping > should create one index automatically on log 1`] = `
           },
         },
       },
+      "retry": {
+        "properties": {
+          "attempt": {
+            "type": "integer",
+          },
+          "max": {
+            "type": "integer",
+          },
+          "waited": {
+            "type": "integer",
+          },
+        },
+      },
       "source": {
         "type": "keyword",
       },

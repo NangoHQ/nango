@@ -212,7 +212,20 @@ aircall-basic:
             response_path: results
     docs_connect: https://docs.nango.dev/integrations/all/aircall-basic/connect
     docs: https://docs.nango.dev/integrations/all/aircall-basic
-
+    credentials:
+        username:
+            type: string
+            title: API ID
+            description: The Application ID (API ID) for your Aircall account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
+        password:
+            type: string
+            title: API Token
+            description: The Admin API Key (API Token) for your Aircall account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
 airtable:
     display_name: Airtable
     categories:
@@ -227,6 +240,26 @@ airtable:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
     docs: https://docs.nango.dev/integrations/all/airtable
+
+airtable-pat:
+    display_name: Airtable (Personal Access Token)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.airtable.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/airtable-pat
+    docs_connect: https://docs.nango.dev/integrations/all/airtable-pat/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token for your Airtable account
+            example: 'patoXxYzA1B2C3D4Ef.98a7b6c5d4e3f2g1h0i9j8k7l6m5n4o3p2q1r0s9t8u7v6w5x4y3z2a1b0cdef'
+            pattern: '^[a-zA-Z0-9\.]+$'
+            doc_section: '#step-1-generating-your-personal-access-token'
 
 autodesk:
     display_name: Autodesk
@@ -305,6 +338,95 @@ amazon:
             description: The domain extension for your Amazon account
             example: com
             pattern: '^[a-z.]+$'
+
+amazon-selling-partner:
+    display_name: Amazon Selling Partner
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
+
+amazon-selling-partner-beta:
+    display_name: Amazon Selling Partner (Beta)
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+        version: beta
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
 
 anrok:
     display_name: Anrok
@@ -447,6 +569,27 @@ apple-app-store:
     proxy:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://docs.nango.dev/integrations/all/apple-app-store
+
+appstle-subscriptions:
+    display_name: Appstle Subscriptions
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://subscription-admin.appstle.com
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/appstle-subscriptions
+    docs_connect: https://docs.nango.dev/integrations/all/appstle-subscriptions/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Appstle Subscriptions API Key
+            secret: true
+            doc_section: '#step-1-finding-your-api-key'
+            example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
+            pattern: ^[a-zA-Z0-9]+$
 
 asana:
     display_name: Asana
@@ -1106,6 +1249,15 @@ booking-com:
             example: secure-supply|supply
             suffix: -xml.booking.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: Machine Account Username
+            description: The username for your Booking.com machine account
+        password:
+            type: string
+            title: Machine Account Password
+            description: The password for your Booking.com machine account
 
 braintree:
     display_name: Braintree
@@ -1549,6 +1701,21 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: The API key for your Chargebee account
+            pattern: '^[a-zA-Z0-9_-]+$'
+            secret: true
+        password:
+            type: string
+            title: Password
+            description: Password
+            # https://apidocs.chargebee.com/docs/api/auth?lang=curl
+            # Chargebee is using basic auth with an api key
+            default_value: ''
+            hidden: true
 
 chattermill:
     display_name: Chattermill
@@ -1933,6 +2100,15 @@ connectwise-psa:
             type: string
             title: Client ID
             description: The Client ID assigned to your integration
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The ConnectWise PSA CompanyId followed by either the Public Key, Integrator Username, or MemberId
+        password:
+            type: string
+            title: Password
+            description: Your ConnectWise PSA private key, integrator password, or member hash
 
 connectwise-psa-staging:
     display_name: ConnectWise PSA (Staging)
@@ -2559,6 +2735,15 @@ e-conomic:
         headers:
             content-type: application/json
     docs: https://docs.nango.dev/integrations/all/e-conomic
+    credentials:
+        username:
+            type: string
+            title: Private Token
+            description: The Private Token for your e-conomic account
+        password:
+            type: string
+            title: Agreement Grant Token
+            description: The Agreement Grant Token for your e-conomic account
 
 egnyte:
     display_name: Egnyte
@@ -2696,6 +2881,17 @@ evaluagent:
             description: The region of your EvaluAgent account
             example: eu
             pattern: '^[a-z]+$'
+    credentials:
+        username:
+            type: string
+            title: Access Key Id
+            description: The Access Key ID for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
+        password:
+            type: string
+            title: Secret Key
+            description: The Secret Key for your EvaluAgent account
+            pattern: '^[a-zA-Z0-9-]+$'
 
 eventbrite:
     display_name: Eventbrite
@@ -3294,6 +3490,24 @@ guru:
             example: 123e4567-e89b-12d3-a456-426614174000
             doc_section: '#step-2-generating-your-user-collection-token'
 
+guru-scim:
+    display_name: Guru (SCIM)
+    categories:
+        - knowledge-base
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getguru.com/api/scim
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/guru-scim
+    docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Guru API Token
+            description: The SCIM API token for your Guru account
+            doc_section: '#step-1-finding-guru-api-token'
+
 github:
     display_name: GitHub (User OAuth)
     categories:
@@ -3654,6 +3868,35 @@ gorgias:
             example: domain
             suffix: .gorgias.com
             prefix: https://
+
+gorgias-basic:
+    display_name: Gorgias (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - e-commerce
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
 
 grafana:
     display_name: Grafana
@@ -5425,6 +5668,9 @@ netsuite-tba:
     alias: netsuite
     display_name: NetSuite (TBA)
     auth_mode: TBA
+    categories:
+        - accounting
+        - erp
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -6529,6 +6775,24 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-intacct-oauth:
+    display_name: Sage Intacct (OAuth)
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://docs.nango.dev/integrations/all/sage-intacct-oauth
 
 sage-intacct:
     display_name: Sage Intacct

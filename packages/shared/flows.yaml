@@ -1758,6 +1758,7 @@ integrations:
                     path: /projects
                     group: Projects
                 output: BasecampProjectsResponse
+                version: 1.0.0
             fetch-todolists:
                 description: >
                     Fetch all todolists in a project.Fetch your projects via the
@@ -1769,6 +1770,7 @@ integrations:
                     path: /todolists
                     group: Todolists
                 output: BasecampTodolistsResponse
+                version: 1.0.0
             create-todo:
                 description: >-
                     Create a new to-do in a specific project + list. Fetch your todolists
@@ -1780,6 +1782,7 @@ integrations:
                     group: Todos
                 input: BasecampCreateTodoInput
                 output: BasecampTodoResponse
+                version: 1.0.0
         syncs:
             todos:
                 runs: every 1 day
@@ -1796,6 +1799,7 @@ integrations:
                     method: GET
                     path: /todos
                     group: Todos
+                version: 1.0.0
         models:
             UserInformation:
                 identity:
@@ -3057,6 +3061,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /pages
+                version: 1.0.0
         models:
             ConfluenceSpace:
                 id: string
@@ -3071,13 +3076,12 @@ integrations:
             ConfluencePage:
                 id: string
                 title: string
-                type: string
                 status: string
                 authorId: string
                 createdAt: string
                 spaceId: string
-                parentId: string
-                parentType: string
+                parentId?: string | null
+                parentType: string | null
                 position: number
                 version:
                     createdAt: string
@@ -3085,9 +3089,12 @@ integrations:
                     number: number
                     minorEdit: boolean
                     authorId: string
-                body:
-                    storage: object
-                    atlas_doc_format: object
+                body?:
+                    storage?: Storage | undefined
+                    atlas_doc_format?: string | undefined
+            Storage:
+                value?: string | undefined
+                representation?: string | undefined
     datadog:
         actions:
             create-user:
@@ -3537,6 +3544,7 @@ integrations:
                 id: string
                 path: string
                 title: string
+                modified_date: string
     evaluagent:
         syncs:
             users:
@@ -10199,81 +10207,81 @@ integrations:
     netsuite-tba:
         syncs:
             customers:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all customers in Netsuite
                 runs: every hour
                 output: NetsuiteCustomer
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /customers
                     group: Customers
-                track_deletes: true
             payments:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all payments received from customers in Netsuite
                 runs: every hour
                 output: NetsuitePayment
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /payments
                     group: Payments
-                track_deletes: true
             invoices:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all invoices in Netsuite
                 runs: every hour
                 output: NetsuiteInvoice
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /invoices
                     group: Invoices
-                track_deletes: true
             credit-notes:
-                version: 1.0.1
+                version: 1.0.2
                 description: |
                     Fetches all credit notes in Netsuite
                 runs: every hour
                 output: NetsuiteCreditNote
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /credit-notes
                     group: Credit Notes
-                track_deletes: true
             locations:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all locations in Netsuite
                 runs: every hour
                 output: NetsuiteLocation
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /locations
-                track_deletes: true
             general-ledger:
-                version: 1.0.0
+                version: 1.0.1
                 description: |
                     Fetches all JournalEntries in Netsuite
                 runs: every hour
                 output: GeneralLedger
-                sync_type: full
-                auto_start: true
+                input: NetsuiteMetadata
+                sync_type: incremental
+                auto_start: false
                 endpoint:
                     method: GET
                     path: /general-ledger
-                track_deletes: true
         actions:
             customer-create:
                 version: 1.0.0
@@ -10352,7 +10360,48 @@ integrations:
                     method: PUT
                     path: /credit-notes
                     group: Credit Notes
+            purchase-order-create:
+                version: 1.0.0
+                description: |
+                    Creates a purchase order in Netsuite
+                input: NetsuitePurchaseOrderCreateInput
+                output: NetsuitePurchaseOrderCreateOutput
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            purchase-order-update:
+                version: 1.0.0
+                description: Updates an existing purchase order in Netsuite.
+                input: NetsuitePurchaseOrderUpdateInput
+                output: NetsuitePurchaseOrderUpdateOutput
+                endpoint:
+                    method: PUT
+                    path: /purchase-orders
+                    group: Purchase Orders
+            bill-create:
+                version: 1.0.0
+                description: |
+                    Creates a vendor bill in Netsuite.
+                input: NetsuiteBillCreateInput
+                output: NetsuiteBillCreateOutput
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
+            bill-update:
+                version: 1.0.0
+                description: |
+                    Updates an existing vendor bill in Netsuite.
+                input: NetsuiteBillUpdateInput
+                output: NetsuiteBillUpdateOutput
+                endpoint:
+                    method: PUT
+                    path: /bills
+                    group: Bills
         models:
+            NetsuiteMetadata:
+                timezone?: string | undefined
             NetsuiteAddress:
                 addressLine1: string | null
                 addressLine2: string | null
@@ -10548,6 +10597,145 @@ integrations:
                 credit?: number
                 debit?: number
                 description: string
+            PurchaseOrderLine:
+                itemId: string
+                quantity: number
+                amount: number
+                description?: string
+                locationId?: string
+                rate?: number
+                department?: string
+                class?: string
+                createWorkOrder?: boolean
+                inventoryDetail?: InventoryDetail | null
+            InventoryDetail:
+                binNumber?: string
+                expirationDate?: string
+                quantity?: number
+                serialNumber?: string
+                toBinNumber?: string
+            NetsuitePurchaseOrderCreateInput:
+                vendorId: string
+                currency?: string
+                description?: string
+                status: string
+                tranDate?: string
+                dueDate?: string
+                lines: PurchaseOrderLine[]
+                customForm?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                taxDetails?: TaxDetails | null
+                billingAddress?: Address
+                shippingAddress?: Address
+            TaxDetails:
+                taxCode?: string
+                taxRate?: number
+            Address:
+                addr1?: string
+                addr2?: string
+                addr3?: string
+                city?: string
+                state?: string
+                zip?: string
+                country?: string
+            NetsuitePurchaseOrderCreateOutput:
+                id: string
+            NetsuitePurchaseOrderUpdateInput:
+                id: string
+                vendorId?: string
+                currency?: string
+                description?: string
+                status?: string
+                tranDate?: string
+                dueDate?: string
+                lines?: PurchaseOrderLine[]
+                customForm?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                billingAddress?: Address | null
+                shippingAddress?: Address | null
+                taxDetails?: TaxDetails | null
+            NetsuitePurchaseOrderUpdateOutput:
+                success: boolean
+            NetsuiteBillLine:
+                itemId: string
+                quantity: number
+                amount: number
+                description?: string
+                rate?: number
+                locationId?: string
+                departmentId?: string
+                classId?: string
+                customerId?: string
+                isBillable?: boolean
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+                inventoryDetail?:
+                    binNumber?: string
+                    expirationDate?: string
+                    quantity?: number
+                    serialNumber?: string
+            NetsuiteBillCreateInput:
+                vendorId: string
+                tranDate: string
+                currency: string
+                dueDate?: string
+                status?: string
+                memo?: string
+                externalId?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                terms?: string
+                lines: NetsuiteBillLine[]
+                billingAddress?:
+                    addr1?: string
+                    addr2?: string
+                    addr3?: string
+                    city?: string
+                    state?: string
+                    zip?: string
+                    country?: string
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+            NetsuiteBillCreateOutput:
+                id: string
+            NetsuiteBillUpdateInput:
+                id: string
+                vendorId?: string
+                tranDate?: string
+                currency?: string
+                dueDate?: string
+                status?: string
+                memo?: string
+                externalId?: string
+                location?: string
+                subsidiary?: string
+                department?: string
+                class?: string
+                terms?: string
+                lines?: NetsuiteBillLine[]
+                billingAddress?:
+                    addr1?: string
+                    addr2?: string
+                    addr3?: string
+                    city?: string
+                    state?: string
+                    zip?: string
+                    country?: string
+                taxDetails?:
+                    taxCode?: string
+                    taxRate?: number
+            NetsuiteBillUpdateOutput:
+                success: boolean
     next-cloud-ocs:
         syncs:
             users:
@@ -12084,6 +12272,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12340,6 +12548,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -12417,6 +12630,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -12668,6 +13006,26 @@ integrations:
                     method: POST
                     path: /payments
                     group: Payments
+            create-purchase-order:
+                description: |
+                    Creates a single purchase order in QuickBooks.
+                input: CreatePurchaseOrder
+                scopes: com.intuit.quickbooks.accounting
+                output: PurchaseOrder
+                endpoint:
+                    method: POST
+                    path: /purchase-orders
+                    group: Purchase Orders
+            create-bill:
+                description: |
+                    Creates a single bill in QuickBooks.
+                input: CreateBill
+                scopes: com.intuit.quickbooks.accounting
+                output: Bill
+                endpoint:
+                    method: POST
+                    path: /bills
+                    group: Bills
         models:
             Updates:
                 id: string
@@ -12924,6 +13282,11 @@ integrations:
                 ap_account_name?: string | undefined
                 total_amount: number
                 lines: BillLine[]
+            CreateBill:
+                currency: string
+                vendor_id: string
+                vendor_name?: string | undefined
+                line: BillLine[]
             BillLine:
                 id: string
                 detail_type: string
@@ -13001,6 +13364,131 @@ integrations:
                 deposit_account_name?: string | undefined
             DeleteResponse:
                 id: string
+            LinkedTxn:
+                txn_id: string
+                txn_type: string
+                txn_line_id?: string
+            CreatePurchaseOrder:
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrder:
+                id: string
+                created_at: string
+                updated_at: string
+                ap_account_ref: Reference
+                vendor_ref: Reference
+                line: PurchaseOrderLine[]
+                sync_token?: string
+                currency_ref?: Reference
+                global_tax_calculation?: TaxExcluded | TaxInclusive | NotApplicable
+                txn_date?: string
+                custom_field?: CustomField[]
+                po_email?: string | null
+                class_ref?: Reference
+                sales_term_ref?: Reference
+                linked_txn?: LinkedTxn[]
+                memo?: string
+                po_status?: Open | Closed
+                transaction_location_type?: string
+                due_date?: string
+                metadata?: Metadata
+                doc_number?: string
+                private_note?: string
+                ship_method_ref?: Reference
+                txn_tax_detail?: TxnTaxDetail
+                ship_to?: Reference
+                exchange_rate?: number
+                ship_addr?: PhysicalAddress | null
+                vendor_addr?: PhysicalAddress | null
+                email_status?: string
+                total_amt_cents: number
+                recur_data_ref?: Reference
+            PurchaseOrderLine:
+                id?: string
+                amount_cents: number
+                detail_type: ItemBasedExpenseLineDetail
+                item_based_expense_line_detail?: ItemBasedExpenseLine
+                description?: string
+                line_num?: number
+                linked_txn?: LinkedTxn[]
+                project_ref?: Reference
+            CustomField:
+                definition_id: string
+                name?: string
+                type?: string
+                string_value?: string
+            AccountBasedExpenseLineDetail:
+                account_ref: Reference
+                tax_amount?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            ItemBasedExpenseLine:
+                item_ref?: Reference
+                price_level_ref?: Reference
+                qty?: number
+                unit_price_cents?: number
+                tax_inclusive_amt?: number
+                customer_ref?: Reference
+                class_ref?: Reference
+                tax_code_ref?: Reference
+                markup_info?: MarkupInfo | null
+                billable_status?: Billable | NotBillable | HasBeenBilled
+            MarkupInfo:
+                price_level_ref?: Reference
+                percent?: number
+                mark_up_income_account_ref?: Reference
+            PhysicalAddress:
+                line1?: string
+                line2?: string
+                line3?: string
+                line4?: string
+                line5?: string
+                city?: string
+                sub_division_code?: string
+                postal_code?: string
+                country?: string
+                country_sub_division_code?: string
+                lat?: string
+                long?: string
+                id: string
+            TaxLine:
+                amount: number
+                detail_type: string
+                tax_line_detail: TaxLineDetail
+            TxnTaxDetail:
+                txn_tax_code_ref?: Reference
+                total_tax_cents?: number
+                tax_line?: TaxLine[]
     ramp:
         syncs:
             users:
@@ -13360,6 +13848,35 @@ integrations:
                 region?: string
                 postalCode?: string
                 country?: string
+    sage-intacct-oauth:
+        syncs:
+            accounts:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of all accounts from your sage intacct account.
+                output: Account
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /accounts
+                    group: Accounts
+        models:
+            Account:
+                id: string
+                key: string
+                name: string
+                account_type: string
+                normal_balance: string
+                status: string
+                disallow_direct_posting: boolean
+                closing_type: string
+                alternative_GLAccount: string
+                audit:
+                    created_date_time: string
+                    modified_date_time: string
+                    created_by: string
+                    modified_by: string
     salesforce:
         actions:
             fetch-fields:
@@ -14499,6 +15016,71 @@ integrations:
             FetchFile:
                 id: string
                 download_url: string | null
+    shopify:
+        syncs:
+            orders:
+                runs: every hour
+                description: |
+                    Fetches a list of orders from Shopify.
+                output: Order
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /orders
+                    group: Orders
+                scopes:
+                    - read_customers
+                    - read_orders
+        models:
+            Order:
+                id: string
+                name: string
+                created_at: string
+                updated_at: string
+                processed_at: string
+                currency_code: string
+                presentment_currency_code: string
+                confirmed: boolean
+                cancelled_at: string | null
+                cancel_reason: string | null
+                closed: boolean
+                closed_at: string | null
+                fully_paid: boolean
+                customer: Customer | null
+                total_price_set:
+                    amount: string
+                    currency_code: string
+                subtotal_price_set:
+                    amount: string
+                    currency_code: string
+                total_tax_set:
+                    amount: string
+                    currency_code: string
+                shipping_address: Address | null
+                billing_address: Address | null
+                line_item:
+                    - id: string
+                      name: string
+                      quantity: number
+                      original_total_set:
+                          amount: string
+                          currency_code: string
+                      discounted_total_set:
+                          amount: string
+                          currency_code: string
+            Address:
+                address1: string
+                address2: string | null
+                city: string
+                country: string
+                province: string | null
+                zip: string | null
+            Customer:
+                first_name: string
+                last_name: string
+                display_name: string
+                email: string | null
+                phone: string | null
     slack:
         syncs:
             users:
