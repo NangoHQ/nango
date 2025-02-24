@@ -1724,7 +1724,7 @@ chattermill:
             suffix: .chattermill.com
             prefix: https://
 
-check:
+checkhq:
     display_name: Check
     categories:
         - accounting
@@ -1733,8 +1733,8 @@ check:
         base_url: https://api.checkhq.com
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://docs.nango.dev/integrations/all/check
-    docs_connect: https://docs.nango.dev/integrations/all/check/connect
+    docs: https://docs.nango.dev/integrations/all/checkhq
+    docs_connect: https://docs.nango.dev/integrations/all/checkhq/connect
     credentials:
         apiKey:
             type: string
