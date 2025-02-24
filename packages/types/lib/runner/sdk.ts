@@ -30,6 +30,7 @@ export interface NangoProps {
     provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
+    syncVariant?: string | undefined;
     nangoConnectionId?: number;
     syncJobId?: number | undefined;
     track_deletes?: boolean;

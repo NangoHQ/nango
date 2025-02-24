@@ -121,8 +121,8 @@ export const VariablesSettings: React.FC = () => {
                 <h3 className="uppercase text-sm">Script Settings</h3>
             </Link>
             <div className="px-8 flex flex-col gap-10 w-3/5">
-                <fieldset className="flex flex-col gap-2">
-                    <label htmlFor="envvar" className="font-semibold mb-2">
+                <fieldset className="flex flex-col gap-2.5">
+                    <label htmlFor="envvar" className="font-semibold">
                         Environment variables
                     </label>
 
@@ -131,14 +131,14 @@ export const VariablesSettings: React.FC = () => {
                         const errorValue = errors.find((err) => err.index === i && err.key === 'value');
                         return (
                             <div key={i} className="flex flex-col gap-0.5">
-                                <div className="flex gap-2">
+                                <div className="flex gap-4">
                                     <Input
                                         value={envVar.name}
                                         onChange={(e) => onUpdate('name', e.target.value, i)}
                                         inputSize={'lg'}
                                         variant={'black'}
                                         onPaste={(e) => onPaste(e)}
-                                        className={cn('w-[225px]', errorName && 'border-alert-400')}
+                                        className={cn('w-[200px]', errorName && 'border-alert-400')}
                                         placeholder="MY_ENV_VAR"
                                         disabled={!edit || loading}
                                     />
@@ -148,12 +148,12 @@ export const VariablesSettings: React.FC = () => {
                                         inputSize={'lg'}
                                         variant={'black'}
                                         onPaste={(e) => onPaste(e)}
-                                        className={cn('w-[225px] grow', errorValue && 'border-alert-400')}
+                                        className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
                                         placeholder="value"
                                         disabled={!edit || loading}
                                     />
                                     {edit && (
-                                        <Button variant={'icon'} size="lg" onClick={() => !loading && onRemove(i)}>
+                                        <Button variant={'danger'} size="lg" onClick={() => !loading && onRemove(i)}>
                                             <IconTrash stroke={1} />
                                         </Button>
                                     )}
@@ -168,18 +168,18 @@ export const VariablesSettings: React.FC = () => {
                             </div>
                         );
                     })}
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-3">
                         {!edit && (
-                            <Button variant={'secondary'} onClick={() => onEnabledEdit()} size={'sm'}>
+                            <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
                                 <IconEdit stroke={1} size={18} /> Edit
                             </Button>
                         )}
                         {edit && (
                             <>
-                                <Button variant={'tertiary'} onClick={onCancel} size={'sm'}>
-                                    cancel
+                                <Button variant={'tertiary'} onClick={onCancel}>
+                                    Cancel
                                 </Button>
-                                <Button variant={'primary'} onClick={onSave} isLoading={loading} size={'sm'}>
+                                <Button variant={'primary'} onClick={onSave} isLoading={loading}>
                                     Save
                                 </Button>
                             </>

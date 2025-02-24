@@ -1,32 +1,28 @@
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { Button } from './ui/button/Button';
-import * as Tooltip from './ui/Tooltip';
 import { cn } from '../utils/utils';
+import { SimpleTooltip } from './SimpleTooltip';
+import { IconHelpCircle } from '@tabler/icons-react';
 
-export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; children: React.ReactNode; className?: string }> = ({
+export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; children: React.ReactNode; className?: string; horizontal?: boolean }> = ({
     title,
     children,
     help,
+    horizontal,
     className
 }) => {
     return (
-        <div className={cn('flex flex-col gap-1 relative', className)}>
-            <div className="flex items-center gap-2">
-                <div className="text-gray-400 text-xs uppercase">{title}</div>
+        <div className={cn('flex flex-col gap-1 relative', horizontal && 'grid grid-cols-2', className)}>
+            <div className={cn('flex items-center gap-2')}>
+                <div className="text-gray-400 text-s uppercase">{title}</div>
                 {help && (
-                    <Tooltip.Tooltip delayDuration={0}>
-                        <Tooltip.TooltipTrigger asChild>
-                            <Button variant="icon" size={'xs'}>
-                                <QuestionMarkCircledIcon />
-                            </Button>
-                        </Tooltip.TooltipTrigger>
-                        <Tooltip.TooltipContent side="right">
-                            <div className="flex text-white text-sm">{help}</div>
-                        </Tooltip.TooltipContent>
-                    </Tooltip.Tooltip>
+                    <SimpleTooltip delay={0} side="right" tooltipContent={<div className="flex text-white text-sm">{help}</div>}>
+                        <Button variant="icon" size={'xs'}>
+                            <IconHelpCircle stroke={1} size={18} />
+                        </Button>
+                    </SimpleTooltip>
                 )}
             </div>
-            <div className="flex items-center gap-2 text-white text-sm">{children}</div>
+            <div className="flex items-center gap-1 text-white text-sm">{children}</div>
         </div>
     );
 };

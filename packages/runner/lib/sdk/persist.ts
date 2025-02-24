@@ -6,7 +6,15 @@ import { getUserAgent } from '@nangohq/node';
 import { httpRetryStrategy, retryWithBackoff, Ok, Err } from '@nangohq/utils';
 import { logger } from '../logger.js';
 import type { Result } from '@nangohq/utils';
-import type { CursorOffset, DeleteRecordsSuccess, GetCursorSuccess, MergingStrategy, PostRecordsSuccess, PutRecordsSuccess } from '@nangohq/types';
+import type {
+    CursorOffset,
+    DeleteRecordsSuccess,
+    GetCursorSuccess,
+    GetRecordsSuccess,
+    MergingStrategy,
+    PostRecordsSuccess,
+    PutRecordsSuccess
+} from '@nangohq/types';
 
 export class PersistClient {
     private httpClient: AxiosInstance;
@@ -222,6 +230,34 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to get cursor: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async getRecords({
+        environmentId,
+        nangoConnectionId,
+        model,
+        cursor,
+        externalIds
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        model: string;
+        cursor?: string | undefined;
+        externalIds?: string[] | undefined;
+    }): Promise<Result<GetRecordsSuccess>> {
+        const res = await this.makeRequest<GetRecordsSuccess>({
+            method: 'GET',
+            url: `/environment/${environmentId}/connection/${nangoConnectionId}/records`,
+            params: {
+                model,
+                cursor,
+                externalIds
+            }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to get records: ${res.error.message}`));
         }
         return res;
     }

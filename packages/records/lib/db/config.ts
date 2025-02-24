@@ -26,4 +26,15 @@ const config: Knex.Config = {
     }
 };
 
-export { config };
+// This config is optional because it can create issues if we have 2 pools connected to the same URL
+const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
+    ? {
+          ...config,
+          connection: {
+              connectionString: envs.RECORDS_DATABASE_READ_URL,
+              statement_timeout: 60000
+          }
+      }
+    : undefined;
+
+export { config, configRead };
