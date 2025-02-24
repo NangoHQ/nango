@@ -17,16 +17,16 @@ export class KnexDatabase {
 
     async migrate(): Promise<any> {
         return retry(
-            async () =>
+            async () => {
                 await this.knex.migrate.latest({
                     directory: directory,
                     tableName: '_nango_auth_migrations',
                     schemaName: this.schema()
-                }),
+                });
+            },
             {
                 maxAttempts: 4,
-                delayMs: (attempt) => 500 * attempt,
-                retryIf: () => true
+                delayMs: (attempt) => 500 * attempt
             }
         );
     }

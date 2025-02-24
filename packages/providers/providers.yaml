@@ -339,6 +339,95 @@ amazon:
             example: com
             pattern: '^[a-z.]+$'
 
+amazon-selling-partner:
+    display_name: Amazon Selling Partner
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
+
+amazon-selling-partner-beta:
+    display_name: Amazon Selling Partner (Beta)
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+        version: beta
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
+
 anrok:
     display_name: Anrok
     categories:
@@ -3405,6 +3494,8 @@ guru-scim:
     auth_mode: API_KEY
     proxy:
         base_url: https://api.getguru.com/api/scim
+        headers:
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
@@ -3774,6 +3865,35 @@ gorgias:
             example: domain
             suffix: .gorgias.com
             prefix: https://
+
+gorgias-basic:
+    display_name: Gorgias (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - e-commerce
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
 
 grafana:
     display_name: Grafana
@@ -5545,6 +5665,9 @@ netsuite-tba:
     alias: netsuite
     display_name: NetSuite (TBA)
     auth_mode: TBA
+    categories:
+        - accounting
+        - erp
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -6649,6 +6772,24 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://docs.nango.dev/integrations/all/sage
+
+sage-intacct-oauth:
+    display_name: Sage Intacct (OAuth)
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://docs.nango.dev/integrations/all/sage-intacct-oauth
 
 sage-intacct:
     display_name: Sage Intacct
