@@ -520,9 +520,12 @@ export class Nango {
     public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
     ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
+        const { connectionId, providerConfigKey, model, variant, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
         const usp = new URLSearchParams({ model });
+        if (variant) {
+            usp.set('variant', variant);
+        }
         if (modifiedAfter || delta) {
             usp.set('modified_after', `${modifiedAfter || delta}`);
         }
