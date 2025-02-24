@@ -158,6 +158,7 @@ export class Scheduler {
                     return Err(running.error);
                 }
                 if (running.value.length > 0) {
+                    // TODO: identify this error so we can return something else than a 500
                     return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
                 }
                 taskProps = {

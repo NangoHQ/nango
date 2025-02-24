@@ -135,14 +135,10 @@ export const connectionRefreshSuccess = async ({
     environment,
     config
 }: {
-    connection: DBConnectionDecrypted;
+    connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     environment: DBEnvironment;
     config: IntegrationConfig;
 }): Promise<void> => {
-    if (!connection.id) {
-        return;
-    }
-
     await errorNotificationService.auth.clear({
         connection_id: connection.id
     });
