@@ -9,7 +9,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' })
         });
-        const res = (await proxy.call()).unwrap();
+        const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
         expect(fn).toHaveBeenNthCalledWith(
             1,
@@ -30,7 +30,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 })
         });
-        await expect(async () => (await proxy.call()).unwrap()).rejects.toThrowError();
+        await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
@@ -58,7 +58,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 })
         });
-        await expect(async () => (await proxy.call()).unwrap()).rejects.toThrowError();
+        await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
@@ -89,5 +89,19 @@ describe('call', () => {
             })
         );
         expect(fn).toHaveBeenCalledTimes(3);
+    });
+
+    it('should dynamically rebuild proxy config on each iteration', { timeout: 10000 }, async () => {
+        const fn = vi.fn();
+        const getProxyConfig = vi.fn(() => {
+            // In an actual scenario we would call getConnection here
+            return getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 });
+        });
+        const proxy = new ProxyRequest({
+            logger: fn,
+            getProxyConfig
+        });
+        await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
+        expect(getProxyConfig).toHaveBeenCalledTimes(2);
     });
 });

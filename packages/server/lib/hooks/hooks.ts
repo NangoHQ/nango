@@ -288,7 +288,7 @@ export async function connectionTest({
             },
             proxyConfig
         });
-        const response = (await proxy.call()).unwrap();
+        const response = (await proxy.request()).unwrap();
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
             const error = new NangoError('connection_test_failed', { response, logs });

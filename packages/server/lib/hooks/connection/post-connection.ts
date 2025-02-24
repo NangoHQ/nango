@@ -75,8 +75,13 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 }
 
                 const proxyConfig = getProxyConfiguration({ externalConfig: finalExternalConfig, internalConfig }).unwrap();
-                const proxy = new ProxyRequest({ logger: () => {}, proxyConfig });
-                const response = (await proxy.call()).unwrap();
+                const proxy = new ProxyRequest({
+                    logger: () => {
+                        // TODO: log something here?
+                    },
+                    proxyConfig
+                });
+                const response = (await proxy.request()).unwrap();
 
                 return response;
             },

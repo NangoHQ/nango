@@ -6,7 +6,8 @@ import { Readable, Transform, PassThrough } from 'stream';
 import type { UrlWithParsedQuery } from 'url';
 import url from 'url';
 import querystring from 'querystring';
-import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { isAxiosError } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import {
     LogActionEnum,
     errorManager,
@@ -14,9 +15,7 @@ import {
     connectionService,
     configService,
     featureFlags,
-    buildProxyURL,
     getProxyConfiguration,
-    buildProxyHeaders,
     ProxyRequest
 } from '@nangohq/shared';
 import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
@@ -167,7 +166,7 @@ class ProxyController {
                 return;
             }
 
-            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig.value, logCtx });
+            await this.request({ res, proxyConfig: proxyConfig.value, logCtx });
         } catch (err) {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
@@ -201,38 +200,6 @@ class ProxyController {
                 }
             });
         }
-    }
-
-    /**
-     * Send to http method
-     */
-    private sendToHttpMethod({
-        res,
-        method,
-        configBody,
-        logCtx
-    }: {
-        res: Response;
-        method: HTTP_METHOD;
-        configBody: ApplicationConstructedProxyConfiguration;
-        logCtx: LogContext;
-    }) {
-        const url = buildProxyURL(configBody);
-        let decompress = false;
-
-        if (configBody.decompress === true || configBody.provider.proxy?.decompress === true) {
-            decompress = true;
-        }
-
-        return this.request({
-            res,
-            method,
-            url,
-            config: configBody,
-            decompress,
-            data: configBody.data,
-            logCtx
-        });
     }
 
     private async handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
@@ -302,10 +269,19 @@ class ProxyController {
         });
     }
 
-    private async handleErrorResponse({ res, e, requestConfig, logCtx }: { res: Response; e: unknown; requestConfig: AxiosRequestConfig; logCtx: LogContext }) {
-        const error = e as AxiosError;
-
-        if (!error.response?.data && error.toJSON) {
+    private async handleErrorResponse({
+        res,
+        error,
+        requestConfig,
+        logCtx
+    }: {
+        res: Response;
+        error: unknown;
+        requestConfig?: AxiosRequestConfig | undefined;
+        logCtx: LogContext;
+    }) {
+        const axiosError = isAxiosError(error);
+        if (axiosError && !error.response?.data && error.toJSON) {
             const {
                 message,
                 stack,
@@ -314,7 +290,7 @@ class ProxyController {
                 status
             } = error.toJSON() as any;
 
-            const errorObject = { message, stack, code, status, url: requestConfig.url, method };
+            const errorObject = { message, stack, code, status, url: requestConfig?.url, method };
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};
@@ -330,13 +306,13 @@ class ProxyController {
             return;
         }
 
-        const errorData = error.response?.data as stream.Readable;
+        const errorData = axiosError && (error.response?.data as stream.Readable);
         const stringify = new Transform({
             transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
                 callback(null, chunk);
             }
         });
-        if (error.response?.status) {
+        if (axiosError && error.response?.status) {
             res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
         }
         if (errorData) {
@@ -364,48 +340,19 @@ class ProxyController {
         }
     }
 
-    private async request({
-        res,
-        method,
-        url,
-        config,
-        decompress,
-        data,
-        logCtx
-    }: {
-        res: Response;
-        method: HTTP_METHOD;
-        url: string;
-        config: ApplicationConstructedProxyConfiguration;
-        decompress: boolean;
-        data?: unknown;
-        logCtx: LogContext;
-    }) {
-        const headers = buildProxyHeaders(config, url);
+    private async request({ res, proxyConfig, logCtx }: { res: Response; proxyConfig: ApplicationConstructedProxyConfiguration; logCtx: LogContext }) {
+        const proxy = new ProxyRequest({
+            logger: async (msg) => {
+                await logCtx.log(msg);
+            },
+            proxyConfig: proxyConfig
+        });
 
-        const axiosConfig: AxiosRequestConfig = {
-            method,
-            url,
-            responseType: 'stream',
-            headers,
-            decompress
-        };
         try {
-            if (data && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                axiosConfig.data = data;
-            }
-            const proxy = new ProxyRequest({
-                logger: async (msg) => {
-                    await logCtx.log(msg);
-                },
-                proxyConfig: config
-            });
-
-            const responseStream = (await proxy.request({ axiosConfig })).unwrap();
-
+            const responseStream = (await proxy.request()).unwrap();
             await this.handleResponse({ res, responseStream, logCtx });
         } catch (err) {
-            await this.handleErrorResponse({ res, e: err, requestConfig: axiosConfig, logCtx });
+            await this.handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }

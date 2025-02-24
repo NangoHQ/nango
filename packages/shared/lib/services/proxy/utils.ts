@@ -7,6 +7,7 @@ import FormData from 'form-data';
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 import type { ApplicationConstructedProxyConfiguration, HTTP_METHOD, InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AxiosRequestConfig } from 'axios';
 
 type ProxyErrorCode =
     | 'missing_api_url'
@@ -24,6 +25,31 @@ export class ProxyError extends Error {
         super(message || code, { cause });
         this.code = code;
     }
+}
+
+const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+export function getAxiosConfiguration({ proxyConfig }: { proxyConfig: ApplicationConstructedProxyConfiguration }): AxiosRequestConfig {
+    const url = buildProxyURL(proxyConfig);
+    const axiosConfig: AxiosRequestConfig = {
+        method: proxyConfig.method,
+        url,
+        headers: buildProxyHeaders(proxyConfig, url)
+    };
+
+    if (proxyConfig.responseType) {
+        axiosConfig.responseType = proxyConfig.responseType;
+    }
+
+    if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
+        axiosConfig.data = proxyConfig.data;
+    }
+
+    if (proxyConfig.decompress === true || proxyConfig.provider.proxy?.decompress === true) {
+        axiosConfig.decompress = true;
+    }
+
+    return axiosConfig;
 }
 
 export function getProxyConfiguration({

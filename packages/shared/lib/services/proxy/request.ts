@@ -4,8 +4,20 @@ import type { Result, RetryAttemptArgument } from '@nangohq/utils';
 import { axiosInstance as axios, Err, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
 
 import type { ApplicationConstructedProxyConfiguration, MaybePromise, MessageRowInsert } from '@nangohq/types';
-import { buildProxyHeaders, buildProxyURL, ProxyError } from './utils.js';
+import { getAxiosConfiguration, ProxyError } from './utils.js';
 import { getProxyRetryFromErr } from './retry.js';
+
+type Props = {
+    logger: (msg: MessageRowInsert) => MaybePromise<void>;
+    onError?: (args: { err: unknown; max: number; attempt: number }) => { retry: boolean; reason: string; wait?: number };
+} & (
+    | {
+          proxyConfig: ApplicationConstructedProxyConfiguration;
+      }
+    | {
+          getProxyConfig: () => MaybePromise<ApplicationConstructedProxyConfiguration>;
+      }
+);
 
 /**
  * This simple class is responsible to execute a call to a third-party
@@ -14,61 +26,83 @@ import { getProxyRetryFromErr } from './retry.js';
  * It's the same code for the SDK and for the Proxy API.
  */
 export class ProxyRequest {
-    logger: (msg: MessageRowInsert) => MaybePromise<void>;
-    config: ApplicationConstructedProxyConfiguration;
-
-    constructor({ logger, proxyConfig }: { logger: (msg: MessageRowInsert) => MaybePromise<void>; proxyConfig: ApplicationConstructedProxyConfiguration }) {
-        this.logger = logger;
-        this.config = proxyConfig;
-    }
+    logger: Props['logger'];
 
     /**
-     * Prepare the request and execute.
-     * Most code should use this method.
+     * Called before each tries to re-build proxy config
      */
-    public async call(): Promise<Result<AxiosResponse>> {
-        const options: AxiosRequestConfig = {};
+    getProxyConfig?: () => MaybePromise<ApplicationConstructedProxyConfiguration>;
 
-        if (this.config.responseType) {
-            options.responseType = this.config.responseType;
+    /**
+     * Called on error, gives the ability to control the retry and wait time
+     */
+    onError?: Props['onError'];
+
+    /**
+     * Either supplied in the constructor or build at each iteration if getProxyConfig is specified
+     */
+    config?: ApplicationConstructedProxyConfiguration;
+
+    /**
+     * Re-build at each iteration if getProxyConfig is specified
+     */
+    axiosConfig?: AxiosRequestConfig;
+
+    constructor(props: Props) {
+        this.logger = props.logger;
+        this.onError = props.onError;
+
+        if ('proxyConfig' in props) {
+            this.config = props.proxyConfig;
+        } else if ('getProxyConfig' in props) {
+            this.getProxyConfig = props.getProxyConfig;
         }
-
-        if (this.config.data) {
-            options.data = this.config.data;
-        }
-
-        const { method } = this.config;
-
-        options.url = buildProxyURL(this.config);
-        options.method = method;
-
-        options.headers = buildProxyHeaders(this.config, options.url);
-
-        return await this.request({ axiosConfig: options });
     }
 
     /**
      * Send a request to the third-party with retry.
-     * Only use this if you want a different axiosConfig than the one created in call()
      */
-    public async request({ axiosConfig }: { axiosConfig: AxiosRequestConfig }): Promise<Result<AxiosResponse>> {
+    public async request(): Promise<Result<AxiosResponse>> {
+        if (this.getProxyConfig) {
+            this.config = await this.getProxyConfig();
+        }
+        if (!this.config) {
+            throw new ProxyError('unknown_error', 'Failed to build proxy configuration');
+        }
+
+        this.axiosConfig = getAxiosConfiguration({ proxyConfig: this.config });
+
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
                 async (retryAttempt) => {
                     const start = new Date();
+
+                    // Dynamically re-build proxy and axios config
+                    // Useful for example to refresh connection's credentials
+                    if (retryAttempt.attempt > 0 && this.getProxyConfig) {
+                        this.config = await this.getProxyConfig();
+                        this.axiosConfig = getAxiosConfiguration({ proxyConfig: this.config });
+                    }
+
                     try {
-                        const res = await axios.request(axiosConfig);
-                        await this.logResponse({ response: res, axiosConfig, retryAttempt, start });
+                        const res = await axios.request(this.axiosConfig!);
+                        await this.logResponse({ response: res, retryAttempt, start });
                         return res;
                     } catch (err) {
-                        await this.logErrorResponse({ error: err, axiosConfig, retryAttempt, start });
+                        await this.logErrorResponse({ error: err, retryAttempt, start });
                         throw err;
                     }
                 },
                 {
                     max: this.config.retries || 0,
                     onError: async ({ err, nextWait, max, attempt }) => {
-                        const retry = getProxyRetryFromErr({ err, proxyConfig: this.config });
+                        let retry = getProxyRetryFromErr({ err, proxyConfig: this.config });
+
+                        // Only call onError if it's an actionable error
+                        if (retry.reason !== 'unknown_error' && this.onError) {
+                            retry = this.onError({ err, max, attempt });
+                        }
+
                         if (retry.retry) {
                             await this.logger({
                                 type: 'log',
@@ -97,18 +131,10 @@ export class ProxyRequest {
         }
     }
 
-    private async logErrorResponse({
-        error,
-        axiosConfig,
-        retryAttempt,
-        start
-    }: {
-        error: unknown;
-        axiosConfig: AxiosRequestConfig;
-        retryAttempt: RetryAttemptArgument;
-        start: Date;
-    }): Promise<void> {
-        const valuesToFilter = Object.values(this.config.connection.credentials);
+    private async logErrorResponse({ error, retryAttempt, start }: { error: unknown; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
+        const config = this.config!;
+        const axiosConfig = this.axiosConfig!;
+        const valuesToFilter = Object.values(config.connection.credentials);
         const redactedURL = redactURL({ url: axiosConfig.url!, valuesToFilter });
 
         if (isAxiosError(error)) {
@@ -119,9 +145,9 @@ export class ProxyRequest {
                 source: 'internal',
                 createdAt: start.toISOString(),
                 endedAt: new Date().toISOString(),
-                message: `${this.config.method} ${redactedURL}`,
+                message: `${config.method} ${redactedURL}`,
                 request: {
-                    method: this.config.method,
+                    method: config.method,
                     url: redactedURL,
                     headers: safeHeaders
                 },
@@ -146,36 +172,30 @@ export class ProxyRequest {
                 source: 'internal',
                 createdAt: start.toISOString(),
                 endedAt: new Date().toISOString(),
-                message: `${this.config.method} ${redactedURL}`,
+                message: `${config.method} ${redactedURL}`,
                 error: error as any,
                 retry: retryAttempt
             });
         }
     }
 
-    private async logResponse({
-        response,
-        axiosConfig,
-        retryAttempt,
-        start
-    }: {
-        response: AxiosResponse;
-        axiosConfig: AxiosRequestConfig;
-        retryAttempt: RetryAttemptArgument;
-        start: Date;
-    }): Promise<void> {
-        const valuesToFilter = Object.values(this.config.connection.credentials);
+    private async logResponse({ response, retryAttempt, start }: { response: AxiosResponse; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
+        const config = this.config!;
+        const axiosConfig = this.axiosConfig!;
+
+        const valuesToFilter = Object.values(config.connection.credentials);
         const safeHeaders = redactHeaders({ headers: axiosConfig.headers, valuesToFilter });
         const redactedURL = redactURL({ url: axiosConfig.url!, valuesToFilter });
+
         await this.logger({
             type: 'http',
             level: 'info',
             source: 'internal',
             createdAt: start.toISOString(),
             endedAt: new Date().toISOString(),
-            message: `${this.config.method} ${redactedURL}`,
+            message: `${config.method} ${redactedURL}`,
             request: {
-                method: this.config.method,
+                method: config.method,
                 url: redactedURL,
                 headers: safeHeaders
             },

@@ -38,10 +38,10 @@ export class NangoActionRunner extends NangoActionBase {
             }
         );
 
-        if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
-        if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
-        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
-        if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
+        if (!this.activityLogId) throw new Error('Parameter activityLogId is required');
+        if (!this.environmentId) throw new Error('Parameter environmentId is required');
+        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
+        if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -51,25 +51,29 @@ export class NangoActionRunner extends NangoActionBase {
         }
 
         const { connectionId, providerConfigKey } = config;
-        const connection = await this.getConnection(providerConfigKey, connectionId);
-        if (!connection) {
-            throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
-        }
 
-        const computedConfig = getProxyConfiguration({
-            externalConfig: this.getProxyConfig(config),
-            internalConfig: {
-                connection,
-                providerName: this.provider!
-            }
-        }).unwrap();
         const proxy = new ProxyRequest({
             logger: async (log) => {
                 await this.sendLogToPersist(log);
             },
-            proxyConfig: computedConfig
+            getProxyConfig: async () => {
+                console.log('prout???');
+                // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
+                const connection = await this.getConnection(providerConfigKey, connectionId);
+                if (!connection) {
+                    throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
+                }
+
+                return getProxyConfiguration({
+                    externalConfig: this.getProxyConfig(config),
+                    internalConfig: {
+                        connection,
+                        providerName: this.provider!
+                    }
+                }).unwrap();
+            }
         });
-        const response = (await proxy.call()).unwrap();
+        const response = (await proxy.request()).unwrap();
 
         return response;
     }
@@ -201,8 +205,8 @@ export class NangoSyncRunner extends NangoSyncBase {
             }
         );
 
-        if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
-        if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+        if (!this.syncId) throw new Error('Parameter syncId is required');
+        if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
     }
 
     // Can't double extends
