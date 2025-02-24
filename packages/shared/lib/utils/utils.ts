@@ -293,12 +293,12 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
             const firstPart = parts[0] ? interpolateStringFromObject(parts[0].trim(), replacers) : undefined;
             const secondPart = parts[1] ? interpolateStringFromObject(parts[1].trim(), replacers) : undefined;
             return (firstPart || secondPart) as string;
-        } else {
-            return interpolateStringFromObject(str, replacers);
         }
-    } else {
-        return str;
+
+        return interpolateStringFromObject(str, replacers);
     }
+
+    return str;
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {

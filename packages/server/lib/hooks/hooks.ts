@@ -255,7 +255,6 @@ export async function connectionTest({
         endpoint,
         method: method ?? 'GET',
         provider,
-        token: credentials,
         providerName: config.provider,
         providerConfigKey: config.unique_key,
         connectionId,
