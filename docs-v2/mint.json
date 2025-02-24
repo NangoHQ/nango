@@ -532,6 +532,7 @@
                 "integrations/all/prive",
                 "integrations/all/productboard",
                 "integrations/all/qualtrics",
+                "integrations/all/quickbase",
                 "integrations/all/quickbooks",
                 "integrations/all/quickbooks-sandbox",
                 "integrations/all/ragieai",
