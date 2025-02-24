@@ -570,6 +570,27 @@ apple-app-store:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://docs.nango.dev/integrations/all/apple-app-store
 
+appstle-subscriptions:
+    display_name: Appstle Subscriptions
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://subscription-admin.appstle.com
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/appstle-subscriptions
+    docs_connect: https://docs.nango.dev/integrations/all/appstle-subscriptions/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Appstle Subscriptions API Key
+            secret: true
+            doc_section: '#step-1-finding-your-api-key'
+            example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
+            pattern: ^[a-zA-Z0-9]+$
+
 asana:
     display_name: Asana
     categories:
