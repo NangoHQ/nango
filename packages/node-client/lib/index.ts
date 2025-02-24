@@ -563,16 +563,21 @@ export class Nango {
     /**
      * Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to trigger. If empty, all applicable syncs will be triggered
+     * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
      * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
      * @returns A promise that resolves when the sync trigger request is sent
      */
-    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        fullResync?: boolean
+    ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
-        if (typeof syncs === 'string') {
-            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        if (syncs && !Array.isArray(syncs)) {
+            throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
         const body = {
@@ -588,11 +593,11 @@ export class Nango {
     /**
      * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to start. If empty, all applicable syncs will be started
+     * @param syncs - An optional array of sync names or sync objects to start. If empty, all applicable syncs will be started
      * @param connectionId - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
      * @returns A promise that resolves when the sync start request is sent
      */
-    public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
+    public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -601,7 +606,7 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string') {
+        if (!Array.isArray(syncs)) {
             throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
         }
 
@@ -619,11 +624,11 @@ export class Nango {
     /**
      * Pauses the schedule of specified sync(s) for a given connection or all applicable connections
      * @param providerConfigKey -The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to pause. If empty, all applicable syncs will be paused
+     * @param syncs - An optional array of sync names or sync objects to pause. If empty, all applicable syncs will be paused
      * @param connectionId - An optional ID of the connection for which to pause the syncs. If not provided, syncs will be paused for all applicable connections
      * @returns A promise that resolves when the sync pause request is sent
      */
-    public async pauseSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
+    public async pauseSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -632,7 +637,7 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string') {
+        if (!Array.isArray(syncs)) {
             throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
         }
 
@@ -650,11 +655,15 @@ export class Nango {
     /**
      * Get the status of specified sync(s) for a given connection or all applicable connections
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An array of sync names to get status for, or '*' to get status for all syncs
+     * @param syncs - An array of sync names or sync objects to get status for, or '*' to get status for all syncs
      * @param connectionId - An optional ID of the connection for which to get sync status. If not provided, status for all applicable connections will be retrieved
      * @returns A promise that resolves with the status of the specified sync(s)
      */
-    public async syncStatus(providerConfigKey: string, syncs: '*' | string[], connectionId?: string): Promise<SyncStatusResponse> {
+    public async syncStatus(
+        providerConfigKey: string,
+        syncs: '*' | (string | { name: string; variant: string })[],
+        connectionId?: string
+    ): Promise<SyncStatusResponse> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -663,14 +672,27 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string' && syncs !== '*') {
-            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        if (!Array.isArray(syncs) && syncs !== '*') {
+            throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
         const url = `${this.serverUrl}/sync/status`;
 
+        const getSyncFullName = (sync: string | { name: string; variant: string }) => {
+            if (typeof sync === 'string') {
+                return sync;
+            }
+            if (sync.variant) {
+                return `${sync.name}::${sync.variant}`;
+            }
+            return sync.name;
+        };
+
+        const formattedSyncs = syncs === '*' ? '*' : syncs.map(getSyncFullName).join(',');
+
+        console.log(formattedSyncs);
         const params = {
-            syncs: syncs === '*' ? '*' : syncs.join(','),
+            syncs: formattedSyncs,
             provider_config_key: providerConfigKey,
             connection_id: connectionId
         };
@@ -683,14 +705,14 @@ export class Nango {
     /**
      * Override a sync’s default frequency for a specific connection, or revert to the default frequency
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param sync - The name of the sync to update
+     * @param sync - The name of the sync to update (or an object with name and variant properties)
      * @param connectionId - The ID of the connection for which to update the sync frequency
      * @param frequency - The new frequency to set for the sync, or null to revert to the default frequency
      * @returns A promise that resolves with the response data after updating the sync frequency
      */
     public async updateSyncConnectionFrequency(
         providerConfigKey: string,
-        sync: string,
+        sync: string | { name: string; variant: string },
         connectionId: string,
         frequency: string | null
     ): Promise<UpdateSyncFrequencyResponse> {
@@ -698,8 +720,8 @@ export class Nango {
             throw new Error('Provider Config Key is required');
         }
 
-        if (typeof sync !== 'string') {
-            throw new Error('Sync must be a string.');
+        if (!sync) {
+            throw new Error('Sync is required');
         }
 
         if (typeof connectionId !== 'string') {
@@ -712,14 +734,14 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/update-connection-frequency`;
 
-        const params = {
-            sync,
+        const body = {
+            ...(typeof sync === 'string' ? { sync_name: sync } : { sync_name: sync.name, sync_variant: sync.variant }),
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
             frequency
         };
 
-        const response = await this.http.put(url, { headers: this.enrichHeaders(), params });
+        const response = await this.http.put(url, body, { headers: this.enrichHeaders() });
 
         return response.data;
     }
