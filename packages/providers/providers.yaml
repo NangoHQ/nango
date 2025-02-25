@@ -5529,11 +5529,19 @@ mip:
     display_name: mip
     categories:
         - accounting
-    auth_mode: BASIC
+    auth_mode: TWO_STEP
     proxy:
-        base_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
-        headers:
-            content-type: application/json
+        base_url: https://api.mip.com/api
+    token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response: # TODO: VALIDATE
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     docs: https://docs.nango.dev/integrations/all/mip
     docs_connect: https://docs.nango.dev/integrations/all/mip/connect
     credentials:
