@@ -345,7 +345,7 @@ amazon-selling-partner:
         - dev-tools
         - e-commerce
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
     authorization_params:
         application_id: ${connectionConfig.applicationId}
@@ -389,7 +389,7 @@ amazon-selling-partner-beta:
         - dev-tools
         - e-commerce
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
     authorization_params:
         application_id: ${connectionConfig.applicationId}
