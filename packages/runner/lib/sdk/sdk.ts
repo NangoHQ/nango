@@ -154,7 +154,7 @@ export class NangoActionRunner extends NangoActionBase {
             this.nango.secretKey
         ];
 
-        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
+        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase
         void this.sendLogToPersist({
             type: 'http',
             message: `${method} ${res.config.url}`,
