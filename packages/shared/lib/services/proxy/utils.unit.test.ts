@@ -543,6 +543,22 @@ describe('buildProxyURL', () => {
             );
         }).toThrow(new Error('Can not set query params in endpoint and in params'));
     });
+
+    it('should handle array', () => {
+        const url = buildProxyURL(
+            getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url: 'https://example.com'
+                    }
+                },
+                params: { ids: [1, 2] }
+            })
+        );
+
+        expect(url).toBe('https://example.com/api/test?ids=1%2C2');
+    });
 });
 
 describe('getProxyConfiguration', () => {
