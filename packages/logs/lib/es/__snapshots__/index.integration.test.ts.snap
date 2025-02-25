@@ -11,9 +11,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
       "accountName": {
         "type": "keyword",
       },
-      "code": {
-        "type": "keyword",
-      },
       "connectionId": {
         "type": "keyword",
       },
@@ -148,9 +145,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
           },
         },
         "type": "text",
-      },
-      "title": {
-        "type": "keyword",
       },
       "type": {
         "type": "keyword",

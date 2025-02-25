@@ -200,7 +200,7 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
 /**
  * Update a row (can be a partial update)
  */
-export async function update(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<MessageRow, 'id'>>, 'createdAt'> }): Promise<void> {
+export async function updateOperation(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'> }): Promise<void> {
     await client.update({
         index: getFullIndexName(indexMessages.index, opts.data.createdAt),
         id: opts.id,
@@ -219,35 +219,35 @@ export async function update(opts: { id: OperationRow['id']; data: SetRequired<P
  * Set an operation as currently running
  */
 export async function setRunning(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as success
  */
 export async function setSuccess(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
 export async function setFailed(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
 export async function setCancelled(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as timeout
  */
 export async function setTimeouted(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
 }
 
 /**

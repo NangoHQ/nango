@@ -28,14 +28,14 @@ export const logLevelToLogger = {
 
 export function errorToDocument(error?: unknown): MessageRow['error'] {
     if (!error) {
-        return null;
+        return;
     }
 
     const err = { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) };
     return {
         name: error instanceof Error ? error.constructor.name : err.name,
         message: err.message,
-        type: 'type' in err ? (err.type as string) : null,
-        payload: 'payload' in err ? err.payload : null
+        type: 'type' in err ? (err.type as string) : undefined,
+        payload: 'payload' in err ? err.payload : undefined
     };
 }

@@ -4,7 +4,7 @@ import { isAxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, axiosInstance as axios, retryWithBackoff, redactHeaders } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
-import type { WebhookTypes, SyncOperationType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow } from '@nangohq/types';
+import type { WebhookTypes, SyncOperationType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow, MessageHTTPResponse } from '@nangohq/types';
 
 export const RETRY_ATTEMPTS = 7;
 
@@ -26,7 +26,7 @@ export const NON_FORWARDABLE_HEADERS = [
     'server'
 ];
 
-function formatLogResponse(response: AxiosResponse): MessageRow['response'] {
+function formatLogResponse(response: AxiosResponse): MessageHTTPResponse {
     return {
         code: response.status,
         headers: redactHeaders({ headers: response.headers })
@@ -155,7 +155,7 @@ export const deliver = async ({
                     } catch (err) {
                         if (isAxiosError(err)) {
                             await logCtx?.http(`POST ${logRequest.url}`, {
-                                response: err.response ? formatLogResponse(err.response) : null,
+                                response: err.response ? formatLogResponse(err.response) : undefined,
                                 request: logRequest,
                                 error: !err.response ? err : null,
                                 level: 'error'
@@ -163,7 +163,7 @@ export const deliver = async ({
                         } else {
                             await logCtx?.http(`POST ${logRequest?.url}`, {
                                 request: logRequest,
-                                response: null,
+                                response: undefined,
                                 error: err,
                                 level: 'error'
                             });
