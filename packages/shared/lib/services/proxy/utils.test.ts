@@ -7,7 +7,7 @@ export function getDefaultConnection(): DBConnectionDecrypted {
         credentials: { type: 'API_KEY', apiKey: 'random_token' },
         end_user_id: null,
         environment_id: 1,
-        provider_config_key: 'foobar',
+        provider_config_key: 'freshteam',
         updated_at: new Date(),
         connection_config: {},
         config_id: 1,
@@ -32,14 +32,18 @@ export function getDefaultProxy(
         connectionId: 'a',
         endpoint: '/api/test',
         method: 'GET',
-        providerConfigKey: 'foobar',
-        providerName: 'github',
-        token: '',
+        providerConfigKey: 'freshteam',
+        providerName: 'freshteam',
         ...override,
         provider: {
             auth_mode: 'API_KEY',
             display_name: 'test',
             docs: '',
+            proxy: {
+                headers: {
+                    authorization: 'Bearer ${apiKey}'
+                }
+            },
             ...override.provider
         } as Provider,
         connection: { ...getDefaultConnection(), ...override.connection }

@@ -339,6 +339,95 @@ amazon:
             example: com
             pattern: '^[a-z.]+$'
 
+amazon-selling-partner:
+    display_name: Amazon Selling Partner
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
+
+amazon-selling-partner-beta:
+    display_name: Amazon Selling Partner (Beta)
+    categories:
+        - dev-tools
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/authorize/consent
+    token_url: https://api.amazon.com/auth/o2/token
+    authorization_params:
+        application_id: ${connectionConfig.applicationId}
+        version: beta
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+    docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
+    connection_config:
+        applicationId:
+            type: string
+            title: Application ID
+            description: The unique identifier for your Amazon Selling Partner application
+            example: 'amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28'
+            pattern: '^[a-zA-Z0-9.-]+$'
+            doc_section: '#step-1-finding-your-app-id'
+            order: 1
+        domain:
+            type: string
+            title: Domain
+            description: The domain representing the Amazon platform you are integrating with
+            example: sellercentral.amazon.com
+            pattern: '^[a-z0-9.-]+\.amazon\.[a-z.]+$'
+            doc_section: '#step-2-finding-your-domain'
+            order: 2
+        region:
+            type: string
+            title: Proxy BaseUrl Region
+            description: The geographical region associated with the Amazon marketplace.
+            example: eu
+            pattern: '^[a-z]+$'
+            doc_section: '#step-3-finding-your-proxy-baseurl-region'
+            order: 3
+
 anrok:
     display_name: Anrok
     categories:
@@ -480,6 +569,27 @@ apple-app-store:
     proxy:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://docs.nango.dev/integrations/all/apple-app-store
+
+appstle-subscriptions:
+    display_name: Appstle Subscriptions
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://subscription-admin.appstle.com
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/appstle-subscriptions
+    docs_connect: https://docs.nango.dev/integrations/all/appstle-subscriptions/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Appstle Subscriptions API Key
+            secret: true
+            doc_section: '#step-1-finding-your-api-key'
+            example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
+            pattern: ^[a-zA-Z0-9]+$
 
 asana:
     display_name: Asana
@@ -3759,6 +3869,35 @@ gorgias:
             suffix: .gorgias.com
             prefix: https://
 
+gorgias-basic:
+    display_name: Gorgias (Basic Auth)
+    auth_mode: BASIC
+    categories:
+        - e-commerce
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+    docs: https://docs.nango.dev/integrations/all/gorgias-basic
+    docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Gorgias account Username
+        password:
+            type: string
+            title: API Key
+            description: Your Gorgias API Key
+            default_value: ''
+            doc_section: '#step-1-finding-gorgias-api-key-secret'
+    connection_config:
+        subdomain:
+            type: string
+            title: Gorgias Domain
+            description: The subdomain of your Gorgias account
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
+
 grafana:
     display_name: Grafana
     categories:
@@ -5386,6 +5525,34 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
+mip:
+    display_name: mip
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
+        headers:
+            content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/mip
+    docs_connect: https://docs.nango.dev/integrations/all/mip/connect
+    credentials:
+        username:
+            type: string
+            title: ID
+            description: Your Login ID for MIP Fund Accounting
+        password:
+            type: string
+            title: Password
+            description: Your Password for MIP Fund Accounting.
+    connection_config:
+        domain:
+            type: string
+            title: REST Service URL
+            description: The rest service URL for the cloud-based API service
+            prefix: https://
+            suffix: /api/v1/sso/mipadv/login
+            format: hostname
 
 mixpanel:
     display_name: Mixpanel
@@ -5758,6 +5925,30 @@ openai:
             title: API Key
             description: The API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-api-key'
+openai-admin:
+    display_name: OpenAI (Admin)
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.openai.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/organization/users
+        retry:
+            after: 'x-ratelimit-reset-requests'
+    docs: https://docs.nango.dev/integrations/all/openai-admin
+    docs_connect: https://docs.nango.dev/integrations/all/openai-admin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Admin Key
+            description: The Admin API key for your OpenAI account
+            doc_section: '#step-1-retrieve-your-openai-admin-key'
 
 ory:
     display_name: Ory
@@ -6352,6 +6543,43 @@ qualtrics:
             example: domain
             suffix: .qualtrics.com
             prefix: https://
+
+quickbase:
+    display_name: Quickbase
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.quickbase.com/v1/
+        headers:
+            qb-realm-hostname: ${connectionConfig.domain}
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+            authorization: QB-USER-TOKEN ${apiKey}
+        query:
+            apiKey: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/quickbase
+    docs_connect: https://docs.nango.dev/integrations/all/quickbase/connect
+    connection_config:
+        domain:
+            type: string
+            title: Realm Hostname
+            description: Your Quickbase Realm Hostname
+            example: demo.quickbase.com
+            format: hostname
+            doc_section: '#step-1-finding-your-realm-hostname'
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: User Token
+            description: Your User Token
+            pattern: '^[a-z0-9_-]+$'
+            example: bb_aa_xxxxxx_xxxxxxxxxxxxxxxxx
+            doc_section: '#step-2-finding-your-user-token'
 
 quickbooks:
     display_name: Quickbooks
