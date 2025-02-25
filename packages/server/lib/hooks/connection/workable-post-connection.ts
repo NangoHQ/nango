@@ -14,7 +14,6 @@ export default async function execute(nango: Nango) {
         baseUrlOverride: 'https://workable.com',
         endpoint: '/spi/v3/accounts',
         method: 'GET',
-        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

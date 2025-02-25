@@ -6,7 +6,6 @@ export default async function execute(nango: Nango) {
     const response = await nango.proxy({
         endpoint: '/v1.0/organization',
         method: 'GET',
-        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

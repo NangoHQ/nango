@@ -10,7 +10,6 @@ export default async function execute(nango: Nango) {
     const response = await nango.proxy<UserInfoResponse>({
         baseUrlOverride: `https://${rootUrl}`,
         endpoint: '/oauth/userinfo',
-        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

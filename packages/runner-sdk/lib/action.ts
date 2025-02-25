@@ -113,7 +113,6 @@ export abstract class NangoActionBase {
             method: 'GET',
             ...config,
             providerConfigKey: config.providerConfigKey || this.providerConfigKey,
-            connectionId: config.connectionId || this.connectionId,
             headers: {
                 ...(config.headers || {}),
                 'user-agent': this.nango.userAgent

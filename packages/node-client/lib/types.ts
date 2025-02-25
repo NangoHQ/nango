@@ -115,7 +115,7 @@ export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes['OAuth2'];
 }
 
-export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
+export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey'> & {
     providerConfigKey?: string;
     connectionId?: string;
 };

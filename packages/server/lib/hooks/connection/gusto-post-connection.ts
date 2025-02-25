@@ -9,7 +9,6 @@ export default async function execute(nango: Nango) {
     const response = await nango.proxy<GustoTokenInfoResponse>({
         baseUrlOverride: `https://${rootUrl}`,
         endpoint: '/v1/token_info',
-        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 
