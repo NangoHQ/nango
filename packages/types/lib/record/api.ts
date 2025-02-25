@@ -31,6 +31,7 @@ export type GetPublicRecords = Endpoint<{
     Error: ApiError<'unknown_connection'>;
     Querystring: {
         model: string;
+        variant?: string | undefined;
         delta?: string | undefined;
         modified_after?: string | undefined;
         limit?: number | undefined;
