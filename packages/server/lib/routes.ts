@@ -14,7 +14,7 @@ import appAuthController from './controllers/appAuth.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
-import { dirname } from './utils/utils.js';
+import { dirname, isBinaryContentType } from './utils/utils.js';
 import express from 'express';
 import cors from 'cors';
 import { setupAuth } from './clients/auth.client.js';
@@ -124,23 +124,7 @@ const adminAuth: RequestHandler[] = [
     authMiddleware.adminKeyAuth.bind(authMiddleware),
     rateLimiterMiddleware
 ];
-const BINARY_CONTENT_TYPES = [
-    'image/png',
-    'video/',
-    'audio/',
-    'application/',
-    'text/',
-    'font/',
-    'model/',
-    'message/',
-    'chemical/',
-    'x-world/',
-    'application/octet-stream'
-];
-const isBinaryContentType = (contentType: string | undefined): boolean => {
-    if (!contentType) return false;
-    return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
-};
+
 const connectSessionOrPublicAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
     resourceCapping,
