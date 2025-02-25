@@ -10,6 +10,20 @@ import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 
 const logger = getLogger('Server.Utils');
 
+const BINARY_CONTENT_TYPES = [
+    'image/png',
+    'video/',
+    'audio/',
+    'application/',
+    'text/',
+    'font/',
+    'model/',
+    'message/',
+    'chemical/',
+    'x-world/',
+    'application/octet-stream'
+];
+
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
     const sessionUser = req.user;
@@ -372,4 +386,9 @@ export function getOrchestratorClient() {
 
 export function getOrchestrator() {
     return new Orchestrator(getOrchestratorClient());
+}
+
+export function isBinaryContentType(contentType: string | undefined): boolean {
+    if (!contentType) return false;
+    return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
 }
