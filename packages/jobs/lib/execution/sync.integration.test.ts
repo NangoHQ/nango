@@ -328,10 +328,6 @@ async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
 
     const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
-    if (!connection.id) {
-        throw new Error('Failed to create connection');
-    }
-
     const config = await seeders.createConfigSeed(env, 'github', 'github');
     const { syncConfig, sync } = await seeders.createSyncSeeds({
         connectionId: connection.id,

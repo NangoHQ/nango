@@ -1,13 +1,3 @@
-import type {
-    BasicApiCredentials,
-    ApiKeyCredentials,
-    AppCredentials,
-    TbaCredentials,
-    TableauCredentials,
-    JwtCredentials,
-    TwoStepCredentials,
-    SignatureCredentials
-} from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { HTTP_METHOD } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
@@ -49,16 +39,6 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     decompress?: boolean;
     method: HTTP_METHOD;
     providerName: string;
-    token:
-        | string
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | TbaCredentials
-        | TableauCredentials
-        | JwtCredentials
-        | TwoStepCredentials
-        | SignatureCredentials;
     provider: Provider;
     connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
 }
