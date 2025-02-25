@@ -53,23 +53,23 @@ export class NangoActionRunner extends NangoActionBase {
         const { connectionId, providerConfigKey } = config;
 
         const proxy = new ProxyRequest({
+            proxyConfig: getProxyConfiguration({
+                externalConfig: this.getProxyConfig(config),
+                internalConfig: {
+                    providerName: this.provider!
+                }
+            }).unwrap(),
             logger: async (log) => {
                 await this.sendLogToPersist(log);
             },
-            getProxyConfig: async () => {
+            getConnection: async () => {
                 // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
                 const connection = await this.getConnection(providerConfigKey, connectionId);
                 if (!connection) {
                     throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
                 }
 
-                return getProxyConfiguration({
-                    externalConfig: this.getProxyConfig(config),
-                    internalConfig: {
-                        connection,
-                        providerName: this.provider!
-                    }
-                }).unwrap();
+                return connection;
             }
         });
         const response = (await proxy.request()).unwrap();

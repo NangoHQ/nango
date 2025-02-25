@@ -1,13 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ProxyRequest } from './request.js';
-import { getDefaultProxy } from './utils.test';
+import { getDefaultConnection, getDefaultProxy } from './utils.test';
 
 describe('call', () => {
     it('should make a single successful http call', async () => {
         const fn = vi.fn();
         const proxy = new ProxyRequest({
             logger: fn,
-            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' })
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            getConnection: () => getDefaultConnection()
         });
         const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
@@ -28,7 +29,8 @@ describe('call', () => {
         const fn = vi.fn();
         const proxy = new ProxyRequest({
             logger: fn,
-            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 })
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
+            getConnection: () => getDefaultConnection()
         });
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
@@ -54,9 +56,13 @@ describe('call', () => {
 
     it('should retries failed http call', { timeout: 10000 }, async () => {
         const fn = vi.fn();
+        const getConnection = vi.fn(() => {
+            return getDefaultConnection();
+        });
         const proxy = new ProxyRequest({
             logger: fn,
-            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 })
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
+            getConnection
         });
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
@@ -89,19 +95,8 @@ describe('call', () => {
             })
         );
         expect(fn).toHaveBeenCalledTimes(3);
-    });
 
-    it('should dynamically rebuild proxy config on each iteration', { timeout: 10000 }, async () => {
-        const fn = vi.fn();
-        const getProxyConfig = vi.fn(() => {
-            // In an actual scenario we would call getConnection here
-            return getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 });
-        });
-        const proxy = new ProxyRequest({
-            logger: fn,
-            getProxyConfig
-        });
-        await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
-        expect(getProxyConfig).toHaveBeenCalledTimes(2);
+        // should dynamically rebuild proxy config on each iteration
+        expect(getConnection).toHaveBeenCalledTimes(2);
     });
 });

@@ -257,11 +257,10 @@ export async function connectionTest({
         provider,
         providerName: config.provider,
         providerConfigKey: config.unique_key,
-        connectionId,
         headers: {
             'Content-Type': 'application/json'
         },
-        connection
+        decompress: false
     };
 
     if (headers) {
@@ -273,8 +272,7 @@ export async function connectionTest({
     }
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName: config.provider,
-        connection
+        providerName: config.provider
     };
 
     const logs: MessageRowInsert[] = [
@@ -286,7 +284,10 @@ export async function connectionTest({
             logger: (msg) => {
                 logs.push(msg);
             },
-            proxyConfig
+            proxyConfig,
+            getConnection: () => {
+                return connection;
+            }
         });
         const response = (await proxy.request()).unwrap();
 
