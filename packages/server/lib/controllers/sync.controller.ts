@@ -7,7 +7,6 @@ import {
     getSyncs,
     verifyOwnership,
     isSyncValid,
-    getSyncNamesByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getProviderConfigBySyncAndAccount,
@@ -21,15 +20,16 @@ import {
     getAttributes,
     flowService,
     getActionOrModelByEndpoint,
-    findSyncByConnections,
     setFrequency,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     syncCommandToOperation,
-    getSyncConfigRaw
+    getSyncConfigRaw,
+    getSyncsByConnectionId
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
-import { getHeaders, isHosted, truncateJson } from '@nangohq/utils';
+import type { Result } from '@nangohq/utils';
+import { getHeaders, isHosted, truncateJson, Ok, Err } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -105,7 +105,7 @@ class SyncController {
 
     public async trigger(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { syncs: syncNames, full_resync } = req.body;
+            const { syncs, full_resync } = req.body;
 
             const provider_config_key: string | undefined = req.body.provider_config_key || req.get('Provider-Config-Key');
             if (!provider_config_key) {
@@ -116,15 +116,9 @@ class SyncController {
 
             const connection_id: string | undefined = req.body.connection_id || req.get('Connection-Id');
 
-            if (typeof syncNames === 'string') {
-                res.status(400).send({ message: 'Syncs must be an array' });
-
-                return;
-            }
-
-            if (!syncNames) {
-                res.status(400).send({ message: 'Missing sync names' });
-
+            const syncIdentifiers = normalizedSyncParams(syncs);
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: syncIdentifiers.error.message });
                 return;
             }
 
@@ -140,7 +134,7 @@ class SyncController {
                 orchestrator,
                 environment,
                 providerConfigKey: provider_config_key,
-                syncNames: syncNames as string[],
+                syncIdentifiers: syncIdentifiers.value,
                 command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
                 logContextGetter,
                 connectionId: connection_id!,
@@ -352,7 +346,7 @@ class SyncController {
 
     public async pause(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
+            const { syncs, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -360,15 +354,9 @@ class SyncController {
                 return;
             }
 
-            if (typeof syncNames === 'string') {
-                res.status(400).send({ message: 'Syncs must be an array' });
-
-                return;
-            }
-
-            if (!syncNames) {
-                res.status(400).send({ message: 'Missing sync names' });
-
+            const syncIdentifiers = normalizedSyncParams(syncs);
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: syncIdentifiers.error.message });
                 return;
             }
 
@@ -379,7 +367,7 @@ class SyncController {
                 orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
-                syncNames: syncNames as string[],
+                syncIdentifiers: syncIdentifiers.value,
                 command: SyncCommand.PAUSE,
                 logContextGetter,
                 connectionId: connection_id,
@@ -394,7 +382,7 @@ class SyncController {
 
     public async start(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
+            const { syncs, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -402,15 +390,9 @@ class SyncController {
                 return;
             }
 
-            if (typeof syncNames === 'string') {
-                res.status(400).send({ message: 'Syncs must be an array' });
-
-                return;
-            }
-
-            if (!syncNames) {
-                res.status(400).send({ message: 'Missing sync names' });
-
+            const syncIdentifiers = normalizedSyncParams(syncs);
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: syncIdentifiers.error.message });
                 return;
             }
 
@@ -421,7 +403,7 @@ class SyncController {
                 orchestrator,
                 environment,
                 providerConfigKey: provider_config_key as string,
-                syncNames: syncNames as string[],
+                syncIdentifiers: syncIdentifiers.value,
                 command: SyncCommand.UNPAUSE,
                 logContextGetter,
                 connectionId: connection_id,
@@ -436,9 +418,7 @@ class SyncController {
 
     public async getSyncStatus(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { syncs: passedSyncNames, provider_config_key, connection_id } = req.query;
-
-            let syncNames = passedSyncNames;
+            const { syncs, provider_config_key, connection_id } = req.query;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -446,9 +426,9 @@ class SyncController {
                 return;
             }
 
-            if (!syncNames) {
-                res.status(400).send({ message: 'Sync names must be passed in' });
-
+            let syncIdentifiers = syncs === '*' ? Ok([]) : normalizedSyncParams(typeof syncs === 'string' ? syncs.split(',') : syncs);
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: syncIdentifiers.error.message });
                 return;
             }
 
@@ -467,31 +447,39 @@ class SyncController {
                 connection = connectionResult.response;
             }
 
-            if (syncNames === '*') {
+            if (syncIdentifiers.value.length <= 0) {
                 if (connection && connection.id) {
-                    syncNames = await getSyncNamesByConnectionId(connection.id);
+                    const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
+                    if (syncs) {
+                        syncIdentifiers = Ok(syncs.map((sync) => ({ syncName: sync.name, syncVariant: sync.variant })));
+                    }
                 } else {
-                    const syncs = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string);
-                    syncNames = syncs.map((sync) => sync.name);
+                    const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey: provider_config_key as string });
+                    if (syncs) {
+                        syncIdentifiers = Ok(syncs.map((sync) => ({ syncName: sync.name, syncVariant: sync.variant })));
+                    }
                 }
-            } else {
-                syncNames = (syncNames as string).split(',');
+            }
+
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: `syncs parameter is invalid. Received ${JSON.stringify(syncs)}` });
+                return;
             }
 
             const {
                 success,
                 error,
                 response: syncsWithStatus
-            } = await syncManager.getSyncStatus(
+            } = await syncManager.getSyncStatus({
                 environmentId,
-                provider_config_key as string,
-                syncNames,
+                providerConfigKey: provider_config_key as string,
+                syncIdentifiers: syncIdentifiers.value,
                 orchestrator,
                 recordsService,
-                connection_id as string,
-                false,
-                connection
-            );
+                connectionId: connection_id as string,
+                includeJobStatus: false,
+                optionalConnection: connection
+            });
 
             if (!success || !syncsWithStatus) {
                 errorManager.errResFromNangoErr(res, error);
@@ -677,14 +665,10 @@ class SyncController {
      */
     public async updateFrequencyForConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { sync_name, provider_config_key, connection_id, frequency } = req.body;
+            const { sync_name, sync_variant, provider_config_key, connection_id, frequency } = req.body;
 
             if (!provider_config_key || typeof provider_config_key !== 'string') {
                 res.status(400).send({ message: 'provider_config_key must be a string' });
-                return;
-            }
-            if (!sync_name || typeof sync_name !== 'string') {
-                res.status(400).send({ message: 'sync_name must be a string' });
                 return;
             }
             if (!connection_id || typeof connection_id !== 'string') {
@@ -693,6 +677,22 @@ class SyncController {
             }
             if (typeof frequency !== 'string' && frequency !== null) {
                 res.status(400).send({ message: 'frequency must be a string or null' });
+                return;
+            }
+
+            if (!sync_name) {
+                res.status(400).send({ message: 'Missing sync name' });
+                return;
+            }
+
+            const sync = sync_variant ? { name: sync_name, variant: sync_variant } : sync_name;
+            const syncIdentifiers = normalizedSyncParams([sync]);
+            if (syncIdentifiers.isErr()) {
+                res.status(400).send({ message: syncIdentifiers.error.message });
+                return;
+            }
+            if (!syncIdentifiers.value[0]) {
+                res.status(400).send({ message: 'error processing sync name/variant' });
                 return;
             }
 
@@ -716,8 +716,11 @@ class SyncController {
             }
             const connection = getConnection.response;
 
-            // TODO: handle variant
-            const syncs = await findSyncByConnections([Number(connection.id)], sync_name);
+            const syncs =
+                (await getSyncsByConnectionId({
+                    connectionId: connection.id,
+                    filter: syncIdentifiers.value
+                })) || [];
             if (syncs.length <= 0) {
                 res.status(400).send({ message: 'Invalid sync_name' });
                 return;
@@ -759,6 +762,36 @@ class SyncController {
             next(err);
         }
     }
+}
+
+function normalizedSyncParams(syncs: any): Result<{ syncName: string; syncVariant: string }[]> {
+    if (!syncs) {
+        return Err('Missing sync names');
+    }
+    if (!Array.isArray(syncs)) {
+        return Err('syncs must be an array');
+    }
+
+    const syncIdentifiers = syncs.map((sync) => {
+        if (typeof sync === 'string') {
+            if (sync.includes('::')) {
+                const [name, variant] = sync.split('::');
+                return { syncName: name, syncVariant: variant };
+            }
+            return { syncName: sync, syncVariant: 'base' };
+        }
+
+        if (typeof sync === 'object' && sync !== null && typeof sync.name === 'string' && typeof sync.variant === 'string') {
+            return { syncName: sync.name, syncVariant: sync.variant };
+        }
+
+        return null; // Mark invalid entries
+    });
+
+    if (syncIdentifiers.some((sync) => sync === null)) {
+        return Err('syncs must be either strings or { name: string, variant: string } objects');
+    }
+    return Ok(syncIdentifiers as { syncName: string; syncVariant: string }[]);
 }
 
 export default new SyncController();
