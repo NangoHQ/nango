@@ -46,9 +46,6 @@ export class NangoActionRunner extends NangoActionBase {
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.throwIfAborted();
-        if (!config.method) {
-            config.method = 'GET';
-        }
 
         const { connectionId, providerConfigKey } = config;
 

@@ -122,7 +122,7 @@ export function getProxyConfiguration({
 
     const configBody: ApplicationConstructedProxyConfiguration = {
         endpoint,
-        method: method?.toUpperCase() as HTTP_METHOD,
+        method: method ? (method.toUpperCase() as HTTP_METHOD) : 'GET',
         provider,
         providerName,
         providerConfigKey,

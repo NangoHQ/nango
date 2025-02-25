@@ -30,6 +30,8 @@ type ForwardedHeaders = Record<string, string>;
 
 const logger = getLogger('Proxy.Controller');
 
+const MEMOIZED_CONNECTION_TTL = 60000;
+
 class ProxyController {
     /**
      * Route Call
@@ -137,6 +139,8 @@ class ProxyController {
                 providerName: integration.provider
             };
 
+            let lastConnectionRefresh = Date.now();
+            let freshConnection = connection;
             const proxy = new ProxyRequest({
                 proxyConfig: getProxyConfiguration({
                     externalConfig: {
@@ -157,6 +161,11 @@ class ProxyController {
                     await logCtx?.log(msg);
                 },
                 getConnection: async () => {
+                    if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
+                        return freshConnection;
+                    }
+
+                    lastConnectionRefresh = Date.now();
                     const credentialResponse = await connectionService.refreshOrTestCredentials({
                         account,
                         environment,
@@ -171,7 +180,8 @@ class ProxyController {
                         throw new ProxyError('failed_to_get_connection', 'Failed to get connection credentials', connectionRes.error);
                     }
 
-                    return credentialResponse.value;
+                    freshConnection = credentialResponse.value;
+                    return freshConnection;
                 }
             });
 

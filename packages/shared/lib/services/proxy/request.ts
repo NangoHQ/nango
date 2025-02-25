@@ -67,7 +67,7 @@ export class ProxyRequest {
                     this.axiosConfig = getAxiosConfiguration({ proxyConfig: this.config, connection: this.connection });
 
                     try {
-                        const res = await axios.request(this.axiosConfig);
+                        const res = await this.httpCall(this.axiosConfig);
                         await this.logResponse({ response: res, retryAttempt, start });
                         return res;
                     } catch (err) {
@@ -111,6 +111,14 @@ export class ProxyRequest {
         } catch (err) {
             return Err(err instanceof Error ? err : new ProxyError('unknown_error', '', err));
         }
+    }
+
+    /**
+     * For testing purpose only
+     * @private
+     */
+    public async httpCall(axiosConfig: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await axios.request(axiosConfig);
     }
 
     private async logErrorResponse({ error, retryAttempt, start }: { error: unknown; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
