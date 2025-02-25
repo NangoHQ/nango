@@ -6520,6 +6520,43 @@ qualtrics:
             suffix: .qualtrics.com
             prefix: https://
 
+quickbase:
+    display_name: Quickbase
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.quickbase.com/v1/
+        headers:
+            qb-realm-hostname: ${connectionConfig.domain}
+            user-agent: ${connectionConfig.appDetails} || App (support@nango.dev)
+            authorization: QB-USER-TOKEN ${apiKey}
+        query:
+            apiKey: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/quickbase
+    docs_connect: https://docs.nango.dev/integrations/all/quickbase/connect
+    connection_config:
+        domain:
+            type: string
+            title: Realm Hostname
+            description: Your Quickbase Realm Hostname
+            example: demo.quickbase.com
+            format: hostname
+            doc_section: '#step-1-finding-your-realm-hostname'
+        appDetails:
+            type: string
+            title: App Details
+            description: The details of your app
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: User Token
+            description: Your User Token
+            pattern: '^[a-z0-9_-]+$'
+            example: bb_aa_xxxxxx_xxxxxxxxxxxxxxxxx
+            doc_section: '#step-2-finding-your-user-token'
+
 quickbooks:
     display_name: Quickbooks
     categories:
