@@ -5925,6 +5925,30 @@ openai:
             title: API Key
             description: The API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-api-key'
+openai-admin:
+    display_name: OpenAI (Admin)
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.openai.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/organization/users
+        retry:
+            after: 'x-ratelimit-reset-requests'
+    docs: https://docs.nango.dev/integrations/all/openai-admin
+    docs_connect: https://docs.nango.dev/integrations/all/openai-admin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Admin Key
+            description: The Admin API key for your OpenAI account
+            doc_section: '#step-1-retrieve-your-openai-admin-key'
 
 ory:
     display_name: Ory
