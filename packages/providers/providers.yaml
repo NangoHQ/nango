@@ -5926,8 +5926,11 @@ openai:
             description: The API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-api-key'
 openai-admin:
-    alias: openai
     display_name: OpenAI (Admin)
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
     proxy:
         base_url: https://api.openai.com
         headers:
