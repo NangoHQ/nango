@@ -56,6 +56,7 @@ The sample app uses Slack as an example integration and is showcased in this [de
     - Go to [Slack Dev Center](https://api.slack.com/apps) and create a Slack OAuth app with **Bot Token Scopes**:
       - `users:read`
       - `chat:write`
+    - Add `https://api.nango.dev/oauth/callback` as a **redirect URL** in your Slack OAuth app.
     - Go back to Nango. In the "Authorization" tab, add credentials in the Slack integration in the `Authorization` tab. In the "Endpoints" tab, activate endpoint `GET /users` and `POST /send-message`.
   </Step>
   <Step title="Prepare your env">
