@@ -119,15 +119,15 @@ export const typesOptions = [
         childs: [
             { name: 'External webhook executed', value: 'webhook:incoming' },
             { name: 'External webhook forwarded', value: 'webhook:forward' },
-            { name: 'Connection creation webhooks', value: 'webhook:connection_create' },
-            { name: 'Sync completion webhooks', value: 'webhook:sync' },
-            { name: 'Token refresh webhooks', value: 'webhook:connection_refresh' }
+            { name: 'Connection creation webhook', value: 'webhook:connection_create' },
+            { name: 'Sync completion webhook', value: 'webhook:sync' },
+            { name: 'Token refresh webhook', value: 'webhook:connection_refresh' }
         ]
     },
-    { value: 'action', name: 'Actions' },
-    { value: 'events', name: 'Event-based executions' },
+    { value: 'action', name: 'Action' },
+    { value: 'events', name: 'Event-based execution' },
     { value: 'proxy', name: 'Proxy' },
-    { value: 'deploy', name: 'Deploys' }
+    { value: 'deploy', name: 'Deploy' }
 ];
 
 export const integrationsDefaultOptions: SearchOperationsIntegration[] = ['all'];
