@@ -29,7 +29,7 @@ import {
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
-import { getHeaders, isHosted, truncateJson, Ok, Err } from '@nangohq/utils';
+import { getHeaders, isHosted, truncateJson, Ok, Err, redactHeaders } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
 import type { RequestLocals } from '../utils/express.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -315,11 +315,11 @@ class SyncController {
                 request: {
                     url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
                     method: req.method,
-                    headers: reqHeaders
+                    headers: redactHeaders({ headers: reqHeaders })
                 },
                 response: {
                     code: res.statusCode,
-                    headers: getHeaders(res.getHeaders())
+                    headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
                 }
             });
         }
