@@ -204,11 +204,15 @@ export const ScriptSettings: React.FC<{
                     <code className="font-code text-white text-s bg-black px-1 rounded-md uppercase">{isSync ? 'Sync' : 'Action'}</code>
                 </InfoBloc>
 
-                {!flow.is_public && (
+                {!flow.is_public ? (
                     <InfoBloc title="Script Name" horizontal>
                         <code className="font-code max-w-full break-all text-text-light-gray text-xs">
                             {integration.integration.unique_key}/{flow.type}s/{flow.name}.ts
                         </code>
+                    </InfoBloc>
+                ) : (
+                    <InfoBloc title="Script Name" horizontal>
+                        <code className="font-code max-w-full break-all text-text-light-gray text-xs">{flow.name}</code>
                     </InfoBloc>
                 )}
                 {isSync && (
