@@ -5628,8 +5628,8 @@ mip-cloud:
             suffix: /api/v1/sso/mipadv/login
             format: hostname
 
-mip-on-premises:
-    display_name: MIP On Premises
+mip-on-premise:
+    display_name: MIP On Premise
     categories:
         - accounting
     auth_mode: TWO_STEP
@@ -5644,8 +5644,8 @@ mip-on-premises:
         content-type: application/json
     token_response:
         token: token
-    docs: https://docs.nango.dev/integrations/all/mip-on-premises
-    docs_connect: https://docs.nango.dev/integrations/all/mip-on-premises/connect
+    docs: https://docs.nango.dev/integrations/all/mip-on-premise
+    docs_connect: https://docs.nango.dev/integrations/all/mip-on-premise/connect
     credentials:
         login:
             type: string

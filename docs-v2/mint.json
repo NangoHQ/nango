@@ -486,7 +486,7 @@
                 "integrations/all/mindbody",
                 "integrations/all/minimax",
                 "integrations/all/mip-cloud",
-                "integrations/all/mip-on-premises",
+                "integrations/all/mip-on-premise",
                 "integrations/all/miro",
                 "integrations/all/miro-scim",
                 "integrations/all/mixpanel",
