@@ -587,8 +587,8 @@ describe('buildProxyURL', () => {
     });
 
     it('should handle array', () => {
-        const url = buildProxyURL(
-            getDefaultProxy({
+        const url = buildProxyURL({
+            config: getDefaultProxy({
                 provider: {
                     auth_mode: 'OAUTH2',
                     proxy: {
@@ -596,8 +596,9 @@ describe('buildProxyURL', () => {
                     }
                 },
                 params: { ids: [1, 2] }
-            })
-        );
+            }),
+            connection: getDefaultConnection()
+        });
 
         expect(url).toBe('https://example.com/api/test?ids=1%2C2');
     });
