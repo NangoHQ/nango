@@ -127,6 +127,7 @@ export interface ListRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
     model: string;
+    variant?: string;
     /**
      * @deprecated use modifiedAfter
      */

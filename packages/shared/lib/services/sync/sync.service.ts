@@ -249,75 +249,57 @@ export const getSyncs = async (
     });
 };
 
-export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise<Sync[] | null> => {
-    const results = await db.knex.select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
+export const getSyncsByConnectionId = async ({
+    connectionId,
+    filter = []
+}: {
+    connectionId: number;
+    filter?: { syncName: string; syncVariant: string }[];
+}): Promise<Sync[] | null> => {
+    const query = db.knex.select('*').from<Sync>(TABLE).where({ nango_connection_id: connectionId, deleted: false });
+    if (filter && filter.length > 0) {
+        query.andWhere((builder) => {
+            for (const { syncName, syncVariant } of filter) {
+                builder.orWhere({ name: syncName, variant: syncVariant });
+            }
+        });
+    }
 
+    const results = await query;
     if (Array.isArray(results) && results.length > 0) {
         return results;
     }
-
     return null;
 };
 
-export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<SyncWithConnectionId[]> => {
-    const results = await db.knex
+export const getSyncsByProviderConfigKey = async ({
+    environmentId,
+    providerConfigKey,
+    filter = []
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    filter?: { syncName: string; syncVariant: string }[];
+}): Promise<SyncWithConnectionId[]> => {
+    const query = db.knex
         .select(`${TABLE}.*`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
-            environment_id,
+            environment_id: environmentId,
             provider_config_key: providerConfigKey,
             [`_nango_connections.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });
-
-    return results;
-};
-
-export const getSyncsByProviderConfigAndSyncName = async (environment_id: number, providerConfigKey: string, syncName: string): Promise<Sync[]> => {
-    const results = await db.knex
-        .select(`${TABLE}.*`)
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .where({
-            environment_id,
-            provider_config_key: providerConfigKey,
-            name: syncName,
-            [`_nango_connections.deleted`]: false,
-            [`${TABLE}.deleted`]: false
+    if (filter && filter.length > 0) {
+        query.andWhere((builder) => {
+            for (const { syncName, syncVariant } of filter) {
+                builder.orWhere({ name: syncName, variant: syncVariant });
+            }
         });
-
-    return results;
-};
-
-export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Promise<string[]> => {
-    const results = await db.knex.select('name').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
-
-    if (Array.isArray(results) && results.length > 0) {
-        return results.map((sync) => sync.name);
     }
 
-    return [];
-};
-
-export const getSyncsByProviderConfigAndSyncNames = async (
-    environment_id: number,
-    providerConfigKey: string,
-    syncNames: string[]
-): Promise<SyncWithConnectionId[]> => {
-    const results = await db.knex
-        .select(`${TABLE}.*`, '_nango_connections.connection_id')
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .where({
-            environment_id,
-            provider_config_key: providerConfigKey,
-            [`_nango_connections.deleted`]: false,
-            [`${TABLE}.deleted`]: false
-        })
-        .whereIn('name', syncNames);
-
-    return results;
+    return query;
 };
 
 /**
