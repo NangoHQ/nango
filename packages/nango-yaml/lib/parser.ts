@@ -3,6 +3,7 @@ import { ModelsParser, getRecursiveModelNames } from './modelsParser.js';
 import {
     ParserErrorDuplicateEndpoint,
     ParserErrorDuplicateModel,
+    ParserErrorInvalidSyncName,
     ParserErrorMissingId,
     ParserErrorModelIsLiteral,
     ParserErrorModelNotFound
@@ -77,6 +78,11 @@ export abstract class NangoYamlParser {
 
             // --- Validate syncs
             for (const sync of integration.syncs) {
+                const syncNameRegex = /^[a-zA-Z0-9-_]+$/;
+                if (!syncNameRegex.test(sync.name)) {
+                    this.errors.push(new ParserErrorInvalidSyncName({ name: sync.name, path: [integrationName, 'syncs', sync.name] }));
+                    continue;
+                }
                 const usedModelsSync = new Set<string>();
                 if (sync.output) {
                     for (const output of sync.output) {

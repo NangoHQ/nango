@@ -10,6 +10,16 @@ export class ParserError {
     }
 }
 
+export class ParserErrorInvalidSyncName extends ParserError {
+    constructor(options: { name: string; path: string[] }) {
+        super({
+            code: 'invalid_sync_name',
+            message: `Sync "${options.name}" contains invalid characters`,
+            path: options.path
+        });
+    }
+}
+
 export class ParserErrorInvalidModelName extends ParserError {
     constructor(options: { model: string; path: string[] }) {
         super({
