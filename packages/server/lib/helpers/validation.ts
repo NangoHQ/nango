@@ -30,6 +30,10 @@ export const modelSchema = z
     .string()
     .regex(/^[A-Z][a-zA-Z0-9_-]+$/)
     .max(255);
+export const variantSchema = z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .max(255);
 
 export const connectionCredential = z.union([
     z.object({ public_key: z.string().uuid(), hmac: z.string().optional() }),

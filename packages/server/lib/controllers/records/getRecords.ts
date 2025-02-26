@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
-import { connectionIdSchema, modelSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionIdSchema, modelSchema, variantSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { GetPublicRecords } from '@nangohq/types';
 import { connectionService, trackFetch } from '@nangohq/shared';
 import { records } from '@nangohq/records';
@@ -9,6 +9,7 @@ import { records } from '@nangohq/records';
 export const validationQuery = z
     .object({
         model: modelSchema,
+        variant: variantSchema.optional(),
         delta: z.string().datetime().optional(),
         modified_after: z.string().datetime().optional(),
         limit: z.coerce.number().min(1).max(10000).default(100).optional(),
@@ -65,7 +66,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
 
     const result = await records.getRecords({
         connectionId: connection.id,
-        model: query.model,
+        model: query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model,
         modifiedAfter: query.delta || query.modified_after,
         limit: query.limit,
         filter: query.filter,

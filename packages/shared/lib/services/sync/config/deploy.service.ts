@@ -1,7 +1,7 @@
 import db, { dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
+import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 import connectionService from '../../connection.service.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
@@ -478,7 +478,11 @@ export async function deployPreBuilt({
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
             if (runs) {
-                const syncs = await getSyncsByProviderConfigAndSyncName(environment.id, provider_config_key, sync_name);
+                const syncs = await getSyncsByProviderConfigKey({
+                    environmentId: environment.id,
+                    providerConfigKey: provider_config_key,
+                    filter: [{ syncName: sync_name, syncVariant: 'base' }]
+                });
                 for (const sync of syncs) {
                     const interval = sync.frequency || runs;
                     const res = await orchestrator.updateSyncFrequency({
@@ -764,7 +768,7 @@ async function compileDeployInfo({
         }
 
         if (runs) {
-            const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
+            const syncs = await getSyncsByProviderConfigKey({ environmentId: environment_id, providerConfigKey, filter: [{ syncName, syncVariant: 'base' }] });
 
             for (const sync of syncs) {
                 const interval = sync.frequency || runs;
