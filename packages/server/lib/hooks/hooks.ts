@@ -257,10 +257,11 @@ export async function connectionTest({
         provider,
         providerName: config.provider,
         providerConfigKey: config.unique_key,
+        connectionId,
         headers: {
             'Content-Type': 'application/json'
         },
-        decompress: false
+        connection
     };
 
     if (headers) {
@@ -272,7 +273,8 @@ export async function connectionTest({
     }
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName: config.provider
+        providerName: config.provider,
+        connection
     };
 
     const logs: MessageRowInsert[] = [
@@ -284,12 +286,9 @@ export async function connectionTest({
             logger: (msg) => {
                 logs.push(msg);
             },
-            proxyConfig,
-            getConnection: () => {
-                return connection;
-            }
+            proxyConfig
         });
-        const response = (await proxy.request()).unwrap();
+        const response = (await proxy.call()).unwrap();
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
             const error = new NangoError('connection_test_failed', { response, logs });

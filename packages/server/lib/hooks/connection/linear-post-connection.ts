@@ -14,6 +14,7 @@ export default async function execute(nango: Nango) {
         endpoint: '/graphql',
         data: { query },
         method: 'POST',
+        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

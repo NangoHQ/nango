@@ -8,6 +8,7 @@ export default async function execute(nango: Nango) {
     const response = await nango.proxy<BasecampAuthorizationResponse>({
         baseUrlOverride: 'https://launchpad.37signals.com',
         endpoint: '/authorization.json',
+        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

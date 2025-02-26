@@ -66,7 +66,7 @@ class PaginationService {
 
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
-            const response = await proxy(config);
+            const response: AxiosResponse = await proxy(config);
 
             const responseData: T[] = cursorPagination.response_path ? get(response.data, cursorPagination.response_path) : response.data;
 
@@ -100,7 +100,7 @@ class PaginationService {
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
         while (true) {
-            const response = await proxy(config);
+            const response: AxiosResponse = await proxy(config);
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
             if (!responseData.length) {
@@ -144,7 +144,7 @@ class PaginationService {
 
             this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
-            const response = await proxy(config);
+            const response: AxiosResponse = await proxy(config);
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
             if (!responseData || !responseData.length) {

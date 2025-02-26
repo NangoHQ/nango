@@ -19,6 +19,7 @@ export default async function execute(nango: Nango) {
         headers: {
             Authorization: 'Basic ' + Buffer.from(access_token + ':').toString('base64')
         },
+        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

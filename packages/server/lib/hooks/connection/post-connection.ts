@@ -35,19 +35,27 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
         const connection = connectionRes.response;
 
         const internalConfig: InternalProxyConfiguration = {
+            connection,
             providerName
         };
 
         const externalConfig: UserProvidedProxyConfiguration = {
             endpoint: '',
+            connectionId: connection.connection_id,
             providerConfigKey: connection.provider_config_key,
             method: 'GET',
             data: {}
         };
 
         const internalNango: InternalNango = {
-            getConnection: () => {
-                return Promise.resolve(connection);
+            getConnection: async () => {
+                const { response: connection } = await connectionService.getConnection(
+                    upsertedConnection.connection_id,
+                    upsertedConnection.provider_config_key,
+                    environment.id
+                );
+
+                return connection!;
             },
             proxy: async ({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => {
                 const finalExternalConfig: UserProvidedProxyConfiguration = {
@@ -67,16 +75,8 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                 }
 
                 const proxyConfig = getProxyConfiguration({ externalConfig: finalExternalConfig, internalConfig }).unwrap();
-                const proxy = new ProxyRequest({
-                    logger: () => {
-                        // TODO: log something here?
-                    },
-                    proxyConfig,
-                    getConnection: () => {
-                        return connection;
-                    }
-                });
-                const response = (await proxy.request()).unwrap();
+                const proxy = new ProxyRequest({ logger: () => {}, proxyConfig });
+                const response = (await proxy.call()).unwrap();
 
                 return response;
             },

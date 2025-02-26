@@ -5,6 +5,7 @@ export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const response = await nango.proxy({
         endpoint: `oauth/token/accessible-resources`,
+        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 
@@ -17,6 +18,7 @@ export default async function execute(nango: Nango) {
 
     const accountResponse = await nango.proxy({
         endpoint: `ex/jira/${cloudId}/rest/api/3/myself`,
+        connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key
     });
 

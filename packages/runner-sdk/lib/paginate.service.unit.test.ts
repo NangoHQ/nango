@@ -15,7 +15,8 @@ describe('PaginationService', () => {
             config = {
                 endpoint: '/test',
                 method: 'POST',
-                providerConfigKey: 'test-provider-key'
+                providerConfigKey: 'test-provider-key',
+                connectionId: 'test-connection-id'
             };
 
             paginationConfig = {
