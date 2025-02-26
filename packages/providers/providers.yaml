@@ -5538,7 +5538,7 @@ mip-cloud:
         password: ${credentials.password}
     token_headers:
         content-type: application/json
-    token_response: # TODO: VALIDATE, AUTH HEADER
+    token_response:
         token: token
     docs: https://docs.nango.dev/integrations/all/mip-cloud
     docs_connect: https://docs.nango.dev/integrations/all/mip-cloud/connect
