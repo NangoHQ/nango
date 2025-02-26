@@ -4800,7 +4800,7 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 1.0.4
+                version: 2.0.0
                 output: Document
                 sync_type: full
                 endpoint:
@@ -4819,6 +4819,7 @@ integrations:
                     path: /root-folders
                     group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
+                version: 1.0.0
         actions:
             fetch-document:
                 input: IdEntity
@@ -4877,11 +4878,13 @@ integrations:
                 url: string
                 title: string
                 mimeType: string
+                updatedAt: string
             Folder:
                 id: string
                 url: string
                 title: string
                 mimeType: string
+                updatedAt: string
             JSONSpreadsheet:
                 spreadsheetId: string
                 properties: object
