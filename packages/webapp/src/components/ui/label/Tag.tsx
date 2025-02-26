@@ -2,7 +2,7 @@ import { cn } from '../../../utils/utils';
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 
-const variants = cva('', {
+const variantStyles = cva('', {
     variants: {
         variant: {
             success: 'bg-success-400 border-success-400 text-success-400',
@@ -10,22 +10,56 @@ const variants = cva('', {
             info: 'bg-info-400 border-info-400 text-info-400',
             warning: 'bg-warning-400 border-warning-400 text-warning-400',
             gray: 'bg-grayscale-500 border-grayscale-500 text-grayscale-500',
+            gray1: 'bg-grayscale-500 border-grayscale-700 text-white',
             neutral: 'bg-grayscale-900 border-grayscale-700 text-grayscale-100'
+        },
+        size: {
+            default: 'px-2 pt-[1px]',
+            small: 'px-1 pt-[1px]'
         }
     },
     defaultVariants: {
-        variant: 'neutral'
+        variant: 'neutral',
+        size: 'default'
+    }
+});
+
+const textCaseStyles = cva('', {
+    variants: {
+        textCase: {
+            uppercase: 'uppercase',
+            lowercase: 'lowercase',
+            capitalize: 'capitalize',
+            normal: 'normal-case'
+        }
+    },
+    defaultVariants: {
+        textCase: 'uppercase'
+    }
+});
+
+const sizeTextStyles = cva('text-[11px]', {
+    variants: {
+        size: {
+            default: 'leading-[17px]',
+            small: 'leading-[14px]'
+        }
+    },
+    defaultVariants: {
+        size: 'default'
     }
 });
 
 export const Tag: React.FC<
     {
         children: React.ReactNode;
-    } & VariantProps<typeof variants>
-> = ({ children, variant }) => {
+        textCase?: 'uppercase' | 'lowercase' | 'capitalize' | 'normal';
+        size?: 'default' | 'small';
+    } & VariantProps<typeof variantStyles>
+> = ({ children, variant, textCase, size }) => {
     return (
-        <div className={cn('inline-flex px-2 pt-[1px] border-[0.5px] bg-opacity-30 rounded', variants({ variant }))}>
-            <div className={cn('uppercase text-[11px] leading-[17px]')}>{children}</div>
+        <div className={cn('inline-flex border-[0.5px] bg-opacity-30 rounded', variantStyles({ variant, size }))}>
+            <div className={cn(sizeTextStyles({ size }), textCaseStyles({ textCase }))}>{children}</div>
         </div>
     );
 };
