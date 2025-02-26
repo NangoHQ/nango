@@ -36,16 +36,22 @@ const nangoProps: NangoProps = {
 describe('cache', () => {
     let nangoAction: NangoActionRunner;
     let nango: Nango;
+
     beforeEach(async () => {
-        nangoAction = new NangoActionRunner({
-            ...nangoProps
-        });
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        nangoAction = new NangoActionRunner(
+            {
+                ...nangoProps
+            },
+            { persistClient }
+        );
         nango = new Nango({ secretKey: '***' });
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
         nodeClient.prototype.setMetadata = vi.fn().mockReturnValue({});
         nodeClient.prototype.getIntegration = vi.fn().mockReturnValue({ data: { provider: 'github' } });
-        vi.spyOn(ProxyRequest.prototype, 'request').mockImplementation(() => Promise.resolve(Ok({} as AxiosResponse)));
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
     });
 
     afterEach(() => {
@@ -122,18 +128,18 @@ describe('Pagination', () => {
     let nangoAction: NangoActionRunner;
 
     beforeEach(async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.saveLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         const config: NangoProps = {
             ...nangoProps,
             secretKey: 'encrypted',
             providerConfigKey,
             connectionId
         };
-        nangoAction = new NangoActionRunner(config);
+        nangoAction = new NangoActionRunner(config, { persistClient });
 
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: { type: 'OAUTH2', access_token: 'token' } });
-
-        vi.spyOn(ProxyRequest.prototype, 'request').mockImplementation(() => Promise.resolve(Ok({} as AxiosResponse)));
     });
 
     afterEach(() => {
@@ -158,21 +164,19 @@ describe('Pagination', () => {
     it('Sends pagination params in body for POST HTTP method', async () => {
         await stubProviderTemplate(cursorPagination);
 
-        const spy = vi.spyOn(ProxyRequest.prototype, 'request').mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
+        const spy = vi.spyOn(ProxyRequest.prototype, 'httpCall').mockReturnValueOnce(Promise.resolve({ data: { issues: [] } } as AxiosResponse));
 
         const endpoint = '/issues';
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
         expect(spy).toHaveBeenCalledWith({
-            axiosConfig: {
-                method: 'POST',
-                url: 'https://api.github.com/issues',
-                data: { limit: 2 },
-                headers: {
-                    authorization: 'Bearer token',
-                    'user-agent': expect.any(String)
-                }
+            method: 'POST',
+            url: 'https://api.github.com/issues',
+            data: { limit: 2 },
+            headers: {
+                authorization: 'Bearer token',
+                'user-agent': expect.any(String)
             }
         });
     });
@@ -181,9 +185,9 @@ describe('Pagination', () => {
         await stubProviderTemplate(cursorPagination);
 
         const spy = vi
-            .spyOn(ProxyRequest.prototype, 'request')
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [{}, {}, {}] } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
+            .spyOn(ProxyRequest.prototype, 'httpCall')
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: [{}, {}, {}] } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: [] } } as AxiosResponse));
 
         const endpoint = '/issues';
         const paginationConfigOverride: OffsetPagination = {
@@ -200,13 +204,11 @@ describe('Pagination', () => {
         }
 
         expect(spy).toHaveBeenLastCalledWith({
-            axiosConfig: {
-                method: 'GET',
-                url: 'https://api.github.com/issues?per_page=3&offset=3',
-                headers: {
-                    authorization: 'Bearer token',
-                    'user-agent': expect.any(String)
-                }
+            method: 'GET',
+            url: 'https://api.github.com/issues?per_page=3&offset=3',
+            headers: {
+                authorization: 'Bearer token',
+                'user-agent': expect.any(String)
             }
         });
     });
@@ -217,10 +219,10 @@ describe('Pagination', () => {
         const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
 
-        vi.spyOn(ProxyRequest.prototype, 'request')
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: [] } } as AxiosResponse)));
+        vi.spyOn(ProxyRequest.prototype, 'httpCall')
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: firstBatch } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: secondBatch } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: [] } } as AxiosResponse));
 
         const endpoint = '/issues';
 
@@ -243,10 +245,10 @@ describe('Pagination', () => {
         const secondBatch: any[] = [{ id: 4 }, { id: 5 }, { id: 6 }];
         const thirdBatch: any[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
 
-        vi.spyOn(ProxyRequest.prototype, 'request')
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: '2' } } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch, metadata: { next_cursor: '2' } } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: thirdBatch } } as AxiosResponse)));
+        vi.spyOn(ProxyRequest.prototype, 'httpCall')
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: firstBatch, metadata: { next_cursor: '2' } } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: secondBatch, metadata: { next_cursor: '2' } } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: thirdBatch } } as AxiosResponse));
 
         const endpoint = '/issues';
 
@@ -267,8 +269,8 @@ describe('Pagination', () => {
 
         const onlyBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
-        vi.spyOn(ProxyRequest.prototype, 'request').mockReturnValueOnce(
-            Promise.resolve(Ok({ data: { issues: onlyBatch, metadata: { next_cursor: '' } } } as AxiosResponse))
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockReturnValueOnce(
+            Promise.resolve({ data: { issues: onlyBatch, metadata: { next_cursor: '' } } } as AxiosResponse)
         );
 
         const endpoint = '/issues';
@@ -291,9 +293,9 @@ describe('Pagination', () => {
             const firstBatch: any[] = [{ id: 1 }, { id: 2 }, { id: 3 }];
             const emptyBatch: any[] = [];
 
-            vi.spyOn(ProxyRequest.prototype, 'request')
-                .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse)))
-                .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse)));
+            vi.spyOn(ProxyRequest.prototype, 'httpCall')
+                .mockReturnValueOnce(Promise.resolve({ data: { issues: firstBatch, metadata: { next_cursor: '' } } } as AxiosResponse))
+                .mockReturnValueOnce(Promise.resolve({ data: { issues: emptyBatch, metadata: { next_cursor: '' } } } as AxiosResponse));
 
             const endpoint = '/issues';
 
@@ -320,10 +322,10 @@ describe('Pagination', () => {
         const thirdBatch: { id: number }[] = [{ id: 7 }, { id: 8 }, { id: 9 }];
 
         const spy = vi
-            .spyOn(ProxyRequest.prototype, 'request')
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: firstBatch, metadata: { next_cursor: nextUrlOrPathValue } } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: secondBatch, metadata: { next_cursor: anotherNextUrlOrPathValue } } } as AxiosResponse)))
-            .mockReturnValueOnce(Promise.resolve(Ok({ data: { issues: thirdBatch } } as AxiosResponse)));
+            .spyOn(ProxyRequest.prototype, 'httpCall')
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: firstBatch, metadata: { next_cursor: nextUrlOrPathValue } } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: secondBatch, metadata: { next_cursor: anotherNextUrlOrPathValue } } } as AxiosResponse))
+            .mockReturnValueOnce(Promise.resolve({ data: { issues: thirdBatch } } as AxiosResponse));
 
         const endpoint = '/issues';
 
@@ -335,25 +337,19 @@ describe('Pagination', () => {
         }
 
         expect(spy).toHaveBeenNthCalledWith(1, {
-            axiosConfig: {
-                method: 'GET',
-                url: 'https://api.github.com/issues',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-            }
+            method: 'GET',
+            url: 'https://api.github.com/issues',
+            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
         });
         expect(spy).toHaveBeenNthCalledWith(2, {
-            axiosConfig: {
-                method: 'GET',
-                url: 'https://api.github.com/issues?page=2',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-            }
+            method: 'GET',
+            url: 'https://api.github.com/issues?page=2',
+            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
         });
         expect(spy).toHaveBeenNthCalledWith(3, {
-            axiosConfig: {
-                method: 'GET',
-                url: 'https://api.github.com/issues?page=3',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
-            }
+            method: 'GET',
+            url: 'https://api.github.com/issues?page=3',
+            headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
         });
         expect(spy).toHaveBeenCalledTimes(3);
 
@@ -404,10 +400,10 @@ describe('Log', () => {
 
     const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
 
-    it('should enforce activityLogId when not in dryRun', () => {
+    it('should enforce activityLogId', () => {
         expect(() => {
             new NangoActionRunner({ ...nangoProps, activityLogId: undefined });
-        }).toThrowError(new Error('Parameter activityLogId is required when not in dryRun'));
+        }).toThrowError(new Error('Parameter activityLogId is required'));
     });
 
     it('should not fail on null', async () => {

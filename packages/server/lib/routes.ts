@@ -14,7 +14,7 @@ import appAuthController from './controllers/appAuth.controller.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
-import { dirname } from './utils/utils.js';
+import { dirname, isBinaryContentType } from './utils/utils.js';
 import express from 'express';
 import cors from 'cors';
 import { setupAuth } from './clients/auth.client.js';
@@ -124,6 +124,7 @@ const adminAuth: RequestHandler[] = [
     authMiddleware.adminKeyAuth.bind(authMiddleware),
     rateLimiterMiddleware
 ];
+
 const connectSessionOrPublicAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
     resourceCapping,
@@ -149,7 +150,12 @@ router.use(
         }
     })
 );
-router.use(bodyParser.raw({ type: 'application/octet-stream', limit: bodyLimit }));
+router.use(
+    bodyParser.raw({
+        type: (req) => isBinaryContentType(req.headers['content-type']),
+        limit: bodyLimit
+    })
+);
 router.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 router.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 

@@ -1,6 +1,6 @@
 ---
-title: OpenAI Admin
-sidebarTitle: OpenAI Admin
+title: OpenAI Administration
+sidebarTitle: OpenAI Administration
 ---
 
 import Overview from "/snippets/overview.mdx"
@@ -40,15 +40,14 @@ _No setup guide yet._
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai-admin.mdx)</Note>
 
 ## API gotchas
-
+- Admin API keys cannot be used for non-administration endpoints.
 - OpenAI uses API_KEY auth mode with `Authorization: Bearer API_KEY` in the request header to access different endpoints.
 - Nango supports automatic retries based on the `x-ratelimit-reset-requests` header from OpenAI's API. This header indicates when the request limit will reset, allowing Nango to efficiently manage API calls. Unlike `x-ratelimit-reset-tokens`, which pertains to the total token usage,`x-ratelimit-reset-requests` specifically addresses the number of API requests.
-```
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai-admin.mdx)</Note>
 
 ## Going further
 
-<Card title="Connect to Openai" icon="link" href="/integrations/all/openai-admin/connect" horizontal>
-  Guide to connect to Openai with Admin  Keys using Nango Connect.
+<Card title="Connect to Openai Administration" icon="link" href="/integrations/all/openai-admin/connect" horizontal>
+  Guide to connect to Openai with Admin Keys using Nango Connect.
 </Card>
