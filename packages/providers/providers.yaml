@@ -152,6 +152,7 @@ affinity:
     display_name: Affinity
     categories:
         - crm
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
@@ -229,6 +230,7 @@ aircall-basic:
 airtable:
     display_name: Airtable
     categories:
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
@@ -432,6 +434,7 @@ anrok:
     display_name: Anrok
     categories:
         - legal
+        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://api.anrok.com
@@ -525,6 +528,7 @@ apollo:
     display_name: Apollo (API Key)
     categories:
         - marketing
+        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
@@ -544,6 +548,7 @@ apollo-oauth:
     display_name: Apollo (OAuth)
     categories:
         - marketing
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.apollo.io
     token_url: https://app.apollo.io/api/v1/oauth/token
@@ -594,6 +599,7 @@ appstle-subscriptions:
 asana:
     display_name: Asana
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -645,6 +651,7 @@ ashby:
     display_name: Ashby
     categories:
         - ats
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
@@ -684,6 +691,7 @@ atlassian:
     display_name: Atlassian
     categories:
         - dev-tools
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
@@ -705,6 +713,7 @@ attio:
     display_name: Attio
     categories:
         - crm
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.attio.com/authorize
     token_url: https://app.attio.com/oauth/token
@@ -822,6 +831,7 @@ aws:
     categories:
         - dev-tools
         - e-commerce
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
@@ -864,6 +874,7 @@ aws-iam:
     display_name: AWS IAM
     categories:
         - dev-tools
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
@@ -899,6 +910,7 @@ bamboohr:
     display_name: BambooHR (OAuth)
     categories:
         - hr
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
     token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
@@ -926,6 +938,7 @@ bamboohr-basic:
     display_name: BambooHR (Basic Auth)
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
@@ -1062,6 +1075,7 @@ bigcommerce:
     display_name: BigCommerce
     categories:
         - e-commerce
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.bigcommerce.com/oauth2/authorize
     token_url: https://login.bigcommerce.com/oauth2/token
@@ -1104,6 +1118,7 @@ bill:
     display_name: Bill (Connect API)
     categories:
         - payment
+        - popular
     auth_mode: BILL
     token_url: https://gateway.prod.bill.com/connect/v3/login
     proxy:
@@ -1224,6 +1239,7 @@ box:
     display_name: Box
     categories:
         - knowledge-base
+        - popular
         - storage
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
@@ -1576,6 +1592,7 @@ cal-com-v2:
 calendly:
     display_name: Calendly
     categories:
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://auth.calendly.com/oauth/authorize
@@ -1887,6 +1904,7 @@ clari-copilot:
 clickup:
     display_name: ClickUp
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -2371,6 +2389,7 @@ deel:
     display_name: Deel
     categories:
         - hr
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.deel.com/oauth2/authorize
     token_url: https://app.deel.com/oauth2/tokens
@@ -2542,6 +2561,7 @@ docusign:
     display_name: DocuSign
     categories:
         - legal
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
     token_url: https://account.docusign.com/oauth/token
@@ -2578,6 +2598,7 @@ dropbox:
     display_name: Dropbox
     categories:
         - knowledge-base
+        - popular
         - storage
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
@@ -2929,6 +2950,7 @@ exact-online:
     categories:
         - accounting
         - hr
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -3193,6 +3215,7 @@ freshbooks:
     display_name: FreshBooks
     categories:
         - accounting
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
@@ -3205,6 +3228,7 @@ freshbooks:
 freshdesk:
     display_name: FreshDesk
     categories:
+        - popular
         - support
     auth_mode: BASIC
     proxy:
@@ -3367,6 +3391,7 @@ gainsight-cc:
     categories:
         - support
         - crm
+        - popular
     auth_mode: OAUTH2_CC
     token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
     scope_separator: ' '
@@ -3512,6 +3537,7 @@ github:
     display_name: GitHub (User OAuth)
     categories:
         - dev-tools
+        - popular
         - support
         - ticketing
     auth_mode: OAUTH2
@@ -3533,6 +3559,7 @@ github-app:
     display_name: GitHub (App)
     categories:
         - dev-tools
+        - popular
         - ticketing
     alias: github
     auth_mode: APP
@@ -3590,6 +3617,7 @@ gitlab:
     display_name: GitLab
     categories:
         - dev-tools
+        - popular
         - ticketing
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -3674,7 +3702,11 @@ ghost-content:
 gong:
     display_name: Gong (Basic Auth)
     categories:
+        - communication
+        - marketing
+        - popular
         - productivity
+        - video
     auth_mode: BASIC
     proxy:
         base_url: https://api.gong.io
@@ -3700,7 +3732,11 @@ gong-oauth:
     display_name: Gong (Oauth)
     auth_mode: OAUTH2
     categories:
+        - communication
+        - marketing
+        - popular
         - productivity
+        - video
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
@@ -3729,6 +3765,12 @@ gong-oauth:
 
 google:
     display_name: Google
+    categories:
+        - communication
+        - dev-tools
+        - popular
+        - productivity
+        - social
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
     token_url: https://oauth2.googleapis.com/token
@@ -3973,6 +4015,7 @@ greenhouse:
     display_name: Greenhouse (OAuth)
     categories:
         - ats
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
@@ -3999,6 +4042,7 @@ greenhouse-basic:
     display_name: Greenhouse (Basic Auth)
     categories:
         - ats
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
@@ -4186,6 +4230,7 @@ gusto:
     display_name: Gusto
     categories:
         - hr
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
     token_url: https://api.gusto.com/oauth/token
@@ -4286,6 +4331,7 @@ hibob-service-user:
     display_name: Hibob Service User
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
@@ -4371,6 +4417,7 @@ hubspot:
         - marketing
         - support
         - crm
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
@@ -4453,6 +4500,7 @@ intercom:
     display_name: Intercom
     categories:
         - marketing
+        - popular
         - support
         - surveys
         - ticketing
@@ -4469,6 +4517,7 @@ intuit:
     display_name: Intuit
     categories:
         - accounting
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
@@ -4479,6 +4528,7 @@ intuit:
 jira:
     display_name: Jira (OAuth)
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -4505,6 +4555,7 @@ jira:
 jira-basic:
     display_name: Jira (Basic Auth)
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: BASIC
@@ -4544,6 +4595,7 @@ jira-basic:
 jira-data-center:
     display_name: Jira Data Center
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -4723,6 +4775,7 @@ klaviyo:
     display_name: Klaviyo (API Key)
     categories:
         - marketing
+        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://a.klaviyo.com
@@ -4746,6 +4799,7 @@ klaviyo-oauth:
     display_name: Klaviyo (OAuth)
     categories:
         - marketing
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.klaviyo.com/oauth/authorize
     token_url: https://a.klaviyo.com/oauth/token
@@ -4879,6 +4933,7 @@ lever:
     display_name: Lever (OAuth)
     categories:
         - ats
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
     token_url: https://auth.lever.co/oauth/token
@@ -4893,6 +4948,9 @@ lever:
 lever-basic:
     display_name: Lever (Basic Auth)
     auth_mode: BASIC
+    categories:
+        - ats
+        - popular
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever-basic
@@ -4944,6 +5002,7 @@ lever-basic-sandbox:
 linear:
     display_name: Linear
     categories:
+        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -5338,6 +5397,11 @@ metabase:
 microsoft:
     display_name: Microsoft
     auth_mode: OAUTH2
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+        - popular
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
     disable_pkce: true
@@ -5363,6 +5427,7 @@ microsoft-teams:
     categories:
         - productivity
         - video
+        - popular
     alias: microsoft
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsPostConnection
@@ -5372,6 +5437,7 @@ microsoft-tenant-specific:
     display_name: Microsoft (Tenant)
     categories:
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
@@ -5672,6 +5738,7 @@ netsuite:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
@@ -5723,6 +5790,7 @@ notion:
     display_name: Notion
     categories:
         - knowledge-base
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
@@ -5840,6 +5908,9 @@ odoo-cc:
 okta:
     display_name: Okta
     auth_mode: OAUTH2
+    categories:
+        - dev-tools
+        - popular
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     authorization_params:
@@ -5871,6 +5942,8 @@ okta:
 okta-preview:
     alias: okta
     display_name: Okta (Preview)
+    categories:
+        - dev-tools
     authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
     proxy:
@@ -6016,6 +6089,7 @@ outreach:
     display_name: Outreach
     categories:
         - marketing
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
@@ -6246,6 +6320,7 @@ personio:
     display_name: Personio (v1)
     categories:
         - hr
+        - popular
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://api.personio.de/v1
@@ -6585,6 +6660,7 @@ quickbooks:
     display_name: Quickbooks
     categories:
         - accounting
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
@@ -6856,6 +6932,7 @@ sage:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
     token_url: https://oauth.accounting.sage.com/token
@@ -6888,6 +6965,7 @@ sage-intacct:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: TWO_STEP
     proxy:
         base_url: https://api.intacct.com/ia/xml/xmlgw.phtml
@@ -6951,6 +7029,7 @@ salesforce:
     display_name: Salesforce
     categories:
         - crm
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
     token_url: https://login.salesforce.com/services/oauth2/token
@@ -7285,6 +7364,7 @@ signnow-sandbox:
 servicenow:
     display_name: ServiceNow
     categories:
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
@@ -7405,6 +7485,7 @@ shopify:
     display_name: Shopify (OAuth)
     categories:
         - e-commerce
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
@@ -7505,6 +7586,7 @@ shortcut:
 slack:
     display_name: Slack
     categories:
+        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
@@ -7781,6 +7863,7 @@ stripe-app:
     display_name: Stripe App
     categories:
         - payment
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -8628,6 +8711,7 @@ woocommerce:
         - e-commerce
         - dev-tools
         - design
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.storeURL}
@@ -8658,6 +8742,7 @@ workable:
     display_name: Workable (API Key)
     categories:
         - ats
+        - popular
     auth_mode: API_KEY
     proxy:
         headers:
@@ -8689,6 +8774,7 @@ workable-oauth:
     display_name: Workable (OAuth)
     categories:
         - ats
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.workable.com/oauth/authorize
     token_url: https://www.workable.com/oauth/token
@@ -8718,6 +8804,7 @@ workday:
     display_name: Workday
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
@@ -8802,6 +8889,7 @@ xero:
     display_name: Xero
     categories:
         - accounting
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
     token_url: https://identity.xero.com/connect/token
@@ -8922,6 +9010,7 @@ zapier-scim:
 zendesk:
     display_name: Zendesk
     categories:
+        - popular
         - support
         - ticketing
     auth_mode: OAUTH2
@@ -8969,6 +9058,7 @@ zoho:
     display_name: Zoho
     categories:
         - accounting
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
     token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
@@ -9058,6 +9148,7 @@ zoho-people:
 zoom:
     display_name: Zoom
     categories:
+        - popular
         - video
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize
