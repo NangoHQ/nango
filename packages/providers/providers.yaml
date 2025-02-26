@@ -5525,25 +5525,23 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
-mip:
-    display_name: mip
+mip-cloud:
+    display_name: MIP Cloud
     categories:
         - accounting
     auth_mode: TWO_STEP
     proxy:
-        base_url: https://api.mip.com/api
+        base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
         username: ${credentials.username}
         password: ${credentials.password}
     token_headers:
         content-type: application/json
-    token_response: # TODO: VALIDATE
-        token: access_token
-        token_expiration: expires_in
-        token_expiration_strategy: expireIn
-    docs: https://docs.nango.dev/integrations/all/mip
-    docs_connect: https://docs.nango.dev/integrations/all/mip/connect
+    token_response: # TODO: VALIDATE, AUTH HEADER
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-cloud
+    docs_connect: https://docs.nango.dev/integrations/all/mip-cloud/connect
     credentials:
         username:
             type: string
@@ -5553,13 +5551,55 @@ mip:
             type: string
             title: Password
             description: Your Password for MIP Fund Accounting.
+            secret: true
     connection_config:
         domain:
             type: string
-            title: REST Service URL
+            title: HOST REST Service URL
             description: The rest service URL for the cloud-based API service
             prefix: https://
             suffix: /api/v1/sso/mipadv/login
+            format: hostname
+
+mip-on-premises:
+    display_name: MIP On Premises
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.mip.com
+    token_url: https://${connectionConfig.domain}/api/security/login
+    token_params:
+        login: ${credentials.login}
+        password: ${credentials.password}
+        org: ${credentials.org}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-on-premises
+    docs_connect: https://docs.nango.dev/integrations/all/mip-on-premises/connect
+    credentials:
+        login:
+            type: string
+            title: ID
+            description: Your Login ID for MIP Fund Accounting
+        password:
+            type: string
+            title: Password
+            description: Your Password for MIP Fund Accounting.
+            secret: true
+        org:
+            type: string
+            title: ORG
+            description: The MIP Fund Accounting database you will be using.
+    connection_config:
+        domain:
+            type: string
+            title: HOST REST Service URL
+            description: The URL of your locally installed REST API server.
+            prefix: https://
+            suffix: /api/security/login
             format: hostname
 
 mixpanel:
