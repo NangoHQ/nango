@@ -840,8 +840,8 @@ export class Nango {
                 : ({} as CustomHeaders);
 
         const headers: Record<string, string | number | boolean | CustomHeaders> = {
-            'Connection-Id': connectionId,
-            'Provider-Config-Key': providerConfigKey as string,
+            'Connection-Id': connectionId!,
+            'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,

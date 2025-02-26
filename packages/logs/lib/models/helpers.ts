@@ -80,7 +80,8 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         retry: data.retry,
         meta: data.meta,
 
-        createdAt: data.createdAt || now.toISOString()
+        createdAt: data.createdAt || now.toISOString(),
+        endedAt: data.endedAt
     };
 }
 

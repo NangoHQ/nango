@@ -41,6 +41,7 @@ export const logBodySchema = z.object({
             .optional(),
         meta: z.record(z.any()).optional(),
         createdAt: z.string(),
+        endedAt: z.string().optional(),
         retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
     })
 });

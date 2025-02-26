@@ -115,6 +115,7 @@ export interface MessageRow {
 
     // Dates
     createdAt: string;
+    endedAt?: string | undefined;
 }
 
 export interface OperationRow {
