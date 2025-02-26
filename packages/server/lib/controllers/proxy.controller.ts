@@ -6,26 +6,31 @@ import { Readable, Transform, PassThrough } from 'stream';
 import type { UrlWithParsedQuery } from 'url';
 import url from 'url';
 import querystring from 'querystring';
-import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { backOff } from 'exponential-backoff';
-import { LogActionEnum, errorManager, ErrorSourceEnum, proxyService, connectionService, configService, featureFlags } from '@nangohq/shared';
-import { metrics, getLogger, axiosInstance as axios, getHeaders, redactHeaders, redactURL } from '@nangohq/utils';
-import { flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { isAxiosError } from 'axios';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
+import {
+    LogActionEnum,
+    errorManager,
+    ErrorSourceEnum,
+    connectionService,
+    configService,
+    featureFlags,
+    getProxyConfiguration,
+    ProxyRequest,
+    ProxyError
+} from '@nangohq/shared';
+import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
+import { logContextGetter } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
-import type {
-    ApplicationConstructedProxyConfiguration,
-    HTTP_METHOD,
-    InternalProxyConfiguration,
-    MessageRowInsert,
-    ProxyFile,
-    UserProvidedProxyConfiguration
-} from '@nangohq/types';
+import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 
 type ForwardedHeaders = Record<string, string>;
 
 const logger = getLogger('Proxy.Controller');
+
+const MEMOIZED_CONNECTION_TTL = 60000;
 
 class ProxyController {
     /**
@@ -40,9 +45,9 @@ class ProxyController {
         const { environment, account } = res.locals;
 
         let logCtx: LogContext | undefined;
+        const connectionId = req.get('Connection-Id') || '';
+        const providerConfigKey = req.get('Provider-Config-Key') || '';
         try {
-            const connectionId = req.get('Connection-Id') || '';
-            const providerConfigKey = req.get('Provider-Config-Key') || '';
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
             const decompress = req.get('Decompress') as string;
@@ -75,20 +80,6 @@ class ProxyController {
                 files = req.files as ProxyFile[];
             }
 
-            const externalConfig: UserProvidedProxyConfiguration = {
-                endpoint,
-                providerConfigKey,
-                connectionId,
-                retries: retries ? Number(retries) : 0,
-                data,
-                files,
-                headers,
-                baseUrlOverride,
-                decompress: decompress === 'true' ? true : false,
-                method: method.toUpperCase() as HTTP_METHOD,
-                retryOn
-            };
-
             const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!integration) {
                 await logCtx.error('Provider configuration not found');
@@ -108,7 +99,9 @@ class ProxyController {
             if (connectionRes.error || !connectionRes.response) {
                 await logCtx.error('Failed to get connection', { error: connectionRes.error });
                 await logCtx.failed();
-                errorManager.errResFromNangoErr(res, connectionRes.error);
+                res.status(400).send({
+                    error: { code: 'server_error', message: `Failed to get connection` }
+                });
                 return;
             }
 
@@ -122,7 +115,6 @@ class ProxyController {
                 onRefreshSuccess: connectionRefreshSuccessHook,
                 onRefreshFailed: connectionRefreshFailedHook
             });
-
             if (credentialResponse.isErr()) {
                 await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
@@ -144,28 +136,65 @@ class ProxyController {
             });
 
             const internalConfig: InternalProxyConfiguration = {
-                existingActivityLogId: logCtx.id,
-                connection,
                 providerName: integration.provider
             };
 
-            const { success, error, response: proxyConfig, logs } = proxyService.configure(externalConfig, internalConfig);
+            let lastConnectionRefresh = Date.now();
+            let freshConnection = connection;
+            const proxy = new ProxyRequest({
+                proxyConfig: getProxyConfiguration({
+                    externalConfig: {
+                        endpoint,
+                        providerConfigKey,
+                        retries: retries ? Number(retries) : 0,
+                        data,
+                        files,
+                        headers,
+                        baseUrlOverride,
+                        decompress: decompress === 'true' ? true : false,
+                        method: method.toUpperCase() as HTTP_METHOD,
+                        retryOn,
+                        responseType: 'stream'
+                    },
+                    internalConfig
+                }).unwrap(),
+                logger: async (msg) => {
+                    await logCtx?.log(msg);
+                },
+                getConnection: async () => {
+                    if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
+                        return freshConnection;
+                    }
 
-            await flushLogsBuffer(logs, logCtx);
+                    lastConnectionRefresh = Date.now();
+                    const credentialResponse = await connectionService.refreshOrTestCredentials({
+                        account,
+                        environment,
+                        connection,
+                        integration,
+                        logContextGetter,
+                        instantRefresh: false,
+                        onRefreshSuccess: connectionRefreshSuccessHook,
+                        onRefreshFailed: connectionRefreshFailedHook
+                    });
+                    if (credentialResponse.isErr()) {
+                        throw new ProxyError('failed_to_get_connection', 'Failed to get connection credentials', connectionRes.error);
+                    }
 
-            if (!success || !proxyConfig || error) {
-                errorManager.errResFromNangoErr(res, error);
+                    freshConnection = credentialResponse.value;
+                    return freshConnection;
+                }
+            });
+
+            try {
+                const responseStream = (await proxy.request()).unwrap();
+                await this.handleResponse({ res, responseStream, logCtx });
+            } catch (err) {
+                await this.handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
-                res.status(400).send({ error: { code: 'server_error', message: 'failed to configure proxy' } });
-                return;
             }
-
-            await this.sendToHttpMethod({ res, method: method as HTTP_METHOD, configBody: proxyConfig, logCtx });
         } catch (err) {
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
-
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.PROXY,
@@ -197,66 +226,7 @@ class ProxyController {
         }
     }
 
-    /**
-     * Send to http method
-     */
-    private sendToHttpMethod({
-        res,
-        method,
-        configBody,
-        logCtx
-    }: {
-        res: Response;
-        method: HTTP_METHOD;
-        configBody: ApplicationConstructedProxyConfiguration;
-        logCtx: LogContext;
-    }) {
-        const url = proxyService.constructUrl(configBody);
-        let decompress = false;
-
-        if (configBody.decompress === true || configBody.provider.proxy?.decompress === true) {
-            decompress = true;
-        }
-
-        return this.request({
-            res,
-            method,
-            url,
-            config: configBody,
-            decompress,
-            data: configBody.data,
-            logCtx
-        });
-    }
-
-    private async handleResponse({
-        res,
-        responseStream,
-        requestConfig,
-        config,
-        logCtx
-    }: {
-        res: Response;
-        responseStream: AxiosResponse;
-        config: ApplicationConstructedProxyConfiguration;
-        requestConfig: AxiosRequestConfig;
-        logCtx: LogContext;
-    }) {
-        const valuesToFilter = Object.values(config.connection.credentials);
-        const safeHeaders = redactHeaders({ headers: requestConfig.headers, valuesToFilter });
-        const redactedURL = redactURL({ url: requestConfig.url!, valuesToFilter });
-        await logCtx.http(`${config.method} ${redactedURL}`, {
-            request: {
-                method: config.method,
-                url: redactedURL,
-                headers: safeHeaders
-            },
-            response: {
-                code: responseStream.status,
-                headers: redactHeaders({ headers: responseStream.headers as Record<string, string> })
-            }
-        });
-
+    private async handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
         const contentType = responseStream.headers['content-type'] || '';
         const contentDisposition = responseStream.headers['content-disposition'] || '';
         const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -323,8 +293,30 @@ class ProxyController {
         });
     }
 
-    private async handleErrorResponse({ res, e, requestConfig, logCtx }: { res: Response; e: unknown; requestConfig: AxiosRequestConfig; logCtx: LogContext }) {
-        const error = e as AxiosError;
+    private async handleErrorResponse({
+        res,
+        error,
+        requestConfig,
+        logCtx
+    }: {
+        res: Response;
+        error: unknown;
+        requestConfig?: AxiosRequestConfig | undefined;
+        logCtx: LogContext;
+    }) {
+        if (!isAxiosError(error)) {
+            if (error instanceof ProxyError) {
+                await logCtx.error('Unknown error', { error });
+                res.status(400).send({
+                    error: { code: error.code, message: error.message }
+                });
+                return;
+            }
+
+            await logCtx.error('Unknown error', { error });
+            res.status(500).send();
+            return;
+        }
 
         if (!error.response?.data && error.toJSON) {
             const {
@@ -335,7 +327,7 @@ class ProxyController {
                 status
             } = error.toJSON() as any;
 
-            const errorObject = { message, stack, code, status, url: requestConfig.url, method };
+            const errorObject = { message, stack, code, status, url: requestConfig?.url, method };
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};
@@ -378,64 +370,6 @@ class ProxyController {
                 }
                 void logCtx.error('Failed with this body', { body: errorData });
             });
-        } else {
-            await logCtx.error('Unknown error', { error });
-            await logCtx.failed();
-            res.status(500).send();
-        }
-    }
-
-    private async request({
-        res,
-        method,
-        url,
-        config,
-        decompress,
-        data,
-        logCtx
-    }: {
-        res: Response;
-        method: HTTP_METHOD;
-        url: string;
-        config: ApplicationConstructedProxyConfiguration;
-        decompress: boolean;
-        data?: unknown;
-        logCtx: LogContext;
-    }) {
-        const logs: MessageRowInsert[] = [];
-        const headers = proxyService.constructHeaders(config, method, url);
-
-        const requestConfig: AxiosRequestConfig = {
-            method,
-            url,
-            responseType: 'stream',
-            headers,
-            decompress
-        };
-        try {
-            if (data && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                requestConfig.data = data;
-            }
-            const responseStream: AxiosResponse = await backOff(
-                async () => {
-                    try {
-                        return await axios(requestConfig);
-                    } catch (err) {
-                        const handling = proxyService.logErrorResponse({ error: err, requestConfig, config });
-                        logs.push(...handling.logs);
-                        throw err;
-                    }
-                },
-                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, config, logs) }
-            );
-
-            await flushLogsBuffer(logs, logCtx);
-            await this.handleResponse({ res, responseStream, config, requestConfig, logCtx });
-        } catch (err) {
-            await flushLogsBuffer(logs, logCtx);
-            await this.handleErrorResponse({ res, e: err, requestConfig, logCtx });
-            await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
         }
     }
 }

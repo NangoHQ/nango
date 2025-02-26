@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ScriptSettings } from './ScriptSettings';
 import { Info } from '../../../../../components/Info';
 import { useLocalStorage } from 'react-use';
-import { Link } from 'react-router-dom';
 
 const syncDefaultQueryParams = [
     {
@@ -137,9 +136,9 @@ export const EndpointOne: React.FC<{ integration: GetIntegration['Success']['dat
             {!flow.enabled && (
                 <Info variant="warning">
                     This endpoint is disabled. To enable it, go to{' '}
-                    <Link to={`#settings`} className="underline">
+                    <span onClick={() => document.getElementById('settings')?.scrollIntoView({ behavior: 'smooth' })} className="underline">
                         Endpoint Configuration
-                    </Link>
+                    </span>
                 </Info>
             )}
 

@@ -3,7 +3,7 @@ import type { AxiosResponse } from 'axios';
 import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { proxyService } from '@nangohq/shared';
+import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 import { PersistClient } from './persist.js';
@@ -38,45 +38,38 @@ export class NangoActionRunner extends NangoActionBase {
             }
         );
 
-        if (!this.activityLogId) throw new Error('Parameter activityLogId is required when not in dryRun');
-        if (!this.environmentId) throw new Error('Parameter environmentId is required when not in dryRun');
-        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required when not in dryRun');
-        if (!this.syncConfig) throw new Error('Parameter syncConfig is required when not in dryRun');
+        if (!this.activityLogId) throw new Error('Parameter activityLogId is required');
+        if (!this.environmentId) throw new Error('Parameter environmentId is required');
+        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
+        if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.throwIfAborted();
-        if (!config.method) {
-            config.method = 'GET';
-        }
 
         const { connectionId, providerConfigKey } = config;
-        const connection = await this.getConnection(providerConfigKey, connectionId);
-        if (!connection) {
-            throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
-        }
 
-        const proxyConfig = this.proxyConfig(config);
-
-        const { response, logs } = await proxyService.route(proxyConfig, {
-            existingActivityLogId: this.activityLogId as string,
-            connection,
-            providerName: this.provider as string
-        });
-
-        // We batch save, since we have buffered the createdAt it shouldn't impact order
-        await Promise.all(
-            logs.map(async (log) => {
-                if (log.level === 'debug') {
-                    return;
+        const proxy = new ProxyRequest({
+            proxyConfig: getProxyConfiguration({
+                externalConfig: this.getProxyConfig(config),
+                internalConfig: {
+                    providerName: this.provider!
                 }
+            }).unwrap(),
+            logger: async (log) => {
                 await this.sendLogToPersist(log);
-            })
-        );
+            },
+            getConnection: async () => {
+                // We try to refresh connection at each iteration so we have fresh credentials even after waiting minutes between calls
+                const connection = await this.getConnection(providerConfigKey, connectionId);
+                if (!connection) {
+                    throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
+                }
 
-        if (response instanceof Error) {
-            throw response;
-        }
+                return connection;
+            }
+        });
+        const response = (await proxy.request()).unwrap();
 
         return response;
     }
@@ -160,7 +153,7 @@ export class NangoActionRunner extends NangoActionBase {
             this.nango.secretKey
         ];
 
-        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase;
+        const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase
         void this.sendLogToPersist({
             type: 'http',
             message: `${method} ${res.config.url}`,
@@ -207,8 +200,8 @@ export class NangoSyncRunner extends NangoSyncBase {
             }
         );
 
-        if (!this.syncId) throw new Error('Parameter syncId is required when not in dryRun');
-        if (!this.syncJobId) throw new Error('Parameter syncJobId is required when not in dryRun');
+        if (!this.syncId) throw new Error('Parameter syncId is required');
+        if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
     }
 
     // Can't double extends

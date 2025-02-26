@@ -2,9 +2,11 @@ import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
-import type { AxiosResponse } from 'axios';
+import type { Metadata, NangoProps, UserLogParameters, GetPublicConnection } from '@nangohq/types';
+import { isAxiosError } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 import type { DryRunService } from './dryrun.service';
+import chalk from 'chalk';
 
 const logLevelToLogger = {
     info: 'info',
@@ -26,20 +28,7 @@ export class NangoActionCLI extends NangoActionBase {
 
         this.dryRunService = cliProps.dryRunService;
 
-        const axiosSettings: AdminAxiosProps = {
-            userAgent: 'sdk'
-        };
-
-        if (props.axios?.response) {
-            axiosSettings.interceptors = {
-                response: {
-                    onFulfilled: props.axios.response.onFulfilled,
-                    onRejected: props.axios.response.onRejected
-                }
-            };
-        }
-
-        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
     public override proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -109,20 +98,7 @@ export class NangoSyncCLI extends NangoSyncBase {
 
         this.dryRunService = cliProps.dryRunService;
 
-        const axiosSettings: AdminAxiosProps = {
-            userAgent: 'sdk'
-        };
-
-        if (props.axios?.response) {
-            axiosSettings.interceptors = {
-                response: {
-                    onFulfilled: props.axios.response.onFulfilled,
-                    onRejected: props.axios.response.onRejected
-                }
-            };
-        }
-
-        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
     // Can't double extends
@@ -214,6 +190,15 @@ export class NangoSyncCLI extends NangoSyncBase {
         return super.getMetadata<TMetadata>();
     }
 
+    public override async getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<GetPublicConnection['Success']> {
+        const fetchedConnection = await super.getConnection(providerConfigKeyOverride, connectionIdOverride);
+        if (this.stubbedMetadata) {
+            return { ...fetchedConnection, metadata: this.stubbedMetadata };
+        }
+
+        return fetchedConnection;
+    }
+
     public override async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
         const objects = new Map<K, T>();
 
@@ -254,4 +239,44 @@ export class NangoSyncCLI extends NangoSyncBase {
 
         return objects;
     }
+}
+
+function getAxiosSettings(props: NangoProps) {
+    const axiosSettings: AdminAxiosProps = {
+        userAgent: 'sdk'
+    };
+
+    if (props.axios?.response) {
+        axiosSettings.interceptors = {
+            response: {
+                onFulfilled: props.axios.response.onFulfilled,
+                onRejected: props.axios.response.onRejected
+            }
+        };
+    } else {
+        axiosSettings.interceptors = {
+            response: {
+                onFulfilled: (res) => {
+                    logAPICall(res);
+                    return res;
+                },
+                onRejected: (err) => {
+                    logAPICall(err as AxiosError);
+                    return err;
+                }
+            }
+        };
+    }
+
+    return axiosSettings;
+}
+
+function logAPICall(res: AxiosResponse | AxiosError): void {
+    const method = res.config?.method?.toLocaleUpperCase(); // axios put it in lowercase
+    if (isAxiosError(res)) {
+        console.log(chalk.blue('http'), `[${chalk[res.status || 999 >= 400 ? 'red' : 'green'](res.status || 'xxx')}] ${method} ${res.config?.url}`);
+        return;
+    }
+
+    console.log(chalk.blue('http'), `[${chalk[res.status >= 400 ? 'red' : 'green'](res.status)}] ${method} ${res.config.url}`);
 }

@@ -1,16 +1,7 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { getLatestSyncJob } from './job.service.js';
-import {
-    createSync,
-    getSyncsByConnectionId,
-    getSyncsByProviderConfigKey,
-    getSyncsByProviderConfigAndSyncNames,
-    getSync,
-    getSyncNamesByConnectionId,
-    softDeleteSync,
-    getSyncsBySyncConfigId
-} from './sync.service.js';
+import { createSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSync, softDeleteSync, getSyncsBySyncConfigId } from './sync.service.js';
 import { errorNotificationService } from '../notification/error.service.js';
 import configService from '../config.service.js';
 import type { SyncWithConnectionId, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
@@ -222,7 +213,7 @@ export class SyncManagerService {
     }
 
     public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {
-        const syncs = await getSyncsByConnectionId(connection.id);
+        const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
 
         if (!syncs) {
             return;
@@ -234,7 +225,7 @@ export class SyncManagerService {
     }
 
     public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
-        const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+        const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey });
 
         if (!syncs) {
             return;
@@ -250,7 +241,7 @@ export class SyncManagerService {
         orchestrator,
         environment,
         providerConfigKey,
-        syncNames,
+        syncIdentifiers,
         command,
         logContextGetter,
         connectionId,
@@ -260,7 +251,7 @@ export class SyncManagerService {
         orchestrator: Orchestrator;
         environment: DBEnvironment;
         providerConfigKey: string;
-        syncNames: string[];
+        syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;
         logContextGetter: LogContextGetter;
         connectionId?: string;
@@ -281,14 +272,18 @@ export class SyncManagerService {
                 return { success: false, error, response: false };
             }
 
-            let syncs = syncNames;
+            let syncs = syncIdentifiers;
 
             if (syncs.length === 0) {
-                syncs = await getSyncNamesByConnectionId(connection.id);
+                syncs =
+                    (await getSyncsByConnectionId({ connectionId: connection.id }))?.map((sync) => ({
+                        syncName: sync.name,
+                        syncVariant: sync.variant
+                    })) || [];
             }
 
-            for (const syncName of syncs) {
-                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: 'base' }); //TODO: pass variant in addition to sync names and iterate over them all
+            for (const { syncName, syncVariant } of syncs) {
+                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
@@ -304,12 +299,9 @@ export class SyncManagerService {
                 });
             }
         } else {
-            const syncs =
-                syncNames.length > 0
-                    ? await getSyncsByProviderConfigAndSyncNames(environment.id, providerConfigKey, syncNames)
-                    : await getSyncsByProviderConfigKey(environment.id, providerConfigKey);
+            const syncs = await getSyncsByProviderConfigKey({ environmentId: environment.id, providerConfigKey, filter: syncIdentifiers });
 
-            if (!syncs) {
+            if (!syncs || syncs.length === 0) {
                 const error = new NangoError('no_syncs_found');
 
                 return { success: false, error, response: false };
@@ -333,22 +325,31 @@ export class SyncManagerService {
             }
         }
 
-        await logCtx.info('Sync was successfully updated', { command, syncNames });
+        await logCtx.info('Sync was successfully updated', { command, syncIdentifiers });
         await logCtx.success();
 
         return { success: true, error: null, response: true };
     }
 
-    public async getSyncStatus(
-        environmentId: number,
-        providerConfigKey: string,
-        syncNames: string[],
-        orchestrator: Orchestrator,
-        recordsService: RecordsServiceInterface,
-        connectionId?: string,
+    public async getSyncStatus({
+        environmentId,
+        providerConfigKey,
+        syncIdentifiers,
+        orchestrator,
+        recordsService,
+        connectionId,
         includeJobStatus = false,
-        optionalConnection?: DBConnectionDecrypted | null
-    ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
+        optionalConnection
+    }: {
+        environmentId: number;
+        providerConfigKey: string;
+        syncIdentifiers: { syncName: string; syncVariant: string }[];
+        orchestrator: Orchestrator;
+        recordsService: RecordsServiceInterface;
+        connectionId?: string;
+        includeJobStatus: boolean;
+        optionalConnection?: DBConnectionDecrypted | null;
+    }): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
         let connection = optionalConnection;
@@ -361,8 +362,8 @@ export class SyncManagerService {
         }
 
         if (connection) {
-            for (const syncName of syncNames) {
-                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: 'base' }); //TODO: pass variant in addition to sync names and iterate over them all
+            for (const { syncName, syncVariant } of syncIdentifiers) {
+                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
                     continue;
                 }
@@ -384,16 +385,9 @@ export class SyncManagerService {
                 syncsWithStatus.push(reportedStatus);
             }
         } else {
-            const syncs: SyncWithConnectionId[] =
-                syncNames.length > 0
-                    ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
-                    : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+            const syncs: SyncWithConnectionId[] = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey, filter: syncIdentifiers });
 
-            if (!syncs) {
-                return { success: true, error: null, response: syncsWithStatus };
-            }
-
-            for (const sync of syncs) {
+            for (const sync of syncs || []) {
                 const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator, recordsService });
 
                 syncsWithStatus.push(reportedStatus);

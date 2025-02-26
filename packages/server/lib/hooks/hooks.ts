@@ -1,17 +1,17 @@
-import axios from 'axios';
 import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
     SpanTypes,
-    proxyService,
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
     SlackService,
     externalWebhookService,
     AnalyticsTypes,
-    syncManager
+    syncManager,
+    getProxyConfiguration,
+    ProxyRequest
 } from '@nangohq/shared';
 import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
@@ -135,14 +135,10 @@ export const connectionRefreshSuccess = async ({
     environment,
     config
 }: {
-    connection: DBConnectionDecrypted;
+    connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     environment: DBEnvironment;
     config: IntegrationConfig;
 }): Promise<void> => {
-    if (!connection.id) {
-        return;
-    }
-
     await errorNotificationService.auth.clear({
         connection_id: connection.id
     });
@@ -259,14 +255,12 @@ export async function connectionTest({
         endpoint,
         method: method ?? 'GET',
         provider,
-        token: credentials,
         providerName: config.provider,
         providerConfigKey: config.unique_key,
-        connectionId,
         headers: {
             'Content-Type': 'application/json'
         },
-        connection
+        decompress: false
     };
 
     if (headers) {
@@ -278,28 +272,24 @@ export async function connectionTest({
     }
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName: config.provider,
-        connection
+        providerName: config.provider
     };
 
     const logs: MessageRowInsert[] = [
         { type: 'log', level: 'info', message: `Running automatic credentials verification`, createdAt: new Date().toISOString() }
     ];
     try {
-        const { response, logs: logsProxy } = await proxyService.route(configBody, internalConfig);
-
-        logs.push(...logsProxy);
-        if (axios.isAxiosError(response)) {
-            const error = new NangoError('connection_test_failed', { response, logs });
-            span.setTag('nango.error', response);
-            return Err(error);
-        }
-
-        if (!response || response instanceof Error) {
-            const error = new NangoError('connection_test_failed', { response, logs });
-            span.setTag('nango.error', response);
-            return Err(error);
-        }
+        const proxyConfig = getProxyConfiguration({ externalConfig: configBody, internalConfig }).unwrap();
+        const proxy = new ProxyRequest({
+            logger: (msg) => {
+                logs.push(msg);
+            },
+            proxyConfig,
+            getConnection: () => {
+                return connection;
+            }
+        });
+        const response = (await proxy.request()).unwrap();
 
         if (response.status && (response?.status < 200 || response?.status > 300)) {
             const error = new NangoError('connection_test_failed', { response, logs });
