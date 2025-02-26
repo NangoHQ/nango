@@ -3,7 +3,11 @@ import { validateData } from './dataValidation.js';
 import type { ValidateDataError } from './dataValidation.js';
 import { NangoActionBase } from './action.js';
 
+export const BASE_VARIANT = 'base';
+
 export abstract class NangoSyncBase extends NangoActionBase {
+    public variant = BASE_VARIANT;
+
     lastSyncDate?: Date;
     track_deletes = false;
 
@@ -17,6 +21,17 @@ export abstract class NangoSyncBase extends NangoActionBase {
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
         }
+
+        if (config.syncVariant) {
+            this.variant = config.syncVariant;
+        }
+    }
+
+    public modelFullName(model: string) {
+        if (this.variant === BASE_VARIANT) {
+            return model;
+        }
+        return `${model}::${this.variant}`;
     }
 
     /**
@@ -33,6 +48,8 @@ export abstract class NangoSyncBase extends NangoActionBase {
     public abstract batchUpdate<T extends object>(results: T[], model: string): MaybePromise<boolean>;
 
     public abstract getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): MaybePromise<Map<K, T>>;
+
+    public abstract setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
 
     protected validateRecords(model: string, records: unknown[]): { data: any; validation: ValidateDataError[] }[] {
         // Validate records

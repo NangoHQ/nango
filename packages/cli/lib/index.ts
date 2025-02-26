@@ -117,6 +117,7 @@ program
         '-l, --lastSyncDate [lastSyncDate]',
         'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
     )
+    .option('--variant [variant]', 'Optional: The variant of the sync to run for the dryrun. If not provided, the base variant will be used.')
     .option(
         '-i, --input [input]',
         'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
