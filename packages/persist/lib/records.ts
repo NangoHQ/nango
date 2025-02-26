@@ -93,10 +93,11 @@ export async function persistRecords({
         return Err(err);
     }
 
+    const baseModel = model.split('::')[0] || model;
     const syncConfig = await getSyncConfigByJobId(syncJobId);
-    if (syncConfig && !syncConfig.models.includes(model)) {
-        const err = new Error(`The model '${model}' is not included in the declared sync models: ${syncConfig.models.join(', ')}.`);
-        await logCtx.error(`The model '${model}' is not included in the declared sync models`);
+    if (syncConfig && !syncConfig.models.includes(baseModel)) {
+        const err = new Error(`The model '${baseModel}' is not included in the declared sync models: ${syncConfig.models.join(', ')}.`);
+        await logCtx.error(`The model '${baseModel}' is not included in the declared sync models`);
 
         span.setTag('error', err).finish();
         return Err(err);
@@ -106,14 +107,14 @@ export async function persistRecords({
     if (persistResult.isOk()) {
         const summary = persistResult.value;
         const updatedResults = {
-            [model]: {
+            [baseModel]: {
                 added: summary.addedKeys.length,
                 updated: summary.updatedKeys.length,
                 deleted: summary.deletedKeys?.length || 0
             }
         };
         for (const nonUniqueKey of summary.nonUniqueKeys) {
-            await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${model}. The record was ignored.`);
+            await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${baseModel}. The record was ignored.`);
         }
 
         const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
@@ -121,7 +122,7 @@ export async function persistRecords({
             persistType,
             updatedResults
         });
-        await updateSyncJobResult(syncJobId, updatedResults, model);
+        await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
