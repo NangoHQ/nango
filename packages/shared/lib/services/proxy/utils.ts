@@ -6,17 +6,24 @@ import FormData from 'form-data';
 
 import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
-import type { ApplicationConstructedProxyConfiguration, HTTP_METHOD, InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type {
+    ApplicationConstructedProxyConfiguration,
+    ConnectionForProxy,
+    HTTP_METHOD,
+    InternalProxyConfiguration,
+    UserProvidedProxyConfiguration
+} from '@nangohq/types';
+import type { AxiosRequestConfig } from 'axios';
 
 type ProxyErrorCode =
     | 'missing_api_url'
-    | 'missing_connection_id'
     | 'missing_provider'
     | 'unsupported_auth'
     | 'unknown_provider'
     | 'unsupported_provider'
     | 'invalid_query_params'
-    | 'unknown_error';
+    | 'unknown_error'
+    | 'failed_to_get_connection';
 
 export class ProxyError extends Error {
     code: ProxyErrorCode;
@@ -26,6 +33,37 @@ export class ProxyError extends Error {
     }
 }
 
+const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+export function getAxiosConfiguration({
+    proxyConfig,
+    connection
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): AxiosRequestConfig {
+    const url = buildProxyURL({ config: proxyConfig, connection });
+    const axiosConfig: AxiosRequestConfig = {
+        method: proxyConfig.method,
+        url,
+        headers: buildProxyHeaders({ config: proxyConfig, url, connection })
+    };
+
+    if (proxyConfig.responseType) {
+        axiosConfig.responseType = proxyConfig.responseType;
+    }
+
+    if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
+        axiosConfig.data = proxyConfig.data;
+    }
+
+    if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
+        axiosConfig.decompress = true;
+    }
+
+    return axiosConfig;
+}
+
 export function getProxyConfiguration({
     externalConfig,
     internalConfig
@@ -33,15 +71,12 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, connectionId, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
-    const { connection, providerName } = internalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const { providerName } = internalConfig;
     let data = externalConfig.data;
 
     if (!passedEndpoint && !baseUrlOverride) {
         return Err(new ProxyError('missing_api_url'));
-    }
-    if (!connectionId) {
-        return Err(new ProxyError('missing_connection_id'));
     }
     if (!providerConfigKey) {
         return Err(new ProxyError('missing_provider'));
@@ -87,11 +122,10 @@ export function getProxyConfiguration({
 
     const configBody: ApplicationConstructedProxyConfiguration = {
         endpoint,
-        method: method?.toUpperCase() as HTTP_METHOD,
+        method: method ? (method.toUpperCase() as HTTP_METHOD) : 'GET',
         provider,
         providerName,
         providerConfigKey,
-        connectionId,
         headers: headersCleaned,
         data,
         retries: retries || 0,
@@ -100,7 +134,6 @@ export function getProxyConfiguration({
         // Coming from a flow it is not a proxy call since the worker
         // makes the request so we don't allow an override in that case
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
-        connection,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
@@ -112,8 +145,7 @@ export function getProxyConfiguration({
 /**
  * Construct URL
  */
-export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) {
-    const { connection } = config;
+export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
     const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
     let apiBase = config.baseUrlOverride || templateApiBase;
@@ -149,9 +181,9 @@ export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) 
         }
     }
 
-    if (config.connection.credentials.type === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
+    if (connection.credentials.type === 'API_KEY' && 'proxy' in config.provider && 'query' in config.provider.proxy) {
         const apiKeyProp = Object.keys(config.provider.proxy.query)[0];
-        url.searchParams.set(apiKeyProp!, config.connection.credentials.apiKey);
+        url.searchParams.set(apiKeyProp!, connection.credentials.apiKey);
     }
 
     return url.toString();
@@ -160,10 +192,17 @@ export function buildProxyURL(config: ApplicationConstructedProxyConfiguration) 
 /**
  * Build Headers for proxy
  */
-export function buildProxyHeaders(config: ApplicationConstructedProxyConfiguration, url: string): Record<string, string> {
+export function buildProxyHeaders({
+    config,
+    url,
+    connection
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    url: string;
+    connection: ConnectionForProxy;
+}): Record<string, string> {
     let headers: Record<Lowercase<string>, string> = {};
 
-    const { connection } = config;
     switch (connection.credentials.type) {
         case 'BASIC': {
             headers['authorization'] = `Basic ${Buffer.from(`${connection.credentials.username}:${connection.credentials.password ?? ''}`).toString('base64')}`;
@@ -192,8 +231,8 @@ export function buildProxyHeaders(config: ApplicationConstructedProxyConfigurati
         }
         case 'TBA': {
             const credentials = connection.credentials;
-            const consumerKey: string = credentials.config_override['client_id'] || config.connection.connection_config['oauth_client_id'];
-            const consumerSecret: string = credentials.config_override['client_secret'] || config.connection.connection_config['oauth_client_secret'];
+            const consumerKey: string = credentials.config_override['client_id'] || connection.connection_config['oauth_client_id'];
+            const consumerSecret: string = credentials.config_override['client_secret'] || connection.connection_config['oauth_client_secret'];
             const accessToken = credentials['token_id'];
             const accessTokenSecret = credentials['token_secret'];
 
@@ -218,7 +257,7 @@ export function buildProxyHeaders(config: ApplicationConstructedProxyConfigurati
             const authHeaders = oauth.toHeader(oauth.authorize(requestData, token));
 
             // splice in the realm into the header
-            let realm = config.connection.connection_config['accountId'];
+            let realm = connection.connection_config['accountId'];
             realm = realm.replace('-', '_').toUpperCase();
 
             headers['authorization'] = authHeaders.Authorization.replace('OAuth ', `OAuth realm="${realm}", `);
