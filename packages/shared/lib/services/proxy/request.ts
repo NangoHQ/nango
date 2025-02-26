@@ -59,13 +59,12 @@ export class ProxyRequest {
         try {
             const response = await retryFlexible<Promise<AxiosResponse>>(
                 async (retryAttempt) => {
-                    const start = new Date();
-
                     // Dynamically re-build proxy and axios config
                     // Useful for example to refresh connection's credentials
                     this.connection = await this.getConnection();
                     this.axiosConfig = getAxiosConfiguration({ proxyConfig: this.config, connection: this.connection });
 
+                    const start = new Date();
                     try {
                         const res = await this.httpCall(this.axiosConfig);
                         await this.logResponse({ response: res, retryAttempt, start });
