@@ -8,13 +8,16 @@ const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'];
  * Determine if we can retry or not based on the error we are receiving
  * The strategy has been laid out carefully, be careful on modifying anything here.
  */
-export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxyConfig: ApplicationConstructedProxyConfiguration }): {
+export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxyConfig?: ApplicationConstructedProxyConfiguration | undefined }): {
     retry: boolean;
     reason: string;
     wait?: number;
 } {
     if (!isAxiosError(err)) {
         return { retry: false, reason: 'unknown_error' };
+    }
+    if (!proxyConfig) {
+        return { retry: false, reason: 'empty_proxy_config' };
     }
 
     if (err.code && networkError.includes(err.code)) {
