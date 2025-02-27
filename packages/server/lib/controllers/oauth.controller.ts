@@ -907,7 +907,9 @@ class OAuthController {
         account: DBTeam,
         logCtx: LogContext
     ) {
-        const { code } = req.query;
+        const authCodeParam = provider.auth_code_param || 'code';
+        const authorizationCode = req.query[authCodeParam] as string | undefined;
+
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
@@ -915,7 +917,7 @@ class OAuthController {
 
         const installationId = req.query['installation_id'] as string | undefined;
 
-        if (!code) {
+        if (!authorizationCode) {
             const error = WSErrBuilder.InvalidCallbackOAuth2();
             await logCtx.error(error.message, {
                 scopes: config.oauth_scopes,
@@ -1010,7 +1012,7 @@ class OAuthController {
                 providerConfigKey,
                 connectionId,
                 additionalTokenParams,
-                code,
+                authorizationCode,
                 scopes: config.oauth_scopes,
                 basicAuthEnabled: provider.token_request_auth_method === 'basic',
                 tokenParams: provider.token_params
@@ -1019,11 +1021,11 @@ class OAuthController {
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
 
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, tokenUrl, code as string, session.callbackUrl, session.codeVerifier);
+                rawCredentials = await providerClientManager.getToken(config, tokenUrl, authorizationCode, session.callbackUrl, session.codeVerifier);
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
                     {
-                        code: code as string,
+                        code: authorizationCode,
                         redirect_uri: session.callbackUrl,
                         ...additionalTokenParams
                     },
@@ -1193,7 +1195,7 @@ class OAuthController {
                 `OAuth connection successful${provider.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
                 {
                     additionalTokenParams,
-                    code,
+                    authorizationCode,
                     scopes: config.oauth_scopes,
                     basicAuthEnabled: provider.token_request_auth_method === 'basic',
                     tokenParams: provider.token_params

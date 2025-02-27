@@ -63,6 +63,7 @@ export interface BaseProvider {
     authorization_url_skip_encode?: string[];
     access_token_url?: string;
     authorization_params?: Record<string, string>;
+    auth_code_param?: string;
     scope_separator?: string;
     default_scopes?: string[];
     token_url?: string | TokenUrlObject;
