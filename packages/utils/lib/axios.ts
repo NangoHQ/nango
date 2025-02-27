@@ -37,7 +37,8 @@ if (hasHttpsProxy) {
 
 const config: AxiosRequestConfig = {
     httpAgent: httpAgent,
-    httpsAgent: httpsAgent
+    httpsAgent: httpsAgent,
+    ...(process.env['AXIOS_HTTP_AGENT'] ? JSON.parse(process.env['AXIOS_HTTP_AGENT']) : {})
 };
 
 if (hasHttpProxy || hasHttpsProxy) {
