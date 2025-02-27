@@ -22,7 +22,12 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '0'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '30'),
             acquireTimeoutMillis: timeoutMs || 30000,
-            createTimeoutMillis: 10000
+            createTimeoutMillis: 10000,
+            afterCreate: (conn: any, done: any) => {
+                conn.query('SET search_path TO your_schema, public;', (err: any) => {
+                    done(err, conn);
+                });
+            }
         },
         // SearchPath needs the current db and public because extension can only be installed once per DB
         searchPath: [defaultSchema, 'public', ...additionalSchemas]
