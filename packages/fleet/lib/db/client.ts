@@ -19,8 +19,7 @@ export class DatabaseClient {
         this.config = {
             client: 'postgres',
             connection: {
-                connectionString: url,
-                statement_timeout: 60000
+                connectionString: url
             },
             searchPath: schema,
             pool: { min: 2, max: poolMax },
