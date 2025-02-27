@@ -348,7 +348,7 @@ amazon-selling-partner:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
-    auth_code_param: spapi_oauth_code
+    authorization_code_param_in_callback: spapi_oauth_code
     disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
@@ -396,7 +396,7 @@ amazon-selling-partner-beta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
-    auth_code_param: spapi_oauth_code
+    authorization_code_param_in_callback: spapi_oauth_code
     disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
