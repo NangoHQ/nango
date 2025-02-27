@@ -1,6 +1,6 @@
 import type { ApplicationConstructedProxyConfiguration, DBConnectionDecrypted, Provider } from '@nangohq/types';
 
-export function getDefaultConnection(): DBConnectionDecrypted {
+export function getDefaultConnection(override?: Partial<DBConnectionDecrypted>): DBConnectionDecrypted {
     return {
         connection_id: 'a',
         created_at: new Date(),
@@ -17,23 +17,23 @@ export function getDefaultConnection(): DBConnectionDecrypted {
         deleted_at: null,
         id: -1,
         last_fetched_at: null,
-        metadata: null
+        metadata: null,
+        ...override
     };
 }
 
 export function getDefaultProxy(
     override: Omit<Partial<ApplicationConstructedProxyConfiguration>, 'connection' | 'provider'> &
         Partial<{
-            connection: Partial<ApplicationConstructedProxyConfiguration['connection']>;
             provider: Partial<ApplicationConstructedProxyConfiguration['provider']>;
         }>
 ): ApplicationConstructedProxyConfiguration {
     return {
-        connectionId: 'a',
         endpoint: '/api/test',
         method: 'GET',
         providerConfigKey: 'freshteam',
         providerName: 'freshteam',
+        decompress: false,
         ...override,
         provider: {
             auth_mode: 'API_KEY',
@@ -45,7 +45,6 @@ export function getDefaultProxy(
                 }
             },
             ...override.provider
-        } as Provider,
-        connection: { ...getDefaultConnection(), ...override.connection }
+        } as Provider
     };
 }

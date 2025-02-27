@@ -11,6 +11,7 @@ const IGNORED_HEADERS = new Set([
     'connection',
     'content-security-policy',
     'content-security-policy-report-only',
+    'cookie',
     'keep-alive',
     'nel',
     'permissions-policy',
