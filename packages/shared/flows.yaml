@@ -4939,6 +4939,20 @@ integrations:
                     method: GET
                     path: /emails
                     group: Emails
+            labels:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of labels from gmail.
+                version: 1.0.0
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
+                output: GmailLabel
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /labels
+                    group: Labels
         actions:
             send-email:
                 input: GmailEmailInput
@@ -4995,6 +5009,20 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            GmailLabel:
+                id: string
+                name: string
+                messageListVisibility: string | null
+                labelListVisibility: string | null
+                type: string
+                messagesTotal: number
+                messagesUnread: number
+                threadsTotal: number
+                threadsUnread: number
+                color: LabelColor | null
+            LabelColor:
+                textColor: string
+                backgroundColor: string
     google-sheet:
         actions:
             fetch-spreadsheet:
@@ -11223,6 +11251,18 @@ integrations:
                     method: GET
                     path: /emails
                 version: 1.1.0
+            folders:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of folders from outlook.
+                scopes:
+                    - Mail.Read
+                output: OutlookFolder
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /folders
         actions:
             fetch-attachment:
                 input: DocumentInput
@@ -11254,6 +11294,14 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            OutlookFolder:
+                id: string
+                displayName: string
+                parentFolderId: string
+                childFolderCount: number
+                unreadItemCount: number
+                totalItemCount: number
+                isHidden: boolean
     pennylane:
         actions:
             create-customer:
