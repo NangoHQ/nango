@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/refs/heads/main/schemas/v3.1/schema.yaml
 openapi: 3.1.0
 info:
     title: 'Nango API'
@@ -839,7 +840,8 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all integration scripts
+            description: >
+                Return the configuration for all integration scripts.
             responses:
                 '200':
                     description: Successfully returned integration scripts config

@@ -5,9 +5,9 @@ import remoteFileService from '../../file/remote.service.js';
 import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
+import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBConnection, DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
+import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -45,9 +45,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
             endpoints: syncConfig.endpoints_object || [],
-            input: input as any,
+            input: input,
             enabled: syncConfig.enabled,
-            models: syncConfig.model_schema as any,
+            models: syncConfig.model_schema || [],
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null

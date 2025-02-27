@@ -111,6 +111,7 @@ import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
+import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 
 export const router = express.Router();
 
@@ -204,7 +205,7 @@ publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.use('/unauth', jsonContentTypeMiddleware);
-// @deprecated
+// @deprecated use /auth/unauthenticated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
@@ -216,9 +217,9 @@ publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustom
 
 // API routes (Secret key auth).
 publicAPI.use('/provider', jsonContentTypeMiddleware);
-// @deprecated
+// @deprecated use /providers
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
-// @deprecated
+// @deprecated use /providers
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
@@ -270,10 +271,11 @@ publicAPI.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
-publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+// @deprecated use /flow/configs
+publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate

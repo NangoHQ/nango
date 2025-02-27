@@ -682,7 +682,7 @@ export class Orchestrator {
         providerConfig: ProviderConfig;
         syncName: string;
         syncVariant: string;
-        syncData: NangoIntegrationData;
+        syncData: Pick<NangoIntegrationData, 'runs' | 'auto_start'>;
         logContextGetter: LogContextGetter;
         debug?: boolean;
     }): Promise<Result<void>> {

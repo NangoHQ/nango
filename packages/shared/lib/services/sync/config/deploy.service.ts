@@ -11,18 +11,19 @@ import type {
     DBEnvironment,
     DBTeam,
     CleanedIncomingFlowConfig,
-    IncomingPreBuiltFlowConfig,
+    PreBuiltFlowConfig,
     NangoModel,
     OnEventScriptsByProvider,
     NangoSyncEndpointV2,
-    IncomingFlowConfig,
     HTTP_METHOD,
     SyncDeploymentResult,
     DBSyncEndpointCreate,
     DBSyncEndpoint,
     SyncTypeLiteral,
     DBSyncConfig,
-    DBSyncConfigInsert
+    DBSyncConfigInsert,
+    NangoSyncConfig,
+    CLIDeployFlowConfig
 } from '@nangohq/types';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { NangoError } from '../../../utils/error.js';
@@ -34,7 +35,6 @@ import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Merge } from 'type-fest';
 import type { JSONSchema7 } from 'json-schema';
 import type { Config } from '../../../models/Provider.js';
-import type { NangoSyncConfig } from '../../../models/NangoConfig.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -54,7 +54,7 @@ interface SyncConfigResult {
 /**
  * Transform received incoming flow from the CLI to an internally standard object
  */
-export function cleanIncomingFlow(flowConfigs: IncomingFlowConfig[]): CleanedIncomingFlowConfig[] {
+export function cleanIncomingFlow(flowConfigs: CLIDeployFlowConfig[]): CleanedIncomingFlowConfig[] {
     const cleaned: CleanedIncomingFlowConfig[] = [];
     for (const flow of flowConfigs) {
         const parsedEndpoints = flow.endpoints
@@ -400,7 +400,7 @@ export async function deployPreBuilt({
 }: {
     environment: DBEnvironment;
     account: DBTeam;
-    configs: IncomingPreBuiltFlowConfig[];
+    configs: PreBuiltFlowConfig[];
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
@@ -892,7 +892,7 @@ async function compileDeployInfo({
                 runs,
                 active: true,
                 model_schema: model_schema as unknown as SyncModelSchema[],
-                input: typeof flow.input === 'string' ? flow.input : flow.input ? flow.input.name : null,
+                input: typeof flow.input === 'string' ? flow.input : null,
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
                 enabled: lastSyncWasEnabled && !shouldCap,

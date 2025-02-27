@@ -14,7 +14,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import environmentService from '../environment.service.js';
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import type { ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, IncomingFlowConfig, SyncDeploymentResult } from '@nangohq/types';
+import type { CLIDeployFlowConfig, ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, SyncDeploymentResult } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -29,7 +29,7 @@ export interface CreateSyncArgs {
     connections: ConnectionInternal[];
     providerConfigKey: string;
     environmentId: number;
-    sync: IncomingFlowConfig;
+    sync: CLIDeployFlowConfig;
     syncName: string;
     syncVariant: string;
 }
@@ -118,7 +118,7 @@ export class SyncManagerService {
         syncVariant: string;
         providerConfigKey: string;
         environmentId: number;
-        flowConfig: IncomingFlowConfig;
+        flowConfig: Pick<CLIDeployFlowConfig, 'runs' | 'auto_start'>;
         logContextGetter: LogContextGetter;
         orchestrator: Orchestrator;
         debug: boolean;
@@ -147,7 +147,7 @@ export class SyncManagerService {
                         providerConfig: providerConfig,
                         syncName,
                         syncVariant,
-                        syncData: { ...flowConfig, returns: flowConfig.models, input: '' } as NangoIntegrationData,
+                        syncData: { runs: flowConfig.runs, auto_start: flowConfig.auto_start },
                         logContextGetter,
                         debug
                     });
@@ -451,7 +451,7 @@ export class SyncManagerService {
                 syncVariant: variant,
                 providerConfigKey,
                 environmentId,
-                flowConfig: flow as unknown as IncomingFlowConfig,
+                flowConfig: flow as Required<SyncDeploymentResult>,
                 logContextGetter,
                 orchestrator,
                 debug: false
