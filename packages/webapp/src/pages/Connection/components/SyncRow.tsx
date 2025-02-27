@@ -128,15 +128,16 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
         <Table.Row className="text-white">
             <Table.Cell bordered>
                 <div className="w-36 max-w-3xl truncate">
-                    {sync.name}
-                    {showSyncVariant && ' '}
-                    {showSyncVariant && (
-                        <SimpleTooltip tooltipContent={sync.variant}>
-                            <Tag variant="gray1" textCase="lowercase" size="small">
-                                {truncateMiddle(sync.variant)}
-                            </Tag>
-                        </SimpleTooltip>
-                    )}
+                    <div className="flex gap-2">
+                        {sync.name}
+                        {showSyncVariant && (
+                            <SimpleTooltip tooltipContent={sync.variant}>
+                                <Tag variant="gray1" textCase="lowercase" size="sm">
+                                    {truncateMiddle(sync.variant)}
+                                </Tag>
+                            </SimpleTooltip>
+                        )}
+                    </div>
                 </div>
             </Table.Cell>
             <Table.Cell bordered>

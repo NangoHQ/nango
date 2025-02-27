@@ -14,13 +14,13 @@ const variantStyles = cva('', {
             neutral: 'bg-grayscale-900 border-grayscale-700 text-grayscale-100'
         },
         size: {
-            default: 'px-2 pt-[1px]',
-            small: 'px-1 pt-[1px]'
+            md: 'px-2 pt-[1px] leading-[17px]',
+            sm: 'px-1 pt-[1px] leading-[13px]'
         }
     },
     defaultVariants: {
         variant: 'neutral',
-        size: 'default'
+        size: 'md'
     }
 });
 
@@ -38,28 +38,16 @@ const textCaseStyles = cva('', {
     }
 });
 
-const sizeTextStyles = cva('text-[11px]', {
-    variants: {
-        size: {
-            default: 'leading-[17px]',
-            small: 'leading-[14px]'
-        }
-    },
-    defaultVariants: {
-        size: 'default'
-    }
-});
-
 export const Tag: React.FC<
     {
         children: React.ReactNode;
         textCase?: 'uppercase' | 'lowercase' | 'capitalize' | 'normal';
-        size?: 'default' | 'small';
+        size?: 'md' | 'sm';
     } & VariantProps<typeof variantStyles>
 > = ({ children, variant, textCase, size }) => {
     return (
         <div className={cn('inline-flex border-[0.5px] bg-opacity-30 rounded', variantStyles({ variant, size }))}>
-            <div className={cn(sizeTextStyles({ size }), textCaseStyles({ textCase }))}>{children}</div>
+            <div className={cn(textCaseStyles({ textCase }))}>{children}</div>
         </div>
     );
 };
