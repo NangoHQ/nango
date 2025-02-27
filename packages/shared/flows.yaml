@@ -4620,63 +4620,63 @@ integrations:
                 etag: string
                 id: string
                 status: string
-                htmlLink: string
-                created: string
-                updated: string
-                summary: string
-                description: string
-                location: string
-                colorId: string
-                creator:
-                    id: string
+                htmlLink?: string
+                created?: string
+                updated?: string
+                summary?: string
+                description?: string
+                location?: string
+                colorId?: string
+                creator?:
+                    id?: string
                     email: string
-                    displayName: string
-                    self: boolean
-                organizer:
-                    id: string
+                    displayName?: string
+                    self?: boolean
+                organizer?:
+                    id?: string
                     email: string
-                    displayName: string
-                    self: boolean
-                start:
-                    date: date
-                    dateTime: string
-                    timeZone: string
-                end:
-                    date: date
-                    string: string
-                    timeZone: string
-                endTimeUnspecified: boolean
-                recurrence:
+                    displayName?: string
+                    self?: boolean
+                start?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                end?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                endTimeUnspecified?: boolean
+                recurrence?:
                     - string
-                recurringEventId: string
-                originalStartTime:
-                    date: date
-                    dateTime: string
-                    timeZone: string
-                transparency: string
-                visibility: string
-                iCalUID: string
-                sequence: integer
-                attendees:
-                    - id: string
+                recurringEventId?: string
+                originalStartTime?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                transparency?: string
+                visibility?: string
+                iCalUID?: string
+                sequence?: integer
+                attendees?:
+                    - id?: string
                       email: string
-                      displayName: string
-                      organizer: boolean
-                      self: boolean
-                      resource: boolean
-                      optional: boolean
+                      displayName?: string
+                      organizer?: boolean
+                      self?: boolean
+                      resource?: boolean
+                      optional?: boolean
                       responseStatus: string
-                      comment: string
-                      additionalGuests: integer
-                attendeesOmitted: boolean
-                extendedProperties:
-                    private:
-                        key: string
-                    shared:
-                        key: string
-                hangoutLink: string
-                conferenceData:
-                    createRequest:
+                      comment?: string
+                      additionalGuests?: integer
+                attendeesOmitted?: boolean
+                extendedProperties?:
+                    private?:
+                        __string: string
+                    shared?:
+                        __string: string
+                hangoutLink?: string
+                conferenceData?:
+                    createRequest?:
                         requestId: string
                         conferenceSolutionKey:
                             type: string
@@ -4685,21 +4685,26 @@ integrations:
                     entryPoints:
                         - entryPointType: string
                           uri: string
-                          label: string
-                          pin: string
-                          accessCode: string
-                          meetingCode: string
-                          passcode: string
-                          password: string
+                          label?: string
+                          pin?: string
+                          accessCode?: string
+                          meetingCode?: string
+                          passcode?: string
+                          password?: string
+                          regionCode?: string
                     conferenceSolution:
                         key:
                             type: string
                         name: string
                         iconUri: string
                     conferenceId: string
-                    signature: string
-                    notes: string
-                gadget:
+                    signature?: string
+                    notes?: string
+                    parameters?:
+                        addOnParameters?:
+                            parameters:
+                                __string: string
+                gadget?:
                     type: string
                     title: string
                     link: string
@@ -4709,21 +4714,24 @@ integrations:
                     display: string
                     preferences:
                         key: string
-                anyoneCanAddSelf: boolean
-                guestsCanInviteOthers: boolean
-                guestsCanModify: boolean
-                guestsCanSeeOtherGuests: boolean
-                privateCopy: boolean
-                locked: boolean
-                reminders:
+                anyoneCanAddSelf?: boolean
+                guestsCanInviteOthers?: boolean
+                guestsCanModify?: boolean
+                guestsCanSeeOtherGuests?: boolean
+                privateCopy?: boolean
+                locked?: boolean
+                reminders?:
                     useDefault: boolean
-                    overrides:
+                    overrides?:
                         - method: string
                           minutes: integer
-                source:
+                outOfOfficeProperties?:
+                    autoDeclineMode: string
+                    declineMessage: string
+                source?:
                     url: string
                     title: string
-                workingLocationProperties:
+                workingLocationProperties?:
                     type: string
                     homeOffice: string
                     customLocation:
@@ -4734,13 +4742,13 @@ integrations:
                         floorSectionId: string
                         deskId: string
                         label: string
-                attachments:
+                attachments?:
                     - fileUrl: string
                       title: string
                       mimeType: string
                       iconLink: string
                       fileId: string
-                eventType: string
+                eventType?: string
     google-docs:
         actions:
             fetch-document:
