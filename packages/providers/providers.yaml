@@ -7449,7 +7449,7 @@ servicenow:
             prefix: https://
 
 sharepoint-online:
-    display_name: SharePoint Online
+    display_name: SharePoint Online (v2)
     categories:
         - storage
         - communication
