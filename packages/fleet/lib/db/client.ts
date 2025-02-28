@@ -24,7 +24,7 @@ export class DatabaseClient {
                 statement_timeout: 60000
             },
             searchPath: schema,
-            pool: { min: 0, max: poolMax },
+            pool: { min: 0, max: poolMax, idleTimeoutMillis: 5000 },
             migrations: {
                 extension: isJS ? 'js' : 'ts',
                 directory: 'migrations',
