@@ -762,6 +762,7 @@ export class Nango {
         const response = await this.http.post(url, body, { headers: this.enrichHeaders() });
         return response.data;
     }
+
     /**
      *
      * Delete an existing sync variant
@@ -778,7 +779,7 @@ export class Nango {
             },
             headers: this.enrichHeaders()
         });
-        return response.data as DeleteSyncVariant['Success'];
+        return response.data;
     }
 
     /**

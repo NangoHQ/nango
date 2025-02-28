@@ -183,6 +183,9 @@ export const ENVS = z.object({
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
+    // LIMITS
+    MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: bool,

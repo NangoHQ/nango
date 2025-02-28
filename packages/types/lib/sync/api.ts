@@ -29,5 +29,5 @@ export type DeleteSyncVariant = Endpoint<{
         variant: string;
     };
     Error: ApiError<'invalid_variant' | 'unknown_connection' | 'failed_sync_variant_deletion'>;
-    Success: never;
+    Success: { success: boolean };
 }>;

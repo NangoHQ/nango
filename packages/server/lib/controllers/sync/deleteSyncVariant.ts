@@ -67,5 +67,5 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
         res.status(500).send({ error: { code: 'failed_sync_variant_deletion' } });
         return;
     }
-    res.status(204).send();
+    res.status(200).send({ success: true });
 });

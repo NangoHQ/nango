@@ -6,6 +6,7 @@ import { connectionService, getSyncConfigByParams, getSyncsByConnectionId, creat
 import { variantSchema, connectionIdSchema, syncNameSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { getOrchestrator } from '../../utils/utils.js';
 import { logContextGetter } from '@nangohq/logs';
+import { envs } from '../../env.js';
 
 const orchestrator = getOrchestrator();
 
@@ -66,7 +67,7 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
         return;
     }
 
-    const maxSyncsPerConnection = 100; // arbitrary limit to prevent abuse/mistakes
+    const maxSyncsPerConnection = envs.MAX_SYNCS_PER_CONNECTION;
     if (syncs.length > maxSyncsPerConnection) {
         res.status(400).send({ error: { code: 'resource_capped', message: `Maximum number of syncs per connection (${maxSyncsPerConnection}) reached` } });
         return;
