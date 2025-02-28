@@ -17,14 +17,9 @@ export class KnexDatabase {
 
         const readOnlyURL = process.env['NANGO_DB_READ_URL'];
         if (readOnlyURL) {
-            (dbConfig.connection as knex.Knex.PgConnectionConfig).connectionString = readOnlyURL;
-            this.readOnly = knex({
-                ...dbConfig,
-                connection: {
-                    ...(dbConfig.connection as object),
-                    connectionString: readOnlyURL
-                }
-            });
+            const readConfig = getDbConfig({ timeoutMs });
+            (readConfig.connection as knex.Knex.PgConnectionConfig).connectionString = readOnlyURL;
+            this.readOnly = knex(readConfig);
         } else {
             this.readOnly = this.knex;
         }
