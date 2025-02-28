@@ -41,6 +41,7 @@ export const ENVS = z.object({
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
     ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
+    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
@@ -105,6 +106,7 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(2 * 60 * 1000), // 2 minutes
+    FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
     // --- Third parties
     // AWS

@@ -3,6 +3,7 @@ import knex from 'knex';
 import { fileURLToPath } from 'node:url';
 import { logger } from '../utils/logger.js';
 import { isTest } from '@nangohq/utils';
+import { envs } from '../env.js';
 
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
@@ -13,7 +14,7 @@ export class DatabaseClient {
     public url: string;
     private config: knex.Knex.Config;
 
-    constructor({ url, schema, poolMax = 15 }: { url: string; schema: string; poolMax?: number }) {
+    constructor({ url, schema, poolMax = envs.FLEET_DB_POOL_MAX }: { url: string; schema: string; poolMax?: number }) {
         this.url = url;
         this.schema = schema;
         this.config = {
@@ -23,7 +24,7 @@ export class DatabaseClient {
                 statement_timeout: 60000
             },
             searchPath: schema,
-            pool: { min: 2, max: poolMax },
+            pool: { min: 0, max: poolMax },
             migrations: {
                 extension: isJS ? 'js' : 'ts',
                 directory: 'migrations',
