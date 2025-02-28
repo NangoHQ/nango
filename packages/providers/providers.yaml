@@ -348,6 +348,8 @@ amazon-selling-partner:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
     token_params:
@@ -356,6 +358,8 @@ amazon-selling-partner:
         grant_type: refresh_token
     proxy:
         base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
     connection_config:
@@ -392,6 +396,8 @@ amazon-selling-partner-beta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
         version: beta
@@ -400,7 +406,9 @@ amazon-selling-partner-beta:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
     connection_config:

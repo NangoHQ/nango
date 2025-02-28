@@ -13,6 +13,7 @@ export interface SyncResponse {
     created_at: string;
     nango_connection_id: number;
     name: string;
+    variant: string;
     frequency: string;
     frequency_override: string | null;
     futureActionTimes: number[];
