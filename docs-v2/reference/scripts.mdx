@@ -601,6 +601,23 @@ Fetching records by ID is useful when you need to update specific records with a
 A common use case is when handling external webhooks, where only a partial update of a record is received from an API.
 </Tip>
 
+### Variant
+
+If you are using sync variants, you can access the current variant name via the `nango.variant` property.
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    await nango.log(`Running sync with variant: ${nango.variant}`);
+
+    // Customize sync behavior based on variant
+    const res = await nango.get({
+        endpoint: `/spreadsheet/${nango.variant}`
+    });
+
+    // Rest of sync implementation...
+}
+```
+
 # Action-specific helper methods
 
 ### `ActionError`
