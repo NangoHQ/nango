@@ -15,7 +15,7 @@ const variantStyles = cva('', {
         },
         size: {
             md: 'px-2 pt-[1px] leading-[17px]',
-            sm: 'px-1 pt-[1px] leading-[13px]'
+            sm: 'px-1 pb-[1px] leading-[13px]'
         }
     },
     defaultVariants: {
