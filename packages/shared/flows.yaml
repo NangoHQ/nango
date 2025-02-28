@@ -5099,10 +5099,11 @@ integrations:
                 output: GorgiasUser
                 endpoint:
                     method: POST
-                    path: /user
+                    path: /users
                     group: Users
                 scopes:
                     - users:write
+                version: 1.0.0
             delete-user:
                 description: Deletes a user in Gorgias
                 output: SuccessResponse
@@ -5259,7 +5260,7 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
-                role: admin | agent | basic-agent | lite-agent | observer-agent
+                role?: admin | agent | basic-agent | lite-agent | observer-agent
             GorgiasUser:
                 id: string
                 firstName: string
