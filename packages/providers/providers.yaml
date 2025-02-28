@@ -4913,7 +4913,7 @@ lessonly:
             secret: true
 
 lemlist:
-    display_name: Lemlist
+    display_name: lemlist
     categories:
         - marketing
         - communication
