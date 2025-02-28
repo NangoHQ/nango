@@ -133,7 +133,7 @@ To configure retries when HTTP requests fail, use the `retries` and `retryOn` pa
 
 The following will apply:
 - By default, retries are performed when:
-  - HTTP Status: `>= 500` & `429`
+  - HTTP Status: `>= 500`, `429`
   - Network error: `ECONNRESET`, `ETIMEDOUT`, and `ECONNABORTED`.
   - Pre-configured headers for providers in ([providers.yaml](https://nango.dev/providers.yaml)).
 - Use the `retryOn` parameter to specify an array of additional status codes to retry on.
