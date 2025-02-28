@@ -4920,6 +4920,36 @@ lessonly:
             description: Your Lessonly API key
             secret: true
 
+lemlist:
+    display_name: lemlist
+    categories:
+        - marketing
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lemlist.com
+        verification:
+            endpoint: /api/team
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/lemlist
+    docs_connect: https://docs.nango.dev/integrations/all/lemlist/connect
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: API Key
+            description: The API key for your Lemlist account
+            secret: true
+            example: a1b2c3d4e5f67890abcdefabcdefabcd
+            pattern: '[a-f0-9]$'
+            doc_section: '#step-1-generating-your-api-key'
+
 lever:
     display_name: Lever (OAuth)
     categories:
