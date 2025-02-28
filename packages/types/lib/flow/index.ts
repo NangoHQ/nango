@@ -2,10 +2,11 @@ import type { JSONSchema7 } from 'json-schema';
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
 import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
 
+// TODO: Split by type
 export interface NangoSyncConfig {
     name: string;
     type?: ScriptTypeLiteral;
-    runs: string | null;
+    runs?: string | null;
     auto_start?: boolean;
     attributes?: object;
     description?: string;

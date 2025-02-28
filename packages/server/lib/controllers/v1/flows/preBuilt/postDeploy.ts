@@ -66,7 +66,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
             {
                 endpoints: flow.endpoints,
                 name: flow.name,
-                runs: flow.runs,
+                runs: flow.runs || null,
                 attributes: flow.attributes,
                 auto_start: flow.auto_start,
                 public_route: body.provider,

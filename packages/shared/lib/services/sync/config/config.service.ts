@@ -33,12 +33,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
         const flowObject: NangoSyncConfig = {
             id: syncConfig.id,
             name: syncConfig.sync_name,
-            runs: syncConfig.runs,
             type: syncConfig.type,
             returns: syncConfig.models,
             description: syncConfig.metadata?.description || '',
-            track_deletes: syncConfig.track_deletes,
-            auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata?.scopes || [],
             version: syncConfig.version,
@@ -55,6 +52,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
 
         if (syncConfig.type === 'sync') {
             flowObject.sync_type = syncConfig.sync_type || 'full';
+            flowObject.auto_start = syncConfig.auto_start;
+            flowObject.runs = syncConfig.runs;
+            flowObject.track_deletes = syncConfig.track_deletes;
             integration['syncs'].push(flowObject);
         } else {
             integration['actions'].push(flowObject);
