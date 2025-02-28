@@ -348,6 +348,8 @@ amazon-selling-partner:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
     token_params:
@@ -356,6 +358,8 @@ amazon-selling-partner:
         grant_type: refresh_token
     proxy:
         base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
     connection_config:
@@ -392,6 +396,8 @@ amazon-selling-partner-beta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
         version: beta
@@ -400,7 +406,9 @@ amazon-selling-partner-beta:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
     connection_config:
@@ -4912,6 +4920,36 @@ lessonly:
             description: Your Lessonly API key
             secret: true
 
+lemlist:
+    display_name: lemlist
+    categories:
+        - marketing
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lemlist.com
+        verification:
+            endpoint: /api/team
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/lemlist
+    docs_connect: https://docs.nango.dev/integrations/all/lemlist/connect
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: API Key
+            description: The API key for your Lemlist account
+            secret: true
+            example: a1b2c3d4e5f67890abcdefabcdefabcd
+            pattern: '[a-f0-9]$'
+            doc_section: '#step-1-generating-your-api-key'
+
 lever:
     display_name: Lever (OAuth)
     categories:
@@ -5570,17 +5608,24 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
-mip:
-    display_name: mip
+
+mip-cloud:
+    display_name: MIP Cloud
     categories:
         - accounting
-    auth_mode: BASIC
+    auth_mode: TWO_STEP
     proxy:
-        base_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
-        headers:
-            content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/mip
-    docs_connect: https://docs.nango.dev/integrations/all/mip/connect
+        base_url: https://api.mip.com
+    token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-cloud
+    docs_connect: https://docs.nango.dev/integrations/all/mip-cloud/connect
     credentials:
         username:
             type: string
@@ -5590,13 +5635,55 @@ mip:
             type: string
             title: Password
             description: Your Password for MIP Fund Accounting.
+            secret: true
     connection_config:
         domain:
             type: string
-            title: REST Service URL
+            title: HOST REST Service URL
             description: The rest service URL for the cloud-based API service
             prefix: https://
             suffix: /api/v1/sso/mipadv/login
+            format: hostname
+
+mip-on-premise:
+    display_name: MIP On Premise
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.mip.com
+    token_url: https://${connectionConfig.domain}/api/security/login
+    token_params:
+        login: ${credentials.login}
+        password: ${credentials.password}
+        org: ${credentials.org}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-on-premise
+    docs_connect: https://docs.nango.dev/integrations/all/mip-on-premise/connect
+    credentials:
+        login:
+            type: string
+            title: ID
+            description: Your Login ID for MIP Fund Accounting
+        password:
+            type: string
+            title: Password
+            description: Your Password for MIP Fund Accounting.
+            secret: true
+        org:
+            type: string
+            title: ORG
+            description: The MIP Fund Accounting database you will be using.
+    connection_config:
+        domain:
+            type: string
+            title: HOST REST Service URL
+            description: The URL of your locally installed REST API server.
+            prefix: https://
+            suffix: /api/security/login
             format: hostname
 
 mixpanel:
