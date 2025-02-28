@@ -16,13 +16,12 @@ export interface ProxyFile {
 
 export interface BaseProxyConfiguration {
     providerConfigKey: string;
-    connectionId: string;
     endpoint: string;
     retries?: number;
     data?: unknown;
     files?: ProxyFile[]; // TODO: only allow this from the API
     headers?: Record<string, string>;
-    params?: string | Record<string, string | number>;
+    params?: string | Record<string, string | number | string[] | number[]>;
     baseUrlOverride?: string;
     responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
@@ -35,20 +34,19 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
+export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
+
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
-    decompress?: boolean;
+    decompress: boolean;
     method: HTTP_METHOD;
     providerName: string;
     provider: Provider;
-    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface InternalProxyConfiguration {
     providerName: string;
-    connection: Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
-    existingActivityLogId?: string | null | undefined;
 }
 
 export interface RetryHeaderConfig {

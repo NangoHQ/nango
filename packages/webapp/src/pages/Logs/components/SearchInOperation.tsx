@@ -54,7 +54,10 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
         accessorKey: 'id',
         header: '',
         size: 40,
-        cell: () => {
+        cell: ({ row }) => {
+            if (!row.original.meta && !row.original.error && !row.original.request && !row.original.response) {
+                return null;
+            }
             return (
                 <div className="-ml-2">
                     <ChevronRightIcon />

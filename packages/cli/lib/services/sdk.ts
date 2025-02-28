@@ -1,10 +1,12 @@
 import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase, BASE_VARIANT } from '@nangohq/runner-sdk';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { Metadata, NangoProps, UserLogParameters, GetPublicConnection } from '@nangohq/types';
-import type { AxiosResponse } from 'axios';
+import { isAxiosError } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 import type { DryRunService } from './dryrun.service';
+import chalk from 'chalk';
 
 const logLevelToLogger = {
     info: 'info',
@@ -26,20 +28,7 @@ export class NangoActionCLI extends NangoActionBase {
 
         this.dryRunService = cliProps.dryRunService;
 
-        const axiosSettings: AdminAxiosProps = {
-            userAgent: 'sdk'
-        };
-
-        if (props.axios?.response) {
-            axiosSettings.interceptors = {
-                response: {
-                    onFulfilled: props.axios.response.onFulfilled,
-                    onRejected: props.axios.response.onRejected
-                }
-            };
-        }
-
-        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
     public override proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -76,9 +65,15 @@ export class NangoActionCLI extends NangoActionBase {
         }
     }
 
-    public triggerSync(_providerConfigKey: string, connectionId: string, syncName: string, _fullResync?: boolean): Promise<void | string> {
+    public triggerSync(
+        _providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        _fullResync?: boolean
+    ): Promise<void | string> {
+        const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
         return this.dryRunService.run({
-            sync: syncName,
+            ...syncArgs,
             connectionId,
             autoConfirm: true,
             debug: false
@@ -109,20 +104,7 @@ export class NangoSyncCLI extends NangoSyncBase {
 
         this.dryRunService = cliProps.dryRunService;
 
-        const axiosSettings: AdminAxiosProps = {
-            userAgent: 'sdk'
-        };
-
-        if (props.axios?.response) {
-            axiosSettings.interceptors = {
-                response: {
-                    onFulfilled: props.axios.response.onFulfilled,
-                    onRejected: props.axios.response.onRejected
-                }
-            };
-        }
-
-        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, axiosSettings);
+        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
     // Can't double extends
@@ -148,18 +130,21 @@ export class NangoSyncCLI extends NangoSyncBase {
             }
         }
 
-        this.logMessages?.messages.push(`A batch save call would save the following data to the ${model} model:`);
+        this.logMessages?.messages.push(
+            `A batch save call would save the following data to the ${model} model${this.variant === BASE_VARIANT ? `` : ` (variant: ${this.variant})`}:`
+        );
         for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
             this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
         }
+        const modelFullName = this.modelFullName(model);
         if (this.rawSaveOutput) {
-            if (!this.rawSaveOutput.has(model)) {
-                this.rawSaveOutput.set(model, []);
+            if (!this.rawSaveOutput.has(modelFullName)) {
+                this.rawSaveOutput.set(modelFullName, []);
             }
-            this.rawSaveOutput.get(model)?.push(...results);
+            this.rawSaveOutput.get(modelFullName)?.push(...results);
         }
         return true;
     }
@@ -179,11 +164,12 @@ export class NangoSyncCLI extends NangoSyncBase {
         if (this.logMessages && this.logMessages.counts) {
             this.logMessages.counts.deleted = Number(this.logMessages.counts.deleted) + results.length;
         }
+        const modelFullName = this.modelFullName(model);
         if (this.rawDeleteOutput) {
-            if (!this.rawDeleteOutput.has(model)) {
-                this.rawDeleteOutput.set(model, []);
+            if (!this.rawDeleteOutput.has(modelFullName)) {
+                this.rawDeleteOutput.set(modelFullName, []);
             }
-            this.rawDeleteOutput.get(model)?.push(...results);
+            this.rawDeleteOutput.get(modelFullName)?.push(...results);
         }
         return true;
     }
@@ -196,7 +182,9 @@ export class NangoSyncCLI extends NangoSyncBase {
 
         const resultsWithoutMetadata = this.removeMetadata(results);
 
-        this.logMessages?.messages.push(`A batch update call would update the following data to the ${model} model:`);
+        this.logMessages?.messages.push(
+            `A batch update call would save the following data to the ${model} model${this.variant === BASE_VARIANT ? `` : ` (variant: ${this.variant})`}:`
+        );
         for (const msg of resultsWithoutMetadata) {
             this.logMessages?.messages.push(msg);
         }
@@ -240,7 +228,7 @@ export class NangoSyncCLI extends NangoSyncBase {
             const props: ListRecordsRequestConfig = {
                 providerConfigKey: this.providerConfigKey,
                 connectionId: this.connectionId,
-                model,
+                model: this.modelFullName(model),
                 ids: batchIds
             };
             if (cursor) {
@@ -263,4 +251,49 @@ export class NangoSyncCLI extends NangoSyncBase {
 
         return objects;
     }
+
+    public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
+        // Not applicable to CLI
+        return Promise.resolve();
+    }
+}
+
+function getAxiosSettings(props: NangoProps) {
+    const axiosSettings: AdminAxiosProps = {
+        userAgent: 'sdk'
+    };
+
+    if (props.axios?.response) {
+        axiosSettings.interceptors = {
+            response: {
+                onFulfilled: props.axios.response.onFulfilled,
+                onRejected: props.axios.response.onRejected
+            }
+        };
+    } else {
+        axiosSettings.interceptors = {
+            response: {
+                onFulfilled: (res) => {
+                    logAPICall(res);
+                    return res;
+                },
+                onRejected: (err) => {
+                    logAPICall(err as AxiosError);
+                    return err;
+                }
+            }
+        };
+    }
+
+    return axiosSettings;
+}
+
+function logAPICall(res: AxiosResponse | AxiosError): void {
+    const method = res.config?.method?.toLocaleUpperCase(); // axios put it in lowercase
+    if (isAxiosError(res)) {
+        console.log(chalk.blue('http'), `[${chalk[res.status || 999 >= 400 ? 'red' : 'green'](res.status || 'xxx')}] ${method} ${res.config?.url}`);
+        return;
+    }
+
+    console.log(chalk.blue('http'), `[${chalk[res.status >= 400 ? 'red' : 'green'](res.status)}] ${method} ${res.config.url}`);
 }

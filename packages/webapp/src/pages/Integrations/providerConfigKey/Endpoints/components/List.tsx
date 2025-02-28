@@ -63,8 +63,8 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                 <Table.Header>
                                     <Table.Row>
                                         <Table.Head className="w-[220px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[340px] bg-pure-black p-0"></Table.Head>
-                                        <Table.Head className="w-[60px] bg-pure-black p-0"></Table.Head>
+                                        <Table.Head className="w-[330px] bg-pure-black p-0"></Table.Head>
+                                        <Table.Head className="w-[100px] bg-pure-black p-0"></Table.Head>
                                         <Table.Head className="w-[50px] bg-pure-black p-0"></Table.Head>
                                     </Table.Row>
                                 </Table.Header>
@@ -85,7 +85,12 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                                         {flow.description}
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white">
-                                                        {flow.is_public ? 'Template' : 'Custom'}
+                                                        <div className="flex gap-2">
+                                                            {flow.is_public ? 'Template' : 'Custom'}
+                                                            <div className="bg-active-gray text-text-light-gray uppercase px-1 rounded-md text-xs">
+                                                                {flow.type}
+                                                            </div>
+                                                        </div>
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white">
                                                         <ScriptToggle flow={flow} integration={integration} />

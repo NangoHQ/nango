@@ -111,6 +111,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         await logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
+            syncVariant: task.syncVariant,
             syncType,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key,
@@ -317,6 +318,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 connection: connection,
                                 environment: environment,
                                 syncConfig: nangoProps.syncConfig,
+                                syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
                                 webhookSettings,
                                 model,
@@ -696,6 +698,7 @@ async function onFailure({
                         account: team,
                         providerConfig,
                         syncConfig,
+                        syncVariant,
                         connection: connection,
                         environment: environment,
                         webhookSettings,
