@@ -9,10 +9,25 @@ const directory = path.join(projectRoot, 'packages/database/lib/migrations');
 
 export class KnexDatabase {
     knex: Knex;
+    readOnly: Knex;
 
     constructor({ timeoutMs } = { timeoutMs: 60000 }) {
         const dbConfig = getDbConfig({ timeoutMs });
         this.knex = knex(dbConfig);
+
+        const readOnlyURL = process.env['NANGO_DATABASE_READ_URL'];
+        if (readOnlyURL) {
+            (dbConfig.connection as knex.Knex.PgConnectionConfig).connectionString = readOnlyURL;
+            this.readOnly = knex({
+                ...dbConfig,
+                connection: {
+                    ...(dbConfig.connection as object),
+                    connectionString: readOnlyURL
+                }
+            });
+        } else {
+            this.readOnly = this.knex;
+        }
     }
 
     async migrate(): Promise<any> {
