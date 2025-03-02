@@ -11,7 +11,6 @@ import {
     errorManager,
     featureFlags,
     getApiUrl,
-    getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
@@ -19,14 +18,13 @@ import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } 
 import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import db from '@nangohq/database';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
     let syncConfig: DBSyncConfig | null = null;
-    let endUser: NangoProps['endUser'] | null = null;
+    const endUser: NangoProps['endUser'] | null = null;
 
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
@@ -50,11 +48,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         });
         if (!syncConfig) {
             throw new Error(`Action config not found: ${task.id}`);
-        }
-
-        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
-        if (getEndUser.isOk()) {
-            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
