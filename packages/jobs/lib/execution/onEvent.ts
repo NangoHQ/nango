@@ -2,11 +2,12 @@ import { Err, metrics, Ok, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import { configService, environmentService, featureFlags, getApiUrl, NangoError } from '@nangohq/shared';
+import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
+import db from '@nangohq/database';
 import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -14,7 +15,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | undefined | null;
     let syncConfig: DBSyncConfig | null = null;
-    const endUser: NangoProps['endUser'] | null = null;
+    let endUser: NangoProps['endUser'] | null = null;
 
     try {
         const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
@@ -28,6 +29,11 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
         if (providerConfig === null) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
+        }
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });

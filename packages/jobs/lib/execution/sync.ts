@@ -21,6 +21,7 @@ import {
     createSyncJob,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    getEndUserByConnectionId,
     featureFlags
 } from '@nangohq/shared';
 import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
@@ -35,6 +36,7 @@ import { records } from '@nangohq/records';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
+import db from '@nangohq/database';
 import { getRunnerFlags } from '../utils/flags.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
@@ -46,7 +48,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     let syncType: SyncTypeLiteral = 'full';
     let providerConfig: Config | null = null;
     let syncConfig: DBSyncConfig | null = null;
-    const endUser: NangoProps['endUser'] | null = null;
+    let endUser: NangoProps['endUser'] | null = null;
 
     try {
         lastSyncDate = await getLastSyncDate(task.syncId);
@@ -73,6 +75,11 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         team = accountAndEnv.account;
         environment = accountAndEnv.environment;
         tagTraceUser(accountAndEnv);
+
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        if (getEndUser.isOk()) {
+            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
+        }
 
         syncType = syncConfig.sync_type?.toLowerCase() === 'incremental' && lastSyncDate ? 'incremental' : 'full';
 
@@ -540,6 +547,8 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             throw new Error(`Sync config not found. TaskId: ${task.id}`);
         }
 
+        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+
         const isCancel = task.abortedTask.state === 'CANCELLED';
         await onFailure({
             connection: {
@@ -565,7 +574,9 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             syncConfig,
             runTime: 0,
             error: new NangoError('sync_script_failure', task.reason),
-            endUser: null
+            endUser: getEndUser.isOk()
+                ? { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null }
+                : null
         });
         const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
         if (setSuccess.isErr()) {
