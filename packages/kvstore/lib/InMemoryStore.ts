@@ -1,3 +1,4 @@
+import type { MaybePromise } from '@nangohq/types';
 import type { KVStore } from './KVStore.js';
 
 interface Value {
@@ -11,6 +12,10 @@ export class InMemoryKVStore implements KVStore {
 
     constructor() {
         this.store = new Map();
+    }
+
+    destroy(): MaybePromise<void> {
+        this.store.clear();
     }
 
     public async get(key: string): Promise<string | null> {

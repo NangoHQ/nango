@@ -136,6 +136,7 @@ export const ENVS = z.object({
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
+    NANGO_DB_READ_URL: z.string().url().optional(),
     NANGO_DB_HOST: z.string().optional().default('localhost'),
     NANGO_DB_PORT: z.coerce.number().optional().default(5432),
     NANGO_DB_USER: z.string().optional().default('nango'),
@@ -176,7 +177,6 @@ export const ENVS = z.object({
     PUBLIC_SENTRY_KEY: z.string().optional(),
 
     // Slack
-    NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
