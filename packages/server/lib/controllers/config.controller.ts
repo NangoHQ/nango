@@ -242,37 +242,40 @@ class ConfigController {
 
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
-            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
-            const connection_count = connections.length;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
                 webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${config.provider}`;
             }
 
-            const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
-                ? ({
-                      unique_key: config.unique_key,
-                      provider: config.provider,
-                      client_id: config.oauth_client_id,
-                      client_secret,
-                      custom: config.custom,
-                      scopes: config.oauth_scopes,
-                      app_link: config.app_link,
-                      auth_mode: authMode,
-                      created_at: config.created_at,
-                      syncs,
-                      actions,
-                      has_webhook: Boolean(hasWebhook),
-                      webhook_secret,
-                      connections: connections.map(({ connection_config, connection_id, environment_id, id, provider_config_key }) => {
-                          return { connection_config, connection_id, environment_id, id, provider_config_key };
-                      }),
-                      docs: provider.docs,
-                      connection_count,
-                      has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,
-                      webhook_url: webhookUrl
-                  } satisfies IntegrationWithCreds)
-                : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } satisfies ProviderIntegration);
+            let configRes: ProviderIntegration | IntegrationWithCreds;
+            if (includeCreds) {
+                const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+                const connection_count = connections.length;
+                configRes = {
+                    unique_key: config.unique_key,
+                    provider: config.provider,
+                    client_id: config.oauth_client_id,
+                    client_secret,
+                    custom: config.custom,
+                    scopes: config.oauth_scopes,
+                    app_link: config.app_link,
+                    auth_mode: authMode,
+                    created_at: config.created_at,
+                    syncs,
+                    actions,
+                    has_webhook: Boolean(hasWebhook),
+                    webhook_secret,
+                    connections: connections.map(({ connection_config, connection_id, environment_id, id, provider_config_key }) => {
+                        return { connection_config, connection_id, environment_id, id, provider_config_key };
+                    }),
+                    docs: provider.docs,
+                    connection_count,
+                    has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,
+                    webhook_url: webhookUrl
+                } satisfies IntegrationWithCreds;
+            } else {
+                configRes = { unique_key: config.unique_key, provider: config.provider, syncs, actions } satisfies ProviderIntegration;
+            }
 
             if (includeFlows && !isHosted) {
                 const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
@@ -289,24 +292,6 @@ class ConfigController {
             }
 
             res.status(200).send({ config: configRes });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getConnections(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const providerConfigKey = req.params['providerConfigKey'] as string | null;
-            const environmentId = res.locals['environment'].id;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
-
-            res.status(200).send(connections);
         } catch (err) {
             next(err);
         }

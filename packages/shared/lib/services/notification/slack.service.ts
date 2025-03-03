@@ -195,11 +195,6 @@ export class SlackService {
      *      4) Add an activity log entry for the notification to the admin account
      */
     async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
-        const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-        if (!slackNotificationsEnabled) {
-            return;
-        }
-
         if (name === this.actionName) {
             return;
         }
@@ -210,6 +205,9 @@ export class SlackService {
         }
 
         const { account, environment } = accountEnv;
+        if (!environment.slack_notifications) {
+            return;
+        }
 
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
 

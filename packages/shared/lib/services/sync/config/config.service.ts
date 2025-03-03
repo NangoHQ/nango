@@ -485,7 +485,7 @@ export async function getSyncConfigsWithConnections(
     providerConfigKey: string,
     environment_id: number
 ): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
-    const result = await db.knex
+    const result = await db.readOnly
         .select(
             `${TABLE}.id`,
             '_nango_configs.provider',
@@ -541,9 +541,9 @@ export async function getSyncConfigsByProviderConfigKey(environment_id: number, 
 }
 
 export async function getSyncConfigByJobId(job_id: number): Promise<DBSyncConfig | null> {
-    const result = await schema()
+    const result = await db.readOnly
         .from<DBSyncConfig>(TABLE)
-        .select(`${TABLE}.*`)
+        .select<DBSyncConfig>(`${TABLE}.*`)
         .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
         .where({
             '_nango_sync_jobs.id': job_id,
@@ -563,7 +563,7 @@ export async function getSyncConfigByJobId(job_id: number): Promise<DBSyncConfig
 export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfig | null> {
     const result = await schema()
         .from<DBSyncConfig>(TABLE)
-        .select(`${TABLE}.*`)
+        .select<DBSyncConfig>(`${TABLE}.*`)
         .join('_nango_syncs', `${TABLE}.id`, '_nango_syncs.sync_config_id')
         .where({
             '_nango_syncs.id': syncId
@@ -578,7 +578,7 @@ export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfi
 }
 
 export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
-    const result = await schema()
+    const result = await db.readOnly
         .from<DBSyncConfig>(TABLE)
         .select(`${TABLE}.attributes`)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
@@ -597,27 +597,6 @@ export async function getAttributes(provider_config_key: string, sync_name: stri
     }
 
     return result.attributes;
-}
-
-export async function getProviderConfigBySyncAndAccount(sync_name: string, environment_id: number): Promise<string | null> {
-    const providerConfigKey = await schema()
-        .from<DBSyncConfig>(TABLE)
-        .select('_nango_configs.unique_key')
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            active: true,
-            sync_name,
-            '_nango_configs.environment_id': environment_id,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false
-        })
-        .first();
-
-    if (providerConfigKey) {
-        return providerConfigKey.unique_key;
-    }
-
-    return null;
 }
 
 export function increment(input: number | string): number | string {
@@ -749,7 +728,7 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
 }
 
 export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<DBSyncConfig | null> {
-    const query = db.knex
+    const query = db.readOnly
         .select<DBSyncConfig>('*')
         .where({
             environment_id: opts.environmentId,
