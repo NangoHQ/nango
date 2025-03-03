@@ -132,7 +132,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                         {sync.name}
                         {showSyncVariant && (
                             <SimpleTooltip tooltipContent={sync.variant}>
-                                <Tag variant="gray1" textCase="lowercase" size="sm">
+                                <Tag variant="gray1" textCase="normal" size="sm">
                                     {truncateMiddle(sync.variant)}
                                 </Tag>
                             </SimpleTooltip>

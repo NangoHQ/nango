@@ -553,7 +553,6 @@ apollo-oauth:
     display_name: Apollo (OAuth)
     categories:
         - marketing
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.apollo.io
     token_url: https://app.apollo.io/api/v1/oauth/token
@@ -655,6 +654,7 @@ ashby:
     display_name: Ashby
     categories:
         - ats
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
@@ -2164,6 +2164,7 @@ confluence:
     display_name: Confluence
     categories:
         - knowledge-base
+        - popular
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 
@@ -3736,6 +3737,7 @@ gong-oauth:
         - marketing
         - productivity
         - video
+        - popular
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
@@ -4329,6 +4331,7 @@ hibob-service-user:
     display_name: Hibob Service User
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
@@ -4497,6 +4500,7 @@ intercom:
     display_name: Intercom
     categories:
         - marketing
+        - popular
         - support
         - surveys
         - ticketing
@@ -5804,7 +5808,6 @@ netsuite:
     categories:
         - accounting
         - erp
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
@@ -5832,6 +5835,7 @@ netsuite-tba:
     categories:
         - accounting
         - erp
+        - popular
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -7009,6 +7013,7 @@ sage-intacct-oauth:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
     token_url: https://api.intacct.com/ia/api/v1/oauth2/token
@@ -7449,7 +7454,7 @@ servicenow:
             prefix: https://
 
 sharepoint-online:
-    display_name: SharePoint Online
+    display_name: SharePoint Online (v2)
     categories:
         - storage
         - communication
@@ -8860,6 +8865,7 @@ workday:
     display_name: Workday
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
