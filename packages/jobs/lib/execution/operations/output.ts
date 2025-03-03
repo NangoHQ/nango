@@ -3,32 +3,47 @@ import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
 import { NangoError } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
-// import { handleActionError, handleActionSuccess } from '../action.js';
+import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import type { ApiError, NangoProps, RunnerOutputError } from '@nangohq/types';
 import type { ClientError } from '@nangohq/nango-orchestrator';
 import { toNangoError } from './utils/errors.js';
 
-export async function handleSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
-    switch (nangoProps.scriptType) {
-        case 'sync':
-            await handleSyncSuccess({ nangoProps });
-            break;
-        // case 'action':
-        //     await handleActionSuccess({ nangoProps });
-        //     break;
-        case 'webhook':
-            await handleWebhookSuccess({ nangoProps });
-            break;
-        case 'on-event':
-            await handleOnEventSuccess({ nangoProps });
-            break;
-    }
+async function setTaskSuccess({ taskId, output, nangoProps }: { taskId: string; output: JsonValue; nangoProps: NangoProps }): Promise<void> {
     const setSuccess = await orchestratorClient.succeed({ taskId, output: output });
     if (setSuccess.isErr()) {
         await handlePayloadTooBigError({ taskId, error: setSuccess.error, nangoProps });
         logger.error(`failed to set task ${taskId} as succeeded`, setSuccess.error);
+    }
+}
+
+async function setTaskFailed({ taskId, error, nangoProps }: { taskId: string; error: NangoError; nangoProps: NangoProps }): Promise<void> {
+    const setFailed = await orchestratorClient.failed({ taskId, error });
+    if (setFailed.isErr()) {
+        await handlePayloadTooBigError({ taskId, error: setFailed.error, nangoProps });
+        logger.error(`failed to set task ${taskId} as failed`, setFailed.error);
+    }
+}
+
+export async function handleSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
+    switch (nangoProps.scriptType) {
+        case 'action':
+            await setTaskSuccess({ taskId, output, nangoProps }); // Setting task as success for action as soon as possible
+            await handleActionSuccess({ nangoProps });
+            break;
+        case 'sync':
+            await handleSyncSuccess({ nangoProps });
+            await setTaskSuccess({ taskId, output, nangoProps });
+            break;
+        case 'webhook':
+            await handleWebhookSuccess({ nangoProps });
+            await setTaskSuccess({ taskId, output, nangoProps });
+            break;
+        case 'on-event':
+            await handleOnEventSuccess({ nangoProps });
+            await setTaskSuccess({ taskId, output, nangoProps });
+            break;
     }
 }
 
@@ -52,24 +67,22 @@ export async function handleError({ taskId, nangoProps, error }: { taskId: strin
     });
 
     switch (nangoProps.scriptType) {
+        case 'action':
+            await setTaskFailed({ taskId, error: formattedError, nangoProps }); // Setting task as failed for action as soon as possible
+            await handleActionError({ nangoProps, error: formattedError });
+            break;
         case 'sync':
             await handleSyncError({ nangoProps, error: formattedError });
+            await setTaskFailed({ taskId, error: formattedError, nangoProps });
             break;
-        // case 'action':
-        //     await handleActionError({ nangoProps, error: formattedError });
-        //     break;
         case 'webhook':
             await handleWebhookError({ nangoProps, error: formattedError });
+            await setTaskFailed({ taskId, error: formattedError, nangoProps });
             break;
         case 'on-event':
             await handleOnEventError({ nangoProps, error: formattedError });
+            await setTaskFailed({ taskId, error: formattedError, nangoProps });
             break;
-    }
-
-    const setFailed = await orchestratorClient.failed({ taskId, error: formattedError });
-    if (setFailed.isErr()) {
-        await handlePayloadTooBigError({ taskId, error: setFailed.error, nangoProps });
-        logger.error(`failed to set task ${taskId} as failed`, setFailed.error);
     }
 }
 
