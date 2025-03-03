@@ -28,7 +28,7 @@ Find detail about HTTP request retries in the [reference](/reference/scripts#htt
 
 ## Strategy 2: Leverage rate-limit headers
 
-Most of the time, the 1st strategy is sufficient to handle rate limits. 
+Most of the time, the 1st strategy is sufficient to handle rate limits.
 
 For APIs with stringent limits, Nango provides a more refined and customized approach by automatically parsing API-specific rate-limit headers from responses and scheduling retries only after the rate limit period has reset:
 

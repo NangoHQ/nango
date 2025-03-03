@@ -64,12 +64,14 @@ export function onAxiosRequestFulfilled({
     response,
     providerConfigKey,
     connectionId,
-    syncName
+    syncName,
+    syncVariant
 }: {
     response: AxiosResponse;
     providerConfigKey: string | undefined;
     connectionId: string;
     syncName: string;
+    syncVariant: string;
 }): AxiosResponse {
     if (!providerConfigKey) {
         return response;
@@ -97,6 +99,7 @@ export function onAxiosRequestFulfilled({
 
     const requestIdentity = computeConfigIdentity(response.config);
 
+    const syncSubDir = syncVariant ? `${syncName}/${syncVariant}` : syncName;
     saveResponse<CachedRequest>({
         directoryName,
         data: {
@@ -105,7 +108,7 @@ export function onAxiosRequestFulfilled({
             status: response.status,
             headers: response.headers as Record<string, string>
         },
-        customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+        customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncSubDir}/${requestIdentity.requestIdentityHash}.json`
     });
 
     return response;
@@ -114,18 +117,21 @@ export function onAxiosRequestFulfilled({
 export function onAxiosRequestRejected({
     error,
     providerConfigKey,
-    syncName
+    syncName,
+    syncVariant
 }: {
     error: unknown;
     providerConfigKey: string | undefined;
     connectionId: string;
     syncName: string;
+    syncVariant: string;
 }) {
     const directoryName = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
 
     const response: AxiosResponse | undefined = (error as AxiosError).response;
     if (response) {
         const requestIdentity = computeConfigIdentity(response.config);
+        const syncSubDir = syncVariant ? `${syncName}/${syncVariant}` : syncName;
         saveResponse<CachedRequest>({
             directoryName,
             data: {
@@ -134,7 +140,7 @@ export function onAxiosRequestRejected({
                 status: response.status,
                 headers: response.headers as Record<string, string>
             },
-            customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncName}/${requestIdentity.requestIdentityHash}.json`
+            customFilePath: `mocks/nango/${requestIdentity.method}/proxy/${requestIdentity.endpoint}/${syncSubDir}/${requestIdentity.requestIdentityHash}.json`
         });
     }
 

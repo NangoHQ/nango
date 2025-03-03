@@ -527,6 +527,7 @@ export class SyncManagerService {
             finishedAt: latestJob?.updated_at,
             nextScheduledSyncAt: schedule.nextDueDate,
             name: sync.name,
+            variant: sync.variant,
             status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
             frequency,
             latestResult: latestJob?.result,

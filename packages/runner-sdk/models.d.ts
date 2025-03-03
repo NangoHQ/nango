@@ -355,6 +355,7 @@ export declare class NangoAction {
     private logAPICall;
 }
 export declare class NangoSync extends NangoAction {
+    variant: string;
     lastSyncDate?: Date;
     track_deletes: boolean;
     logMessages?:

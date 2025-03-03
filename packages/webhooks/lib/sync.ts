@@ -27,6 +27,7 @@ export const sendSync = async ({
     providerConfig,
     webhookSettings,
     syncConfig,
+    syncVariant,
     model,
     now,
     responseResults,
@@ -40,6 +41,7 @@ export const sendSync = async ({
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
     syncConfig: DBSyncConfig;
+    syncVariant: string;
     model: string;
     now: Date | undefined;
     operation: SyncOperationType;
@@ -63,7 +65,7 @@ export const sendSync = async ({
             integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
             connection: { id: connection.id, name: connection.connection_id },
             syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
-            meta: { scriptVersion: syncConfig.version }
+            meta: { scriptVersion: syncConfig.version, syncVariant }
         }
     );
 
@@ -73,6 +75,7 @@ export const sendSync = async ({
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         syncName: syncConfig.sync_name,
+        syncVariant,
         model,
         // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
         syncType: operation === 'FULL' ? 'INITIAL' : operation
