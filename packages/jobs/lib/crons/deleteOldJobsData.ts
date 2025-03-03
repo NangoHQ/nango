@@ -9,7 +9,7 @@ const logger = getLogger('Jobs.deleteOldsJobs');
 
 const limit = envs.CRON_DELETE_OLD_JOBS_LIMIT;
 const cronMinutes = 10;
-const expiresAfterDays = 31;
+const expiresAfterDays = 90;
 
 export function deleteOldJobsData(): void {
     cron.schedule(`*/${cronMinutes} * * * *`, async () => {
