@@ -47,7 +47,7 @@
         "docs:generate": "tsx scripts/docs-gen-snippets.ts",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
-        "changelog:providers": "tsx scripts/package-changelog.ts",
+        "changelog:providers": "tsx scripts/provider-changelog.ts",
         "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
     },
     "devDependencies": {
