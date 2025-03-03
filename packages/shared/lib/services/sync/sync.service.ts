@@ -326,27 +326,6 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
     return true;
 };
 
-export const isSyncValid = async (connection_id: string, provider_config_key: string, environment_id: number, sync_id: string): Promise<boolean> => {
-    const result = await schema()
-        .select('*')
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .where({
-            environment_id,
-            [`${TABLE}.id`]: sync_id,
-            connection_id,
-            provider_config_key,
-            [`_nango_connections.deleted`]: false,
-            [`${TABLE}.deleted`]: false
-        });
-
-    if (result.length === 0) {
-        return false;
-    }
-
-    return true;
-};
-
 export const softDeleteSync = async (syncId: string): Promise<string> => {
     await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     return syncId;

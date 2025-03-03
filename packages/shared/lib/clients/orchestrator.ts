@@ -4,7 +4,6 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
 import { v4 as uuid } from 'uuid';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -174,20 +173,6 @@ export class Orchestrator {
                 truncated_response: JSON.stringify(res.value)?.slice(0, 100)
             });
 
-            await telemetry.log(
-                LogTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    input: JSON.stringify(input),
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
-
             metrics.increment(metrics.Types.ACTION_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
@@ -217,22 +202,6 @@ export class Orchestrator {
                     input
                 }
             });
-
-            await telemetry.log(
-                LogTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    error: stringifyError(err),
-                    input: JSON.stringify(input),
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    actionName,
-                    level: 'error'
-                },
-                `actionName:${actionName}`
-            );
 
             metrics.increment(metrics.Types.ACTION_FAILURE);
             span.setTag('error', formattedError);
@@ -440,19 +409,6 @@ export class Orchestrator {
                 integration: connection.provider_config_key
             });
 
-            await telemetry.log(
-                LogTypes.ON_EVENT_SCRIPT_SUCCESS,
-                content,
-                LogActionEnum.ON_EVENT_SCRIPT,
-                {
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    name
-                },
-                `onEventScript:${name}`
-            );
-
             metrics.increment(metrics.Types.ON_EVENT_SCRIPT_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
@@ -482,20 +438,6 @@ export class Orchestrator {
                     connectionDetails: JSON.stringify(connection)
                 }
             });
-
-            await telemetry.log(
-                LogTypes.ON_EVENT_SCRIPT_FAILURE,
-                content,
-                LogActionEnum.ON_EVENT_SCRIPT,
-                {
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    name,
-                    level: 'error'
-                },
-                `onEventScript:${name}`
-            );
 
             metrics.increment(metrics.Types.ON_EVENT_SCRIPT_FAILURE);
             span.setTag('error', formattedError);

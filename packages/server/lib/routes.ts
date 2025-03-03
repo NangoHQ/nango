@@ -112,6 +112,8 @@ import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
+import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
+import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 
 export const router = express.Router();
 
@@ -267,7 +269,8 @@ publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncContr
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 publicAPI.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
-publicAPI.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
+publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
+publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
