@@ -1,34 +1,52 @@
 import { promises as fs } from 'node:fs';
-import { load as loadYaml } from 'js-yaml';
+import { parse } from './config.service.js';
+import type { NangoYamlV2Endpoint, NangoYamlModel, NangoYamlV2IntegrationSync, NangoYamlV2IntegrationAction } from '@nangohq/types';
+import chalk from 'chalk';
+import { printDebug } from '../utils.js';
+
+type NangoSyncOrAction = NangoYamlV2IntegrationSync | NangoYamlV2IntegrationAction;
 
 const divider = '<!-- END  GENERATED CONTENT -->';
 
 export async function generate({ absolutePath, path, debug = false }: { absolutePath: string; path?: string; debug?: boolean }): Promise<boolean> {
-    console.log(path);
-    console.log(debug);
-    const yamlConfig = loadYaml(await fs.readFile(`${absolutePath}/nango.yaml`, 'utf8')) as any;
+    const pathPrefix = path && path.startsWith('/') ? path.slice(1) : path;
+    const parsing = parse(absolutePath, debug);
+
+    if (parsing.isErr()) {
+        console.log(chalk.red(`Error parsing nango.yaml: ${parsing.error}`));
+        return false;
+    }
+    const yamlConfig = parsing.value.raw;
+    const writePath = pathPrefix ? `${absolutePath}/${pathPrefix}` : absolutePath;
+
+    if (debug) {
+        printDebug(`Generating readme files in ${writePath}`);
+    }
+
+    if (debug && !(await directoryExists(writePath))) {
+        printDebug(`Creating the directory at ${writePath}`);
+    }
+
+    await fs.mkdir(writePath, { recursive: true });
 
     const integrations = yamlConfig.integrations;
     for (const integration of Object.keys(integrations)) {
         const models = yamlConfig.models || {};
         const config = integrations[integration];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const toGenerate: [string, string, string, any][] = [];
+        const toGenerate: [string, string, string, NangoSyncOrAction][] = [];
 
         toGenerate.push(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...Object.entries(config.syncs || {}).map<[string, string, string, any]>(([key, sync]) => ['sync', integration, key, sync])
+            ...Object.entries(config?.syncs || {}).map<[string, string, string, NangoSyncOrAction]>(([key, sync]) => ['sync', integration, key, sync])
         );
         toGenerate.push(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...Object.entries(config.actions || {}).map<[string, string, string, any]>(([key, action]) => ['action', integration, key, action])
+            ...Object.entries(config?.actions || {}).map<[string, string, string, NangoSyncOrAction]>(([key, action]) => ['action', integration, key, action])
         );
 
         for (const [type, integration, key, config] of toGenerate) {
             const scriptPath = `${integration}/${type}s/${key}`;
             try {
-                const filename = `${absolutePath}/${scriptPath}.md`;
+                const filename = path ? `${writePath}/${key}.md` : `${writePath}/${scriptPath}.md`;
 
                 let markdown;
                 try {
@@ -38,9 +56,9 @@ export async function generate({ absolutePath, path, debug = false }: { absolute
                 }
 
                 const updatedMarkdown = updateReadme(markdown, key, scriptPath, type, config, models);
-                await fs.writeFile(`${absolutePath}/${scriptPath}.md`, updatedMarkdown);
-            } catch (err: any) {
-                console.error(`Error generating readme for ${integration} ${type} ${key}: ${err}`);
+                await fs.writeFile(path ? `${writePath}/${key}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
+            } catch {
+                console.error(`Error generating readme for ${integration} ${type} ${key}`);
                 return false;
             }
         }
@@ -49,15 +67,22 @@ export async function generate({ absolutePath, path, debug = false }: { absolute
     return true;
 }
 
+async function directoryExists(path: string): Promise<boolean> {
+    try {
+        await fs.access(path);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 function updateReadme(
     markdown: string,
     scriptName: string,
     scriptPath: string,
     endpointType: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    scriptConfig: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    models: any
+    scriptConfig: NangoSyncOrAction,
+    models: NangoYamlModel
 ): string {
     const [, custom = ''] = markdown.split(divider);
 
@@ -83,7 +108,7 @@ function updateReadme(
     return `${generatedLines}\n${divider}\n${custom.trim()}\n`;
 }
 
-function generalInfo(scriptPath: string, endpointType: string, scriptConfig: any) {
+function generalInfo(scriptPath: string, endpointType: string, scriptConfig: NangoSyncOrAction) {
     const scopes = Array.isArray(scriptConfig.scopes) ? scriptConfig.scopes.join(', ') : scriptConfig.scopes;
 
     if (!scriptConfig.description) {
@@ -91,22 +116,25 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: any
     }
 
     const endpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
+    const [endpoint] = endpoints;
 
     return [
         `## General Information`,
         ``,
         `- **Description:** ${scriptConfig.description ?? ''}`,
         `- **Version:** ${scriptConfig.version ? scriptConfig.version : '0.0.1'}`,
-        `- **Group:** ${endpoints[0].group || 'Others'}`,
+        `- **Group:** ${endpoint && typeof endpoint !== 'string' && 'group' in endpoint ? endpoint?.group : 'Others'}`,
         `- **Scopes:** ${scopes ? `\`${scopes}\`` : '_None_'}`,
         `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`,
         ``
     ].join('\n');
 }
 
-function requestEndpoint(scriptConfig: any) {
+function requestEndpoint(scriptConfig: NangoSyncOrAction) {
     const rawEndpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
-    const endpoints = rawEndpoints.map((endpoint: any) => `\`${endpoint?.method || 'GET'} ${endpoint?.path}\``);
+    const endpoints = rawEndpoints.map((endpoint: NangoYamlV2Endpoint | string) =>
+        typeof endpoint !== 'string' ? `\`${endpoint?.method || 'GET'} ${endpoint?.path}\`` : ''
+    );
 
     return ['### Request Endpoint', ``, endpoints.join(', '), ``].join('\n');
 }
@@ -130,13 +158,13 @@ function requestParams(endpointType: string) {
     return out.join('\n');
 }
 
-function requestBody(scriptConfig: any, endpointType: string, models: any) {
+function requestBody(scriptConfig: NangoSyncOrAction, endpointType: string, models: NangoYamlModel) {
     const out = ['### Request Body'];
 
     if (endpointType === 'action' && scriptConfig.input) {
         let expanded = expandModels(scriptConfig.input, models);
         if (Array.isArray(expanded)) {
-            expanded = { input: expanded };
+            expanded = { input: expanded } as unknown as NangoYamlModel;
         }
         const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
         out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
@@ -147,7 +175,7 @@ function requestBody(scriptConfig: any, endpointType: string, models: any) {
     return out.join('\n');
 }
 
-function requestResponse(scriptConfig: any, models: any) {
+function requestResponse(scriptConfig: NangoSyncOrAction, models: NangoYamlModel) {
     const out = ['### Request Response'];
 
     const scriptOutput = Array.isArray(scriptConfig.output) ? scriptConfig.output[0] : scriptConfig.output;
@@ -163,35 +191,38 @@ function requestResponse(scriptConfig: any, models: any) {
     return out.join('\n');
 }
 
-function expandModels(model: any, models: any): any {
+function expandModels(model: string | NangoYamlModel, models: NangoYamlModel): NangoYamlModel | NangoYamlModel[] {
     if (typeof model === 'undefined' || model === null) {
         return [];
     }
 
     if (typeof model === 'string') {
         if (model.endsWith('[]')) {
-            return [expandModels(model.slice(0, -2), models)];
+            return [expandModels(model.slice(0, -2), models)] as NangoYamlModel[];
         }
 
         if (models[model]) {
-            model = models[model];
+            model = models[model] as NangoYamlModel;
         } else {
             model = `<${model}>`;
         }
     }
 
     if (typeof model === 'object') {
-        if (model.__extends) {
-            model = { ...models[model.__extends], ...model };
-            delete model.__extends;
+        if ('__extends' in model) {
+            const extension = model['__extends'];
+            if (typeof extension === 'string') {
+                model = { ...models[extension], ...model } as NangoYamlModel;
+                delete (model as Record<string, unknown>)['__extends'];
+            }
         }
 
         model = Object.fromEntries(
             Object.entries(model).map(([key, value]) => {
-                return [key, expandModels(value, models)];
+                return [key, expandModels(value as NangoYamlModel, models)];
             })
-        );
+        ) as NangoYamlModel;
     }
 
-    return model;
+    return model as NangoYamlModel;
 }

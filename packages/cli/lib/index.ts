@@ -209,7 +209,7 @@ program
 
 program
     .command('generate:docs')
-    .option('-p, --path [path]', 'Optional: The path to generate the docs for. Defaults to the same directory as the script.')
+    .option('-p, --path [path]', 'Optional: The relative path to generate the docs for. Defaults to the same directory as the script.')
     .description('Generate documentation for the integration scripts')
     .action(async function (this: Command) {
         const { debug, path: optionalPath } = this.opts();
