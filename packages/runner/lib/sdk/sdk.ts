@@ -411,7 +411,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
             const res = await this.persistClient.getRecords({
-                model,
+                model: this.modelFullName(model),
                 externalIds: Array.from(externalIdMap.keys()),
                 environmentId: this.environmentId,
                 nangoConnectionId: this.nangoConnectionId!,
