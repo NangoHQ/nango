@@ -6,11 +6,11 @@ import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
 import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { getLogger, requestLoggerMiddleware } from '@nangohq/utils';
+import { getLogger, once, requestLoggerMiddleware } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
-import { KnexDatabase } from '@nangohq/database';
+import db, { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
-import { migrate as migrateRecords } from '@nangohq/records';
+import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
 import { start as migrateLogs, otlp } from '@nangohq/logs';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { runnersFleet } from './fleet.js';
@@ -27,8 +27,8 @@ process.on('unhandledRejection', (reason) => {
     // not closing on purpose
 });
 
-process.on('uncaughtException', (e) => {
-    logger.error('Received uncaughtException...', e);
+process.on('uncaughtException', (err) => {
+    logger.error('Received uncaughtException...', err);
     // not closing on purpose
 });
 
@@ -82,4 +82,35 @@ server.listen(port, () => {
     logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
+});
+
+// --- Close function
+const close = once(() => {
+    logger.info('Closing...');
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    server.close(async () => {
+        // TODO: close logs
+        wss.close();
+        await runnersFleet.stop();
+        await db.knex.destroy();
+        await db.readOnly.destroy();
+        await destroyRecords();
+        otlp.stop();
+
+        logger.close();
+
+        console.info('Closed');
+
+        process.exit();
+    });
+});
+
+process.on('SIGINT', () => {
+    logger.info('Received SIGINT...');
+    close();
+});
+
+process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM...');
+    close();
 });

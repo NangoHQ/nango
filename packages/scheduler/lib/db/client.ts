@@ -36,6 +36,10 @@ export class DatabaseClient {
         this.db = knex(this.config);
     }
 
+    async destroy() {
+        await this.db.destroy();
+    }
+
     async migrate(): Promise<void> {
         logger.info('[scheduler] migration');
 

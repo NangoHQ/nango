@@ -13,6 +13,16 @@ import { generateImage } from '@nangohq/fleet';
 
 const logger = getLogger('Jobs');
 
+process.on('unhandledRejection', (reason) => {
+    logger.error('Received unhandledRejection...', reason);
+    // not closing on purpose
+});
+
+process.on('uncaughtException', (err) => {
+    logger.error('Received uncaughtException...', err);
+    // not closing on purpose
+});
+
 try {
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
@@ -45,11 +55,13 @@ try {
     const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             processor.stop();
             otlp.stop();
             await runnersFleet.stop();
             await db.knex.destroy();
+            await db.readOnly.destroy();
             process.exit();
         });
     });
@@ -62,16 +74,6 @@ try {
     process.on('SIGTERM', () => {
         logger.info('Received SIGTERM...');
         close();
-    });
-
-    process.on('unhandledRejection', (reason) => {
-        logger.error('Received unhandledRejection...', reason);
-        // not closing on purpose
-    });
-
-    process.on('uncaughtException', (e) => {
-        logger.error('Received uncaughtException...', e);
-        // not closing on purpose
     });
 
     if (envs.RUNNER_TYPE === 'LOCAL') {
