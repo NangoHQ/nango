@@ -11303,6 +11303,28 @@ integrations:
                     method: GET
                     path: /emails
                 version: 1.1.0
+            events:
+                description: |
+                    Sync calendar events on the primary calendar going back one month and
+                    save the entire object as specified by the Outlook Calendar API
+                runs: every 5 minutes
+                output: OutlookCalendarEvent
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /events
+                scopes: Calendars.Read
+            calendars:
+                description: |
+                    Sync the calendars list of the user
+                track_deletes: true
+                runs: every hour
+                output: OutlookCalendar
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /calendars
+                scopes: Calendars.Read
             folders:
                 runs: every 6 hours
                 description: |
@@ -11346,6 +11368,146 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            OutlookCalendar:
+                id: string
+                allowedOnlineMeetingProviders: string[]
+                canEdit: boolean
+                canShare: boolean
+                canViewPrivateItems: boolean
+                changeKey: string
+                color: >-
+                    auto | lightBlue | lightGreen | lightOrange | lightGray | lightYellow
+                    | lightTeal | lightPink | lightBrown | lightRed | maxColor
+                defaultOnlineMeetingProvider: string
+                hexColor: string
+                isDefaultCalendar: boolean
+                isRemovable: boolean
+                isTallyingResponses: boolean
+                name: string
+                owner: EmailAddress
+            OutlookCalendarEvent:
+                id: string
+                allowNewTimeProposals?: boolean
+                attendees: Attendee[]
+                body?:
+                    content?: string
+                    contentType?: text | html
+                bodyPreview: string
+                categories?: string[]
+                changeKey?: string
+                createdDateTime?: string
+                end:
+                    dateTime: string
+                    timeZone: string
+                hasAttachments?: boolean
+                hideAttendees?: boolean
+                iCalUId?: string
+                importance: low | normal | high
+                isAllDay: boolean
+                isCancelled: boolean
+                isDraft?: boolean
+                isOnlineMeeting?: boolean
+                isOrganizer: boolean
+                isReminderOn?: boolean
+                lastModifiedDateTime?: string
+                location: Location
+                locations?: Location[]
+                onlineMeeting: OnlineMeetingInfo | null
+                onlineMeetingProvider?: string
+                onlineMeetingUrl?: string
+                organizer:
+                    emailAddress: EmailAddress
+                originalEndTimeZone?: string
+                originalStart?: string
+                originalStartTimeZone?: string
+                recurrence?: PatternedRecurrence | null
+                reminderMinutesBeforeStart?: number
+                responseRequested: boolean
+                responseStatus:
+                    response: string
+                    time: string
+                sensitivity: normal | personal | private | confidential
+                seriesMasterId?: string
+                showAs?: free | tentative | busy | oof | workingElsewhere | unknown
+                start:
+                    dateTime: string
+                    timeZone: string
+                subject: string
+                transactionId?: string
+                type?: singleInstance | occurrence | exception | seriesMaster
+                webLink: string
+            Location:
+                address?:
+                    city?: string
+                    countryOrRegion?: string
+                    postalCode?: string
+                    state?: string
+                    street?: string
+                coordinates?:
+                    accuracy?: number
+                    altitude?: number
+                    altitudeAccuracy?: number
+                    latitude?: number
+                    longitude?: number
+                displayName?: string
+                locationEmailAddress?: string
+                locationUri?: string
+                locationType?: >-
+                    default | conferenceRoom | homeAddress | businessAddress |
+                    geoCoordinates | streetAddress | hotel | restaurant | localBusiness |
+                    postalAddress
+                uniqueId?: string
+                uniqueIdType?: string
+            OnlineMeetingInfo:
+                conferenceId: string
+                joinUrl: string
+                phones:
+                    - number: string
+                      type: >-
+                          home | business | mobile | other | assistant | homeFax |
+                          businessFax | otherFax | pager | radio
+                quickDial: string
+                tollFreeNumbers: string[]
+                tollNumber: string
+            PatternedRecurrence:
+                pattern:
+                    dayOfMonth?: number
+                    daysOfWeek?:
+                        - sunday
+                        - monday
+                        - tuesday
+                        - wednesday
+                        - thursday
+                        - friday
+                        - saturday
+                    firstDayOfWeek: sunday | monday | tuesday | wednesday | thursday | friday | saturday
+                    index?: first | second | third | fourth | last
+                    interval: number
+                    month?: number
+                    type: >-
+                        daily | weekly | absoluteMonthly | relativeMonthly | absoluteYearly
+                        | relativeYearly
+                range:
+                    endDate?: string
+                    numberOfOccurrences?: number
+                    recurrenceTimeZone?: string
+                    startDate: string
+                    type: endDate | noEnd | numbered
+            Attendee:
+                emailAddress: EmailAddress
+                proposedNewTime?:
+                    start: TimeSlot
+                    end: TimeSlot
+                status:
+                    response: none | accepted | declined | tentative
+                    sentDateTime: string
+                type: required | optional | resource
+            TimeSlot:
+                dateTime: string
+                timeZone: string
+            EmailAddress:
+                address: string
+                name: string
             OutlookFolder:
                 id: string
                 displayName: string
