@@ -35,9 +35,9 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
         >
             <DrawerTrigger asChild type={null as unknown as 'button'}></DrawerTrigger>
             <DrawerContent ref={ref as any}>
-                <div className={`w-[1034px] relative h-screen`}>
-                    <div className="absolute right-6 top-[32px]">
-                        <DrawerClose title="Close" className="w-8 h-9 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white">
+                <div className={`w-[1034px] relative h-screen select-text`}>
+                    <div className="absolute right-6 top-[35px]">
+                        <DrawerClose title="Close" className="w-8 h-6 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white">
                             <Cross1Icon className="" />
                         </DrawerClose>
                     </div>

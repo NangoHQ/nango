@@ -41,6 +41,7 @@ export const ENVS = z.object({
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
     ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
+    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
@@ -105,6 +106,7 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(2 * 60 * 1000), // 2 minutes
+    FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
     // --- Third parties
     // AWS
@@ -134,6 +136,7 @@ export const ENVS = z.object({
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
+    NANGO_DB_READ_URL: z.string().url().optional(),
     NANGO_DB_HOST: z.string().optional().default('localhost'),
     NANGO_DB_PORT: z.coerce.number().optional().default(5432),
     NANGO_DB_USER: z.string().optional().default('nango'),
@@ -180,6 +183,9 @@ export const ENVS = z.object({
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // LIMITS
+    MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
