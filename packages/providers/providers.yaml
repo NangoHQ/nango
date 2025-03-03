@@ -1187,6 +1187,38 @@ blackbaud:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
 
+blackbaud-basic:
+    display_name: Blackbaud (Basic Auth)
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostName}
+        headers:
+            content-type: application/soap+xml; charset=utf-8
+    docs: https://docs.nango.dev/integrations/all/blackbaud-basic
+    docs_connect: https://docs.nango.dev/integrations/all/blackbaud-basic
+    connection_config:
+        hostName:
+            type: string
+            title: Host Name
+            description: Your Blackbaud host name
+            example: https://altrurig01bo3.blackbaudhosting.com
+            pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
+            order: 1
+            doc_section: '#step-1-finding-your-host-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Username
+            doc_section: '#step-3-finding-your-username'
+        password:
+            type: string
+            title: Password
+            description: Your Password
+            doc_section: '#step-2-finding-your-password'
+
 blandai:
     display_name: BlandAI
     categories:

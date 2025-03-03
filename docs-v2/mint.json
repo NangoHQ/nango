@@ -284,6 +284,7 @@
                 "integrations/all/bitdefender",
                 "integrations/all/bitly",
                 "integrations/all/blackbaud",
+                "integrations/all/blackbaud-basic",
                 "integrations/all/blandai",
                 "integrations/all/boldsign",
                 "integrations/all/booking-com",
