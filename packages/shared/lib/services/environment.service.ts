@@ -125,7 +125,7 @@ class EnvironmentService {
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
     ): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
-        const q = db.knex
+        const q = db.readOnly
             .select<{
                 account: DBTeam;
                 environment: DBEnvironment;

@@ -62,6 +62,7 @@ export interface ReportedSyncJobStatus {
     id?: string;
     type: SyncJobsType | 'INITIAL';
     name?: string;
+    variant?: string;
     connection_id?: string;
     status: SyncStatus;
     latestResult?: SyncResultByModel | undefined;
