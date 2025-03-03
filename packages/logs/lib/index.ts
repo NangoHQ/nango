@@ -6,3 +6,4 @@ export * as model from './models/messages.js';
 export * as modelOperations from './models/insights.js';
 export * from './otlp/otlp.js';
 export { envs, defaultOperationExpiration } from './env.js';
+export { destroyLogsKVStore } from './utils.js';
