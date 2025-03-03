@@ -11305,6 +11305,24 @@ integrations:
                 unreadItemCount: number
                 totalItemCount: number
                 isHidden: boolean
+    paylocity:
+        syncs:
+            users:
+                runs: every day
+                description: Fetch employees from Paylocity.
+                sync_type: full
+                track_deletes: true
+                output: User
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
     pennylane:
         actions:
             create-customer:
