@@ -153,7 +153,8 @@ class ProxyController {
                         baseUrlOverride,
                         decompress: decompress === 'true' ? true : false,
                         method: method.toUpperCase() as HTTP_METHOD,
-                        retryOn
+                        retryOn,
+                        responseType: 'stream'
                     },
                     internalConfig
                 }).unwrap(),

@@ -16,6 +16,7 @@ export type ResDefaultErrors =
     | ApiError<'invalid_content_type'>
     | ApiError<'not_found'>
     | ApiError<'conflict'>
+    | ApiError<'forbidden'>
     | ApiError<'invalid_query_params', ValidationError[]>
     | ApiError<'invalid_headers', ValidationError[]>
     | ApiError<'invalid_body', ValidationError[]>

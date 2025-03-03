@@ -253,3 +253,12 @@ export function stringArrayEqual(prev: string[], next: string[]) {
     }
     return true;
 }
+
+export function truncateMiddle(str: string, maxLength: number = 14, ellipsis: string = '...'): string {
+    if (str.length <= maxLength) return str;
+    if (maxLength <= ellipsis.length) return ellipsis.substring(0, maxLength);
+    const charsToShow = maxLength - ellipsis.length;
+    const frontChars = Math.ceil(charsToShow / 2);
+    const backChars = Math.floor(charsToShow / 2);
+    return str.substring(0, frontChars) + ellipsis + str.substring(str.length - backChars);
+}

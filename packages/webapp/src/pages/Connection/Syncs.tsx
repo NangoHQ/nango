@@ -23,6 +23,8 @@ export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
 
     const { data: syncs, loading, mutate } = useSyncs({ env, provider_config_key: connection.provider_config_key, connection_id: connection.connection_id });
 
+    const showSyncVariant = (target: SyncResponse): boolean => (syncs?.filter((sync) => sync.name === target.name) || []).length > 1;
+
     useInterval(async () => {
         await mutate();
     }, 5000);
@@ -104,7 +106,7 @@ export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
                     </Table.Header>
                     <Table.Body>
                         {syncs.map((sync) => (
-                            <SyncRow key={sync.id} sync={sync} connection={connection} provider={provider} />
+                            <SyncRow key={sync.id} sync={sync} connection={connection} provider={provider} showSyncVariant={showSyncVariant(sync)} />
                         ))}
                     </Table.Body>
                 </Table.Table>

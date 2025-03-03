@@ -4620,63 +4620,63 @@ integrations:
                 etag: string
                 id: string
                 status: string
-                htmlLink: string
-                created: string
-                updated: string
-                summary: string
-                description: string
-                location: string
-                colorId: string
-                creator:
-                    id: string
+                htmlLink?: string
+                created?: string
+                updated?: string
+                summary?: string
+                description?: string
+                location?: string
+                colorId?: string
+                creator?:
+                    id?: string
                     email: string
-                    displayName: string
-                    self: boolean
-                organizer:
-                    id: string
+                    displayName?: string
+                    self?: boolean
+                organizer?:
+                    id?: string
                     email: string
-                    displayName: string
-                    self: boolean
-                start:
-                    date: date
-                    dateTime: string
-                    timeZone: string
-                end:
-                    date: date
-                    string: string
-                    timeZone: string
-                endTimeUnspecified: boolean
-                recurrence:
+                    displayName?: string
+                    self?: boolean
+                start?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                end?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                endTimeUnspecified?: boolean
+                recurrence?:
                     - string
-                recurringEventId: string
-                originalStartTime:
-                    date: date
-                    dateTime: string
-                    timeZone: string
-                transparency: string
-                visibility: string
-                iCalUID: string
-                sequence: integer
-                attendees:
-                    - id: string
+                recurringEventId?: string
+                originalStartTime?:
+                    date?: string
+                    dateTime?: string
+                    timeZone?: string
+                transparency?: string
+                visibility?: string
+                iCalUID?: string
+                sequence?: integer
+                attendees?:
+                    - id?: string
                       email: string
-                      displayName: string
-                      organizer: boolean
-                      self: boolean
-                      resource: boolean
-                      optional: boolean
+                      displayName?: string
+                      organizer?: boolean
+                      self?: boolean
+                      resource?: boolean
+                      optional?: boolean
                       responseStatus: string
-                      comment: string
-                      additionalGuests: integer
-                attendeesOmitted: boolean
-                extendedProperties:
-                    private:
-                        key: string
-                    shared:
-                        key: string
-                hangoutLink: string
-                conferenceData:
-                    createRequest:
+                      comment?: string
+                      additionalGuests?: integer
+                attendeesOmitted?: boolean
+                extendedProperties?:
+                    private?:
+                        __string: string
+                    shared?:
+                        __string: string
+                hangoutLink?: string
+                conferenceData?:
+                    createRequest?:
                         requestId: string
                         conferenceSolutionKey:
                             type: string
@@ -4685,21 +4685,26 @@ integrations:
                     entryPoints:
                         - entryPointType: string
                           uri: string
-                          label: string
-                          pin: string
-                          accessCode: string
-                          meetingCode: string
-                          passcode: string
-                          password: string
+                          label?: string
+                          pin?: string
+                          accessCode?: string
+                          meetingCode?: string
+                          passcode?: string
+                          password?: string
+                          regionCode?: string
                     conferenceSolution:
                         key:
                             type: string
                         name: string
                         iconUri: string
                     conferenceId: string
-                    signature: string
-                    notes: string
-                gadget:
+                    signature?: string
+                    notes?: string
+                    parameters?:
+                        addOnParameters?:
+                            parameters:
+                                __string: string
+                gadget?:
                     type: string
                     title: string
                     link: string
@@ -4709,21 +4714,24 @@ integrations:
                     display: string
                     preferences:
                         key: string
-                anyoneCanAddSelf: boolean
-                guestsCanInviteOthers: boolean
-                guestsCanModify: boolean
-                guestsCanSeeOtherGuests: boolean
-                privateCopy: boolean
-                locked: boolean
-                reminders:
+                anyoneCanAddSelf?: boolean
+                guestsCanInviteOthers?: boolean
+                guestsCanModify?: boolean
+                guestsCanSeeOtherGuests?: boolean
+                privateCopy?: boolean
+                locked?: boolean
+                reminders?:
                     useDefault: boolean
-                    overrides:
+                    overrides?:
                         - method: string
                           minutes: integer
-                source:
+                outOfOfficeProperties?:
+                    autoDeclineMode: string
+                    declineMessage: string
+                source?:
                     url: string
                     title: string
-                workingLocationProperties:
+                workingLocationProperties?:
                     type: string
                     homeOffice: string
                     customLocation:
@@ -4734,13 +4742,13 @@ integrations:
                         floorSectionId: string
                         deskId: string
                         label: string
-                attachments:
+                attachments?:
                     - fileUrl: string
                       title: string
                       mimeType: string
                       iconLink: string
                       fileId: string
-                eventType: string
+                eventType?: string
     google-docs:
         actions:
             fetch-document:
@@ -4931,6 +4939,20 @@ integrations:
                     method: GET
                     path: /emails
                     group: Emails
+            labels:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of labels from gmail.
+                version: 1.0.0
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
+                output: GmailLabel
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /labels
+                    group: Labels
         actions:
             send-email:
                 input: GmailEmailInput
@@ -4987,6 +5009,20 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            GmailLabel:
+                id: string
+                name: string
+                messageListVisibility: string | null
+                labelListVisibility: string | null
+                type: string
+                messagesTotal: number
+                messagesUnread: number
+                threadsTotal: number
+                threadsUnread: number
+                color: LabelColor | null
+            LabelColor:
+                textColor: string
+                backgroundColor: string
     google-sheet:
         actions:
             fetch-spreadsheet:
@@ -5026,7 +5062,7 @@ integrations:
                     method: GET
                     path: /tickets
                     group: Tickets
-                version: 1.0.1
+                version: 1.0.2
             users:
                 description: |
                     Fetches the list of users
@@ -5063,10 +5099,11 @@ integrations:
                 output: GorgiasUser
                 endpoint:
                     method: POST
-                    path: /user
+                    path: /users
                     group: Users
                 scopes:
                     - users:write
+                version: 1.0.0
             delete-user:
                 description: Deletes a user in Gorgias
                 output: SuccessResponse
@@ -5092,7 +5129,8 @@ integrations:
                     facebook-mention | facebook-messenger | facebook-recommendations |
                     help-center | instagram-ad-comment | instagram-comment |
                     instagram-direct-message | instagram-mention | internal-note | phone |
-                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
                 closed_datetime: string | null
                 created_datetime: string | null
                 excerpt?: string | undefined
@@ -5142,7 +5180,8 @@ integrations:
                     facebook-mention | facebook-messenger | facebook-recommendations |
                     help-center | instagram-ad-comment | instagram-comment |
                     instagram-direct-message | instagram-mention | internal-note | phone |
-                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
                 via: >-
                     aircall | api | chat | contact_form | email | facebook |
                     facebook-mention | facebook-messenger | facebook-recommendations |
@@ -5223,7 +5262,7 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
-                role: admin | agent | basic-agent | lite-agent | observer-agent
+                role?: admin | agent | basic-agent | lite-agent | observer-agent
             GorgiasUser:
                 id: string
                 firstName: string
@@ -11215,6 +11254,18 @@ integrations:
                     method: GET
                     path: /emails
                 version: 1.1.0
+            folders:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of folders from outlook.
+                scopes:
+                    - Mail.Read
+                output: OutlookFolder
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /folders
         actions:
             fetch-attachment:
                 input: DocumentInput
@@ -11246,6 +11297,32 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            OutlookFolder:
+                id: string
+                displayName: string
+                parentFolderId: string
+                childFolderCount: number
+                unreadItemCount: number
+                totalItemCount: number
+                isHidden: boolean
+    paylocity:
+        syncs:
+            users:
+                runs: every day
+                description: Fetch employees from Paylocity.
+                sync_type: full
+                track_deletes: true
+                output: User
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
     pennylane:
         actions:
             create-customer:

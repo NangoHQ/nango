@@ -350,7 +350,12 @@ export abstract class NangoActionBase {
         }
     }
 
-    public abstract triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+    public abstract triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        fullResync?: boolean
+    ): Promise<void | string>;
 
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
