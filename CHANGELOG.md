@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.56.1] - 2025-03-04
+
+### Added
+
+- *(integrations)* Add support for blackbaud basic (#3616) by @hassan254-prog
+
+### Fixed
+
+- *(db)* Clean up models, use read-only for more calls (#3613) by @bodinsamuel
+- *(zod-validation)* Return the parsed zod (#3622) by @khaliqgant
+
 ## [v0.56.0] - 2025-03-04
 
 ### Added
@@ -3242,6 +3253,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.56.1]: https://github.com/NangoHQ/nango/compare/v0.56.0..v0.56.1
 [v0.56.0]: https://github.com/NangoHQ/nango/compare/v0.55.0..v0.56.0
 [v0.55.0]: https://github.com/NangoHQ/nango/compare/v0.54.0..v0.55.0
 [v0.54.0]: https://github.com/NangoHQ/nango/compare/v0.53.2..v0.54.0
