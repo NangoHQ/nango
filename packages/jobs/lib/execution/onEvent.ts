@@ -9,6 +9,7 @@ import { startScript } from './operations/start.js';
 import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
 import { getRunnerFlags } from '../utils/flags.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -129,7 +130,12 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     }
 }
 
-export async function handleOnEventSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleOnEventSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
+    await setTaskSuccess({ taskId, output: null });
+
+    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
+    await logCtx.success();
+
     const content = `Script "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
     void bigQueryClient.insert({
         executionType: 'on-event',
@@ -151,11 +157,11 @@ export async function handleOnEventSuccess({ nangoProps }: { nangoProps: NangoPr
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
         endUser: nangoProps.endUser
     });
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
-    await logCtx.success();
 }
 
-export async function handleOnEventError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleOnEventError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+    await setTaskFailed({ taskId, error });
+
     await onFailure({
         connection: {
             id: nangoProps.nangoConnectionId!,
@@ -198,6 +204,9 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
+    const logCtx = await logContextGetter.get({ id: activityLogId });
+    await logCtx.error(error.message, { error });
+
     if (team) {
         void bigQueryClient.insert({
             executionType: 'on-event',
@@ -220,6 +229,4 @@ async function onFailure({
             endUser
         });
     }
-    const logCtx = await logContextGetter.get({ id: activityLogId });
-    await logCtx.error(error.message, { error });
 }
