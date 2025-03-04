@@ -49,8 +49,6 @@ export * from './constants.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 
-export { NANGO_VERSION } from './version.js';
-
 export {
     seeders,
     configService,

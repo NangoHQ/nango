@@ -4,7 +4,7 @@ import * as cron from 'node-cron';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger, stringifyError, once } from '@nangohq/utils';
+import { getLogger, stringifyError, once, initSentry, report } from '@nangohq/utils';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
@@ -18,13 +18,17 @@ const logger = getLogger('Jobs');
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
+    report(reason);
     // not closing on purpose
 });
 
 process.on('uncaughtException', (err) => {
     logger.error('Received uncaughtException...', err);
+    report(err);
     // not closing on purpose
 });
+
+initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 try {
     const port = envs.NANGO_JOBS_PORT;
@@ -45,7 +49,7 @@ try {
             healthCheck = setTimeout(check, TIMEOUT);
         } catch (err) {
             healthCheckFailures += 1;
-            logger.error(`HealthCheck failed (${healthCheckFailures} times)...`, err);
+            report(new Error(`HealthCheck failed (${healthCheckFailures} times)...`, { cause: err }));
             if (healthCheckFailures > MAX_FAILURES) {
                 close();
             } else {

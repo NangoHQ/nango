@@ -1,4 +1,4 @@
-import { nanoid, stringifyError } from '@nangohq/utils';
+import { nanoid, report } from '@nangohq/utils';
 import type { SetRequired } from 'type-fest';
 import { createOperation, getOperation } from './messages.js';
 import { envs } from '../env.js';
@@ -43,8 +43,7 @@ export const logContextGetter = {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_create_operation ${stringifyError(err)}`);
+            report(new Error('failed_to_create_operation', { cause: err }), { id: msg.id });
         }
 
         return new LogContext({ parentId: msg.id, operation: msg }, options);
@@ -63,8 +62,7 @@ export const logContextGetter = {
                 return new LogContext({ parentId: id, operation }, options);
             }
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_get_operation ${stringifyError(err)}`);
+            report(new Error('failed_to_get_operation', { cause: err }), { id });
         }
 
         // If it failed, we create a fake operation for now
