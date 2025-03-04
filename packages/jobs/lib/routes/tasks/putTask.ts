@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { ApiError, Endpoint, NangoProps, RunnerOutputError } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleSuccess } from '../../execution/operations/output.js';
+import { handleError, handleSuccess } from '../../execution/operations/handler.js';
 import type { JsonValue } from 'type-fest';
 
 const path = '/tasks/:taskId';
