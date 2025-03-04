@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.js';
 import * as nodes from '../models/nodes.js';
 import * as deployments from '../models/deployments.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
-import { Err, errorToObject, Ok, retryWithBackoff } from '@nangohq/utils';
+import { Err, errorToObject, Ok, report, retryWithBackoff } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { FleetError } from '../utils/errors.js';
 import type { Node, NodeConfigOverride } from '../types.js';
@@ -399,7 +399,7 @@ export class Supervisor {
                 throw new Error(`status: ${res.status}. response: ${res.statusText}`);
             }
         } catch (err) {
-            logger.warning(`Failed to notify node ${node.id} to notifyWhenIdle`, err);
+            report(new Error(`Failed to notify node ${node.id} to notifyWhenIdle`, { cause: err }));
         }
 
         return nodes.transitionTo(this.dbClient.db, {

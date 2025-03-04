@@ -1,12 +1,11 @@
 import { PostHog } from 'posthog-node';
-import { localhostUrl, isCloud, isStaging, baseUrl, getLogger } from '@nangohq/utils';
+import { localhostUrl, isCloud, isStaging, baseUrl, getLogger, NANGO_VERSION } from '@nangohq/utils';
 import { UserType } from '../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
-import { NANGO_VERSION } from '../version.js';
 
 const logger = getLogger('analytics');
 

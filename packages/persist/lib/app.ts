@@ -1,5 +1,6 @@
 import './tracer.js';
-import { getLogger, once } from '@nangohq/utils';
+
+import { getLogger, once, initSentry, report } from '@nangohq/utils';
 import { server } from './server.js';
 import { envs } from './env.js';
 import type { Server } from 'node:http';
@@ -11,15 +12,20 @@ const logger = getLogger('Persist');
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
+    report(reason);
     // not closing on purpose
 });
 
 process.on('uncaughtException', (err) => {
     logger.error('Received uncaughtException...', err);
+    report(err);
     // not closing on purpose
 });
 
+initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
+
 let api: Server;
+
 try {
     const port = envs.NANGO_PERSIST_PORT;
     api = server.listen(port, () => {

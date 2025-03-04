@@ -1,6 +1,6 @@
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { NANGO_VERSION, environmentService, getOnboarding } from '@nangohq/shared';
+import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { environmentService, getOnboarding } from '@nangohq/shared';
 import type { GetMeta } from '@nangohq/types';
 
 export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {

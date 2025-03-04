@@ -64,7 +64,11 @@ export const otlp: {
         otlp.running = new AbortController();
         while (otlp.running) {
             await updateRoutes(getRoutes);
-            await setTimeout(15000, null, { signal: otlp.running.signal });
+            try {
+                await setTimeout(15000, null, { signal: otlp.running.signal });
+            } catch {
+                break;
+            }
         }
     }),
     stop: () => {
