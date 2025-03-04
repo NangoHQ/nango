@@ -10303,6 +10303,7 @@ integrations:
                     path: /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
+                version: 1.0.0
             users:
                 runs: every hour
                 description: |
@@ -10321,6 +10322,7 @@ integrations:
                     path: /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
+                version: 1.0.0
         models:
             Metadata:
                 orgsToSync: string[]
