@@ -4,11 +4,11 @@ import type { Sync, SyncWithConnectionId, Job as SyncJob } from '../../models/Sy
 import { SyncStatus } from '../../models/Sync.js';
 import type {
     ActiveLog,
+    CLIDeployFlowConfig,
     ConnectionInternal,
     DBConnection,
     DBConnectionDecrypted,
     DBSyncConfig,
-    IncomingFlowConfig,
     SlimAction,
     SlimSync,
     SyncAndActionDifferences,
@@ -377,7 +377,7 @@ export const getAndReconcileDifferences = async ({
     orchestrator
 }: {
     environmentId: number;
-    flows: IncomingFlowConfig[];
+    flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;

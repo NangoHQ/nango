@@ -7,7 +7,7 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { otlp } from '@nangohq/logs';
+import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { runnersFleet } from './runner/fleet.js';
 import { generateImage } from '@nangohq/fleet';
 
@@ -48,6 +48,7 @@ try {
         srv.close(async () => {
             processor.stop();
             otlp.stop();
+            await destroyLogs();
             await runnersFleet.stop();
             await db.knex.destroy();
             process.exit();

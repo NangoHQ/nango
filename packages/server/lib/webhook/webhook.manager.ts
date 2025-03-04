@@ -1,5 +1,5 @@
 import type { Config } from '@nangohq/shared';
-import { externalWebhookService, telemetry, LogTypes, LogActionEnum, getProvider } from '@nangohq/shared';
+import { externalWebhookService, getProvider } from '@nangohq/shared';
 import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
 import * as webhookHandlers from './index.js';
@@ -50,16 +50,6 @@ export async function routeWebhook({
             return await handler(internalNango, integration, headers, body, rawBody, logContextGetter);
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
-
-            await telemetry.log(LogTypes.INCOMING_WEBHOOK_FAILED_PROCESSING, 'Incoming webhook failed processing', LogActionEnum.WEBHOOK, {
-                accountId: String(account.id),
-                environmentId: String(integration.environment_id),
-                provider: integration.provider,
-                providerConfigKey: integration.unique_key,
-                payload: JSON.stringify(body),
-                error: String(err),
-                level: 'error'
-            });
         }
         return null;
     });
@@ -80,14 +70,6 @@ export async function routeWebhook({
             webhookOriginalHeaders: headers,
             logContextGetter
         });
-    });
-
-    await telemetry.log(LogTypes.INCOMING_WEBHOOK_PROCESSED_SUCCESSFULLY, 'Incoming webhook was processed successfully', LogActionEnum.WEBHOOK, {
-        accountId: String(account.id),
-        environmentId: String(integration.environment_id),
-        provider: integration.provider,
-        providerConfigKey: integration.unique_key,
-        payload: JSON.stringify(webhookBodyToForward)
     });
 
     return res ? res.acknowledgementResponse : null;
