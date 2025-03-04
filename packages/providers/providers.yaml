@@ -3070,8 +3070,10 @@ figma:
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
-    token_url: https://www.figma.com/api/oauth/token
-    refresh_url: https://www.figma.com/api/oauth/refresh
+    token_url: https://api.figma.com/v1/oauth/token
+    refresh_url: https://api.figma.com/v1/oauth/refresh
+    token_request_auth_method: basic
+    scope_separator: ','
     disable_pkce: true
     proxy:
         base_url: https://api.figma.com
