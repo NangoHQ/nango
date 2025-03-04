@@ -1,8 +1,7 @@
 import { nanoid, stringifyError } from '@nangohq/utils';
-import type { SetRequired } from 'type-fest';
 import { createOperation, getOperation } from './messages.js';
 import { envs } from '../env.js';
-import type { FormatMessageData } from './helpers.js';
+import type { AdditionalOperationData } from './helpers.js';
 import { getFormattedOperation } from './helpers.js';
 import { LogContext, LogContextStateless } from '../client.js';
 import { getKVStore, logger } from '../utils.js';
@@ -11,9 +10,6 @@ import type { OperationRow, OperationRowInsert } from '@nangohq/types';
 interface Options {
     dryRun?: boolean;
     logToConsole?: boolean;
-}
-
-export interface OperationContextData extends FormatMessageData {
     start?: boolean;
 }
 
@@ -23,13 +19,9 @@ export const logContextGetter = {
     /**
      * Create an operation and return a Context
      */
-    async create(
-        data: OperationRowInsert,
-        { start, ...rest }: SetRequired<OperationContextData, 'account' | 'environment'>,
-        options?: Options
-    ): Promise<LogContext> {
-        const msg = getFormattedOperation(data, rest);
-        if (typeof start === 'undefined' || start) {
+    async create(data: OperationRowInsert, additionalData: AdditionalOperationData, options?: Options): Promise<LogContext> {
+        const msg = getFormattedOperation(data, additionalData);
+        if (typeof options?.start === 'undefined' || options.start) {
             msg.startedAt = msg.startedAt ?? new Date().toISOString();
             msg.state = msg.state === 'waiting' ? 'running' : msg.state;
         }

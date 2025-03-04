@@ -94,7 +94,7 @@ export class NangoActionRunner extends NangoActionBase {
         const [message, payload] = args;
 
         // arrays are not supported in the log meta, so we convert them to objects
-        const meta = Array.isArray(payload) ? Object.fromEntries(payload.map((e, i) => [i, e])) : payload || null;
+        const meta = Array.isArray(payload) ? Object.fromEntries(payload.map((e, i) => [i, e])) : payload || undefined;
 
         await this.sendLogToPersist({
             type: 'log',
@@ -102,8 +102,7 @@ export class NangoActionRunner extends NangoActionBase {
             source: 'user',
             message: stringifyAndTruncateValue(message),
             meta,
-            createdAt: new Date().toISOString(),
-            environmentId: this.environmentId
+            createdAt: new Date().toISOString()
         });
     }
 
@@ -227,7 +226,6 @@ export class NangoSyncRunner extends NangoSyncBase {
                 source: 'user',
                 message: `Merging strategy for model ${model} is already set. Skipping`,
                 createdAt: now.toISOString(),
-                environmentId: this.environmentId,
                 meta: { model, merging }
             });
             return;
@@ -257,8 +255,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             level: 'info',
             source: 'user',
             message: `Merging strategy set to '${merging.strategy}' for model ${model}.`,
-            createdAt: now.toISOString(),
-            environmentId: this.environmentId
+            createdAt: now.toISOString()
         });
     }
 
