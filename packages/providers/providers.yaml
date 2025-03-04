@@ -1197,6 +1197,38 @@ blackbaud:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
 
+blackbaud-basic:
+    display_name: Blackbaud (Basic Auth)
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostName}
+        headers:
+            content-type: application/soap+xml; charset=utf-8
+    docs: https://docs.nango.dev/integrations/all/blackbaud-basic
+    docs_connect: https://docs.nango.dev/integrations/all/blackbaud-basic
+    connection_config:
+        hostName:
+            type: string
+            title: Host Name
+            description: Your Blackbaud host name
+            example: https://altrurig01bo3.blackbaudhosting.com
+            pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
+            order: 1
+            doc_section: '#step-1-finding-your-host-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Username
+            doc_section: '#step-3-finding-your-username'
+        password:
+            type: string
+            title: Password
+            description: Your Password
+            doc_section: '#step-2-finding-your-password'
+
 blandai:
     display_name: BlandAI
     categories:
@@ -3070,8 +3102,10 @@ figma:
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
-    token_url: https://www.figma.com/api/oauth/token
-    refresh_url: https://www.figma.com/api/oauth/refresh
+    token_url: https://api.figma.com/v1/oauth/token
+    refresh_url: https://api.figma.com/v1/oauth/refresh
+    token_request_auth_method: basic
+    scope_separator: ','
     disable_pkce: true
     proxy:
         base_url: https://api.figma.com
@@ -3920,7 +3954,7 @@ gorgias-basic:
     categories:
         - e-commerce
     proxy:
-        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+        base_url: https://${connectionConfig.subdomain}.gorgias.com
     docs: https://docs.nango.dev/integrations/all/gorgias-basic
     docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
     credentials:

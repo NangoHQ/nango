@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.56.1] - 2025-03-04
+
+### Added
+
+- *(integrations)* Add support for blackbaud basic (#3616) by @hassan254-prog
+
+### Fixed
+
+- *(db)* Clean up models, use read-only for more calls (#3613) by @bodinsamuel
+- *(zod-validation)* Return the parsed zod (#3622) by @khaliqgant
+
+## [v0.56.0] - 2025-03-04
+
+### Added
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/71af92e2df493bcaada30310cb1de04f17252315 by Victor Lang'at. Commit message: feat(outlook): add calendars and events sync (#241) by @github-actions[bot]
+- *(cli)* Dynamically load extraneous dependency (#3601) by @bodinsamuel
+- *(cli-docs)* Cli command to generate integration readme files (#3614) by @khaliqgant
+- *(cron)* Delete old jobs data  (#3619) by @bodinsamuel
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/8d6f366ac10909f31486123e808403e935884bb8 by Khaliq. Commit message: feat(paylocity): Add paylocity (#244) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/2001c1fd1c40ed7ec49f76ee0fccbe527a3d7891 by Daniel Roy Lwetabe. Commit message: feat(box): file sync (#235) by @github-actions[bot]
+- Add Feb changelog + update popular APIs (#3610) by @bastienbeurier
+
+### Fixed
+
+- Remove usage of getEndUserByConnectionId (#3609) by @TBonnin
+- *(db)* Allow using read-only replica (#3605) by @bodinsamuel
+- *(db)* Use read-only for getProviderConfig (#3611) by @bodinsamuel
+- *(telemetry)* Remove unused logs (#3599) by @bodinsamuel
+- *(api)* GET /scripts/config (#3598) by @bodinsamuel
+- Temporary disabling actions slack and bigquery reporting (#3615) by @TBonnin
+- *(runner-sdk)* Support variant in getRecordsByIds (#3608) by @TBonnin
+- *(gorgias-api)* Remove api so can have parity (#3603) by @khaliqgant
+- *(figma)* Update token requests method and endpoints (#3618) by @hassan254-prog
+
 ## [v0.55.0] - 2025-02-28
 
 ### Added
@@ -3215,6 +3253,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.56.1]: https://github.com/NangoHQ/nango/compare/v0.56.0..v0.56.1
+[v0.56.0]: https://github.com/NangoHQ/nango/compare/v0.55.0..v0.56.0
 [v0.55.0]: https://github.com/NangoHQ/nango/compare/v0.54.0..v0.55.0
 [v0.54.0]: https://github.com/NangoHQ/nango/compare/v0.53.2..v0.54.0
 [v0.53.2]: https://github.com/NangoHQ/nango/compare/v0.53.1..v0.53.2

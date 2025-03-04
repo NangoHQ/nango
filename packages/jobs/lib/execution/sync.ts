@@ -404,7 +404,6 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             name: nangoProps.syncConfig.sync_name,
             type: 'sync',
             originalActivityLogId: nangoProps.activityLogId as unknown as string,
-            environment_id: nangoProps.environmentId,
             provider: nangoProps.provider
         });
 
@@ -661,7 +660,7 @@ async function onFailure({
 
     const logCtx = await logContextGetter.get({ id: activityLogId });
     try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, connection.environment_id, provider);
+        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, provider);
     } catch {
         errorManager.report('slack notification service reported a failure', {
             environmentId: connection.environment_id,
