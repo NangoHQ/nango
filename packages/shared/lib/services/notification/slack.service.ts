@@ -3,10 +3,9 @@ import type { ServiceResponse } from '../../models/Generic.js';
 import environmentService from '../environment.service.js';
 import { basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
-import accountService from '../account.service.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContextGetter } from '@nangohq/logs';
 import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSlackNotification } from '@nangohq/types';
+import type { ConnectionJobs, DBConnection, DBSlackNotification } from '@nangohq/types';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -78,7 +77,6 @@ export class SlackService {
     private logContextGetter: LogContextGetter;
 
     private actionName = 'flow-result-notifier-action';
-    private adminConnectionId = process.env['NANGO_ADMIN_CONNECTION_ID'] || 'admin-slack';
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
@@ -86,72 +84,6 @@ export class SlackService {
     constructor({ orchestrator, logContextGetter }: { orchestrator: Orchestrator; logContextGetter: LogContextGetter }) {
         this.orchestrator = orchestrator;
         this.logContextGetter = logContextGetter;
-    }
-
-    /**
-     * Get Nango Admin Connection
-     * @desc get the admin connection information to be able to send a duplicate
-     * notification to the Nango admin account
-     */
-    private async getNangoAdminConnection(): Promise<DBConnectionDecrypted | null> {
-        const info = await accountService.getAccountAndEnvironmentIdByUUID(this.nangoAdminUUID as string, this.env);
-
-        const { success, response: slackConnection } = await connectionService.getConnection(
-            this.adminConnectionId,
-            this.integrationKey,
-            info?.environmentId as number
-        );
-
-        if (!success || !slackConnection) {
-            return null;
-        }
-
-        return slackConnection;
-    }
-
-    /**
-     * Send Duplicate Notification to Nango Admins
-     * @desc append the account and environment information to the notification content,
-     * add the payload timestamp if available and send the notification to the Nango Admins
-     * and with the action response update the slack timestamp to the notification
-     * record. This is so future notifications can be sent as updates to the original
-     */
-    private async sendDuplicateNotificationToNangoAdmins(
-        payload: NotificationPayload,
-        environment_id: number,
-        logCtx: LogContext, // TODO: we should not reuse this ctx
-        id?: number,
-        ts?: string
-    ) {
-        const nangoAdminConnection = await this.getNangoAdminConnection();
-        if (!nangoAdminConnection) {
-            return;
-        }
-
-        const account = await environmentService.getAccountFromEnvironment(environment_id);
-        if (!account) {
-            throw new Error('failed_to_get_account');
-        }
-
-        payload.meta = {
-            accountName: account.name,
-            accountUuid: account.uuid
-        };
-
-        if (ts) {
-            payload.ts = ts;
-        }
-
-        const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
-            connection: nangoAdminConnection,
-            actionName: this.actionName,
-            input: payload,
-            logCtx
-        });
-
-        if (id && actionResponse.isOk() && actionResponse.value.ts) {
-            await this.updateNotificationWithAdminTimestamp(id, actionResponse.value.ts);
-        }
     }
 
     /**
@@ -169,20 +101,6 @@ export class SlackService {
     }
 
     /**
-     * Update Notification with Admin Timestamp
-     * @desc used to keep the admin_slack_timestamp up to date to be able to
-     * send updates to the original notification
-     */
-    private async updateNotificationWithAdminTimestamp(id: number, ts: string) {
-        await schema()
-            .from<DBSlackNotification>(TABLE)
-            .update({
-                admin_slack_timestamp: ts
-            })
-            .where('id', id);
-    }
-
-    /**
      * Report Failure
      * @desc
      *      1) if slack notifications are enabled and the name is not itself (to avoid an infinite loop)
@@ -191,10 +109,9 @@ export class SlackService {
      *      by triggering the action.
      *      2) Update the notification record with the slack timestamp
      *      so future notifications can be sent as updates to the original.
-     *      3) Send a duplicate notification to the Nango Admins
-     *      4) Add an activity log entry for the notification to the admin account
+     *      3) Add an activity log entry for the notification to the admin account
      */
-    async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, environment_id: number, provider: string) {
+    async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, provider: string) {
         if (name === this.actionName) {
             return;
         }
@@ -296,16 +213,6 @@ export class SlackService {
                 await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
 
-            await logCtx.info('Sending duplicate notification');
-
-            await this.sendDuplicateNotificationToNangoAdmins(
-                payload,
-                environment_id,
-                logCtx,
-                slackNotificationStatus.id,
-                slackNotificationStatus.admin_slack_timestamp
-            );
-
             if (actionResponse.isOk()) {
                 await logCtx.info(
                     `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
@@ -331,8 +238,7 @@ export class SlackService {
      *      1) if there are no more connections that are failing then send
      *      a resolution notification to the slack channel, otherwise update the message
      *      with the decremented connection count.
-     *      2) Send a duplicate notification to the Nango Admins
-     *      3) Add an activity log entry for the notification to the admin account
+     *      2) Add an activity log entry for the notification to the admin account
      *
      */
     async reportResolution(
@@ -340,10 +246,8 @@ export class SlackService {
         syncName: string,
         type: string,
         originalActivityLogId: string | null,
-        environment_id: number,
         provider: string,
         slack_timestamp: string,
-        admin_slack_timestamp: string,
         connectionCount: number
     ) {
         if (syncName === this.actionName) {
@@ -438,10 +342,6 @@ export class SlackService {
                 const res = actionResponse.value;
                 await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
-
-            await logCtx.info('Sending duplicate notification');
-
-            await this.sendDuplicateNotificationToNangoAdmins(payload, environment_id, logCtx, undefined, admin_slack_timestamp);
 
             const content = actionResponse.isOk()
                 ? `The action ${this.actionName} was successfully triggered for the ${type} ${syncName} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`
@@ -610,14 +510,12 @@ export class SlackService {
         name,
         type,
         originalActivityLogId,
-        environment_id,
         provider
     }: {
         connection: ConnectionJobs;
         name: string;
         type: string;
         originalActivityLogId: string | null;
-        environment_id: number;
         provider: string;
     }): Promise<void> {
         const update = await db.knex.transaction(async (trx) => {
@@ -674,17 +572,7 @@ export class SlackService {
             // we report resolution to the slack channel which could be either
             // 1) The slack notification is resolved, connection_list === 0
             // 2) The list of failing connections has been decremented
-            await this.reportResolution(
-                nangoConnection,
-                name,
-                type,
-                originalActivityLogId,
-                environment_id,
-                provider,
-                update.slackTimestamp as string,
-                update.adminSlackTimestamp as string,
-                update.connectionCount
-            );
+            await this.reportResolution(nangoConnection, name, type, originalActivityLogId, provider, update.slackTimestamp as string, update.connectionCount);
         }
     }
 

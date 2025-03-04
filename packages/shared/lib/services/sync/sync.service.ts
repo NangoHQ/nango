@@ -3,11 +3,11 @@ import db, { schema, dbNamespace } from '@nangohq/database';
 import type { Sync, SyncWithConnectionId, SyncStatus } from '../../models/Sync.js';
 import type {
     ActiveLog,
+    CLIDeployFlowConfig,
     ConnectionInternal,
     DBConnection,
     DBConnectionDecrypted,
     DBSyncConfig,
-    IncomingFlowConfig,
     SlimAction,
     SlimSync,
     SyncAndActionDifferences,
@@ -350,7 +350,7 @@ export const getAndReconcileDifferences = async ({
     orchestrator
 }: {
     environmentId: number;
-    flows: IncomingFlowConfig[];
+    flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
     singleDeployMode?: boolean | undefined;

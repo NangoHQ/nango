@@ -173,3 +173,15 @@ export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit:
             sub.select('id').from('_nango_sync_jobs').where({ sync_id: syncId }).limit(limit);
         });
 }
+
+export async function deleteJobsByDate({ deleteJobsOlderThan, limit }: { deleteJobsOlderThan: number; limit: number }): Promise<number> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - deleteJobsOlderThan);
+
+    return db
+        .knex('_nango_sync_jobs')
+        .delete()
+        .whereIn('id', function (sub) {
+            sub.select('id').from<SyncJob>('_nango_sync_jobs').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+        });
+}

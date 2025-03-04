@@ -3,7 +3,7 @@ import type { JsonValue } from 'type-fest';
 import { logger } from '../../logger.js';
 import { NangoError } from '@nangohq/shared';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
-import { handleActionError, handleActionSuccess } from '../action.js';
+// import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import type { ApiError, NangoProps, RunnerOutputError } from '@nangohq/types';
@@ -15,9 +15,9 @@ export async function handleSuccess({ taskId, nangoProps, output }: { taskId: st
         case 'sync':
             await handleSyncSuccess({ nangoProps });
             break;
-        case 'action':
-            await handleActionSuccess({ nangoProps });
-            break;
+        // case 'action':
+        //     await handleActionSuccess({ nangoProps });
+        //     break;
         case 'webhook':
             await handleWebhookSuccess({ nangoProps });
             break;
@@ -55,9 +55,9 @@ export async function handleError({ taskId, nangoProps, error }: { taskId: strin
         case 'sync':
             await handleSyncError({ nangoProps, error: formattedError });
             break;
-        case 'action':
-            await handleActionError({ nangoProps, error: formattedError });
-            break;
+        // case 'action':
+        //     await handleActionError({ nangoProps, error: formattedError });
+        //     break;
         case 'webhook':
             await handleWebhookError({ nangoProps, error: formattedError });
             break;

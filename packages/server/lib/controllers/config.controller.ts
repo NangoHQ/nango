@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
-import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
+import type { Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
-import type { AuthModeType, ProviderTwoStep } from '@nangohq/types';
+import type { AuthModeType, NangoSyncConfig, ProviderTwoStep, StandardNangoConfig } from '@nangohq/types';
 import {
     flowService,
     errorManager,

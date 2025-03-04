@@ -407,14 +407,6 @@ class ConnectionService {
 
         if (!rawConnection) {
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey });
-
-            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                level: 'error'
-            });
-
             return { success: false, error, response: null };
         }
 

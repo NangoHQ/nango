@@ -17,6 +17,10 @@ export class RedisKVStore implements KVStore {
         return this.client.connect().then(() => {});
     }
 
+    public async destroy(): Promise<void> {
+        await this.client.disconnect();
+    }
+
     public async get(key: string): Promise<string | null> {
         return this.client.get(key);
     }

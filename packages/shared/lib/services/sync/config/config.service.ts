@@ -5,9 +5,9 @@ import remoteFileService from '../../file/remote.service.js';
 import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
+import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBConnection, DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
+import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -33,21 +33,18 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
         const flowObject: NangoSyncConfig = {
             id: syncConfig.id,
             name: syncConfig.sync_name,
-            runs: syncConfig.runs,
             type: syncConfig.type,
             returns: syncConfig.models,
             description: syncConfig.metadata?.description || '',
-            track_deletes: syncConfig.track_deletes,
-            auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata?.scopes || [],
             version: syncConfig.version,
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
             endpoints: syncConfig.endpoints_object || [],
-            input: input as any,
+            input: input,
             enabled: syncConfig.enabled,
-            models: syncConfig.model_schema as any,
+            models: syncConfig.model_schema || [],
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null
@@ -55,6 +52,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
 
         if (syncConfig.type === 'sync') {
             flowObject.sync_type = syncConfig.sync_type || 'full';
+            flowObject.auto_start = syncConfig.auto_start;
+            flowObject.runs = syncConfig.runs;
+            flowObject.track_deletes = syncConfig.track_deletes;
             integration['syncs'].push(flowObject);
         } else {
             integration['actions'].push(flowObject);

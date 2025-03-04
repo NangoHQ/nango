@@ -48,6 +48,9 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
+    CRON_DELETE_OLD_JOBS_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(90),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
@@ -177,7 +180,6 @@ export const ENVS = z.object({
     PUBLIC_SENTRY_KEY: z.string().optional(),
 
     // Slack
-    NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
