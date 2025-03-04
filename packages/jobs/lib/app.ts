@@ -75,6 +75,8 @@ try {
             await db.readOnly.destroy();
 
             // TODO: close redis
+            console.info('Closed');
+
             process.exit();
         });
     });
