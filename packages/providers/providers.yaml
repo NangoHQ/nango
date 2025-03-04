@@ -5656,8 +5656,8 @@ mip-cloud:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
-        username: ${credentials.username}
-        password: ${credentials.password}
+        username: ${credential.username}
+        password: ${credential.password}
     token_headers:
         content-type: application/json
     token_response:
@@ -5692,9 +5692,9 @@ mip-on-premise:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/security/login
     token_params:
-        login: ${credentials.login}
-        password: ${credentials.password}
-        org: ${credentials.org}
+        login: ${credential.login}
+        password: ${credential.password}
+        org: ${credential.org}
     token_headers:
         content-type: application/json
     token_response:
