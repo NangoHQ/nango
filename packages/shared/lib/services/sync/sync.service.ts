@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '@nangohq/database';
-import type { Sync, SyncWithConnectionId, Job as SyncJob } from '../../models/Sync.js';
-import { SyncStatus } from '../../models/Sync.js';
+import type { Sync, SyncWithConnectionId, SyncStatus } from '../../models/Sync.js';
 import type {
     ActiveLog,
     CLIDeployFlowConfig,
@@ -86,7 +85,7 @@ export const createSync = async ({
 };
 
 export const getLastSyncDate = async (id: string): Promise<Date | null> => {
-    const result = await schema().select<{ last_sync_date: Date | null }[]>('last_sync_date').from<Sync>(TABLE).where({
+    const result = await db.readOnly.select<{ last_sync_date: Date | null }[]>('last_sync_date').from<Sync>(TABLE).where({
         id,
         deleted: false
     });
@@ -125,32 +124,6 @@ export const setLastSyncDate = async (id: string, date: Date): Promise<boolean> 
     return true;
 };
 
-/**
- * Get Last Sync Date
- * @desc this is the very end of the sync process so we know when the sync job
- * is completely finished
- */
-export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> => {
-    const result = await schema()
-        .select('updated_at')
-        .from<SyncJob>(SYNC_JOB_TABLE)
-        .where({
-            sync_id,
-            status: SyncStatus.SUCCESS,
-            deleted: false
-        })
-        .orderBy('updated_at', 'desc')
-        .first();
-
-    if (!result) {
-        return null;
-    }
-
-    const { updated_at } = result;
-
-    return updated_at;
-};
-
 export const getSync = async ({ connectionId, name, variant }: { connectionId: number; name: string; variant: string }): Promise<Sync | null> => {
     const result = await db.knex.select('*').from<Sync>(TABLE).where({
         nango_connection_id: connectionId,
@@ -175,7 +148,7 @@ export const getSyncs = async (
     nangoConnection: DBConnection | DBConnectionDecrypted,
     orchestrator: Orchestrator
 ): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'>; models: string[] })[]> => {
-    const q = db.knex
+    const q = db.readOnly
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
@@ -307,7 +280,7 @@ export const getSyncsByProviderConfigKey = async ({
  * @desc verify that the incoming account id matches with the provided nango connection id
  */
 export const verifyOwnership = async (nangoConnectionId: number, environment_id: number, syncId: string): Promise<boolean> => {
-    const result = await schema()
+    const result = await db.readOnly
         .select('*')
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
@@ -557,7 +530,7 @@ export const getAndReconcileDifferences = async ({
 };
 
 export async function findRecentlyDeletedSync(): Promise<{ id: string; environmentId: number; connectionId: number; models: string[] }[]> {
-    const q = db.knex
+    const q = db.readOnly
         .from('_nango_syncs')
         .select<
             { id: string; environmentId: number; connectionId: number; models: string[] }[]

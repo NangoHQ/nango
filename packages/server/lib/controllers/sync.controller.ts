@@ -8,7 +8,6 @@ import {
     verifyOwnership,
     getSyncsByProviderConfigKey,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    getProviderConfigBySyncAndAccount,
     SyncCommand,
     errorManager,
     analytics,
@@ -321,25 +320,6 @@ class SyncController {
                     headers: redactHeaders({ headers: getHeaders(res.getHeaders()) })
                 }
             });
-        }
-    }
-
-    public async getSyncProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const { syncName } = req.query;
-
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name!' });
-
-                return;
-            }
-
-            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
-
-            res.send(providerConfigKey);
-        } catch (err) {
-            next(err);
         }
     }
 

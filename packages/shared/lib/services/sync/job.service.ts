@@ -65,12 +65,6 @@ export async function createSyncJob({
     return null;
 }
 
-export const updateRunId = async (id: number, run_id: string): Promise<void> => {
-    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
-        run_id
-    });
-};
-
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
     const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).orderBy('created_at', 'desc').first();
 
@@ -101,14 +95,6 @@ export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promi
         })
         .returning('*');
     return job || null;
-};
-
-export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncStatus): Promise<SyncJob | null> => {
-    const latestJob = await getLatestSyncJob(sync_id);
-    if (latestJob && latestJob.id) {
-        return updateSyncJobStatus(latestJob.id, status);
-    }
-    return null;
 };
 
 /**
@@ -158,12 +144,6 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 
             return updatedRow as SyncJob;
         }
-    });
-};
-
-export const addSyncConfigToJob = async (id: number, sync_config_id: number): Promise<void> => {
-    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
-        sync_config_id
     });
 };
 

@@ -267,7 +267,6 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
-publicAPI.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
@@ -368,8 +367,6 @@ web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 web.route('/api/v1/connect/sessions').post(webAuth, postInternalConnectSessions);
 
 web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-// TODO: delete this unused routes
-web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 web.route('/api/v1/integrations').post(webAuth, postIntegration);
 web.route('/api/v1/integrations/:providerConfigKey').get(webAuth, getIntegration);
 web.route('/api/v1/integrations/:providerConfigKey').patch(webAuth, patchIntegration);

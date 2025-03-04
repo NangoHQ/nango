@@ -460,21 +460,6 @@ class ConnectionService {
             .update(encryptionManager.encryptConnection(connection));
     }
 
-    public async getMetadata(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<Record<string, string>> {
-        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('metadata').where({
-            connection_id: connection.connection_id,
-            provider_config_key: connection.provider_config_key,
-            environment_id: connection.environment_id,
-            deleted: false
-        });
-
-        if (!result || result.length == 0 || !result[0]) {
-            return {};
-        }
-
-        return result[0].metadata;
-    }
-
     public async getConnectionConfig(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
         const result = await db.knex.from<DBConnection>(`_nango_connections`).select('connection_config').where({
             connection_id: connection.connection_id,
@@ -553,7 +538,7 @@ class ConnectionService {
         type T = Awaited<ReturnType<ConnectionService['getStaleConnections']>>;
 
         const query = db
-            .knex<DBConnection>(`_nango_connections`)
+            .readOnly<DBConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
@@ -664,12 +649,15 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection));
     }
 
+    /**
+     * Only useful for private API
+     */
     public async count({
         environmentId
     }: {
         environmentId: number;
     }): Promise<Result<{ total: number; withAuthError: number; withSyncError: number; withError: number }>> {
-        const query = db.knex
+        const query = db.readOnly
             .from(`_nango_connections`)
             .select<{ total_connection: string; with_auth_error: string; with_sync_error: string; with_error: string }>(
                 db.knex.raw('COUNT(DISTINCT _nango_connections.id) as total_connection'),
@@ -724,7 +712,7 @@ class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
-        const query = db.knex
+        const query = db.readOnly
             .from<DBConnection>(`_nango_connections`)
             .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
@@ -1911,13 +1899,9 @@ class ConnectionService {
         environmentId: number;
         type: 'activate' | 'deploy';
     }): Promise<boolean> {
-        const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+        const count = await this.countConnections({ environmentId, providerConfigKey });
 
-        if (!connections) {
-            return false;
-        }
-
-        if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (count > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
                 void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);

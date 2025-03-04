@@ -109,15 +109,9 @@ export class SlackService {
      *      by triggering the action.
      *      2) Update the notification record with the slack timestamp
      *      so future notifications can be sent as updates to the original.
-     *      3) Send a duplicate notification to the Nango Admins
-     *      4) Add an activity log entry for the notification to the admin account
+     *      3) Add an activity log entry for the notification to the admin account
      */
     async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, provider: string) {
-        const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-        if (!slackNotificationsEnabled) {
-            return;
-        }
-
         if (name === this.actionName) {
             return;
         }
@@ -128,6 +122,9 @@ export class SlackService {
         }
 
         const { account, environment } = accountEnv;
+        if (!environment.slack_notifications) {
+            return;
+        }
 
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, name, type);
 
@@ -241,8 +238,7 @@ export class SlackService {
      *      1) if there are no more connections that are failing then send
      *      a resolution notification to the slack channel, otherwise update the message
      *      with the decremented connection count.
-     *      2) Send a duplicate notification to the Nango Admins
-     *      3) Add an activity log entry for the notification to the admin account
+     *      2) Add an activity log entry for the notification to the admin account
      *
      */
     async reportResolution(
