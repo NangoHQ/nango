@@ -176,7 +176,9 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
-                        "guides/syncs/large-datasets"
+                        "guides/syncs/large-datasets",
+                        "guides/syncs/real-time-syncing",
+                        "guides/syncs/sync-partitioning"
                     ]
                 },
                 {
