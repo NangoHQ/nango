@@ -8,10 +8,11 @@ import { envs } from '../env.js';
 const logger = getLogger('Jobs.deleteOldsJobs');
 
 const limit = envs.CRON_DELETE_OLD_JOBS_LIMIT;
-const cronMinutes = 10;
-const expiresAfterDays = 90;
+const cronMinutes = envs.CRON_DELETE_OLD_JOBS_EVERY_MIN;
+const deleteJobsOlderThan = envs.CRON_DELETE_OLD_JOBS_MAX_DAYS;
 
 export function deleteOldJobsData(): void {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     cron.schedule(`*/${cronMinutes} * * * *`, async () => {
         const start = Date.now();
         try {
@@ -42,7 +43,7 @@ export async function exec(): Promise<void> {
         }
 
         while (true) {
-            const deleted = await deleteJobsByDate({ expiresAfterDays, limit });
+            const deleted = await deleteJobsByDate({ deleteJobsOlderThan, limit });
             logger.info(`Deleted ${deleted} jobs`);
             if (deleted <= 0) {
                 break;
