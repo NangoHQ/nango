@@ -834,6 +834,10 @@ const records = await nango.listRecords<ModelName>({
         The name of the model of the data you want to retrieve.
       </ResponseField>
 
+      <ResponseField name="variant" type="string">
+        The variant of the model to fetch. When omitted, the default base variant is used.
+      </ResponseField>
+
       <ResponseField name="cursor" type="string">
         Each record from this endpoint comes with a synchronization cursor in `_nango_metadata.cursor`.
 
@@ -903,7 +907,14 @@ This endpoint returns a list of records, ordered by modification date ascending.
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
 ```ts
-const records = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+// Simple usage with sync names
+const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -912,8 +923,11 @@ const records = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs to trigger. If the array is empty, all syncs are triggered.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
@@ -928,8 +942,15 @@ Empty response.
 
 Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
 
-```js
-await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.startSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -938,8 +959,11 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs that should be triggered.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
@@ -954,8 +978,15 @@ Empty response.
 
 Pauses the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
-```js
-await nango.pauseSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.pauseSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.pauseSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -964,8 +995,11 @@ await nango.pauseSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs that should be paused.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will pause for all relevant connections.
@@ -980,8 +1014,18 @@ Empty response.
 
 Get the status of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
-```js
-await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.syncStatus('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
+
+// Get all syncs
+await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -990,8 +1034,11 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
-        The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs.
+    <ResponseField name="syncs" type="string | Array<string | {name: string, variant: string}>" required>
+        Either "*" to return all syncs, or an array of syncs to fetch status for.
+        When using an array, each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, all connections will be surfaced.
@@ -1008,6 +1055,7 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
             "id": "<string>",
             "connection_id": "<string>",
             "name": "<string>",
+            "variant": "<string>",
             "status": "RUNNING",
             "type": "INCREMENTAL",
             "finishedAt": "<string>",
@@ -1034,8 +1082,12 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
 
 Override a sync's default frequency for a specific connection, or revert to the default frequency.
 
-```js
-await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CONNECTION_ID>', '<FREQUENCY>')
+```ts
+// For base variant
+await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CONNECTION_ID>', '<FREQUENCY>');
+
+// For a specific variant
+await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', { name: 'SYNC_NAME', variant: 'VARIANT_NAME' }, '<CONNECTION_ID>', '<FREQUENCY>');
 ```
 
 **Parameters**
@@ -1044,8 +1096,10 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="sync" type="string" required>
-        The name of the sync.
+    <ResponseField name="sync" type="string | {name: string, variant: string}" required>
+        The sync to update. Can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string" required>
         The connection ID.
@@ -1061,6 +1115,96 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
 ```json
 {
     "frequency": "<string>"
+}
+```
+</Expandable>
+
+### Create sync variant
+
+Creates a new sync variant for a specific connection. Sync variants allow you to run multiple instances of the same sync with different configurations.
+
+```ts
+await nango.createSyncVariant({
+  provider_config_key: '<INTEGRATION-ID>',
+  connection_id: '<CONNECTION_ID>',
+  name: 'SYNC_NAME',
+  variant: 'VARIANT_NAME'
+});
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="provider_config_key" type="string" required>
+                The integration ID.
+            </ResponseField>
+            <ResponseField name="connection_id" type="string" required>
+                The connection ID.
+            </ResponseField>
+            <ResponseField name="name" type="string" required>
+                The name of the sync.
+            </ResponseField>
+            <ResponseField name="variant" type="string" required>
+                The name of the variant to create. Cannot be "base" (protected name).
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "id": "12345",
+    "name": "SYNC_NAME",
+    "variant": "VARIANT_NAME"
+}
+```
+</Expandable>
+
+### Delete sync variant
+
+Deletes a sync variant for a specific connection.
+
+```ts
+await nango.deleteSyncVariant({
+  provider_config_key: '<INTEGRATION-ID>',
+  connection_id: '<CONNECTION_ID>',
+  name: 'SYNC_NAME',
+  variant: 'VARIANT_NAME'
+});
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="provider_config_key" type="string" required>
+                The integration ID.
+            </ResponseField>
+            <ResponseField name="connection_id" type="string" required>
+                The connection ID.
+            </ResponseField>
+            <ResponseField name="name" type="string" required>
+                The name of the sync.
+            </ResponseField>
+            <ResponseField name="variant" type="string" required>
+                The name of the variant to delete. Cannot be "base" (protected name).
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "success": true
 }
 ```
 </Expandable>
