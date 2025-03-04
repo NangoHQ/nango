@@ -178,7 +178,6 @@ export const ENVS = z.object({
     PUBLIC_SENTRY_KEY: z.string().optional(),
 
     // Slack
-    NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
