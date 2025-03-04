@@ -6,15 +6,21 @@ interface Value {
     timestamp: number;
     ttlInMs: number;
 }
+const KVSTORE_INTERVAL_CLEANUP = 10000;
 
 export class InMemoryKVStore implements KVStore {
     private store: Map<string, Value>;
+    private interval: NodeJS.Timeout;
 
     constructor() {
         this.store = new Map();
+        this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 
     destroy(): MaybePromise<void> {
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
         this.store.clear();
     }
 
@@ -54,5 +60,15 @@ export class InMemoryKVStore implements KVStore {
             return true;
         }
         return false;
+    }
+
+    private clearExpired() {
+        for (const [key, value] of this.store) {
+            if (this.isExpired(value)) {
+                this.store.delete(key);
+            }
+        }
+        console.log(this.store.size);
+        this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 }

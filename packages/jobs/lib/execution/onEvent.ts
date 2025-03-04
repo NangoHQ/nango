@@ -2,7 +2,7 @@ import { Err, metrics, Ok, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import { configService, environmentService, featureFlags, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
+import { configService, environmentService, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
 import { logContextGetter } from '@nangohq/logs';
 import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
 import { startScript } from './operations/start.js';
@@ -89,7 +89,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };

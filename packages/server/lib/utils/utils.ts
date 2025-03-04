@@ -7,6 +7,7 @@ import { getLogger, Err, Ok } from '@nangohq/utils';
 import type { WSErr } from './web-socket-error.js';
 import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { getFeatureFlagsClient } from '@nangohq/kvstore';
 
 const logger = getLogger('Server.Utils');
 
@@ -23,6 +24,8 @@ const BINARY_CONTENT_TYPES = [
     'x-world/',
     'application/octet-stream'
 ];
+
+export const ffClient = await getFeatureFlagsClient();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {

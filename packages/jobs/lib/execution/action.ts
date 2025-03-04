@@ -9,7 +9,6 @@ import {
     configService,
     environmentService,
     errorManager,
-    featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw
@@ -85,7 +84,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };
