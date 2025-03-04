@@ -19,8 +19,9 @@ import * as zod from 'zod';
 import * as unzipper from 'unzipper';
 import { Buffer } from 'buffer';
 import { serializeError } from 'serialize-error';
-import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
+import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData, BASE_VARIANT } from '@nangohq/runner-sdk';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
+import { createRequire } from 'module';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -32,6 +33,27 @@ interface RunArgs extends GlobalOptions {
     optionalEnvironment?: string;
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
+    variant?: string;
+}
+
+const require = createRequire(import.meta.url);
+
+/**
+ * To avoid pre-installing too much things we dynamically load package inside local package.json
+ */
+async function loadDynamicModule(moduleName: string) {
+    try {
+        // Resolve module path from user's working directory
+        const modulePath = require.resolve(moduleName, { paths: [process.cwd()] });
+
+        // Convert to file URL for dynamic import()
+        const moduleUrl = url.pathToFileURL(modulePath).href;
+
+        // Dynamically import the module
+        return await import(moduleUrl);
+    } catch {
+        return null;
+    }
 }
 
 export class DryRunService {
@@ -62,7 +84,7 @@ export class DryRunService {
 
     public async run(options: RunArgs, debug = false): Promise<string | undefined> {
         let syncName = '';
-        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
+        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, syncVariant;
 
         const environment = options.optionalEnvironment || this.environment;
 
@@ -85,12 +107,23 @@ export class DryRunService {
         }
 
         if (Object.keys(options).length > 0) {
-            ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: rawStubbedMetadata } = options);
+            ({
+                sync: syncName,
+                variant: syncVariant,
+                connectionId,
+                lastSyncDate: suppliedLastSyncDate,
+                input: actionInput,
+                metadata: rawStubbedMetadata
+            } = options);
         }
 
         if (!syncName) {
             console.log(chalk.red('Sync name is required'));
             return;
+        }
+
+        if (!syncVariant) {
+            syncVariant = BASE_VARIANT;
         }
 
         if (!connectionId) {
@@ -221,6 +254,9 @@ export class DryRunService {
         let stubbedMetadata;
         let normalizedInput;
 
+        const saveResponsesDir = `${process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? ''}${providerConfigKey}`;
+        const saveResponsesSyncDir = `${saveResponsesDir}/mocks/${syncName}${syncVariant && syncVariant !== BASE_VARIANT ? `/${syncVariant}` : ''}`;
+
         if (actionInput) {
             if (actionInput.startsWith('@') && actionInput.endsWith('.json')) {
                 const fileContents = readFile(actionInput);
@@ -243,10 +279,8 @@ export class DryRunService {
             }
 
             if (options.saveResponses) {
-                const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
-                const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
-                const filePath = `${directoryName}/mocks/${syncName}/input.json`;
+                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                const filePath = `${saveResponsesSyncDir}/input.json`;
                 const dataToWrite = typeof normalizedInput === 'object' ? JSON.stringify(normalizedInput, null, 2) : normalizedInput;
                 fs.writeFileSync(filePath, dataToWrite);
             }
@@ -320,6 +354,7 @@ export class DryRunService {
                 syncId: 'dryrun-sync',
                 lastSyncDate: lastSyncDate as Date,
                 syncConfig,
+                syncVariant,
                 debug,
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
@@ -334,19 +369,29 @@ export class DryRunService {
                 nangoProps.axios = {
                     response: {
                         onFulfilled: (response: AxiosResponse) =>
-                            responseSaver.onAxiosRequestFulfilled({ response, providerConfigKey, connectionId: nangoConnection.connection_id, syncName }),
+                            responseSaver.onAxiosRequestFulfilled({
+                                response,
+                                providerConfigKey,
+                                connectionId: nangoConnection.connection_id,
+                                syncName,
+                                syncVariant
+                            }),
                         onRejected: (error: unknown) =>
-                            responseSaver.onAxiosRequestRejected({ error, providerConfigKey, connectionId: nangoConnection.connection_id, syncName })
+                            responseSaver.onAxiosRequestRejected({
+                                error,
+                                providerConfigKey,
+                                connectionId: nangoConnection.connection_id,
+                                syncName,
+                                syncVariant
+                            })
                     }
                 };
             }
             console.log('---');
 
             if (options.saveResponses && stubbedMetadata) {
-                const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
-                const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
-                const filePath = `${directoryName}/mocks/nango/getMetadata.json`;
+                responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                const filePath = `${saveResponsesDir}/mocks/nango/getMetadata.json`;
                 fs.writeFileSync(filePath, JSON.stringify(stubbedMetadata, null, 2));
             }
 
@@ -385,10 +430,8 @@ export class DryRunService {
                 } else {
                     console.log(JSON.stringify(results.response.output, null, 2));
                     if (options.saveResponses) {
-                        const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
-                        const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
-                        responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}`);
-                        const filePath = `${directoryName}/mocks/${syncName}/output.json`;
+                        responseSaver.ensureDirectoryExists(saveResponsesSyncDir);
+                        const filePath = `${saveResponsesSyncDir}/output.json`;
                         const { nango, ...responseWithoutNango } = results.response;
                         fs.writeFileSync(filePath, JSON.stringify(responseWithoutNango.output, null, 2));
                     }
@@ -430,21 +473,21 @@ export class DryRunService {
                 }
 
                 if (options.saveResponses && results.response?.nango && results.response?.nango instanceof NangoSyncCLI) {
-                    const responseDirectoryPrefix = process.env['NANGO_MOCKS_RESPONSE_DIRECTORY'] ?? '';
-                    const directoryName = `${responseDirectoryPrefix}${providerConfigKey}`;
                     const nango = results.response.nango;
                     if (scriptInfo?.output) {
                         for (const model of scriptInfo.output) {
-                            responseSaver.ensureDirectoryExists(`${directoryName}/mocks/${syncName}/${model}`);
+                            const modelFullName = nango.modelFullName(model);
+                            const modelDir = `${saveResponsesSyncDir}/${model}`;
+                            responseSaver.ensureDirectoryExists(modelDir);
                             {
-                                const filePath = `${directoryName}/mocks/${syncName}/${model}/batchSave.json`;
-                                const modelData = nango.rawSaveOutput.get(model) || [];
+                                const filePath = `${modelDir}/batchSave.json`;
+                                const modelData = nango.rawSaveOutput.get(modelFullName) || [];
                                 fs.writeFileSync(filePath, JSON.stringify(modelData, null, 2));
                             }
 
                             {
-                                const filePath = `${directoryName}/mocks/${syncName}/${model}/batchDelete.json`;
-                                const modelData = nango.rawDeleteOutput.get(model) || [];
+                                const filePath = `${modelDir}/batchDelete.json`;
+                                const modelData = nango.rawDeleteOutput.get(modelFullName) || [];
                                 fs.writeFileSync(filePath, JSON.stringify(modelData, null, 2));
                             }
                         }
@@ -484,7 +527,8 @@ export class DryRunService {
                 : new NangoActionCLI(nangoProps, { dryRunService: drs });
 
         try {
-            nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}"`);
+            const variant = nangoProps.syncVariant === BASE_VARIANT ? '' : `variant:"${nangoProps.syncVariant}"`;
+            nango.log(`Executing -> integration:"${nangoProps.provider}" script:"${syncName}" ${variant}`);
 
             const script = getIntegrationFile(syncName, nangoProps.providerConfigKey, loadLocation);
             const isAction = nangoProps.scriptType === 'action';
@@ -504,6 +548,13 @@ export class DryRunService {
                 const scriptObj = new vm.Script(wrappedCode, {
                     filename
                 });
+
+                // We can't await inside require so we pre-load before, a bit wasteful if we don't use them but good enough
+                const preloaded = {
+                    soap: await loadDynamicModule('soap'),
+                    botbuilder: await loadDynamicModule('botbuilder')
+                };
+
                 const sandbox = {
                     console,
                     require: (moduleName: string) => {
@@ -518,7 +569,12 @@ export class DryRunService {
                                 return unzipper;
                             case 'soap':
                             case 'botbuilder':
-                                throw new Error(`Module '${moduleName}' not available in dry run. Please test the integration using the Nango dashboard`);
+                                if (!preloaded[moduleName]) {
+                                    throw new Error(
+                                        `Module '${moduleName}' needs to be installed on your side in a package.json. You can also test using the Nango dashboard`
+                                    );
+                                }
+                                return preloaded[moduleName];
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }

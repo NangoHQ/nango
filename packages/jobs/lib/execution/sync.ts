@@ -111,6 +111,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         await logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
+            syncVariant: task.syncVariant,
             syncType,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key,
@@ -317,6 +318,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                                 connection: connection,
                                 environment: environment,
                                 syncConfig: nangoProps.syncConfig,
+                                syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
                                 webhookSettings,
                                 model,
@@ -402,7 +404,6 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
             name: nangoProps.syncConfig.sync_name,
             type: 'sync',
             originalActivityLogId: nangoProps.activityLogId as unknown as string,
-            environment_id: nangoProps.environmentId,
             provider: nangoProps.provider
         });
 
@@ -659,7 +660,7 @@ async function onFailure({
 
     const logCtx = await logContextGetter.get({ id: activityLogId });
     try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, connection.environment_id, provider);
+        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, provider);
     } catch {
         errorManager.report('slack notification service reported a failure', {
             environmentId: connection.environment_id,
@@ -696,6 +697,7 @@ async function onFailure({
                         account: team,
                         providerConfig,
                         syncConfig,
+                        syncVariant,
                         connection: connection,
                         environment: environment,
                         webhookSettings,

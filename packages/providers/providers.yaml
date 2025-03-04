@@ -152,7 +152,6 @@ affinity:
     display_name: Affinity
     categories:
         - crm
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.affinity.co
@@ -349,6 +348,8 @@ amazon-selling-partner:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
     token_params:
@@ -357,6 +358,8 @@ amazon-selling-partner:
         grant_type: refresh_token
     proxy:
         base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner/connect
     connection_config:
@@ -393,6 +396,8 @@ amazon-selling-partner-beta:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.domain}/apps/authorize/consent
     token_url: https://api.amazon.com/auth/o2/token
+    authorization_code_param_in_callback: spapi_oauth_code
+    disable_pkce: true
     authorization_params:
         application_id: ${connectionConfig.applicationId}
         version: beta
@@ -401,7 +406,9 @@ amazon-selling-partner-beta:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://sellingpartnerapi-${connectionConfig.region}.amazon.com
+        base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
+        headers:
+            x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
     docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
     connection_config:
@@ -434,7 +441,6 @@ anrok:
     display_name: Anrok
     categories:
         - legal
-        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://api.anrok.com
@@ -528,7 +534,6 @@ apollo:
     display_name: Apollo (API Key)
     categories:
         - marketing
-        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://app.apollo.io/api
@@ -548,7 +553,6 @@ apollo-oauth:
     display_name: Apollo (OAuth)
     categories:
         - marketing
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.apollo.io
     token_url: https://app.apollo.io/api/v1/oauth/token
@@ -599,7 +603,6 @@ appstle-subscriptions:
 asana:
     display_name: Asana
     categories:
-        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -691,7 +694,6 @@ atlassian:
     display_name: Atlassian
     categories:
         - dev-tools
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
@@ -713,7 +715,6 @@ attio:
     display_name: Attio
     categories:
         - crm
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.attio.com/authorize
     token_url: https://app.attio.com/oauth/token
@@ -831,7 +832,6 @@ aws:
     categories:
         - dev-tools
         - e-commerce
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
@@ -874,7 +874,6 @@ aws-iam:
     display_name: AWS IAM
     categories:
         - dev-tools
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
@@ -910,7 +909,6 @@ bamboohr:
     display_name: BambooHR (OAuth)
     categories:
         - hr
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
     token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
@@ -938,7 +936,6 @@ bamboohr-basic:
     display_name: BambooHR (Basic Auth)
     categories:
         - hr
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
@@ -1075,7 +1072,6 @@ bigcommerce:
     display_name: BigCommerce
     categories:
         - e-commerce
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.bigcommerce.com/oauth2/authorize
     token_url: https://login.bigcommerce.com/oauth2/token
@@ -1118,7 +1114,6 @@ bill:
     display_name: Bill (Connect API)
     categories:
         - payment
-        - popular
     auth_mode: BILL
     token_url: https://gateway.prod.bill.com/connect/v3/login
     proxy:
@@ -1202,6 +1197,38 @@ blackbaud:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
 
+blackbaud-basic:
+    display_name: Blackbaud (Basic Auth)
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostName}
+        headers:
+            content-type: application/soap+xml; charset=utf-8
+    docs: https://docs.nango.dev/integrations/all/blackbaud-basic
+    docs_connect: https://docs.nango.dev/integrations/all/blackbaud-basic
+    connection_config:
+        hostName:
+            type: string
+            title: Host Name
+            description: Your Blackbaud host name
+            example: https://altrurig01bo3.blackbaudhosting.com
+            pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
+            order: 1
+            doc_section: '#step-1-finding-your-host-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Username
+            doc_section: '#step-3-finding-your-username'
+        password:
+            type: string
+            title: Password
+            description: Your Password
+            doc_section: '#step-2-finding-your-password'
+
 blandai:
     display_name: BlandAI
     categories:
@@ -1239,7 +1266,6 @@ box:
     display_name: Box
     categories:
         - knowledge-base
-        - popular
         - storage
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
@@ -1592,7 +1618,6 @@ cal-com-v2:
 calendly:
     display_name: Calendly
     categories:
-        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://auth.calendly.com/oauth/authorize
@@ -1762,6 +1787,24 @@ chattermill:
             suffix: .chattermill.com
             prefix: https://
 
+checkhq:
+    display_name: Check
+    categories:
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.checkhq.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/checkhq
+    docs_connect: https://docs.nango.dev/integrations/all/checkhq/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your CheckHQ account
+            doc_section: '#step-1-finding-check-api-token'
+
 checkr-partner:
     display_name: Checkr Partner
     categories:
@@ -1904,7 +1947,6 @@ clari-copilot:
 clickup:
     display_name: ClickUp
     categories:
-        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -2154,6 +2196,7 @@ confluence:
     display_name: Confluence
     categories:
         - knowledge-base
+        - popular
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 
@@ -2389,7 +2432,6 @@ deel:
     display_name: Deel
     categories:
         - hr
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.deel.com/oauth2/authorize
     token_url: https://app.deel.com/oauth2/tokens
@@ -2561,7 +2603,6 @@ docusign:
     display_name: DocuSign
     categories:
         - legal
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
     token_url: https://account.docusign.com/oauth/token
@@ -2598,7 +2639,6 @@ dropbox:
     display_name: Dropbox
     categories:
         - knowledge-base
-        - popular
         - storage
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
@@ -2950,7 +2990,6 @@ exact-online:
     categories:
         - accounting
         - hr
-        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -3063,8 +3102,10 @@ figma:
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
-    token_url: https://www.figma.com/api/oauth/token
-    refresh_url: https://www.figma.com/api/oauth/refresh
+    token_url: https://api.figma.com/v1/oauth/token
+    refresh_url: https://api.figma.com/v1/oauth/refresh
+    token_request_auth_method: basic
+    scope_separator: ','
     disable_pkce: true
     proxy:
         base_url: https://api.figma.com
@@ -3215,7 +3256,6 @@ freshbooks:
     display_name: FreshBooks
     categories:
         - accounting
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
@@ -3228,7 +3268,6 @@ freshbooks:
 freshdesk:
     display_name: FreshDesk
     categories:
-        - popular
         - support
     auth_mode: BASIC
     proxy:
@@ -3391,7 +3430,6 @@ gainsight-cc:
     categories:
         - support
         - crm
-        - popular
     auth_mode: OAUTH2_CC
     token_url: https://api2-${connectionConfig.region}.insided.com/oauth2/token
     scope_separator: ' '
@@ -3537,7 +3575,6 @@ github:
     display_name: GitHub (User OAuth)
     categories:
         - dev-tools
-        - popular
         - support
         - ticketing
     auth_mode: OAUTH2
@@ -3617,7 +3654,6 @@ gitlab:
     display_name: GitLab
     categories:
         - dev-tools
-        - popular
         - ticketing
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -3704,7 +3740,6 @@ gong:
     categories:
         - communication
         - marketing
-        - popular
         - productivity
         - video
     auth_mode: BASIC
@@ -3734,9 +3769,9 @@ gong-oauth:
     categories:
         - communication
         - marketing
-        - popular
         - productivity
         - video
+        - popular
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
@@ -3768,7 +3803,6 @@ google:
     categories:
         - communication
         - dev-tools
-        - popular
         - productivity
         - social
     auth_mode: OAUTH2
@@ -3798,6 +3832,7 @@ google-analytics:
 google-calendar:
     display_name: Google Calendar
     categories:
+        - popular
         - productivity
     alias: google
     proxy:
@@ -3820,8 +3855,9 @@ google-docs:
     docs: https://docs.nango.dev/integrations/all/google-docs
 
 google-mail:
-    display_name: Google Mail
+    display_name: Gmail
     categories:
+        - popular
         - productivity
     alias: google
     proxy:
@@ -3841,6 +3877,7 @@ google-drive:
     display_name: Google Drive
     categories:
         - knowledge-base
+        - popular
         - storage
     alias: google
     docs: https://docs.nango.dev/integrations/all/google-drive
@@ -3917,7 +3954,7 @@ gorgias-basic:
     categories:
         - e-commerce
     proxy:
-        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+        base_url: https://${connectionConfig.subdomain}.gorgias.com
     docs: https://docs.nango.dev/integrations/all/gorgias-basic
     docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
     credentials:
@@ -4015,7 +4052,6 @@ greenhouse:
     display_name: Greenhouse (OAuth)
     categories:
         - ats
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
@@ -4042,7 +4078,6 @@ greenhouse-basic:
     display_name: Greenhouse (Basic Auth)
     categories:
         - ats
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.resource}.greenhouse.io
@@ -4230,7 +4265,6 @@ gusto:
     display_name: Gusto
     categories:
         - hr
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
     token_url: https://api.gusto.com/oauth/token
@@ -4517,7 +4551,6 @@ intuit:
     display_name: Intuit
     categories:
         - accounting
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
@@ -4555,7 +4588,6 @@ jira:
 jira-basic:
     display_name: Jira (Basic Auth)
     categories:
-        - popular
         - productivity
         - ticketing
     auth_mode: BASIC
@@ -4595,7 +4627,6 @@ jira-basic:
 jira-data-center:
     display_name: Jira Data Center
     categories:
-        - popular
         - productivity
         - ticketing
     auth_mode: OAUTH2
@@ -4775,7 +4806,6 @@ klaviyo:
     display_name: Klaviyo (API Key)
     categories:
         - marketing
-        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://a.klaviyo.com
@@ -4799,7 +4829,6 @@ klaviyo-oauth:
     display_name: Klaviyo (OAuth)
     categories:
         - marketing
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.klaviyo.com/oauth/authorize
     token_url: https://a.klaviyo.com/oauth/token
@@ -4929,11 +4958,40 @@ lessonly:
             description: Your Lessonly API key
             secret: true
 
+lemlist:
+    display_name: lemlist
+    categories:
+        - marketing
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lemlist.com
+        verification:
+            endpoint: /api/team
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/lemlist
+    docs_connect: https://docs.nango.dev/integrations/all/lemlist/connect
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: API Key
+            description: The API key for your Lemlist account
+            secret: true
+            example: a1b2c3d4e5f67890abcdefabcdefabcd
+            pattern: '[a-f0-9]$'
+            doc_section: '#step-1-generating-your-api-key'
+
 lever:
     display_name: Lever (OAuth)
     categories:
         - ats
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
     token_url: https://auth.lever.co/oauth/token
@@ -4950,7 +5008,6 @@ lever-basic:
     auth_mode: BASIC
     categories:
         - ats
-        - popular
     proxy:
         base_url: https://api.lever.co
     docs: https://docs.nango.dev/integrations/all/lever-basic
@@ -5401,7 +5458,6 @@ microsoft:
         - communication
         - dev-tools
         - productivity
-        - popular
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
     disable_pkce: true
@@ -5437,7 +5493,6 @@ microsoft-tenant-specific:
     display_name: Microsoft (Tenant)
     categories:
         - erp
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
@@ -5591,17 +5646,24 @@ minimax:
             title: API Key
             description: The API key for securely accessing the MiniMax API.
             doc_section: '#step-2-generate-an-api-key'
-mip:
-    display_name: mip
+
+mip-cloud:
+    display_name: MIP Cloud
     categories:
         - accounting
-    auth_mode: BASIC
+    auth_mode: TWO_STEP
     proxy:
-        base_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
-        headers:
-            content-type: application/json
-    docs: https://docs.nango.dev/integrations/all/mip
-    docs_connect: https://docs.nango.dev/integrations/all/mip/connect
+        base_url: https://api.mip.com
+    token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-cloud
+    docs_connect: https://docs.nango.dev/integrations/all/mip-cloud/connect
     credentials:
         username:
             type: string
@@ -5611,13 +5673,55 @@ mip:
             type: string
             title: Password
             description: Your Password for MIP Fund Accounting.
+            secret: true
     connection_config:
         domain:
             type: string
-            title: REST Service URL
+            title: HOST REST Service URL
             description: The rest service URL for the cloud-based API service
             prefix: https://
             suffix: /api/v1/sso/mipadv/login
+            format: hostname
+
+mip-on-premise:
+    display_name: MIP On Premise
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    proxy:
+        base_url: https://api.mip.com
+    token_url: https://${connectionConfig.domain}/api/security/login
+    token_params:
+        login: ${credentials.login}
+        password: ${credentials.password}
+        org: ${credentials.org}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token
+    docs: https://docs.nango.dev/integrations/all/mip-on-premise
+    docs_connect: https://docs.nango.dev/integrations/all/mip-on-premise/connect
+    credentials:
+        login:
+            type: string
+            title: ID
+            description: Your Login ID for MIP Fund Accounting
+        password:
+            type: string
+            title: Password
+            description: Your Password for MIP Fund Accounting.
+            secret: true
+        org:
+            type: string
+            title: ORG
+            description: The MIP Fund Accounting database you will be using.
+    connection_config:
+        domain:
+            type: string
+            title: HOST REST Service URL
+            description: The URL of your locally installed REST API server.
+            prefix: https://
+            suffix: /api/security/login
             format: hostname
 
 mixpanel:
@@ -5738,7 +5842,6 @@ netsuite:
     categories:
         - accounting
         - erp
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
@@ -5766,6 +5869,7 @@ netsuite-tba:
     categories:
         - accounting
         - erp
+        - popular
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -5910,7 +6014,6 @@ okta:
     auth_mode: OAUTH2
     categories:
         - dev-tools
-        - popular
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     authorization_params:
@@ -6089,7 +6192,6 @@ outreach:
     display_name: Outreach
     categories:
         - marketing
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
@@ -6320,7 +6422,6 @@ personio:
     display_name: Personio (v1)
     categories:
         - hr
-        - popular
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://api.personio.de/v1
@@ -6932,7 +7033,6 @@ sage:
     categories:
         - accounting
         - erp
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
     token_url: https://oauth.accounting.sage.com/token
@@ -6947,6 +7047,7 @@ sage-intacct-oauth:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
     token_url: https://api.intacct.com/ia/api/v1/oauth2/token
@@ -6965,7 +7066,6 @@ sage-intacct:
     categories:
         - accounting
         - erp
-        - popular
     auth_mode: TWO_STEP
     proxy:
         base_url: https://api.intacct.com/ia/xml/xmlgw.phtml
@@ -7364,7 +7464,6 @@ signnow-sandbox:
 servicenow:
     display_name: ServiceNow
     categories:
-        - popular
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
@@ -7389,7 +7488,7 @@ servicenow:
             prefix: https://
 
 sharepoint-online:
-    display_name: SharePoint Online
+    display_name: SharePoint Online (v2)
     categories:
         - storage
         - communication
@@ -7863,7 +7962,6 @@ stripe-app:
     display_name: Stripe App
     categories:
         - payment
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -8711,7 +8809,6 @@ woocommerce:
         - e-commerce
         - dev-tools
         - design
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.storeURL}
@@ -8742,7 +8839,6 @@ workable:
     display_name: Workable (API Key)
     categories:
         - ats
-        - popular
     auth_mode: API_KEY
     proxy:
         headers:
@@ -8774,7 +8870,6 @@ workable-oauth:
     display_name: Workable (OAuth)
     categories:
         - ats
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://www.workable.com/oauth/authorize
     token_url: https://www.workable.com/oauth/token
@@ -9058,7 +9153,6 @@ zoho:
     display_name: Zoho
     categories:
         - accounting
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
     token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
@@ -9148,7 +9242,6 @@ zoho-people:
 zoom:
     display_name: Zoom
     categories:
-        - popular
         - video
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize

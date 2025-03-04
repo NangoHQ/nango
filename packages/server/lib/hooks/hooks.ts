@@ -132,11 +132,9 @@ export const connectionCreationFailed = async (
 
 export const connectionRefreshSuccess = async ({
     connection,
-    environment,
     config
 }: {
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
-    environment: DBEnvironment;
     config: IntegrationConfig;
 }): Promise<void> => {
     await errorNotificationService.auth.clear({
@@ -150,7 +148,6 @@ export const connectionRefreshSuccess = async ({
         name: connection.connection_id,
         type: 'auth',
         originalActivityLogId: null,
-        environment_id: environment.id,
         provider: config.provider
     });
 };
@@ -198,7 +195,7 @@ export const connectionRefreshFailed = async ({
 
     const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
-    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
+    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, config.provider);
 };
 
 export async function connectionTest({

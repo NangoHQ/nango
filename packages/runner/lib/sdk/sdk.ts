@@ -106,9 +106,14 @@ export class NangoActionRunner extends NangoActionBase {
         });
     }
 
-    public triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string> {
+    public triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        fullResync?: boolean
+    ): Promise<void | string> {
         this.throwIfAborted();
-        return this.nango.triggerSync(providerConfigKey, [syncName], connectionId, fullResync);
+        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, fullResync);
     }
 
     private async sendLogToPersist(log: MessageRowInsert) {
@@ -213,7 +218,8 @@ export class NangoSyncRunner extends NangoSyncBase {
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         const now = new Date();
-        if (this.mergingByModel.has(model)) {
+        const modelFullName = this.modelFullName(model);
+        if (this.mergingByModel.has(modelFullName)) {
             await this.sendLogToPersist({
                 type: 'log',
                 level: 'warn',
@@ -235,11 +241,11 @@ export class NangoSyncRunner extends NangoSyncBase {
                 if (res.isErr()) {
                     throw res.error;
                 }
-                this.mergingByModel.set(model, { strategy: 'ignore_if_modified_after_cursor', ...(res.value ? { cursor: res.value.cursor } : {}) });
+                this.mergingByModel.set(modelFullName, { strategy: 'ignore_if_modified_after_cursor', ...(res.value ? { cursor: res.value.cursor } : {}) });
                 break;
             }
             case 'override':
-                this.mergingByModel.set(model, { strategy: 'override' });
+                this.mergingByModel.set(modelFullName, { strategy: 'override' });
                 break;
             default:
                 throw new Error(`Unsupported merging strategy: ${merging.strategy}`);
@@ -254,11 +260,11 @@ export class NangoSyncRunner extends NangoSyncBase {
     }
 
     private getMergingStrategy(model: string): MergingStrategy {
-        return this.mergingByModel.get(model) || { strategy: 'override' };
+        return this.mergingByModel.get(this.modelFullName(model)) || { strategy: 'override' };
     }
 
     private setMergingStrategyByModel(model: string, merging: MergingStrategy): void {
-        this.mergingByModel.set(model, merging);
+        this.mergingByModel.set(this.modelFullName(model), merging);
     }
 
     public async batchSave<T extends object>(results: T[], model: string) {
@@ -302,10 +308,11 @@ export class NangoSyncRunner extends NangoSyncBase {
             );
         }
 
+        const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.saveRecords({
-                model,
+                model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
                 providerConfigKey: this.providerConfigKey,
@@ -314,12 +321,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStrategy(model)
+                merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStrategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
         }
         return true;
     }
@@ -332,10 +339,11 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         const resultsWithoutMetadata = this.removeMetadata(results);
 
+        const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.deleteRecords({
-                model,
+                model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
                 providerConfigKey: this.providerConfigKey,
@@ -344,12 +352,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStrategy(model)
+                merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStrategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
         }
 
         return true;
@@ -363,10 +371,11 @@ export class NangoSyncRunner extends NangoSyncBase {
 
         const resultsWithoutMetadata = this.removeMetadata(results);
 
+        const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
             const res = await this.persistClient.updateRecords({
-                model,
+                model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
                 providerConfigKey: this.providerConfigKey,
@@ -375,12 +384,12 @@ export class NangoSyncRunner extends NangoSyncBase {
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
                 activityLogId: this.activityLogId!,
-                merging: this.getMergingStrategy(model)
+                merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
                 throw res.error;
             }
-            this.setMergingStrategyByModel(model, res.value.nextMerging);
+            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
         }
         return true;
     }
@@ -399,7 +408,7 @@ export class NangoSyncRunner extends NangoSyncBase {
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
             const res = await this.persistClient.getRecords({
-                model,
+                model: this.modelFullName(model),
                 externalIds: Array.from(externalIdMap.keys()),
                 environmentId: this.environmentId,
                 nangoConnectionId: this.nangoConnectionId!,

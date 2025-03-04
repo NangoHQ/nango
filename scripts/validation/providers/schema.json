@@ -98,6 +98,9 @@
                     "type": "object",
                     "additionalProperties": true
                 },
+                "authorization_code_param_in_callback": {
+                    "type": "string"
+                },
                 "body_format": {
                     "type": "string"
                 },

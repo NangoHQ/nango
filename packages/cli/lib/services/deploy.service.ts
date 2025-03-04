@@ -8,12 +8,12 @@ import type {
     NangoYamlParsed,
     OnEventScriptsByProvider,
     ScriptFileType,
-    IncomingFlowConfig,
     NangoConfigMetadata,
     PostDeploy,
     PostDeployInternal,
     PostDeployConfirmation,
-    OnEventType
+    OnEventType,
+    CLIDeployFlowConfig
 } from '@nangohq/types';
 import { compileSingleFile, compileAllFiles, resolveTsFileLocation, getFileToCompile } from './compile.service.js';
 
@@ -360,8 +360,8 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-    }): { flowConfigs: IncomingFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
-        const postData: IncomingFlowConfig[] = [];
+    }): { flowConfigs: CLIDeployFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
+        const postData: CLIDeployFlowConfig[] = [];
         const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
         for (const integration of parsed.integrations) {
@@ -415,7 +415,7 @@ class DeployService {
                         printDebug(`Scripts files found for ${sync.name}`);
                     }
 
-                    const body: IncomingFlowConfig = {
+                    const body: CLIDeployFlowConfig = {
                         syncName: sync.name,
                         providerConfigKey,
                         models: sync.output || [],
@@ -461,7 +461,7 @@ class DeployService {
                         printDebug(`Scripts files found for "${action.name}"`);
                     }
 
-                    const body: IncomingFlowConfig = {
+                    const body: CLIDeployFlowConfig = {
                         syncName: action.name,
                         providerConfigKey,
                         models: action.output || [],
