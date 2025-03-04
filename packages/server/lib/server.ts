@@ -2,6 +2,7 @@ import './tracer.js';
 import './utils/loadEnv.js';
 
 import express from 'express';
+import * as cron from 'node-cron';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
@@ -11,10 +12,9 @@ import oAuthSessionService from './services/oauth-session.service.js';
 import db, { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
 import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
-import { start as migrateLogs, otlp } from '@nangohq/logs';
+import { start as migrateLogs, otlp, destroy as destroyLogs } from '@nangohq/logs';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { runnersFleet } from './fleet.js';
-
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
 import { refreshConnectionsCron } from './refreshConnections.js';
@@ -65,6 +65,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateLogs();
     await migrateRecords();
     await runnersFleet.migrate();
+    await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
@@ -87,20 +88,23 @@ server.listen(port, () => {
 // --- Close function
 const close = once(() => {
     logger.info('Closing...');
+
+    cron.getTasks().forEach((task) => task.stop());
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     server.close(async () => {
-        // TODO: close logs
         wss.close();
         await runnersFleet.stop();
-        await db.knex.destroy();
-        await db.readOnly.destroy();
+        await db.destroy();
         await destroyRecords();
+        await destroyLogs();
         otlp.stop();
 
         logger.close();
 
         console.info('Closed');
 
+        // TODO: close redis
         process.exit();
     });
 });

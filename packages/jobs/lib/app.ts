@@ -1,4 +1,6 @@
 import './tracer.js';
+
+import * as cron from 'node-cron';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
@@ -56,6 +58,9 @@ try {
     const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
+
+        cron.getTasks().forEach((task) => task.stop());
+
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             processor.stop();
@@ -64,6 +69,8 @@ try {
             await runnersFleet.stop();
             await db.knex.destroy();
             await db.readOnly.destroy();
+
+            // TODO: close redis
             process.exit();
         });
     });

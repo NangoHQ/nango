@@ -78,8 +78,6 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
-            // TODO: close logs
-
             scheduler.stop();
             await dbClient.destroy();
 

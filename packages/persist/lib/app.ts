@@ -5,6 +5,7 @@ import { envs } from './env.js';
 import type { Server } from 'node:http';
 import db from '@nangohq/database';
 import { destroy as destroyRecords } from '@nangohq/records';
+import { destroy as destroyLogs } from '@nangohq/logs';
 
 const logger = getLogger('Persist');
 
@@ -34,8 +35,7 @@ const close = once(() => {
     logger.info('Closing...');
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
-        // TODO: close logs
-
+        await destroyLogs();
         await db.knex.destroy();
         await db.readOnly.destroy();
         await destroyRecords();
@@ -43,6 +43,8 @@ const close = once(() => {
         logger.close();
 
         console.info('Closed');
+
+        // TODO: close redis
 
         process.exit();
     });
