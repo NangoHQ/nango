@@ -42,10 +42,8 @@ export class KnexDatabase {
     }
 
     async destroy() {
-        await this.knex.client.pool.destroy();
         await this.knex.destroy();
         if (process.env['NANGO_DB_READ_URL']) {
-            await this.readOnly.client.pool.destroy();
             await this.readOnly.destroy();
         }
     }
