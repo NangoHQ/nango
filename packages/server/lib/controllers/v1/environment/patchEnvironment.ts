@@ -86,5 +86,5 @@ async function isOtlpEnabled({ account }: { account: DBTeam }): Promise<boolean>
     if (isEnterprise) {
         return true;
     }
-    return ffClient.isSet({ key: 'feature:otlp:account', distinctId: account.uuid });
+    return await ffClient.isSet('feature:otlp:account', { distinctId: account.uuid });
 }

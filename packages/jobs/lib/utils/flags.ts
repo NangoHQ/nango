@@ -4,10 +4,10 @@ import type { RunnerFlags } from '@nangohq/types';
 export const ffClient = await getFeatureFlagsClient();
 export async function getRunnerFlags(): Promise<RunnerFlags> {
     const [validateActionInput, validateActionOutput, validateSyncRecords, validateSyncMetadata] = await Promise.all([
-        ffClient.isSet({ key: 'runner.validateActionInput' }),
-        ffClient.isSet({ key: 'runner.validateActionOutput' }),
-        ffClient.isSet({ key: 'runner.validateSyncRecords' }),
-        ffClient.isSet({ key: 'runner.validateSyncMetadata' })
+        ffClient.isSet('runner.validateActionInput'),
+        ffClient.isSet('runner.validateActionOutput'),
+        ffClient.isSet('runner.validateSyncRecords'),
+        ffClient.isSet('runner.validateSyncMetadata')
     ]);
 
     return {

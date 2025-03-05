@@ -73,7 +73,7 @@ class ProxyController {
 
             const headers = parseHeaders(req);
 
-            const rawBodyFlag = await ffClient.isSet({ key: 'proxy:rawbody' });
+            const rawBodyFlag = await ffClient.isSet('proxy:rawbody');
             const data = rawBodyFlag ? req.rawBody : req.body;
             let files: ProxyFile[] = [];
             if (Array.isArray(req.files)) {

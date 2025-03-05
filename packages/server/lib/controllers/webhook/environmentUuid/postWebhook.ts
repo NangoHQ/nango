@@ -35,7 +35,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
         const headers = req.headers;
 
         try {
-            const isGloballyDisabled = await ffClient.isSet({ key: 'disable-external-webhooks' });
+            const isGloballyDisabled = await ffClient.isSet('disable-external-webhooks');
             if (isGloballyDisabled) {
                 res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature globally disabled' } });
                 return;
@@ -52,7 +52,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
-            const isDisabledForThisAccount = await ffClient.isSet({ key: 'disable-external-webhooks', distinctId: account.uuid });
+            const isDisabledForThisAccount = await ffClient.isSet('disable-external-webhooks', { distinctId: account.uuid });
             if (isDisabledForThisAccount) {
                 res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });
                 return;

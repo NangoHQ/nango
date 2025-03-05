@@ -7,7 +7,7 @@ export class FeatureFlags {
         this.kvstore = kvstore;
     }
 
-    async isSet({ key, distinctId = 'global', fallback = false }: { key: string; distinctId?: string; fallback?: boolean }): Promise<boolean> {
+    async isSet(key: string, { distinctId = 'global', fallback = false }: { distinctId?: string; fallback?: boolean } = {}): Promise<boolean> {
         try {
             return await this.kvstore.exists(`flag:${key}:${distinctId}`);
         } catch {
