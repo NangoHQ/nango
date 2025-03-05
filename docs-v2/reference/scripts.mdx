@@ -97,7 +97,7 @@ Note that all HTTP requests benefit from automatic credential injection. Because
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
+                The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>
             <ResponseField name="decompress" type="boolean">
                 Override the decompress option when making requests. Optional, defaults to false
@@ -600,6 +600,23 @@ Fetching records by ID is useful when you need to update specific records with a
 
 A common use case is when handling external webhooks, where only a partial update of a record is received from an API.
 </Tip>
+
+### Variant
+
+If you are using sync variants, you can access the current variant name via the `nango.variant` property.
+
+```ts
+export default async function fetchData(nango: NangoSync) {
+    await nango.log(`Running sync with variant: ${nango.variant}`);
+
+    // Customize sync behavior based on variant
+    const res = await nango.get({
+        endpoint: `/spreadsheet/${nango.variant}`
+    });
+
+    // Rest of sync implementation...
+}
+```
 
 # Action-specific helper methods
 

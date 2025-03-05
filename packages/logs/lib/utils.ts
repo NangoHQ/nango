@@ -2,6 +2,7 @@ import { errorToObject, getLogger } from '@nangohq/utils';
 import { createKVStore } from '@nangohq/kvstore';
 import type { KVStore } from '@nangohq/kvstore';
 import type { MessageRow } from '@nangohq/types';
+import { client } from './es/client.js';
 
 export const logger = getLogger('logs');
 
@@ -21,8 +22,9 @@ export async function destroy() {
     logger.info('Destroying logs...');
     if (kvstorePromise) {
         await (await kvstorePromise)?.destroy();
+        kvstorePromise = undefined;
     }
-    kvstorePromise = undefined;
+    await client.close();
 }
 
 export const logLevelToLogger = {

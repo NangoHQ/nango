@@ -35,7 +35,7 @@ Nango leverages the timestamp of the last sync as a cursor for incremental syncs
 
 In the case of incremental syncing, the first sync execution is heavier because it fetches all of the historical data (how far back it should go depends on your integration script logic). This is called an initial sync execution in Nango. Subsequent sync executions should be lighter, particularly if your syncing frequency is high.
 
-# Sync webooks
+# Sync webhooks
 
 Nango sends [webhooks](/guides/webhooks/webhooks-from-nango) upon the completion of sync executions that result in new data. These webhooks allow you to promptly fetch the new records from the sync endpoint. 
 

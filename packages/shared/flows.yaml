@@ -4916,7 +4916,7 @@ integrations:
             fetch-google-doc:
                 input: IdEntity
                 description: |
-                    Fetches the content of a native google document given its ID. Outputs 
+                    Fetches the content of a native google document given its ID. Outputs
                     a JSON reprensentation of a google doc.
                 output: JSONDocument
                 endpoint:
@@ -4924,6 +4924,39 @@ integrations:
                     path: /fetch-google-document
                     group: Documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-folders:
+                input: FetchFoldersInput
+                description: >
+                    Fetches the content of a folder given its ID. The output is a
+
+                    list of folders within the specified folder if an id is provided.
+
+                    If no id is provided, the output is a list of folders at the root
+                    level.
+                output: GoogleDriveFolder
+                endpoint:
+                    method: GET
+                    path: /fetch-folders
+                    group: Folders
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            upload-document:
+                input: UploadFileInput
+                description: >
+                    Uploads a file to Google Drive. The file is uploaded to the root
+                    directory
+
+                    of the authenticated user's Google Drive account. If a folder ID is
+                    provided,
+
+                    the file is uploaded to the specified folder.
+                output: GoogleDocument
+                endpoint:
+                    method: POST
+                    path: /upload-document
+                    group: Documents
+                scopes: >-
+                    https://www.googleapis.com/auth/drive.file
+                    https://www.googleapis.com/auth/drive.metadata
         models:
             IdEntity:
                 id: string
@@ -4970,6 +5003,28 @@ integrations:
                 namedRanges: object
                 inlineObjects: object
                 positionedObjects: object
+            FetchFoldersInput:
+                id?: string
+                nextPageToken?: string | undefined
+            GoogleDriveFolder:
+                folders?: GoogleDocument[]
+                nextPageToken?: string | undefined
+            GoogleDocument:
+                id: string
+                name: string
+                mimeType: string
+                parents?: string[]
+                modifiedTime?: string
+                createdTime?: string
+                webViewLink?: string
+                kind?: string
+            UploadFileInput:
+                content: string
+                name: string
+                mimeType: string
+                folderId?: string | undefined
+                description?: string | undefined
+                isBase64?: boolean | undefined
     google-mail:
         syncs:
             emails:
@@ -5097,6 +5152,227 @@ integrations:
                 dataSources: object[]
                 dataSourceSchedules: object[]
     gorgias:
+        syncs:
+            tickets:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of tickets with their associated messages
+                output: Ticket
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - tickets:read
+                endpoint:
+                    method: GET
+                    path: /tickets
+                    group: Tickets
+                version: 1.0.2
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: full
+                track_deletes: true
+                runs: every 6 hours
+                output: GorgiasUser
+                scopes:
+                    - users:read
+        actions:
+            create-ticket:
+                description: |
+                    Creates a new ticket
+                input: CreateTicketInput
+                scopes:
+                    - tickets:write
+                    - account:read
+                    - customers:write
+                    - customers:read
+                endpoint:
+                    method: POST
+                    path: /ticket
+                    group: Tickets
+                output: Ticket
+            create-user:
+                description: >
+                    Creates a new user with a role in Gorgias. Defaults to agent if a role
+                    is not provided
+                input: GorgiasCreateUser
+                output: GorgiasUser
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
+                version: 1.0.0
+            delete-user:
+                description: Deletes a user in Gorgias
+                output: SuccessResponse
+                input: IdEntity
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            Ticket:
+                id: number
+                assignee_user: AssigneeUser | null
+                channel: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    help-center | instagram-ad-comment | instagram-comment |
+                    instagram-direct-message | instagram-mention | internal-note | phone |
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
+                closed_datetime: string | null
+                created_datetime: string | null
+                excerpt?: string | undefined
+                external_id: string | null
+                from_agent: boolean
+                integrations?: array | null | undefined
+                is_unread: boolean
+                language: string | null
+                last_message_datetime: string | null
+                last_received_message_datetime: string | null
+                messages_count?: number | undefined
+                messages: Message[]
+                meta: object | null
+                opened_datetime: string | null
+                snooze_datetime: string | null
+                status: open | closed
+                subject: string | null
+                tags:
+                    - id: number
+                      name: string
+                      uri: string | null
+                      decoration: object | null
+                      created_datetime: string | null
+                      deleted_datetime?: string | null | undefined
+                spam: boolean | null
+                trashed_datetime: string | null
+                updated_datetime: string | null
+                via: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    form | gorgias_chat | help-center | helpdesk | instagram |
+                    instagram-ad-comment | instagram-comment | instagram-direct-message |
+                    instagram-mention | internal-note | offline_capture | phone | rule |
+                    self_service | shopify | sms | twilio | twitter |
+                    twitter-direct-message | whatsapp | yotpo | yotpo-review | zendesk
+                uri: string
+            Message:
+                id: number
+                uri: string
+                message_id: string | null
+                integration_id: number | null
+                rule_id: number | null
+                external_id: string | null
+                ticket_id: number
+                channel: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    help-center | instagram-ad-comment | instagram-comment |
+                    instagram-direct-message | instagram-mention | internal-note | phone |
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
+                via: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    form | gorgias_chat | help-center | helpdesk | instagram |
+                    instagram-ad-comment | instagram-comment | instagram-direct-message |
+                    instagram-mention | internal-note | offline_capture | phone | rule |
+                    self_service | shopify | sms | twilio | twitter |
+                    twitter-direct-message | whatsapp | yotpo | yotpo-review | zendesk
+                subject: string | null
+                body_text: string | null
+                body_html: string | null
+                stripped_text: string | null
+                stripped_html: string | null
+                stripped_signature: string | null
+                public: boolean
+                from_agent: boolean
+                sender: RecieverSender
+                receiver: RecieverSender | null
+                attachments: Attachment[] | null
+                meta: object | null
+                headers: object | null
+                actions: array | null
+                macros: array | null
+                created_datetime: string | null
+                opened_datetime: string | null
+                failed_datetime: string | null
+                last_sending_error: object | null
+                deleted_datetime: string | null
+                replied_by?: string | null | undefined
+                replied_to?: string | null | undefined
+            AssigneeUser:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+                email: string
+                name: string
+                bio: string | null
+            RecieverSender:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+                email: string | null
+                name: string | null
+            User:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+            Attachment:
+                url: string
+                name: string
+                size: number | null
+                content_type: string
+                public: boolean
+                extra: string | null
+            CreateTicketInput:
+                customer:
+                    phone_number: string
+                    email?: string | undefined
+                ticket:
+                    messages: CreateTicketMessage[]
+            CreateTicketMessage:
+                attachments:
+                    - url: string
+                      name: string
+                      size: number
+                      content_type: string
+                body_html: string
+                body_text: string
+                id: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GorgiasCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: admin | agent | basic-agent | lite-agent | observer-agent
+            GorgiasUser:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    gorgias-basic:
         syncs:
             tickets:
                 runs: every 6 hours
@@ -10248,6 +10524,7 @@ integrations:
                     path: /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
+                version: 1.0.0
             users:
                 runs: every hour
                 description: |
@@ -10266,6 +10543,7 @@ integrations:
                     path: /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
+                version: 1.0.0
         models:
             Metadata:
                 orgsToSync: string[]
