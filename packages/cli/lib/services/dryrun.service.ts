@@ -21,6 +21,7 @@ import { Buffer } from 'buffer';
 import { serializeError } from 'serialize-error';
 import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData, BASE_VARIANT } from '@nangohq/runner-sdk';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
+import { createRequire } from 'module';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -33,6 +34,26 @@ interface RunArgs extends GlobalOptions {
     optionalProviderConfigKey?: string;
     saveResponses?: boolean;
     variant?: string;
+}
+
+const require = createRequire(import.meta.url);
+
+/**
+ * To avoid pre-installing too much things we dynamically load package inside local package.json
+ */
+async function loadDynamicModule(moduleName: string) {
+    try {
+        // Resolve module path from user's working directory
+        const modulePath = require.resolve(moduleName, { paths: [process.cwd()] });
+
+        // Convert to file URL for dynamic import()
+        const moduleUrl = url.pathToFileURL(modulePath).href;
+
+        // Dynamically import the module
+        return await import(moduleUrl);
+    } catch {
+        return null;
+    }
 }
 
 export class DryRunService {
@@ -527,6 +548,13 @@ export class DryRunService {
                 const scriptObj = new vm.Script(wrappedCode, {
                     filename
                 });
+
+                // We can't await inside require so we pre-load before, a bit wasteful if we don't use them but good enough
+                const preloaded = {
+                    soap: await loadDynamicModule('soap'),
+                    botbuilder: await loadDynamicModule('botbuilder')
+                };
+
                 const sandbox = {
                     console,
                     require: (moduleName: string) => {
@@ -541,7 +569,12 @@ export class DryRunService {
                                 return unzipper;
                             case 'soap':
                             case 'botbuilder':
-                                throw new Error(`Module '${moduleName}' not available in dry run. Please test the integration using the Nango dashboard`);
+                                if (!preloaded[moduleName]) {
+                                    throw new Error(
+                                        `Module '${moduleName}' needs to be installed on your side in a package.json. You can also test using the Nango dashboard`
+                                    );
+                                }
+                                return preloaded[moduleName];
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }

@@ -1,4 +1,6 @@
 import './tracer.js';
+
+import * as cron from 'node-cron';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
@@ -7,11 +9,22 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { otlp } from '@nangohq/logs';
+import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { runnersFleet } from './runner/fleet.js';
 import { generateImage } from '@nangohq/fleet';
+import { deleteOldJobsData } from './crons/deleteOldJobsData.js';
 
 const logger = getLogger('Jobs');
+
+process.on('unhandledRejection', (reason) => {
+    logger.error('Received unhandledRejection...', reason);
+    // not closing on purpose
+});
+
+process.on('uncaughtException', (err) => {
+    logger.error('Received uncaughtException...', err);
+    // not closing on purpose
+});
 
 try {
     const port = envs.NANGO_JOBS_PORT;
@@ -45,11 +58,19 @@ try {
     const close = once(() => {
         logger.info('Closing...');
         clearTimeout(healthCheck);
+
+        cron.getTasks().forEach((task) => task.stop());
+
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             processor.stop();
             otlp.stop();
+            await destroyLogs();
             await runnersFleet.stop();
             await db.knex.destroy();
+            await db.readOnly.destroy();
+
+            // TODO: close redis
             process.exit();
         });
     });
@@ -62,16 +83,6 @@ try {
     process.on('SIGTERM', () => {
         logger.info('Received SIGTERM...');
         close();
-    });
-
-    process.on('unhandledRejection', (reason) => {
-        logger.error('Received unhandledRejection...', reason);
-        // not closing on purpose
-    });
-
-    process.on('uncaughtException', (e) => {
-        logger.error('Received uncaughtException...', e);
-        // not closing on purpose
     });
 
     if (envs.RUNNER_TYPE === 'LOCAL') {
@@ -87,6 +98,7 @@ try {
     // Register recurring tasks
     deleteSyncsData();
     timeoutLogsOperations();
+    deleteOldJobsData();
 
     otlp.register(getOtlpRoutes);
 } catch (err) {

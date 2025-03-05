@@ -2,18 +2,29 @@ import { errorToObject, getLogger } from '@nangohq/utils';
 import { createKVStore } from '@nangohq/kvstore';
 import type { KVStore } from '@nangohq/kvstore';
 import type { MessageRow } from '@nangohq/types';
+import { client } from './es/client.js';
 
 export const logger = getLogger('logs');
 
 export const isCli = process.argv.find((value) => value.includes('/bin/nango') || value.includes('cli/dist/index'));
 
-let kvstore: KVStore;
-export async function getKVStore() {
-    if (!kvstore) {
-        kvstore = await createKVStore();
+let kvstorePromise: Promise<KVStore> | undefined;
+export async function getKVStore(): Promise<KVStore> {
+    if (!kvstorePromise) {
+        kvstorePromise = createKVStore();
+        return await kvstorePromise;
     }
 
-    return kvstore;
+    return await kvstorePromise;
+}
+
+export async function destroy() {
+    logger.info('Destroying logs...');
+    if (kvstorePromise) {
+        await (await kvstorePromise)?.destroy();
+        kvstorePromise = undefined;
+    }
+    await client.close();
 }
 
 export const logLevelToLogger = {

@@ -1,6 +1,7 @@
 import type { ScriptTypeLiteral } from '../nangoYaml';
 import type { LegacySyncModelSchema } from './incomingFlow';
 
+// TODO split by type
 export interface SyncDeploymentResult {
     name: string;
     version?: string;
@@ -10,6 +11,7 @@ export interface SyncDeploymentResult {
     input?: string | LegacySyncModelSchema | undefined | null;
     models: string | string[];
     id?: number | undefined;
+    runs?: string | null;
 
     /** @deprecated legacy **/
     sync_name?: string;

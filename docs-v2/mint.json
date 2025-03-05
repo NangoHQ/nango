@@ -176,7 +176,9 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
-                        "guides/syncs/large-datasets"
+                        "guides/syncs/large-datasets",
+                        "guides/syncs/real-time-syncing",
+                        "guides/syncs/sync-partitioning"
                     ]
                 },
                 {
@@ -284,6 +286,7 @@
                 "integrations/all/bitdefender",
                 "integrations/all/bitly",
                 "integrations/all/blackbaud",
+                "integrations/all/blackbaud-basic",
                 "integrations/all/blandai",
                 "integrations/all/boldsign",
                 "integrations/all/booking-com",
@@ -729,7 +732,9 @@
                                 "reference/api/sync/pause",
                                 "reference/api/sync/status",
                                 "reference/api/sync/update-connection-frequency",
-                                "reference/api/sync/environment-variables"
+                                "reference/api/sync/environment-variables",
+                                "reference/api/sync/create-variant",
+                                "reference/api/sync/delete-variant"
                             ]
                         },
                         {

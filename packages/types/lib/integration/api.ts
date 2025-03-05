@@ -3,9 +3,7 @@ import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
 import type { Provider } from '../providers/provider';
 import type { AuthModeType, AuthModes } from '../auth/api';
-import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml';
-import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow';
-import type { JSONSchema7 } from 'json-schema';
+import type { NangoSyncConfig } from '../flow';
 
 export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
     logo: string;
@@ -132,33 +130,6 @@ export type DeleteIntegration = Endpoint<{
         data: { success: boolean };
     };
 }>;
-
-// Todo: Move this type elsewhere?
-export interface NangoSyncConfig {
-    name: string;
-    type?: ScriptTypeLiteral;
-    runs: string;
-    auto_start?: boolean;
-    attributes?: object;
-    description?: string;
-    scopes?: string[];
-    metadata?: NangoConfigMetadata;
-    track_deletes?: boolean;
-    returns: string[] | string;
-    models: any[];
-    endpoints: NangoSyncEndpointV2[];
-    is_public?: boolean | null;
-    pre_built?: boolean | null;
-    version?: string | null;
-    last_deployed?: string | null;
-    id?: number;
-    input?: NangoModel | LegacySyncModelSchema;
-    sync_type?: SyncTypeLiteral;
-    webhookSubscriptions?: string[];
-    enabled?: boolean;
-    json_schema: JSONSchema7 | null;
-    upgrade_version?: string;
-}
 
 export type GetIntegrationFlows = Endpoint<{
     Method: 'GET';

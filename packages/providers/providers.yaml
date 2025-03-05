@@ -553,7 +553,6 @@ apollo-oauth:
     display_name: Apollo (OAuth)
     categories:
         - marketing
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.apollo.io
     token_url: https://app.apollo.io/api/v1/oauth/token
@@ -655,6 +654,7 @@ ashby:
     display_name: Ashby
     categories:
         - ats
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.ashbyhq.com
@@ -1196,6 +1196,38 @@ blackbaud:
     proxy:
         base_url: https://api.sky.blackbaud.com
     docs: https://docs.nango.dev/integrations/all/blackbaud
+
+blackbaud-basic:
+    display_name: Blackbaud (Basic Auth)
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostName}
+        headers:
+            content-type: application/soap+xml; charset=utf-8
+    docs: https://docs.nango.dev/integrations/all/blackbaud-basic
+    docs_connect: https://docs.nango.dev/integrations/all/blackbaud-basic
+    connection_config:
+        hostName:
+            type: string
+            title: Host Name
+            description: Your Blackbaud host name
+            example: https://altrurig01bo3.blackbaudhosting.com
+            pattern: '^https?:\/\/[a-z0-9.-]+(:\d+)?(\/.*)?$'
+            order: 1
+            doc_section: '#step-1-finding-your-host-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Username
+            doc_section: '#step-3-finding-your-username'
+        password:
+            type: string
+            title: Password
+            description: Your Password
+            doc_section: '#step-2-finding-your-password'
 
 blandai:
     display_name: BlandAI
@@ -2164,6 +2196,7 @@ confluence:
     display_name: Confluence
     categories:
         - knowledge-base
+        - popular
     alias: jira
     docs: https://docs.nango.dev/integrations/all/confluence
 
@@ -3069,8 +3102,10 @@ figma:
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
-    token_url: https://www.figma.com/api/oauth/token
-    refresh_url: https://www.figma.com/api/oauth/refresh
+    token_url: https://api.figma.com/v1/oauth/token
+    refresh_url: https://api.figma.com/v1/oauth/refresh
+    token_request_auth_method: basic
+    scope_separator: ','
     disable_pkce: true
     proxy:
         base_url: https://api.figma.com
@@ -3736,6 +3771,7 @@ gong-oauth:
         - marketing
         - productivity
         - video
+        - popular
     authorization_url: https://app.gong.io/oauth2/authorize
     token_url: https://app.gong.io/oauth2/generate-customer-token
     token_response_metadata:
@@ -3918,7 +3954,7 @@ gorgias-basic:
     categories:
         - e-commerce
     proxy:
-        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
+        base_url: https://${connectionConfig.subdomain}.gorgias.com
     docs: https://docs.nango.dev/integrations/all/gorgias-basic
     docs_connect: https://docs.nango.dev/integrations/all/gorgias-basic/connect
     credentials:
@@ -4329,6 +4365,7 @@ hibob-service-user:
     display_name: Hibob Service User
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://api.hibob.com
@@ -4497,6 +4534,7 @@ intercom:
     display_name: Intercom
     categories:
         - marketing
+        - popular
         - support
         - surveys
         - ticketing
@@ -5618,8 +5656,8 @@ mip-cloud:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
-        username: ${credentials.username}
-        password: ${credentials.password}
+        username: ${credential.username}
+        password: ${credential.password}
     token_headers:
         content-type: application/json
     token_response:
@@ -5654,9 +5692,9 @@ mip-on-premise:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/security/login
     token_params:
-        login: ${credentials.login}
-        password: ${credentials.password}
-        org: ${credentials.org}
+        login: ${credential.login}
+        password: ${credential.password}
+        org: ${credential.org}
     token_headers:
         content-type: application/json
     token_response:
@@ -5804,7 +5842,6 @@ netsuite:
     categories:
         - accounting
         - erp
-        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
@@ -5832,6 +5869,7 @@ netsuite-tba:
     categories:
         - accounting
         - erp
+        - popular
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
 
 next-cloud-ocs:
@@ -7009,6 +7047,7 @@ sage-intacct-oauth:
     categories:
         - accounting
         - erp
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://api.intacct.com/ia/api/v1/oauth2/authorize
     token_url: https://api.intacct.com/ia/api/v1/oauth2/token
@@ -8860,6 +8899,7 @@ workday:
     display_name: Workday
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.workday.com
