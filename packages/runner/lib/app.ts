@@ -1,7 +1,7 @@
 import './tracer.js';
 import { server } from './server.js';
 import { stringifyError } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { logger } from './logger.js';
 import { monitorProviders } from '@nangohq/shared';
 import { register } from './register.js';
 import { envs } from './env.js';

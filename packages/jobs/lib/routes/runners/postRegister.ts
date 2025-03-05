@@ -1,24 +1,8 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { runnersFleet } from '../../runner/fleet.js';
-
-const path = '/runners/:nodeId/register';
-const method = 'POST';
-
-export type PostRegister = Endpoint<{
-    Method: typeof method;
-    Path: typeof path;
-    Params: {
-        nodeId: number;
-    };
-    Body: {
-        url: string;
-    };
-    Error: ApiError<'register_failed'>;
-    Success: { status: 'ok' };
-}>;
+import type { PostRegister } from '@nangohq/types';
 
 const validate = validateRequest<PostRegister>({
     parseParams: (data) => z.object({ nodeId: z.coerce.number().positive() }).strict().parse(data),
@@ -44,8 +28,8 @@ const handler = async (req: EndpointRequest<PostRegister>, res: EndpointResponse
 };
 
 export const routeHandler: RouteHandler<PostRegister> = {
-    path,
-    method,
+    method: 'POST',
+    path: '/runners/:nodeId/register',
     validate,
     handler
 };
