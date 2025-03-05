@@ -25,7 +25,7 @@ const BINARY_CONTENT_TYPES = [
     'application/octet-stream'
 ];
 
-export const ffClient = await getFeatureFlagsClient();
+export const featureFlags = await getFeatureFlagsClient();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {

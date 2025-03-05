@@ -4,7 +4,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { DBEnvironment, DBTeam, PatchEnvironment } from '@nangohq/types';
 import { environmentService } from '@nangohq/shared';
 import { environmentToApi } from '../../../formatters/environment.js';
-import { ffClient } from '../../../utils/utils.js';
+import { featureFlags } from '../../../utils/utils.js';
 
 const validationBody = z
     .object({
@@ -86,5 +86,5 @@ async function isOtlpEnabled({ account }: { account: DBTeam }): Promise<boolean>
     if (isEnterprise) {
         return true;
     }
-    return await ffClient.isSet('feature:otlp:account', { distinctId: account.uuid });
+    return await featureFlags.isSet('feature:otlp:account', { distinctId: account.uuid });
 }

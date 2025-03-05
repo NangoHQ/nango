@@ -24,7 +24,7 @@ import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefre
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 import type { HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
-import { ffClient } from '../utils/utils.js';
+import { featureFlags } from '../utils/utils.js';
 
 type ForwardedHeaders = Record<string, string>;
 
@@ -73,7 +73,7 @@ class ProxyController {
 
             const headers = parseHeaders(req);
 
-            const rawBodyFlag = await ffClient.isSet('proxy:rawbody');
+            const rawBodyFlag = await featureFlags.isSet('proxy:rawbody');
             const data = rawBodyFlag ? req.rawBody : req.body;
             let files: ProxyFile[] = [];
             if (Array.isArray(req.files)) {

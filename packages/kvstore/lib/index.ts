@@ -61,13 +61,13 @@ export async function getKVStore(): Promise<KVStore> {
     return await kvstorePromise;
 }
 
-let ffClient: Promise<FeatureFlags> | undefined;
+let featureFlags: Promise<FeatureFlags> | undefined;
 export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
-    if (ffClient) {
-        return await ffClient;
+    if (featureFlags) {
+        return await featureFlags;
     }
 
     const store = await getKVStore();
-    ffClient = Promise.resolve(new FeatureFlags(store));
-    return await ffClient;
+    featureFlags = Promise.resolve(new FeatureFlags(store));
+    return await featureFlags;
 }

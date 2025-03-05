@@ -9,7 +9,7 @@ export class RedisKVStore implements KVStore {
     }
 
     public async destroy(): Promise<void> {
-        // DO nothing
+        // Do nothing because the client is shared across other class
     }
 
     public async get(key: string): Promise<string | null> {
