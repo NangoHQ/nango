@@ -7,6 +7,7 @@ import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 import { PersistClient } from './persist.js';
+import { logger } from '../logger.js';
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -136,7 +137,8 @@ export class NangoActionRunner extends NangoActionBase {
             data
         });
         if (res.isErr()) {
-            throw res.error;
+            logger.error('Failed to log', res.error);
+            // TODO: eventually report but never throw, we don't want logger to kill a script
         }
     }
 
