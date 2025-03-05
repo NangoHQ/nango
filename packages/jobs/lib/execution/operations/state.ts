@@ -32,7 +32,7 @@ async function handlePayloadTooBigError({ taskId, error }: { taskId: string; err
         ) {
             const res = error.payload['response'] as unknown as ApiError<string>;
             if (res.error && res.error.code === 'payload_too_big') {
-                await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_big') });
+                await orchestratorClient.failed({ taskId, error: new NangoError('script_output_too_large') });
             }
         }
     } catch (err) {

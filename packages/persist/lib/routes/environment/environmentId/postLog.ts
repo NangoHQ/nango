@@ -1,15 +1,10 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint, MessageRowInsert } from '@nangohq/types';
+import type { MessageRowInsert, PostLog } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 
 const MAX_LOG_CHAR = 10000;
-
-interface LogBody {
-    activityLogId: string;
-    log: MessageRowInsert;
-}
 
 export const logBodySchema = z.object({
     activityLogId: z.string(),
@@ -46,20 +41,6 @@ export const logBodySchema = z.object({
     })
 });
 
-type PostLog = Endpoint<{
-    Method: typeof method;
-    Path: typeof path;
-    Params: {
-        environmentId: number;
-    };
-    Body: LogBody;
-    Error: ApiError<'post_log_failed'>;
-    Success: never;
-}>;
-
-export const path = '/environment/:environmentId/log';
-const method = 'POST';
-
 const validate = validateRequest<PostLog>({
     parseBody: (data) => {
         return logBodySchema.strict().parse(data);
@@ -92,7 +73,7 @@ const handler = async (req: EndpointRequest<PostLog>, res: EndpointResponse<Post
     return;
 };
 
-export const route: Route<PostLog> = { path, method };
+export const route: Route<PostLog> = { method: 'POST', path: '/environment/:environmentId/log' };
 
 export const routeHandler: RouteHandler<PostLog> = {
     ...route,
