@@ -1,27 +1,9 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint, NangoProps, RunnerOutputError } from '@nangohq/types';
+import type { PutTask } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { handleError, handleSuccess } from '../../execution/operations/handler.js';
 import type { JsonValue } from 'type-fest';
-
-const path = '/tasks/:taskId';
-const method = 'PUT';
-
-type PutTask = Endpoint<{
-    Method: typeof method;
-    Path: typeof path;
-    Params: {
-        taskId: string;
-    };
-    Body: {
-        nangoProps?: NangoProps;
-        error?: RunnerOutputError | undefined;
-        output: JsonValue;
-    };
-    Error: ApiError<'put_task_failed'>;
-    Success: never;
-}>;
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
@@ -114,15 +96,15 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
     if (error) {
         await handleError({ taskId, nangoProps, error });
     } else {
-        await handleSuccess({ taskId, nangoProps, output: output });
+        await handleSuccess({ taskId, nangoProps, output: output || null });
     }
     res.status(204).send();
     return;
 };
 
 export const routeHandler: RouteHandler<PutTask> = {
-    path,
-    method,
+    method: 'PUT',
+    path: '/tasks/:taskId',
     validate,
     handler
 };
