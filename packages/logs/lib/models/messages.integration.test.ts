@@ -32,8 +32,8 @@ describe('model', () => {
         });
 
         it('should paginate', async () => {
-            await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
-            await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
+            await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
+            await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
 
             // First operation = should list one
             const list1 = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
@@ -90,7 +90,7 @@ describe('model', () => {
         });
 
         it('should paginate', async () => {
-            const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
             await ctx.info('1');
             await ctx.info('2');
             await ctx.info('3');

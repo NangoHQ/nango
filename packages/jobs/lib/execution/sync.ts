@@ -150,7 +150,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         };
 
         if (task.debug) {
-            await logCtx.debug(`Last sync date is`, lastSyncDate);
+            await logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
