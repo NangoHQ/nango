@@ -1,8 +1,8 @@
 import type { estypes } from '@elastic/elasticsearch';
-import type { MessageRow } from '@nangohq/types';
+import type { MessageRow, OperationRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, estypes.MappingProperty> = {
+const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -62,10 +62,8 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     },
 
     type: { type: 'keyword' },
-    title: { type: 'keyword' },
     level: { type: 'keyword' },
     state: { type: 'keyword' },
-    code: { type: 'keyword' },
 
     source: { type: 'keyword' },
 

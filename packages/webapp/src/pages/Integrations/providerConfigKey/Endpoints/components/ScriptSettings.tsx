@@ -56,7 +56,7 @@ export const ScriptSettings: React.FC<{
     // Frequency
     const [openFrequency, setOpenFrequency] = useState(false);
     const [loadingFrequency, setLoadingFrequency] = useState(false);
-    const [frequency, setFrequency] = useState(flow.runs);
+    const [frequency, setFrequency] = useState<string>(flow.runs || '');
     const [frequencyError, setFrequencyError] = useState<string | null>(null);
 
     const onEditFrequency = async () => {
@@ -240,7 +240,7 @@ export const ScriptSettings: React.FC<{
                                 <Dialog
                                     open={openFrequency}
                                     onOpenChange={(v) => {
-                                        if (v) onFrequencyChange(flow.runs);
+                                        if (v) onFrequencyChange(flow.runs!);
                                         setOpenFrequency(v);
                                     }}
                                 >

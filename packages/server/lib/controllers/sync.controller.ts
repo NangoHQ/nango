@@ -6,10 +6,8 @@ import {
     connectionService,
     getSyncs,
     verifyOwnership,
-    isSyncValid,
     getSyncsByProviderConfigKey,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    getProviderConfigBySyncAndAccount,
     SyncCommand,
     errorManager,
     analytics,
@@ -325,25 +323,6 @@ class SyncController {
         }
     }
 
-    public async getSyncProvider(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-            const { syncName } = req.query;
-
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name!' });
-
-                return;
-            }
-
-            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId);
-
-            res.send(providerConfigKey);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async pause(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const { syncs, provider_config_key, connection_id } = req.body;
@@ -611,47 +590,6 @@ class SyncController {
             const attributes = await getAttributes(provider_config_key as string, sync_name as string);
 
             res.status(200).send(attributes);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    public async deleteSync(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const syncId = req.params['syncId'];
-            const { connection_id, provider_config_key } = req.query;
-
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            if (!syncId) {
-                res.status(400).send({ message: 'Missing sync id' });
-
-                return;
-            }
-
-            if (!connection_id) {
-                res.status(400).send({ message: 'Missing connection id' });
-
-                return;
-            }
-
-            const environmentId = res.locals['environment'].id;
-
-            const isValid = await isSyncValid(connection_id as string, provider_config_key as string, environmentId, syncId);
-
-            if (!isValid) {
-                res.status(400).send({ message: 'Invalid sync id' });
-
-                return;
-            }
-
-            await syncManager.softDeleteSync(syncId, environmentId, orchestrator);
-
-            res.sendStatus(204);
         } catch (err) {
             next(err);
         }

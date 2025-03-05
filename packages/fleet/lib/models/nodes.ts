@@ -177,7 +177,8 @@ export async function search(
         }
 
         const nextCursor = nodes[nodes.length - 1]?.id;
-        if (!nextCursor) {
+        const hasMore = nodes.length === pageSize;
+        if (!nextCursor || !hasMore) {
             return nodesMap;
         }
 

@@ -28,7 +28,9 @@ import type {
     SignatureCredentials,
     PostPublicConnectSessionsReconnect,
     GetPublicConnection,
-    NangoRecord
+    NangoRecord,
+    PostSyncVariant,
+    DeleteSyncVariant
 } from '@nangohq/types';
 import type {
     CreateConnectionOAuth1,
@@ -747,6 +749,40 @@ export class Nango {
     }
 
     /**
+     * Creates a new sync variant
+     * @param props - The properties for the new variant (provider_config_key, connection_id, name, variant)
+     * @returns A promise that resolves with the new sync variant (id, name, variant)
+     */
+    public async createSyncVariant(props: PostSyncVariant['Body'] & PostSyncVariant['Params']): Promise<PostSyncVariant['Success']> {
+        const url = `${this.serverUrl}/sync/${props.name}/variant/${props.variant}`;
+        const body = {
+            provider_config_key: props.provider_config_key,
+            connection_id: props.connection_id
+        };
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders() });
+        return response.data;
+    }
+
+    /**
+     *
+     * Delete an existing sync variant
+     * @param props - The properties of the variant to delete (provider_config_key, connection_id, name, variant)
+     * @returns A promise that resolves with void when the sync variant is deleted
+     */
+    public async deleteSyncVariant(props: DeleteSyncVariant['Body'] & DeleteSyncVariant['Params']): Promise<DeleteSyncVariant['Success']> {
+        const url = `${this.serverUrl}/sync/${props.name}/variant/${props.variant}`;
+
+        const response = await this.http.delete(url, {
+            data: {
+                provider_config_key: props.provider_config_key,
+                connection_id: props.connection_id
+            },
+            headers: this.enrichHeaders()
+        });
+        return response.data;
+    }
+
+    /**
      * Retrieve the environment variables as added in the Nango dashboard
      * @returns A promise that resolves with an array of environment variables
      */
@@ -840,8 +876,8 @@ export class Nango {
                 : ({} as CustomHeaders);
 
         const headers: Record<string, string | number | boolean | CustomHeaders> = {
-            'Connection-Id': connectionId as string,
-            'Provider-Config-Key': providerConfigKey as string,
+            'Connection-Id': connectionId!,
+            'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,

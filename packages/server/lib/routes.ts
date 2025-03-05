@@ -111,6 +111,9 @@ import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
+import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
+import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
+import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 
 export const router = express.Router();
 
@@ -204,7 +207,7 @@ publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPubli
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.use('/unauth', jsonContentTypeMiddleware);
-// @deprecated
+// @deprecated use /auth/unauthenticated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
@@ -216,9 +219,9 @@ publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustom
 
 // API routes (Secret key auth).
 publicAPI.use('/provider', jsonContentTypeMiddleware);
-// @deprecated
+// @deprecated use /providers
 publicAPI.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
-// @deprecated
+// @deprecated use /providers
 publicAPI.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
@@ -264,16 +267,17 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
-publicAPI.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
-publicAPI.route('/sync/:syncId').delete(apiAuth, syncController.deleteSync.bind(syncController));
+publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, postSyncVariant);
+publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVariant);
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
-publicAPI.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
-publicAPI.route('/scripts/config').get(apiAuth, flowController.getFlowConfig.bind(flowController));
+// @deprecated use /flow/configs
+publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
@@ -363,8 +367,6 @@ web.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.g
 web.route('/api/v1/connect/sessions').post(webAuth, postInternalConnectSessions);
 
 web.route('/api/v1/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-// TODO: delete this unused routes
-web.route('/api/v1/integrations/:providerConfigKey/connections').get(webAuth, configController.getConnections.bind(connectionController));
 web.route('/api/v1/integrations').post(webAuth, postIntegration);
 web.route('/api/v1/integrations/:providerConfigKey').get(webAuth, getIntegration);
 web.route('/api/v1/integrations/:providerConfigKey').patch(webAuth, patchIntegration);

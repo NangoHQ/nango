@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/refs/heads/main/schemas/v3.1/schema.yaml
 openapi: 3.1.0
 info:
     title: 'Nango API'
@@ -839,7 +840,7 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all integration scripts
+            description: Return the configuration for all integration scripts.
             responses:
                 '200':
                     description: Successfully returned integration scripts config
@@ -855,31 +856,22 @@ paths:
                                         items:
                                             type: object
                                             properties:
+                                                id:
+                                                    type: number
                                                 name:
                                                     type: string
                                                     example: 'github-issues'
+                                                enabled:
+                                                    type: boolean
                                                 type:
                                                     type: string
                                                     example: 'sync'
+                                                json_schema:
+                                                    type: object
                                                 models:
                                                     type: array
                                                     items:
-                                                        type: object
-                                                        properties:
-                                                            name:
-                                                                type: string
-                                                                example: 'GithubIssue'
-                                                            fields:
-                                                                type: array
-                                                                items:
-                                                                    type: object
-                                                                    properties:
-                                                                        name:
-                                                                            type: string
-                                                                            example: 'title'
-                                                                        type:
-                                                                            type: string
-                                                                            example: 'string'
+                                                        $ref: '#/components/schemas/NangoModel'
                                                 sync_type:
                                                     type: string
                                                     example: 'full'
@@ -930,31 +922,18 @@ paths:
                                         items:
                                             type: object
                                             properties:
+                                                id:
+                                                    type: number
                                                 name:
                                                     type: string
                                                     example: 'github-issues'
                                                 type:
                                                     type: string
-                                                    example: 'sync'
+                                                    example: 'action'
                                                 models:
                                                     type: array
                                                     items:
-                                                        type: object
-                                                        properties:
-                                                            name:
-                                                                type: string
-                                                                example: 'GithubIssue'
-                                                            fields:
-                                                                type: array
-                                                                items:
-                                                                    type: object
-                                                                    properties:
-                                                                        name:
-                                                                            type: string
-                                                                            example: 'id'
-                                                                        type:
-                                                                            type: string
-                                                                            example: 'integer'
+                                                        $ref: '#/components/schemas/NangoModel'
                                                 last_deployed:
                                                     type: string
                                                     example: '2024-02-28T20:16:38.052Z'
@@ -985,7 +964,7 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
-                                    postConnectionScripts:
+                                    on-events:
                                         type: array
                                         items:
                                             type: string
@@ -993,14 +972,9 @@ paths:
                                         type: string
                                         example: 'github'
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /records:
         get:
@@ -1055,6 +1029,12 @@ paths:
                       items:
                           type: string
                       max: 100
+                - name: variant
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: The variant of the model to fetch
                 - name: Connection-Id
                   in: header
                   required: true
@@ -1139,10 +1119,27 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: An array of sync names to trigger. If the array is empty, all syncs are triggered.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to pause. If empty, all syncs are triggered
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to trigger. If empty, all syncs are triggered
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
                                 full_resync:
                                     type: boolean
                                     description: Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
@@ -1188,10 +1185,27 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be started for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: A list of sync names that you wish to start.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to start.
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to start.
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
             responses:
                 '200':
                     description: Successfully started the sync
@@ -1232,10 +1246,27 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be paused for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: A list of sync names that you wish to pause.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to pause.
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to start.
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
             responses:
                 '200':
                     description: Successfully paused the sync
@@ -1273,7 +1304,7 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs per the integration
+                  description: The name of the syncs you want to fetch a status for, as a comma-separated list. Pass in "*" to return all syncs for the integration. For variants, use the format "syncName::variantName".
                 - name: connection_id
                   in: query
                   required: false
@@ -1302,6 +1333,9 @@ paths:
                                                 name:
                                                     type: string
                                                     description: The name of the sync.
+                                                variant:
+                                                    type: string
+                                                    description: The variant of the sync.
                                                 status:
                                                     type: string
                                                     enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
@@ -1335,6 +1369,197 @@ paths:
                                     message:
                                         type: string
 
+    /sync/{name}/variant/{variant}:
+        post:
+            description: Creates a new sync variant for a specific connection
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the sync
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the variant to create. Cannot be "base" (protected name).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - connection_id
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used when creating the connection
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection to create the sync variant for
+            responses:
+                '200':
+                    description: Successfully created the sync variant
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - id
+                                    - name
+                                    - variant
+                                properties:
+                                    id:
+                                        type: string
+                                        description: The unique identifier for the created sync variant
+                                    name:
+                                        type: string
+                                        description: The name of the sync
+                                    variant:
+                                        type: string
+                                        description: The name of the variant
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum:
+                                                    [
+                                                        invalid_body,
+                                                        invalid_uri_params,
+                                                        invalid_query_params,
+                                                        invalid_variant,
+                                                        unknown_connection,
+                                                        unknown_provider_config,
+                                                        unknown_sync,
+                                                        sync_variant_already_exists,
+                                                        resource_capped,
+                                                        feature_disabled
+                                                    ]
+                                            message:
+                                                type: string
+                                            errors:
+                                                type: array
+                                                items:
+                                                    type: object
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [failed_sync_variant_creation]
+                                            message:
+                                                type: string
+        delete:
+            description: Deletes a sync variant for a specific connection
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the sync
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the variant to delete. Cannot be "base" (protected name).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - connection_id
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used when creating the connection
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection the sync variant belongs to
+            responses:
+                '200':
+                    description: Successfully deleted the sync variant
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the deletion was successful
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [invalid_body, invalid_uri_params, invalid_query_params, invalid_variant, unknown_connection]
+                                            message:
+                                                type: string
+                                            errors:
+                                                type: array
+                                                items:
+                                                    type: object
+                '404':
+                    description: Sync variant not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [not_found]
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [failed_sync_variant_deletion]
+                                            message:
+                                                type: string
+
     /sync/update-connection-frequency:
         put:
             description: Override a sync's default frequency for a specific connection, or revert to the default frequency.
@@ -1359,6 +1584,9 @@ paths:
                                 sync_name:
                                     type: string
                                     description: The name of the sync you want to update
+                                sync_variant:
+                                    type: string
+                                    description: The variant of the sync you want to update
                                 frequency:
                                     type: string
                                     nullable: true
@@ -2731,3 +2959,49 @@ components:
                     type: string
                 credentials:
                     $ref: '#/components/schemas/AllAuthCredentials'
+
+        ## -------- Yaml
+        NangoModel:
+            type: object
+            additionalProperties: false
+            properties:
+                fields:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NangoModelField'
+                isAnon:
+                    type: boolean
+                name:
+                    type: string
+            required:
+                - name
+                - fields
+        NangoModelField:
+            type: object
+            additionalProperties: false
+            required:
+                - name
+                - value
+            properties:
+                array:
+                    type: boolean
+                dynamic:
+                    type: boolean
+                model:
+                    type: boolean
+                name:
+                    type: string
+                optional:
+                    type: boolean
+                tsType:
+                    type: boolean
+                union:
+                    type: boolean
+                value:
+                    anyOf:
+                        - type: string
+                        - type: number
+                        - type: boolean
+                        - items:
+                              type: array
+                              $ref: '#/components/schemas/NangoModelField'

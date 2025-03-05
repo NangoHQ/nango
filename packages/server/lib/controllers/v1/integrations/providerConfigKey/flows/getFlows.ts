@@ -1,7 +1,6 @@
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetIntegration, GetIntegrationFlows } from '@nangohq/types';
-import type { NangoSyncConfig } from '@nangohq/shared';
+import type { GetIntegration, GetIntegrationFlows, NangoSyncConfig } from '@nangohq/types';
 import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { validationParams } from '../getIntegration.js';
 

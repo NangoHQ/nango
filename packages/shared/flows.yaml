@@ -2077,6 +2077,18 @@ integrations:
                     group: Users
                 output: SuccessResponse
                 input: BoxDeleteUser
+            fetch-file:
+                description: >-
+                    Fetches the content of a file given its ID, processes the data using a
+                    response stream, and encodes it into a base64 string. This
+                    base64-encoded string can be used to recreate the file in its original
+                    format using an external tool.
+                endpoint:
+                    method: GET
+                    path: /file
+                    group: Files
+                output: string
+                input: IdEntity
         syncs:
             users:
                 runs: every day
@@ -2089,6 +2101,30 @@ integrations:
                     method: GET
                     path: /users
                     group: Users
+            folders:
+                runs: every day
+                track_deletes: true
+                sync_type: full
+                description: Sync the folders at the root level from Box
+                output: Folder
+                endpoint:
+                    method: GET
+                    path: /root-folders
+                    group: Folders
+            files:
+                runs: every day
+                description: >
+                    Sync the metadata of a specified files or folders paths from Box. A
+                    file or folder id or path can be used.
+                input: BoxMetadata
+                auto_start: false
+                output: BoxDocument
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /files
+                    group: Files
         models:
             SuccessResponse:
                 success: boolean
@@ -2167,6 +2203,19 @@ integrations:
                 id: string
                 force?: boolean
                 notify?: boolean
+            BoxMetadata:
+                files: string[]
+                folders: string[]
+            BoxDocument:
+                id: string
+                name: string
+                download_url: string
+                modified_at: string
+            Folder:
+                id: string
+                name: string
+                modified_at: string
+                url: string | null
     brightcrowd:
         syncs:
             books:
@@ -4867,7 +4916,7 @@ integrations:
             fetch-google-doc:
                 input: IdEntity
                 description: |
-                    Fetches the content of a native google document given its ID. Outputs 
+                    Fetches the content of a native google document given its ID. Outputs
                     a JSON reprensentation of a google doc.
                 output: JSONDocument
                 endpoint:
@@ -4875,6 +4924,39 @@ integrations:
                     path: /fetch-google-document
                     group: Documents
                 scopes: https://www.googleapis.com/auth/drive.readonly
+            fetch-folders:
+                input: FetchFoldersInput
+                description: >
+                    Fetches the content of a folder given its ID. The output is a
+
+                    list of folders within the specified folder if an id is provided.
+
+                    If no id is provided, the output is a list of folders at the root
+                    level.
+                output: GoogleDriveFolder
+                endpoint:
+                    method: GET
+                    path: /fetch-folders
+                    group: Folders
+                scopes: https://www.googleapis.com/auth/drive.readonly
+            upload-document:
+                input: UploadFileInput
+                description: >
+                    Uploads a file to Google Drive. The file is uploaded to the root
+                    directory
+
+                    of the authenticated user's Google Drive account. If a folder ID is
+                    provided,
+
+                    the file is uploaded to the specified folder.
+                output: GoogleDocument
+                endpoint:
+                    method: POST
+                    path: /upload-document
+                    group: Documents
+                scopes: >-
+                    https://www.googleapis.com/auth/drive.file
+                    https://www.googleapis.com/auth/drive.metadata
         models:
             IdEntity:
                 id: string
@@ -4921,6 +5003,28 @@ integrations:
                 namedRanges: object
                 inlineObjects: object
                 positionedObjects: object
+            FetchFoldersInput:
+                id?: string
+                nextPageToken?: string | undefined
+            GoogleDriveFolder:
+                folders?: GoogleDocument[]
+                nextPageToken?: string | undefined
+            GoogleDocument:
+                id: string
+                name: string
+                mimeType: string
+                parents?: string[]
+                modifiedTime?: string
+                createdTime?: string
+                webViewLink?: string
+                kind?: string
+            UploadFileInput:
+                content: string
+                name: string
+                mimeType: string
+                folderId?: string | undefined
+                description?: string | undefined
+                isBase64?: boolean | undefined
     google-mail:
         syncs:
             emails:
@@ -4939,6 +5043,20 @@ integrations:
                     method: GET
                     path: /emails
                     group: Emails
+            labels:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of labels from gmail.
+                version: 1.0.0
+                scopes:
+                    - https://www.googleapis.com/auth/gmail.readonly
+                output: GmailLabel
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /labels
+                    group: Labels
         actions:
             send-email:
                 input: GmailEmailInput
@@ -4995,6 +5113,20 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            GmailLabel:
+                id: string
+                name: string
+                messageListVisibility: string | null
+                labelListVisibility: string | null
+                type: string
+                messagesTotal: number
+                messagesUnread: number
+                threadsTotal: number
+                threadsUnread: number
+                color: LabelColor | null
+            LabelColor:
+                textColor: string
+                backgroundColor: string
     google-sheet:
         actions:
             fetch-spreadsheet:
@@ -5034,7 +5166,7 @@ integrations:
                     method: GET
                     path: /tickets
                     group: Tickets
-                version: 1.0.1
+                version: 1.0.2
             users:
                 description: |
                     Fetches the list of users
@@ -5071,10 +5203,11 @@ integrations:
                 output: GorgiasUser
                 endpoint:
                     method: POST
-                    path: /user
+                    path: /users
                     group: Users
                 scopes:
                     - users:write
+                version: 1.0.0
             delete-user:
                 description: Deletes a user in Gorgias
                 output: SuccessResponse
@@ -5100,7 +5233,8 @@ integrations:
                     facebook-mention | facebook-messenger | facebook-recommendations |
                     help-center | instagram-ad-comment | instagram-comment |
                     instagram-direct-message | instagram-mention | internal-note | phone |
-                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
                 closed_datetime: string | null
                 created_datetime: string | null
                 excerpt?: string | undefined
@@ -5150,7 +5284,8 @@ integrations:
                     facebook-mention | facebook-messenger | facebook-recommendations |
                     help-center | instagram-ad-comment | instagram-comment |
                     instagram-direct-message | instagram-mention | internal-note | phone |
-                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
                 via: >-
                     aircall | api | chat | contact_form | email | facebook |
                     facebook-mention | facebook-messenger | facebook-recommendations |
@@ -5231,7 +5366,228 @@ integrations:
                 firstName: string
                 lastName: string
                 email: string
-                role: admin | agent | basic-agent | lite-agent | observer-agent
+                role?: admin | agent | basic-agent | lite-agent | observer-agent
+            GorgiasUser:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+    gorgias-basic:
+        syncs:
+            tickets:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of tickets with their associated messages
+                output: Ticket
+                sync_type: full
+                track_deletes: true
+                scopes:
+                    - tickets:read
+                endpoint:
+                    method: GET
+                    path: /tickets
+                    group: Tickets
+                version: 1.0.2
+            users:
+                description: |
+                    Fetches the list of users
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+                sync_type: full
+                track_deletes: true
+                runs: every 6 hours
+                output: GorgiasUser
+                scopes:
+                    - users:read
+        actions:
+            create-ticket:
+                description: |
+                    Creates a new ticket
+                input: CreateTicketInput
+                scopes:
+                    - tickets:write
+                    - account:read
+                    - customers:write
+                    - customers:read
+                endpoint:
+                    method: POST
+                    path: /ticket
+                    group: Tickets
+                output: Ticket
+            create-user:
+                description: >
+                    Creates a new user with a role in Gorgias. Defaults to agent if a role
+                    is not provided
+                input: GorgiasCreateUser
+                output: GorgiasUser
+                endpoint:
+                    method: POST
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
+                version: 1.0.0
+            delete-user:
+                description: Deletes a user in Gorgias
+                output: SuccessResponse
+                input: IdEntity
+                endpoint:
+                    method: DELETE
+                    path: /users
+                    group: Users
+                scopes:
+                    - users:write
+        models:
+            IdEntity:
+                id: string
+            SuccessResponse:
+                success: boolean
+            ActionResponseError:
+                message: string
+            Ticket:
+                id: number
+                assignee_user: AssigneeUser | null
+                channel: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    help-center | instagram-ad-comment | instagram-comment |
+                    instagram-direct-message | instagram-mention | internal-note | phone |
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
+                closed_datetime: string | null
+                created_datetime: string | null
+                excerpt?: string | undefined
+                external_id: string | null
+                from_agent: boolean
+                integrations?: array | null | undefined
+                is_unread: boolean
+                language: string | null
+                last_message_datetime: string | null
+                last_received_message_datetime: string | null
+                messages_count?: number | undefined
+                messages: Message[]
+                meta: object | null
+                opened_datetime: string | null
+                snooze_datetime: string | null
+                status: open | closed
+                subject: string | null
+                tags:
+                    - id: number
+                      name: string
+                      uri: string | null
+                      decoration: object | null
+                      created_datetime: string | null
+                      deleted_datetime?: string | null | undefined
+                spam: boolean | null
+                trashed_datetime: string | null
+                updated_datetime: string | null
+                via: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    form | gorgias_chat | help-center | helpdesk | instagram |
+                    instagram-ad-comment | instagram-comment | instagram-direct-message |
+                    instagram-mention | internal-note | offline_capture | phone | rule |
+                    self_service | shopify | sms | twilio | twitter |
+                    twitter-direct-message | whatsapp | yotpo | yotpo-review | zendesk
+                uri: string
+            Message:
+                id: number
+                uri: string
+                message_id: string | null
+                integration_id: number | null
+                rule_id: number | null
+                external_id: string | null
+                ticket_id: number
+                channel: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    help-center | instagram-ad-comment | instagram-comment |
+                    instagram-direct-message | instagram-mention | internal-note | phone |
+                    sms | twitter | twitter-direct-message | whatsapp | yotpo-review |
+                    string
+                via: >-
+                    aircall | api | chat | contact_form | email | facebook |
+                    facebook-mention | facebook-messenger | facebook-recommendations |
+                    form | gorgias_chat | help-center | helpdesk | instagram |
+                    instagram-ad-comment | instagram-comment | instagram-direct-message |
+                    instagram-mention | internal-note | offline_capture | phone | rule |
+                    self_service | shopify | sms | twilio | twitter |
+                    twitter-direct-message | whatsapp | yotpo | yotpo-review | zendesk
+                subject: string | null
+                body_text: string | null
+                body_html: string | null
+                stripped_text: string | null
+                stripped_html: string | null
+                stripped_signature: string | null
+                public: boolean
+                from_agent: boolean
+                sender: RecieverSender
+                receiver: RecieverSender | null
+                attachments: Attachment[] | null
+                meta: object | null
+                headers: object | null
+                actions: array | null
+                macros: array | null
+                created_datetime: string | null
+                opened_datetime: string | null
+                failed_datetime: string | null
+                last_sending_error: object | null
+                deleted_datetime: string | null
+                replied_by?: string | null | undefined
+                replied_to?: string | null | undefined
+            AssigneeUser:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+                email: string
+                name: string
+                bio: string | null
+            RecieverSender:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+                email: string | null
+                name: string | null
+            User:
+                id: number
+                firstname: string
+                lastname: string
+                meta: object | null
+            Attachment:
+                url: string
+                name: string
+                size: number | null
+                content_type: string
+                public: boolean
+                extra: string | null
+            CreateTicketInput:
+                customer:
+                    phone_number: string
+                    email?: string | undefined
+                ticket:
+                    messages: CreateTicketMessage[]
+            CreateTicketMessage:
+                attachments:
+                    - url: string
+                      name: string
+                      size: number
+                      content_type: string
+                body_html: string
+                body_text: string
+                id: string
+            CreateUser:
+                firstName: string
+                lastName: string
+                email: string
+            GorgiasCreateUser:
+                firstName: string
+                lastName: string
+                email: string
+                role?: admin | agent | basic-agent | lite-agent | observer-agent
             GorgiasUser:
                 id: string
                 firstName: string
@@ -10168,6 +10524,7 @@ integrations:
                     path: /microsoft-teams/microsoft-org-unit
                 scopes:
                     - GroupMember.Read.All
+                version: 1.0.0
             users:
                 runs: every hour
                 description: |
@@ -10186,6 +10543,7 @@ integrations:
                     path: /microsoft-teams/microsoft-users
                 scopes:
                     - User.Read.All
+                version: 1.0.0
         models:
             Metadata:
                 orgsToSync: string[]
@@ -11223,6 +11581,40 @@ integrations:
                     method: GET
                     path: /emails
                 version: 1.1.0
+            events:
+                description: |
+                    Sync calendar events on the primary calendar going back one month and
+                    save the entire object as specified by the Outlook Calendar API
+                runs: every 5 minutes
+                output: OutlookCalendarEvent
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /events
+                scopes: Calendars.Read
+            calendars:
+                description: |
+                    Sync the calendars list of the user
+                track_deletes: true
+                runs: every hour
+                output: OutlookCalendar
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /calendars
+                scopes: Calendars.Read
+            folders:
+                runs: every 6 hours
+                description: |
+                    Fetches a list of folders from outlook.
+                scopes:
+                    - Mail.Read
+                output: OutlookFolder
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /folders
         actions:
             fetch-attachment:
                 input: DocumentInput
@@ -11254,6 +11646,172 @@ integrations:
             DocumentInput:
                 threadId: string
                 attachmentId: string
+            OutlookCalendar:
+                id: string
+                allowedOnlineMeetingProviders: string[]
+                canEdit: boolean
+                canShare: boolean
+                canViewPrivateItems: boolean
+                changeKey: string
+                color: >-
+                    auto | lightBlue | lightGreen | lightOrange | lightGray | lightYellow
+                    | lightTeal | lightPink | lightBrown | lightRed | maxColor
+                defaultOnlineMeetingProvider: string
+                hexColor: string
+                isDefaultCalendar: boolean
+                isRemovable: boolean
+                isTallyingResponses: boolean
+                name: string
+                owner: EmailAddress
+            OutlookCalendarEvent:
+                id: string
+                allowNewTimeProposals?: boolean
+                attendees: Attendee[]
+                body?:
+                    content?: string
+                    contentType?: text | html
+                bodyPreview: string
+                categories?: string[]
+                changeKey?: string
+                createdDateTime?: string
+                end:
+                    dateTime: string
+                    timeZone: string
+                hasAttachments?: boolean
+                hideAttendees?: boolean
+                iCalUId?: string
+                importance: low | normal | high
+                isAllDay: boolean
+                isCancelled: boolean
+                isDraft?: boolean
+                isOnlineMeeting?: boolean
+                isOrganizer: boolean
+                isReminderOn?: boolean
+                lastModifiedDateTime?: string
+                location: Location
+                locations?: Location[]
+                onlineMeeting: OnlineMeetingInfo | null
+                onlineMeetingProvider?: string
+                onlineMeetingUrl?: string
+                organizer:
+                    emailAddress: EmailAddress
+                originalEndTimeZone?: string
+                originalStart?: string
+                originalStartTimeZone?: string
+                recurrence?: PatternedRecurrence | null
+                reminderMinutesBeforeStart?: number
+                responseRequested: boolean
+                responseStatus:
+                    response: string
+                    time: string
+                sensitivity: normal | personal | private | confidential
+                seriesMasterId?: string
+                showAs?: free | tentative | busy | oof | workingElsewhere | unknown
+                start:
+                    dateTime: string
+                    timeZone: string
+                subject: string
+                transactionId?: string
+                type?: singleInstance | occurrence | exception | seriesMaster
+                webLink: string
+            Location:
+                address?:
+                    city?: string
+                    countryOrRegion?: string
+                    postalCode?: string
+                    state?: string
+                    street?: string
+                coordinates?:
+                    accuracy?: number
+                    altitude?: number
+                    altitudeAccuracy?: number
+                    latitude?: number
+                    longitude?: number
+                displayName?: string
+                locationEmailAddress?: string
+                locationUri?: string
+                locationType?: >-
+                    default | conferenceRoom | homeAddress | businessAddress |
+                    geoCoordinates | streetAddress | hotel | restaurant | localBusiness |
+                    postalAddress
+                uniqueId?: string
+                uniqueIdType?: string
+            OnlineMeetingInfo:
+                conferenceId: string
+                joinUrl: string
+                phones:
+                    - number: string
+                      type: >-
+                          home | business | mobile | other | assistant | homeFax |
+                          businessFax | otherFax | pager | radio
+                quickDial: string
+                tollFreeNumbers: string[]
+                tollNumber: string
+            PatternedRecurrence:
+                pattern:
+                    dayOfMonth?: number
+                    daysOfWeek?:
+                        - sunday
+                        - monday
+                        - tuesday
+                        - wednesday
+                        - thursday
+                        - friday
+                        - saturday
+                    firstDayOfWeek: sunday | monday | tuesday | wednesday | thursday | friday | saturday
+                    index?: first | second | third | fourth | last
+                    interval: number
+                    month?: number
+                    type: >-
+                        daily | weekly | absoluteMonthly | relativeMonthly | absoluteYearly
+                        | relativeYearly
+                range:
+                    endDate?: string
+                    numberOfOccurrences?: number
+                    recurrenceTimeZone?: string
+                    startDate: string
+                    type: endDate | noEnd | numbered
+            Attendee:
+                emailAddress: EmailAddress
+                proposedNewTime?:
+                    start: TimeSlot
+                    end: TimeSlot
+                status:
+                    response: none | accepted | declined | tentative
+                    sentDateTime: string
+                type: required | optional | resource
+            TimeSlot:
+                dateTime: string
+                timeZone: string
+            EmailAddress:
+                address: string
+                name: string
+            OutlookFolder:
+                id: string
+                displayName: string
+                parentFolderId: string
+                childFolderCount: number
+                unreadItemCount: number
+                totalItemCount: number
+                isHidden: boolean
+    paylocity:
+        syncs:
+            users:
+                runs: every day
+                description: Fetch employees from Paylocity.
+                sync_type: full
+                track_deletes: true
+                output: User
+                endpoint:
+                    method: GET
+                    path: /users
+                    group: Users
+        models:
+            User:
+                id: string
+                email: string
+                firstName: string
+                lastName: string
     pennylane:
         actions:
             create-customer:

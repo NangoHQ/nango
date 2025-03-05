@@ -41,12 +41,16 @@ export const ENVS = z.object({
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
     ORCHESTRATOR_DATABASE_URL: z.string().url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
+    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
 
     // Jobs
     JOBS_SERVICE_URL: z.string().url().optional().default('http://localhost:3005'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
+    CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
+    CRON_DELETE_OLD_JOBS_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(90),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
@@ -105,6 +109,7 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(2 * 60 * 1000), // 2 minutes
+    FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
     // --- Third parties
     // AWS
@@ -134,6 +139,7 @@ export const ENVS = z.object({
 
     // Postgres
     NANGO_DATABASE_URL: z.string().url().optional(),
+    NANGO_DB_READ_URL: z.string().url().optional(),
     NANGO_DB_HOST: z.string().optional().default('localhost'),
     NANGO_DB_PORT: z.coerce.number().optional().default(5432),
     NANGO_DB_USER: z.string().optional().default('nango'),
@@ -174,12 +180,14 @@ export const ENVS = z.object({
     PUBLIC_SENTRY_KEY: z.string().optional(),
 
     // Slack
-    NANGO_ADMIN_CONNECTION_ID: z.string().optional(),
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // LIMITS
+    MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

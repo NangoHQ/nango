@@ -602,7 +602,7 @@ class ConnectionController {
 
             if (updatedConnection && updatedConnection.operation === 'override') {
                 // If we updated the connection we assume the connection is now correct
-                await connectionRefreshSuccess({ connection: updatedConnection.connection, environment, config: integration });
+                await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
             }
 
             res.status(201).send({

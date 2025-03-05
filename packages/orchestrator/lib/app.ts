@@ -1,5 +1,5 @@
 import './tracer.js';
-import { metrics, stringifyError } from '@nangohq/utils';
+import { metrics, once, stringifyError } from '@nangohq/utils';
 import { getServer } from './server.js';
 import { envs } from './env.js';
 import type { Task } from '@nangohq/scheduler';
@@ -13,6 +13,16 @@ const databaseUrl =
     envs.ORCHESTRATOR_DATABASE_URL ||
     envs.NANGO_DATABASE_URL ||
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+
+process.on('unhandledRejection', (reason) => {
+    logger.error('Received unhandledRejection...', reason);
+    // not closing on purpose
+});
+
+process.on('uncaughtException', (e) => {
+    logger.error('Received uncaughtException...', e);
+    // not closing on purpose
+});
 
 try {
     const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
@@ -59,13 +69,34 @@ try {
 
     const server = getServer(scheduler, eventsHandler);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
-    server.listen(port, () => {
+    const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
 
-    // handle SIGTERM
+    // --- Close function
+    const close = once(() => {
+        logger.info('Closing...');
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        api.close(async () => {
+            scheduler.stop();
+            await dbClient.destroy();
+
+            logger.close();
+
+            console.info('Closed');
+
+            process.exit();
+        });
+    });
+
+    process.on('SIGINT', () => {
+        logger.info('Received SIGINT...');
+        close();
+    });
+
     process.on('SIGTERM', () => {
-        scheduler.stop();
+        logger.info('Received SIGTERM...');
+        close();
     });
 } catch (err) {
     logger.error(`Orchestrator API error: ${stringifyError(err)}`);
