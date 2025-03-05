@@ -1,7 +1,7 @@
 import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHTTPResponse, MessageHTTPRequest } from '@nangohq/types';
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
-import { metrics, stringifyError } from '@nangohq/utils';
+import { metrics, report } from '@nangohq/utils';
 import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
 import { envs } from './env.js';
 import { OtlpSpan } from './otlp/otlpSpan.js';
@@ -45,8 +45,7 @@ export class LogContextStateless {
             await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
             return true;
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_insert_in_es: ${stringifyError(err)}`);
+            report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
             metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
@@ -181,8 +180,7 @@ export class LogContext extends LogContextStateless {
         try {
             await callback();
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
+            report(new Error(`failed_to_set_${log}`, { cause: err }));
         }
     }
 }

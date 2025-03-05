@@ -6,8 +6,8 @@ import * as cron from 'node-cron';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import http from 'node:http';
-import { NANGO_VERSION, getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { getLogger, once, requestLoggerMiddleware } from '@nangohq/utils';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
+import { getLogger, once, requestLoggerMiddleware, initSentry, NANGO_VERSION, report } from '@nangohq/utils';
 import oAuthSessionService from './services/oauth-session.service.js';
 import db, { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
@@ -18,18 +18,23 @@ import { runnersFleet } from './fleet.js';
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
 import { refreshConnectionsCron } from './refreshConnections.js';
+import { envs } from './env.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
 
+initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
+
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
+    report(reason);
     // not closing on purpose
 });
 
 process.on('uncaughtException', (err) => {
     logger.error('Received uncaughtException...', err);
+    report(err);
     // not closing on purpose
 });
 

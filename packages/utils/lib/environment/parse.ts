@@ -12,6 +12,9 @@ export const ENVS = z.object({
     VITEST: z.coerce.boolean().default(false),
     TZ: z.string().default('UTC'),
 
+    // Dockerfile
+    GIT_HASH: z.string().optional(),
+
     // Auth
     WORKOS_API_KEY: z.string().optional(),
     WORKOS_CLIENT_ID: z.string().optional(),
@@ -178,6 +181,7 @@ export const ENVS = z.object({
 
     // Sentry
     PUBLIC_SENTRY_KEY: z.string().optional(),
+    SENTRY_DSN: z.string().url().optional(),
 
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional(),
