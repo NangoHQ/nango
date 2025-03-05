@@ -1671,6 +1671,9 @@ canva-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
     credentials:
         apiKey:
@@ -3562,6 +3565,9 @@ guru-scim:
         base_url: https://api.getguru.com/api/scim
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
@@ -5167,6 +5173,9 @@ lucid-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/lucid-scim
     docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
     credentials:
@@ -5656,8 +5665,8 @@ mip-cloud:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
-        username: ${credentials.username}
-        password: ${credentials.password}
+        username: ${credential.username}
+        password: ${credential.password}
     token_headers:
         content-type: application/json
     token_response:
@@ -5692,9 +5701,9 @@ mip-on-premise:
         base_url: https://api.mip.com
     token_url: https://${connectionConfig.domain}/api/security/login
     token_params:
-        login: ${credentials.login}
-        password: ${credentials.password}
-        org: ${credentials.org}
+        login: ${credential.login}
+        password: ${credential.password}
+        org: ${credential.org}
     token_headers:
         content-type: application/json
     token_response:
@@ -7651,6 +7660,9 @@ shopify-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify-scim
