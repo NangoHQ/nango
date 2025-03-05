@@ -7877,6 +7877,8 @@ squareup:
 
 squareup-sandbox:
     display_name: Squareup (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
     token_url: https://connect.squareupsandbox.com/oauth2/token
