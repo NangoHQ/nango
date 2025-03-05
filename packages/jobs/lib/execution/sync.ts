@@ -21,8 +21,7 @@ import {
     createSyncJob,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    getEndUserByConnectionId,
-    featureFlags
+    getEndUserByConnectionId
 } from '@nangohq/shared';
 import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -144,7 +143,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser

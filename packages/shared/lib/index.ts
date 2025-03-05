@@ -16,7 +16,6 @@ import syncManager, { syncCommandToOperation } from './services/sync/manager.ser
 import flowService from './services/flow.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
-import featureFlags, { FeatureFlags } from './utils/featureflags.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
@@ -34,9 +33,6 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
-
-export * from './utils/lock/locking.js';
-export * from './clients/locking.js';
 
 export * from './utils/lock/locking.js';
 export * from './clients/locking.js';
@@ -75,8 +71,6 @@ export {
     errorNotificationService,
     analytics,
     AnalyticsTypes,
-    FeatureFlags,
-    featureFlags,
     syncCommandToOperation,
     Orchestrator,
     SlackService,

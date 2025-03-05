@@ -4,8 +4,9 @@ import { envs } from '../env.js';
 import type { AdditionalOperationData } from './helpers.js';
 import { getFormattedOperation } from './helpers.js';
 import { LogContext, LogContextStateless } from '../client.js';
-import { getKVStore, logger } from '../utils.js';
+import { logger } from '../utils.js';
 import type { OperationRow, OperationRowInsert } from '@nangohq/types';
+import { getKVStore } from '@nangohq/kvstore';
 
 interface Options {
     dryRun?: boolean;

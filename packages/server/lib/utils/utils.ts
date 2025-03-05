@@ -6,6 +6,7 @@ import type { Result } from '@nangohq/utils';
 import { Err, Ok } from '@nangohq/utils';
 import { NangoError, userService, interpolateString, Orchestrator, getOrchestratorUrl } from '@nangohq/shared';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
+import { getFeatureFlagsClient } from '@nangohq/kvstore';
 
 const BINARY_CONTENT_TYPES = [
     'image/png',
@@ -20,6 +21,8 @@ const BINARY_CONTENT_TYPES = [
     'x-world/',
     'application/octet-stream'
 ];
+
+export const featureFlags = await getFeatureFlagsClient();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {

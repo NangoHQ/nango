@@ -18,6 +18,7 @@ import { runnersFleet } from './fleet.js';
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
 import { refreshConnectionsCron } from './refreshConnections.js';
+import { destroy as destroyKvstore } from '@nangohq/kvstore';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -99,6 +100,7 @@ const close = once(() => {
         await destroyRecords();
         await destroyLogs();
         otlp.stop();
+        await destroyKvstore();
 
         logger.close();
 
