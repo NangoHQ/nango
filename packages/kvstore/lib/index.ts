@@ -67,7 +67,9 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
         return await featureFlags;
     }
 
-    const store = await getKVStore();
-    featureFlags = Promise.resolve(new FeatureFlags(store));
+    featureFlags = (async () => {
+        const store = await getKVStore();
+        return new FeatureFlags(store);
+    })();
     return await featureFlags;
 }
