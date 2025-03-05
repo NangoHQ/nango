@@ -11,7 +11,6 @@ import {
     createSyncJob,
     environmentService,
     externalWebhookService,
-    featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
     getSync,
@@ -113,7 +112,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };

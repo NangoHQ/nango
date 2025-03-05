@@ -64,7 +64,10 @@ describe('Persist API', () => {
     it('should log', async () => {
         const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
             method: 'POST',
-            body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: 'Hello, world!' }),
+            body: JSON.stringify({
+                activityLogId: seed.activityLogId,
+                log: { type: 'log', level: 'info', message: 'Hello, world!', createdAt: new Date().toISOString() }
+            }),
             headers: {
                 Authorization: `Bearer ${mockSecretKey}`,
                 'Content-Type': 'application/json'
@@ -74,14 +77,9 @@ describe('Persist API', () => {
     });
 
     it('should refuse huge log', async () => {
-        const msg: number[] = [];
-
-        for (let index = 0; index < 150_000; index++) {
-            msg.push(index);
-        }
         const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
             method: 'POST',
-            body: JSON.stringify({ activityLogId: seed.activityLogId, level: 'info', msg: msg.join(',') }),
+            body: JSON.stringify({ activityLogId: seed.activityLogId, log: { level: 'info', message: 'a'.repeat(150_000) } }),
             headers: {
                 Authorization: `Bearer ${mockSecretKey}`,
                 'Content-Type': 'application/json'

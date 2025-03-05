@@ -13,6 +13,7 @@ import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { runnersFleet } from './runner/fleet.js';
 import { generateImage } from '@nangohq/fleet';
 import { deleteOldJobsData } from './crons/deleteOldJobsData.js';
+import { destroy as destroyKvstore } from '@nangohq/kvstore';
 
 const logger = getLogger('Jobs');
 
@@ -73,6 +74,7 @@ try {
             await runnersFleet.stop();
             await db.knex.destroy();
             await db.readOnly.destroy();
+            await destroyKvstore();
 
             // TODO: close redis
             console.info('Closed');

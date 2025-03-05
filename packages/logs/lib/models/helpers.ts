@@ -4,10 +4,11 @@ import { z } from 'zod';
 import type { estypes } from '@elastic/elasticsearch';
 import { defaultOperationExpiration } from '../env.js';
 import type { LogContext } from '../client.js';
+import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
 
-export interface FormatMessageData {
+export interface AdditionalOperationData {
     account?: { id: number; name: string };
     user?: { id: number } | undefined;
     environment?: { id: number; name: string } | undefined;
@@ -19,98 +20,70 @@ export interface FormatMessageData {
 
 export function getFormattedOperation(
     data: OperationRowInsert,
-    { account, user, environment, integration, connection, syncConfig, meta }: FormatMessageData = {}
+    { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
+    const now = new Date();
     return {
-        ...getFormattedMessage(data as unknown as MessageRow),
         message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
         id: data.id || nanoid(),
         operation: data.operation,
+        state: data.state || 'waiting',
+        source: 'internal',
+        level: data.level || 'info',
+        type: 'operation',
 
         accountId: account?.id ?? data.accountId ?? -1,
         accountName: account?.name || data.accountName || '',
 
-        environmentId: environment?.id ?? data.environmentId ?? null,
-        environmentName: environment?.name || data.environmentName || null,
+        environmentId: environment?.id ?? data.environmentId ?? undefined,
+        environmentName: environment?.name || data.environmentName || undefined,
 
-        integrationId: integration?.id ?? data.integrationId ?? null,
-        integrationName: integration?.name || data.integrationName || null,
-        providerName: integration?.provider || data.providerName || null,
+        integrationId: integration?.id ?? data.integrationId ?? undefined,
+        integrationName: integration?.name || data.integrationName || undefined,
+        providerName: integration?.provider || data.providerName || undefined,
 
-        connectionId: connection?.id ?? data.connectionId ?? null,
-        connectionName: connection?.name || data.connectionName || null,
+        connectionId: connection?.id ?? data.connectionId ?? undefined,
+        connectionName: connection?.name || data.connectionName || undefined,
 
-        syncConfigId: syncConfig?.id || data.syncConfigId || null,
-        syncConfigName: syncConfig?.name || data.syncConfigName || null,
+        syncConfigId: syncConfig?.id || data.syncConfigId || undefined,
+        syncConfigName: syncConfig?.name || data.syncConfigName || undefined,
 
-        jobId: data.jobId || null,
-        meta: meta || data.meta || null,
+        jobId: data.jobId || undefined,
+        meta: meta || data.meta || undefined,
 
-        userId: user?.id || data.userId || null,
-        parentId: null,
-
-        expiresAt: data.expiresAt || defaultOperationExpiration.sync()
-    };
-}
-export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {
-    const now = new Date();
-    return {
-        id: data.id || nanoid(), // This ID is for debugging purpose, not for insertion
-
-        source: data.source || 'internal',
-        level: data.level || 'info',
-        operation: data.operation || null,
-        type: data.type || 'log',
-        message: data.message || '',
-        title: data.title || null,
-        code: data.code || null,
-        state: data.state || 'waiting',
-
-        accountId: null,
-        accountName: null,
-
-        environmentId: null,
-        environmentName: null,
-
-        integrationId: null,
-        integrationName: null,
-        providerName: null,
-
-        connectionId: null,
-        connectionName: null,
-
-        syncConfigId: null,
-        syncConfigName: null,
-
-        jobId: data.jobId || null,
-
-        userId: null,
-        parentId: data.parentId || null,
-
-        error: data.error || null,
-        request: data.request || null,
-        response: data.response || null,
-        retry: data.retry || undefined,
-        meta: meta || data.meta || null,
+        userId: user?.id || data.userId || undefined,
 
         createdAt: data.createdAt || now.toISOString(),
         updatedAt: data.updatedAt || now.toISOString(),
         startedAt: data.startedAt || null,
         endedAt: data.endedAt || null,
-        expiresAt: data.operation ? data.expiresAt || defaultOperationExpiration.sync() : null
+        expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
+export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId'>): MessageRow {
+    const now = new Date();
+    return {
+        // This ID is for debugging purpose, not for insertion
+        // If we ever need to improve insert performance we can remove this ID
+        id: data.id || nanoid(),
 
-// TODO: remove once not used by persist anymore
-export const oldLevelToNewLevel = {
-    debug: 'debug',
-    info: 'info',
-    warn: 'warn',
-    error: 'error',
-    verbose: 'debug',
-    silly: 'debug',
-    http: 'info'
-} as const;
+        source: data.source || 'internal',
+        level: data.level || 'info',
+        type: data.type || 'log',
+        message: data.message || '',
+
+        parentId: data.parentId,
+
+        error: data.error,
+        request: data.request,
+        response: data.response,
+        retry: data.retry,
+        meta: data.meta,
+
+        createdAt: data.createdAt || now.toISOString(),
+        endedAt: data.endedAt
+    };
+}
 
 export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;

@@ -4,10 +4,11 @@ import { logContextGetter } from '@nangohq/logs';
 import tracer from 'dd-trace';
 import { z } from 'zod';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { configService, environmentService, featureFlags } from '@nangohq/shared';
+import { configService, environmentService } from '@nangohq/shared';
 import type { PostPublicWebhook } from '@nangohq/types';
 
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
+import { featureFlags } from '../../../utils/utils.js';
 
 const paramValidation = z
     .object({
@@ -34,8 +35,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
         const headers = req.headers;
 
         try {
-            const isGloballyEnabled = await featureFlags.isEnabled('external-webhooks', 'global', true, true);
-            if (!isGloballyEnabled) {
+            const isGloballyDisabled = await featureFlags.isSet('disable-external-webhooks');
+            if (isGloballyDisabled) {
                 res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature globally disabled' } });
                 return;
             }
@@ -51,8 +52,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
-            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', account.uuid, true, true);
-            if (!areWebhooksEnabled) {
+            const isDisabledForThisAccount = await featureFlags.isSet('disable-external-webhooks', { distinctId: account.uuid });
+            if (isDisabledForThisAccount) {
                 res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });
                 return;
             }

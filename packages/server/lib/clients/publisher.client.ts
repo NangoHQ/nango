@@ -4,8 +4,8 @@ import * as uuid from 'uuid';
 import { createClient } from 'redis';
 import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
-import { errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';
+import { authHtml } from '../utils/html.js';
 
 const logger = getLogger('Server.Publisher');
 
@@ -202,7 +202,7 @@ export class Publisher {
                 await this.unsubscribe(wsClientId);
             }
         }
-        errorHtml(res, wsClientId, wsErr);
+        authHtml({ res, error: wsErr.message });
     }
 
     public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
@@ -218,7 +218,7 @@ export class Publisher {
                 await this.unsubscribe(wsClientId);
             }
         }
-        successHtml(res, wsClientId, providerConfigKey, connectionId);
+        authHtml({ res });
     }
 }
 

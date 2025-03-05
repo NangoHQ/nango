@@ -1,5 +1,5 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow } from '@nangohq/types';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
+import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHTTPResponse, MessageHTTPRequest } from '@nangohq/types';
+import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
 import { metrics, report } from '@nangohq/utils';
 import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
@@ -52,15 +52,15 @@ export class LogContextStateless {
         }
     }
 
-    async debug(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async debug(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
-    async info(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async info(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
-    async warn(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async warn(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
@@ -71,7 +71,7 @@ export class LogContextStateless {
             level: 'error',
             message,
             error: errorToDocument(error),
-            meta: Object.keys(rest).length > 0 ? rest : null,
+            meta: Object.keys(rest).length > 0 ? rest : undefined,
             source: 'internal',
             createdAt: new Date().toISOString()
         });
@@ -83,8 +83,8 @@ export class LogContextStateless {
             error,
             ...data
         }: {
-            request: MessageRow['request'];
-            response: MessageRow['response'];
+            request: MessageHTTPRequest | undefined;
+            response: MessageHTTPResponse | undefined;
             error?: unknown;
             meta?: MessageRow['meta'];
             level?: MessageRow['level'];
@@ -105,7 +105,7 @@ export class LogContextStateless {
     /**
      * @deprecated Only there for retro compat
      */
-    async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async trace(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 }
@@ -126,11 +126,11 @@ export class LogContext extends LogContextStateless {
     /**
      * Add more data to the parentId
      */
-    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
+    async enrichOperation(data: Partial<OperationRow>): Promise<void> {
         this.span.enrich(data);
         await this.logOrExec(
             `enrich(${JSON.stringify(data)})`,
-            async () => await update({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
+            async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
         );
     }
 
