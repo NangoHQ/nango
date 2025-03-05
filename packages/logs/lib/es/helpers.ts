@@ -53,7 +53,7 @@ export async function migrateMapping() {
         if (!existsAlias) {
             // insert a dummy record to create first index
             logger.info(`  Inserting dummy record`);
-            await createMessage(getFormattedMessage({}));
+            await createMessage(getFormattedMessage({ parentId: '-1' }));
         }
     } catch (err) {
         logger.error(err);

@@ -3,7 +3,7 @@ import { deleteIndex, migrateMapping } from './helpers.js';
 import { client } from './client.js';
 import { indexMessages } from './schema.js';
 import { nanoid } from '@nangohq/utils';
-import { createOperation, getOperation, update } from '../models/messages.js';
+import { createOperation, getOperation, updateOperation } from '../models/messages.js';
 import { getFormattedOperation } from '../models/helpers.js';
 
 // This file is sequential
@@ -37,7 +37,7 @@ describe('mapping', () => {
         // Log to automatically create an index
         const id = nanoid();
         await createOperation(getFormattedOperation({ id, operation: { type: 'action', action: 'run' }, createdAt: today.toISOString() }));
-        await update({ id, data: { state: 'failed', createdAt: today.toISOString() } });
+        await updateOperation({ id, data: { state: 'failed', createdAt: today.toISOString() } });
 
         // Should have created a today index
         const mapping = await client.indices.getMapping({ index: fullIndexName });
@@ -57,7 +57,7 @@ describe('mapping', () => {
         // Log to automatically create an index
         const id = nanoid();
         await createOperation(getFormattedOperation({ id, operation: { type: 'action', action: 'run' }, createdAt: yesterday.toISOString() }));
-        await update({ id, data: { state: 'failed', createdAt: yesterday.toISOString() } });
+        await updateOperation({ id, data: { state: 'failed', createdAt: yesterday.toISOString() } });
 
         // Should have created a yesterday index
         await client.indices.getMapping({ index: yesterdayIndexName });

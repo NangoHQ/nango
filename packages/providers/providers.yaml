@@ -1671,6 +1671,9 @@ canva-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
     credentials:
         apiKey:
@@ -3562,6 +3565,9 @@ guru-scim:
         base_url: https://api.getguru.com/api/scim
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
@@ -5167,6 +5173,9 @@ lucid-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/lucid-scim
     docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
     credentials:
@@ -7651,6 +7660,9 @@ shopify-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify-scim
@@ -7865,6 +7877,8 @@ squareup:
 
 squareup-sandbox:
     display_name: Squareup (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
     token_url: https://connect.squareupsandbox.com/oauth2/token
