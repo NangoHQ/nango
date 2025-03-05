@@ -68,7 +68,6 @@ export class InMemoryKVStore implements KVStore {
                 this.store.delete(key);
             }
         }
-        console.log(this.store.size);
         this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 }
