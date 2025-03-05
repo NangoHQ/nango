@@ -110,7 +110,7 @@ export interface MessageRow {
     error?: MessageError | undefined;
     request?: MessageHTTPRequest | undefined;
     response?: MessageHTTPResponse | undefined;
-    meta?: MessageMeta | undefined;
+    meta?: MessageMeta | null | undefined;
     retry?: MessageHTTPRetry | undefined;
 
     // Dates
