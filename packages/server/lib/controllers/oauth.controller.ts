@@ -45,6 +45,7 @@ import type { ConnectSessionAndEndUser } from '../services/connectSession.servic
 import { getConnectSession } from '../services/connectSession.service.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
+import { authHtml } from '../utils/html.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -808,15 +809,13 @@ class OAuthController {
 
         if (!state && installation_id && action) {
             res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
-
             return;
         }
-
         if (state == null) {
-            const errorMessage = 'No state found in callback';
-            const e = new Error(errorMessage);
+            const err = new Error('No state found in callback');
 
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            authHtml({ res, error: err.message });
             return;
         }
 
@@ -825,14 +824,15 @@ class OAuthController {
             session = await oAuthSessionService.findById(state as string);
         } catch (err) {
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
-            errorManager.errRes(res, 'invalid_oauth_state');
+            authHtml({ res, error: 'invalid_oauth_state' });
             return;
         }
 
         if (session == null) {
-            const e = new Error(`No session found for state: ${JSON.stringify(state)}`);
+            const err = new Error(`No session found for state: ${JSON.stringify(state)}`);
 
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH });
+            authHtml({ res, error: err.message });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
