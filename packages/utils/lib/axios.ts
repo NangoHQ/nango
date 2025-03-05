@@ -8,6 +8,9 @@ import type { Agent as HttpsAgent } from 'node:https';
 import https from 'node:https';
 
 let agentOptions: http.AgentOptions = {};
+// Set this env var to fine tune the agent depending on the service
+// It's helpful not to hardcode it because our service have different call pattern
+// And allows OSS users to change this too
 if (process.env['HTTP_AGENT_CONFIG']) {
     try {
         agentOptions = JSON.parse(process.env['HTTP_AGENT_CONFIG']) as http.AgentOptions;
