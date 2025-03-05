@@ -62,8 +62,13 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
  * missesInterpolationParamInObject({ context: 'stores/${storeHash}', response_type: 'code' }, { storeHash: 'abc123' }) -> returns false
  * missesInterpolationParamInObject({ context: 'stores/${storeHash}', response_type: 'code' }, {}) -> returns true
  */
-export function missesInterpolationParamInObject(params: Record<string, string>, replacers: Record<string, any>) {
-    return Object.values(params).some((param) => missesInterpolationParam(param, replacers));
+export function missesInterpolationParamInObject(params: Record<string, any>, replacers: Record<string, any>) {
+    return Object.values(params).some((param) => {
+        if (typeof param === 'string') {
+            return missesInterpolationParam(param, replacers);
+        }
+        return false;
+    });
 }
 /**
  * A helper function to extract the additional authorization parameters from the frontend Auth request.
