@@ -26,6 +26,7 @@ export class Redis {
 
     constructor(url: string) {
         this.url = url;
+
         this.pub = createClient({ url: this.url });
         this.pub.on('error', (err: Error) => {
             logger.error(`Redis (publisher) error`, err);
@@ -33,7 +34,8 @@ export class Redis {
         this.pub.on('connect', () => {
             logger.info(`Redis (publisher) connected to ${this.url}`);
         });
-        this.sub = createClient({ url: this.url }) as RedisClientType;
+
+        this.sub = createClient({ url: this.url });
         this.sub.on('error', (err: Error) => {
             logger.error(`Redis (subscriber) error`, err);
         });
