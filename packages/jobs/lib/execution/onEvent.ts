@@ -39,7 +39,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
-        await logCtx.info(`Starting script '${task.onEventName}'`, {
+        void logCtx.info(`Starting script '${task.onEventName}'`, {
             postConnection: task.onEventName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
@@ -205,7 +205,7 @@ async function onFailure({
     endUser: NangoProps['endUser'];
 }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: activityLogId });
-    await logCtx.error(error.message, { error });
+    void logCtx.error(error.message, { error });
 
     if (team) {
         void bigQueryClient.insert({

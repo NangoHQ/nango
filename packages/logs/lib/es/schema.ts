@@ -145,7 +145,8 @@ export const indexMessages: estypes.IndicesCreateRequest = {
             'sort.field': ['createdAt', 'id'],
             'sort.order': ['desc', 'desc']
         },
-        number_of_shards: 10 // Made up number until we figured out a better strategy
+        // They are recommending 1 shard per 20gb-40gb
+        number_of_shards: envs.NANGO_LOGS_ES_SHARD_PER_DAY
     },
     mappings: {
         _source: { enabled: true },

@@ -109,7 +109,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
-        await logCtx.info(`Starting sync '${task.syncName}'`, {
+        void logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
             syncVariant: task.syncVariant,
             syncType,
@@ -150,7 +150,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         };
 
         if (task.debug) {
-            await logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
+            void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
@@ -247,7 +247,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
-                await logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
+                void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
             const updatedResults: Record<string, SyncResult> = {
@@ -391,7 +391,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             meta: syncPayload
         });
 
-        await logCtx.info(
+        void logCtx.info(
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             syncPayload
         );
