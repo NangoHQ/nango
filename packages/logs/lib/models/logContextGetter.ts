@@ -31,7 +31,7 @@ export const logContextGetter = {
             if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
                 const res = await createOperation(msg);
                 const store = await getKVStore();
-                await store.set(`es:operation:${msg.id}:indexName`, res.index, { ttlInMs: 60 * 1000 });
+                await store.set(`es:operation:${msg.id}:indexName`, res.index, { ttlInMs: 5 * 60 * 1000 });
             } else if (options?.logToConsole !== false) {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }

@@ -96,6 +96,10 @@ export interface MessageHTTPRetry {
  * Full schema
  */
 export interface MessageRow {
+    /**
+     * This ID is for debugging purpose, not for insertion
+     * It should never be used to index
+     */
     id: string;
 
     // State

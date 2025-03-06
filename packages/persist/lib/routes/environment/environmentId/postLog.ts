@@ -54,7 +54,7 @@ const validate = validateRequest<PostLog>({
             .parse(data)
 });
 
-const handler = async (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) => {
+const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) => {
     const { body } = req;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
@@ -64,12 +64,9 @@ const handler = async (req: EndpointRequest<PostLog>, res: EndpointResponse<Post
         message: truncate(body.log.message)
     };
     const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId) }, { logToConsole: false });
-    const result = await logCtx.log(log);
-    if (result) {
-        res.status(204).send();
-    } else {
-        res.status(500).json({ error: { code: 'post_log_failed', message: `Failed to save log ${body.activityLogId}` } });
-    }
+    void logCtx.log(log);
+    res.status(204).send();
+
     return;
 };
 
