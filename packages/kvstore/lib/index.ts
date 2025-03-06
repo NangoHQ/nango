@@ -4,11 +4,13 @@ import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import type { KVStore } from './KVStore.js';
 import { RedisKVStore } from './RedisStore.js';
+import { Locking } from './Locking.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { KVStore } from './KVStore.js';
+export { Locking, type Lock } from './Locking.js';
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
@@ -72,4 +74,17 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
         return new FeatureFlags(store);
     })();
     return await featureFlags;
+}
+
+let locking: Promise<Locking> | undefined;
+export async function getLocking(): Promise<Locking> {
+    if (locking) {
+        return await locking;
+    }
+
+    locking = (async () => {
+        const store = await getKVStore();
+        return new Locking(store);
+    })();
+    return await locking;
 }
