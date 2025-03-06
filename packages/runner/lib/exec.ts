@@ -9,7 +9,7 @@ import * as botbuilder from 'botbuilder';
 import * as unzipper from 'unzipper';
 import tracer from 'dd-trace';
 import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { logger } from './logger.js';
 import type { NangoProps, RunnerOutput } from '@nangohq/types';
 import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
