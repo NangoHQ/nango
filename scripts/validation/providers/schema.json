@@ -610,6 +610,9 @@
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
+                                },
+                                "optional": {
+                                    "type": "boolean"
                                 }
                             }
                         }
