@@ -5,7 +5,6 @@ import type { Knex } from '@nangohq/database';
 import db, { dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Config } from '../models/index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
@@ -42,7 +41,6 @@ import { getLogger, stringifyError, Ok, Err, axiosInstance as axios, metrics } f
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type {
     AppCredentials,
     AppStoreCredentials,
@@ -887,11 +885,11 @@ class ConnectionService {
                         }
                     );
 
+                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                     await logCtx.error('Failed to refresh credentials', error);
                     await logCtx.failed();
 
                     if (logCtx) {
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         await onRefreshFailed({
                             connection,
                             logCtx,
@@ -1289,46 +1287,16 @@ class ConnectionService {
                 throw err;
             }
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider
-            });
-
             const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, provider);
             if (!success || !newCredentials) {
-                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
-                    connectionId,
-                    providerConfigKey,
-                    provider: providerConfig.provider,
-                    level: 'error'
-                });
-
                 return { success, error, response: null };
             }
 
             connectionToRefresh.credentials = newCredentials;
             await this.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider
-            });
-
             return { success: true, error: null, response: { refreshed: true, credentials: newCredentials } };
         } catch (err) {
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider,
-                level: 'error'
-            });
-
             const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
 
             return { success: false, error, response: null };
