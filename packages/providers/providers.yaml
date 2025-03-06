@@ -7504,6 +7504,29 @@ sharepoint-online:
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 
+sharepoint-online-oauth2-cc:
+    display_name: SharePoint Online (Client Credentials V2)
+    categories:
+        - storage
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 sharepoint-online-v1:
     display_name: SharePoint Online (v1)
     categories:
