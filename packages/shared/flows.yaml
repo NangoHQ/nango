@@ -6348,7 +6348,7 @@ integrations:
                     - timeline
                     - e-commerce
                     - automation
-                version: 1.0.0
+                version: 1.0.1
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
