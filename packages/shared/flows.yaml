@@ -6348,6 +6348,7 @@ integrations:
                     - timeline
                     - e-commerce
                     - automation
+                version: 1.0.0
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
@@ -6604,10 +6605,10 @@ integrations:
             InputProperty:
                 name: string
             PropertyResponse:
-                result: Property
+                results: Property[]
             Property:
-                updatedAt: string
-                createdAt: string
+                createdAt?: string
+                updatedAt?: string
                 name: string
                 label: string
                 type: string
@@ -6620,14 +6621,17 @@ integrations:
                 externalOptions: boolean
                 hasUniqueValue: boolean
                 hidden: boolean
-                hubspotDefined: boolean
-                showCurrencySymbol: boolean
-                modificationMetadata:
-                    archivable: boolean
-                    readOnlyDefinition: boolean
-                    readOnlyValue: boolean
+                options?: any[]
+                hubspotDefined?: boolean
+                showCurrencySymbol?: boolean
+                modificationMetadata?:
+                    archivable?: boolean
+                    readOnlyDefinition?: boolean
+                    readOnlyValue?: boolean
+                    readOnlyOptions?: boolean
                 formField: boolean
                 dataSensitivity: string
+                __string: any
             Option:
                 label: string
                 value: string
