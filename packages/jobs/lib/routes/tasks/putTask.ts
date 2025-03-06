@@ -47,7 +47,7 @@ const nangoPropsSchema = z
                 file_location: z.string(),
                 nango_config_id: z.number(),
                 active: z.boolean(),
-                runs: z.string(),
+                runs: z.string().nullable(),
                 track_deletes: z.boolean(),
                 auto_start: z.boolean(),
                 enabled: z.boolean(),
