@@ -1,9 +1,10 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, locking, deleteJobsByDate } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, deleteJobsByDate } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
 import { envs } from '../env.js';
+import { getLocking } from '@nangohq/kvstore';
 
 const logger = getLogger('Jobs.deleteOldsJobs');
 
@@ -28,6 +29,8 @@ export function deleteOldJobsData(): void {
 }
 
 export async function exec(): Promise<void> {
+    const locking = await getLocking();
+
     await tracer.trace<Promise<void>>('nango.server.cron.deleteOldJobs', async () => {
         logger.info(`Starting`);
 

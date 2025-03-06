@@ -466,9 +466,9 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate a record in batchSave';
                 break;
 
-            case 'script_output_too_big':
+            case 'script_output_too_large':
                 this.status = 400;
-                this.message = 'Script output is too big';
+                this.message = 'Script output is too large';
                 break;
 
             case 'sync_job_update_failure':

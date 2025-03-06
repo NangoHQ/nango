@@ -9,6 +9,9 @@
             "path": "../database"
         },
         {
+            "path": "../kvstore"
+        },
+        {
             "path": "../logs"
         },
         {

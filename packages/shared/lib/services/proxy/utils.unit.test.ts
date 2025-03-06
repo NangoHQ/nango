@@ -247,6 +247,40 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('should correctly insert headers with dynamic values for two_step based', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'authorization-token': '${accessToken}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getDefaultConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    username: 't',
+                    password: 'some-oauth-access-token',
+                    org: 'example',
+                    token: 'some-oauth-access-token',
+                    raw: { AccessToken: '3432432434324234', RestApiUrl: 'https://example.com' }
+                }
+            })
+        });
+
+        expect(result).toEqual({
+            authorization: 'Bearer some-oauth-access-token',
+            'authorization-token': 'some-oauth-access-token'
+        });
+    });
+
     it('should correctly override headers with different casing', () => {
         const config: UserProvidedProxyConfiguration = {
             endpoint: '/top',
