@@ -1,18 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthCredentials, NangoError } from '@nangohq/shared';
-import {
-    environmentService,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    configService,
-    connectionService,
-    LogActionEnum,
-    telemetry,
-    LogTypes,
-    getProvider,
-    linkConnection
-} from '@nangohq/shared';
+import { environmentService, errorManager, analytics, AnalyticsTypes, configService, connectionService, getProvider, linkConnection } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -143,19 +131,6 @@ class AppAuthController {
                 await logCtx.error('Error during app token retrieval call', { error });
                 await logCtx.failed();
 
-                await telemetry.log(
-                    LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
-                    `App auth token retrieval request process failed ${error?.message}`,
-                    LogActionEnum.AUTH,
-                    {
-                        environmentId: String(environment.id),
-                        providerConfigKey: String(providerConfigKey),
-                        connectionId: String(connectionId),
-                        authMode: String(provider.auth_mode),
-                        level: 'error'
-                    }
-                );
-
                 void connectionCreationFailedHook(
                     {
                         connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
@@ -229,14 +204,6 @@ class AppAuthController {
             await logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                provider: String(config.provider),
-                connectionId: String(connectionId),
-                authMode: String(provider.auth_mode)
-            });
-
             await publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
             return;
         } catch (err) {
@@ -247,12 +214,6 @@ class AppAuthController {
 
             await logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
-
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                connectionId: String(receivedConnectionId)
-            });
 
             void connectionCreationFailedHook(
                 {

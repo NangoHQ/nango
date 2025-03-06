@@ -2,7 +2,6 @@ import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
-    SpanTypes,
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
@@ -218,7 +217,7 @@ export async function connectionTest({
     }
 
     const active = tracer.scope().active();
-    const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
+    const span = tracer.startSpan('nango.server.hooks.connectionTest', {
         childOf: active as Span,
         tags: {
             'nango.provider': provider,

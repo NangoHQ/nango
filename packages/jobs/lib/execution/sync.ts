@@ -10,8 +10,6 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    telemetry,
-    LogTypes,
     errorNotificationService,
     SyncJobsType,
     updateSyncJobResult,
@@ -362,29 +360,6 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     }
                 });
             }
-
-            await telemetry.log(
-                LogTypes.SYNC_SUCCESS,
-                `${nangoProps.syncConfig.sync_type || 'The'} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
-                LogActionEnum.SYNC,
-                {
-                    model,
-                    environmentId: String(nangoProps.environmentId),
-                    responseResults: JSON.stringify(result),
-                    numberOfModels: '1',
-                    version: nangoProps.syncConfig.version || '-1',
-                    syncName: nangoProps.syncConfig.sync_name,
-                    connectionDetails: JSON.stringify(connection),
-                    connectionId: nangoProps.connectionId,
-                    providerConfigKey: nangoProps.providerConfigKey,
-                    syncId: nangoProps.syncId,
-                    syncJobId: String(nangoProps.syncJobId),
-                    syncType: nangoProps.syncConfig.sync_type!,
-                    totalRunTime: `${runTime} seconds`,
-                    debug: String(nangoProps.debug)
-                },
-                `syncId:${nangoProps.syncId}`
-            );
         }
 
         await logCtx.enrichOperation({
@@ -755,25 +730,6 @@ async function onFailure({
             debug: debug
         }
     });
-
-    await telemetry.log(
-        LogTypes.SYNC_FAILURE,
-        error.message,
-        LogActionEnum.SYNC,
-        {
-            environmentId: String(connection.environment_id),
-            syncName: syncName,
-            connectionDetails: JSON.stringify(connection),
-            connectionId: connection.connection_id,
-            providerConfigKey: connection.provider_config_key,
-            syncId: syncId,
-            syncJobId: String(syncJobId),
-            syncType: syncType,
-            debug: String(debug),
-            level: 'error'
-        },
-        `syncId:${syncId}`
-    );
 
     await errorNotificationService.sync.create({
         action: 'run',

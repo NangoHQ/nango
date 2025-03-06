@@ -22,8 +22,6 @@ import {
     providerClientManager,
     errorManager,
     analytics,
-    telemetry,
-    LogTypes,
     AnalyticsTypes,
     hmacService,
     ErrorSourceEnum,
@@ -78,13 +76,6 @@ class OAuthController {
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
-
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_START, 'OAuth request process start', LogActionEnum.AUTH, {
-                environmentId: String(environmentId),
-                accountId: String(accountId),
-                providerConfigKey: String(providerConfigKey),
-                connectionId
-            });
 
             const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -242,7 +233,6 @@ class OAuthController {
                     connectionConfig,
                     authorizationParams,
                     callbackUrl,
-                    environment_id: environmentId,
                     userScope,
                     logCtx
                 });
@@ -251,7 +241,7 @@ class OAuthController {
                 await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
-                await this.oauth1Request(provider, config, session, res, callbackUrl, environmentId, logCtx);
+                await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
                 return;
             }
 
@@ -490,7 +480,6 @@ class OAuthController {
         connectionConfig,
         authorizationParams,
         callbackUrl,
-        environment_id,
         userScope,
         logCtx
     }: {
@@ -501,7 +490,6 @@ class OAuthController {
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
         callbackUrl: string;
-        environment_id: number;
         userScope?: string | undefined;
         logCtx: LogContext;
     }) {
@@ -623,15 +611,6 @@ class OAuthController {
                     });
                 }
 
-                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth2 callback url received', LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
-                    callbackUrl,
-                    providerConfigKey: String(providerConfigKey),
-                    provider: String(providerConfig.provider),
-                    connectionId: String(connectionId),
-                    authMode: String(provider.auth_mode)
-                });
-
                 await logCtx.info('Redirecting', {
                     authorizationUri,
                     providerConfigKey,
@@ -661,15 +640,6 @@ class OAuthController {
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
-            const content = error.message + '\n' + prettyError;
-
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
-                callbackUrl,
-                environmentId: String(environment_id),
-                providerConfigKey: String(providerConfigKey),
-                connectionId: String(connectionId),
-                level: 'error'
-            });
 
             await logCtx.error(WSErrBuilder.UnknownError().message, { error, connectionConfig });
             await logCtx.failed();
@@ -737,15 +707,7 @@ class OAuthController {
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
-    private async oauth1Request(
-        provider: Provider,
-        config: ProviderConfig,
-        session: OAuthSession,
-        res: Response,
-        callbackUrl: string,
-        environment_id: number,
-        logCtx: LogContext
-    ) {
+    private async oauth1Request(provider: Provider, config: ProviderConfig, session: OAuthSession, res: Response, callbackUrl: string, logCtx: LogContext) {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
@@ -786,15 +748,6 @@ class OAuthController {
             providerConfigKey,
             connectionId,
             redirectUrl
-        });
-
-        await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED, 'OAuth1 callback url received', LogActionEnum.AUTH, {
-            environmentId: String(environment_id),
-            callbackUrl,
-            providerConfigKey: String(providerConfigKey),
-            provider: config.provider,
-            connectionId: String(connectionId),
-            authMode: String(provider.auth_mode)
         });
 
         // All worked, let's redirect the user to the authorization page
@@ -926,15 +879,6 @@ class OAuthController {
             });
             await logCtx.failed();
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed with a missing code', LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                provider: String(config.provider),
-                connectionId: String(connectionId),
-                authMode: String(provider.auth_mode),
-                level: 'error'
-            });
-
             void connectionCreationFailedHook(
                 {
                     connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
@@ -1047,20 +991,6 @@ class OAuthController {
             } catch (err) {
                 await logCtx.error('The OAuth token response from the server could not be parsed - OAuth flow failed.', { error: err, rawCredentials });
                 await logCtx.failed();
-
-                await telemetry.log(
-                    LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
-                    'OAuth2 token request failed, response from the server could not be parsed',
-                    LogActionEnum.AUTH,
-                    {
-                        environmentId: String(environment.id),
-                        providerConfigKey: String(providerConfigKey),
-                        provider: String(config.provider),
-                        connectionId: String(connectionId),
-                        authMode: String(provider.auth_mode),
-                        level: 'error'
-                    }
-                );
 
                 void connectionCreationFailedHook(
                     {
@@ -1242,14 +1172,6 @@ class OAuthController {
                 await connectionService.getAppCredentialsAndFinishConnection(connectionId, config, provider, connectionConfig, logCtx, connCreatedHook);
             }
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth2 token request succeeded', LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                provider: String(config.provider),
-                connectionId: String(connectionId),
-                authMode: String(provider.auth_mode)
-            });
-
             await logCtx.success();
 
             await publisher.notifySuccess(res, channel, providerConfigKey, connectionId, pending);
@@ -1264,15 +1186,6 @@ class OAuthController {
                     providerConfigKey,
                     connectionId
                 }
-            });
-
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth2 token request failed', LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                provider: String(config.provider),
-                connectionId: String(connectionId),
-                authMode: String(provider.auth_mode),
-                level: 'error'
             });
 
             const error = WSErrBuilder.UnknownError();
@@ -1395,14 +1308,6 @@ class OAuthController {
 
                 await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 
-                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'OAuth1 token request succeeded', LogActionEnum.AUTH, {
-                    environmentId: String(environment.id),
-                    providerConfigKey: String(providerConfigKey),
-                    provider: String(config.provider),
-                    connectionId: String(connectionId),
-                    authMode: String(provider.auth_mode)
-                });
-
                 await logCtx.enrichOperation({
                     connectionId: updatedConnection.connection.id,
                     connectionName: updatedConnection.connection.connection_id
@@ -1440,15 +1345,6 @@ class OAuthController {
                     }
                 });
                 const prettyError = stringifyError(err, { pretty: true });
-
-                await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, 'OAuth1 token request failed', LogActionEnum.AUTH, {
-                    environmentId: String(environment.id),
-                    providerConfigKey: String(providerConfigKey),
-                    provider: String(config.provider),
-                    connectionId: String(connectionId),
-                    authMode: String(provider.auth_mode),
-                    level: 'error'
-                });
 
                 const error = WSErrBuilder.UnknownError();
                 await logCtx.error(error.message);
