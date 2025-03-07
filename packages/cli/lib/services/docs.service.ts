@@ -113,9 +113,12 @@ function updateReadme(
         requestEndpoint(scriptConfig),
         requestParams(endpointType),
         requestBody(scriptConfig, endpointType, models),
-        requestResponse(scriptConfig, models),
-        expectedMetadata(scriptConfig, endpointType, models)
+        requestResponse(scriptConfig, models)
     ];
+    const metadata = expectedMetadata(scriptConfig, endpointType, models);
+    if (metadata) {
+        generatedLines.push(metadata);
+    }
 
     if (isForIntegrationTemplates) {
         generatedLines.push(changelog(scriptPath));
@@ -225,8 +228,7 @@ function expectedMetadata(scriptConfig: any, endpointType: string, models: Nango
 
         return out.join('\n');
     }
-
-    return '';
+    return;
 }
 
 function changelog(scriptPath: string) {
