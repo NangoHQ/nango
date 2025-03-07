@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.56.4] - 2025-03-07
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7d8ef4a445a02c6f8c4da217952cc0cb488e94f9 by Khaliq. Commit message: fix(schema): Schema should always be updated (#255) by @github-actions[bot]
+- *(cli)* Add metadata section for docs (#3640) by @khaliqgant
+
 ## [v0.56.3] - 2025-03-07
 
 ### Fixed
@@ -3298,6 +3305,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
 [v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3
 [v0.56.2]: https://github.com/NangoHQ/nango/compare/v0.56.1..v0.56.2
 [v0.56.1]: https://github.com/NangoHQ/nango/compare/v0.56.0..v0.56.1
