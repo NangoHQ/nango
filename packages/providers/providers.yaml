@@ -1453,7 +1453,6 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
-        # TODO
         verification:
             method: POST
             endpoint: /api/v1/write/page
@@ -1488,10 +1487,9 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
-        # TODO
         verification:
             method: GET
-            endpoint: /api/v3/content/page
+            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -1918,7 +1916,7 @@ chorus:
             title: API Key
             description: The API key for your Chorus account
             doc_section: '#step-1-generating-your-chorus-api-key'
-# TODO: NOTE: not validated.. tiered API: member, headless, admin
+
 circle-so:
     display_name: Circle.so
     categories:
@@ -3151,10 +3149,8 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
-        #TODO: validate
         verification:
             method: POST
-            # https://docs.fal.ai/model-endpoints/queue
             endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
@@ -3206,10 +3202,8 @@ fireflies:
         headers:
             authorization: Bearer ${apiKey}
             content-type: application/json
-        #TODO: Validate: graphql
         verification:
             method: GET
-            # https://docs.fireflies.ai/getting-started/quickstart
             endpoint: ?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
@@ -4127,7 +4121,6 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        # TODO: CHECK context: add in untested
         verification:
             endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
@@ -4169,9 +4162,9 @@ greenhouse-harvest:
         base_url: https://harvest.greenhouse.io
         retry:
             after: 'retry-after'
-        #TODO: validate slack link
         verification:
-            endpoint: /v1/candidates/
+            method: GET
+            endpoint: /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
