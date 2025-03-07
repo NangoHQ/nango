@@ -494,6 +494,9 @@ anthropic:
             content-type: application/json
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -507,6 +510,37 @@ anthropic:
             type: string
             title: API Key
             description: The API key for your Anthropic account
+
+anthropic-admin:
+    display_name: Anthropic Administrator
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anthropic.com
+        headers:
+            x-api-key: ${apiKey}
+            anthropic-version: ${connectionConfig.version}
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /v1/organizations/users
+    docs: https://docs.nango.dev/integrations/all/anthropic-admin
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Anthropic API to use
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The Admin API key for your Anthropic account
 
 apaleo:
     display_name: Apaleo
@@ -1374,6 +1408,9 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
+        verification:
+            method: GET
+            endpoint: /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
@@ -1451,6 +1488,9 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: POST
+            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1482,6 +1522,9 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -2010,6 +2053,9 @@ coda:
         base_url: https://coda.io/apis/v1
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/coda
     credentials:
         apiKey:
@@ -3124,6 +3170,9 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
+        verification:
+            method: POST
+            endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
         apiKey:
@@ -3173,6 +3222,9 @@ fireflies:
         base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: ?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:

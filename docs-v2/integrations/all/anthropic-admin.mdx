@@ -1,0 +1,50 @@
+---
+title: Anthropic Administrator
+sidebarTitle: Anthropic Administrator
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/anthropic-admin/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/anthropic-admin/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/anthropic-admin.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate an Admin key in your Anthropic account](https://console.anthropic.com/settings/admin-keys)
+-   [Anthropic API docs](https://docs.anthropic.com/en/api/getting-started)
+-   [Anthropic Administration Docs](https://docs.anthropic.com/en/docs/administration/administration-api)
+-   [Anthropic Authentication](https://docs.anthropic.com/en/api/getting-started#authentication)
+-   [Anthropic rate limiting](https://docs.anthropic.com/en/api/rate-limits)
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/anthropic.mdx)</Note>
+
+## API gotchas
+
+- Admin keys (starting with sk-ant-admin) are specifically for administrative tasks like managing organization members, workspaces, and API keys 
+- Anthropic uses API_KEY auth mode with `x-api-key: API_KEY` in the request header to access different endpoints.
+- When creating a new connection in Nango, you will also need to specify the API version, which can be found under [Anthropic versions](https://docs.anthropic.com/en/api/versioning)
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/anthropic-admin.mdx)</Note>
