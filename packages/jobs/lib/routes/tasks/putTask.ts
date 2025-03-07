@@ -23,13 +23,13 @@ const nangoPropsSchema = z
             .object({
                 id: z.number(),
                 sync_name: z.string().min(1),
-                type: z.enum(['sync', 'action']),
+                type: z.enum(['sync', 'action', 'on-event']),
                 environment_id: z.number(),
                 models: z.array(z.string()),
                 file_location: z.string(),
                 nango_config_id: z.number(),
                 active: z.boolean(),
-                runs: z.string(),
+                runs: z.string().nullable(),
                 track_deletes: z.boolean(),
                 auto_start: z.boolean(),
                 enabled: z.boolean(),
@@ -45,6 +45,9 @@ const nangoPropsSchema = z
                 input: z.string().nullable(),
                 sync_type: z.enum(['full', 'incremental']).nullable(),
                 metadata: z.record(z.string(), z.any())
+                // TODO: fix this missing fields
+                // deleted: z.boolean().optional(),
+                // deleted_at: z.coerce.date().optional().nullable(),
             })
             .passthrough(),
         syncId: z.string().uuid().optional(),
