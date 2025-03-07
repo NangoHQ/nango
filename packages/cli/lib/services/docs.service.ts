@@ -115,6 +115,10 @@ function updateReadme(
         requestBody(scriptConfig, endpointType, models),
         requestResponse(scriptConfig, models)
     ];
+    const metadata = expectedMetadata(scriptConfig, endpointType, models);
+    if (metadata) {
+        generatedLines.push(metadata);
+    }
 
     if (isForIntegrationTemplates) {
         generatedLines.push(changelog(scriptPath));
@@ -212,6 +216,19 @@ function requestResponse(scriptConfig: NangoSyncOrAction, models: NangoYamlModel
     }
 
     return out.join('\n');
+}
+
+function expectedMetadata(scriptConfig: any, endpointType: string, models: NangoYamlModel) {
+    if (endpointType === 'sync' && scriptConfig.input) {
+        const out = ['### Expected Metadata'];
+
+        const expanded = expandModels(scriptConfig.input, models);
+        const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
+        out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
+
+        return out.join('\n');
+    }
+    return;
 }
 
 function changelog(scriptPath: string) {
