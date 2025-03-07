@@ -1166,9 +1166,6 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: 'retry-after'
-        verification:
-            method: GET
-            endpoint: /api/v1.0/jsonrpc/network
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -1235,9 +1232,6 @@ blandai:
         base_url: https://api.bland.ai
         headers:
             authorization: ${apiKey}
-        verification:
-            method: GET
-            endpoint: v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -1454,7 +1448,9 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
-        # TODO
+        verification:
+            method: POST
+            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1486,10 +1482,9 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
-        # TODO
         verification:
             method: GET
-            endpoint: /api/v3/content/page
+            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -1779,9 +1774,6 @@ chattermill:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-        verification:
-            method: GET
-            endpoint: /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -1926,9 +1918,6 @@ circle-so:
         base_url: https://app.circle.so
         headers:
             authorization: Token ${apiKey}
-        verification:
-            method: GET
-            endpoint: /api/admin/v2/posts
     docs: https://docs.nango.dev/integrations/all/circle-so
     credentials:
         apiKey:
@@ -1946,9 +1935,6 @@ clari-copilot:
             x-api-key: ${apiKey}
             x-api-password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
-        verification:
-            method: GET
-            endpoint: /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
         API_PASSWORD:
@@ -2561,10 +2547,6 @@ discourse:
             api-username: ${connectionConfig.apiUsername}
             api-key: ${apiKey}
             accept: application/json
-        # TODO
-        verification:
-            method: GET
-            endpoint: /u/${connectionConfig.apiUsername}.json
     docs: https://docs.nango.dev/integrations/all/discourse
     connection_config:
         defaultHost:
@@ -2592,10 +2574,6 @@ dixa:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
             authorization: ${apiKey}
-        # TODO: check if we can use full URL
-        verification:
-            method: GET
-            endpoint: https://dev.dixa.io/v1/agents
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -2890,10 +2868,6 @@ elevio:
         headers:
             x-api-key: ${apiKey}
             authorization: Bearer ${connectionConfig.jwt}
-        # TODO
-        verification:
-            method: GET
-            endpoint: /v1/articles
     docs: https://docs.nango.dev/integrations/all/elevio
     credentials:
         apiKey:
@@ -3009,11 +2983,6 @@ exa:
         base_url: https://api.exa.ai
         headers:
             x-api-key: ${apiKey}
-        #TODO: VALIDATE
-        verification:
-            method: POST
-            # https://docs.exa.ai/reference/search
-            endpoint: /search?q=example
     docs: https://docs.nango.dev/integrations/all/exa
     credentials:
         apiKey:
@@ -3155,10 +3124,8 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
-        #TODO: validate
         verification:
             method: POST
-            # https://docs.fal.ai/model-endpoints/queue
             endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
@@ -3209,10 +3176,8 @@ fireflies:
         base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
-        #TODO: Valdate: graphql
         verification:
             method: POST
-            # https://docs.fireflies.ai/getting-started/quickstart
             endpoint: /graphql
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
@@ -4130,10 +4095,6 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        #TODO: validate slack
-        verification:
-            method: GET
-            endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
