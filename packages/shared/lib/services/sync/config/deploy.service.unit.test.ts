@@ -5,7 +5,6 @@ import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
 import configService from '../../config.service.js';
-import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
@@ -26,9 +25,6 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     searchSchedules: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
-
-const locking = await getLocking();
-vi.spyOn(locking, 'acquire').mockResolvedValue({ key: '1' });
 
 describe('Sync config create', () => {
     const environment = { id: 1, name: '' } as DBEnvironment;
