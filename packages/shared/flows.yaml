@@ -10220,6 +10220,21 @@ integrations:
                     opportunityLocation?: string
     linear:
         actions:
+            fetch-fields:
+                description: Introspection endpoint to fetch the fields available per a model
+                input: Entity
+                output: FieldResponse
+                endpoint:
+                    method: GET
+                    path: /fields
+                    group: Fields
+            fetch-models:
+                description: Introspection endpoint to fetch the models available
+                output: ModelResponse
+                endpoint:
+                    method: GET
+                    path: /models
+                    group: Models
             create-issue:
                 description: Create an issue in Linear
                 input: CreateIssue
@@ -10359,6 +10374,16 @@ integrations:
                 project:
                     id: string
                     name: string
+            Entity:
+                name: string
+            FieldResponse:
+                fields: Field[]
+            Field:
+                __string: Field | string
+            ModelResponse:
+                models: Model[]
+            Model:
+                name: string
     linkedin:
         actions:
             post:
