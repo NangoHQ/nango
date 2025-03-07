@@ -483,12 +483,11 @@ anthropic:
         headers:
             x-api-key: ${apiKey}
             anthropic-version: ${connectionConfig.version}
-            content-type: application/json
         retry:
             after: 'retry-after'
         verification:
             method: GET
-            endpoint: v1/models
+            endpoint: /v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -1455,6 +1454,9 @@ builder-io-private:
         headers:
             authorization: Bearer ${apiKey}
         # TODO
+        verification:
+            method: POST
+            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1916,7 +1918,7 @@ chorus:
             title: API Key
             description: The API key for your Chorus account
             doc_section: '#step-1-generating-your-chorus-api-key'
-
+# TODO: NOTE: not validated.. tiered API: member, headless, admin
 circle-so:
     display_name: Circle.so
     categories:
@@ -1926,9 +1928,6 @@ circle-so:
         base_url: https://app.circle.so
         headers:
             authorization: Token ${apiKey}
-        verification:
-            method: GET
-            endpoint: /api/admin/v2/posts
     docs: https://docs.nango.dev/integrations/all/circle-so
     credentials:
         apiKey:
@@ -2564,7 +2563,8 @@ discourse:
         # TODO
         verification:
             method: GET
-            endpoint: /u/${connectionConfig.apiUsername}.json
+            endpoint: /u/${connectionConfig.apiUsername}
+            # alt readonly latest topics. /latest
     docs: https://docs.nango.dev/integrations/all/discourse
     connection_config:
         defaultHost:
@@ -2595,7 +2595,8 @@ dixa:
         # TODO: check if we can use full URL
         verification:
             method: GET
-            endpoint: https://dev.dixa.io/v1/agents
+            endpoint: /v1/agents
+            base_url_override: https://dev.dixa.io
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -3009,11 +3010,6 @@ exa:
         base_url: https://api.exa.ai
         headers:
             x-api-key: ${apiKey}
-        #TODO: VALIDATE
-        verification:
-            method: POST
-            # https://docs.exa.ai/reference/search
-            endpoint: /search?q=example
     docs: https://docs.nango.dev/integrations/all/exa
     credentials:
         apiKey:
@@ -3206,14 +3202,15 @@ fireflies:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.fireflies.ai
+        base_url: https://api.fireflies.ai/graphql
         headers:
             authorization: Bearer ${apiKey}
-        #TODO: Valdate: graphql
+            content-type: application/json
+        #TODO: Validate: graphql
         verification:
-            method: POST
+            method: GET
             # https://docs.fireflies.ai/getting-started/quickstart
-            endpoint: /graphql
+            endpoint: ?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
@@ -4130,9 +4127,8 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        #TODO: validate slack
+        # TODO: CHECK context: add in untested
         verification:
-            method: GET
             endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
@@ -4173,6 +4169,9 @@ greenhouse-harvest:
         base_url: https://harvest.greenhouse.io
         retry:
             after: 'retry-after'
+        #TODO: validate slack link
+        verification:
+            endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
@@ -4225,6 +4224,8 @@ greenhouse-assessment:
         - ats
     proxy:
         base_url: https://${connectionConfig.baseUrl}
+        verification:
+            endpoint: /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
     connection_config:
@@ -4273,6 +4274,8 @@ greenhouse-onboarding:
         - ats
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
+        verification:
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
