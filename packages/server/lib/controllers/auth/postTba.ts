@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 import {
     analytics,
     configService,
@@ -240,6 +240,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             logContextGetter
         );
 
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
@@ -249,7 +251,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
                 environment,
                 account,
-                auth_mode: 'TABLEAU',
+                auth_mode: 'TBA',
                 error: {
                     type: 'unknown',
                     description: `Error during Unauth create: ${prettyError}`
@@ -269,6 +271,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             environmentId: environment.id,
             metadata: { providerConfigKey, connectionId }
         });
+
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TBA' });
 
         next(err);
     }

@@ -28,6 +28,9 @@ export enum Types {
     ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
     ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
 
+    POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
+    POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
+
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
@@ -67,7 +70,10 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
 
-    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length'
+    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
+
+    AUTH_SUCCESS = 'nango.server.auth.success',
+    AUTH_FAILURE = 'nango.server.auth.failure'
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {

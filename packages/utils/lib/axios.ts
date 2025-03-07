@@ -7,7 +7,12 @@ import type { Agent as HttpAgent } from 'node:http';
 import type { Agent as HttpsAgent } from 'node:https';
 import https from 'node:https';
 
-let agentOptions: http.AgentOptions = {};
+let agentOptions: http.AgentOptions = {
+    keepAlive: true,
+    timeout: 30000,
+    scheduling: 'fifo'
+};
+
 // Set this env var to fine tune the agent depending on the service
 // It's helpful not to hardcode it because our service have different call pattern
 // And allows OSS users to change this too

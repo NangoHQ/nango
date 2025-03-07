@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
@@ -154,6 +154,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             undefined
         );
 
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+
         res.status(200).send({ providerConfigKey, connectionId });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
@@ -173,6 +175,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             await logCtx.error('Error during Unauthenticated connection creation', { error: err });
             await logCtx.failed();
         }
+
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'NONE' });
 
         errorManager.handleGenericError(err, req, res);
     }

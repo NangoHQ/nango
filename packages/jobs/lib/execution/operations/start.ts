@@ -37,7 +37,7 @@ export async function startScript({
 
         if (!script) {
             const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;
-            await logCtx.error(content);
+            void logCtx.error(content);
             return Err('Unable to find integration file');
         }
         if (!nangoProps.team) {
@@ -64,7 +64,7 @@ export async function startScript({
     } catch (err) {
         span.setTag('error', err);
         const errMessage = `Error starting integration '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
-        await logCtx.error(errMessage, { error: err });
+        void logCtx.error(errMessage, { error: err });
         return Err(errMessage);
     } finally {
         span.finish();

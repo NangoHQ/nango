@@ -63,8 +63,6 @@ export function getFormattedOperation(
 export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId'>): MessageRow {
     const now = new Date();
     return {
-        // This ID is for debugging purpose, not for insertion
-        // If we ever need to improve insert performance we can remove this ID
         id: data.id || nanoid(),
 
         source: data.source || 'internal',
