@@ -17,7 +17,7 @@ import { noopNodeProvider } from './node-providers/noop.js';
 import { waitUntilHealthy } from './utils/url.js';
 
 const defaultDbUrl =
-    envs.NANGO_DATABASE_URL ||
+    envs.RUNNERS_DATABASE_URL ||
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}?application_name=${envs.NANGO_DB_APPLICATION_NAME}${envs.NANGO_DB_SSL ? '&sslmode=no-verify' : ''}`;
 
 export class Fleet {
