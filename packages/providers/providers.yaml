@@ -1165,9 +1165,6 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: 'retry-after'
-        verification:
-            method: GET
-            endpoint: /api/v1.0/jsonrpc/network
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -2558,11 +2555,6 @@ discourse:
             api-username: ${connectionConfig.apiUsername}
             api-key: ${apiKey}
             accept: application/json
-        # TODO
-        verification:
-            method: GET
-            endpoint: /u/${connectionConfig.apiUsername}
-            # alt readonly latest topics. /latest
     docs: https://docs.nango.dev/integrations/all/discourse
     connection_config:
         defaultHost:
@@ -2590,7 +2582,6 @@ dixa:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
             authorization: ${apiKey}
-        # TODO: check if we can use full URL
         verification:
             method: GET
             endpoint: /v1/agents
@@ -2889,10 +2880,6 @@ elevio:
         headers:
             x-api-key: ${apiKey}
             authorization: Bearer ${connectionConfig.jwt}
-        # TODO
-        verification:
-            method: GET
-            endpoint: /v1/articles
     docs: https://docs.nango.dev/integrations/all/elevio
     credentials:
         apiKey:
