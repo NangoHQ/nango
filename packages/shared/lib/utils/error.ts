@@ -506,6 +506,11 @@ export class NangoError extends Error {
                 this.message = `The script was aborted`;
                 break;
 
+            case 'concurrent_deployment':
+                this.status = 409;
+                this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

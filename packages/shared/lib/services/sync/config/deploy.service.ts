@@ -28,6 +28,8 @@ import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { NangoError } from '../../../utils/error.js';
 import { env, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
+import type { Lock } from '@nangohq/kvstore';
+import { getLocking } from '@nangohq/kvstore';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Merge } from 'type-fest';
@@ -91,6 +93,23 @@ export async function deploy({
     debug?: boolean;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
+
+    // we don't allow concurrent deploys so we need to lock this
+    // and reject this deploy if there is already a deploy in progress
+    const locking = await getLocking();
+    const ttlMs = 60 * 1000;
+    const lockKey = `lock:deployService:deploy:${account.id}:${environment.id}`;
+    let lock: Lock | undefined;
+
+    try {
+        lock = await locking.acquire(lockKey, ttlMs);
+    } catch {
+        await logCtx.error('Failed to deploy scripts', { error: 'There is an ongoing deployment in process. Please avoid concurrent deloys.' });
+        await logCtx.failed();
+
+        const error = new NangoError('concurrent_deployment');
+        return { success: false, error, response: null };
+    }
 
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`, environment.id);
@@ -210,6 +229,10 @@ export async function deploy({
         await logCtx.failed();
 
         throw new NangoError('error_creating_sync_config');
+    } finally {
+        if (lock) {
+            await locking.release(lock);
+        }
     }
 }
 
