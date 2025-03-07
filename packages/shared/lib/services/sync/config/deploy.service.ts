@@ -104,10 +104,11 @@ export async function deploy({
     try {
         lock = await locking.acquire(lockKey, ttlMs);
     } catch {
-        await logCtx.error('Failed to deploy scripts', { error: 'There is an ongoing deployment in process. Please avoid concurrent deloys.' });
+        const error = new NangoError('concurrent_deployment');
+
+        await logCtx.error('Failed to deploy scripts', { error });
         await logCtx.failed();
 
-        const error = new NangoError('concurrent_deployment');
         return { success: false, error, response: null };
     }
 
