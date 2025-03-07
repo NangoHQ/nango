@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.56.3] - 2025-03-07
+
+### Fixed
+
+- *(cli-deploy)* Concurrent deployment throws an error and ruins future (#3639) by @khaliqgant
+
 ## [v0.56.2] - 2025-03-07
 
 ### Added
@@ -3292,6 +3298,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3
 [v0.56.2]: https://github.com/NangoHQ/nango/compare/v0.56.1..v0.56.2
 [v0.56.1]: https://github.com/NangoHQ/nango/compare/v0.56.0..v0.56.1
 [v0.56.0]: https://github.com/NangoHQ/nango/compare/v0.55.0..v0.56.0
