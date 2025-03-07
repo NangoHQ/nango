@@ -10,8 +10,6 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    telemetry,
-    LogTypes,
     errorNotificationService,
     SyncJobsType,
     updateSyncJobResult,
@@ -21,8 +19,7 @@ import {
     createSyncJob,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    getEndUserByConnectionId,
-    featureFlags
+    getEndUserByConnectionId
 } from '@nangohq/shared';
 import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -38,6 +35,7 @@ import { abortScript } from './operations/abort.js';
 import { logger } from '../logger.js';
 import db from '@nangohq/database';
 import { getRunnerFlags } from '../utils/flags.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
     let logCtx: LogContext | undefined;
@@ -109,7 +107,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
-        await logCtx.info(`Starting sync '${task.syncName}'`, {
+        void logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
             syncVariant: task.syncVariant,
             syncType,
@@ -143,14 +141,14 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser
         };
 
         if (task.debug) {
-            await logCtx.debug(`Last sync date is`, lastSyncDate);
+            void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
@@ -167,6 +165,10 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
         return Ok(nangoProps);
     } catch (err) {
         const error = new NangoError('sync_script_failure', { error: err instanceof Error ? err.message : err });
+        const syncJobId = syncJob?.id;
+        if (syncJobId) {
+            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+        }
         await onFailure({
             connection: task.connection,
             provider: providerConfig?.provider || 'unknown',
@@ -175,7 +177,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncVariant: task.syncVariant,
             syncName: syncConfig?.sync_name || 'unknown',
             syncType: syncType,
-            syncJobId: syncJob?.id || -1,
+            syncJobId,
             activityLogId: logCtx?.id || 'unknown',
             debug: task.debug,
             team: team,
@@ -190,7 +192,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
     }
 }
 
-export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
     const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
     const runTime = (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000;
     const syncType: SyncTypeLiteral = nangoProps.syncConfig.sync_type === 'full' ? 'full' : 'incremental';
@@ -243,7 +245,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
-                await logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
+                void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
             const updatedResults: Record<string, SyncResult> = {
@@ -358,53 +360,32 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
                     }
                 });
             }
-
-            await telemetry.log(
-                LogTypes.SYNC_SUCCESS,
-                `${nangoProps.syncConfig.sync_type || 'The'} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
-                LogActionEnum.SYNC,
-                {
-                    model,
-                    environmentId: String(nangoProps.environmentId),
-                    responseResults: JSON.stringify(result),
-                    numberOfModels: '1',
-                    version: nangoProps.syncConfig.version || '-1',
-                    syncName: nangoProps.syncConfig.sync_name,
-                    connectionDetails: JSON.stringify(connection),
-                    connectionId: nangoProps.connectionId,
-                    providerConfigKey: nangoProps.providerConfigKey,
-                    syncId: nangoProps.syncId,
-                    syncJobId: String(nangoProps.syncJobId),
-                    syncType: nangoProps.syncConfig.sync_type!,
-                    totalRunTime: `${runTime} seconds`,
-                    debug: String(nangoProps.debug)
-                },
-                `syncId:${nangoProps.syncId}`
-            );
         }
 
         await logCtx.enrichOperation({
             meta: syncPayload
         });
 
-        await logCtx.info(
+        void logCtx.info(
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             syncPayload
         );
-
-        await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
 
         // set the last sync date to when the sync started in case
         // the sync is long running to make sure we wouldn't miss
         // any changes while the sync is running
         await setLastSyncDate(nangoProps.syncId, nangoProps.startedAt);
 
+        if (nangoProps.syncJobId) {
+            await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.SUCCESS);
+        }
+        await setTaskSuccess({ taskId, output: null });
+
         await slackService.removeFailingConnection({
             connection,
             name: nangoProps.syncConfig.sync_name,
             type: 'sync',
             originalActivityLogId: nangoProps.activityLogId as unknown as string,
-            environment_id: nangoProps.environmentId,
             provider: nangoProps.provider
         });
 
@@ -469,7 +450,7 @@ export async function handleSyncSuccess({ nangoProps }: { nangoProps: NangoProps
     }
 }
 
-export async function handleSyncError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleSyncError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null = null;
@@ -484,6 +465,11 @@ export async function handleSyncError({ nangoProps, error }: { nangoProps: Nango
     if (!providerConfig) {
         throw new Error(`Provider config not found for connection: ${nangoProps.nangoConnectionId}`);
     }
+
+    if (nangoProps.syncJobId) {
+        await updateSyncJobStatus(nangoProps.syncJobId, SyncStatus.STOPPED);
+    }
+    await setTaskFailed({ taskId, error });
 
     await onFailure({
         team,
@@ -624,7 +610,7 @@ async function onFailure({
     syncVariant: string;
     syncName: string;
     syncType: SyncTypeLiteral;
-    syncJobId: number;
+    syncJobId: number | undefined;
     lastSyncDate?: Date | undefined;
     activityLogId: string;
     debug: boolean;
@@ -661,7 +647,7 @@ async function onFailure({
 
     const logCtx = await logContextGetter.get({ id: activityLogId });
     try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, connection.environment_id, provider);
+        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, provider);
     } catch {
         errorManager.report('slack notification service reported a failure', {
             environmentId: connection.environment_id,
@@ -724,8 +710,6 @@ async function onFailure({
         }
     }
 
-    await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
-
     await logCtx.enrichOperation({ error });
     if (isCancel) {
         await logCtx.cancel();
@@ -746,25 +730,6 @@ async function onFailure({
             debug: debug
         }
     });
-
-    await telemetry.log(
-        LogTypes.SYNC_FAILURE,
-        error.message,
-        LogActionEnum.SYNC,
-        {
-            environmentId: String(connection.environment_id),
-            syncName: syncName,
-            connectionDetails: JSON.stringify(connection),
-            connectionId: connection.connection_id,
-            providerConfigKey: connection.provider_config_key,
-            syncId: syncId,
-            syncJobId: String(syncJobId),
-            syncType: syncType,
-            debug: String(debug),
-            level: 'error'
-        },
-        `syncId:${syncId}`
-    );
 
     await errorNotificationService.sync.create({
         action: 'run',

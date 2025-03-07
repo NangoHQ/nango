@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { Endpoint } from '../api';
 import type { PickFromUnion } from '../utils';
-import type { MessageRow, MessageState, OperationList, OperationRow } from './messages';
+import type { MessageRow, OperationList, OperationRow, OperationState } from './messages';
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
 export type ConcatOperationList = Concat<OperationList>;
@@ -26,7 +26,7 @@ export type SearchOperations = Endpoint<{
         pagination: { total: number; cursor: string | null };
     };
 }>;
-export type SearchOperationsState = 'all' | MessageState;
+export type SearchOperationsState = 'all' | OperationState;
 export type SearchOperationsType = 'all' | ConcatOperationListWithGroup;
 export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;

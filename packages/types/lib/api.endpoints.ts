@@ -63,6 +63,7 @@ import type { PatchEnvironment, PostEnvironment } from './environment/api';
 import type { PatchWebhook } from './environment/api/webhook';
 import type { PostEnvironmentVariables } from './environment/variable/api';
 import type { GetPublicRecords } from './record/api';
+import type { GetPublicScriptsConfig } from './scripts/http.api';
 
 export type PublicApiEndpoints =
     | SetMetadata
@@ -94,7 +95,8 @@ export type PublicApiEndpoints =
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
-    | GetPublicRecords;
+    | GetPublicRecords
+    | GetPublicScriptsConfig;
 
 export type PrivateApiEndpoints =
     | PostSignup

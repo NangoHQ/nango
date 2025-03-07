@@ -28,9 +28,11 @@ export type * from './proxy/api.js';
 export type * from './scripts/on-events/db.js';
 export type * from './scripts/on-events/api.js';
 export type * from './scripts/syncs/api.js';
+export type * from './scripts/http.api.js';
 export type * from './slackNotifications/db.js';
 export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
+export type * from './sync/api.js';
 export type * from './integration/api.js';
 export type * from './integration/db.js';
 export type * from './providers/provider.js';
@@ -58,6 +60,7 @@ export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
 export type * from './webhooks/http.api.js';
 export type * from './flow/http.api.js';
+export type * from './flow/index.js';
 
 export type * from './utils.js';
 export type * from './web/env.js';
@@ -66,3 +69,4 @@ export type * from './fleet/api.js';
 export type * from './fleet/index.js';
 
 export type * from './persist/api.js';
+export type * from './jobs/api.js';

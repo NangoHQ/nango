@@ -5,7 +5,6 @@ import type { Knex } from '@nangohq/database';
 import db, { dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Config } from '../models/index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
@@ -42,7 +41,6 @@ import { getLogger, stringifyError, Ok, Err, axiosInstance as axios, metrics } f
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
 import type {
     AppCredentials,
     AppStoreCredentials,
@@ -72,10 +70,10 @@ import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
 import { getProvider } from './providers.js';
 import { v4 as uuidv4 } from 'uuid';
-import { locking } from '../clients/locking.js';
-import type { Lock, Locking } from '../utils/lock/locking.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import tracer from 'dd-trace';
+import { getLocking } from '@nangohq/kvstore';
+import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -85,12 +83,6 @@ const DEFAULT_BILL_EXPIRES_AT_MS = 35 * 60 * 1000; //This ensures we have an exp
 type KeyValuePairs = Record<string, string | boolean>;
 
 class ConnectionService {
-    private locking: Locking;
-
-    constructor(locking: Locking) {
-        this.locking = locking;
-    }
-
     public generateConnectionId(): string {
         return uuidv4();
     }
@@ -407,14 +399,6 @@ class ConnectionService {
 
         if (!rawConnection) {
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey });
-
-            await telemetry.log(LogTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                level: 'error'
-            });
-
             return { success: false, error, response: null };
         }
 
@@ -466,21 +450,6 @@ class ConnectionService {
                 deleted: false
             })
             .update(encryptionManager.encryptConnection(connection));
-    }
-
-    public async getMetadata(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<Record<string, string>> {
-        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('metadata').where({
-            connection_id: connection.connection_id,
-            provider_config_key: connection.provider_config_key,
-            environment_id: connection.environment_id,
-            deleted: false
-        });
-
-        if (!result || result.length == 0 || !result[0]) {
-            return {};
-        }
-
-        return result[0].metadata;
     }
 
     public async getConnectionConfig(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
@@ -561,7 +530,7 @@ class ConnectionService {
         type T = Awaited<ReturnType<ConnectionService['getStaleConnections']>>;
 
         const query = db
-            .knex<DBConnection>(`_nango_connections`)
+            .readOnly<DBConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
@@ -672,12 +641,15 @@ class ConnectionService {
         return result.map((connection) => encryptionManager.decryptConnection(connection));
     }
 
+    /**
+     * Only useful for private API
+     */
     public async count({
         environmentId
     }: {
         environmentId: number;
     }): Promise<Result<{ total: number; withAuthError: number; withSyncError: number; withError: number }>> {
-        const query = db.knex
+        const query = db.readOnly
             .from(`_nango_connections`)
             .select<{ total_connection: string; with_auth_error: string; with_sync_error: string; with_error: string }>(
                 db.knex.raw('COUNT(DISTINCT _nango_connections.id) as total_connection'),
@@ -732,7 +704,7 @@ class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
-        const query = db.knex
+        const query = db.readOnly
             .from<DBConnection>(`_nango_connections`)
             .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
@@ -913,11 +885,11 @@ class ConnectionService {
                         }
                     );
 
+                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                     await logCtx.error('Failed to refresh credentials', error);
                     await logCtx.failed();
 
                     if (logCtx) {
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
                         await onRefreshFailed({
                             connection,
                             logCtx,
@@ -1231,6 +1203,7 @@ class ConnectionService {
         }>
     > {
         const providerConfigKey = providerConfig.unique_key;
+        const locking = await getLocking();
 
         // fetch connection and return credentials if they are fresh
         const getConnectionAndFreshCredentials = async (): Promise<{
@@ -1291,7 +1264,7 @@ class ConnectionService {
             let connectionToRefresh: DBConnectionDecrypted;
             try {
                 const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
-                lock = await this.locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+                lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
                 // Another refresh was running so we check if the credentials were refreshed
                 // If yes, we return the new credentials
                 // If not, we proceed with the refresh
@@ -1314,52 +1287,22 @@ class ConnectionService {
                 throw err;
             }
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider
-            });
-
             const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, provider);
             if (!success || !newCredentials) {
-                await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
-                    environmentId: String(environment_id),
-                    connectionId,
-                    providerConfigKey,
-                    provider: providerConfig.provider,
-                    level: 'error'
-                });
-
                 return { success, error, response: null };
             }
 
             connectionToRefresh.credentials = newCredentials;
             await this.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider
-            });
-
             return { success: true, error: null, response: { refreshed: true, credentials: newCredentials } };
         } catch (err) {
-            await telemetry.log(LogTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
-                environmentId: String(environment_id),
-                connectionId,
-                providerConfigKey,
-                provider: providerConfig.provider,
-                level: 'error'
-            });
-
             const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
 
             return { success: false, error, response: null };
         } finally {
             if (lock) {
-                await this.locking.release(lock);
+                await locking.release(lock);
             }
         }
     }
@@ -1919,13 +1862,9 @@ class ConnectionService {
         environmentId: number;
         type: 'activate' | 'deploy';
     }): Promise<boolean> {
-        const connections = await this.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+        const count = await this.countConnections({ environmentId, providerConfigKey });
 
-        if (!connections) {
-            return false;
-        }
-
-        if (connections.length > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (count > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
                 void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
@@ -2112,4 +2051,4 @@ class ConnectionService {
     }
 }
 
-export default new ConnectionService(locking);
+export default new ConnectionService();

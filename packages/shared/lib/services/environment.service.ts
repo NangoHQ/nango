@@ -125,7 +125,7 @@ class EnvironmentService {
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
     ): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
-        const q = db.knex
+        const q = db.readOnly
             .select<{
                 account: DBTeam;
                 environment: DBEnvironment;
@@ -263,10 +263,6 @@ class EnvironmentService {
         return result.map((env) => encryptionManager.decryptEnvironment(env));
     }
 
-    /**
-     * @deprecated
-     * TODO: remove this in favor of using environment
-     */
     async getSlackNotificationsEnabled(environmentId: number): Promise<boolean | null> {
         const result = await db.knex.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
 

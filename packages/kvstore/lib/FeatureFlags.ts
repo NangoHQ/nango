@@ -1,37 +1,15 @@
-import { getLogger } from '@nangohq/utils';
 import type { KVStore } from './KVStore.js';
 
-const logger = getLogger('FeatureFlags');
-
 export class FeatureFlags {
-    kvstore: KVStore | undefined;
+    kvstore: KVStore;
 
-    constructor(kvstore: KVStore | undefined) {
-        if (!kvstore) {
-            logger.error('Feature flags not enabled');
-        }
-
+    constructor(kvstore: KVStore) {
         this.kvstore = kvstore;
     }
 
-    async isEnabled({
-        key,
-        distinctId,
-        fallback,
-        isExcludingFlag = false
-    }: {
-        key: string;
-        distinctId: string;
-        fallback: boolean;
-        isExcludingFlag?: boolean;
-    }): Promise<boolean> {
-        if (!this.kvstore) {
-            return fallback;
-        }
-
+    async isSet(key: string, { distinctId = 'global', fallback = false }: { distinctId?: string; fallback?: boolean } = {}): Promise<boolean> {
         try {
-            const exists = await this.kvstore.exists(`flag:${key}:${distinctId}`);
-            return isExcludingFlag ? !exists : exists;
+            return await this.kvstore.exists(`flag:${key}:${distinctId}`);
         } catch {
             return fallback;
         }
