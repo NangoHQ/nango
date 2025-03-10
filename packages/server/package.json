@@ -35,7 +35,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
-        "axios": "^1.7.9",
+        "axios": "^1.8.2",
         "body-parser": "1.20.3",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.6",
