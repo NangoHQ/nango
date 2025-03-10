@@ -547,7 +547,6 @@ export async function getSyncConfigByJobId(job_id: number): Promise<DBSyncConfig
         .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
         .where({
             '_nango_sync_jobs.id': job_id,
-            '_nango_sync_jobs.deleted': false,
             [`${TABLE}.deleted`]: false
         })
         .first()
