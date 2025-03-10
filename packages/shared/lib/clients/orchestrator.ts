@@ -31,6 +31,7 @@ import environmentService from '../services/environment.service.js';
 import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
 import type { JsonValue } from 'type-fest';
+import { OtlpSpan } from '@nangohq/logs';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({
@@ -256,6 +257,7 @@ export class Orchestrator {
                 syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
             }
         );
+        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         try {
             let parsedInput = null;

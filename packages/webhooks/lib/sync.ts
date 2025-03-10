@@ -13,7 +13,7 @@ import type {
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import { logContextGetter } from '@nangohq/logs';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 import { metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -36,11 +36,11 @@ export const sendSync = async ({
     error
 }: {
     connection: ConnectionJobs;
-    environment: DBEnvironment;
-    account: DBTeam;
+    environment: Pick<DBEnvironment, 'id' | 'name' | 'secret_key'>;
+    account: Pick<DBTeam, 'id' | 'name'>;
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
-    syncConfig: DBSyncConfig;
+    syncConfig: Pick<DBSyncConfig, 'id' | 'sync_name' | 'version'>;
     syncVariant: string;
     model: string;
     now: Date | undefined;
@@ -68,6 +68,7 @@ export const sendSync = async ({
             meta: { scriptVersion: syncConfig.version, syncVariant }
         }
     );
+    logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
     const bodyBase: NangoSyncWebhookBodyBase = {
         from: 'nango',
