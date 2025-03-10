@@ -5,7 +5,7 @@ import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nang
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
+import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
@@ -61,7 +61,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
     try {
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'create_connection' }, meta: { authType: 'unauth' } },
+            { operation: { type: 'auth', action: 'create_connection' }, meta: { authType: 'unauth', connectSession: endUserToMeta(res.locals.endUser) } },
             { account, environment }
         );
         void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
