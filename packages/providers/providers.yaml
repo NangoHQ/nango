@@ -491,6 +491,7 @@ anthropic:
         headers:
             x-api-key: ${apiKey}
             anthropic-version: ${connectionConfig.version}
+            content-type: application/json
         retry:
             after: 'retry-after'
         verification:
