@@ -14,5 +14,10 @@ ADD COLUMN "refreshable" bool`);
  * @param {import('knex').Knex} knex
  */
 exports.down = async function (knex) {
-    await knex.raw(``);
+    await knex.raw(`ALTER TABLE "_nango_connections"
+DROP COLUMN "credentials_expires_at",
+DROP COLUMN "last_refresh_success",
+DROP COLUMN "last_refresh_failure",
+DROP COLUMN "last_refresh_tries",
+DROP COLUMN "refreshable"`);
 };
