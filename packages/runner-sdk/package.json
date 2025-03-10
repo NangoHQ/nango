@@ -9,14 +9,13 @@
         "@nangohq/providers": "0.56.4",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
-        "axios": "1.7.9",
         "lodash-es": "4.17.21",
-        "parse-link-header": "2.0.0",
-        "undici": "6.21.1"
+        "parse-link-header": "2.0.0"
     },
     "devDependencies": {
         "@nangohq/types": "0.56.4",
         "@types/json-schema": "7.0.15",
+        "axios": "1.8.2",
         "json-schema": "0.4.0",
         "vitest": "2.1.9",
         "zod": "3.24.1"
