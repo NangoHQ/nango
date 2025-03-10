@@ -257,7 +257,6 @@
                 "integrations/all/amplitude",
                 "integrations/all/anrok",
                 "integrations/all/anthropic",
-                "integrations/all/anthropic-admin",
                 "integrations/all/apaleo",
                 "integrations/all/apollo",
                 "integrations/all/apollo-oauth",

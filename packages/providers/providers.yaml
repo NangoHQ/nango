@@ -511,37 +511,6 @@ anthropic:
             title: API Key
             description: The API key for your Anthropic account
 
-anthropic-admin:
-    display_name: Anthropic Administrator
-    categories:
-        - productivity
-        - dev-tools
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.anthropic.com
-        headers:
-            x-api-key: ${apiKey}
-            anthropic-version: ${connectionConfig.version}
-            content-type: application/json
-        retry:
-            after: 'retry-after'
-        verification:
-            method: GET
-            endpoint: /v1/organizations/users
-    docs: https://docs.nango.dev/integrations/all/anthropic-admin
-    connection_config:
-        version:
-            type: string
-            title: API Version
-            description: The version of the Anthropic API to use
-            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-            example: '2023-06-01'
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: The Admin API key for your Anthropic account
-
 apaleo:
     display_name: Apaleo
     categories:
