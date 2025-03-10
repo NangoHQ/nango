@@ -64,6 +64,7 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     type: { type: 'keyword' },
     level: { type: 'keyword' },
     state: { type: 'keyword' },
+    context: { type: 'keyword' },
 
     source: { type: 'keyword' },
 
@@ -96,7 +97,8 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     updatedAt: { type: 'date' },
     startedAt: { type: 'date' },
     expiresAt: { type: 'date' },
-    endedAt: { type: 'date' }
+    endedAt: { type: 'date' },
+    durationMs: { type: 'integer' }
 };
 
 export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRequest {

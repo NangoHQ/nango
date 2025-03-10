@@ -132,6 +132,7 @@ export interface OperationRow {
     message: string;
     operation: OperationList;
     state: OperationState;
+    context?: 'script' | 'proxy';
 
     // Ids
     accountId: number;
@@ -175,6 +176,7 @@ export interface OperationRow {
     startedAt: string | null;
     endedAt: string | null;
     expiresAt: string | null;
+    durationMs?: number | undefined;
 }
 
 /**
