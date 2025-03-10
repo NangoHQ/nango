@@ -24,6 +24,9 @@
     },
     "dependencies": {
         "@nangohq/database": "file:../database",
+        "@nangohq/fleet": "file:../fleet",
+        "@nangohq/keystore": "file:../keystore",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/nango-yaml": "file:../nango-yaml",
@@ -31,8 +34,6 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "@nangohq/keystore": "file:../keystore",
-        "@nangohq/fleet": "file:../fleet",
         "@workos-inc/node": "6.2.0",
         "axios": "^1.7.9",
         "body-parser": "1.20.3",

@@ -2,7 +2,7 @@
 import type { Nango } from '@nangohq/node';
 import paginateService from './paginate.service.js';
 import type { AxiosResponse } from 'axios';
-import type { ZodSchema } from 'zod';
+import type { ZodSchema, SafeParseSuccess } from 'zod';
 import type {
     ApiKeyCredentials,
     ApiPublicConnectionFull,
@@ -338,7 +338,7 @@ export abstract class NangoActionBase {
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
     }
 
-    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<void> {
+    public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>> {
         const parsedInput = zodSchema.safeParse(input);
         if (!parsedInput.success) {
             for (const error of parsedInput.error.errors) {
@@ -348,6 +348,8 @@ export abstract class NangoActionBase {
                 message: 'Invalid input provided'
             });
         }
+
+        return parsedInput;
     }
 
     public abstract triggerSync(

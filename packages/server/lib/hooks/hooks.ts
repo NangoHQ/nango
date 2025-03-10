@@ -2,7 +2,6 @@ import type { Span } from 'dd-trace';
 import {
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
-    SpanTypes,
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
@@ -132,11 +131,9 @@ export const connectionCreationFailed = async (
 
 export const connectionRefreshSuccess = async ({
     connection,
-    environment,
     config
 }: {
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
-    environment: DBEnvironment;
     config: IntegrationConfig;
 }): Promise<void> => {
     await errorNotificationService.auth.clear({
@@ -150,7 +147,6 @@ export const connectionRefreshSuccess = async ({
         name: connection.connection_id,
         type: 'auth',
         originalActivityLogId: null,
-        environment_id: environment.id,
         provider: config.provider
     });
 };
@@ -198,7 +194,7 @@ export const connectionRefreshFailed = async ({
 
     const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
 
-    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
+    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, config.provider);
 };
 
 export async function connectionTest({
@@ -221,7 +217,7 @@ export async function connectionTest({
     }
 
     const active = tracer.scope().active();
-    const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
+    const span = tracer.startSpan('nango.server.hooks.connectionTest', {
         childOf: active as Span,
         tags: {
             'nango.provider': provider,

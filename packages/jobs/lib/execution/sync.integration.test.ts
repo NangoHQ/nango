@@ -243,7 +243,7 @@ const runJob = async (
     };
     await updateSyncJobResult(syncJob.id, updatedResults, model);
 
-    await handleSyncSuccess({ nangoProps: nangoProps.value });
+    await handleSyncSuccess({ taskId: 'abc', nangoProps: nangoProps.value });
 
     const latestSyncJob = await getLatestSyncJob(sync.id);
     if (!latestSyncJob) {

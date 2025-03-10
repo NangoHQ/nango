@@ -15,9 +15,9 @@ export function requestLoggerMiddleware({ logger }: { logger: Logger }): Handler
             const route = req.route?.path || req.originalUrl;
             const msg = `${req.method} ${route} -> ${res.statusCode}`;
             if (res.statusCode >= 500) {
-                logger.error(colors.red(msg), resBody);
+                logger.error(colors.red(msg), res.getHeader('content-type') === 'application/json' ? resBody : '[buffer]');
             } else if (res.statusCode >= 400) {
-                logger.warning?.(colors.yellow(msg), resBody);
+                logger.warning?.(colors.yellow(msg), res.getHeader('content-type') === 'application/json' ? resBody : '[buffer]');
             } else {
                 logger.info(msg);
             }

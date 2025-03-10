@@ -17,6 +17,8 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
+    JOBS_DELETE_OLD_JOBS_DATA = 'nango.jobs.cron.deleteOldJobs',
+
     LOGS_LOG = 'nango.logs.log',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
@@ -25,6 +27,9 @@ export enum Types {
     ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',
     ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
     ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
+
+    POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
+    POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
 
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
@@ -65,7 +70,10 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
 
-    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length'
+    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
+
+    AUTH_SUCCESS = 'nango.server.auth.success',
+    AUTH_FAILURE = 'nango.server.auth.failure'
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {

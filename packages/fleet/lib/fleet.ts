@@ -55,6 +55,7 @@ export class Fleet {
         if (this.supervisor) {
             await this.supervisor.stop();
         }
+        await this.dbClient.destroy();
     }
 
     public async rollout(image: string, options?: { verifyImage?: boolean }): Promise<Result<Deployment>> {

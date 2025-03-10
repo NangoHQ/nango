@@ -98,6 +98,9 @@
                     "type": "object",
                     "additionalProperties": true
                 },
+                "authorization_code_param_in_callback": {
+                    "type": "string"
+                },
                 "body_format": {
                     "type": "string"
                 },
@@ -607,6 +610,9 @@
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
+                                },
+                                "optional": {
+                                    "type": "boolean"
                                 }
                             }
                         }

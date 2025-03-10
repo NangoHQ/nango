@@ -1,7 +1,7 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow } from '@nangohq/types';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
+import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHTTPResponse, MessageHTTPRequest } from '@nangohq/types';
+import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
-import { metrics, stringifyError } from '@nangohq/utils';
+import { metrics, report } from '@nangohq/utils';
 import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
 import { envs } from './env.js';
 import { OtlpSpan } from './otlp/otlpSpan.js';
@@ -45,23 +45,22 @@ export class LogContextStateless {
             await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
             return true;
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_insert_in_es: ${stringifyError(err)}`);
+            report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
             metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
         }
     }
 
-    async debug(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async debug(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
-    async info(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async info(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
-    async warn(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async warn(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 
@@ -72,7 +71,7 @@ export class LogContextStateless {
             level: 'error',
             message,
             error: errorToDocument(error),
-            meta: Object.keys(rest).length > 0 ? rest : null,
+            meta: Object.keys(rest).length > 0 ? rest : undefined,
             source: 'internal',
             createdAt: new Date().toISOString()
         });
@@ -84,8 +83,8 @@ export class LogContextStateless {
             error,
             ...data
         }: {
-            request: MessageRow['request'];
-            response: MessageRow['response'];
+            request: MessageHTTPRequest | undefined;
+            response: MessageHTTPResponse | undefined;
             error?: unknown;
             meta?: MessageRow['meta'];
             level?: MessageRow['level'];
@@ -106,7 +105,7 @@ export class LogContextStateless {
     /**
      * @deprecated Only there for retro compat
      */
-    async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
+    async trace(message: string, meta?: MessageMeta): Promise<boolean> {
         return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
     }
 }
@@ -127,11 +126,11 @@ export class LogContext extends LogContextStateless {
     /**
      * Add more data to the parentId
      */
-    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
+    async enrichOperation(data: Partial<OperationRow>): Promise<void> {
         this.span.enrich(data);
         await this.logOrExec(
             `enrich(${JSON.stringify(data)})`,
-            async () => await update({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
+            async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
         );
     }
 
@@ -181,8 +180,7 @@ export class LogContext extends LogContextStateless {
         try {
             await callback();
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
+            report(new Error(`failed_to_set_${log}`, { cause: err }));
         }
     }
 }

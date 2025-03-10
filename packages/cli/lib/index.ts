@@ -22,6 +22,7 @@ import type { DeployOptions } from './types.js';
 import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { init } from './services/init.service.js';
+import { generate as generateDocs } from './services/docs.service.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -204,6 +205,21 @@ program
     .description('Migrate the endpoint format')
     .action(function (this: Command) {
         endpointMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('generate:docs')
+    .option('-p, --path [path]', 'Optional: The relative path to generate the docs for. Defaults to the same directory as the script.')
+    .option('--integration-templates', 'Optional: for the nango integration templates repo', false)
+    .description('Generate documentation for the integration scripts')
+    .action(async function (this: Command) {
+        const { debug, path: optionalPath, integrationTemplates } = this.opts();
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const ok = await generateDocs({ absolutePath, path: optionalPath, debug, isForIntegrationTemplates: integrationTemplates });
+
+        if (ok) {
+            console.log(chalk.green(`Docs have been generated`));
+        }
     });
 
 // Hidden commands //

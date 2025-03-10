@@ -109,7 +109,7 @@ class VerificationService {
 
         const tsFiles = listFilesToCompile({ fullPath, parsed: parser.parsed! });
 
-        const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
+        const tsFileNames = tsFiles.filter((file) => file.baseName !== 'models').map((file) => file.baseName);
 
         const missingFiles = flows.filter((scriptName) => !tsFileNames.includes(scriptName));
 

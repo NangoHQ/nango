@@ -101,38 +101,13 @@ describe('POST /logs/messages', () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [
                 {
-                    accountId: null,
-                    accountName: null,
-                    code: null,
-                    integrationId: null,
-                    integrationName: null,
-                    providerName: null,
-                    connectionId: null,
-                    connectionName: null,
                     createdAt: expect.toBeIsoDate(),
-                    endedAt: null,
-                    environmentId: null,
-                    environmentName: null,
-                    error: null,
-                    expiresAt: null,
                     id: expect.any(String),
-                    jobId: null,
                     level: 'info',
                     message: 'test info',
-                    meta: null,
-                    operation: null,
                     parentId: logCtx.id,
-                    request: null,
-                    response: null,
                     source: 'internal',
-                    startedAt: null,
-                    state: 'waiting',
-                    syncConfigId: null,
-                    syncConfigName: null,
-                    title: null,
-                    type: 'log',
-                    updatedAt: expect.toBeIsoDate(),
-                    userId: null
+                    type: 'log'
                 }
             ],
             pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: null }

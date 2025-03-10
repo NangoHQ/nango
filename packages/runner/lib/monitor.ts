@@ -1,29 +1,24 @@
 import os from 'os';
 import fs from 'fs';
-import { httpFetch, logger } from './utils.js';
+import { logger } from './logger.js';
 import { idle } from './idle.js';
 import { envs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
+import { persistClient } from './clients/persist.js';
 
 export class RunnerMonitor {
     private runnerId: number;
     private tracked: Map<number, NangoProps> = new Map<number, NangoProps>();
-    private jobsServiceUrl: string = '';
-    private persistServiceUrl: string = '';
-    private idleMaxDurationMs = parseInt(process.env['IDLE_MAX_DURATION_MS'] || '') || 0;
+    private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
     private idleInterval: NodeJS.Timeout | null = null;
     private memoryInterval: NodeJS.Timeout | null = null;
 
-    constructor({ runnerId, jobsServiceUrl, persistServiceUrl }: { runnerId: number; jobsServiceUrl: string; persistServiceUrl: string }) {
+    constructor({ runnerId }: { runnerId: number }) {
         this.runnerId = runnerId;
-        this.jobsServiceUrl = jobsServiceUrl;
-        this.persistServiceUrl = persistServiceUrl;
-        if (this.jobsServiceUrl.length > 0) {
-            this.memoryInterval = this.checkMemoryUsage();
-            this.idleInterval = this.checkIdle();
-        }
+        this.memoryInterval = this.checkMemoryUsage();
+        this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
     }
 
@@ -79,17 +74,18 @@ export class RunnerMonitor {
             if (!environmentId || !activityLogId) {
                 continue;
             }
-            await httpFetch({
-                method: 'post',
-                url: `${this.persistServiceUrl}/environment/${environmentId}/log`,
-                headers: {
-                    Authorization: `Bearer ${secretKey}`
-                },
-                data: JSON.stringify({
+            await persistClient.postLog({
+                secretKey,
+                environmentId,
+                data: {
                     activityLogId: activityLogId,
-                    level: 'warn',
-                    msg: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`
-                })
+                    log: {
+                        type: 'log',
+                        level: 'warn',
+                        message: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`,
+                        createdAt: new Date().toISOString()
+                    }
+                }
             });
         }
     }

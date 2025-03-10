@@ -111,18 +111,6 @@ class FlowController {
         }
     }
 
-    public async getFlowConfig(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-
-            const nangoConfigs = await getSyncConfigsAsStandardConfig(environmentId);
-
-            res.send(nangoConfigs);
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async getFlow(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environment = res.locals['environment'];

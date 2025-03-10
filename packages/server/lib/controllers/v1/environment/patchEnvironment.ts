@@ -2,8 +2,9 @@ import { z } from 'zod';
 import { isEnterprise, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import type { DBEnvironment, DBTeam, PatchEnvironment } from '@nangohq/types';
-import { environmentService, featureFlags } from '@nangohq/shared';
+import { environmentService } from '@nangohq/shared';
 import { environmentToApi } from '../../../formatters/environment.js';
+import { featureFlags } from '../../../utils/utils.js';
 
 const validationBody = z
     .object({
@@ -85,5 +86,5 @@ async function isOtlpEnabled({ account }: { account: DBTeam }): Promise<boolean>
     if (isEnterprise) {
         return true;
     }
-    return featureFlags.isEnabled('feature:otlp:account', account.uuid, false);
+    return await featureFlags.isSet('feature:otlp:account', { distinctId: account.uuid });
 }

@@ -1,8 +1,8 @@
 import type { estypes } from '@elastic/elasticsearch';
-import type { MessageRow } from '@nangohq/types';
+import type { MessageRow, OperationRow } from '@nangohq/types';
 import { envs } from '../env.js';
 
-const props: Record<keyof MessageRow, estypes.MappingProperty> = {
+const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProperty> = {
     id: { type: 'keyword' },
 
     parentId: { type: 'keyword' },
@@ -62,10 +62,8 @@ const props: Record<keyof MessageRow, estypes.MappingProperty> = {
     },
 
     type: { type: 'keyword' },
-    title: { type: 'keyword' },
     level: { type: 'keyword' },
     state: { type: 'keyword' },
-    code: { type: 'keyword' },
 
     source: { type: 'keyword' },
 
@@ -147,7 +145,8 @@ export const indexMessages: estypes.IndicesCreateRequest = {
             'sort.field': ['createdAt', 'id'],
             'sort.order': ['desc', 'desc']
         },
-        number_of_shards: 10 // Made up number until we figured out a better strategy
+        // They are recommending 1 shard per 20gb-40gb
+        number_of_shards: envs.NANGO_LOGS_ES_SHARD_PER_DAY
     },
     mappings: {
         _source: { enabled: true },

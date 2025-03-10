@@ -1,6 +1,6 @@
 ---
-title: Sharepoint Online
-sidebarTitle: Sharepoint Online
+title: SharePoint Online (v2)
+sidebarTitle: SharePoint Online (v2)
 ---
 
 import Overview from "/snippets/overview.mdx"
@@ -43,9 +43,7 @@ _No setup guide yet._
 -   To get refresh token, you will need to add **`offline_access`** to the list of your scopes.
 -   You can find permissions required for each API call in their corresponding API methods section.
 
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sharepoint-online.mdx)</Note>
+-   Nango supports both SharePoint Online v1 and v2, providing flexibility for integrations depending on your requirements. SharePoint v1 refers to the older REST API, which uses legacy authentication methods like SharePoint Online (SPO) or older OAuth implementations. Its endpoints follow the pattern `https://<your-tenant>.sharepoint.com/_api/`, and it supports basic SharePoint operations. However, v1 lacks modern features such as delta queries for incremental sync and deep integration with Microsoft 365.
+-   Sharepoint Online v2, on the other hand, is a modernized version aligned with the Microsoft Graph API. It uses OAuth 2.0 with the Microsoft Identity Platform (formerly Azure AD) for secure and scalable authentication. Endpoints for v2 are primarily accessed through `https://graph.microsoft.com/v1.0/sites/...`, and it offers advanced capabilities like delta queries for incremental sync, enhanced performance, and seamless integration with Microsoft 365 services. 
 
-## Going further
-<Card title="Connect to SharePoint Online (v1)" icon="link" href="/integrations/all/sharepoint-online-v1/connect" horizontal>
-  Guide to connect to SharePoint Online (v1) using Nango Connect UI.
-</Card>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sharepoint-online.mdx)</Note>

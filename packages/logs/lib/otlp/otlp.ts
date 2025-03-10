@@ -5,6 +5,7 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { once, stringifyError } from '@nangohq/utils';
 import { logger } from '../utils.js';
 import { RoutingSpanProcessor } from './otlpSpanProcessor.js';
+import { setTimeout } from 'node:timers/promises';
 
 // Enable OpenTelemetry console logging
 // import { DiagLogLevel, DiagConsoleLogger, diag } from '@opentelemetry/api';
@@ -51,17 +52,30 @@ async function updateRoutes(getRoutes: () => Promise<RouteConfig[]>) {
     }
 }
 
-export const otlp = {
+export const otlp: {
+    running: AbortController | false;
+    register: (getRoutes: () => Promise<RouteConfig[]>) => Promise<void>;
+    stop: () => void;
+    tracer: any;
+    routingAttributeKey: string;
+} = {
     running: false,
-    register: once(async (getRoutes: () => Promise<RouteConfig[]>) => {
-        otlp.running = true;
+    register: once(async (getRoutes) => {
+        otlp.running = new AbortController();
         while (otlp.running) {
             await updateRoutes(getRoutes);
-            await new Promise((resolve) => setTimeout(resolve, 15000));
+            try {
+                await setTimeout(15000, null, { signal: otlp.running.signal });
+            } catch {
+                break;
+            }
         }
     }),
     stop: () => {
-        otlp.running = false;
+        if (otlp.running) {
+            otlp.running.abort();
+            otlp.running = false;
+        }
     },
     tracer: trace.getTracer('nango-otlp'),
     routingAttributeKey: 'otlp.internal.routingKey'

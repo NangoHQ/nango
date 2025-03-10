@@ -9,7 +9,6 @@ import {
     configService,
     environmentService,
     errorManager,
-    featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw
@@ -20,6 +19,8 @@ import { startScript } from './operations/start.js';
 import { bigQueryClient, slackService } from '../clients.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import db from '@nangohq/database';
+import type { JsonValue } from 'type-fest';
+import { setTaskSuccess, setTaskFailed } from './operations/state.js';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -58,7 +59,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
-        await logCtx.info(`Starting action '${task.actionName}'`, {
+        void logCtx.info(`Starting action '${task.actionName}'`, {
             input: task.input,
             action: task.actionName,
             connection: task.connection.connection_id,
@@ -83,7 +84,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };
@@ -125,7 +126,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         return Err(error);
     }
 }
-export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoProps }): Promise<void> {
+export async function handleActionSuccess({ taskId, nangoProps, output }: { taskId: string; nangoProps: NangoProps; output: JsonValue }): Promise<void> {
+    await setTaskSuccess({ taskId, output });
+
     const connection: ConnectionJobs = {
         id: nangoProps.nangoConnectionId!,
         connection_id: nangoProps.connectionId,
@@ -137,7 +140,6 @@ export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoPro
         name: nangoProps.syncConfig.sync_name,
         type: 'action',
         originalActivityLogId: nangoProps.activityLogId as unknown as string,
-        environment_id: nangoProps.environmentId,
         provider: nangoProps.provider
     });
 
@@ -163,7 +165,9 @@ export async function handleActionSuccess({ nangoProps }: { nangoProps: NangoPro
     });
 }
 
-export async function handleActionError({ nangoProps, error }: { nangoProps: NangoProps; error: NangoError }): Promise<void> {
+export async function handleActionError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
+    await setTaskFailed({ taskId, error });
+
     await onFailure({
         connection: {
             id: nangoProps.nangoConnectionId!,
@@ -209,6 +213,22 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
+    const logCtx = await logContextGetter.get({ id: activityLogId });
+    try {
+        await slackService.reportFailure(connection, syncName, 'action', logCtx.id, provider);
+    } catch {
+        errorManager.report('slack notification service reported a failure', {
+            environmentId: connection.environment_id,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.ACTION,
+            metadata: {
+                syncName: syncName,
+                connectionDetails: connection,
+                syncType: 'action',
+                debug: false
+            }
+        });
+    }
     if (team) {
         void bigQueryClient.insert({
             executionType: 'action',
@@ -229,22 +249,6 @@ async function onFailure({
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
             endUser
-        });
-    }
-    const logCtx = await logContextGetter.get({ id: activityLogId });
-    try {
-        await slackService.reportFailure(connection, syncName, 'action', logCtx.id, connection.environment_id, provider);
-    } catch {
-        errorManager.report('slack notification service reported a failure', {
-            environmentId: connection.environment_id,
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.ACTION,
-            metadata: {
-                syncName: syncName,
-                connectionDetails: connection,
-                syncType: 'action',
-                debug: false
-            }
         });
     }
 }

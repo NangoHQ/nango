@@ -32,7 +32,7 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
-        const result = await db.knex
+        const result = await db.readOnly
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
