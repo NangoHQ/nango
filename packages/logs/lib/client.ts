@@ -4,7 +4,7 @@ import { getFormattedMessage } from './models/helpers.js';
 import { metrics, report } from '@nangohq/utils';
 import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
 import { envs } from './env.js';
-import { OtlpSpan } from './otlp/otlpSpan.js';
+import type { OtlpSpan } from './otlp/otlpSpan.js';
 
 interface Options {
     dryRun?: boolean;
@@ -115,19 +115,27 @@ export class LogContextStateless {
  */
 export class LogContext extends LogContextStateless {
     operation: OperationRow;
-    span: OtlpSpan;
+    span?: OtlpSpan;
 
     constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
         super(data, options);
         this.operation = data.operation;
-        this.span = new OtlpSpan(data.operation);
+    }
+
+    /**
+     * We are using internal logging system to log to OpenTelemetry
+     * Unfortunately, by design, our logging system is not compatible
+     * so we sometimes have to trick and inject a span because it was started elsewhere
+     */
+    attachSpan(otlpSpan: OtlpSpan) {
+        this.span = otlpSpan;
     }
 
     /**
      * Add more data to the parentId
      */
     async enrichOperation(data: Partial<OperationRow>): Promise<void> {
-        this.span.enrich(data);
+        this.span?.enrich(data);
         await this.logOrExec(
             `enrich(${JSON.stringify(data)})`,
             async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
@@ -144,28 +152,28 @@ export class LogContext extends LogContextStateless {
     async failed(): Promise<void> {
         await this.logOrExec('failed', async () => {
             await setFailed(this.operation);
-            this.span.end('failed');
+            this.span?.end('failed');
         });
     }
 
     async success(): Promise<void> {
         await this.logOrExec('success', async () => {
             await setSuccess(this.operation);
-            this.span.end('success');
+            this.span?.end('success');
         });
     }
 
     async cancel(): Promise<void> {
         await this.logOrExec('cancel', async () => {
             await setCancelled(this.operation);
-            this.span.end('cancelled');
+            this.span?.end('cancelled');
         });
     }
 
     async timeout(): Promise<void> {
         await this.logOrExec('timeout', async () => {
             await setTimeouted(this.operation);
-            this.span.end('timeout');
+            this.span?.end('timeout');
         });
     }
 

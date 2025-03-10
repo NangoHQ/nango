@@ -21,8 +21,7 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
     Sentry.init({
         dsn: dsn || '',
         sampleRate: 1,
-        tracesSampleRate: 0,
-        openTelemetryInstrumentations: [],
+        skipOpenTelemetrySetup: true,
         enabled: dsn ? true : false,
         release: `${NANGO_VERSION}@${hash || 'no_hash'}`,
         serverName: applicationName,
