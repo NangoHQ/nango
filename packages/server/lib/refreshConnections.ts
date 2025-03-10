@@ -1,6 +1,5 @@
 import * as cron from 'node-cron';
-import type { Lock } from '@nangohq/shared';
-import { errorManager, ErrorSourceEnum, connectionService, locking, encryptionManager } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, connectionService, encryptionManager } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import {
@@ -9,6 +8,8 @@ import {
     connectionTest as connectionTestHook
 } from './hooks/hooks.js';
 import tracer from 'dd-trace';
+import type { Lock } from '@nangohq/kvstore';
+import { getLocking } from '@nangohq/kvstore';
 
 const logger = getLogger('Server');
 const cronName = '[refreshConnections]';
@@ -36,6 +37,8 @@ export function refreshConnectionsCron(): void {
 }
 
 export async function exec(): Promise<void> {
+    const locking = await getLocking();
+
     await tracer.trace<Promise<void>>('nango.server.cron.refreshConnections', async (span) => {
         let lock: Lock | undefined;
         try {

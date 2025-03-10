@@ -210,11 +210,12 @@ program
 program
     .command('generate:docs')
     .option('-p, --path [path]', 'Optional: The relative path to generate the docs for. Defaults to the same directory as the script.')
+    .option('--integration-templates', 'Optional: for the nango integration templates repo', false)
     .description('Generate documentation for the integration scripts')
     .action(async function (this: Command) {
-        const { debug, path: optionalPath } = this.opts();
+        const { debug, path: optionalPath, integrationTemplates } = this.opts();
         const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
-        const ok = await generateDocs({ absolutePath, path: optionalPath, debug });
+        const ok = await generateDocs({ absolutePath, path: optionalPath, debug, isForIntegrationTemplates: integrationTemplates });
 
         if (ok) {
             console.log(chalk.green(`Docs have been generated`));

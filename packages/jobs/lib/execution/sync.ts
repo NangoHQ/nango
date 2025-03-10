@@ -10,8 +10,6 @@ import {
     errorManager,
     ErrorSourceEnum,
     LogActionEnum,
-    telemetry,
-    LogTypes,
     errorNotificationService,
     SyncJobsType,
     updateSyncJobResult,
@@ -21,8 +19,7 @@ import {
     createSyncJob,
     getSyncConfigRaw,
     getSyncJobByRunId,
-    getEndUserByConnectionId,
-    featureFlags
+    getEndUserByConnectionId
 } from '@nangohq/shared';
 import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -110,7 +107,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             throw new Error(`Failed to create sync job for sync: ${task.syncId}. TaskId: ${task.id}`);
         }
 
-        await logCtx.info(`Starting sync '${task.syncName}'`, {
+        void logCtx.info(`Starting sync '${task.syncName}'`, {
             syncName: task.syncName,
             syncVariant: task.syncVariant,
             syncType,
@@ -144,14 +141,14 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             track_deletes: syncConfig.track_deletes,
             syncConfig,
             debug: task.debug || false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser
         };
 
         if (task.debug) {
-            await logCtx.debug(`Last sync date is`, lastSyncDate);
+            void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
@@ -248,7 +245,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     syncId: nangoProps.syncId,
                     generation: nangoProps.syncJobId
                 });
-                await logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
+                void logCtx.info(`${model}: "track_deletes" post deleted ${deletedKeys.length} records`);
             }
 
             const updatedResults: Record<string, SyncResult> = {
@@ -363,36 +360,13 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     }
                 });
             }
-
-            await telemetry.log(
-                LogTypes.SYNC_SUCCESS,
-                `${nangoProps.syncConfig.sync_type || 'The'} sync '${nangoProps.syncConfig.sync_name}' for model ${model} was completed successfully`,
-                LogActionEnum.SYNC,
-                {
-                    model,
-                    environmentId: String(nangoProps.environmentId),
-                    responseResults: JSON.stringify(result),
-                    numberOfModels: '1',
-                    version: nangoProps.syncConfig.version || '-1',
-                    syncName: nangoProps.syncConfig.sync_name,
-                    connectionDetails: JSON.stringify(connection),
-                    connectionId: nangoProps.connectionId,
-                    providerConfigKey: nangoProps.providerConfigKey,
-                    syncId: nangoProps.syncId,
-                    syncJobId: String(nangoProps.syncJobId),
-                    syncType: nangoProps.syncConfig.sync_type!,
-                    totalRunTime: `${runTime} seconds`,
-                    debug: String(nangoProps.debug)
-                },
-                `syncId:${nangoProps.syncId}`
-            );
         }
 
         await logCtx.enrichOperation({
             meta: syncPayload
         });
 
-        await logCtx.info(
+        void logCtx.info(
             `${nangoProps.syncConfig.sync_type ? nangoProps.syncConfig.sync_type.replace(/^./, (c) => c.toUpperCase()) : 'The '} sync '${nangoProps.syncConfig.sync_name}' completed successfully`,
             syncPayload
         );
@@ -756,25 +730,6 @@ async function onFailure({
             debug: debug
         }
     });
-
-    await telemetry.log(
-        LogTypes.SYNC_FAILURE,
-        error.message,
-        LogActionEnum.SYNC,
-        {
-            environmentId: String(connection.environment_id),
-            syncName: syncName,
-            connectionDetails: JSON.stringify(connection),
-            connectionId: connection.connection_id,
-            providerConfigKey: connection.provider_config_key,
-            syncId: syncId,
-            syncJobId: String(syncJobId),
-            syncType: syncType,
-            debug: String(debug),
-            level: 'error'
-        },
-        `syncId:${syncId}`
-    );
 
     await errorNotificationService.sync.create({
         action: 'run',

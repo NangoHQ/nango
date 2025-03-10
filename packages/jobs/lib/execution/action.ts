@@ -9,7 +9,6 @@ import {
     configService,
     environmentService,
     errorManager,
-    featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw
@@ -60,7 +59,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
-        await logCtx.info(`Starting action '${task.actionName}'`, {
+        void logCtx.info(`Starting action '${task.actionName}'`, {
             input: task.input,
             action: task.actionName,
             connection: task.connection.connection_id,
@@ -85,7 +84,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };

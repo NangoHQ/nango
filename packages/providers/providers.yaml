@@ -1671,6 +1671,9 @@ canva-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
     credentials:
         apiKey:
@@ -3569,6 +3572,9 @@ guru-scim:
         base_url: https://api.getguru.com/api/scim
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
@@ -5174,6 +5180,9 @@ lucid-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
     docs: https://docs.nango.dev/integrations/all/lucid-scim
     docs_connect: https://docs.nango.dev/integrations/all/lucid-scim/connect
     credentials:
@@ -5661,14 +5670,17 @@ mip-cloud:
     auth_mode: TWO_STEP
     proxy:
         base_url: https://api.mip.com
+        headers:
+            authorization-token: ${accessToken}
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
-        username: ${credentials.username}
-        password: ${credentials.password}
+        username: ${credential.username}
+        password: ${credential.password}
+        org: ${credential.org}
     token_headers:
         content-type: application/json
     token_response:
-        token: token
+        token: AccessToken
     docs: https://docs.nango.dev/integrations/all/mip-cloud
     docs_connect: https://docs.nango.dev/integrations/all/mip-cloud/connect
     credentials:
@@ -5681,6 +5693,12 @@ mip-cloud:
             title: Password
             description: Your Password for MIP Fund Accounting.
             secret: true
+        org:
+            type: string
+            title: ORG
+            description: The MIP Fund Accounting database you will be using.
+            optional: true
+            example: ZQXP_98421_NTO
     connection_config:
         domain:
             type: string
@@ -5697,15 +5715,17 @@ mip-on-premise:
     auth_mode: TWO_STEP
     proxy:
         base_url: https://api.mip.com
+        headers:
+            authorization-token: ${accessToken}
     token_url: https://${connectionConfig.domain}/api/security/login
     token_params:
-        login: ${credentials.login}
-        password: ${credentials.password}
-        org: ${credentials.org}
+        login: ${credential.login}
+        password: ${credential.password}
+        org: ${credential.org}
     token_headers:
         content-type: application/json
     token_response:
-        token: token
+        token: AccessToken
     docs: https://docs.nango.dev/integrations/all/mip-on-premise
     docs_connect: https://docs.nango.dev/integrations/all/mip-on-premise/connect
     credentials:
@@ -7502,6 +7522,29 @@ sharepoint-online:
     alias: microsoft
     docs: https://docs.nango.dev/integrations/all/sharepoint-online
 
+sharepoint-online-oauth2-cc:
+    display_name: SharePoint Online (Client Credentials V2)
+    categories:
+        - storage
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 sharepoint-online-v1:
     display_name: SharePoint Online (v1)
     categories:
@@ -7658,6 +7701,9 @@ shopify-scim:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v2/Users
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/shopify-scim
@@ -7872,6 +7918,8 @@ squareup:
 
 squareup-sandbox:
     display_name: Squareup (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
     token_url: https://connect.squareupsandbox.com/oauth2/token

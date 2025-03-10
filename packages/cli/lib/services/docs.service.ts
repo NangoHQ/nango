@@ -8,7 +8,17 @@ type NangoSyncOrAction = NangoYamlV2IntegrationSync | NangoYamlV2IntegrationActi
 
 const divider = '<!-- END  GENERATED CONTENT -->';
 
-export async function generate({ absolutePath, path, debug = false }: { absolutePath: string; path?: string; debug?: boolean }): Promise<boolean> {
+export async function generate({
+    absolutePath,
+    path,
+    isForIntegrationTemplates = false,
+    debug = false
+}: {
+    absolutePath: string;
+    path?: string;
+    debug?: boolean;
+    isForIntegrationTemplates?: false;
+}): Promise<boolean> {
     const pathPrefix = path && path.startsWith('/') ? path.slice(1) : path;
     const parsing = parse(absolutePath, debug);
 
@@ -55,7 +65,7 @@ export async function generate({ absolutePath, path, debug = false }: { absolute
                     markdown = '';
                 }
 
-                const updatedMarkdown = updateReadme(markdown, key, scriptPath, type, config, models);
+                const updatedMarkdown = updateReadme(markdown, key, scriptPath, type, config, models, isForIntegrationTemplates);
                 await fs.writeFile(path ? `${writePath}/${key}.md` : `${writePath}/${scriptPath}.md`, updatedMarkdown);
             } catch {
                 console.error(`Error generating readme for ${integration} ${type} ${key}`);
@@ -82,7 +92,8 @@ function updateReadme(
     scriptPath: string,
     endpointType: string,
     scriptConfig: NangoSyncOrAction,
-    models: NangoYamlModel
+    models: NangoYamlModel,
+    isForIntegrationTemplates: boolean
 ): string {
     const [, custom = ''] = markdown.split(divider);
 
@@ -95,7 +106,7 @@ function updateReadme(
         `<!-- BEGIN GENERATED CONTENT -->`,
         `# ${prettyName}`,
         ``,
-        generalInfo(scriptPath, endpointType, scriptConfig),
+        generalInfo(scriptPath, endpointType, scriptConfig, isForIntegrationTemplates),
         ``,
         '## Endpoint Reference',
         ``,
@@ -103,12 +114,20 @@ function updateReadme(
         requestParams(endpointType),
         requestBody(scriptConfig, endpointType, models),
         requestResponse(scriptConfig, models)
-    ].join('\n');
+    ];
+    const metadata = expectedMetadata(scriptConfig, endpointType, models);
+    if (metadata) {
+        generatedLines.push(metadata);
+    }
 
-    return `${generatedLines}\n${divider}\n${custom.trim()}\n`;
+    if (isForIntegrationTemplates) {
+        generatedLines.push(changelog(scriptPath));
+    }
+
+    return `${generatedLines.join('\n')}\n${divider}\n${custom.trim()}\n`;
 }
 
-function generalInfo(scriptPath: string, endpointType: string, scriptConfig: NangoSyncOrAction) {
+function generalInfo(scriptPath: string, endpointType: string, scriptConfig: NangoSyncOrAction, isForIntegrationTemplates: boolean) {
     const scopes = Array.isArray(scriptConfig.scopes) ? scriptConfig.scopes.join(', ') : scriptConfig.scopes;
 
     if (!scriptConfig.description) {
@@ -118,16 +137,23 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
     const endpoints = Array.isArray(scriptConfig.endpoint) ? scriptConfig.endpoint : [scriptConfig.endpoint];
     const [endpoint] = endpoints;
 
-    return [
+    const generalInfo = [
         `## General Information`,
         ``,
         `- **Description:** ${scriptConfig.description ?? ''}`,
         `- **Version:** ${scriptConfig.version ? scriptConfig.version : '0.0.1'}`,
         `- **Group:** ${endpoint && typeof endpoint !== 'string' && 'group' in endpoint ? endpoint?.group : 'Others'}`,
         `- **Scopes:** ${scopes ? `\`${scopes}\`` : '_None_'}`,
-        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`,
-        ``
-    ].join('\n');
+        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`
+    ];
+
+    if (isForIntegrationTemplates) {
+        generalInfo.push(`- **Code:** [github.com](https://github.com/NangoHQ/integration-templates/tree/main/integrations/${scriptPath}.ts)`);
+    }
+
+    generalInfo.push(``);
+
+    return generalInfo.join('\n');
 }
 
 function requestEndpoint(scriptConfig: NangoSyncOrAction) {
@@ -149,6 +175,7 @@ function requestParams(endpointType: string) {
             `- **limit:** \`(optional, integer)\` The maximum number of records to return per page. Defaults to 100.`,
             `- **cursor:** \`(optional, string)\` A marker used to fetch records modified after a specific point in time.If not provided, all records are returned.Each record includes a cursor value found in _nango_metadata.cursor.Save the cursor from the last record retrieved to track your sync progress.Use the cursor parameter together with the limit parameter to paginate through records.The cursor is more precise than modified_after, as it can differentiate between records with the same modification timestamp.`,
             `- **filter:** \`(optional, added | updated | deleted)\` Filter to only show results that have been added or updated or deleted.`,
+            `- **ids:** \`(optional, string[])\` An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.`,
             ``
         );
     } else {
@@ -189,6 +216,29 @@ function requestResponse(scriptConfig: NangoSyncOrAction, models: NangoYamlModel
     }
 
     return out.join('\n');
+}
+
+function expectedMetadata(scriptConfig: any, endpointType: string, models: NangoYamlModel) {
+    if (endpointType === 'sync' && scriptConfig.input) {
+        const out = ['### Expected Metadata'];
+
+        const expanded = expandModels(scriptConfig.input, models);
+        const expandedLines = JSON.stringify(expanded, null, 2).split('\n');
+        out.push(``, `\`\`\`json`, ...expandedLines, `\`\`\``, ``);
+
+        return out.join('\n');
+    }
+    return;
+}
+
+function changelog(scriptPath: string) {
+    return [
+        '## Changelog',
+        ``,
+        `- [Script History](https://github.com/NangoHQ/integration-templates/commits/main/integrations/${scriptPath}.ts)`,
+        `- [Documentation History](https://github.com/NangoHQ/integration-templates/commits/main/integrations/${scriptPath}.md)`,
+        ``
+    ].join('\n');
 }
 
 function expandModels(model: string | NangoYamlModel, models: NangoYamlModel): NangoYamlModel | NangoYamlModel[] {

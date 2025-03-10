@@ -11,7 +11,6 @@ import {
     createSyncJob,
     environmentService,
     externalWebhookService,
-    featureFlags,
     getApiUrl,
     getEndUserByConnectionId,
     getSync,
@@ -72,7 +71,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
-        await logCtx.info(`Starting webhook '${task.webhookName}'`, {
+        void logCtx.info(`Starting webhook '${task.webhookName}'`, {
             input: task.input,
             webhook: task.webhookName,
             connection: task.connection.connection_id,
@@ -113,7 +112,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncId: sync.id,
             syncJobId: syncJob.id,
             debug: false,
-            runnerFlags: await getRunnerFlags(featureFlags),
+            runnerFlags: await getRunnerFlags(),
             startedAt: new Date(),
             endUser
         };

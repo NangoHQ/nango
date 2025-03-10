@@ -2069,6 +2069,7 @@ integrations:
                     path: /users
                     group: Users
                 input: BoxCreateUser
+                version: 1.0.0
             delete-user:
                 description: Deletes a user in Box. Requires an enterprise account.
                 endpoint:
@@ -3604,7 +3605,7 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /evaluagent/users
+                    path: /users
             groups:
                 runs: every day
                 output: EvaluAgentGroup
@@ -3613,7 +3614,7 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /evaluagent/groups
+                    path: /groups
             roles:
                 runs: every day
                 output: EvaluAgentRole
@@ -3622,7 +3623,7 @@ integrations:
                 sync_type: full
                 endpoint:
                     method: GET
-                    path: /evaluagent/roles
+                    path: /roles
         models:
             EvaluAgentGroup:
                 id: string
@@ -6347,6 +6348,7 @@ integrations:
                     - timeline
                     - e-commerce
                     - automation
+                version: 1.0.1
             create-property:
                 description: Create a property in Hubspot
                 input: CreatePropertyInput
@@ -6603,10 +6605,10 @@ integrations:
             InputProperty:
                 name: string
             PropertyResponse:
-                result: Property
+                results: Property[]
             Property:
-                updatedAt: string
-                createdAt: string
+                createdAt?: string
+                updatedAt?: string
                 name: string
                 label: string
                 type: string
@@ -6619,14 +6621,17 @@ integrations:
                 externalOptions: boolean
                 hasUniqueValue: boolean
                 hidden: boolean
-                hubspotDefined: boolean
-                showCurrencySymbol: boolean
-                modificationMetadata:
-                    archivable: boolean
-                    readOnlyDefinition: boolean
-                    readOnlyValue: boolean
+                options?: any[]
+                hubspotDefined?: boolean
+                showCurrencySymbol?: boolean
+                modificationMetadata?:
+                    archivable?: boolean
+                    readOnlyDefinition?: boolean
+                    readOnlyValue?: boolean
+                    readOnlyOptions?: boolean
                 formField: boolean
                 dataSensitivity: string
+                __string: any
             Option:
                 label: string
                 value: string
@@ -10215,6 +10220,21 @@ integrations:
                     opportunityLocation?: string
     linear:
         actions:
+            fetch-fields:
+                description: Introspection endpoint to fetch the fields available per a model
+                input: Entity
+                output: FieldResponse
+                endpoint:
+                    method: GET
+                    path: /fields
+                    group: Fields
+            fetch-models:
+                description: Introspection endpoint to fetch the models available
+                output: ModelResponse
+                endpoint:
+                    method: GET
+                    path: /models
+                    group: Models
             create-issue:
                 description: Create an issue in Linear
                 input: CreateIssue
@@ -10354,6 +10374,16 @@ integrations:
                 project:
                     id: string
                     name: string
+            Entity:
+                name: string
+            FieldResponse:
+                fields: Field[]
+            Field:
+                __string: Field | string
+            ModelResponse:
+                models: Model[]
+            Model:
+                name: string
     linkedin:
         actions:
             post:
