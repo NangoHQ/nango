@@ -118,7 +118,7 @@ export async function persistRecords({
         }
 
         const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
-        await logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
+        void logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
             persistType,
             updatedResults
         });

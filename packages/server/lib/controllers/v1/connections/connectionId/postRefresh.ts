@@ -105,7 +105,7 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
             connection: { id: connection.id, name: connection.connection_id }
         }
     );
-    await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
+    void logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
     await logCtx.success();
 
     res.status(200).send({

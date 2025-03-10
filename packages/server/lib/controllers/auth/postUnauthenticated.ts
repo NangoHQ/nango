@@ -136,7 +136,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('Unauthenticated connection creation was successful');
+        void logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
         void connectionCreated(
