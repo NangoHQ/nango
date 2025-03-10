@@ -130,7 +130,7 @@ export async function handleActionSuccess({ taskId, nangoProps, output }: { task
     await setTaskSuccess({ taskId, output });
 
     const connection: ConnectionJobs = {
-        id: nangoProps.nangoConnectionId!,
+        id: nangoProps.nangoConnectionId,
         connection_id: nangoProps.connectionId,
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
@@ -170,7 +170,7 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
 
     await onFailure({
         connection: {
-            id: nangoProps.nangoConnectionId!,
+            id: nangoProps.nangoConnectionId,
             connection_id: nangoProps.connectionId,
             environment_id: nangoProps.environmentId,
             provider_config_key: nangoProps.providerConfigKey

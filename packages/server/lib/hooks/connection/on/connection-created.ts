@@ -1,6 +1,6 @@
 import { onEventScriptService } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
-import { defaultOperationExpiration } from '@nangohq/logs';
+import { defaultOperationExpiration, OtlpSpan } from '@nangohq/logs';
 import { getOrchestrator } from '../../../utils/utils.js';
 import type { RecentlyCreatedConnection } from '@nangohq/types';
 
@@ -41,6 +41,7 @@ export async function postConnectionCreation(
                 meta: { event }
             }
         );
+        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
         const res = await getOrchestrator().triggerOnEventScript({
             connection: createdConnection.connection,
             version,
