@@ -132,7 +132,7 @@ export interface OperationRow {
     message: string;
     operation: OperationList;
     state: OperationState;
-    context?: 'script' | 'proxy';
+    context?: 'script' | 'proxy' | 'webhook';
 
     // Ids
     accountId: number;
