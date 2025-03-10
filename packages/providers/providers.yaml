@@ -3188,7 +3188,7 @@ fireflies:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.fireflies.ai
+        base_url: https://api.fireflies.ai/graphql
         headers:
             authorization: Bearer ${apiKey}
         verification:
