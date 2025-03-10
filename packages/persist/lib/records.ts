@@ -86,7 +86,7 @@ export async function persistRecords({
     });
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
     if (formatting.isErr()) {
-        await logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
+        void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
 
         span.setTag('error', err).finish();
@@ -97,7 +97,7 @@ export async function persistRecords({
     const syncConfig = await getSyncConfigByJobId(syncJobId);
     if (syncConfig && !syncConfig.models.includes(baseModel)) {
         const err = new Error(`The model '${baseModel}' is not included in the declared sync models: ${syncConfig.models.join(', ')}.`);
-        await logCtx.error(`The model '${baseModel}' is not included in the declared sync models`);
+        void logCtx.error(`The model '${baseModel}' is not included in the declared sync models`);
 
         span.setTag('error', err).finish();
         return Err(err);
@@ -114,7 +114,7 @@ export async function persistRecords({
             }
         };
         for (const nonUniqueKey of summary.nonUniqueKeys) {
-            await logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${baseModel}. The record was ignored.`);
+            void logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${baseModel}. The record was ignored.`);
         }
 
         const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
@@ -132,7 +132,7 @@ export async function persistRecords({
     } else {
         const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;
 
-        await logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
+        void logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
 
         errorManager.report(content, {
             environmentId: environmentId,
