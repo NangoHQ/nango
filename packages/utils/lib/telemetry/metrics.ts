@@ -28,6 +28,9 @@ export enum Types {
     ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
     ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
 
+    PRE_CONNECTION_DELETE_SUCCESS = 'nango.preConnectionDelete.success',
+    PRE_CONNECTION_DELETE_FAILURE = 'nango.preConnectionDelete.failure',
+
     POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
     POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
 

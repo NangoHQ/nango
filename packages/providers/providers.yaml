@@ -4547,6 +4547,7 @@ intercom:
     auth_mode: OAUTH2
     authorization_url: https://app.intercom.io/oauth
     token_url: https://api.intercom.io/auth/eagle/token
+    pre_connection_delete_script: intercomePreConnectionDelete
     proxy:
         base_url: https://api.intercom.io
         retry:

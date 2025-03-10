@@ -46,7 +46,7 @@ export interface OperationOnEvents {
 // TODO: rename to OperationConnection
 export interface OperationAuth {
     type: 'auth';
-    action: 'create_connection' | 'refresh_token' | 'post_connection' | 'connection_test';
+    action: 'create_connection' | 'refresh_token' | 'post_connection' | 'connection_test' | 'pre_connection_delete';
 }
 export interface OperationAdmin {
     type: 'admin';

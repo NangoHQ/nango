@@ -46,8 +46,8 @@ export const deleteConnection = asyncWrapper<DeleteConnection>(async (req, res) 
         return;
     }
 
-    const preDeletionHook = () =>
-        preConnectionDeletion({
+    const preDeletionHook = async () =>
+        await preConnectionDeletion({
             team,
             environment,
             connection,

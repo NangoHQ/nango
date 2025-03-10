@@ -44,8 +44,8 @@ export const deletePublicConnection = asyncWrapper<DeletePublicConnection>(async
         return;
     }
 
-    const preDeletionHook = () =>
-        preConnectionDeletion({
+    const preDeletionHook = async () =>
+        await preConnectionDeletion({
             team,
             environment,
             connection,

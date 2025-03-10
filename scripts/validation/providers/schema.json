@@ -168,6 +168,9 @@
                 "post_connection_script": {
                     "type": "string"
                 },
+                "pre_connection_delete_script": {
+                    "type": "string"
+                },
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
