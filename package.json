@@ -35,6 +35,7 @@
         "watch:dev": "npm run dev:watch",
         "dev:watch:apps": "concurrently --names 'srv,web,job,prs,orc,con' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\" \"npm run connect-ui:dev:watch\"",
         "dev:watch:headless": "concurrently --names 'srv,job,prs,orc' --kill-others \"npm run server:dev:watch\" \"npm run jobs:dev:watch\" \"npm run persist:dev:watch\" \"npm run orchestrator:dev:watch\"",
+        "dev:watch:web": "concurrently --names 'srv,web' --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run connect-ui:dev:watch\"",
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",
         "dwa": "npm run dev:watch:apps",

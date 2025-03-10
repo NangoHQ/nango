@@ -97,10 +97,10 @@ export const Syncs: React.FC<SyncsProps> = ({ connection, provider }) => {
                             <Table.Head className="w-[120px]">Sync Name</Table.Head>
                             <Table.Head className="w-[115px]">Models</Table.Head>
                             <Table.Head className="w-[120px]">Last Execution</Table.Head>
-                            <Table.Head className="w-[80px]">Frequency</Table.Head>
-                            <Table.Head className="w-[75px]">Records</Table.Head>
+                            <Table.Head className="w-[90px]">Frequency</Table.Head>
+                            <Table.Head className="w-[80px]">Records</Table.Head>
                             <Table.Head className="w-[130px]">Last Sync Start</Table.Head>
-                            <Table.Head className="w-[150px]">Next Sync Start</Table.Head>
+                            <Table.Head className="w-[160px]">Next Sync Start</Table.Head>
                             <Table.Head className="w-[30px]"></Table.Head>
                         </Table.Row>
                     </Table.Header>
