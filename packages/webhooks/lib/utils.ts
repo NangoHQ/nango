@@ -175,12 +175,12 @@ export const deliver = async ({
             );
 
             if (logCtx) {
-                await logCtx.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(response) });
+                void logCtx.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(response) });
 
                 if (response.status >= 200 && response.status < 300) {
                     void logCtx.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
                 } else {
-                    await logCtx.warn(
+                    void logCtx.warn(
                         `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${response.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
                     );
                     success = false;

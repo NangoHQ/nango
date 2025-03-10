@@ -103,7 +103,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
-            await logCtx.error('Unknown provider config');
+            void logCtx.error('Unknown provider config');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_config' } });
             return;
@@ -111,14 +111,14 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
 
         const provider = getProvider(config.provider);
         if (!provider) {
-            await logCtx.error('Unknown provider');
+            void logCtx.error('Unknown provider');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
         if (provider.auth_mode !== 'BASIC') {
-            await logCtx.error('Provider does not support Basic auth', { provider: config.provider });
+            void logCtx.error('Provider does not support Basic auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -132,7 +132,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         if (isConnectSession && res.locals.connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
             if (!connection) {
-                await logCtx.error('Invalid connection');
+                void logCtx.error('Invalid connection');
                 await logCtx.failed();
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
@@ -154,7 +154,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             if ('logs' in connectionResponse.error.payload) {
                 await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
             }
-            await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'connection_test_failed', message: connectionResponse.error.message } });
             return;
@@ -174,7 +174,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
-            await logCtx.error('Failed to create connection');
+            void logCtx.error('Failed to create connection');
             await logCtx.failed();
             return;
         }
@@ -223,7 +223,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
                 },
                 account
             );
-            await logCtx.error('Error during Basic auth', { error: err });
+            void logCtx.error('Error during Basic auth', { error: err });
             await logCtx.failed();
         }
 

@@ -23,7 +23,7 @@ export async function hmacCheck({
     }
 
     if (!hmac) {
-        await logCtx.error('Missing HMAC in query params');
+        void logCtx.error('Missing HMAC in query params');
         await logCtx.failed();
 
         errorManager.errRes(res, 'missing_hmac');
@@ -33,7 +33,7 @@ export async function hmacCheck({
 
     const verified = hmacService.verify({ receivedDigest: hmac, environment, values: [providerConfigKey, ...(connectionId ? [connectionId] : [])] });
     if (!verified) {
-        await logCtx.error('Invalid HMAC');
+        void logCtx.error('Invalid HMAC');
         await logCtx.failed();
 
         errorManager.errRes(res, 'invalid_hmac');
