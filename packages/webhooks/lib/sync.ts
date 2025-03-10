@@ -65,7 +65,7 @@ export const sendSync = async ({
             integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
             connection: { id: connection.id, name: connection.connection_id },
             syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
-            meta: { scriptVersion: syncConfig.version, syncVariant }
+            meta: { scriptVersion: syncConfig.version, syncVariant, model }
         }
     );
 
