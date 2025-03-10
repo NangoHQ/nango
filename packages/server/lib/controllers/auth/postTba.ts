@@ -165,7 +165,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         if (oauth_client_id_override || oauth_client_secret_override) {
             const obfuscatedClientSecret = oauth_client_secret_override ? oauth_client_secret_override.slice(0, 4) + '***' : '';
 
-            await logCtx.info('Credentials override', {
+            void logCtx.info('Credentials override', {
                 oauth_client_id: oauth_client_id_override || '',
                 oauth_client_secret: obfuscatedClientSecret
             });
@@ -223,7 +223,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('Tba connection creation was successful');
+        void logCtx.info('Tba connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(

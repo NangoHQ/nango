@@ -158,8 +158,8 @@ class ProxyController {
                     },
                     internalConfig
                 }).unwrap(),
-                logger: async (msg) => {
-                    await logCtx?.log(msg);
+                logger: (msg) => {
+                    void logCtx?.log(msg);
                 },
                 getConnection: async () => {
                     if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {

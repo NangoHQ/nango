@@ -120,7 +120,7 @@ export async function deploy({
         });
 
         if (!success || !response) {
-            await logCtx.error(`Failed to deploy script "${flow.syncName}"`, { error });
+            void logCtx.error(`Failed to deploy script "${flow.syncName}"`, { error });
             await logCtx.failed();
             return { success, error, response: null };
         }
@@ -144,7 +144,7 @@ export async function deploy({
 
     if (syncConfigs.length === 0) {
         if (debug) {
-            await logCtx.debug('All syncs were deleted');
+            void logCtx.debug('All syncs were deleted');
         }
         await logCtx.success();
 
@@ -196,7 +196,7 @@ export async function deploy({
             await switchActiveSyncConfig(id);
         }
 
-        await logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
+        void logCtx.info(`Successfully deployed ${flows.length} script${flows.length > 1 ? 's' : ''}`, {
             nameOfType,
             count: flows.length,
             syncNames: flowNames,
@@ -206,7 +206,7 @@ export async function deploy({
 
         return { success: true, error: null, response: { result: deployResults, logCtx } };
     } catch (err) {
-        await logCtx.error('Failed to deploy scripts', { error: err });
+        void logCtx.error('Failed to deploy scripts', { error: err });
         await logCtx.failed();
 
         throw new NangoError('error_creating_sync_config');
@@ -244,7 +244,7 @@ export async function upgradePreBuilt({
     );
 
     if (!file_location) {
-        await logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
+        void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: name, version: flow.version });
         await logCtx.failed();
 
         throw new NangoError('file_upload_error');
@@ -311,12 +311,12 @@ export async function upgradePreBuilt({
 
         await db.knex.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', [syncConfig.id]);
 
-        await logCtx.info('Successfully deployed', { nameOfType, configs: name });
+        void logCtx.info('Successfully deployed', { nameOfType, configs: name });
         await logCtx.success();
 
         return Ok(true);
     } catch (err) {
-        await logCtx.error('Failed to upgrade', { type: flow.type, name: flow.name, error: err });
+        void logCtx.error('Failed to upgrade', { type: flow.type, name: flow.name, error: err });
         await logCtx.failed();
 
         throw new NangoError('error_creating_sync_config');
@@ -457,7 +457,7 @@ export async function deployPreBuilt({
         }
 
         if (!file_location) {
-            await logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: sync_name, version });
+            void logCtx.error('There was an error uploading the template', { isPublic: is_public, syncName: sync_name, version });
             await logCtx.failed();
 
             throw new NangoError('file_upload_error');
@@ -590,12 +590,12 @@ export async function deployPreBuilt({
 
         const names = configs.map((config) => config.name || config.syncName);
 
-        await logCtx.info('Successfully deployed', { nameOfType, configs: names });
+        void logCtx.info('Successfully deployed', { nameOfType, configs: names });
         await logCtx.success();
 
         return { success: true, error: null, response: { result: flowReturnData, logCtx } };
     } catch (err) {
-        await logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: err });
+        void logCtx.error('Failed to deploy', { nameOfType, configs: configs.map((config) => config.name), error: err });
         await logCtx.failed();
 
         throw new NangoError('error_creating_sync_config');
@@ -639,7 +639,7 @@ async function compileDeployInfo({
 
     if (!config) {
         const error = new NangoError('unknown_provider_config', { providerConfigKey });
-        await logCtx.error(error.message);
+        void logCtx.error(error.message);
 
         return { success: false, error, response: null };
     }
@@ -651,7 +651,7 @@ async function compileDeployInfo({
         bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
         if (debug) {
-            await logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
+            void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
         if (runs) {
@@ -697,7 +697,7 @@ async function compileDeployInfo({
     }
 
     if (!file_location) {
-        await logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
+        void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
 
         // this is a platform error so throw this
         throw new NangoError('file_upload_error');

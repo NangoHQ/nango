@@ -418,7 +418,7 @@ export const getAndReconcileDifferences = async ({
             });
             if (performAction) {
                 if (debug) {
-                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
+                    void logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${connections.length} connections and initiating`);
                 }
                 syncsToCreate.push({ connections, syncName: flowName, syncVariant: 'base', sync: flow, providerConfigKey, environmentId });
             }
@@ -432,7 +432,7 @@ export const getAndReconcileDifferences = async ({
 
             if (missingConnections.length > 0) {
                 if (debug) {
-                    await logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
+                    void logCtx?.debug(`Creating sync ${flowName} for ${providerConfigKey} with ${missingConnections.length} connections`);
                 }
                 syncsToCreate.push({ connections: missingConnections, syncName: flowName, syncVariant: 'base', sync: flow, providerConfigKey, environmentId });
             }
@@ -442,7 +442,7 @@ export const getAndReconcileDifferences = async ({
     if (syncsToCreate.length > 0) {
         if (debug) {
             const syncNames = syncsToCreate.map((sync) => sync.syncName);
-            await logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
+            void logCtx?.debug(`Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames)}`);
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
         const result = await syncManager.createSyncs(syncsToCreate, logContextGetter, orchestrator, debug, logCtx);
@@ -483,7 +483,7 @@ export const getAndReconcileDifferences = async ({
 
                 if (performAction) {
                     if (debug) {
-                        await logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
+                        void logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
                     await syncManager.deleteConfig(existingSync.id, environmentId);
 
@@ -501,7 +501,7 @@ export const getAndReconcileDifferences = async ({
                             existingSync.type === 'sync' ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
                         const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
-                        await logCtx?.info(content);
+                        void logCtx?.info(content);
                     }
                 }
             } else {
@@ -517,7 +517,7 @@ export const getAndReconcileDifferences = async ({
     }
 
     if (debug) {
-        await logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
+        void logCtx?.debug('Sync deploy diff in debug mode process complete successfully.');
     }
 
     return {

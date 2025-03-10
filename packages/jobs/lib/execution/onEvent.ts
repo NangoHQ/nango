@@ -39,7 +39,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
 
         const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
 
-        void logCtx.info(`Starting script '${task.onEventName}'`, {
+        await logCtx.info(`Starting script '${task.onEventName}'`, {
             postConnection: task.onEventName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key

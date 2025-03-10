@@ -113,7 +113,7 @@ class OAuthController {
                 }
             }
 
-            await logCtx.info('Authorization URL request from the client');
+            void logCtx.info('Authorization URL request from the client');
 
             const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
@@ -200,7 +200,7 @@ class OAuthController {
 
                 const obfuscatedClientSecret = config.oauth_client_secret ? config.oauth_client_secret.slice(0, 4) + '***' : '';
 
-                await logCtx.info('Credentials override', {
+                void logCtx.info('Credentials override', {
                     oauth_client_id: config.oauth_client_id,
                     oauth_client_secret: obfuscatedClientSecret
                 });
@@ -419,7 +419,7 @@ class OAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-            await logCtx.info('OAuth2 client credentials creation was successful');
+            void logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
             void connectionCreatedHook(
                 {
@@ -615,7 +615,7 @@ class OAuthController {
                     });
                 }
 
-                await logCtx.info('Redirecting', {
+                void logCtx.info('Redirecting', {
                     authorizationUri,
                     providerConfigKey,
                     connectionId,
@@ -694,7 +694,7 @@ class OAuthController {
 
             const authorizationUri = `${appUrl}?${params.toString()}`;
 
-            await logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
+            void logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
 
             res.redirect(authorizationUri);
         } catch (err) {
@@ -721,7 +721,7 @@ class OAuthController {
 
         const oAuth1CallbackURL = `${callbackUrl}?${callbackParams.toString()}`;
 
-        await logCtx.info('OAuth callback URL was retrieved', { url: oAuth1CallbackURL });
+        void logCtx.info('OAuth callback URL was retrieved', { url: oAuth1CallbackURL });
 
         const oAuth1Client = new OAuth1Client(config, provider, oAuth1CallbackURL);
 
@@ -748,7 +748,7 @@ class OAuthController {
         await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult, oAuth1CallbackURL);
 
-        await logCtx.info('Successfully requested token. Redirecting...', {
+        void logCtx.info('Successfully requested token. Redirecting...', {
             providerConfigKey,
             connectionId,
             redirectUrl
@@ -802,7 +802,7 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         try {
-            await logCtx.debug('Received callback', { providerConfigKey, connectionId });
+            void logCtx.debug('Received callback', { providerConfigKey, connectionId });
 
             const provider = getProvider(session.provider);
             if (!provider) {
@@ -913,7 +913,7 @@ class OAuthController {
                 return;
             }
 
-            await logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
+            void logCtx.info('Update request has been made', { provider: session.provider, providerConfigKey, connectionId });
             await logCtx.success();
 
             await publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
@@ -957,7 +957,7 @@ class OAuthController {
         try {
             let rawCredentials: object;
 
-            await logCtx.info('Initiating token request', {
+            void logCtx.info('Initiating token request', {
                 provider: session.provider,
                 providerConfigKey,
                 connectionId,
@@ -986,7 +986,7 @@ class OAuthController {
                 rawCredentials = accessToken.token;
             }
 
-            await logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
+            void logCtx.info('Token response received', { provider: session.provider, providerConfigKey, connectionId });
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, provider);
 
@@ -1127,7 +1127,7 @@ class OAuthController {
                 await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
             }
 
-            await logCtx.debug(
+            void logCtx.debug(
                 `OAuth connection successful${provider.auth_mode === 'CUSTOM' && !installationId ? ' and request for app approval is pending' : ''}`,
                 {
                     additionalTokenParams,
@@ -1316,7 +1316,7 @@ class OAuthController {
                     await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
                 }
 
-                await logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
+                void logCtx.info('OAuth connection was successful', { url: session.callbackUrl, providerConfigKey });
 
                 await logCtx.enrichOperation({
                     connectionId: updatedConnection.connection.id,

@@ -532,7 +532,7 @@ class SyncController {
                 return;
             }
 
-            await logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
+            void logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
             await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
