@@ -2,7 +2,6 @@ import type { NangoForwardWebhookBody, DBExternalWebhook, IntegrationConfig, DBT
 import type { LogContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 import { metrics } from '@nangohq/utils';
-import { OtlpSpan } from '@nangohq/logs';
 
 export const forwardWebhook = async ({
     integration,
@@ -39,7 +38,6 @@ export const forwardWebhook = async ({
             integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider }
         }
     );
-    logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
     const body: NangoForwardWebhookBody = {
         from: integration.provider,

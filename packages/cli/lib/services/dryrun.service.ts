@@ -356,7 +356,6 @@ export class DryRunService {
                 syncConfig,
                 syncVariant,
                 debug,
-                team: { id: 1, name: 'team' },
                 runnerFlags: {
                     validateActionInput: this.validation, // irrelevant for cli
                     validateActionOutput: this.validation, // irrelevant for cli
@@ -521,7 +520,7 @@ export class DryRunService {
     }): Promise<
         { success: false; error: any; response: null } | { success: true; error: null; response: { output: any; nango: NangoSyncCLI | NangoActionCLI } }
     > {
-        const drs = new DryRunService({ environment: nangoProps.environmentName, returnOutput: true, fullPath: this.fullPath, validation: this.validation });
+        const drs = new DryRunService({ environment: nangoProps.environmentName!, returnOutput: true, fullPath: this.fullPath, validation: this.validation });
         const nango =
             nangoProps.scriptType === 'sync' || nangoProps.scriptType === 'webhook'
                 ? new NangoSyncCLI(nangoProps, { dryRunService: drs, stubbedMetadata })

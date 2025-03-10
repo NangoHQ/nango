@@ -225,7 +225,7 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
                     const res = await sendSyncWebhook({
                         account: team,
                         connection: {
-                            id: nangoProps.nangoConnectionId,
+                            id: nangoProps.nangoConnectionId!,
                             connection_id: nangoProps.connectionId,
                             environment_id: nangoProps.environmentId,
                             provider_config_key: nangoProps.providerConfigKey
@@ -280,7 +280,7 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         team,
         environment,
         connection: {
-            id: nangoProps.nangoConnectionId,
+            id: nangoProps.nangoConnectionId!,
             connection_id: nangoProps.connectionId,
             environment_id: nangoProps.environmentId,
             provider_config_key: nangoProps.providerConfigKey

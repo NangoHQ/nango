@@ -164,7 +164,7 @@ export async function handleOnEventError({ taskId, nangoProps, error }: { taskId
 
     await onFailure({
         connection: {
-            id: nangoProps.nangoConnectionId,
+            id: nangoProps.nangoConnectionId!,
             connection_id: nangoProps.connectionId,
             environment_id: nangoProps.environmentId,
             provider_config_key: nangoProps.providerConfigKey

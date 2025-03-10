@@ -12,7 +12,7 @@ import type {
     DBTeam,
     DBConnection
 } from '@nangohq/types';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
+import { logContextGetter } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
 import { metrics } from '@nangohq/utils';
 
@@ -93,7 +93,6 @@ export async function sendAuth({
             ...('id' in connection ? { connection: { id: connection.id, name: connection.connection_id } } : {})
         }
     );
-    logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
     const res = await deliver({
         webhooks,

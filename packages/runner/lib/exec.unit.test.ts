@@ -8,7 +8,6 @@ function getNangoProps(): NangoProps {
         host: 'http://localhost:3003',
         connectionId: 'connection-id',
         environmentId: 1,
-        environmentName: 'dev',
         providerConfigKey: 'provider-config-key',
         provider: 'provider',
         activityLogId: '1',
@@ -22,7 +21,6 @@ function getNangoProps(): NangoProps {
         syncConfig: {} as DBSyncConfig,
         debug: false,
         startedAt: new Date(),
-        team: { id: 1, name: 'dev' },
         runnerFlags: {
             validateActionInput: false,
             validateActionOutput: false,
