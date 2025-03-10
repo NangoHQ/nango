@@ -575,6 +575,7 @@
                 "integrations/all/servicenow",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
+                "integrations/all/sharepoint-online-oauth2-cc",
                 "integrations/all/shipstation",
                 "integrations/all/shopify",
                 "integrations/all/shopify-api-key",

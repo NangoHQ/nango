@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.56.4] - 2025-03-07
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7d8ef4a445a02c6f8c4da217952cc0cb488e94f9 by Khaliq. Commit message: fix(schema): Schema should always be updated (#255) by @github-actions[bot]
+- *(cli)* Add metadata section for docs (#3640) by @khaliqgant
+
+## [v0.56.3] - 2025-03-07
+
+### Fixed
+
+- *(cli-deploy)* Concurrent deployment throws an error and ruins future (#3639) by @khaliqgant
+
+## [v0.56.2] - 2025-03-07
+
+### Added
+
+- *(docs)* Document sync variant in docs reference (#3607) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0172dcf2019baf9c98b7c5f59f224d6fb444350f by Victor Lang'at. Commit message: feat(google-drive): add fetch-folders and upload-document actions; en… (#248) by @github-actions[bot]
+- Add sigint and sigterm support for all services (#3620) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/31eacd0661a1cbbd151accef42b41632d5ba0b53 by Khaliq. Commit message: feat(gorgias): add symlink (#243) by @github-actions[bot]
+- *(veriifcation)* [nan-2856] additional scim verification checks (#3627) by @khaliqgant
+- *(http)* Add env to change agent (#3597) by @bodinsamuel
+- Add sentry again (#3623) by @bodinsamuel
+- *(integrations)* Add support for sharepoint online v2 oauth2_cc (#3633) by @hassan254-prog
+- *(generate:docs)* Add specific option for integration templates (#3638) by @khaliqgant
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/c0b1166087c87bc71acd6a477c9ea2450a7b4980 by devin-ai-integration[bot]. Commit message: refactor: replace zod validation pattern with nango.zodValidateInput() (#240) by @github-actions[bot]
+- 300+ to 400+ APIs (#3637) by @bastienbeurier
+
+### Fixed
+
+- Refactor script result handler (#3621) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/a53b152611212714834516f56c78fc8737154403 by Khaliq. Commit message: fix(microsoft-teams): fix pagination and org unit (#250) by @github-actions[bot]
+- *(provider)* Fix mip (#3624) by @hassan254-prog
+- Fixing typographical errors (#3612) by @clarencepenz
+- *(es)* Make nullable fields undefinable, dissociate Message and Operation (#3548) by @bodinsamuel
+- *(oauth2)* Fix authorization params miss interpolation logic (#3628) by @hassan254-prog
+- *(oauth)* Improve callback html response  (#3626) by @bodinsamuel
+- *(kvstore)* Move feature flags to dedicated package  (#3625) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/914da07de9a9ceded03d5db81183901b39ff4bd0 by Khaliq. Commit message: fix(hubspot): clean up typing (#252) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/5c6b4c01169363dd0b49da58f830772e116bfc91 by Khaliq. Commit message: fix(schema): bump the version (#253) by @github-actions[bot]
+- *(mip)* Update token response interpolation (#3630) by @hassan254-prog
+- *(kvstore)* Move Locking (#3631) by @bodinsamuel
+- Fail action when output is >10mb (#3629) by @TBonnin
+- *(agent)* Better default for axios (#3632) by @bodinsamuel
+- *(telemetry)* Remove logs (#3635) by @bodinsamuel
+- *(es)* Do not wait some calls, change sharding (#3634) by @bodinsamuel
+- *(syncConfig)* Runs is nullable, not models  (#3636) by @bodinsamuel
+
 ## [v0.56.1] - 2025-03-04
 
 ### Added
@@ -3253,6 +3305,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
+[v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3
+[v0.56.2]: https://github.com/NangoHQ/nango/compare/v0.56.1..v0.56.2
 [v0.56.1]: https://github.com/NangoHQ/nango/compare/v0.56.0..v0.56.1
 [v0.56.0]: https://github.com/NangoHQ/nango/compare/v0.55.0..v0.56.0
 [v0.55.0]: https://github.com/NangoHQ/nango/compare/v0.54.0..v0.55.0

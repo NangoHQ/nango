@@ -1,7 +1,7 @@
 import type { NextFunction } from 'express';
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError } from '@nangohq/utils';
+import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
 import {
     analytics,
     configService,
@@ -202,6 +202,8 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             logContextGetter
         );
 
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+
         res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
@@ -231,6 +233,8 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             environmentId: environment.id,
             metadata: { providerConfigKey, connectionId }
         });
+
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'BASIC' });
 
         next(err);
     }

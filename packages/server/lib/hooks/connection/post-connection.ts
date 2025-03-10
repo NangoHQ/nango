@@ -1,8 +1,8 @@
 import type { AxiosError, AxiosResponse } from 'axios';
-import { LogActionEnum, LogTypes, connectionService, telemetry, getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { connectionService, getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { stringifyError } from '@nangohq/utils';
+import { metrics } from '@nangohq/utils';
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
@@ -93,53 +93,33 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
         const postConnectionScript = provider['post_connection_script'];
         const handler = handlers[postConnectionScript];
 
-        if (handler) {
-            logCtx = await logContextGetter.create(
-                { operation: { type: 'auth', action: 'post_connection' } },
-                {
-                    account,
-                    environment,
-                    integration: { id: upsertedConnection.config_id, name: upsertedConnection.provider_config_key, provider: providerName },
-                    connection: { id: upsertedConnection.id, name: upsertedConnection.connection_id }
-                }
-            );
+        if (!handler) {
+            return;
+        }
 
-            try {
-                await handler(internalNango);
-                await logCtx.info('Success');
-                await logCtx.success();
-            } catch (err) {
-                const errorDetails =
-                    err instanceof Error
-                        ? {
-                              message: err.message || 'Unknown error',
-                              name: err.name || 'Error',
-                              stack: err.stack || 'No stack trace'
-                          }
-                        : 'Unknown error';
-
-                const errorString = JSON.stringify(errorDetails);
-
-                await logCtx.error('Post connection script failed', { error: err });
-                await logCtx.failed();
-
-                await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
-                    environmentId: String(environment.id),
-                    connectionId: upsertedConnection.connection_id,
-                    providerConfigKey: upsertedConnection.provider_config_key,
-                    provider: providerName,
-                    level: 'error'
-                });
+        logCtx = await logContextGetter.create(
+            { operation: { type: 'auth', action: 'post_connection' } },
+            {
+                account,
+                environment,
+                integration: { id: upsertedConnection.config_id, name: upsertedConnection.provider_config_key, provider: providerName },
+                connection: { id: upsertedConnection.id, name: upsertedConnection.connection_id }
             }
+        );
+
+        try {
+            await handler(internalNango);
+            await logCtx.info('Success');
+            await logCtx.success();
+            metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS);
+        } catch (err) {
+            await logCtx.error('Post connection script failed', { error: err });
+            await logCtx.failed();
+
+            metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);
         }
     } catch (err) {
-        await telemetry.log(LogTypes.POST_CONNECTION_FAILURE, `Post connection manager failed, ${stringifyError(err)}`, LogActionEnum.AUTH, {
-            environmentId: String(environment.id),
-            connectionId: upsertedConnection.connection_id,
-            providerConfigKey: upsertedConnection.provider_config_key,
-            provider: providerName,
-            level: 'error'
-        });
+        metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);
 
         await logCtx?.error('Post connection script failed', { error: err });
         await logCtx?.failed();

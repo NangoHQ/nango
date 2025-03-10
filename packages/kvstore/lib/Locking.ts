@@ -1,5 +1,5 @@
 import { stringifyError } from '@nangohq/utils';
-import type { KVStore } from '../kvstore/KVStore.js';
+import type { KVStore } from './KVStore.js';
 
 export interface Lock {
     readonly key: string;
@@ -37,7 +37,7 @@ export class Locking {
             throw new Error(`lock's TTL must be greater than 0`);
         }
         try {
-            await this.store.set(key, '1', false, ttlInMs);
+            await this.store.set(key, '1', { canOverride: false, ttlInMs });
         } catch (err) {
             throw new Error(`Failed to acquire lock for key: ${key} ${stringifyError(err)}`);
         }

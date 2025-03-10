@@ -7,10 +7,11 @@ import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { abort } from './abort.js';
 import superjson from 'superjson';
-import { httpFetch, logger } from './utils.js';
 import { abortControllers } from './state.js';
-import { envs, persistServiceUrl, jobsServiceUrl, heartbeatIntervalMs } from './env.js';
+import { envs, heartbeatIntervalMs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
+import { jobsClient } from './clients/jobs.js';
+import { logger } from './logger.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -41,7 +42,7 @@ function healthProcedure() {
     });
 }
 
-const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID, jobsServiceUrl, persistServiceUrl });
+const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
 
 function startProcedure() {
     return publicProcedure
@@ -62,10 +63,7 @@ function startProcedure() {
             // sending the result to the jobs service when done
             setImmediate(async () => {
                 const heartbeat = setInterval(async () => {
-                    await httpFetch({
-                        method: 'POST',
-                        url: `${jobsServiceUrl}/tasks/${taskId}/heartbeat`
-                    });
+                    await jobsClient.postHeartbeat({ taskId });
                 }, heartbeatIntervalMs);
                 try {
                     const abortController = new AbortController();
@@ -75,13 +73,10 @@ function startProcedure() {
 
                     const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
 
-                    await httpFetch({
-                        method: 'PUT',
-                        url: `${jobsServiceUrl}/tasks/${taskId}`,
-                        data: JSON.stringify({
-                            nangoProps,
-                            ...(error ? { error } : { output })
-                        })
+                    await jobsClient.putTask({
+                        taskId,
+                        nangoProps,
+                        ...(error ? { error } : { output: output as any })
                     });
                 } finally {
                     clearInterval(heartbeat);

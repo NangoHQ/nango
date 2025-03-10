@@ -5,7 +5,6 @@ import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
-import telemetry, { LogTypes, SpanTypes } from './utils/telemetry.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import userService from './services/user.service.js';
@@ -34,9 +33,6 @@ export * from './services/proxy/request.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 
-export * from './utils/lock/locking.js';
-export * from './clients/locking.js';
-
 export * from './models/index.js';
 
 export * from './utils/utils.js';
@@ -54,9 +50,6 @@ export {
     externalWebhookService,
     providerClientManager,
     errorManager,
-    telemetry,
-    LogTypes,
-    SpanTypes,
     ErrorSourceEnum,
     accountService,
     environmentService,
