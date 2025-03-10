@@ -66,7 +66,7 @@ export async function createSyncJob({
 }
 
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
-    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).orderBy('created_at', 'desc').first();
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id }).orderBy('created_at', 'desc').first();
 
     if (result) {
         return result;
@@ -76,7 +76,7 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
 };
 
 export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null> => {
-    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ run_id, deleted: false }).first();
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ run_id }).first();
 
     if (result) {
         return result;
@@ -88,7 +88,7 @@ export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null>
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<SyncJob | null> => {
     const [job] = await schema()
         .from<SyncJob>(SYNC_JOB_TABLE)
-        .where({ id, deleted: false })
+        .where({ id })
         .update({
             status,
             updated_at: new Date()
@@ -112,7 +112,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
         if (!existingResult || Object.keys(existingResult).length === 0) {
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)
-                .where({ id, deleted: false })
+                .where({ id })
                 .update({
                     result
                 })
@@ -136,7 +136,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)
-                .where({ id, deleted: false })
+                .where({ id })
                 .update({
                     result: finalResult
                 })
@@ -152,7 +152,6 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({
             sync_id,
-            deleted: false,
             status: SyncStatus.RUNNING
         })
         .orderBy('created_at', 'desc')
