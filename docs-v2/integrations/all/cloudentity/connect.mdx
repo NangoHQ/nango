@@ -1,0 +1,84 @@
+---
+title: Cloudentity - How do I link my account?
+sidebarTitle: Cloudentity
+---
+
+
+
+# Overview
+
+To authenticate with Cloudentity, you will need:
+1. **Client ID** - A unique identifier for your application on Cloudentity.
+2. **Client Secret** - A key that grants Nango permission to interact with Cloudentity APIs resources and services.
+3. **Tenant ID** - Tenant ID for your application on Cloudentity.
+4. **Region ID** - Region ID for your application on Cloudentity.
+5. **Workspace ID** - Workspace ID for your application on Cloudentity.
+
+This guide will walk you through generating the API Key within Cloudentity.
+
+
+## Prerequisites:
+- You should have a registered account with Cloudentity. Create one on [Cloudentity Getting Started page](https://lime.certn.co/welcome/signUp/).
+- Permission to generate an **API Key**.
+
+#### Step 1: Creating Client ID and Client Secret
+2. Click on the **Applications** option from the dropdown menu, and select **Clients**.
+
+<img src="/integrations/all/cloudentity/cloudentity_select_clients.png" />
+
+3. Click on the **CREATE CLIENT** button at the top right corner.
+
+<img src="/integrations/all/cloudentity/cloudentity_create_client.png" />
+
+4. Enter the required details for the client
+
+<img src="/integrations/all/cloudentity/cloudentity_fill_application_details.png" />
+
+5. Click on the **CREATE** button at the bottom right corner.
+
+<img src="/integrations/all/cloudentity/cloudentity_click_create_button.png" />
+
+6. You will find the **Client ID** and **Client Secret** on the right side of the page.
+
+<img src="/integrations/all/cloudentity/cloudentity_copy_keys.png" />
+
+**Note:** It is important to store this key securely as it will not be visible again once you leave the API Key page.
+
+#### Step 2: Retrieving the Tenant ID
+1. Once logged in to you Cloudentity dashboard, at the top right corner, you should find the tenant ID in the format `Tenant {tenant_id}`. You are interested in the `tenant_id` part.
+
+<img src="/integrations/all/cloudentity/cloudentity_copy_tenant_id.png" />
+
+#### Step 3: Retrieving the Region ID
+1. The region ID is usually found in the URL of your Cloudentity dashboard. It is the part of the URL that comes after `https://{tenant_id}`. It could be `us`, `eu`, or any other region.
+
+#### Step 4: Retrieving the Workspace ID
+
+1. **Log in** to your Cloudentity dashboard
+
+
+2. On the left sidebar, click on the **Settings** option. 
+
+<img src="/integrations/all/cloudentity/cloudentity_select_settings.png" />
+
+3.You should see the General settings page. You will find the **Workspace ID** here.
+
+<img src="/integrations/all/cloudentity/cloudentity_copy_workspace_id.png" />
+
+
+#### Step 5: Connect Your Cloudentity Account
+
+<img src="/integrations/all/cloudentity/connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Cloudentity authentication form.
+Enter your credentials as follows:
+- Client ID: Enter the Client ID you obtained from Cloudentity.
+- Client Secret: Enter the Client Secret you obtained from Cloudentity.
+- Tenant ID: Enter the Tenant ID you obtained from Cloudentity.
+- Region ID: Enter the Region ID you obtained from Cloudentity.
+- Workspace ID: Enter the Workspace ID you obtained from Cloudentity.
+
+Click "Connect" to complete the authentication.
+
+Note: Make sure to match the credentials exactly as shown above - the field names in the form may differ from your Cloudentity dashboard.
+
