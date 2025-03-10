@@ -1696,6 +1696,7 @@ certn:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+    docs_connect: https://docs.nango.dev/integrations/all/certn
     credentials:
         apiKey:
             type: string
@@ -1734,6 +1735,7 @@ chargebee:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
+    docs_connect: https://docs.nango.dev/integrations/all/chargebee/connect
     connection_config:
         subdomain:
             type: string
@@ -1870,6 +1872,7 @@ checkout-com:
             accept: application/json
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com/connect
 
 checkout-com-sandbox:
     display_name: Checkout.com (Sandbox)
@@ -1886,6 +1889,7 @@ checkout-com-sandbox:
             accept: application/json
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com-sandbox/connect
 
 chorus:
     display_name: Chorus
@@ -1968,6 +1972,7 @@ cloudentity:
     proxy:
         base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
+    docs_connect: https://docs.nango.dev/integrations/all/cloudentity/connect
     connection_config:
         tenantID:
             type: string
@@ -2008,6 +2013,7 @@ coda:
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/coda
+    docs_connect: https://docs.nango.dev/integrations/all/coda/connect
     credentials:
         apiKey:
             type: string
@@ -2029,6 +2035,7 @@ codeclimate:
             method: GET
             endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
+    docs_connect: https://docs.nango.dev/integrations/all/codeclimate/connect
     connection_config:
         domain:
             type: string
