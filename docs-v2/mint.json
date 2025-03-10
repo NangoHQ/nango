@@ -176,7 +176,9 @@
                     "pages": [
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
-                        "guides/syncs/large-datasets"
+                        "guides/syncs/large-datasets",
+                        "guides/syncs/real-time-syncing",
+                        "guides/syncs/sync-partitioning"
                     ]
                 },
                 {
@@ -285,6 +287,7 @@
                 "integrations/all/bitdefender",
                 "integrations/all/bitly",
                 "integrations/all/blackbaud",
+                "integrations/all/blackbaud-basic",
                 "integrations/all/blandai",
                 "integrations/all/boldsign",
                 "integrations/all/booking-com",
@@ -456,6 +459,7 @@
                 "integrations/all/kustomer",
                 "integrations/all/lagrowthmachine",
                 "integrations/all/lastpass",
+                "integrations/all/lemlist",
                 "integrations/all/lattice",
                 "integrations/all/lessonly",
                 "integrations/all/lever",
@@ -487,7 +491,8 @@
                 "integrations/all/microsoft-tenant-specific",
                 "integrations/all/mindbody",
                 "integrations/all/minimax",
-                "integrations/all/mip",
+                "integrations/all/mip-cloud",
+                "integrations/all/mip-on-premise",
                 "integrations/all/miro",
                 "integrations/all/miro-scim",
                 "integrations/all/mixpanel",
@@ -570,6 +575,7 @@
                 "integrations/all/servicenow",
                 "integrations/all/sharepoint-online",
                 "integrations/all/sharepoint-online-v1",
+                "integrations/all/sharepoint-online-oauth2-cc",
                 "integrations/all/shipstation",
                 "integrations/all/shopify",
                 "integrations/all/shopify-api-key",
@@ -728,7 +734,9 @@
                                 "reference/api/sync/pause",
                                 "reference/api/sync/status",
                                 "reference/api/sync/update-connection-frequency",
-                                "reference/api/sync/environment-variables"
+                                "reference/api/sync/environment-variables",
+                                "reference/api/sync/create-variant",
+                                "reference/api/sync/delete-variant"
                             ]
                         },
                         {

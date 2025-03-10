@@ -36,7 +36,7 @@ export const flowConfig = z
     .object({
         type: z.enum(['action', 'sync']),
         models: z.array(z.string().min(1).max(255)),
-        runs: z.string(),
+        runs: z.string().nullable(),
         auto_start: z.boolean().optional().default(false),
         attributes: z.object({}).optional(),
         metadata: z

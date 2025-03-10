@@ -32,21 +32,16 @@ export interface LegacySyncModelSchema {
 }
 
 // TODO: split into action | sync type
-interface InternalIncomingPreBuiltFlowConfig {
+export interface PreBuiltFlowConfig {
     type: ScriptTypeLiteral;
     models: string[];
     runs: string | null;
-    auto_start?: boolean;
+    auto_start?: boolean | undefined;
     attributes?: object | undefined;
     metadata?: NangoConfigMetadata | undefined;
     model_schema: string | NangoModel[];
-    input?: string | LegacySyncModelSchema | undefined;
-    endpoints?: (NangoSyncEndpointV2 | NangoSyncEndpointOld)[] | undefined;
     track_deletes: boolean;
     providerConfigKey: string;
-}
-
-export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     provider: string;
     is_public: boolean;
     public_route: string;
@@ -55,9 +50,22 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     nango_config_id?: number;
     fileBody?: IncomingScriptFiles;
     endpoints: NangoSyncEndpointV2[];
+    input?: NangoModel | LegacySyncModelSchema | undefined;
 }
 
-export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
+// TODO: split into action | sync type
+export interface CLIDeployFlowConfig {
+    type: ScriptTypeLiteral;
+    models: string[];
+    runs: string | null;
+    auto_start?: boolean;
+    attributes?: object | undefined;
+    metadata?: NangoConfigMetadata | undefined;
+    model_schema: string | NangoModel[];
+    endpoints?: (NangoSyncEndpointV2 | NangoSyncEndpointOld)[] | undefined;
+    track_deletes: boolean;
+    providerConfigKey: string;
+    input?: string | undefined;
     syncName: string;
     fileBody: IncomingScriptFiles;
     version?: string | undefined;
@@ -65,4 +73,7 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     webhookSubscriptions?: string[] | undefined;
 }
 
-export type CleanedIncomingFlowConfig = Merge<IncomingFlowConfig, { endpoints: NangoSyncEndpointV2[] }>;
+/**
+ * Flow shape after being sent by the CLI and cleaned in the backend
+ */
+export type CleanedIncomingFlowConfig = Merge<CLIDeployFlowConfig, { endpoints: NangoSyncEndpointV2[] }>;

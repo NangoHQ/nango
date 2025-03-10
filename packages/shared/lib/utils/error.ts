@@ -466,9 +466,9 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate a record in batchSave';
                 break;
 
-            case 'script_output_too_big':
+            case 'script_output_too_large':
                 this.status = 400;
-                this.message = 'Script output is too big';
+                this.message = 'Script output is too large';
                 break;
 
             case 'sync_job_update_failure':
@@ -504,6 +504,11 @@ export class NangoError extends Error {
             case 'script_aborted':
                 this.status = 410;
                 this.message = `The script was aborted`;
+                break;
+
+            case 'concurrent_deployment':
+                this.status = 409;
+                this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
                 break;
 
             default:

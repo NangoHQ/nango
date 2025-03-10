@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
-import { routeHandler as postLogHandler, path as logsPath } from './routes/environment/environmentId/postLog.js';
+import { routeHandler as postLogHandler } from './routes/environment/environmentId/postLog.js';
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
@@ -23,7 +23,7 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
 }
 
 server.use('/environment/:environmentId/*', authMiddleware);
-server.use(logsPath, express.json({ limit: maxSizeJsonLog }));
+server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(cursorPath, express.json());
 server.use(getRecordsPath, express.json());

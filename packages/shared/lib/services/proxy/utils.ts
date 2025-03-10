@@ -293,6 +293,10 @@ export function buildProxyHeaders({
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }
+                case 'TWO_STEP': {
+                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    break;
+                }
                 default:
                     headers[key] = interpolateIfNeeded(value, connection.credentials as Record<string, string>);
                     break;

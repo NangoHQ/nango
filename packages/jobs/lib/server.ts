@@ -27,5 +27,11 @@ createRoute(server, putTaskHandler);
 createRoute(server, postHeartbeatHandler);
 
 server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
+    if (err instanceof Error) {
+        if (err.message === 'request entity too large') {
+            res.status(413).json({ error: { code: 'request_too_large', message: `Request is too large (>${serverRequestSizeLimit})` } });
+            return;
+        }
+    }
     res.status(500).send({ error: { code: 'server_error', message: err.message } });
 });

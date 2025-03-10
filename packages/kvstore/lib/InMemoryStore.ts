@@ -1,3 +1,4 @@
+import type { MaybePromise } from '@nangohq/types';
 import type { KVStore } from './KVStore.js';
 
 interface Value {
@@ -5,12 +6,22 @@ interface Value {
     timestamp: number;
     ttlInMs: number;
 }
+const KVSTORE_INTERVAL_CLEANUP = 10000;
 
 export class InMemoryKVStore implements KVStore {
     private store: Map<string, Value>;
+    private interval: NodeJS.Timeout;
 
     constructor() {
         this.store = new Map();
+        this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
+    }
+
+    destroy(): MaybePromise<void> {
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+        this.store.clear();
     }
 
     public async get(key: string): Promise<string | null> {
@@ -49,5 +60,14 @@ export class InMemoryKVStore implements KVStore {
             return true;
         }
         return false;
+    }
+
+    private clearExpired() {
+        for (const [key, value] of this.store) {
+            if (this.isExpired(value)) {
+                this.store.delete(key);
+            }
+        }
+        this.interval = setTimeout(() => this.clearExpired(), KVSTORE_INTERVAL_CLEANUP);
     }
 }
