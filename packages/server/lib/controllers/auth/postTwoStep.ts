@@ -186,7 +186,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('TwoStep connection creation was successful');
+        void logCtx.info('TwoStep connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
