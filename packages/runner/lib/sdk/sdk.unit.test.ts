@@ -312,7 +312,7 @@ describe('Pagination', () => {
 
     it.each([
         // TODO: validate proper config is passed to proxy
-        ['https://api.gihub.com/issues?page=2', 'https://api.gihub.com/issues?page=3'],
+        ['https://api.github.com/issues?page=2', 'https://api.github.com/issues?page=3'],
         ['/issues?page=2', '/issues?page=3']
     ])('Paginates using next URL/path %s from body', async (nextUrlOrPathValue, anotherNextUrlOrPathValue) => {
         await stubProviderTemplate(linkPagination);
