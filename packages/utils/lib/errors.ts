@@ -21,7 +21,7 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
     Sentry.init({
         dsn: dsn || '',
         sampleRate: 1,
-        skipOpenTelemetrySetup: true,
+        skipOpenTelemetrySetup: true, // If false or not set, sentry is breaking our otel setup for logs export
         enabled: dsn ? true : false,
         release: `${NANGO_VERSION}@${hash || 'no_hash'}`,
         serverName: applicationName,
