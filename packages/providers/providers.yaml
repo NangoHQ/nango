@@ -494,9 +494,6 @@ anthropic:
             content-type: application/json
         retry:
             after: 'retry-after'
-        verification:
-            method: GET
-            endpoint: /v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -1272,9 +1269,6 @@ blandai:
         base_url: https://api.bland.ai
         headers:
             authorization: ${apiKey}
-        verification:
-            method: GET
-            endpoint: v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -1411,9 +1405,6 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
-        verification:
-            method: GET
-            endpoint: /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
@@ -1491,9 +1482,6 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
-        verification:
-            method: POST
-            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1525,9 +1513,6 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
-        verification:
-            method: GET
-            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -1820,9 +1805,6 @@ chattermill:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
-        verification:
-            method: GET
-            endpoint: /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -1984,9 +1966,6 @@ clari-copilot:
             x-api-key: ${apiKey}
             x-api-password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
-        verification:
-            method: GET
-            endpoint: /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
         API_PASSWORD:
@@ -2062,9 +2041,6 @@ coda:
         base_url: https://coda.io/apis/v1
         headers:
             authorization: Bearer ${apiKey}
-        verification:
-            method: GET
-            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/coda
     credentials:
         apiKey:
@@ -2627,10 +2603,6 @@ dixa:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
             authorization: ${apiKey}
-        verification:
-            method: GET
-            endpoint: /v1/agents
-            base_url_override: https://dev.dixa.io
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -3183,9 +3155,6 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
-        verification:
-            method: POST
-            endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
         apiKey:
@@ -3232,13 +3201,10 @@ fireflies:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.fireflies.ai/graphql
+        base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
             content-type: application/json
-        verification:
-            method: GET
-            endpoint: ?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
@@ -4159,8 +4125,6 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
-        verification:
-            endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
@@ -4200,9 +4164,6 @@ greenhouse-harvest:
         base_url: https://harvest.greenhouse.io
         retry:
             after: 'retry-after'
-        verification:
-            method: GET
-            endpoint: /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
@@ -4255,8 +4216,6 @@ greenhouse-assessment:
         - ats
     proxy:
         base_url: https://${connectionConfig.baseUrl}
-        verification:
-            endpoint: /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
     connection_config:
@@ -4305,8 +4264,6 @@ greenhouse-onboarding:
         - ats
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
-        verification:
-            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
