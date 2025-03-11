@@ -319,19 +319,17 @@ export function listFilesToCompile({
 
         if (providerConfigKey && debug) {
             if (filteredIntegrations.length > 0) {
-                printDebug(`Filtering compilation to only include files for provider config key: ${providerConfigKey}`);
+                printDebug(`Compiling file(s) for integration: ${providerConfigKey}`);
             } else {
-                printDebug(`Warning: No integration found with provider config key: ${providerConfigKey}`);
+                printDebug(`Warning: No '${providerConfigKey}' integration found`);
             }
         }
 
         for (const integration of filteredIntegrations) {
-            const pcKey = integration.providerConfigKey;
-
             // Look for files in each script type directory
             const scriptTypes: ScriptFileType[] = ['syncs', 'actions', 'on-events', 'post-connection-scripts'];
             for (const scriptType of scriptTypes) {
-                const scriptPath = `${pcKey}/${scriptType}`;
+                const scriptPath = `${integration.providerConfigKey}/${scriptType}`;
                 const scriptFiles = globFiles(fullPath, scriptPath, '*.ts');
                 if (scriptFiles.length > 0 && debug) {
                     printDebug(`Found ${scriptFiles.length} files in ${scriptPath}`);

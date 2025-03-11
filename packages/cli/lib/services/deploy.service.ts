@@ -116,7 +116,7 @@ class DeployService {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
             if (integrationId) {
-                printDebug(`Deploying only for provider config key: ${integrationId}`);
+                printDebug(`Deploying integration '${integrationId}' only`);
             }
         }
 
@@ -129,12 +129,13 @@ class DeployService {
         const parser = parsing.value;
 
         // Check if the integrationId exists in the parsed config
-        if (integrationId && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === integrationId)) {
+        if (integrationId && parser.parsed!.integrations.every((integration) => integration.providerConfigKey !== integrationId)) {
             console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
             process.exit(1);
         }
 
         const singleDeployMode = Boolean(optionalSyncName || optionalActionName || integrationId);
+
         const integrationIdMode = Boolean(integrationId);
 
         let successfulCompile = false;
@@ -354,7 +355,7 @@ class DeployService {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
             if (integrationId) {
-                printDebug(`Deploying only for provider: ${integrationId}`);
+                printDebug(`Deploying for integration: '${integrationId}' only`);
             }
         }
 
@@ -366,7 +367,7 @@ class DeployService {
 
         const parser = parsing.value;
 
-        if (integrationId && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === integrationId)) {
+        if (integrationId && parser.parsed!.integrations.every((integration) => integration.providerConfigKey === integrationId)) {
             console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
             process.exit(1);
         }
@@ -416,7 +417,7 @@ class DeployService {
     }): { flowConfigs: CLIDeployFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
         if (integrationId) {
             if (debug) {
-                printDebug(`Packaging only integration with provider config key: ${integrationId}`);
+                printDebug(`Packaging for integration: ${integrationId} only`);
             }
         }
 

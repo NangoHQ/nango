@@ -176,7 +176,7 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
-    .option('--integration-id [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
+    .option('-i, --integration-id [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
