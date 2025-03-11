@@ -5836,7 +5836,21 @@ miro-scim:
             title: API Key
             description: The API key for your Miro scim account
             doc_section: '#step-1-finding-miro-api-key'
-
+missive:
+    display_name: Missive
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api_token: ${apiKey}
+        base_url: https://missiveapp.com
+    docs: https://docs.nango.dev/integrations/all/missive
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Missive account
 monday:
     display_name: Monday
     categories:
