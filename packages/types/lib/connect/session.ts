@@ -4,6 +4,7 @@ export interface ConnectSession {
     readonly accountId: number;
     readonly environmentId: number;
     readonly connectionId: number | null;
+    readonly operationId: string | null;
     readonly allowedIntegrations: string[] | null;
     readonly integrationsConfigDefaults: Record<
         string,
