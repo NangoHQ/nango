@@ -3188,12 +3188,12 @@ fireflies:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.fireflies.ai/graphql
+        base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
-            endpoint: ?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
+            endpoint: /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
