@@ -37,6 +37,8 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
             }
         }
     },
+    endUserId: { type: 'keyword' },
+    endUserName: { type: 'keyword' },
 
     syncConfigId: { type: 'keyword' },
     syncConfigName: {
