@@ -154,12 +154,12 @@ export class SyncManagerService {
                 }
             }
             if (debug) {
-                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
+                void logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
         } catch (err) {
-            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: err });
+            void logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: err });
 
             return false;
         }
@@ -325,7 +325,7 @@ export class SyncManagerService {
             }
         }
 
-        await logCtx.info('Sync was successfully updated', { command, syncIdentifiers });
+        void logCtx.info('Sync was successfully updated', { command, syncIdentifiers });
         await logCtx.success();
 
         return { success: true, error: null, response: true };

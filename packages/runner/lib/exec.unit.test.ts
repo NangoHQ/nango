@@ -269,6 +269,7 @@ describe('Exec', () => {
                     config: {
                         adapter: ['xhr', 'http', 'fetch'],
                         env: {},
+                        allowAbsoluteUrls: true,
                         headers: {
                             Accept: 'application/json, text/plain, */*',
                             'Accept-Encoding': 'gzip, compress, deflate, br',

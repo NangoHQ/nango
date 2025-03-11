@@ -8,3 +8,4 @@ export * from './otlp/otlp.js';
 export { OtlpSpan } from './otlp/otlpSpan.js';
 export { envs, defaultOperationExpiration } from './env.js';
 export { destroy } from './utils.js';
+export * from './formatters.js';

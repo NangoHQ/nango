@@ -6893,6 +6893,34 @@ rapidapi:
             suffix: .p.rapidapi.com
             prefix: https://
 
+razorpay:
+    display_name: Razorpay
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.razorpay.com
+        verification:
+            method: GET
+            endpoint: /v1/orders
+    docs: https://docs.nango.dev/integrations/all/razorpay
+    docs_connect: https://docs.nango.dev/integrations/all/razorpay/connect
+    credentials:
+        username:
+            type: string
+            title: Key ID
+            description: Your Key ID
+            pattern: '^rzp_(test|live)_[A-Za-z0-9]+$'
+            example: 'rzp_test_*************'
+            doc_section: '#step-1-finding-your-key-id-and-secret'
+        password:
+            type: string
+            title: Key Secret
+            description: Your Key Secret
+            secret: true
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-key-id-and-secret'
+
 recharge:
     display_name: Recharge
     categories:
