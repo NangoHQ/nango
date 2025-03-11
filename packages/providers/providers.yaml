@@ -3204,7 +3204,6 @@ fireflies:
         base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
-            content-type: application/json
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
