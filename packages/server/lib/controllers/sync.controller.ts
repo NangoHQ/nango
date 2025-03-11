@@ -301,7 +301,7 @@ class SyncController {
             span.setTag('nango.error', err);
             span.finish();
             if (logCtx) {
-                await logCtx.error('Failed to run action', { error: err });
+                void logCtx.error('Failed to run action', { error: err });
                 await logCtx.failed();
             }
 
@@ -508,7 +508,7 @@ class SyncController {
             );
 
             if (!(await verifyOwnership(nango_connection_id, environment.id, sync_id))) {
-                await logCtx.error('Unauthorized access to run the command');
+                void logCtx.error('Unauthorized access to run the command');
                 await logCtx.failed();
 
                 res.status(401).json({ error: { code: 'forbidden' } });
@@ -532,7 +532,7 @@ class SyncController {
                 return;
             }
 
-            await logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
+            void logCtx.info(`Sync command run successfully "${command}"`, { command, syncId: sync_id });
             await logCtx.success();
 
             let event = AnalyticsTypes.SYNC_RUN;
@@ -564,7 +564,7 @@ class SyncController {
             res.status(200).json({ data: { success: true } });
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('Failed to sync command', { error: err });
+                void logCtx.error('Failed to sync command', { error: err });
                 await logCtx.failed();
             }
             next(err);

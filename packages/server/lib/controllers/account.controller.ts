@@ -97,7 +97,7 @@ class AccountController {
                     meta: { loginReason: login_reason, admin: adminUser.email, impersonating: user.id }
                 }
             );
-            await logCtx.info('A Nango admin logged into another account');
+            void logCtx.info('A Nango admin logged into another account');
 
             req.login(user, (err) => {
                 if (err) {
@@ -123,7 +123,7 @@ class AccountController {
             });
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                void logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
             next(err);

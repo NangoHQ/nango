@@ -886,7 +886,7 @@ class ConnectionService {
                     );
 
                     metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
-                    await logCtx.error('Failed to refresh credentials', error);
+                    void logCtx.error('Failed to refresh credentials', error);
                     await logCtx.failed();
 
                     if (logCtx) {
@@ -952,7 +952,7 @@ class ConnectionService {
                             );
                         }
 
-                        await logCtx.error('Failed to verify connection', result.error);
+                        void logCtx.error('Failed to verify connection', result.error);
                         await logCtx.failed();
 
                         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
@@ -1390,7 +1390,7 @@ class ConnectionService {
             void connectionCreatedHook(updatedConnection);
         }
 
-        await logCtx.info('App connection was approved and credentials were saved');
+        void logCtx.info('App connection was approved and credentials were saved');
     }
 
     public async getAppCredentials(

@@ -109,11 +109,11 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
 
         try {
             await handler(internalNango);
-            await logCtx.info('Success');
+            void logCtx.info('Success');
             await logCtx.success();
             metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS);
         } catch (err) {
-            await logCtx.error('Post connection script failed', { error: err });
+            void logCtx.error('Post connection script failed', { error: err });
             await logCtx.failed();
 
             metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);
@@ -121,7 +121,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
     } catch (err) {
         metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);
 
-        await logCtx?.error('Post connection script failed', { error: err });
+        void logCtx?.error('Post connection script failed', { error: err });
         await logCtx?.failed();
     }
 }

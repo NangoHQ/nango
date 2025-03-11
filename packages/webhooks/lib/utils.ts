@@ -33,12 +33,12 @@ function formatLogResponse(response: AxiosResponse): MessageHTTPResponse {
     };
 }
 
-export const retry = async (logCtx?: LogContext | null, error?: AxiosError, attemptNumber: number = 0): Promise<boolean> => {
+export const retry = (logCtx?: LogContext | null, error?: AxiosError, attemptNumber: number = 0): boolean => {
     if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
-        await logCtx?.warn(`HTTP Status error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`);
+        void logCtx?.warn(`HTTP Status error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`);
         return true;
     } else if (error && !error.response) {
-        await logCtx?.warn(
+        void logCtx?.warn(
             `Error "${error.code ? error.code : 'unknown'}", retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`
         );
         return true;
@@ -154,14 +154,14 @@ export const deliver = async ({
                         return await axios.post(url, body, { headers });
                     } catch (err) {
                         if (isAxiosError(err)) {
-                            await logCtx?.http(`POST ${logRequest.url}`, {
+                            void logCtx?.http(`POST ${logRequest.url}`, {
                                 response: err.response ? formatLogResponse(err.response) : undefined,
                                 request: logRequest,
                                 error: !err.response ? err : null,
                                 level: 'error'
                             });
                         } else {
-                            await logCtx?.http(`POST ${logRequest?.url}`, {
+                            void logCtx?.http(`POST ${logRequest?.url}`, {
                                 request: logRequest,
                                 response: undefined,
                                 error: err,
@@ -175,12 +175,12 @@ export const deliver = async ({
             );
 
             if (logCtx) {
-                await logCtx.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(response) });
+                void logCtx.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(response) });
 
                 if (response.status >= 200 && response.status < 300) {
-                    await logCtx.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
+                    void logCtx.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
                 } else {
-                    await logCtx.warn(
+                    void logCtx.warn(
                         `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${response.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
                     );
                     success = false;

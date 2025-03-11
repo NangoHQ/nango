@@ -66,6 +66,7 @@ export const ENVS = z.object({
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
 
     // FLEET
+    RUNNERS_DATABASE_URL: z.string().url().optional(),
     FLEET_TIMEOUT_PENDING_MS: z.coerce
         .number()
         .optional()

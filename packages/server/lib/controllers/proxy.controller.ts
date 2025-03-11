@@ -82,7 +82,7 @@ class ProxyController {
 
             const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             if (!integration) {
-                await logCtx.error('Provider configuration not found');
+                void logCtx.error('Provider configuration not found');
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
                 res.status(404).send({
@@ -97,7 +97,7 @@ class ProxyController {
 
             const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
             if (connectionRes.error || !connectionRes.response) {
-                await logCtx.error('Failed to get connection', { error: connectionRes.error });
+                void logCtx.error('Failed to get connection', { error: connectionRes.error });
                 await logCtx.failed();
                 res.status(400).send({
                     error: { code: 'server_error', message: `Failed to get connection` }
@@ -116,7 +116,7 @@ class ProxyController {
                 onRefreshFailed: connectionRefreshFailedHook
             });
             if (credentialResponse.isErr()) {
-                await logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
+                void logCtx.error('Failed to get connection credentials', { error: credentialResponse.error });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
                 res.status(400).send({
@@ -158,8 +158,8 @@ class ProxyController {
                     },
                     internalConfig
                 }).unwrap(),
-                logger: async (msg) => {
-                    await logCtx?.log(msg);
+                logger: (msg) => {
+                    void logCtx?.log(msg);
                 },
                 getConnection: async () => {
                     if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
@@ -190,7 +190,7 @@ class ProxyController {
                 const responseStream = (await proxy.request()).unwrap();
                 await this.handleResponse({ res, responseStream, logCtx });
             } catch (err) {
-                await this.handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
+                this.handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
             }
@@ -205,7 +205,7 @@ class ProxyController {
                 }
             });
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                void logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
             metrics.increment(metrics.Types.PROXY_FAILURE);
@@ -286,14 +286,14 @@ class ProxyController {
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Failed to parse JSON response' }));
 
-                await logCtx.error('Failed to parse JSON response', { error: err });
+                void logCtx.error('Failed to parse JSON response', { error: err });
                 await logCtx.failed();
                 metrics.increment(metrics.Types.PROXY_FAILURE);
             }
         });
     }
 
-    private async handleErrorResponse({
+    private handleErrorResponse({
         res,
         error,
         requestConfig,
@@ -306,14 +306,14 @@ class ProxyController {
     }) {
         if (!isAxiosError(error)) {
             if (error instanceof ProxyError) {
-                await logCtx.error('Unknown error', { error });
+                void logCtx.error('Unknown error', { error });
                 res.status(400).send({
                     error: { code: error.code, message: error.message }
                 });
                 return;
             }
 
-            await logCtx.error('Unknown error', { error });
+            void logCtx.error('Unknown error', { error });
             res.status(500).send();
             return;
         }

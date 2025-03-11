@@ -166,7 +166,7 @@ export class Orchestrator {
 
             const content = `The action was successfully run`;
 
-            await logCtx.info(content, {
+            void logCtx.info(content, {
                 action: actionName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key,
@@ -184,7 +184,7 @@ export class Orchestrator {
             }
 
             const content = `Action '${actionName}' failed`;
-            await logCtx.error(content, {
+            void logCtx.error(content, {
                 error: formattedError,
                 action: actionName,
                 connection: connection.connection_id,
@@ -296,7 +296,7 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            await logCtx.info('The webhook was successfully run', {
+            void logCtx.info('The webhook was successfully run', {
                 action: webhookName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
@@ -314,7 +314,7 @@ export class Orchestrator {
                 formattedError = new NangoError('webhook_failure', { error: errorToObject(err) });
             }
 
-            await logCtx.error('The webhook failed', {
+            void logCtx.error('The webhook failed', {
                 error: err,
                 webhook: webhookName,
                 connection: connection.connection_id,
@@ -403,7 +403,7 @@ export class Orchestrator {
 
             const content = `Script was successfully run.`;
 
-            await logCtx.info(content, {
+            void logCtx.info(content, {
                 onEventScript: name,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
@@ -421,7 +421,7 @@ export class Orchestrator {
 
             const content = `Script failed`;
 
-            await logCtx.error(content, {
+            void logCtx.error(content, {
                 error: formattedError,
                 onEvent: name,
                 connection: connection.connection_id,
@@ -493,7 +493,7 @@ export class Orchestrator {
                 }
             });
         } else {
-            await logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
+            void logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
     }
@@ -552,7 +552,7 @@ export class Orchestrator {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
                         for (const model of syncConfig?.models || []) {
                             const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                            await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
                         }
                     }
 
@@ -561,11 +561,11 @@ export class Orchestrator {
                 }
             }
             if (res.isErr()) {
-                await logCtx.error(`Sync command '${command}' failed`, { error: res.error, command });
+                void logCtx.error(`Sync command '${command}' failed`, { error: res.error, command });
             }
             return res;
         } catch (err) {
-            await logCtx.error(`Sync command '${command}' failed`, { error: err, command });
+            void logCtx.error(`Sync command '${command}' failed`, { error: err, command });
 
             return Err(err as Error);
         }
@@ -655,7 +655,7 @@ export class Orchestrator {
 
             if (frequencyMs.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                void logCtx.error('The sync was not created or started due to an error with the sync interval', {
                     error: frequencyMs.error,
                     runs: syncData.runs
                 });
@@ -710,7 +710,7 @@ export class Orchestrator {
                 throw schedule.error;
             }
 
-            await logCtx.info('Scheduled successfully', { runs: syncData.runs });
+            void logCtx.info('Scheduled successfully', { runs: syncData.runs });
             await logCtx.success();
             return Ok(undefined);
         } catch (err) {
@@ -728,7 +728,7 @@ export class Orchestrator {
                 }
             });
             if (logCtx) {
-                await logCtx.error('Failed to init sync', { error: err });
+                void logCtx.error('Failed to init sync', { error: err });
                 await logCtx.failed();
             }
             return Err(new Error('Failed to schedule sync', { cause: err }));

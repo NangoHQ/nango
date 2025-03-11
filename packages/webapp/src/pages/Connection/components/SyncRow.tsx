@@ -189,7 +189,7 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
             <Table.Cell bordered>
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="zombie">
+                        <Button variant="icon" size="xs">
                             <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" />
                         </Button>
                     </PopoverTrigger>

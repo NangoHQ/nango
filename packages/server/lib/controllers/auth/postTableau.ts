@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import type { PostPublicTableauAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -90,7 +90,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         const logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'tableau' },
+                meta: { authType: 'tableau', connectSession: endUserToMeta(res.locals.endUser) },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -106,7 +106,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
-            await logCtx.error('Unknown provider config');
+            void logCtx.error('Unknown provider config');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_config' } });
             return;
@@ -114,14 +114,14 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
 
         const provider = getProvider(config.provider);
         if (!provider) {
-            await logCtx.error('Unknown provider');
+            void logCtx.error('Unknown provider');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
         if (provider.auth_mode !== 'TABLEAU') {
-            await logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
+            void logCtx.error('Provider does not support Tableau auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -135,7 +135,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         if (isConnectSession && res.locals.connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
             if (!connection) {
-                await logCtx.error('Invalid connection');
+                void logCtx.error('Invalid connection');
                 await logCtx.failed();
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
@@ -152,7 +152,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         } = await connectionService.getTableauCredentials(provider, patName, patSecret, connectionConfig, contentUrl);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });
+            void logCtx.error('Error during Tableau credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
             errorManager.errRes(res, 'tableau_error');
@@ -172,7 +172,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
-            await logCtx.error('Failed to create connection');
+            void logCtx.error('Failed to create connection');
             await logCtx.failed();
             return;
         }
@@ -183,7 +183,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('Tableau credentials creation was successful');
+        void logCtx.info('Tableau credentials creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(
@@ -221,7 +221,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             account
         );
         if (logCtx) {
-            await logCtx.error('Error during Tableau credentials creation', { error: err });
+            void logCtx.error('Error during Tableau credentials creation', { error: err });
             await logCtx.failed();
         }
 

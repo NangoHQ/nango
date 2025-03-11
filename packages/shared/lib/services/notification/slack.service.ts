@@ -186,10 +186,10 @@ export class SlackService {
             }
         );
 
-        await logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
+        void logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
 
         if (!success || !slackNotificationStatus) {
-            await logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
+            void logCtx.error('Failed looking up the slack notification using the slack notification service', { error });
             await logCtx.failed();
 
             return;
@@ -210,24 +210,24 @@ export class SlackService {
             if (actionResponse.isOk() && actionResponse.value.ts) {
                 const res = actionResponse.value;
                 await this.updateNotificationWithTimestamp(slackNotificationStatus.id, res.ts);
-                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
+                void logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
 
             if (actionResponse.isOk()) {
-                await logCtx.info(
+                void logCtx.info(
                     `The action ${this.actionName} was successfully triggered for the ${flowType} ${name} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
                     { payload }
                 );
                 await logCtx.success();
             } else {
-                await logCtx.error(
+                void logCtx.error(
                     `The action ${this.actionName} failed to trigger for the ${flowType} ${name} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`,
                     { error: actionResponse.error, payload }
                 );
                 await logCtx.failed();
             }
         } catch (err) {
-            await logCtx.error('Failed to trigger slack notification', { error: err });
+            void logCtx.error('Failed to trigger slack notification', { error: err });
             await logCtx.failed();
         }
     }
@@ -328,7 +328,7 @@ export class SlackService {
             }
         );
 
-        await logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
+        void logCtx.info(`Sending notification for connection ${nangoConnection.connection_id}`);
 
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
@@ -340,7 +340,7 @@ export class SlackService {
 
             if (actionResponse.isOk() && actionResponse.value.ts) {
                 const res = actionResponse.value;
-                await logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
+                void logCtx.info(`Posted to https://slack.com/archives/${res.channel}/p${res.ts.replace('.', '')}`);
             }
 
             const content = actionResponse.isOk()
@@ -348,14 +348,14 @@ export class SlackService {
                 : `The action ${this.actionName} failed to trigger for the ${type} ${syncName} with the error: ${actionResponse.error.message} for environment ${slackConnection?.environment_id} for account ${account.uuid}.`;
 
             if (actionResponse.isOk()) {
-                await logCtx.info(content, payload);
+                void logCtx.info(content, payload);
                 await logCtx.success();
             } else {
-                await logCtx.error(content, { error: actionResponse.error });
+                void logCtx.error(content, { error: actionResponse.error });
                 await logCtx.failed();
             }
         } catch (err) {
-            await logCtx.error('Failed to trigger slack notification', { error: err });
+            void logCtx.error('Failed to trigger slack notification', { error: err });
             await logCtx.failed();
         }
     }

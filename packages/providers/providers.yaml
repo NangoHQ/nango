@@ -508,6 +508,37 @@ anthropic:
             title: API Key
             description: The API key for your Anthropic account
 
+anthropic-admin:
+    display_name: Anthropic Administrator
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anthropic.com
+        headers:
+            x-api-key: ${apiKey}
+            anthropic-version: ${connectionConfig.version}
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /v1/organizations/users
+    docs: https://docs.nango.dev/integrations/all/anthropic-admin
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Anthropic API to use
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The Admin API key for your Anthropic account
+
 apaleo:
     display_name: Apaleo
     categories:
@@ -6893,6 +6924,34 @@ rapidapi:
             suffix: .p.rapidapi.com
             prefix: https://
 
+razorpay:
+    display_name: Razorpay
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.razorpay.com
+        verification:
+            method: GET
+            endpoint: /v1/orders
+    docs: https://docs.nango.dev/integrations/all/razorpay
+    docs_connect: https://docs.nango.dev/integrations/all/razorpay/connect
+    credentials:
+        username:
+            type: string
+            title: Key ID
+            description: Your Key ID
+            pattern: '^rzp_(test|live)_[A-Za-z0-9]+$'
+            example: 'rzp_test_*************'
+            doc_section: '#step-1-finding-your-key-id-and-secret'
+        password:
+            type: string
+            title: Key Secret
+            description: Your Key Secret
+            secret: true
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-finding-your-key-id-and-secret'
+
 recharge:
     display_name: Recharge
     categories:
@@ -8311,6 +8370,24 @@ trello-scim:
             title: API Key
             description: The API key for your Trello scim account
             doc_section: '#step-1-finding-your-trello-api-key'
+
+tldv:
+    display_name: tl;dv
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://pasta.tldv.io
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/tldv
+    docs_connect: https://docs.nango.dev/integrations/all/tldv/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your tl;dv account
+            doc_section: '#step-1-finding-your-api-key'
 
 tsheetsteam:
     display_name: TSheets
