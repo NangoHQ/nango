@@ -18,6 +18,7 @@ type GetRecords = Endpoint<{
         externalIds?: string[] | undefined;
         cursor?: string | undefined;
         limit: number;
+        // TODO: fix this to be only string
         activityLogId?: string | undefined;
     };
     Error: ApiError<'get_records_failed'>;
@@ -49,7 +50,7 @@ const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<G
     });
 
     if (result.isOk()) {
-        await logCtx?.info(`Successfully found ${result.value.records.length} records`, {
+        void logCtx?.info(`Successfully found ${result.value.records.length} records`, {
             model,
             externalIds,
             limit

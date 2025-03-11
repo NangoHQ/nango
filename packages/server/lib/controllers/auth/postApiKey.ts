@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import type { ApiKeyCredentials, MessageRowInsert, PostPublicApiKeyAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook, connectionTest } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -86,7 +86,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'apikey' },
+                meta: { authType: 'apikey', connectSession: endUserToMeta(res.locals.endUser) },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -183,7 +183,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('API key auth creation was successful');
+        void logCtx.info('API key auth creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(

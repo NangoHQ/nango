@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import type { MessageRowInsert, PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -94,7 +94,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'signature' },
+                meta: { authType: 'signature', connectSession: endUserToMeta(res.locals.endUser) },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -198,7 +198,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('Signature connection creation was successful');
+        void logCtx.info('Signature connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(

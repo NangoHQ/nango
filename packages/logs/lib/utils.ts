@@ -1,5 +1,4 @@
-import { errorToObject, getLogger } from '@nangohq/utils';
-import type { MessageRow } from '@nangohq/types';
+import { getLogger } from '@nangohq/utils';
 import { client } from './es/client.js';
 
 export const logger = getLogger('logs');
@@ -20,17 +19,3 @@ export const logLevelToLogger = {
     verbose: 'debug',
     silly: 'debug'
 } as const;
-
-export function errorToDocument(error?: unknown): MessageRow['error'] {
-    if (!error) {
-        return;
-    }
-
-    const err = { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) };
-    return {
-        name: error instanceof Error ? error.constructor.name : err.name,
-        message: err.message,
-        type: 'type' in err ? (err.type as string) : undefined,
-        payload: 'payload' in err ? err.payload : undefined
-    };
-}
