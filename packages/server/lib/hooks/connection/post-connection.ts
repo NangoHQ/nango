@@ -113,7 +113,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
             await logCtx.success();
             metrics.increment(metrics.Types.POST_CONNECTION_SUCCESS);
         } catch (err) {
-            await logCtx.error('Post connection script failed', { error: err });
+            void logCtx.error('Post connection script failed', { error: err });
             await logCtx.failed();
 
             metrics.increment(metrics.Types.POST_CONNECTION_FAILURE);

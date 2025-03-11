@@ -14,12 +14,13 @@ interface DBConnectSession {
     readonly account_id: number;
     readonly environment_id: number;
     readonly connection_id: number | null;
+    readonly operation_id: string | null;
     readonly created_at: Date;
     readonly updated_at: Date | null;
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
 }
-type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
+type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at' | 'operation_id'>;
 
 const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
@@ -29,6 +30,7 @@ const ConnectSessionMapper = {
             account_id: session.accountId,
             environment_id: session.environmentId,
             connection_id: session.connectionId,
+            operation_id: session.operationId || null,
             created_at: session.createdAt,
             updated_at: session.updatedAt,
             allowed_integrations: session.allowedIntegrations || null,
@@ -42,6 +44,7 @@ const ConnectSessionMapper = {
             accountId: dbSession.account_id,
             environmentId: dbSession.environment_id,
             connectionId: dbSession.connection_id,
+            operationId: dbSession.operation_id || null,
             createdAt: dbSession.created_at,
             updatedAt: dbSession.updated_at,
             allowedIntegrations: dbSession.allowed_integrations || null,

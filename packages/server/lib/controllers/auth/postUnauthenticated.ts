@@ -75,7 +75,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
-            await logCtx.error('Unknown provider config');
+            void logCtx.error('Unknown provider config');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_config' } });
             return;
@@ -83,14 +83,14 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         const provider = getProvider(config.provider);
         if (!provider) {
-            await logCtx.error('Unknown provider');
+            void logCtx.error('Unknown provider');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
         if (provider.auth_mode !== 'NONE') {
-            await logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
+            void logCtx.error('Provider does not support Unauthenticated', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -104,7 +104,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         if (isConnectSession && res.locals.connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
             if (!connection) {
-                await logCtx.error('Invalid connection');
+                void logCtx.error('Invalid connection');
                 await logCtx.failed();
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
@@ -125,7 +125,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
-            await logCtx.error('Failed to create connection');
+            void logCtx.error('Failed to create connection');
             await logCtx.failed();
             return;
         }
@@ -172,7 +172,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             account
         );
         if (logCtx) {
-            await logCtx.error('Error during Unauthenticated connection creation', { error: err });
+            void logCtx.error('Error during Unauthenticated connection creation', { error: err });
             await logCtx.failed();
         }
 

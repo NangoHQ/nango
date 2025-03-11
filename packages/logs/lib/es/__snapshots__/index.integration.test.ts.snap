@@ -23,8 +23,20 @@ exports[`mapping > should create one index automatically on log 1`] = `
         },
         "type": "text",
       },
+      "context": {
+        "type": "keyword",
+      },
       "createdAt": {
         "type": "date",
+      },
+      "durationMs": {
+        "type": "integer",
+      },
+      "endUserId": {
+        "type": "keyword",
+      },
+      "endUserName": {
+        "type": "keyword",
       },
       "endedAt": {
         "type": "date",
