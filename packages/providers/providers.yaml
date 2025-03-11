@@ -1705,6 +1705,7 @@ certn:
             type: string
             title: API Key
             description: The API key for your Certn account
+            doc_section: '#step-1-creating-an-api-key'
 
 certn-partner:
     display_name: Certn Partner
@@ -1748,6 +1749,7 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+            doc_section: '#step-1-creating-an-api-key'
     credentials:
         username:
             type: string
@@ -1981,14 +1983,17 @@ cloudentity:
             type: string
             title: Tenant ID
             description: The tenant ID of your Cloudentity account
+            doc_section: '#step-2-retrieving-the-tenant-id'
         regionID:
             type: string
             title: Region ID
             description: The region ID of your Cloudentity account
+            doc_section: '#step-3-retrieving-the-region-id'
         workspaceID:
             type: string
             title: Workspace ID
             description: The workspace ID of your Cloudentity account
+            doc_section: '#step-4-retrieving-the-workspace-id'
 
 close:
     display_name: Close
@@ -2022,6 +2027,7 @@ coda:
             type: string
             title: API Key
             description: The API key for your Coda account
+            doc_section: '#step-1-creating-an-api-key'
 
 codeclimate:
     display_name: Code Climate
@@ -2046,11 +2052,13 @@ codeclimate:
             description: The domain of your Code Climate account
             format: hostname
             prefix: https://
+            doc_section: '#step-1-obtaining-the-domain-url'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Code Climate account
+            doc_section: '#step-2-creating-an-api-key'
 
 commercetools:
     display_name: Commercetools
