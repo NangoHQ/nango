@@ -7,3 +7,4 @@ export * as modelOperations from './models/insights.js';
 export * from './otlp/otlp.js';
 export { envs, defaultOperationExpiration } from './env.js';
 export { destroy } from './utils.js';
+export * from './formatters.js';
