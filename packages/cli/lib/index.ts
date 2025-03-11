@@ -176,7 +176,7 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
-    .option('-i, --integration-id [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
@@ -231,7 +231,7 @@ program
     .description('Deploy a Nango integration to local')
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('-i, --integration-id [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
@@ -302,7 +302,7 @@ program
     .description('Deploy a Nango integration to the internal Nango dev account')
     .arguments('environment')
     .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, cloud).')
-    .option('-i, --integration-id [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
     .action(async function (this: Command, environment: string) {
         const { debug, nangoRemoteEnvironment, integrationId } = this.opts();
         const fullPath = process.cwd();
