@@ -37,7 +37,7 @@ describe('package', () => {
         ).toMatchSnapshot();
     });
 
-    it('should filter by optionalProviderConfigKey when specified', async () => {
+    it('should filter by integrationId when specified', async () => {
         const dir = await getTestDirectory('deploy-nested-filtered');
 
         await copyDirectoryAndContents(`${fixturesPath}/nango-yaml/v2/nested-integrations/hubspot`, `${dir}/hubspot`);
@@ -57,7 +57,7 @@ describe('package', () => {
             parsed: parsing.value.parsed!,
             debug: false,
             fullPath: dir,
-            optionalProviderConfigKey: 'hubspot'
+            integrationId: 'hubspot'
         });
 
         // Verify only hubspot integrations are included
@@ -73,7 +73,7 @@ describe('package', () => {
             parsed: parsing.value.parsed!,
             debug: false,
             fullPath: dir,
-            optionalProviderConfigKey: 'github'
+            integrationId: 'github'
         });
 
         // Verify only github integrations are included
@@ -84,14 +84,13 @@ describe('package', () => {
         // Verify no hubspot integrations are included
         expect(resGithub!.flowConfigs.some((flow) => flow.providerConfigKey === 'hubspot')).toBe(false);
 
-        // Test with no optionalProviderConfigKey (should include all)
+        // Test with no integrationId (should include all)
         const resAll = deployService.package({
             parsed: parsing.value.parsed!,
             debug: false,
             fullPath: dir
         });
 
-        // Verify all integrations are included
         expect(resAll).not.toBeNull();
         expect(resAll!.flowConfigs.length).toBeGreaterThan(0);
 
@@ -101,7 +100,6 @@ describe('package', () => {
         expect(providerKeys.has('hubspot')).toBe(true);
         expect(providerKeys.has('github')).toBe(true);
 
-        // Verify the total count is the sum of the individual filtered counts
         expect(resAll!.flowConfigs.length).toBe(resHubspot!.flowConfigs.length + resGithub!.flowConfigs.length);
     });
 });

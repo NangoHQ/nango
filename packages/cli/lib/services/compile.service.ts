@@ -57,7 +57,7 @@ export async function compileAllFiles({
         console.log(chalk.green(`Compiling ${scriptName}.ts in ${fullPath}${scriptDirectory}`));
     }
 
-    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug });
+    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug, providerConfigKey });
     let success = true;
 
     for (const file of integrationFiles) {
@@ -275,57 +275,70 @@ export function listFilesToCompile({
     scriptDirectory,
     scriptName,
     parsed,
-    debug
+    debug,
+    providerConfigKey
 }: {
     fullPath: string;
     scriptDirectory?: string | undefined;
     scriptName?: string | undefined;
     parsed: NangoYamlParsed;
     debug?: boolean;
+    providerConfigKey?: string | undefined;
 }): ListedFile[] {
     let files: string[] = [];
+
+    // Compiling a specific script
     if (scriptName) {
         if (debug) {
-            printDebug(`Compiling ${scriptName}.ts`);
+            printDebug(`Compiling script: ${scriptName}.ts`);
         }
-
         files = [path.join(fullPath, scriptDirectory || '', `${scriptName}.ts`)];
-    } else {
-        files = globFiles(fullPath, '*.ts');
-
-        // models.ts is the one expected file
-        if (files.length === 1 && debug) {
-            printDebug(`No files found in the root: ${fullPath}`);
+    }
+    // Filtering by providerConfigKey or compiling all files
+    else {
+        // Always include models.ts
+        const modelsPath = path.join(fullPath, 'models.ts');
+        if (fs.existsSync(modelsPath)) {
+            files = [modelsPath];
+        } else {
+            files = [];
         }
 
-        parsed.integrations.forEach((integration) => {
-            const syncPath = `${integration.providerConfigKey}/syncs`;
-            const actionPath = `${integration.providerConfigKey}/actions`;
-            const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
-            const onEventsPath = `${integration.providerConfigKey}/on-events`;
+        // If not filtering by provider, include all root TypeScript files
+        if (!providerConfigKey) {
+            const rootFiles = globFiles(fullPath, '*.ts').filter((file) => path.basename(file) !== 'models.ts');
+            files.push(...rootFiles);
 
-            const syncFiles = globFiles(fullPath, syncPath, '*.ts');
-            const actionFiles = globFiles(fullPath, actionPath, '*.ts');
-            const postFiles = globFiles(fullPath, postConnectionPath, '*.ts');
-            const onEventsFiles = globFiles(fullPath, onEventsPath, '*.ts');
-
-            files = [...files, ...syncFiles, ...actionFiles, ...postFiles, ...onEventsFiles];
-
-            if (debug) {
-                if (syncFiles.length > 0) {
-                    printDebug(`Found nested sync files in ${syncPath}`);
-                }
-                if (actionFiles.length > 0) {
-                    printDebug(`Found nested action files in ${actionPath}`);
-                }
-                if (postFiles.length > 0) {
-                    printDebug(`Found nested post-connection-scripts files in ${postConnectionPath}`);
-                }
-                if (onEventsFiles.length > 0) {
-                    printDebug(`Found nested on-events files in ${onEventsPath}`);
-                }
+            if (debug && rootFiles.length > 0) {
+                printDebug(`Found ${rootFiles.length} TypeScript files in the root directory`);
             }
-        });
+        }
+        const filteredIntegrations = providerConfigKey
+            ? parsed.integrations.filter((integration) => integration.providerConfigKey === providerConfigKey)
+            : parsed.integrations;
+
+        if (providerConfigKey && debug) {
+            if (filteredIntegrations.length > 0) {
+                printDebug(`Filtering compilation to only include files for provider config key: ${providerConfigKey}`);
+            } else {
+                printDebug(`Warning: No integration found with provider config key: ${providerConfigKey}`);
+            }
+        }
+
+        for (const integration of filteredIntegrations) {
+            const pcKey = integration.providerConfigKey;
+
+            // Look for files in each script type directory
+            const scriptTypes: ScriptFileType[] = ['syncs', 'actions', 'on-events', 'post-connection-scripts'];
+            for (const scriptType of scriptTypes) {
+                const scriptPath = `${pcKey}/${scriptType}`;
+                const scriptFiles = globFiles(fullPath, scriptPath, '*.ts');
+                if (scriptFiles.length > 0 && debug) {
+                    printDebug(`Found ${scriptFiles.length} files in ${scriptPath}`);
+                }
+                files.push(...scriptFiles);
+            }
+        }
     }
 
     return files.map((filePath) => {

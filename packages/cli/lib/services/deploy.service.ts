@@ -95,9 +95,8 @@ class DeployService {
             console.error(err);
         }
     }
-    // TODO: CLEANUP
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
-        const { env, version, sync: optionalSyncName, action: optionalActionName, optionalProviderConfigKey, autoConfirm, allowDestructive } = options;
+        const { env, version, sync: optionalSyncName, action: optionalActionName, integrationId, autoConfirm, allowDestructive } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
@@ -116,8 +115,8 @@ class DeployService {
         if (debug) {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
-            if (optionalProviderConfigKey) {
-                printDebug(`Deploying only for provider config key: ${optionalProviderConfigKey}`);
+            if (integrationId) {
+                printDebug(`Deploying only for provider config key: ${integrationId}`);
             }
         }
 
@@ -129,17 +128,18 @@ class DeployService {
 
         const parser = parsing.value;
 
-        // Check if the optionalProviderConfigKey exists in the parsed config
-        if (optionalProviderConfigKey && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === optionalProviderConfigKey)) {
-            console.log(chalk.red(`Integration with ID "${optionalProviderConfigKey}" not found in configuration.`));
+        // Check if the integrationId exists in the parsed config
+        if (integrationId && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === integrationId)) {
+            console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
             process.exit(1);
         }
 
-        const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+        const singleDeployMode = Boolean(optionalSyncName || optionalActionName || integrationId);
+        const integrationIdMode = Boolean(integrationId);
 
         let successfulCompile = false;
 
-        if (singleDeployMode) {
+        if (singleDeployMode && !integrationIdMode) {
             const scriptName: string = String(optionalSyncName || optionalActionName);
             const type = optionalSyncName ? 'syncs' : 'actions';
             const providerConfigKey = parser.parsed!.integrations.find((integration) => {
@@ -162,12 +162,12 @@ class DeployService {
                     debug
                 });
             }
-        } else if (optionalProviderConfigKey) {
+        } else if (integrationIdMode) {
             // Only compile files for the specified integration
             successfulCompile = await compileAllFiles({
                 fullPath,
                 debug,
-                providerConfigKey: optionalProviderConfigKey
+                providerConfigKey: integrationId!
             });
         } else {
             // Compile all files
@@ -186,7 +186,7 @@ class DeployService {
             version,
             optionalSyncName,
             optionalActionName,
-            optionalProviderConfigKey
+            integrationId
         });
 
         if (!postData) {
@@ -196,13 +196,24 @@ class DeployService {
         const nangoYamlBody = parser.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
+        const bodyDeploy: PostDeploy['Body'] = {
+            ...postData,
+            reconcile: true,
+            debug,
+            nangoYamlBody,
+            singleDeployMode
+        };
 
         const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
 
         try {
-            const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
+            const bodyConfirmation: PostDeployConfirmation['Body'] = {
+                ...postData,
+                reconcile: false,
+                debug,
+                singleDeployMode
+            };
             const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
 
             if (shouldConfirm) {
@@ -312,7 +323,6 @@ class DeployService {
             });
     }
 
-    // TODO: CLEANUP
     public async internalDeploy({
         fullPath,
         environment,
@@ -324,7 +334,7 @@ class DeployService {
         options: InternalDeployOptions;
         debug?: boolean;
     }) {
-        const { env, optionalProviderConfigKey } = options;
+        const { env, integrationId } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, checkDist: false });
 
         await parseSecretKey('dev', debug);
@@ -343,8 +353,8 @@ class DeployService {
         if (debug) {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
-            if (optionalProviderConfigKey) {
-                printDebug(`Deploying only for provider config key: ${optionalProviderConfigKey}`);
+            if (integrationId) {
+                printDebug(`Deploying only for provider: ${integrationId}`);
             }
         }
 
@@ -356,8 +366,8 @@ class DeployService {
 
         const parser = parsing.value;
 
-        if (optionalProviderConfigKey && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === optionalProviderConfigKey)) {
-            console.log(chalk.red(`Integration with ID "${optionalProviderConfigKey}" not found in configuration.`));
+        if (integrationId && !parser.parsed!.integrations.some((integration) => integration.providerConfigKey === integrationId)) {
+            console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
             process.exit(1);
         }
 
@@ -372,7 +382,7 @@ class DeployService {
             parsed: parser.parsed!,
             fullPath,
             debug,
-            optionalProviderConfigKey
+            integrationId
         });
 
         if (!postData) {
@@ -394,7 +404,7 @@ class DeployService {
         version = '',
         optionalSyncName,
         optionalActionName,
-        optionalProviderConfigKey
+        integrationId
     }: {
         parsed: NangoYamlParsed;
         fullPath: string;
@@ -402,20 +412,20 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
-        optionalProviderConfigKey?: string | undefined;
+        integrationId?: string | undefined;
     }): { flowConfigs: CLIDeployFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
+        if (integrationId) {
+            if (debug) {
+                printDebug(`Packaging only integration with provider config key: ${integrationId}`);
+            }
+        }
+
         const postData: CLIDeployFlowConfig[] = [];
         const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
-        // Filter integrations by optionalProviderConfigKey if provided
-        const filteredIntegrations = optionalProviderConfigKey
-            ? parsed.integrations.filter((integration) => integration.providerConfigKey === optionalProviderConfigKey)
+        const filteredIntegrations = integrationId
+            ? parsed.integrations.filter((integration) => integration.providerConfigKey === integrationId)
             : parsed.integrations;
-
-        if (optionalProviderConfigKey && filteredIntegrations.length === 0) {
-            console.log(chalk.red(`No integration found with provider config key "${optionalProviderConfigKey}"`));
-            return null;
-        }
 
         for (const integration of filteredIntegrations) {
             const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
