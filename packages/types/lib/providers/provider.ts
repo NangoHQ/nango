@@ -54,7 +54,7 @@ export interface BaseProvider {
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
-            endpoint: string;
+            endpoints: string[];
             base_url_override?: string;
             headers?: Record<string, string>;
         };
@@ -78,6 +78,7 @@ export interface BaseProvider {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    verification_script?: string;
     categories?: string[];
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;

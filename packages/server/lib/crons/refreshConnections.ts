@@ -5,8 +5,8 @@ import { logContextGetter } from '@nangohq/logs';
 import {
     connectionRefreshFailed as connectionRefreshFailedHook,
     connectionRefreshSuccess as connectionRefreshSuccessHook,
-    connectionTest as connectionTestHook
-} from '../hooks/hooks.js';
+    verifyConnectionBeforeCreation as connectionTestHook
+} from './hooks/hooks.js';
 import tracer from 'dd-trace';
 import type { Lock } from '@nangohq/kvstore';
 import { getLocking } from '@nangohq/kvstore';

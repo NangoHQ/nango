@@ -146,10 +146,14 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
                     ...(provider.connection_configuration || [])
                 ].includes(cleanParamName(param))
         );
-        const proxyVerificationMatches =
-            provider.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
-            provider.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
-            [];
+        const proxyVerificationMatches = [
+            ...(provider.proxy?.verification?.endpoints
+                ? provider.proxy.verification.endpoints.flatMap((param) =>
+                      typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
+                  )
+                : []),
+            ...(provider.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) || [])
+        ];
 
         return [
             ...tokenUrlMatches,
