@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import type { MessageRowInsert, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -100,7 +100,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'jwt' },
+                meta: { authType: 'jwt', connectSession: endUserToMeta(res.locals.endUser) },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -204,7 +204,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        await logCtx.info('JWT connection creation was successful');
+        void logCtx.info('JWT connection creation was successful');
         await logCtx.success();
 
         void connectionCreatedHook(

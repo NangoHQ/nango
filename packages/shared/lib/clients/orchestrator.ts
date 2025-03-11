@@ -166,7 +166,7 @@ export class Orchestrator {
 
             const content = `The action was successfully run`;
 
-            await logCtx.info(content, {
+            void logCtx.info(content, {
                 action: actionName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key,
@@ -296,7 +296,7 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            await logCtx.info('The webhook was successfully run', {
+            void logCtx.info('The webhook was successfully run', {
                 action: webhookName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
@@ -403,7 +403,7 @@ export class Orchestrator {
 
             const content = `Script was successfully run.`;
 
-            await logCtx.info(content, {
+            void logCtx.info(content, {
                 onEventScript: name,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
@@ -493,7 +493,7 @@ export class Orchestrator {
                 }
             });
         } else {
-            await logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
+            void logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
     }
@@ -552,7 +552,7 @@ export class Orchestrator {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
                         for (const model of syncConfig?.models || []) {
                             const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                            await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
                         }
                     }
 
@@ -710,7 +710,7 @@ export class Orchestrator {
                 throw schedule.error;
             }
 
-            await logCtx.info('Scheduled successfully', { runs: syncData.runs });
+            void logCtx.info('Scheduled successfully', { runs: syncData.runs });
             await logCtx.success();
             return Ok(undefined);
         } catch (err) {

@@ -1390,7 +1390,7 @@ class ConnectionService {
             void connectionCreatedHook(updatedConnection);
         }
 
-        await logCtx.info('App connection was approved and credentials were saved');
+        void logCtx.info('App connection was approved and credentials were saved');
     }
 
     public async getAppCredentials(
