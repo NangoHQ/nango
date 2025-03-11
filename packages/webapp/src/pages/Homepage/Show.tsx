@@ -115,6 +115,19 @@ export const Homepage: React.FC = () => {
                         }
                     />
                 )}
+                <InsightChart
+                    title="Authorization"
+                    type="auth:create_connection"
+                    desc=""
+                    help={
+                        <div>
+                            No authorization attempted in the last 14 days.{' '}
+                            <Link to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui" className="underline text-white">
+                                Learn more
+                            </Link>
+                        </div>
+                    }
+                />
             </div>
         </DashboardLayout>
     );

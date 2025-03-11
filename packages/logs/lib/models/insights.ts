@@ -1,7 +1,7 @@
 import type { estypes } from '@elastic/elasticsearch';
 import { indexMessages } from '../es/schema.js';
 import { client } from '../es/client.js';
-import type { ConcatOperationList, InsightsHistogramEntry, OperationList } from '@nangohq/types';
+import type { ConcatOperationList, InsightsHistogramEntry, OperationList, OperationRow } from '@nangohq/types';
 
 export async function retrieveInsights(opts: { accountId: number; environmentId: number; type: OperationList['type'] | ConcatOperationList }) {
     const query: estypes.QueryDslQueryContainer = {
@@ -46,9 +46,20 @@ export async function retrieveInsights(opts: { accountId: number; environmentId:
 
     const computed: InsightsHistogramEntry[] = [];
     for (const item of agg.buckets as any[]) {
-        const success = (item.state_agg.buckets as { key: string; doc_count: number }[]).find((i) => i.key === 'success');
-        const failure = (item.state_agg.buckets as { key: string; doc_count: number }[]).find((i) => i.key === 'failed');
-        computed.push({ key: item.key_as_string, total: item.doc_count, success: success?.doc_count || 0, failure: failure?.doc_count || 0 });
+        const success = (item.state_agg.buckets as { key: OperationRow['state']; doc_count: number }[]).find((i) => i.key === 'success');
+        const failure = (item.state_agg.buckets as { key: OperationRow['state']; doc_count: number }[]).find((i) => i.key === 'failed');
+        const cancelled = (item.state_agg.buckets as { key: OperationRow['state']; doc_count: number }[]).find((i) => i.key === 'cancelled');
+        const expired = (item.state_agg.buckets as { key: OperationRow['state']; doc_count: number }[]).find((i) => i.key === 'timeout');
+        const running = (item.state_agg.buckets as { key: OperationRow['state']; doc_count: number }[]).find((i) => i.key === 'running');
+        computed.push({
+            key: item.key_as_string,
+            total: item.doc_count,
+            success: success?.doc_count || 0,
+            failure: failure?.doc_count || 0,
+            cancelled: cancelled?.doc_count || 0,
+            expired: expired?.doc_count || 0,
+            running: running?.doc_count || 0
+        });
     }
 
     return {
