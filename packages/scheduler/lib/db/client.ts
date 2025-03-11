@@ -21,7 +21,8 @@ export class DatabaseClient {
             client: 'postgres',
             connection: {
                 connectionString: url,
-                statement_timeout: 60000
+                statement_timeout: 60000,
+                application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
             },
             searchPath: schema,
             pool: { min: 2, max: poolMax },
