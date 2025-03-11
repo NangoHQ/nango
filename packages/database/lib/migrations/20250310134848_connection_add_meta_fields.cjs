@@ -6,8 +6,8 @@ exports.up = async function (knex) {
 ADD COLUMN "credentials_expires_at" timestamptz,
 ADD COLUMN "last_refresh_success" timestamptz,
 ADD COLUMN "last_refresh_failure" timestamptz,
-ADD COLUMN "last_refresh_tries" int2,
-ADD COLUMN "refreshable" bool`);
+ADD COLUMN "refresh_attempts" int2,
+ADD COLUMN "refresh_exhausted" bool`);
 };
 
 /**
@@ -18,6 +18,6 @@ exports.down = async function (knex) {
 DROP COLUMN "credentials_expires_at",
 DROP COLUMN "last_refresh_success",
 DROP COLUMN "last_refresh_failure",
-DROP COLUMN "last_refresh_tries",
-DROP COLUMN "refreshable"`);
+DROP COLUMN "refresh_attempts",
+DROP COLUMN "refresh_exhausted"`);
 };
