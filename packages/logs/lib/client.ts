@@ -2,9 +2,10 @@ import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHT
 import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
 import { getFormattedMessage } from './models/helpers.js';
 import { metrics, report } from '@nangohq/utils';
-import { errorToDocument, isCli, logger, logLevelToLogger } from './utils.js';
+import { isCli, logger, logLevelToLogger } from './utils.js';
 import { envs } from './env.js';
 import { OtlpSpan } from './otlp/otlpSpan.js';
+import { errorToDocument } from './formatters.js';
 
 interface Options {
     dryRun?: boolean;
