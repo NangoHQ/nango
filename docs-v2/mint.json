@@ -614,6 +614,7 @@
                 "integrations/all/timely",
                 "integrations/all/todoist",
                 "integrations/all/trello",
+                "integrations/all/tldv",
                 "integrations/all/trello-scim",
                 "integrations/all/tremendous",
                 "integrations/all/tremendous-sandbox",
