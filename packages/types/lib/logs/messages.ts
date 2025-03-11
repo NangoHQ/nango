@@ -107,6 +107,8 @@ export interface MessageRow {
     level: LogLevel;
     type: MessageType;
     message: string;
+    context?: 'script' | 'proxy' | 'webhook';
+
     // Operation row id
     parentId: string;
 
@@ -120,6 +122,7 @@ export interface MessageRow {
     // Dates
     createdAt: string;
     endedAt?: string | undefined;
+    durationMs?: number | undefined;
 }
 
 export interface OperationRow {
@@ -155,6 +158,8 @@ export interface OperationRow {
 
     connectionId?: number | undefined;
     connectionName?: string | undefined;
+    endUserId?: string | undefined;
+    endUserName?: string | undefined;
 
     syncConfigId?: number | undefined;
     syncConfigName?: string | undefined;
@@ -175,6 +180,7 @@ export interface OperationRow {
     startedAt: string | null;
     endedAt: string | null;
     expiresAt: string | null;
+    durationMs?: number | undefined;
 }
 
 /**

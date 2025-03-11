@@ -39,7 +39,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
         const error = new NangoError('concurrent_deployment');
 
-        await logCtx.error('Failed to deploy scripts', { error });
+        void logCtx.error('Failed to deploy scripts', { error });
         await logCtx.failed();
 
         errorManager.errResFromNangoErr(res, error);

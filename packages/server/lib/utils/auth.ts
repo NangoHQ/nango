@@ -23,7 +23,7 @@ export async function isIntegrationAllowed({
         return true;
     }
 
-    await logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
+    void logCtx.error('Integration not allowed by this token', { integration: config.unique_key, allowed: session.allowedIntegrations });
     await logCtx.failed();
     res.status(400).send({ error: { code: 'integration_not_allowed' } });
     return false;

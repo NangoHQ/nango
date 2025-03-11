@@ -16,7 +16,7 @@ import {
 } from '@nangohq/shared';
 import type { MessageRowInsert, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -100,7 +100,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         logCtx = await logContextGetter.create(
             {
                 operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'jwt' },
+                meta: { authType: 'jwt', connectSession: endUserToMeta(res.locals.endUser) },
                 expiresAt: defaultOperationExpiration.auth()
             },
             { account, environment }
@@ -116,7 +116,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         const config = await configService.getProviderConfig(providerConfigKey, environment.id);
         if (!config) {
-            await logCtx.error('Unknown provider config');
+            void logCtx.error('Unknown provider config');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_config' } });
             return;
@@ -124,14 +124,14 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         const provider = getProvider(config.provider);
         if (!provider) {
-            await logCtx.error('Unknown provider');
+            void logCtx.error('Unknown provider');
             await logCtx.failed();
             res.status(404).send({ error: { code: 'unknown_provider_template' } });
             return;
         }
 
         if (provider.auth_mode !== 'JWT') {
-            await logCtx.error('Provider does not support JWT auth', { provider: config.provider });
+            void logCtx.error('Provider does not support JWT auth', { provider: config.provider });
             await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_auth_mode' } });
             return;
@@ -145,7 +145,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         if (isConnectSession && res.locals.connectSession.connectionId) {
             const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
             if (!connection) {
-                await logCtx.error('Invalid connection');
+                void logCtx.error('Invalid connection');
                 await logCtx.failed();
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
@@ -158,7 +158,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         const { success, error, response: credentials } = connectionService.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
 
         if (!success || !credentials) {
-            await logCtx.error('Error during JWT creation', { error, provider: config.provider });
+            void logCtx.error('Error during JWT creation', { error, provider: config.provider });
             await logCtx.failed();
 
             errorManager.errRes(res, 'jwt_error');
@@ -171,7 +171,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             if ('logs' in connectionResponse.error.payload) {
                 await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
             }
-            await logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
             await logCtx.failed();
 
             errorManager.errResFromNangoErr(res, connectionResponse.error);
@@ -193,7 +193,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
-            await logCtx.error('Failed to create connection');
+            void logCtx.error('Failed to create connection');
             await logCtx.failed();
             return;
         }
@@ -242,7 +242,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             account
         );
         if (logCtx) {
-            await logCtx.error('Error during JWT credentials creation', { error: err });
+            void logCtx.error('Error during JWT credentials creation', { error: err });
             await logCtx.failed();
         }
 

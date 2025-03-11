@@ -64,7 +64,7 @@ class AppAuthController {
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
-                await logCtx.error('Error during API Key auth: config not found');
+                void logCtx.error('Error during API Key auth: config not found');
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -76,7 +76,7 @@ class AppAuthController {
 
             const provider = getProvider(config.provider);
             if (!provider) {
-                await logCtx.error('Unknown provider');
+                void logCtx.error('Unknown provider');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
@@ -85,7 +85,7 @@ class AppAuthController {
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['APP'] as string);
 
             if (provider.auth_mode !== 'APP') {
-                await logCtx.error('Provider does not support app creation', { provider: config.provider });
+                void logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -94,7 +94,7 @@ class AppAuthController {
             }
 
             if (action === 'request') {
-                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
+                void logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
                     provider: config.provider,
                     url: req.originalUrl
                 });
@@ -112,7 +112,7 @@ class AppAuthController {
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
+                void logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
                 await logCtx.failed();
 
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
@@ -128,7 +128,7 @@ class AppAuthController {
             const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
 
             if (!success || !credentials) {
-                await logCtx.error('Error during app token retrieval call', { error });
+                void logCtx.error('Error during app token retrieval call', { error });
                 await logCtx.failed();
 
                 void connectionCreationFailedHook(
@@ -161,7 +161,7 @@ class AppAuthController {
                 accountId: account.id
             });
             if (!updatedConnection) {
-                await logCtx.error('Failed to create connection');
+                void logCtx.error('Failed to create connection');
                 await logCtx.failed();
                 await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
                 return;
@@ -175,7 +175,7 @@ class AppAuthController {
                     environmentId: environment.id
                 });
                 if (connectSessionRes.isErr()) {
-                    await logCtx.error('Failed to get session');
+                    void logCtx.error('Failed to get session');
                     await logCtx.failed();
                     await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
                     return;
@@ -212,7 +212,7 @@ class AppAuthController {
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
 
-            await logCtx.error(error.message, { error: err, url: req.originalUrl });
+            void logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
 
             void connectionCreationFailedHook(
