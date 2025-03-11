@@ -13,7 +13,8 @@ const config: Knex.Config = {
     client: 'postgres',
     connection: {
         connectionString: databaseUrl,
-        statement_timeout: 60000
+        statement_timeout: 60000,
+        application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
     },
     searchPath: schema,
     pool: { min: 2, max: 50 },
@@ -32,7 +33,8 @@ const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
           ...config,
           connection: {
               connectionString: envs.RECORDS_DATABASE_READ_URL,
-              statement_timeout: 60000
+              statement_timeout: 60000,
+              application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
           }
       }
     : undefined;
