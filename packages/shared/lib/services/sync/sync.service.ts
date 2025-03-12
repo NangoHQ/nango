@@ -172,7 +172,7 @@ export const getSyncs = async (
                         )
                         FROM ${SYNC_JOB_TABLE}
                         JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
-                        WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id AND ${SYNC_JOB_TABLE}.deleted = false
+                        WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
                         ORDER BY ${SYNC_JOB_TABLE}.created_at DESC
                         LIMIT 1) as latest_sync`
             )

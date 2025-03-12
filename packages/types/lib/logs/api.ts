@@ -82,7 +82,7 @@ export type PostInsights = Endpoint<{
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };
     Body: {
-        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync:run' | 'proxy' | 'webhook:incoming'>;
+        type: PickFromUnion<ConcatOperationListWithGroup, 'action' | 'sync:run' | 'proxy' | 'webhook:incoming' | 'auth:create_connection'>;
     };
     Success: {
         data: {
@@ -95,4 +95,7 @@ export interface InsightsHistogramEntry {
     total: number;
     success: number;
     failure: number;
+    cancelled: number;
+    expired: number;
+    running: number;
 }

@@ -16,6 +16,9 @@ interface Entry {
     total: number;
     success: number;
     failure: number;
+    expired: number;
+    cancelled: number;
+    running: number;
 }
 
 const chartConfig = {
@@ -26,6 +29,18 @@ const chartConfig = {
     failure: {
         label: 'Failure',
         color: '#E5484D'
+    },
+    expired: {
+        label: 'Expired',
+        color: '#f09745'
+    },
+    cancelled: {
+        label: 'Cancelled',
+        color: '#a2a2a2'
+    },
+    running: {
+        label: 'Running',
+        color: '#509af8'
     }
 } satisfies ChartConfig;
 
@@ -94,7 +109,10 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                 date: utc,
                 total: entry?.total || 0,
                 success: entry?.success || 0,
-                failure: entry?.failure || 0
+                failure: entry?.failure || 0,
+                expired: entry?.expired || 0,
+                cancelled: entry?.cancelled || 0,
+                running: entry?.running || 0
             });
         }
 
@@ -147,7 +165,11 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             axisLine={false}
                             tickLine={false}
                             interval="preserveStartEnd"
-                            ticks={[histogram[0].date.getTime(), histogram[7].date.getTime(), histogram[histogram.length - 1].date.getTime()]}
+                            ticks={
+                                histogram.length > 0
+                                    ? [histogram[0].date.getTime(), histogram[7].date.getTime(), histogram[histogram.length - 1].date.getTime()]
+                                    : []
+                            }
                             tickFormatter={(value: number) => {
                                 return new Date(value).toLocaleDateString('en-US', {
                                     month: 'short',
@@ -187,9 +209,8 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                         />
                         <Bar dataKey="success" stackId="a" fill="var(--color-success)" strokeWidth={0} animationDuration={250} animationBegin={0}>
                             {histogram.map((entry, index) => {
-                                return (
-                                    <Cell key={index} radius={(entry.failure > 0 ? [0, 0, 4, 4] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />
-                                );
+                                const hasAbove = entry.failure || entry.expired || entry.cancelled || entry.running;
+                                return <Cell key={index} radius={(hasAbove ? [0, 0, 4, 4] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />;
                             })}
                         </Bar>
                         <Bar
@@ -202,9 +223,80 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
                             radius={[4, 4, 0, 0]}
                         >
                             {histogram.map((entry, index) => {
-                                return (
-                                    <Cell key={index} radius={(entry.success > 0 ? [4, 4, 0, 0] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />
-                                );
+                                const radius = [];
+                                if (entry.expired || entry.cancelled || entry.running) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                if (entry.success) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                return <Cell key={index} radius={radius as unknown as number} style={{ pointerEvents: 'none' }} />;
+                            })}
+                        </Bar>
+                        <Bar
+                            dataKey="expired"
+                            stackId="a"
+                            fill="var(--color-expired)"
+                            strokeWidth={0}
+                            animationDuration={250}
+                            animationBegin={0}
+                            radius={[4, 4, 0, 0]}
+                        >
+                            {histogram.map((entry, index) => {
+                                const radius = [];
+                                if (entry.cancelled || entry.running) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                if (entry.success || entry.failure) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                return <Cell key={index} radius={radius as unknown as number} style={{ pointerEvents: 'none' }} />;
+                            })}
+                        </Bar>
+                        <Bar
+                            dataKey="cancelled"
+                            stackId="a"
+                            fill="var(--color-cancelled)"
+                            strokeWidth={0}
+                            animationDuration={250}
+                            animationBegin={0}
+                            radius={[4, 4, 0, 0]}
+                        >
+                            {histogram.map((entry, index) => {
+                                const radius = [];
+                                if (entry.running) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                if (entry.success || entry.failure || entry.expired) {
+                                    radius.push(0, 0);
+                                } else {
+                                    radius.push(4, 4);
+                                }
+                                return <Cell key={index} radius={radius as unknown as number} style={{ pointerEvents: 'none' }} />;
+                            })}
+                        </Bar>
+                        <Bar
+                            dataKey="running"
+                            stackId="a"
+                            fill="var(--color-running)"
+                            strokeWidth={0}
+                            animationDuration={250}
+                            animationBegin={0}
+                            radius={[4, 4, 0, 0]}
+                        >
+                            {histogram.map((entry, index) => {
+                                const hasBelow = entry.success || entry.failure || entry.expired || entry.cancelled;
+                                return <Cell key={index} radius={(hasBelow ? [4, 4, 0, 0] : 4) as unknown as number} style={{ pointerEvents: 'none' }} />;
                             })}
                         </Bar>
                     </BarChart>

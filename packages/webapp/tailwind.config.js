@@ -86,9 +86,6 @@ module.exports = {
                 'code-orange': '#f09745',
                 'code-yellow': '#f7c752',
 
-                success: '#5bb98b',
-                failure: '#e5484d',
-
                 'success-100': '#f9fef1',
                 'success-200': '#edfbd8',
                 'success-300': '#d4f1c5',
