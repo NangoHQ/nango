@@ -549,6 +549,8 @@
                 "integrations/all/ramp",
                 "integrations/all/ramp-sandbox",
                 "integrations/all/rapidapi",
+                "integrations/all/readwise",
+                "integrations/all/readwise-reader",
                 "integrations/all/recharge",
                 "integrations/all/reddit",
                 "integrations/all/refiner",

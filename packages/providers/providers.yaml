@@ -7024,6 +7024,57 @@ razorpay:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-key-id-and-secret'
 
+readwise:
+    display_name: Readwise
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://readwise.io/api/v2
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            endpoint: /auth
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/readwise
+    docs_connect: https://docs.nango.dev/integrations/all/readwise/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your Readwise account
+            example: zCDL1fUOpu4Cg3WMlMl1S7ecKsaBQlfCzw7sbVfc0wBqUJMI56
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-generating-your-access-token'
+
+readwise-reader:
+    display_name: Readwise Reader
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://readwise.io/api/v3
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            base_url_override: https://readwise.io
+            endpoint: /api/v2/auth
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/readwise-reader
+    docs_connect: https://docs.nango.dev/integrations/all/readwise-reader/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your Readwise account
+            example: zCDL1fUOpu4Cg3WMlMl1S7ecKsaBQlfCzw7sbVfc0wBqUJMI56
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-generating-your-access-token'
+
 recharge:
     display_name: Recharge
     categories:
