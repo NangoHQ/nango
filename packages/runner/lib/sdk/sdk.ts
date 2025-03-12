@@ -117,8 +117,8 @@ export class NangoActionRunner extends NangoActionBase {
         return this.nango.triggerSync(providerConfigKey, [sync], connectionId, fullResync);
     }
 
-    public startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
-        return this.nango.startSync(providerConfigKey, syncs, connectionId);
+    public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
+        await this.nango.startSync(providerConfigKey, syncs, connectionId);
     }
 
     private async sendLogToPersist(log: MessageRowInsert) {
