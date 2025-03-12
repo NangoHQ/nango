@@ -280,9 +280,9 @@ export async function credentialsTest({
     const span = tracer.startSpan('nango.server.hooks.credentialsTest', {
         childOf: active as Span,
         tags: {
-            'nango.provider': provider,
-            'nango.providerConfigKey': config.unique_key,
-            'nango.connectionId': connectionId
+            provider: provider,
+            providerConfigKey: config.unique_key,
+            connectionId: connectionId
         }
     });
 
