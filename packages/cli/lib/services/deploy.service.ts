@@ -96,7 +96,12 @@ class DeployService {
         }
     }
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
-        const { env, version, sync: optionalSyncName, action: optionalActionName, integrationId, autoConfirm, allowDestructive } = options;
+        const { env, version, sync: optionalSyncName, action: optionalActionName, integration: integrationId, autoConfirm, allowDestructive } = options;
+        if (integrationId && (optionalSyncName || optionalActionName)) {
+            console.log(chalk.red('Error: Cannot use both --integration and -s/-a flags together. Please use either one, but not both.'));
+            process.exit(1);
+        }
+
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
@@ -335,7 +340,7 @@ class DeployService {
         options: InternalDeployOptions;
         debug?: boolean;
     }) {
-        const { env, integrationId } = options;
+        const { env, integration: integrationId } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, checkDist: false });
 
         await parseSecretKey('dev', debug);
