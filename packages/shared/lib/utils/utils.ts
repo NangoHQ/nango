@@ -209,7 +209,7 @@ export function interpolateObject(obj: Record<string, any>, dynamicValues: Recor
 
 export function stripCredential(obj: any): any {
     if (typeof obj === 'string') {
-        return obj.replace(/credential\./g, '');
+        return obj.replace(/credentials\./g, '');
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
