@@ -346,6 +346,7 @@ export declare class NangoAction {
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
     zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>>;
     triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+    startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.

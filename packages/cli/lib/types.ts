@@ -12,8 +12,10 @@ export interface DeployOptions extends GlobalOptions {
     sync?: string;
     action?: string;
     allowDestructive?: boolean;
+    integration?: string;
 }
 
 export interface InternalDeployOptions {
     env?: ENV;
+    integration?: string;
 }

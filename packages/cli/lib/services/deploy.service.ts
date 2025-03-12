@@ -95,9 +95,9 @@ class DeployService {
             console.error(err);
         }
     }
-
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
-        const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm, allowDestructive } = options;
+        const { env, version, sync: optionalSyncName, action: optionalActionName, integration: integrationId, autoConfirm, allowDestructive } = options;
+
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
         await parseSecretKey(environment, debug);
@@ -116,6 +116,9 @@ class DeployService {
         if (debug) {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
+            if (integrationId) {
+                printDebug(`Deploying integration '${integrationId}' only`);
+            }
         }
 
         const parsing = parse(fullPath, debug);
@@ -125,11 +128,51 @@ class DeployService {
         }
 
         const parser = parsing.value;
-        const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+
+        // Check if the integrationId exists in the parsed config
+        if (integrationId && parser.parsed!.integrations.every((integration) => integration.providerConfigKey !== integrationId)) {
+            console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
+            process.exit(1);
+        }
+
+        const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
+        const integrationIdMode = Boolean(integrationId);
+        const singleDeployMode = hasSingleScript || integrationIdMode;
 
         let successfulCompile = false;
 
-        if (singleDeployMode) {
+        // case where both integrationId and sync/action are specified
+        if (hasSingleScript && integrationIdMode) {
+            const scriptName: string = String(optionalSyncName || optionalActionName);
+            const type = optionalSyncName ? 'syncs' : 'actions';
+
+            const allMatchingIntegrations = parser.parsed!.integrations.filter((integration) => {
+                const scripts = type === 'syncs' ? integration.syncs : integration.actions;
+                return scripts.some((script) => script.name === scriptName);
+            });
+
+            // Check if the specified integration has this script
+            const matchingIntegration = allMatchingIntegrations.find((integration) => integration.providerConfigKey === integrationId);
+            if (!matchingIntegration) {
+                console.log(chalk.red(`The ${type.slice(0, -1)} "${scriptName}" does not exist in integration "${integrationId}".`));
+                process.exit(1);
+            }
+            if (debug) {
+                printDebug(`Compiling only the ${type.slice(0, -1)} "${scriptName}" from integration "${integrationId}"`);
+            }
+            const parentFilePath = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey: integrationId!, type });
+            successfulCompile = await compileSingleFile({
+                fullPath,
+                file: getFileToCompile({
+                    fullPath,
+                    filePath: path.join(parentFilePath, `${scriptName}.ts`)
+                }),
+                parsed: parser.parsed!,
+                debug
+            });
+        }
+        // single script mode without integration ID
+        else if (hasSingleScript) {
             const scriptName: string = String(optionalSyncName || optionalActionName);
             const type = optionalSyncName ? 'syncs' : 'actions';
             const providerConfigKey = parser.parsed!.integrations.find((integration) => {
@@ -152,7 +195,15 @@ class DeployService {
                     debug
                 });
             }
+        } else if (integrationIdMode) {
+            // Only compile files for the specified integration
+            successfulCompile = await compileAllFiles({
+                fullPath,
+                debug,
+                providerConfigKey: integrationId!
+            });
         } else {
+            // Compile all files
             successfulCompile = await compileAllFiles({ fullPath, debug });
         }
 
@@ -161,7 +212,16 @@ class DeployService {
             process.exit(1);
         }
 
-        const postData = this.package({ parsed: parser.parsed!, fullPath, debug, version, optionalSyncName, optionalActionName });
+        const postData = this.package({
+            parsed: parser.parsed!,
+            fullPath,
+            debug,
+            version,
+            optionalSyncName,
+            optionalActionName,
+            integrationId
+        });
+
         if (!postData) {
             return;
         }
@@ -169,13 +229,24 @@ class DeployService {
         const nangoYamlBody = parser.yaml;
 
         const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-        const bodyDeploy: PostDeploy['Body'] = { ...postData, reconcile: true, debug, nangoYamlBody, singleDeployMode };
+        const bodyDeploy: PostDeploy['Body'] = {
+            ...postData,
+            reconcile: true,
+            debug,
+            nangoYamlBody,
+            singleDeployMode
+        };
 
         const shouldConfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm;
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
 
         try {
-            const bodyConfirmation: PostDeployConfirmation['Body'] = { ...postData, reconcile: false, debug, singleDeployMode };
+            const bodyConfirmation: PostDeployConfirmation['Body'] = {
+                ...postData,
+                reconcile: false,
+                debug,
+                singleDeployMode
+            };
             const response = await http.post(confirmationUrl, bodyConfirmation, { headers: enrichHeaders() });
 
             if (shouldConfirm) {
@@ -265,7 +336,6 @@ class DeployService {
 
         await this.deploy(url, bodyDeploy);
     }
-
     public async deploy(url: string, body: PostDeploy['Body']) {
         await http
             .post(url, body, { headers: enrichHeaders() })
@@ -297,7 +367,7 @@ class DeployService {
         options: InternalDeployOptions;
         debug?: boolean;
     }) {
-        const { env } = options;
+        const { env, integration } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, checkDist: false });
 
         await parseSecretKey('dev', debug);
@@ -316,6 +386,9 @@ class DeployService {
         if (debug) {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
+            if (integration) {
+                printDebug(`Deploying for integration: '${integration}' only`);
+            }
         }
 
         const parsing = parse(fullPath, debug);
@@ -325,14 +398,36 @@ class DeployService {
         }
 
         const parser = parsing.value;
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+
+        if (integration && parser.parsed!.integrations.every((int) => int.providerConfigKey === integration)) {
+            console.log(chalk.red(`Integration with ID "${integration}" not found in configuration.`));
+            process.exit(1);
+        }
+        let successfulCompile: boolean = false;
+        if (integration) {
+            // Only compile files for the specified integration
+            successfulCompile = await compileAllFiles({
+                fullPath,
+                debug,
+                providerConfigKey: integration
+            });
+        } else {
+            // Compile all files
+            successfulCompile = await compileAllFiles({ fullPath, debug });
+        }
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
             process.exit(1);
         }
 
-        const postData = this.package({ parsed: parser.parsed!, fullPath, debug });
+        const postData = this.package({
+            parsed: parser.parsed!,
+            fullPath,
+            debug,
+            integrationId: integration
+        });
+
         if (!postData) {
             return;
         }
@@ -352,7 +447,8 @@ class DeployService {
         debug,
         version = '',
         optionalSyncName,
-        optionalActionName
+        optionalActionName,
+        integrationId
     }: {
         parsed: NangoYamlParsed;
         fullPath: string;
@@ -360,11 +456,27 @@ class DeployService {
         version?: string | undefined;
         optionalSyncName?: string | undefined;
         optionalActionName?: string | undefined;
+        integrationId?: string | undefined;
     }): { flowConfigs: CLIDeployFlowConfig[]; onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined; jsonSchema: JSONSchema7 } | null {
+        if (integrationId) {
+            if (debug) {
+                printDebug(`Packaging for integration: ${integrationId} only`);
+            }
+        }
+        const hasBothFilters = integrationId && (optionalSyncName || optionalActionName);
+        if (hasBothFilters && debug) {
+            const scriptType = optionalSyncName ? 'sync' : 'action';
+            const scriptName = optionalSyncName || optionalActionName;
+            printDebug(`Packaging only ${scriptType} "${scriptName}" from integration "${integrationId}"`);
+        }
         const postData: CLIDeployFlowConfig[] = [];
         const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
-        for (const integration of parsed.integrations) {
+        const filteredIntegrations = integrationId
+            ? parsed.integrations.filter((integration) => integration.providerConfigKey === integrationId)
+            : parsed.integrations;
+
+        for (const integration of filteredIntegrations) {
             const { providerConfigKey, onEventScripts, postConnectionScripts } = integration;
 
             if (onEventScriptsByProvider) {
