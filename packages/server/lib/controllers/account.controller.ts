@@ -123,7 +123,7 @@ class AccountController {
             });
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                void logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
             next(err);

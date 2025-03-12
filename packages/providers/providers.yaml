@@ -494,6 +494,9 @@ anthropic:
             content-type: application/json
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -507,6 +510,37 @@ anthropic:
             type: string
             title: API Key
             description: The API key for your Anthropic account
+
+anthropic-admin:
+    display_name: Anthropic Administrator
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anthropic.com
+        headers:
+            x-api-key: ${apiKey}
+            anthropic-version: ${connectionConfig.version}
+            content-type: application/json
+        retry:
+            after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /v1/organizations/users
+    docs: https://docs.nango.dev/integrations/all/anthropic-admin
+    connection_config:
+        version:
+            type: string
+            title: API Version
+            description: The version of the Anthropic API to use
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+            example: '2023-06-01'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The Admin API key for your Anthropic account
 
 apaleo:
     display_name: Apaleo
@@ -1238,6 +1272,9 @@ blandai:
         base_url: https://api.bland.ai
         headers:
             authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoint: v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -1374,6 +1411,9 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
+        verification:
+            method: GET
+            endpoint: /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
@@ -1451,6 +1491,9 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: POST
+            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1482,6 +1525,9 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -1699,11 +1745,13 @@ certn:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+    docs_connect: https://docs.nango.dev/integrations/all/certn
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Certn account
+            doc_section: '#step-1-creating-an-api-key'
 
 certn-partner:
     display_name: Certn Partner
@@ -1737,6 +1785,7 @@ chargebee:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
+    docs_connect: https://docs.nango.dev/integrations/all/chargebee/connect
     connection_config:
         subdomain:
             type: string
@@ -1746,6 +1795,7 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+            doc_section: '#step-1-creating-an-api-key'
     credentials:
         username:
             type: string
@@ -1774,6 +1824,9 @@ chattermill:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -1873,6 +1926,7 @@ checkout-com:
             accept: application/json
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com/connect
 
 checkout-com-sandbox:
     display_name: Checkout.com (Sandbox)
@@ -1889,6 +1943,7 @@ checkout-com-sandbox:
             accept: application/json
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com-sandbox/connect
 
 chorus:
     display_name: Chorus
@@ -1935,6 +1990,9 @@ clari-copilot:
             x-api-key: ${apiKey}
             x-api-password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
+        verification:
+            method: GET
+            endpoint: /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
         API_PASSWORD:
@@ -1971,19 +2029,23 @@ cloudentity:
     proxy:
         base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
+    docs_connect: https://docs.nango.dev/integrations/all/cloudentity/connect
     connection_config:
         tenantID:
             type: string
             title: Tenant ID
             description: The tenant ID of your Cloudentity account
+            doc_section: '#step-2-retrieving-the-tenant-id'
         regionID:
             type: string
             title: Region ID
             description: The region ID of your Cloudentity account
+            doc_section: '#step-3-retrieving-the-region-id'
         workspaceID:
             type: string
             title: Workspace ID
             description: The workspace ID of your Cloudentity account
+            doc_section: '#step-4-retrieving-the-workspace-id'
 
 close:
     display_name: Close
@@ -2010,12 +2072,17 @@ coda:
         base_url: https://coda.io/apis/v1
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/coda
+    docs_connect: https://docs.nango.dev/integrations/all/coda/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Coda account
+            doc_section: '#step-1-creating-an-api-key'
 
 codeclimate:
     display_name: Code Climate
@@ -2032,6 +2099,7 @@ codeclimate:
             method: GET
             endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
+    docs_connect: https://docs.nango.dev/integrations/all/codeclimate/connect
     connection_config:
         domain:
             type: string
@@ -2039,11 +2107,13 @@ codeclimate:
             description: The domain of your Code Climate account
             format: hostname
             prefix: https://
+            doc_section: '#step-1-obtaining-the-domain-url'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Code Climate account
+            doc_section: '#step-2-creating-an-api-key'
 
 commercetools:
     display_name: Commercetools
@@ -2572,6 +2642,10 @@ dixa:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
             authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/agents
+            base_url_override: https://dev.dixa.io
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -3124,6 +3198,9 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
+        verification:
+            method: POST
+            endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
         apiKey:
@@ -3173,6 +3250,9 @@ fireflies:
         base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
@@ -4093,6 +4173,8 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
+        verification:
+            endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
@@ -4132,6 +4214,9 @@ greenhouse-harvest:
         base_url: https://harvest.greenhouse.io
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
@@ -4184,6 +4269,8 @@ greenhouse-assessment:
         - ats
     proxy:
         base_url: https://${connectionConfig.baseUrl}
+        verification:
+            endpoint: /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
     connection_config:
@@ -4232,6 +4319,8 @@ greenhouse-onboarding:
         - ats
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
+        verification:
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
@@ -5805,7 +5894,21 @@ miro-scim:
             title: API Key
             description: The API key for your Miro scim account
             doc_section: '#step-1-finding-miro-api-key'
-
+missive:
+    display_name: Missive
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api_token: ${apiKey}
+        base_url: https://missiveapp.com
+    docs: https://docs.nango.dev/integrations/all/missive
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Missive account
 monday:
     display_name: Monday
     categories:
@@ -8339,6 +8442,24 @@ trello-scim:
             title: API Key
             description: The API key for your Trello scim account
             doc_section: '#step-1-finding-your-trello-api-key'
+
+tldv:
+    display_name: tl;dv
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://pasta.tldv.io
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/tldv
+    docs_connect: https://docs.nango.dev/integrations/all/tldv/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your tl;dv account
+            doc_section: '#step-1-finding-your-api-key'
 
 tsheetsteam:
     display_name: TSheets
