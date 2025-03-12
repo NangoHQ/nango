@@ -41,7 +41,7 @@ All major cloud providers are supported (AWS, GCP, Azure).
 - All services (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
 - Postgres: 2 CPU, 8GB RAM, 128GB storage
 - Redis: 128MB
-- ElasticSearch: 8.5 vCPU, 1GB RAM, 30GB storage
+- ElasticSearch: 2 vCPU, 1GB RAM, 30GB storage
 
 ## How does scaling work? Is there auto-scaling?
 
@@ -53,9 +53,9 @@ The main bottlenecks depend on:
 - Number of cached records & record size: Postgres database can be scaled vertically
 - Action/sync execution time: Runner service can be scaled vertically, then horizontally
 
-## What data is stored in S3 vs. Postgres vs. Redis vs. Elastic? 
+## What data is stored in object storage vs. Postgres vs. Redis vs. Elastic? 
 
-- S3: compiled code
+- Object storage (e.g. S3): compiled code
 - Postgres: control plane, data plane, orchestrator
 - Redis: socket information, locks for token refreshes, caching of log indexes, rate-limits
 - Elastic: logs
@@ -64,10 +64,10 @@ The main bottlenecks depend on:
 
 Yes, Nango is not opinionated about your data store setup. However, we recommend using a separate instance to allow independent scaling.
 
-## What services needs internet access?
+## Which services need internet access?
 
-- Server: Required for proxy, credentials management, and webhooks (in/out)
-- Runner: Required for executing sync/actions (outbound connections)
+- Server: Required for proxy requests, credentials management, and outgoing/incoming webhooks (in/out traffic)
+- Runner: Required for reading/writing data from/to external APIs (out traffic)
 
 ## Does the deployment support multi-AZ deployments?
 
