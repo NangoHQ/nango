@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import type { AxiosResponse, AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
 import type { Result } from '@nangohq/utils';
-import { Err, Ok, axiosInstance as axios, retryWithBackoff, redactHeaders } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, redactHeaders, retryFlexible, networkError } from '@nangohq/utils';
 import type { LogContext } from '@nangohq/logs';
 import type { WebhookTypes, SyncOperationType, AuthOperationType, DBExternalWebhook, DBEnvironment, MessageRow, MessageHTTPResponse } from '@nangohq/types';
 
@@ -124,7 +124,7 @@ export const deliver = async ({
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    environment: DBEnvironment;
+    environment: Pick<DBEnvironment, 'secret_key'>;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
@@ -148,10 +148,21 @@ export const deliver = async ({
         };
 
         try {
-            const response = await retryWithBackoff(
+            await retryFlexible(
                 async () => {
                     try {
-                        return await axios.post(url, body, { headers });
+                        const res = await axios.post(url, body, { headers });
+
+                        void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res) });
+                        if (res.status >= 200 && res.status < 300) {
+                            void logCtx?.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
+                        } else {
+                            void logCtx?.warn(
+                                `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${res.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
+                            );
+                            success = false;
+                        }
+                        return res;
                     } catch (err) {
                         if (isAxiosError(err)) {
                             void logCtx?.http(`POST ${logRequest.url}`, {
@@ -171,21 +182,20 @@ export const deliver = async ({
                         throw err;
                     }
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: retry.bind(this, logCtx) }
-            );
+                {
+                    max: RETRY_ATTEMPTS,
+                    onError: ({ err, nextWait, max, attempt }) => {
+                        const retry = shouldRetry(err);
+                        if (retry.retry) {
+                            void logCtx?.warn(`Retrying HTTP call (reason: ${retry.reason}). Waiting for ${nextWait}ms [${attempt}/${max}]`);
+                        } else {
+                            void logCtx?.warn(`Skipping retry HTTP call (reason: ${retry.reason}) [${attempt}/${max}]`);
+                        }
 
-            if (logCtx) {
-                void logCtx.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(response) });
-
-                if (response.status >= 200 && response.status < 300) {
-                    void logCtx.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
-                } else {
-                    void logCtx.warn(
-                        `Webhook "${webhookType}" sent successfully (${type} URL) but received a "${response.status}" response code${endingMessage ? ` ${endingMessage}` : ''}. Please send a 2xx on successful receipt.`
-                    );
-                    success = false;
+                        return retry;
+                    }
                 }
-            }
+            );
         } catch {
             // error should already be logged in retry()
             success = false;
@@ -194,3 +204,24 @@ export const deliver = async ({
 
     return success ? Ok(undefined) : Err(new Error('Failed to send webhooks'));
 };
+
+export function shouldRetry(err: unknown): { retry: boolean; reason: string } {
+    if (!isAxiosError(err)) {
+        return { retry: false, reason: 'unknown_error' };
+    }
+
+    if (err.code && networkError.includes(err.code)) {
+        return { retry: true, reason: 'network_error' };
+    }
+
+    if (!err.response) {
+        return { retry: false, reason: 'invalid_response' };
+    }
+    const status = err.response?.status || 0;
+
+    if (status >= 300 && status < 500) {
+        return { retry: false, reason: `status_code_${status}` };
+    }
+
+    return { retry: true, reason: `status_code_${status}` };
+}
