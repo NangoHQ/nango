@@ -494,6 +494,9 @@ anthropic:
             content-type: application/json
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -1408,6 +1411,9 @@ brevo-api-key:
         headers:
             api-key: ${apiKey}
         base_url: https://api.brevo.com/v3
+        verification:
+            method: GET
+            endpoint: /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
@@ -1485,6 +1491,9 @@ builder-io-private:
         base_url: https://${connectionConfig.domain}
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: POST
+            endpoint: /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1516,6 +1525,9 @@ builder-io-public:
         base_url: https://${connectionConfig.domain}
         query:
             apiKey: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -2050,6 +2062,9 @@ coda:
         base_url: https://coda.io/apis/v1
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/coda
     credentials:
         apiKey:
@@ -3168,6 +3183,9 @@ falai:
         headers:
             authorization: Key ${apiKey}
         base_url: https://queue.fal.run
+        verification:
+            method: POST
+            endpoint: /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
         apiKey:
@@ -3217,6 +3235,9 @@ fireflies:
         base_url: https://api.fireflies.ai
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoint: /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
