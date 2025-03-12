@@ -4,11 +4,82 @@ sidebarTitle: 'Enterprise self-hosting'
 description: 'Overview of the Enterprise self-hosted edition.'
 ---
 
+Nango offers an Enterprise Self-Hosted deployment option for customers who need full control over their infrastructure. This guide covers deployment, scaling, updates, and other key operational details.
+
+## What features are available?
+
 All paid features available on Nango Cloud are also available on the Enterprise self-hosted edition. 
+
+## What plan is needed?
 
 The Enterprise self-hosted edition requires a [Scale plan](https://www.nango.dev/pricing) subscription.
 
+## Who is this option for?
+
 Enterprise self-hosting is optimized for large, regulated enterprises.
+
+## How is it deployed? 
+
+By default, using Helm charts. There is no CloudFormation template or AWS CDK script provided at this time.
+
+We can also guide you to do custom deployments, e.g. for ECS. 
+
+## How and how often is it updated?
+
+Updates are distributed through versioned Helm charts.
+
+A staging environment is recommended to mitigate risks before applying updates to production.
+
+The update cadence is custom based on your need to benefit from new functionalities.
+
+## What cloud provider does Nango support? 
+
+All major cloud providers are supported (AWS, GCP, Azure).
+
+## What is the recommended configuration? 
+
+- All services (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
+- Postgres: 2 CPU, 8GB RAM, 128GB storage
+- Redis: 128MB
+- ElasticSearch: 8.5 vCPU, 1GB RAM, 30GB storage
+
+## How does scaling work? Is there auto-scaling?
+
+The default configuration scales far: 1M+ sync/action executions per day, assuming an average execution time of 2 seconds.
+
+Nango does not yet provide auto-scaling out-of-the-box. 
+
+The main bottlenecks depend on:
+- Number of cached records & record size: Postgres database can be scaled vertically
+- Action/sync execution time: Runner service can be scaled vertically, then horizontally
+
+## What data is stored in S3 vs. Postgres vs. Redis vs. Elastic? 
+
+- S3: compiled code
+- Postgres: control plane, data plane, orchestrator
+- Redis: socket information, locks for token refreshes, caching of log indexes, rate-limits
+- Elastic: logs
+
+## Can you use existing data stores (Postgres, Redis, ElasticSearch)?
+
+Yes, Nango is not opinionated about your data store setup. However, we recommend using a separate instance to allow independent scaling.
+
+## What services needs internet access?
+
+- Server: Required for proxy, credentials management, and webhooks (in/out)
+- Runner: Required for executing sync/actions (outbound connections)
+
+## Does the deployment support multi-AZ deployments?
+
+Multi-AZ deployments are not automated but can be configured manually. We plan to add support for this in our Helm charts in the future.
+
+## How to export metrics for billing?
+
+We do monthly telemetry exports, automated or manual, based on your preference. Details to be discussed individually.
+
+## Can metrics/logs/spans be exported?
+
+Yes, they can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics/logs can be added upon request.
 
 If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
 
