@@ -21,8 +21,8 @@ import type { Config as ProviderConfig } from '../../../models/index.js';
 import tracer from 'dd-trace';
 import type { Lock } from '@nangohq/kvstore';
 import { getLocking } from '@nangohq/kvstore';
-import connectionService from '../../connection.service';
-import providerClient from '../../../clients/provider.client';
+import connectionService from '../../connection.service.js';
+import providerClient from '../../../clients/provider.client.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 
 interface RefreshProps {
