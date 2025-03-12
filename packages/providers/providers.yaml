@@ -1269,6 +1269,9 @@ blandai:
         base_url: https://api.bland.ai
         headers:
             authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoint: v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -1805,6 +1808,9 @@ chattermill:
             authorization: Bearer ${apiKey}
             accept: application/json
             content-type: application/json
+        verification:
+            method: GET
+            endpoint: /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -1966,6 +1972,9 @@ clari-copilot:
             x-api-key: ${apiKey}
             x-api-password: ${connectionConfig.API_PASSWORD}
         base_url: https://rest-api.copilot.clari.com
+        verification:
+            method: GET
+            endpoint: /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
         API_PASSWORD:
@@ -2603,6 +2612,10 @@ dixa:
         base_url: https://${connectionConfig.apiType}.dixa.io
         headers:
             authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoint: /v1/agents
+            base_url_override: https://dev.dixa.io
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
         apiKey:
@@ -4124,6 +4137,8 @@ greenhouse-basic:
             type: link
             limit_name_in_request: per_page
             link_rel_in_response_header: next
+        verification:
+            endpoint: /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
@@ -4163,6 +4178,9 @@ greenhouse-harvest:
         base_url: https://harvest.greenhouse.io
         retry:
             after: 'retry-after'
+        verification:
+            method: GET
+            endpoint: /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
@@ -4215,6 +4233,8 @@ greenhouse-assessment:
         - ats
     proxy:
         base_url: https://${connectionConfig.baseUrl}
+        verification:
+            endpoint: /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
     connection_config:
@@ -4263,6 +4283,8 @@ greenhouse-onboarding:
         - ats
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
+        verification:
+            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
