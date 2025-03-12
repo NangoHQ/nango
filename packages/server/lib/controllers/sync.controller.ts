@@ -25,7 +25,7 @@ import {
     getSyncsByConnectionId
 } from '@nangohq/shared';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { getHeaders, isHosted, truncateJson, Ok, Err, redactHeaders } from '@nangohq/utils';
 import { records as recordsService } from '@nangohq/records';
@@ -262,6 +262,7 @@ class SyncController {
                     meta: truncateJson({ input })
                 }
             );
+            logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
             const actionResponse = await getOrchestrator().triggerAction({
                 connection,

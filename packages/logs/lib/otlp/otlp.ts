@@ -1,3 +1,4 @@
+import type { Tracer } from '@opentelemetry/api';
 import { trace } from '@opentelemetry/api';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { Resource } from '@opentelemetry/resources';
@@ -56,7 +57,7 @@ export const otlp: {
     running: AbortController | false;
     register: (getRoutes: () => Promise<RouteConfig[]>) => Promise<void>;
     stop: () => void;
-    tracer: any;
+    tracer: Tracer;
     routingAttributeKey: string;
 } = {
     running: false,

@@ -1,8 +1,7 @@
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
+import { networkError } from '@nangohq/utils';
 import type { AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
-
-const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'];
 
 /**
  * Determine if we can retry or not based on the error we are receiving

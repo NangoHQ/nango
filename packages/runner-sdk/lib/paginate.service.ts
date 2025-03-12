@@ -120,6 +120,10 @@ class PaginationService {
                 config.endpoint = nextPageLink;
             } else {
                 const url: URL = new URL(nextPageLink);
+                // since this is a fully formed URL then we can reliably use this
+                // also since this might contain the base URL we need to override it
+                config.baseUrlOverride = url.origin;
+                // ensure that the base URL doesn't contain the path
                 config.endpoint = url.pathname + url.search;
             }
 

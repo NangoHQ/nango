@@ -1,5 +1,5 @@
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { ScriptTypeLiteral } from '@nangohq/types';
+import type { ScriptTypeLiteral, Timestamps } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -46,7 +46,7 @@ export interface Action extends TimestampsAndDeleted {
     name: string;
 }
 
-export interface Job extends TimestampsAndDeleted {
+export interface Job extends Timestamps {
     id: number;
     status: SyncStatus;
     type: SyncJobsType;

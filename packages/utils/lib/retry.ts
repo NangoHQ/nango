@@ -96,14 +96,14 @@ export async function retryWithBackoff<T extends () => any>(fn: T, options?: Bac
     return await backOff(fn, { numOfAttempts: 5, ...options });
 }
 
-const handledCode = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'];
+export const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'];
 export function httpRetryStrategy(error: unknown, _attemptNumber: number): boolean {
     if (!(error instanceof AxiosError)) {
         // debatable
         return false;
     }
 
-    if (error.code && handledCode.includes(error.code)) {
+    if (error.code && networkError.includes(error.code)) {
         return true;
     }
 

@@ -1,4 +1,4 @@
-import db, { schema, dbNamespace } from '@nangohq/database';
+import db, { dbNamespace } from '@nangohq/database';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Telemetry.js';
 import type { Job as SyncJob, SyncResultByModel, SyncJobsType } from '../../models/Sync.js';
@@ -39,7 +39,7 @@ export async function createSyncJob({
     }
 
     try {
-        const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('*');
+        const syncJob = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('*');
 
         if (syncJob && syncJob.length > 0 && syncJob[0]) {
             return syncJob[0];
@@ -66,7 +66,7 @@ export async function createSyncJob({
 }
 
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
-    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).orderBy('created_at', 'desc').first();
+    const result = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).select('*').where({ sync_id }).orderBy('created_at', 'desc').first();
 
     if (result) {
         return result;
@@ -76,7 +76,7 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
 };
 
 export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null> => {
-    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ run_id, deleted: false }).first();
+    const result = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).select('*').where({ run_id }).first();
 
     if (result) {
         return result;
@@ -86,9 +86,9 @@ export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null>
 };
 
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<SyncJob | null> => {
-    const [job] = await schema()
+    const [job] = await db.knex
         .from<SyncJob>(SYNC_JOB_TABLE)
-        .where({ id, deleted: false })
+        .where({ id })
         .update({
             status,
             updated_at: new Date()
@@ -112,7 +112,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
         if (!existingResult || Object.keys(existingResult).length === 0) {
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)
-                .where({ id, deleted: false })
+                .where({ id })
                 .update({
                     result
                 })
@@ -136,7 +136,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 
             const [updatedRow] = await trx
                 .from<SyncJob>(SYNC_JOB_TABLE)
-                .where({ id, deleted: false })
+                .where({ id })
                 .update({
                     result: finalResult
                 })
@@ -148,29 +148,25 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 };
 
 export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id' | 'log_id'> | null> => {
-    const result = await schema()
+    const result = await db.knex
         .from<SyncJob>(SYNC_JOB_TABLE)
+        .select('*')
         .where({
             sync_id,
-            deleted: false,
             status: SyncStatus.RUNNING
         })
         .orderBy('created_at', 'desc')
-        .limit(1);
+        .first();
 
-    if (result && result.length > 0) {
-        return result[0];
-    }
-
-    return null;
+    return result || null;
 };
 
 export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {
-    return db
-        .knex('_nango_sync_jobs')
+    return db.knex
+        .from<SyncJob>('_nango_sync_jobs')
         .delete()
         .whereIn('id', function (sub) {
-            sub.select('id').from('_nango_sync_jobs').where({ sync_id: syncId }).limit(limit);
+            sub.select('id').from<SyncJob>('_nango_sync_jobs').where({ sync_id: syncId }).limit(limit);
         });
 }
 
@@ -178,8 +174,8 @@ export async function deleteJobsByDate({ deleteJobsOlderThan, limit }: { deleteJ
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - deleteJobsOlderThan);
 
-    return db
-        .knex('_nango_sync_jobs')
+    return db.knex
+        .from<SyncJob>('_nango_sync_jobs')
         .delete()
         .whereIn('id', function (sub) {
             sub.select('id').from<SyncJob>('_nango_sync_jobs').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
