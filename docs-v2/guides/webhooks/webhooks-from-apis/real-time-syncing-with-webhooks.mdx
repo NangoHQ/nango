@@ -45,15 +45,6 @@ hubspot:
 			  - contact.propertyChange
 ```
 
-Use `'*'` to list for any webhook subscription, e.g. 
-```yaml
-airtable:
-  syncs:
-    airtable-sync-name:
-	    webhook-subscriptions:
-			  - '*'
-```
-
 Handle payloads in your sync script, e.g.
 ```typescript
 // Use for periodic polling.
