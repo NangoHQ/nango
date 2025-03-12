@@ -70,7 +70,7 @@ export class AccessMiddleware {
             span.setTag('error', err);
             return errorManager.errRes(res, 'malformed_auth_header');
         } finally {
-            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
         }
     }
