@@ -35,7 +35,8 @@ import type {
     MessageRowInsert,
     DBConnectionDecrypted,
     ConnectionConfig,
-    ConnectionInternal
+    ConnectionInternal,
+    AllAuthCredentials
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios, metrics } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -79,6 +80,7 @@ const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const DEFAULT_EXPIRES_AT_MS = 55 * 60 * 1000; // This ensures we have an expiresAt value
 const DEFAULT_BILL_EXPIRES_AT_MS = 35 * 60 * 1000; //This ensures we have an expireAt value for Bill
+const MAX_FAILED_REFRESH = 30;
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -108,6 +110,7 @@ class ConnectionService {
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environmentId);
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        const expiresAt = getExpiresAtFromCredentials(parsedRawCredentials);
 
         if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
@@ -118,7 +121,12 @@ class ConnectionService {
                 connection_config: connectionConfig || storedConnection.connection_config,
                 environment_id: environmentId,
                 config_id: config_id as number,
-                metadata: metadata || storedConnection.metadata || null
+                metadata: metadata || storedConnection.metadata || null,
+                credentials_expires_at: expiresAt,
+                last_refresh_success: new Date(),
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false
             });
 
             const connection = await db.knex
@@ -145,7 +153,12 @@ class ConnectionService {
             id: -1,
             last_fetched_at: null,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            credentials_expires_at: expiresAt, // TODO: update that
+            last_refresh_success: new Date(),
+            last_refresh_failure: null,
+            refresh_attempts: null,
+            refresh_exhausted: false
         });
         const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
@@ -194,7 +207,12 @@ class ConnectionService {
             id: -1,
             last_fetched_at: null,
             deleted: false,
-            deleted_at: null
+            deleted_at: null,
+            credentials_expires_at: getExpiresAtFromCredentials(credentials),
+            last_refresh_success: new Date(),
+            last_refresh_failure: null,
+            refresh_attempts: null,
+            refresh_exhausted: false
         });
 
         const [connection] = await db.knex
@@ -211,6 +229,11 @@ class ConnectionService {
                 connection_config: encryptedConnection.connection_config,
                 environment_id: encryptedConnection.environment_id,
                 metadata: encryptedConnection.connection_config,
+                credentials_expires_at: encryptedConnection.credentials_expires_at,
+                last_refresh_success: encryptedConnection.last_refresh_success,
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false,
                 updated_at: new Date()
             })
             .returning('*');
@@ -258,7 +281,8 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
-                    metadata: metadata || storedConnection.metadata || null
+                    metadata: metadata || storedConnection.metadata || null,
+                    last_refresh_success: new Date()
                 })
                 .returning('*');
 
@@ -275,7 +299,8 @@ class ConnectionService {
                 connection_config: connectionConfig || {},
                 metadata: metadata || {},
                 environment_id: environment.id,
-                config_id: config_id!
+                config_id: config_id!,
+                last_refresh_success: new Date()
             })
             .returning('*');
 
@@ -889,21 +914,19 @@ class ConnectionService {
                     void logCtx.error('Failed to refresh credentials', error);
                     await logCtx.failed();
 
-                    if (logCtx) {
-                        await onRefreshFailed({
-                            connection,
-                            logCtx,
-                            authError: {
-                                type: error!.type,
-                                description: error!.message
-                            },
-                            environment,
-                            provider,
-                            account,
-                            config: integration as ProviderConfig,
-                            action: 'token_refresh'
-                        });
-                    }
+                    await onRefreshFailed({
+                        connection,
+                        logCtx,
+                        authError: {
+                            type: error!.type,
+                            description: error!.message
+                        },
+                        environment,
+                        provider,
+                        account,
+                        config: integration as ProviderConfig,
+                        action: 'token_refresh'
+                    });
 
                     const { credentials, ...connectionWithoutCredentials } = copy;
                     const errorWithPayload = new NangoError(error!.type, { connection: connectionWithoutCredentials });
@@ -1001,6 +1024,21 @@ class ConnectionService {
                 throw new Error('Unsupported credentials type');
             }
 
+            // Refresh columns were added after so we are backfilling here
+            // TODO: delete after 2025-06
+            if (!connection.last_refresh_success) {
+                await db.knex
+                    .from<DBConnection>(`_nango_connections`)
+                    .where({ id: connection.id })
+                    .update({
+                        credentials_expires_at: getExpiresAtFromCredentials(connection.credentials),
+                        last_refresh_failure: null,
+                        last_refresh_success: new Date(),
+                        refresh_attempts: null,
+                        refresh_exhausted: false
+                    });
+            }
+
             await this.updateLastFetched(connection.id);
 
             return Ok(copy);
@@ -1009,6 +1047,25 @@ class ConnectionService {
 
     public async updateLastFetched(id: number) {
         await db.knex.from<DBConnection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
+    }
+
+    public async setRefreshSuccess(id: number) {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id })
+            .update({ last_refresh_failure: null, last_refresh_success: new Date(), refresh_attempts: null, refresh_exhausted: false });
+    }
+
+    public async setRefreshFailure({ id, currentAttempt }: { id: number; currentAttempt: number }) {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id })
+            .update({
+                last_refresh_failure: new Date(),
+                last_refresh_success: null,
+                refresh_attempts: currentAttempt + 1,
+                refresh_exhausted: currentAttempt >= MAX_FAILED_REFRESH
+            });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
@@ -2049,6 +2106,13 @@ class ConnectionService {
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
     }
+}
+
+function getExpiresAtFromCredentials(credentials: AllAuthCredentials): Date | null {
+    if ('expires_at' in credentials && credentials['expires_at']) {
+        return credentials['expires_at'];
+    }
+    return null;
 }
 
 export default new ConnectionService();
