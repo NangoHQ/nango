@@ -97,10 +97,6 @@ class DeployService {
     }
     public async prep({ fullPath, options, environment, debug = false }: { fullPath: string; options: DeployOptions; environment: string; debug?: boolean }) {
         const { env, version, sync: optionalSyncName, action: optionalActionName, integration: integrationId, autoConfirm, allowDestructive } = options;
-        if (integrationId && (optionalSyncName || optionalActionName)) {
-            console.log(chalk.red('Error: Cannot use both --integration and -s/-a flags together. Please use either one, but not both.'));
-            process.exit(1);
-        }
 
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, checkDist: false });
 
@@ -139,13 +135,44 @@ class DeployService {
             process.exit(1);
         }
 
-        const singleDeployMode = Boolean(optionalSyncName || optionalActionName || integrationId);
-
+        const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
         const integrationIdMode = Boolean(integrationId);
+        const singleDeployMode = hasSingleScript || integrationIdMode;
 
         let successfulCompile = false;
 
-        if (singleDeployMode && !integrationIdMode) {
+        // case where both integrationId and sync/action are specified
+        if (hasSingleScript && integrationIdMode) {
+            const scriptName: string = String(optionalSyncName || optionalActionName);
+            const type = optionalSyncName ? 'syncs' : 'actions';
+
+            const allMatchingIntegrations = parser.parsed!.integrations.filter((integration) => {
+                const scripts = type === 'syncs' ? integration.syncs : integration.actions;
+                return scripts.some((script) => script.name === scriptName);
+            });
+
+            // Check if the specified integration has this script
+            const matchingIntegration = allMatchingIntegrations.find((integration) => integration.providerConfigKey === integrationId);
+            if (!matchingIntegration) {
+                console.log(chalk.red(`The ${type.slice(0, -1)} "${scriptName}" does not exist in integration "${integrationId}".`));
+                process.exit(1);
+            }
+            if (debug) {
+                printDebug(`Compiling only the ${type.slice(0, -1)} "${scriptName}" from integration "${integrationId}"`);
+            }
+            const parentFilePath = resolveTsFileLocation({ fullPath, scriptName, providerConfigKey: integrationId!, type });
+            successfulCompile = await compileSingleFile({
+                fullPath,
+                file: getFileToCompile({
+                    fullPath,
+                    filePath: path.join(parentFilePath, `${scriptName}.ts`)
+                }),
+                parsed: parser.parsed!,
+                debug
+            });
+        }
+        // single script mode without integration ID
+        else if (hasSingleScript) {
             const scriptName: string = String(optionalSyncName || optionalActionName);
             const type = optionalSyncName ? 'syncs' : 'actions';
             const providerConfigKey = parser.parsed!.integrations.find((integration) => {
@@ -436,7 +463,12 @@ class DeployService {
                 printDebug(`Packaging for integration: ${integrationId} only`);
             }
         }
-
+        const hasBothFilters = integrationId && (optionalSyncName || optionalActionName);
+        if (hasBothFilters && debug) {
+            const scriptType = optionalSyncName ? 'sync' : 'action';
+            const scriptName = optionalSyncName || optionalActionName;
+            printDebug(`Packaging only ${scriptType} "${scriptName}" from integration "${integrationId}"`);
+        }
         const postData: CLIDeployFlowConfig[] = [];
         const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
 
