@@ -20,9 +20,9 @@ Optimized for large, regulated enterprises.
 
 ## Deployment
 
-By default, Nango is deployed using Helm charts. No CloudFormation template or AWS CDK script is provided at this time.
+By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nango-helm-charts). Custom deployments (e.g., ECS) are possible with our guidance.
 
-Custom deployments (e.g., ECS) are possible with our guidance.
+We don't provide a CloudFormation template or AWS CDK script at this time, but we could if you need it.
 
 ## Updates
 
@@ -34,12 +34,13 @@ Update cadence is flexible based on your needs.
 
 Supports all major cloud providers (AWS, GCP, Azure).
 
-## Recommended configuration
+## Components & recommended configuration
 
-- **All services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
-- **Postgres**: 2 CPU, 8GB RAM, 128GB storage
-- **Redis**: 128MB
-- **ElasticSearch**: 2 vCPU, 1GB RAM, 30GB storage
+- **4 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
+- **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
+- **Redis data store**: 128MB
+- **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
+- **Object storage (e.g. S3)8**: <500MB of storage
 
 ## Scaling
 
@@ -48,15 +49,15 @@ The default configuration supports 1M+ sync/action executions per day (assuming 
 Auto-scaling is not provided out-of-the-box.
 
 **Bottlenecks depend on:**
-- **Cached records & size**: Postgres can be scaled vertically.
-- **Action/sync execution time**: Runner service can be scaled vertically, then horizontally.
+- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
+- **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
 
 ## Data storage
 
-- **Object storage (e.g., S3):** Compiled code
 - **Postgres:** Control plane, data plane, orchestrator
 - **Redis:** Socket info, token refresh locks, log index caching, rate limits
 - **ElasticSearch:** Logs
+- **Object storage (e.g., S3):** Compiled integration code
 
 ## Using existing data stores
 
@@ -79,8 +80,6 @@ For usage-based billing, certain anonymous metrics must be exported to Nango. Th
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
 
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
-
 <Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
 </Tip>
