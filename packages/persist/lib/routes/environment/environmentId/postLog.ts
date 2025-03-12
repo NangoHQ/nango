@@ -3,6 +3,7 @@ import type { MessageRowInsert, PostLog } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
+import type { AuthLocals } from '../../../middleware/auth.middleware';
 
 const MAX_LOG_CHAR = 10000;
 
@@ -54,7 +55,7 @@ const validate = validateRequest<PostLog>({
             .parse(data)
 });
 
-const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) => {
+const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, AuthLocals>) => {
     const { body } = req;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
@@ -72,7 +73,7 @@ const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) 
 
 export const route: Route<PostLog> = { method: 'POST', path: '/environment/:environmentId/log' };
 
-export const routeHandler: RouteHandler<PostLog> = {
+export const routeHandler: RouteHandler<PostLog, AuthLocals> = {
     ...route,
     validate,
     handler

@@ -11,7 +11,7 @@ interface RequestParser<E extends Endpoint<any>> {
 
 export const validateRequest =
     <E extends Endpoint<any>>(parser: RequestParser<E>) =>
-    (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => {
+    (req: EndpointRequest<E>, res: EndpointResponse<E, any>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
                 req.body = parser.parseBody(req.body);
