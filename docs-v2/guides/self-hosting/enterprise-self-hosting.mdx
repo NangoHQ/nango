@@ -43,7 +43,7 @@ All major cloud providers are supported (AWS, GCP, Azure).
 - Redis: 128MB
 - ElasticSearch: 2 vCPU, 1GB RAM, 30GB storage
 
-## How does scaling work? Is there auto-scaling?
+## How does scaling work?
 
 The default configuration scales far: 1M+ sync/action executions per day, assuming an average execution time of 2 seconds.
 
@@ -53,14 +53,14 @@ The main bottlenecks depend on:
 - Number of cached records & record size: Postgres database can be scaled vertically
 - Action/sync execution time: Runner service can be scaled vertically, then horizontally
 
-## What data is stored in object storage vs. Postgres vs. Redis vs. Elastic? 
+## What data is stored?
 
 - Object storage (e.g. S3): compiled code
 - Postgres: control plane, data plane, orchestrator
 - Redis: socket information, locks for token refreshes, caching of log indexes, rate-limits
 - Elastic: logs
 
-## Can you use existing data stores (Postgres, Redis, ElasticSearch)?
+## Can you use existing data stores?
 
 Yes, Nango is not opinionated about your data store setup. However, we recommend using a separate instance to allow independent scaling.
 
@@ -69,7 +69,7 @@ Yes, Nango is not opinionated about your data store setup. However, we recommend
 - Server: Required for proxy requests, credentials management, and outgoing/incoming webhooks (in/out traffic)
 - Runner: Required for reading/writing data from/to external APIs (out traffic)
 
-## Does the deployment support multi-AZ deployments?
+## Are multi-AZ deployments supported?
 
 Multi-AZ deployments are not automated but can be configured manually. We plan to add support for this in our Helm charts in the future.
 
