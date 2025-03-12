@@ -27,6 +27,12 @@ henever the cache is updated, Nango sends a [sync completion webhook](/guides/we
 Webhooks can fail due to external API outages or unordered events. Periodic polling ensures data consistency by reconciling any missed updates.
 </Tip>
 
+<Tip>
+**Real-time vs. near-real-time syncing:**
+
+As an alternative to real-time syncing, consider **near**-real-time syncing by polling at a higher frequency, which is simpler. Our high-frequency syncing add-on allows polling every 30 seconds.
+</Tip>
+
 # Implement a real-time sync
 
 To enable real-time sync, define `webhook-subscriptions` in your `nango.yaml` under the relevant `sync` configuration:
