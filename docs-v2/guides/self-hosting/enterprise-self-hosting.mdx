@@ -46,9 +46,9 @@ Supports all major cloud providers (AWS, GCP, Azure).
 
 The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
 
-Auto-scaling is not provided out-of-the-box.
+Auto-scaling is not provided out-of-the-box yet, but the default configuration scales far. We can guide you on configuring auto-scaling when needed.
 
-**Bottlenecks depend on:**
+**Bottlenecks mostly depend on:**
 - **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
 - **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
 
