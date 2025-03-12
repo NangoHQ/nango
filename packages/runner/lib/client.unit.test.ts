@@ -16,6 +16,7 @@ describe('Runner client', () => {
         provider: 'provider',
         activityLogId: '1',
         secretKey: 'secret-key',
+        environmentName: 'dev',
         nangoConnectionId: 1,
         syncId: 'sync-id',
         syncJobId: 1,
@@ -26,7 +27,8 @@ describe('Runner client', () => {
         debug: false,
         startedAt: new Date(),
         runnerFlags: {} as any,
-        endUser: null
+        endUser: null,
+        team: { id: 1, name: 'team' }
     };
 
     beforeAll(() => {

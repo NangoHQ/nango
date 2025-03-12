@@ -11,6 +11,7 @@ const nangoPropsSchema = z
     .object({
         scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
         connectionId: z.string().min(1),
+        nangoConnectionId: z.number(),
         environmentId: z.number(),
         environmentName: z.string().min(1),
         providerConfigKey: z.string().min(1),
