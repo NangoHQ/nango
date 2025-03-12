@@ -156,7 +156,6 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
             status: SyncStatus.RUNNING
         })
         .orderBy('created_at', 'desc')
-        .limit(1)
         .first();
 
     return result || null;
