@@ -340,7 +340,7 @@ class DeployService {
         options: InternalDeployOptions;
         debug?: boolean;
     }) {
-        const { env, integration: integrationId } = options;
+        const { env, integration } = options;
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm: true, checkDist: false });
 
         await parseSecretKey('dev', debug);
@@ -359,8 +359,8 @@ class DeployService {
         if (debug) {
             printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
             printDebug(`Environment is set to ${environment}`);
-            if (integrationId) {
-                printDebug(`Deploying for integration: '${integrationId}' only`);
+            if (integration) {
+                printDebug(`Deploying for integration: '${integration}' only`);
             }
         }
 
@@ -372,12 +372,22 @@ class DeployService {
 
         const parser = parsing.value;
 
-        if (integrationId && parser.parsed!.integrations.every((integration) => integration.providerConfigKey === integrationId)) {
-            console.log(chalk.red(`Integration with ID "${integrationId}" not found in configuration.`));
+        if (integration && parser.parsed!.integrations.every((int) => int.providerConfigKey === integration)) {
+            console.log(chalk.red(`Integration with ID "${integration}" not found in configuration.`));
             process.exit(1);
         }
-
-        const successfulCompile = await compileAllFiles({ fullPath, debug });
+        let successfulCompile: boolean = false;
+        if (integration) {
+            // Only compile files for the specified integration
+            successfulCompile = await compileAllFiles({
+                fullPath,
+                debug,
+                providerConfigKey: integration
+            });
+        } else {
+            // Compile all files
+            successfulCompile = await compileAllFiles({ fullPath, debug });
+        }
 
         if (!successfulCompile) {
             console.log(chalk.red('Compilation was not fully successful. Please make sure all files compile before deploying'));
@@ -388,7 +398,7 @@ class DeployService {
             parsed: parser.parsed!,
             fullPath,
             debug,
-            integrationId
+            integrationId: integration
         });
 
         if (!postData) {
@@ -403,6 +413,7 @@ class DeployService {
 
         await this.deploy(url, bodyDeploy);
     }
+
     public package({
         parsed,
         fullPath,

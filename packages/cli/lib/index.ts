@@ -304,9 +304,9 @@ program
     .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, cloud).')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
     .action(async function (this: Command, environment: string) {
-        const { debug, nangoRemoteEnvironment, integrationId } = this.opts();
+        const { debug, nangoRemoteEnvironment, integration } = this.opts();
         const fullPath = process.cwd();
-        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integrationId } });
+        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
     });
 
 program.parse();
