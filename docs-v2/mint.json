@@ -177,7 +177,7 @@
                         "guides/syncs/overview",
                         "guides/syncs/use-a-sync",
                         "guides/syncs/large-datasets",
-                        "guides/syncs/real-time-syncing",
+                        "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
                         "guides/syncs/sync-partitioning"
                     ]
                 },
@@ -205,6 +205,7 @@
                 },
                 "guides/customer-configuration",
                 "guides/api-unification",
+                "guides/ai-use-cases",
                 {
                     "group": "Logs",
                     "pages": [
