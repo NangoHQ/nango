@@ -1,14 +1,10 @@
-import type { InternalNango as Nango } from '../verificatiion-script.js';
+import type { InternalNango as Nango } from '../credentials-verification-script.js';
 import type { UserResponse } from '../../response-types/lastpass.js';
 
 export default async function execute(nango: Nango) {
     const { credentials, providerConfigKey } = await nango.getCredentials();
 
-    if (!isValidCredentials(credentials)) {
-        throw new Error('Invalid credentials format');
-    }
-
-    const { username, password } = credentials;
+    const { username, password } = credentials as { username: string; password: string };
 
     const response = await nango.proxy<UserResponse | string>({
         method: 'POST',
@@ -22,12 +18,8 @@ export default async function execute(nango: Nango) {
     });
 
     if (isAuthorizationError(response)) {
-        throw new Error('Authorization Error');
+        throw new Error('Incorrect Credentials');
     }
-}
-
-function isValidCredentials(credentials: unknown): credentials is { username: string; password: string } {
-    return typeof credentials === 'object' && credentials !== null && 'username' in credentials && 'password' in credentials;
 }
 
 function isAuthorizationError(response: unknown): boolean {

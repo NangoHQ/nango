@@ -462,7 +462,7 @@
                         "type": "string"
                     }
                 },
-                "verification_script": {
+                "credentials_verification_script": {
                     "type": "string"
                 },
                 "token_url": {

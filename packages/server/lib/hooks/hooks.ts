@@ -38,7 +38,7 @@ import postConnection from './connection/post-connection.js';
 import { postConnectionCreation } from './connection/on/connection-created.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 import tracer from 'dd-trace';
-import executeVerificationScript from './connection/verificatiion-script.js';
+import executeVerificationScript from './connection/credentials-verification-script.js';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -73,7 +73,7 @@ export const connectionCreationStartCapCheck = async ({
     return false;
 };
 
-export async function verifyConnectionBeforeCreation({
+export async function testConnectionCredentials({
     config,
     connectionConfig,
     connectionId,
@@ -96,7 +96,7 @@ export async function verifyConnectionBeforeCreation({
     ];
 
     try {
-        if (provider?.verification_script) {
+        if (provider?.credentials_verification_script) {
             await executeVerificationScript(config, credentials, connectionId, connectionConfig);
             return Ok({ logs, tested: true });
         }
@@ -272,7 +272,7 @@ export async function credentialsTest({
 }): Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>> {
     const providerVerification = provider?.proxy?.verification;
 
-    if (!providerVerification || !Array.isArray(providerVerification.endpoints) || providerVerification.endpoints.length === 0) {
+    if (!providerVerification?.endpoints?.length) {
         return Ok({ logs: [], tested: false });
     }
 
@@ -366,7 +366,7 @@ export async function credentialsTest({
     }
 
     const error = new NangoError('connection_test_failed', { logs });
-    span.setTag('nango.error', error);
+    span.setTag('error', error);
     span.finish();
     return Err(error);
 }

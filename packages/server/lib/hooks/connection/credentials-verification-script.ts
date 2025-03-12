@@ -12,11 +12,9 @@ import type {
     SignatureCredentials,
     UserProvidedProxyConfiguration,
     DBConnectionDecrypted,
-    ConnectionConfig,
-    MessageRowInsert
+    ConnectionConfig
 } from '@nangohq/types';
 import tracer from 'dd-trace';
-import { stringifyError } from '@nangohq/utils';
 
 type VerificationScriptHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -64,9 +62,9 @@ async function execute(
     const span = tracer.startSpan('nango.server.hooks.verificationScript', {
         childOf: activeSpan as Span,
         tags: {
-            'nango.provider': providerName,
-            'nango.providerConfigKey': providerConfigKey,
-            'nango.connectionId': connectionId
+            provider: providerName,
+            providerConfigKey: providerConfigKey,
+            connectionId: connectionId
         }
     });
 
@@ -78,28 +76,19 @@ async function execute(
         data: {}
     };
 
-    const logs: MessageRowInsert[] = [
-        {
-            type: 'log',
-            level: 'info',
-            message: 'Running automatic credentials verification via verification script',
-            createdAt: new Date().toISOString()
-        }
-    ];
-
     try {
         const provider = getProvider(providerName);
-        if (!provider || !provider?.verification_script) {
+        if (!provider || !provider?.credentials_verification_script) {
             return;
         }
 
-        const handler = handlers[provider.verification_script];
+        const handler = handlers[provider.credentials_verification_script];
         if (!handler) {
             return;
         }
 
         const internalNango: InternalNango = {
-            getCredentials: async () =>
+            getCredentials: () =>
                 Promise.resolve({
                     credentials,
                     providerConfigKey
@@ -111,8 +100,8 @@ async function execute(
                 }).unwrap();
 
                 const proxy = new ProxyRequest({
-                    logger: (msg) => {
-                        logs.push(msg);
+                    logger: () => {
+                        // TODO: log something here?
                     },
                     proxyConfig,
                     getConnection: () => {
@@ -124,10 +113,8 @@ async function execute(
         };
 
         await handler(internalNango);
-        span.setTag('nango.success', true);
     } catch (err) {
-        const errorString = stringifyError(err);
-        span.setTag('nango.error', errorString);
+        span.setTag('error', err);
         throw err;
     } finally {
         span.finish();

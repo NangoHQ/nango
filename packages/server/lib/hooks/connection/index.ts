@@ -12,4 +12,5 @@ export { default as gustoPostConnection } from './post/gusto-post-connection.js'
 export { default as workablePostConnection } from './post/workable-post-connection.js';
 export { default as adobeUmapiPostConnection } from './post/adobe-umapi-post-connection.js';
 export { default as basecampPostConnection } from './post/basecamp-post-connection.js';
-export { default as lastpassVerification } from './verification/lastpass-verification.js';
+export { default as lastpassCredentialsVerification } from './verification/lastpass-credentials-verification.js';
+export { default as expensifyCredentialsVerification } from './verification/expensify-credentials-verification.js';

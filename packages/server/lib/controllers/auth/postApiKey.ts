@@ -21,7 +21,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
-    verifyConnectionBeforeCreation
+    testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
@@ -154,7 +154,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             apiKey
         };
 
-        const connectionResponse = await verifyConnectionBeforeCreation({ config, connectionConfig, connectionId, credentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider });
         if (connectionResponse.isErr()) {
             if ('logs' in connectionResponse.error.payload) {
                 await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);

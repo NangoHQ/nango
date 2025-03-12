@@ -501,7 +501,8 @@ anthropic:
             after: 'retry-after'
         verification:
             method: GET
-            endpoint: v1/models
+            endpoints:
+                - v1/models
     docs: https://docs.nango.dev/integrations/all/anthropic
     connection_config:
         version:
@@ -1287,7 +1288,8 @@ blandai:
             authorization: ${apiKey}
         verification:
             method: GET
-            endpoint: v1/calls
+            endpoints:
+                - v1/calls
     docs: https://docs.nango.dev/integrations/all/blandai
     credentials:
         apiKey:
@@ -1426,7 +1428,8 @@ brevo-api-key:
         base_url: https://api.brevo.com/v3
         verification:
             method: GET
-            endpoint: /account
+            endpoints:
+                - /account
     docs: https://docs.nango.dev/integrations/all/brevo-api-key
     credentials:
         apiKey:
@@ -1506,7 +1509,8 @@ builder-io-private:
             authorization: Bearer ${apiKey}
         verification:
             method: POST
-            endpoint: /api/v1/write/page
+            endpoints:
+                - /api/v1/write/page
     docs: https://docs.nango.dev/integrations/all/builder-io-private
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-private/connect
     connection_config:
@@ -1540,7 +1544,8 @@ builder-io-public:
             apiKey: ${apiKey}
         verification:
             method: GET
-            endpoint: /api/v1/content/page
+            endpoints:
+                - /api/v1/content/page
     docs: https://docs.nango.dev/integrations/all/builder-io-public
     docs_connect: https://docs.nango.dev/integrations/all/builder-io-public/connect
     connection_config:
@@ -1847,7 +1852,8 @@ chattermill:
             content-type: application/json
         verification:
             method: GET
-            endpoint: /v1/projects
+            endpoints:
+                - /v1/projects
     docs: https://docs.nango.dev/integrations/all/chattermill
     credentials:
         apiKey:
@@ -2014,7 +2020,8 @@ clari-copilot:
         base_url: https://rest-api.copilot.clari.com
         verification:
             method: GET
-            endpoint: /calls
+            endpoints:
+                - /calls
     docs: https://docs.nango.dev/integrations/all/clari-copilot
     connection_config:
         API_PASSWORD:
@@ -2096,7 +2103,8 @@ coda:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
-            endpoint: /whoami
+            endpoints:
+                - /whoami
     docs: https://docs.nango.dev/integrations/all/coda
     docs_connect: https://docs.nango.dev/integrations/all/coda/connect
     credentials:
@@ -2669,7 +2677,8 @@ dixa:
             authorization: ${apiKey}
         verification:
             method: GET
-            endpoint: /v1/agents
+            endpoints:
+                - /v1/agents
             base_url_override: https://dev.dixa.io
     docs: https://docs.nango.dev/integrations/all/dixa
     credentials:
@@ -3165,6 +3174,7 @@ expensify:
             title: Partner User Secret
             description: Unique secret for your account
             doc_section: '#step-1-finding-your-partneruserid-and-partnerusersecret'
+    credentials_verification_script: expensifyCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/expensify
     docs_connect: https://docs.nango.dev/integrations/all/expensify/connect
 
@@ -3228,7 +3238,8 @@ falai:
         base_url: https://queue.fal.run
         verification:
             method: POST
-            endpoint: /fal-ai/fast-sdxl
+            endpoints:
+                - /fal-ai/fast-sdxl
     docs: https://docs.nango.dev/integrations/all/falai
     credentials:
         apiKey:
@@ -3280,7 +3291,8 @@ fireflies:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
-            endpoint: /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
+            endpoints:
+                - /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/fireflies
     credentials:
         apiKey:
@@ -4213,7 +4225,8 @@ greenhouse-basic:
             limit_name_in_request: per_page
             link_rel_in_response_header: next
         verification:
-            endpoint: /v1/candidates/
+            endpoints:
+                - /v1/candidates/
     docs: https://docs.nango.dev/integrations/all/greenhouse-basic
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-basic/connect
     connection_config:
@@ -4255,7 +4268,8 @@ greenhouse-harvest:
             after: 'retry-after'
         verification:
             method: GET
-            endpoint: /v1/candidates
+            endpoints:
+                - /v1/candidates
     docs: https://docs.nango.dev/integrations/all/greenhouse-harvest
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-harvest/connect
     credentials:
@@ -4309,7 +4323,8 @@ greenhouse-assessment:
     proxy:
         base_url: https://${connectionConfig.baseUrl}
         verification:
-            endpoint: /list_tests
+            endpoints:
+                - /list_tests
     docs: https://docs.nango.dev/integrations/all/greenhouse-assessment
     docs_connect: https://docs.nango.dev/integrations/all/greenhouse-assessment/connect
     connection_config:
@@ -4359,7 +4374,8 @@ greenhouse-onboarding:
     proxy:
         base_url: https://onboarding-api.greenhouse.io/graphql
         verification:
-            endpoint: ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+            endpoints:
+                - ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
     credentials:
         username:
             type: string
@@ -5047,7 +5063,7 @@ lastpass:
         base_url: https://lastpass.com
     docs: https://docs.nango.dev/integrations/all/lastpass
     docs_connect: https://docs.nango.dev/integrations/all/lastpass/connect
-    verification_script: lastpassVerification
+    credentials_verification_script: lastpassCredentialsVerification
     credentials:
         username:
             type: string
