@@ -73,7 +73,10 @@ export enum Types {
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
-    AUTH_FAILURE = 'nango.server.auth.failure'
+    AUTH_FAILURE = 'nango.server.auth.failure',
+
+    GET_RECORDS_COUNT = 'nango.server.getRecords.count',
+    GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

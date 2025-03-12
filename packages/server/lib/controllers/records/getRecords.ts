@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionIdSchema, modelSchema, variantSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { GetPublicRecords } from '@nangohq/types';
 import { connectionService, trackFetch } from '@nangohq/shared';
@@ -51,7 +51,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -80,8 +80,18 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
     }
 
     await trackFetch(connection.id);
+
     res.send({
         next_cursor: result.value.next_cursor || null,
         records: result.value.records
     });
+
+    try {
+        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length, { accountId: account.id });
+        // using the response content-length header as the records size metric in order to avoid stringifying the response body
+        const responseSize = parseInt(res.get('content-length') || '0');
+        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
+    } catch {
+        // ignore errors
+    }
 });
