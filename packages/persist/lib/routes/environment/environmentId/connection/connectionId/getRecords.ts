@@ -5,6 +5,7 @@ import { records } from '@nangohq/records';
 import { getRecordsRequestParser } from './validate.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
 
 type GetRecords = Endpoint<{
     Method: typeof method;
@@ -30,7 +31,7 @@ const method = 'GET';
 
 const validate = validateRequest<GetRecords>(getRecordsRequestParser);
 
-const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<GetRecords>) => {
+const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<GetRecords, AuthLocals>) => {
     const {
         params: { nangoConnectionId },
         query: { model, externalIds, cursor, limit, activityLogId }
@@ -64,7 +65,7 @@ const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<G
 
 export const route: Route<GetRecords> = { path, method };
 
-export const routeHandler: RouteHandler<GetRecords> = {
+export const routeHandler: RouteHandler<GetRecords, AuthLocals> = {
     method,
     path,
     validate,

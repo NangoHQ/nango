@@ -1,5 +1,6 @@
 import type { Endpoint } from '@nangohq/types';
 import type { RouteHandler } from '@nangohq/utils';
+import type { AuthLocals } from '../middleware/auth.middleware';
 
 type Health = Endpoint<{
     Method: typeof method;
@@ -10,7 +11,7 @@ type Health = Endpoint<{
 const path = '/health';
 const method = 'GET';
 
-export const routeHandler: RouteHandler<Health> = {
+export const routeHandler: RouteHandler<Health, AuthLocals> = {
     path,
     method,
     validate: (_req, _res, next) => next(),
