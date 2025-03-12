@@ -76,11 +76,13 @@ export enum Types {
     AUTH_FAILURE = 'nango.server.auth.failure'
 }
 
-export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+type Dimensions = Record<string, string | number> | undefined;
+
+export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
-export function decrement(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
@@ -92,18 +94,18 @@ export function histogram(metricName: Types, value: number): void {
     tracer.dogstatsd.histogram(metricName, value);
 }
 
-export function duration(metricName: Types, value: number): void {
-    tracer.dogstatsd.distribution(metricName, value);
+export function duration(metricName: Types, value: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
 }
 
-export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F): F {
+export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F, dimensions?: Dimensions): F {
     const computeDuration = (start: [number, number]) => {
         const durationComponents = process.hrtime(start);
         const seconds = durationComponents[0];
         const nanoseconds = durationComponents[1];
         const total = seconds * 1000 + nanoseconds / 1e6;
 
-        duration(metricName, total);
+        duration(metricName, total, dimensions);
     };
 
     // This function should handle both async/sync function
