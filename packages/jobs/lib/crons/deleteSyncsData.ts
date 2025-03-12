@@ -51,7 +51,7 @@ export async function exec(): Promise<void> {
         let countJobs = 0;
         do {
             countJobs = await hardDeleteJobs({ syncId: sync.id, limit: limitJobs });
-            logger.info(`[deleteSyncs] soft deleted ${countJobs} jobs`);
+            logger.info(`[deleteSyncs] hard deleted ${countJobs} jobs`);
             metrics.increment(metrics.Types.JOBS_DELETE_SYNCS_DATA_JOBS, countJobs);
         } while (countJobs >= limitJobs);
 
