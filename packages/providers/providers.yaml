@@ -1745,11 +1745,13 @@ certn:
             method: GET
             endpoint: /api/v2/teams
     docs: https://docs.nango.dev/integrations/all/certn
+    docs_connect: https://docs.nango.dev/integrations/all/certn
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Certn account
+            doc_section: '#step-1-creating-an-api-key'
 
 certn-partner:
     display_name: Certn Partner
@@ -1783,6 +1785,7 @@ chargebee:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/chargebee
+    docs_connect: https://docs.nango.dev/integrations/all/chargebee/connect
     connection_config:
         subdomain:
             type: string
@@ -1792,6 +1795,7 @@ chargebee:
             example: domain
             suffix: .chargebee.com
             prefix: https://
+            doc_section: '#step-1-creating-an-api-key'
     credentials:
         username:
             type: string
@@ -1922,6 +1926,7 @@ checkout-com:
             accept: application/json
         base_url: https://api.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com/connect
 
 checkout-com-sandbox:
     display_name: Checkout.com (Sandbox)
@@ -1938,6 +1943,7 @@ checkout-com-sandbox:
             accept: application/json
         base_url: https://api.sandbox.checkout.com
     docs: https://docs.nango.dev/integrations/all/checkout-com-sandbox
+    docs_connect: https://docs.nango.dev/integrations/all/checkout-com-sandbox/connect
 
 chorus:
     display_name: Chorus
@@ -2023,19 +2029,23 @@ cloudentity:
     proxy:
         base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
+    docs_connect: https://docs.nango.dev/integrations/all/cloudentity/connect
     connection_config:
         tenantID:
             type: string
             title: Tenant ID
             description: The tenant ID of your Cloudentity account
+            doc_section: '#step-2-retrieving-the-tenant-id'
         regionID:
             type: string
             title: Region ID
             description: The region ID of your Cloudentity account
+            doc_section: '#step-3-retrieving-the-region-id'
         workspaceID:
             type: string
             title: Workspace ID
             description: The workspace ID of your Cloudentity account
+            doc_section: '#step-4-retrieving-the-workspace-id'
 
 close:
     display_name: Close
@@ -2066,11 +2076,13 @@ coda:
             method: GET
             endpoint: /whoami
     docs: https://docs.nango.dev/integrations/all/coda
+    docs_connect: https://docs.nango.dev/integrations/all/coda/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Coda account
+            doc_section: '#step-1-creating-an-api-key'
 
 codeclimate:
     display_name: Code Climate
@@ -2087,6 +2099,7 @@ codeclimate:
             method: GET
             endpoint: /v1/user
     docs: https://docs.nango.dev/integrations/all/codeclimate
+    docs_connect: https://docs.nango.dev/integrations/all/codeclimate/connect
     connection_config:
         domain:
             type: string
@@ -2094,11 +2107,13 @@ codeclimate:
             description: The domain of your Code Climate account
             format: hostname
             prefix: https://
+            doc_section: '#step-1-obtaining-the-domain-url'
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Code Climate account
+            doc_section: '#step-2-creating-an-api-key'
 
 commercetools:
     display_name: Commercetools
