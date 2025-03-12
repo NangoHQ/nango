@@ -7,23 +7,26 @@ export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
     secretKey: string;
-    team?: Pick<DBTeam, 'id' | 'name'>;
+    team: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;
-    environmentName?: string;
+    environmentName: string;
     activityLogId?: string | undefined;
     providerConfigKey: string;
     provider: string;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     syncVariant?: string | undefined;
-    nangoConnectionId?: number;
+    nangoConnectionId: number;
     syncJobId?: number | undefined;
     track_deletes?: boolean;
     attributes?: object | undefined;
     abortSignal?: AbortSignal;
     syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
+    /**
+     * @deprecated not used
+     */
     debug: boolean;
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
