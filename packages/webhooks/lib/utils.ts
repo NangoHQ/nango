@@ -124,7 +124,7 @@ export const deliver = async ({
     webhooks: { url: string; type: string }[];
     body: unknown;
     webhookType: WebhookTypes;
-    environment: DBEnvironment;
+    environment: Pick<DBEnvironment, 'secret_key'>;
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
