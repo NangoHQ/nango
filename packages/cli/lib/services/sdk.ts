@@ -79,6 +79,11 @@ export class NangoActionCLI extends NangoActionBase {
             debug: false
         });
     }
+
+    public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {
+        this.log(`This has no effect but on a remote Nango instance would start a schedule`);
+        return Promise.resolve();
+    }
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -111,6 +116,7 @@ export class NangoSyncCLI extends NangoSyncBase {
     proxy = NangoActionCLI['prototype']['proxy'];
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
+    startSync = NangoActionCLI['prototype']['startSync'];
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {

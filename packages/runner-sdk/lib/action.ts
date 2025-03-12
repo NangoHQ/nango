@@ -359,6 +359,8 @@ export abstract class NangoActionBase {
         fullResync?: boolean
     ): Promise<void | string>;
 
+    public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
+
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.

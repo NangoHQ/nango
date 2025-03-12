@@ -117,6 +117,10 @@ export class NangoActionRunner extends NangoActionBase {
         return this.nango.triggerSync(providerConfigKey, [sync], connectionId, fullResync);
     }
 
+    public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
+        await this.nango.startSync(providerConfigKey, syncs, connectionId);
+    }
+
     private async sendLogToPersist(log: MessageRowInsert) {
         let data = stringifyObject({ activityLogId: this.activityLogId, log });
 
@@ -215,6 +219,7 @@ export class NangoSyncRunner extends NangoSyncBase {
     proxy = NangoActionRunner['prototype']['proxy'];
     log = NangoActionRunner['prototype']['log'];
     triggerSync = NangoActionRunner['prototype']['triggerSync'];
+    startSync = NangoActionRunner['prototype']['startSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
 
@@ -449,7 +454,8 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
     'proxy',
     'log',
     'triggerAction',
-    'triggerSync'
+    'triggerSync',
+    'startSync'
 ];
 
 /**

@@ -231,6 +231,150 @@ integrations:
             UserInformation:
                 id: string
                 email: string | null
+    airtable-pat:
+        syncs:
+            tables:
+                runs: every day
+                description: >
+                    Lists all tables with their schema for all bases with a reference to
+                    the base id that
+
+                    the table belongs to
+                output: Table
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /tables
+                scopes:
+                    - schema.bases:read
+            bases:
+                runs: every day
+                description: List all bases
+                output: Base
+                track_deletes: true
+                sync_type: full
+                endpoint:
+                    method: GET
+                    path: /bases
+                scopes:
+                    - schema.bases:read
+        actions:
+            whoami:
+                description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+                scopes: user.email:read
+            create-webhook:
+                description: Create a webhook for a particular base
+                input: CreateWebhook
+                output: WebhookCreated
+                endpoint:
+                    method: POST
+                    path: /webhooks
+                    group: Webhooks
+                scopes:
+                    - webhook:manage
+            list-webhooks:
+                description: List all the webhooks available for a base
+                output: WebhookResponse
+                input: BaseId
+                endpoint:
+                    method: GET
+                    path: /webhooks
+                    group: Webhooks
+                scopes:
+                    - webhook:manage
+            delete-webhook:
+                description: Delete a webhook
+                endpoint:
+                    method: DELETE
+                    path: /webhooks
+                    group: Webhooks
+                input: DeleteWebhook
+                output: SuccessResponse
+                scopes:
+                    - webhook:manage
+        models:
+            SuccessResponse:
+                success: boolean
+            Table:
+                baseId: string
+                baseName: string
+                id: string
+                name: string
+                views: TableView[]
+                fields: TableField[]
+                primaryFieldId: string
+            TableView:
+                id: string
+                name: string
+                type: string
+            TableField:
+                id: string
+                description: string
+                name: string
+                type: string
+                options?:
+                    __string: any
+            Base:
+                id: string
+                name: string
+                permissionLevel: none | read | comment | edit | create
+            BaseId:
+                baseId: string
+            WebhookResponse:
+                webhooks: Webhook[]
+            Webhook:
+                id: string
+                areNotificationsEnabled: boolean
+                cursorForNextPayload: number
+                isHookEnabled: boolean
+                lastSuccessfulNotificationTime: string | null
+                expirationTime?: string | undefined
+                specification: WebhookSpecification
+                lastNotificationResult: NotificationResult | null
+            NotificationResult:
+                success: boolean
+                error?:
+                    message: string
+                completionTimestamp?: string
+                durationMs?: number
+                retryNumber?: number
+                willBeRetried?: boolean
+            WebhookSpecification:
+                options:
+                    filters:
+                        recordChangeScope?: string
+                        dataTypes: string[]
+                        changeTypes?: string[]
+                        fromSources?: string[]
+                        sourceOptions?:
+                            formPageSubmission?:
+                                pageId: string
+                            formSubmission?:
+                                viewId: string
+                        watchDataInFieldIds?: string[]
+                        watchSchemasOfFieldIds?: string[]
+                    includes?:
+                        includeCellValuesInFieldIds?: string[] | all
+                        includePreviousCellValues:?: boolean
+                        includePreviousFieldDefinitions?: boolean
+            CreateWebhook:
+                baseId: string
+                specification: WebhookSpecification
+            WebhookCreated:
+                id: string
+                expirationTime: string
+            DeleteWebhook:
+                baseId: string
+                webhookId: string
+            UserInformation:
+                id: string
+                email: string | null
     algolia:
         actions:
             create-contacts:
