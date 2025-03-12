@@ -69,6 +69,7 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         level: data.level || 'info',
         type: data.type || 'log',
         message: data.message || '',
+        context: data.context,
 
         parentId: data.parentId,
 
@@ -79,7 +80,8 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         meta: data.meta,
 
         createdAt: data.createdAt || now.toISOString(),
-        endedAt: data.endedAt
+        endedAt: data.endedAt,
+        durationMs: data.durationMs
     };
 }
 
