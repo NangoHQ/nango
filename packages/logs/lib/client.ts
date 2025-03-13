@@ -35,7 +35,7 @@ export class LogContextStateless {
             const obj: Record<string, any> = {};
             if (data.error) obj['error'] = data.error;
             if (data.meta) obj['meta'] = data.meta;
-            logger[logLevelToLogger[data.level!]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
+            logger[logLevelToLogger[data.level]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
         }
         if (this.dryRun) {
             return true;
