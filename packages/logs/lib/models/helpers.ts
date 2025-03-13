@@ -6,7 +6,7 @@ import { defaultOperationExpiration } from '../env.js';
 import type { LogContext } from '../client.js';
 import type { SetRequired } from 'type-fest';
 
-export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
+export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
 
 export interface AdditionalOperationData {
     account?: { id: number; name: string };
@@ -23,9 +23,10 @@ export function getFormattedOperation(
     { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
     const now = new Date();
+    const createdAt = data.createdAt ? new Date(data.createdAt) : now;
     return {
         message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
-        id: data.id || nanoid(),
+        id: data.id || `${createdAt.getTime()}_${nanoid(8)}`,
         operation: data.operation,
         state: data.state || 'waiting',
         source: 'internal',
