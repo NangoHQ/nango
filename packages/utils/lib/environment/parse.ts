@@ -35,6 +35,9 @@ export const ENVS = z.object({
     NANGO_PUBLIC_CONNECT_URL: z.string().url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
+    // Server
+    CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
