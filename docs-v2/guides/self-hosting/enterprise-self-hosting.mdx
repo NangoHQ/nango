@@ -34,9 +34,13 @@ Update cadence is flexible based on your needs.
 
 Supports all major cloud providers (AWS, GCP, Azure).
 
-## Components & recommended configuration
+## Infrastructure components
 
-- **4 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
+See the detailed infrastructure components [here](/guides/infrastructure).
+
+## Recommended configuration
+
+- **5 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
 - **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
 - **Redis data store**: 128MB
 - **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
@@ -54,10 +58,10 @@ Bottlenecks mostly depend on:
 
 ## Data storage
 
-- **Postgres:** Control plane, data plane, orchestrator
-- **Redis:** Socket info, token refresh locks, log index caching, rate limits
-- **ElasticSearch:** Logs
-- **Object storage (e.g., S3):** Compiled integration code
+- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
+- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **ElasticSearch**: Stores execution data.
+- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
 ## Using existing data stores
 
