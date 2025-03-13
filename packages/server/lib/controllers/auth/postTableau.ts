@@ -70,7 +70,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, connectSession } = res.locals;
     const { pat_name: patName, pat_secret: patSecret, content_url: contentUrl }: PostPublicTableauAuthorization['Body'] = val.data;
     const queryString: PostPublicTableauAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTableauAuthorization['Params'] = paramVal.data;
@@ -87,14 +87,17 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
     let logCtx: LogContext | undefined;
 
     try {
-        const logCtx = await logContextGetter.create(
-            {
-                operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'tableau', connectSession: endUserToMeta(res.locals.endUser) },
-                expiresAt: defaultOperationExpiration.auth()
-            },
-            { account, environment }
-        );
+        const logCtx =
+            isConnectSession && connectSession.operationId
+                ? await logContextGetter.get({ id: connectSession.operationId })
+                : await logContextGetter.create(
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'tableau', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
         if (!isConnectSession) {
@@ -132,8 +135,8 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         }
 
         // Reconnect mechanism
-        if (isConnectSession && res.locals.connectSession.connectionId) {
-            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+        if (isConnectSession && connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(connectSession.connectionId);
             if (!connection) {
                 void logCtx.error('Invalid connection');
                 await logCtx.failed();
@@ -178,8 +181,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
         }
 
         if (isConnectSession) {
-            const session = res.locals.connectSession;
-            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

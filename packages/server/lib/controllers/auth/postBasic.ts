@@ -68,7 +68,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, connectSession } = res.locals;
     const { username, password }: PostPublicBasicAuthorization['Body'] = val.data;
     const queryString: PostPublicBasicAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBasicAuthorization['Params'] = paramsVal.data;
@@ -84,14 +84,17 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
 
     let logCtx: LogContext | undefined;
     try {
-        logCtx = await logContextGetter.create(
-            {
-                operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'basic', connectSession: endUserToMeta(res.locals.endUser) },
-                expiresAt: defaultOperationExpiration.auth()
-            },
-            { account, environment }
-        );
+        logCtx =
+            isConnectSession && connectSession.operationId
+                ? await logContextGetter.get({ id: connectSession.operationId })
+                : await logContextGetter.create(
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'basic', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
         void analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, account.id);
 
         if (!isConnectSession) {
@@ -129,8 +132,8 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         }
 
         // Reconnect mechanism
-        if (isConnectSession && res.locals.connectSession.connectionId) {
-            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+        if (isConnectSession && connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(connectSession.connectionId);
             if (!connection) {
                 void logCtx.error('Invalid connection');
                 await logCtx.failed();
@@ -180,8 +183,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         }
 
         if (isConnectSession) {
-            const session = res.locals.connectSession;
-            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

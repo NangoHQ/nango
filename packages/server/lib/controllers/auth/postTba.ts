@@ -74,7 +74,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, connectSession } = res.locals;
 
     const body: PostPublicTbaAuthorization['Body'] = val.data;
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
@@ -93,14 +93,17 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     let logCtx: LogContext | undefined;
 
     try {
-        logCtx = await logContextGetter.create(
-            {
-                operation: { type: 'auth', action: 'create_connection' },
-                meta: { authType: 'tba', connectSession: endUserToMeta(res.locals.endUser) },
-                expiresAt: defaultOperationExpiration.auth()
-            },
-            { account, environment }
-        );
+        logCtx =
+            isConnectSession && connectSession.operationId
+                ? await logContextGetter.get({ id: connectSession.operationId })
+                : await logContextGetter.create(
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'tba', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
         void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
         if (!isConnectSession) {
@@ -142,8 +145,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         }
 
         // Reconnect mechanism
-        if (isConnectSession && res.locals.connectSession.connectionId) {
-            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+        if (isConnectSession && connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(connectSession.connectionId);
             if (!connection) {
                 void logCtx.error('Invalid connection');
                 await logCtx.failed();
@@ -218,8 +221,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         }
 
         if (isConnectSession) {
-            const session = res.locals.connectSession;
-            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
