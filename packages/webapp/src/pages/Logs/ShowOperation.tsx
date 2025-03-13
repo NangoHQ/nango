@@ -4,7 +4,7 @@ import { useGetOperation } from '../../hooks/useLogs';
 import { useStore } from '../../store';
 import { OperationTag } from './components/OperationTag';
 import { StatusTag } from './components/StatusTag';
-import { elapsedTime, formatDateToLogFormat } from '../../utils/utils';
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 import { Link } from 'react-router-dom';
 import { CalendarIcon, ClockIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { SearchInOperation } from './components/SearchInOperation';
@@ -26,7 +26,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             return 'n/a';
         }
 
-        return elapsedTime(new Date(operation.startedAt), new Date(operation.endedAt));
+        return getRunTime(new Date(operation.startedAt).toISOString(), new Date(operation.endedAt).toISOString());
     }, [operation]);
     const createdAt = useMemo(() => {
         return operation?.createdAt ? formatDateToLogFormat(operation?.createdAt) : 'n/a';
