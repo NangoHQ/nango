@@ -8861,7 +8861,7 @@ unipile:
             x-api-key: ${apiKey}
         verification:
             method: GET
-            endpoint: /api/v1/contacts
+            endpoint: /api/v1/accounts
     docs: https://docs.nango.dev/integrations/all/unipile
     credentials:
         apiKey:
