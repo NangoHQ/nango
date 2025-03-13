@@ -2736,9 +2736,9 @@ drupal:
     body_format: form
     token_url: https://${connectionConfig.baseUrl}/rest_api/access_token
     token_params:
-        client_id: ${credential.clientId}
-        client_secret: ${credential.clientSecret}
-        username: ${credential.userName}
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        username: ${credentials.userName}
         grant_type: client_credentials
     token_headers:
         content-type: application/x-www-form-urlencoded
@@ -5756,9 +5756,9 @@ mip-cloud:
             authorization-token: ${accessToken}
     token_url: https://${connectionConfig.domain}/api/v1/sso/mipadv/login
     token_params:
-        username: ${credential.username}
-        password: ${credential.password}
-        org: ${credential.org}
+        username: ${credentials.username}
+        password: ${credentials.password}
+        org: ${credentials.org}
     token_headers:
         content-type: application/json
     token_response:
@@ -5801,9 +5801,9 @@ mip-on-premise:
             authorization-token: ${accessToken}
     token_url: https://${connectionConfig.domain}/api/security/login
     token_params:
-        login: ${credential.login}
-        password: ${credential.password}
-        org: ${credential.org}
+        login: ${credentials.login}
+        password: ${credentials.password}
+        org: ${credentials.org}
     token_headers:
         content-type: application/json
     token_response:
@@ -6095,8 +6095,8 @@ odoo-cc:
     body_format: form
     token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
     token_params:
-        client_id: ${credential.consumerId}
-        client_secret: ${credential.consumerSecret}
+        client_id: ${credentials.consumerId}
+        client_secret: ${credentials.consumerSecret}
         grant_type: client_credentials
     token_headers:
         content-type: application/x-www-form-urlencoded
@@ -6513,7 +6513,7 @@ perimeter81:
         base_url: https://api.perimeter81.com/api/rest
     token_url: https://api.${connectionConfig.domain}.com/api/v1/auth/authorize
     token_params:
-        apiKey: ${credential.apiKey}
+        apiKey: ${credentials.apiKey}
         grantType: api_key
     token_headers:
         content-type: application/json
@@ -7276,8 +7276,8 @@ sage-intacct:
     token_params:
         request:
             control:
-                senderid: ${credential.senderId}
-                password: ${credential.senderPassword}
+                senderid: ${credentials.senderId}
+                password: ${credentials.senderPassword}
                 controlid: ${now}
                 uniqueid: false
                 dtdversion: '3.0'
@@ -7285,9 +7285,9 @@ sage-intacct:
             operation:
                 authentication:
                     login:
-                        userid: ${credential.userId}
-                        companyid: ${credential.companyId}
-                        password: ${credential.userPassword}
+                        userid: ${credentials.userId}
+                        companyid: ${credentials.companyId}
+                        password: ${credentials.userPassword}
                 content:
                     function:
                         $controlid: '{{$guid}}'
@@ -7413,7 +7413,7 @@ salesforce-cdp:
     body_format: form
     token_params:
         grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
-        assertion: ${credential.jwt}
+        assertion: ${credentials.jwt}
     token_headers:
         content-type: application/x-www-form-urlencoded
     additional_steps:
@@ -7481,9 +7481,9 @@ sap-success-factors:
     token_url: https://${connectionConfig.apiServer}/oauth/token
     token_params:
         company_id: ${connectionConfig.companyId}
-        client_id: ${credential.apiKey}
+        client_id: ${credentials.apiKey}
         grant_type: urn:ietf:params:oauth:grant-type:saml2-bearer
-        assertion: ${credential.assertion}
+        assertion: ${credentials.assertion}
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
@@ -7729,11 +7729,11 @@ sharepoint-online-v1:
     token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
     body_format: form
     token_params:
-        client_id: ${credential.clientId}
+        client_id: ${credentials.clientId}
         grant_type: client_credentials
         resource: https://${connectionConfig.tenantId}.sharepoint.com
         client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
-        client_assertion: ${credential.assertion}
+        client_assertion: ${credentials.assertion}
     token_headers:
         content-type: application/x-www-form-urlencoded
     proxy:
