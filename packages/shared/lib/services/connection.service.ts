@@ -2055,7 +2055,6 @@ class ConnectionService {
         const res = await db.knex
             .withSchema('nango')
             .from('_nango_connections')
-            .debug(true)
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .count('_nango_connections.id as count')
             .select<{ accountId: number; count: number }[]>('_nango_environments.account_id')
