@@ -281,6 +281,9 @@ describe('Exec', () => {
                         },
                         maxBodyLength: -1,
                         maxContentLength: -1,
+                        metadata: {
+                            startTime: expect.toBeIsoDate()
+                        },
                         method: 'get',
                         params: {
                             force_refresh: false,

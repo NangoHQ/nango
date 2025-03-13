@@ -38,6 +38,8 @@ export const logBodySchema = z.object({
         meta: z.record(z.any()).optional().nullable(),
         createdAt: z.string(),
         endedAt: z.string().optional(),
+        durationMs: z.number().optional(),
+        context: z.enum(['script', 'proxy']).optional(),
         retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
     })
 });

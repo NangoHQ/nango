@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosInterceptorManager } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import https from 'node:https';
 
@@ -60,7 +60,7 @@ const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 export interface AdminAxiosProps {
     userAgent?: string;
     interceptors?: {
-        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        request?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
             onRejected?: (error: unknown) => unknown;
@@ -121,6 +121,9 @@ export class Nango {
             }
         });
 
+        if (interceptors?.request) {
+            this.http.interceptors.request.use(interceptors.request);
+        }
         if (interceptors?.response) {
             this.http.interceptors.response.use(interceptors.response.onFulfilled, interceptors.response.onRejected);
         }
