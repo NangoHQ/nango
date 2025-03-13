@@ -18,6 +18,7 @@ import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import { Orchestrator } from './clients/orchestrator.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 
+export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';

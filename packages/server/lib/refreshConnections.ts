@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, connectionService, encryptionManager } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, connectionService, encryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import {
@@ -82,7 +82,7 @@ export async function exec(): Promise<void> {
                     }
 
                     try {
-                        const credentialResponse = await connectionService.refreshOrTestCredentials({
+                        const credentialResponse = await refreshOrTestCredentials({
                             account,
                             environment,
                             integration: decryptedIntegration,

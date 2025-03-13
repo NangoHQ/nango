@@ -4,7 +4,7 @@ import ms from 'ms';
 import type { Knex } from '@nangohq/database';
 import db, { dbNamespace } from '@nangohq/database';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials, Config } from '../models/index.js';
+import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials } from '../models/index.js';
 import providerClient from '../clients/provider.client.js';
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
@@ -25,19 +25,17 @@ import type {
     DBEnvironment,
     JwtCredentials,
     BillCredentials,
-    IntegrationConfig,
     DBConnection,
     DBEndUser,
     TwoStepCredentials,
     ProviderTwoStep,
     ProviderSignature,
     SignatureCredentials,
-    MessageRowInsert,
     DBConnectionDecrypted,
     ConnectionConfig,
     ConnectionInternal
 } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err, axiosInstance as axios, metrics } from '@nangohq/utils';
+import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -54,7 +52,6 @@ import {
     interpolateStringFromObject,
     interpolateString,
     parseTokenExpirationDate,
-    isTokenExpired,
     parseTableauTokenExpirationDate,
     interpolateObject,
     extractValueByPath,
@@ -68,12 +65,8 @@ import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
 import { SlackService } from './notification/slack.service.js';
-import { getProvider } from './providers.js';
 import { v4 as uuidv4 } from 'uuid';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
-import tracer from 'dd-trace';
-import { getLocking } from '@nangohq/kvstore';
-import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -441,7 +434,7 @@ class ConnectionService {
     }
 
     public async updateConnection(connection: DBConnectionDecrypted) {
-        await db.knex
+        const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
                 connection_id: connection.connection_id,
@@ -449,7 +442,9 @@ class ConnectionService {
                 environment_id: connection.environment_id,
                 deleted: false
             })
-            .update(encryptionManager.encryptConnection(connection));
+            .update(encryptionManager.encryptConnection(connection))
+            .returning('*');
+        return encryptionManager.decryptConnection(res[0]!);
     }
 
     public async getConnectionConfig(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
@@ -802,211 +797,6 @@ class ConnectionService {
         return del;
     }
 
-    public async refreshOrTestCredentials({
-        account,
-        environment,
-        connection,
-        integration,
-        logContextGetter,
-        instantRefresh,
-        onRefreshSuccess,
-        onRefreshFailed,
-        connectionTestHook = undefined
-    }: {
-        account: DBTeam;
-        environment: DBEnvironment;
-        connection: DBConnectionDecrypted;
-        integration: IntegrationConfig;
-        logContextGetter: LogContextGetter;
-        instantRefresh: boolean;
-        onRefreshSuccess: (args: { connection: DBConnectionDecrypted; environment: DBEnvironment; config: ProviderConfig }) => Promise<void>;
-        onRefreshFailed: (args: {
-            connection: DBConnectionDecrypted;
-            logCtx: LogContext;
-            authError: { type: string; description: string };
-            environment: DBEnvironment;
-            provider: Provider;
-            config: ProviderConfig;
-            account: DBTeam;
-            action: 'token_refresh' | 'connection_test';
-        }) => Promise<void>;
-        connectionTestHook?:
-            | ((args: {
-                  config: Config;
-                  provider: Provider;
-                  credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
-                  connectionId: string;
-                  connectionConfig: ConnectionConfig;
-              }) => Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>>)
-            | undefined;
-    }): Promise<Result<DBConnectionDecrypted, NangoError>> {
-        return await tracer.trace('nango.connection.refreshCredentials', async (span) => {
-            const provider = getProvider(integration.provider);
-            if (!provider) {
-                const error = new NangoError('unknown_provider_config');
-                return Err(error);
-            }
-
-            const copy = { ...connection };
-
-            if (!connection.credentials || 'encrypted_credentials' in connection.credentials) {
-                return Err(new NangoError('invalid_crypted_connection'));
-            }
-
-            span.setTag('connectionId', connection.connection_id).setTag('authType', connection.credentials.type);
-
-            if (
-                connection.credentials.type === 'OAUTH2' ||
-                connection.credentials.type === 'APP' ||
-                connection.credentials.type === 'OAUTH2_CC' ||
-                connection.credentials.type === 'TABLEAU' ||
-                connection.credentials.type === 'JWT' ||
-                connection.credentials.type === 'BILL' ||
-                connection.credentials.type === 'TWO_STEP' ||
-                connection.credentials.type === 'SIGNATURE'
-            ) {
-                const { success, error, response } = await this.refreshCredentialsIfNeeded({
-                    connectionId: connection.connection_id,
-                    environmentId: environment.id,
-                    providerConfig: integration as ProviderConfig,
-                    provider: provider as ProviderOAuth2,
-                    environment_id: environment.id,
-                    instantRefresh
-                });
-
-                if ((!success && error) || !response) {
-                    const logCtx = await logContextGetter.create(
-                        { operation: { type: 'auth', action: 'refresh_token' } },
-                        {
-                            account,
-                            environment,
-                            integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
-                            connection: { id: connection.id, name: connection.connection_id }
-                        }
-                    );
-
-                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
-                    void logCtx.error('Failed to refresh credentials', error);
-                    await logCtx.failed();
-
-                    if (logCtx) {
-                        await onRefreshFailed({
-                            connection,
-                            logCtx,
-                            authError: {
-                                type: error!.type,
-                                description: error!.message
-                            },
-                            environment,
-                            provider,
-                            account,
-                            config: integration as ProviderConfig,
-                            action: 'token_refresh'
-                        });
-                    }
-
-                    const { credentials, ...connectionWithoutCredentials } = copy;
-                    const errorWithPayload = new NangoError(error!.type, { connection: connectionWithoutCredentials });
-
-                    // there was an attempt to refresh the token so clear it from the queue
-                    // of connections to refresh if it failed
-                    await this.updateLastFetched(connection.id);
-                    span.setTag('error', error!.type);
-                    return Err(errorWithPayload);
-                } else if (response.refreshed) {
-                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
-                    await onRefreshSuccess({
-                        connection,
-                        environment,
-                        config: integration as ProviderConfig
-                    });
-                } else {
-                    metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH);
-                }
-
-                copy.credentials = response.credentials as OAuth2Credentials;
-            } else if (connection.credentials?.type === 'BASIC' || connection.credentials?.type === 'API_KEY' || connection.credentials?.type === 'TBA') {
-                if (connectionTestHook) {
-                    const result = await connectionTestHook({
-                        config: integration as ProviderConfig,
-                        provider,
-                        connectionConfig: connection.connection_config,
-                        connectionId: connection.connection_id,
-                        credentials: connection.credentials
-                    });
-                    if (result.isErr()) {
-                        const logCtx = await logContextGetter.create(
-                            { operation: { type: 'auth', action: 'connection_test' } },
-                            {
-                                account,
-                                environment,
-                                integration: integration ? { id: integration.id!, name: integration.unique_key, provider: integration.provider } : undefined,
-                                connection: { id: connection.id, name: connection.connection_id }
-                            }
-                        );
-                        if ('logs' in result.error.payload) {
-                            await Promise.all(
-                                (result.error.payload['logs'] as MessageRowInsert[]).map(async (log) => {
-                                    await logCtx.log(log);
-                                })
-                            );
-                        }
-
-                        void logCtx.error('Failed to verify connection', result.error);
-                        await logCtx.failed();
-
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
-                        await onRefreshFailed({
-                            connection,
-                            logCtx,
-                            authError: {
-                                type: result.error.type,
-                                description: result.error.message
-                            },
-                            environment,
-                            provider,
-                            account,
-                            config: integration as ProviderConfig,
-                            action: 'connection_test'
-                        });
-
-                        // there was an attempt to test the credentials
-                        // so clear it from the queue if it failed
-                        await this.updateLastFetched(connection.id);
-
-                        const { credentials, ...connectionWithoutCredentials } = copy;
-                        const errorWithPayload = new NangoError(result.error.type, connectionWithoutCredentials);
-                        span.setTag('error', result.error.type);
-                        return Err(errorWithPayload);
-                    } else if (result.value.tested) {
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
-                        await onRefreshSuccess({
-                            connection,
-                            environment,
-                            config: integration as ProviderConfig
-                        });
-                    } else {
-                        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
-                    }
-                }
-            } else if (
-                connection.credentials.type === 'APP_STORE' ||
-                connection.credentials.type === 'CUSTOM' ||
-                connection.credentials.type === 'OAUTH1' ||
-                !connection.credentials.type
-            ) {
-                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
-                // Do nothing
-            } else {
-                throw new Error('Unsupported credentials type');
-            }
-
-            await this.updateLastFetched(connection.id);
-
-            return Ok(copy);
-        });
-    }
-
     public async updateLastFetched(id: number) {
         await db.knex.from<DBConnection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
     }
@@ -1170,140 +960,6 @@ class ConnectionService {
 
             default:
                 throw new NangoError(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);
-        }
-    }
-
-    private async refreshCredentialsIfNeeded({
-        connectionId,
-        environmentId,
-        providerConfig,
-        provider,
-        environment_id,
-        instantRefresh = false
-    }: {
-        connectionId: string;
-        environmentId: number;
-        providerConfig: ProviderConfig;
-        provider: ProviderOAuth2;
-        environment_id: number;
-        instantRefresh?: boolean;
-    }): Promise<
-        ServiceResponse<{
-            refreshed: boolean;
-            credentials:
-                | OAuth2Credentials
-                | AppCredentials
-                | AppStoreCredentials
-                | OAuth2ClientCredentials
-                | TableauCredentials
-                | JwtCredentials
-                | TwoStepCredentials
-                | BillCredentials
-                | SignatureCredentials;
-        }>
-    > {
-        const providerConfigKey = providerConfig.unique_key;
-        const locking = await getLocking();
-
-        // fetch connection and return credentials if they are fresh
-        const getConnectionAndFreshCredentials = async (): Promise<{
-            connection: DBConnectionDecrypted;
-            freshCredentials:
-                | OAuth2Credentials
-                | AppCredentials
-                | AppStoreCredentials
-                | OAuth2ClientCredentials
-                | TableauCredentials
-                | JwtCredentials
-                | TwoStepCredentials
-                | BillCredentials
-                | SignatureCredentials
-                | null;
-        }> => {
-            const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
-
-            if (!success || !connection) {
-                throw error as NangoError;
-            }
-
-            const shouldRefresh = await this.shouldRefreshCredentials(
-                connection,
-                connection.credentials as OAuth2Credentials,
-                providerConfig,
-                provider,
-                instantRefresh
-            );
-
-            return {
-                connection,
-                freshCredentials: shouldRefresh
-                    ? null
-                    : (connection.credentials as
-                          | OAuth2Credentials
-                          | AppCredentials
-                          | AppStoreCredentials
-                          | OAuth2ClientCredentials
-                          | TableauCredentials
-                          | JwtCredentials
-                          | TwoStepCredentials
-                          | BillCredentials
-                          | SignatureCredentials)
-            };
-        };
-
-        // We must ensure that only one refresh is running at a time
-        // Using a simple redis entry as a lock with a TTL to ensure it is always released.
-        // NOTES:
-        // - This is not a distributed lock and will not work in a multi-redis environment.
-        // - It could also be unsafe in case of a Redis crash.
-        let lock: Lock | null = null;
-        try {
-            const ttlInMs = 10000;
-            const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
-
-            let connectionToRefresh: DBConnectionDecrypted;
-            try {
-                const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
-                lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
-                // Another refresh was running so we check if the credentials were refreshed
-                // If yes, we return the new credentials
-                // If not, we proceed with the refresh
-                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
-                if (freshCredentials) {
-                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
-                }
-                connectionToRefresh = connection;
-            } catch (err) {
-                // lock acquisition might have timed out
-                // but refresh might have been successfully performed by another execution
-                // while we were waiting for the lock
-                // so we check if the credentials were refreshed
-                // if yes, we return the new credentials
-                // if not, we actually fail the refresh
-                const { freshCredentials } = await getConnectionAndFreshCredentials();
-                if (freshCredentials) {
-                    return { success: true, error: null, response: { refreshed: false, credentials: freshCredentials } };
-                }
-                throw err;
-            }
-
-            const { success, error, response: newCredentials } = await this.getNewCredentials(connectionToRefresh, providerConfig, provider);
-            if (!success || !newCredentials) {
-                return { success, error, response: null };
-            }
-
-            connectionToRefresh.credentials = newCredentials;
-            await this.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
-
-            return { success: true, error: null, response: { refreshed: true, credentials: newCredentials } };
-        } catch (err) {
-            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
-
-            return { success: false, error, response: null };
-        } finally {
-            if (lock) {
-                await locking.release(lock);
-            }
         }
     }
 
@@ -1917,28 +1573,7 @@ class ConnectionService {
         }
     }
 
-    private async shouldRefreshCredentials(
-        connection: DBConnectionDecrypted,
-        credentials: OAuth2Credentials,
-        providerConfig: ProviderConfig,
-        provider: ProviderOAuth2,
-        instantRefresh: boolean
-    ): Promise<boolean> {
-        const refreshCondition =
-            instantRefresh ||
-            (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
-
-        let tokenExpirationCondition =
-            refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || 15 * 60));
-
-        if ((provider.auth_mode === 'OAUTH2' || credentials.type === 'OAUTH2') && providerConfig.provider !== 'facebook') {
-            tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
-        }
-
-        return Boolean(tokenExpirationCondition);
-    }
-
-    private async getNewCredentials(
+    public async getNewCredentials(
         connection: DBConnectionDecrypted,
         providerConfig: ProviderConfig,
         provider: Provider
