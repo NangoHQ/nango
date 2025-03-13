@@ -78,7 +78,10 @@ export enum Types {
     GET_RECORDS_COUNT = 'nango.server.getRecords.count',
     GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
 
-    CONNECTIONS_COUNT = 'nango.server.connections.count'
+    CONNECTIONS_COUNT = 'nango.connections.count',
+    CONNECTIONS_WITH_ACTIONS_COUNT = 'nango.connections.withActions.count',
+    CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
+    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
