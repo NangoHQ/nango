@@ -2053,7 +2053,6 @@ class ConnectionService {
     // return the number of active connections per account
     async countMetric(): Promise<Result<{ accountId: number; count: number }[], NangoError>> {
         const res = await db.knex
-            .withSchema('nango')
             .from('_nango_connections')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .count('_nango_connections.id as count')
