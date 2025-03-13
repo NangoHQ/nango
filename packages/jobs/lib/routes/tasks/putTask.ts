@@ -4,6 +4,7 @@ import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
 import { handleError, handleSuccess } from '../../execution/operations/handler.js';
 import type { JsonValue } from 'type-fest';
+import { operationIdRegex } from '@nangohq/logs';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
@@ -53,7 +54,7 @@ const nangoPropsSchema = z
             .passthrough(),
         syncId: z.string().uuid().optional(),
         syncJobId: z.number().optional(),
-        activityLogId: z.string().min(1),
+        activityLogId: operationIdRegex,
         secretKey: z.string().min(1),
         debug: z.boolean(),
         startedAt: z.coerce.date(),

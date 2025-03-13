@@ -61,7 +61,7 @@ describe('GET /logs/operations/:operationId', () => {
         const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: { env: 'dev' },
             token: env.secret_key,
-            params: { operationId: '1' }
+            params: { operationId: '1741878251660_XQMgbkGG' }
         });
 
         expect(res.res.status).toBe(404);

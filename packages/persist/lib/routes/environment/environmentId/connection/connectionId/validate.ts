@@ -1,3 +1,4 @@
+import { operationIdRegex } from '@nangohq/logs';
 import { z } from 'zod';
 
 export const getCursorRequestParser = {
@@ -26,7 +27,7 @@ export const getRecordsRequestParser = {
                 model: z.string(),
                 cursor: z.string().optional(),
                 limit: z.coerce.number().int().positive().default(100),
-                activityLogId: z.string().optional(),
+                activityLogId: operationIdRegex.optional(),
                 externalIds: z
                     .union([
                         z.string().min(1).max(256), // There is no diff between a normal query param and an array with one item
