@@ -1,8 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
 import { environmentService } from '@nangohq/shared';
 import { stringifyError, tagTraceUser } from '@nangohq/utils';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export interface AuthLocals {
+    account: DBTeam;
+    environment: DBEnvironment;
+}
+
+export const authMiddleware = (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
     const authorizationHeader = req.get('authorization');
 
     if (!authorizationHeader) {
@@ -28,6 +34,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
             if (!result || result.environment.id !== environmentId) {
                 throw new Error('Cannot find matching environment');
             }
+            res.locals['account'] = result.account;
+            res.locals['environment'] = result.environment;
             tagTraceUser(result);
             next();
         })

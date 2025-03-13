@@ -4,20 +4,20 @@ import type { Endpoint } from '@nangohq/types';
 import * as metrics from '../telemetry/metrics.js';
 
 export type EndpointRequest<E extends Endpoint<any>> = Request<E['Params'], E['Reply'], E['Body'], E['Querystring']>;
-export type EndpointResponse<E extends Endpoint<any>> = Response<E['Reply']>;
+export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<E['Reply'], Locals>;
 
 export interface Route<E extends Endpoint<any>> {
     path: E['Path'];
     method: E['Method'];
 }
 
-export interface RouteHandler<E extends Endpoint<any>> extends Route<E> {
-    validate: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void;
-    handler: (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => void | Promise<void>;
+export interface RouteHandler<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> extends Route<E> {
+    validate: (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction) => void;
+    handler: (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
 }
 
-export const createRoute = <E extends Endpoint<any>>(server: Express, rh: RouteHandler<E>): void => {
-    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction): void => {
+export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(server: Express, rh: RouteHandler<E, Locals>): void => {
+    const safeHandler = (req: EndpointRequest<E>, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
         const active = tracer.scope().active();
         if (active) {
             active?.setTag('http.route', req.route?.path || req.originalUrl);
