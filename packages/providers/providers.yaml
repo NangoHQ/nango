@@ -6249,6 +6249,39 @@ openai-admin:
             description: The Admin API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-admin-key'
 
+oracle-hcm:
+    display_name: Oracle Fusion Cloud (HCM)
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.restServerUrl}
+        headers:
+            content-type: application/vnd.oracle.adf.resourceitem+json | json_pp
+    docs: https://docs.nango.dev/integrations/all/oracle-hcm
+    docs_connect: https://docs.nango.dev/integrations/all/oracle-hcm/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Oracle Cloud service username.
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Oracle Cloud service password.
+            doc_section: '#step-2-finding-your-credentials'
+    connection_config:
+        restServerUrl:
+            type: string
+            title: REST Server URL
+            description: The REST server URL for your Oracle Fusion Cloud
+            format: hostname
+            prefix: https://
+            example: servername.fa.us2.oraclecloud.com
+            order: 1
+            doc_section: '#step-1-finding-your-rest-server-url'
+
 ory:
     display_name: Ory
     categories:
