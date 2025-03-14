@@ -514,6 +514,7 @@
                 "integrations/all/one-note",
                 "integrations/all/openai",
                 "integrations/all/openai-admin",
+                "integrations/all/oracle-hcm",
                 "integrations/all/ory",
                 "integrations/all/osu",
                 "integrations/all/oura",

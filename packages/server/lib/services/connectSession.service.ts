@@ -172,3 +172,15 @@ export async function deleteConnectSession(
     }
     return Ok(undefined);
 }
+
+export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db
+        .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
+        .whereIn('id', function (sub) {
+            sub.select('id').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+        })
+        .delete();
+}
