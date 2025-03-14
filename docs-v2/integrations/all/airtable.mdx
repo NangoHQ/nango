@@ -100,23 +100,7 @@ import PreBuiltUseCases from "/snippets/generated/airtable/PreBuiltUseCases.mdx"
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/airtable.mdx)</Note>
 
-## Connection configuration in Nango
 
-Airtable uses OAuth 2.0 for authentication. You can configure your connection in Nango using the standard authorization flow:
-
-```js
-nango.auth('airtable', '<CONNECTION-ID>');
-```
-
-When configuring your integration in Nango, you can specify the scopes your application requires. For example:
-
-```json
-{
-  "scopes": ["data.records:read", "data.records:write", "schema.bases:read"]
-}
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
