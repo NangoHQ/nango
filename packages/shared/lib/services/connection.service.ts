@@ -2056,9 +2056,9 @@ class ConnectionService {
             {
                 accountId: number;
                 count: number;
-                with_actions: number;
-                with_syncs: number;
-                with_webhooks: number;
+                withActions: number;
+                withSyncs: number;
+                withWebhooks: number;
             }[],
             NangoError
         >
@@ -2078,17 +2078,17 @@ class ConnectionService {
                 {
                     accountId: number;
                     count: number;
-                    with_actions: number;
-                    with_syncs: number;
-                    with_webhooks: number;
+                    withActions: number;
+                    withSyncs: number;
+                    withWebhooks: number;
                 }[]
             >(
-                db.knex.raw(`_nango_environments.account_id as accountId`),
-                db.knex.raw(`count(DISTINCT _nango_connections.id) AS count`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as with_actions`),
-                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as with_syncs`),
+                db.knex.raw(`_nango_environments.account_id as "accountId"`),
+                db.knex.raw(`count(DISTINCT _nango_connections.id) AS "count"`),
+                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as "withActions"`),
+                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as "withSyncs"`),
                 db.knex.raw(
-                    `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as with_webhooks`
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as "withWebhooks"`
                 )
             )
             .whereNull('_nango_connections.deleted_at')

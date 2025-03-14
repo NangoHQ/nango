@@ -224,6 +224,11 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
+    async getAll(): Promise<{ environmentId: number; accountId: number }[]> {
+        const result = await db.knex.select('id as environmentId', 'account_id as accountId').from<{ environmentId: number; accountId: number }[]>(TABLE);
+        return result || [];
+    }
+
     async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
         const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
