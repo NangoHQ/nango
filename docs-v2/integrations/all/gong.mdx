@@ -108,27 +108,7 @@ Gong offers two authentication methods: Basic Auth (API Key) and OAuth. Nango su
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong.mdx)</Note>
 
-## Connection configuration in Nango
 
-### Basic Auth Configuration
-
-When using Basic Auth with Gong, you need to configure your connection with the Access Key and Access Key Secret:
-
-```js
-nango.auth('gong', '<CONNECTION-ID>');
-```
-
-The user will be prompted to enter their Access Key (as username) and Access Key Secret (as password).
-
-### OAuth Configuration
-
-When using OAuth with Gong, the standard authorization flow is used:
-
-```js
-nango.auth('gong-oauth', '<CONNECTION-ID>');
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
