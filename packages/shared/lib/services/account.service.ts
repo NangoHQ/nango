@@ -107,6 +107,10 @@ class AccountService {
     async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
         await db.knex.update({ is_capped }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
     }
+
+    async getAll(): Promise<DBTeam[]> {
+        return db.knex.select('*').from<DBTeam>(`_nango_accounts`);
+    }
 }
 
 export default new AccountService();

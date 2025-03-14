@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, connectionService, environmentService } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, connectionService, environmentService, accountService } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import { envs } from '../env.js';
@@ -25,6 +25,7 @@ export function exportUsageMetricsCron(): void {
 export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.exportUsageMetrics', async () => {
         logger.info(`Starting`);
+        await exportAccountName();
         await exportConnectionsMetrics();
         await exportRecordsMetrics();
         logger.info(`✅ done`);
@@ -86,6 +87,27 @@ async function exportRecordsMetrics(): Promise<void> {
             span.setTag('error', err);
             logger.error(`failed: ${stringifyError(err)}`);
             const e = new Error('failed_to_export_records_metrics', {
+                cause: err instanceof Error ? err.message : String(err)
+            });
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+        }
+    });
+}
+
+async function exportAccountName(): Promise<void> {
+    // Trick:
+    // in order to be able to show account name to account id list in datadog dashboard
+    // we export a metric with the account id as a value and account name as a dimension
+    await tracer.trace<Promise<void>>('nango.cron.exportUsageMetrics.accountName', async (span) => {
+        try {
+            const accounts = await accountService.getAll();
+            for (const account of accounts) {
+                metrics.gauge(metrics.Types.ACCOUNT_NAME, account.id, { accountId: account.id, accountName: account.name });
+            }
+        } catch (err) {
+            span.setTag('error', err);
+            logger.error(`failed: ${stringifyError(err)}`);
+            const e = new Error('failed_to_export_account_name', {
                 cause: err instanceof Error ? err.message : String(err)
             });
             errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });

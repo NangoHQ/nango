@@ -83,7 +83,9 @@ export enum Types {
     CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
     CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
 
-    RECORDS_TOTAL_COUNT = 'nango.records.total.count'
+    RECORDS_TOTAL_COUNT = 'nango.records.total.count',
+
+    ACCOUNT_NAME = 'nango.account.name'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
