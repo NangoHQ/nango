@@ -21,6 +21,7 @@ import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { exportUsageMetricsCron } from './crons/exportMetrics.js';
 import { envs } from './env.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
@@ -83,6 +84,7 @@ getProviders();
 await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
 exportUsageMetricsCron();
+timeoutLogsOperations();
 otlp.register(getOtlpRoutes);
 
 const port = getServerPort();

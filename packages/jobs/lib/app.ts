@@ -5,7 +5,6 @@ import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError, once, initSentry, report } from '@nangohq/utils';
-import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
@@ -105,7 +104,6 @@ try {
 
     // Register recurring tasks
     deleteSyncsData();
-    timeoutLogsOperations();
     deleteOldJobsData();
 
     otlp.register(getOtlpRoutes);

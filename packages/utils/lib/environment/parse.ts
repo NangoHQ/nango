@@ -37,6 +37,7 @@ export const ENVS = z.object({
 
     // Server
     CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+    CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
