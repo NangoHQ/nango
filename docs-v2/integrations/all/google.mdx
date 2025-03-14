@@ -104,21 +104,7 @@ import PreBuiltUseCases from "/snippets/generated/google/PreBuiltUseCases.mdx"
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google.mdx)</Note>
 
-## Connection configuration in Nango
 
-Google uses OAuth 2.0 for authentication. You can configure your connection in Nango using the standard authorization flow:
-
-```js
-nango.auth('google', '<CONNECTION-ID>');
-```
-
-When configuring your integration in Nango, you can specify the scopes your application requires. Google has a wide range of available scopes for different APIs. For example:
-
-- `https://www.googleapis.com/auth/drive.readonly` - Read-only access to Google Drive
-- `https://www.googleapis.com/auth/gmail.send` - Send emails via Gmail
-- `https://www.googleapis.com/auth/calendar` - Full access to Google Calendar
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
