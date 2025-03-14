@@ -1,7 +1,9 @@
 import { IconX } from '@tabler/icons-react';
+import { useMount } from 'react-use';
 
 import { APIError } from '@/lib/api';
 import { triggerClose } from '@/lib/events';
+import { telemetry } from '@/lib/telemetry';
 
 import { Button } from './ui/button';
 
@@ -15,11 +17,14 @@ const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
 };
 
 export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
+    useMount(() => {
+        telemetry('view:unknown_error');
+    });
     return (
         <div className="relative h-full w-full">
             <div className="absolute z-10 top right-0">
                 <header className="self-end p-10">
-                    <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose()}>
+                    <Button size={'icon'} title="Close UI" variant={'transparent'} onClick={() => triggerClose('click:close')}>
                         <IconX stroke={1} />
                     </Button>
                 </header>

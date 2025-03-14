@@ -80,3 +80,31 @@ export type PostInternalConnectSessions = Endpoint<{
     Success: PostConnectSessions['Success'];
     Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization'>;
 }>;
+
+export type PostPublicConnectTelemetry = Endpoint<{
+    Method: 'POST';
+    Path: '/connect/telemetry';
+    Body: {
+        token: string;
+        event:
+            | 'open'
+            | 'view:list'
+            | 'view:integration'
+            | 'view:unknown_error'
+            | 'view:credentials_error'
+            | 'view:success'
+            | 'click:integration'
+            | 'click:doc'
+            | 'click:doc_section'
+            | 'click:connect'
+            | 'click:close'
+            | 'click:finish'
+            | 'click:outside'
+            | 'popup:blocked_by_browser'
+            | 'popup:closed_early';
+        timestamp: Date;
+        dimensions?: { integration?: string | undefined } | undefined;
+    };
+    // We use sendBeacon, it expects no response
+    Success: never;
+}>;

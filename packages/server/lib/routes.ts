@@ -22,7 +22,18 @@ import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request, RequestHandler } from 'express';
-import { isCloud, isEnterprise, isBasicAuthEnabled, isTest, isLocal, basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth } from '@nangohq/utils';
+import {
+    isCloud,
+    isEnterprise,
+    isBasicAuthEnabled,
+    isTest,
+    basePublicUrl,
+    baseUrl,
+    flagHasAuth,
+    flagHasManagedAuth,
+    connectUrl,
+    isLocal
+} from '@nangohq/utils';
 import { errorManager } from '@nangohq/shared';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
@@ -114,6 +125,7 @@ import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
+import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
 
 export const router = express.Router();
 
@@ -121,6 +133,7 @@ router.use(...securityMiddlewares());
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
+const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const adminAuth: RequestHandler[] = [
     authMiddleware.secretKeyAuth.bind(authMiddleware),
@@ -182,8 +195,18 @@ const publicAPICorsHandler = cors({
         'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id, Sentry-Trace, Baggage',
     origin: '*'
 });
+const publicAPITelemetryCors = cors({
+    maxAge: 36000,
+    credentials: true,
+    exposedHeaders: 'content-type',
+    allowedHeaders: 'Authorization, Content-type',
+    methods: 'POST',
+    origin: connectUrl
+});
+publicAPI.options('/connect/telemetry', publicAPITelemetryCors);
 publicAPI.use(publicAPICorsHandler);
 publicAPI.options('*', publicAPICorsHandler); // Pre-flight
+publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
@@ -287,6 +310,7 @@ publicAPI.route('/connect/sessions').post(apiAuth, postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
+publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));

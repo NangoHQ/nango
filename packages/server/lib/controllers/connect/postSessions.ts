@@ -9,6 +9,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import type { Config } from '@nangohq/shared';
 import { configService, upsertEndUser } from '@nangohq/shared';
 import { providerConfigKeySchema } from '../../helpers/validation.js';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 
 export const bodySchema = z
     .object({
@@ -95,6 +96,15 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
             }
         }
 
+        const logCtx = await logContextGetter.create(
+            {
+                operation: { type: 'auth', action: 'create_connection' },
+                meta: { connectSession: endUserToMeta(endUserRes.value) },
+                expiresAt: defaultOperationExpiration.auth()
+            },
+            { account, environment }
+        );
+
         // create connect session
         const createConnectSession = await connectSessionService.createConnectSession(trx, {
             endUserId: endUserRes.value.id,
@@ -108,7 +118,8 @@ export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req,
                           { user_scopes: value.user_scopes, connectionConfig: value.connection_config }
                       ])
                   )
-                : null
+                : null,
+            operationId: logCtx.id
         });
         if (createConnectSession.isErr()) {
             return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };

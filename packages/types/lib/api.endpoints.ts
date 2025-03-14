@@ -45,7 +45,8 @@ import type {
     GetConnectSession,
     PostConnectSessions,
     PostInternalConnectSessions,
-    PostPublicConnectSessionsReconnect
+    PostPublicConnectSessionsReconnect,
+    PostPublicConnectTelemetry
 } from './connect/api';
 import type {
     DeletePublicConnection,
@@ -96,7 +97,8 @@ export type PublicApiEndpoints =
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
     | GetPublicRecords
-    | GetPublicScriptsConfig;
+    | GetPublicScriptsConfig
+    | PostPublicConnectTelemetry;
 
 export type PrivateApiEndpoints =
     | PostSignup

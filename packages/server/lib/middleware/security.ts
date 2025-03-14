@@ -25,7 +25,7 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi],
+                defaultSrc: ["'self'", hostPublic, hostApi, connectUrl],
                 childSrc: "'self'",
                 connectSrc: [
                     "'self'",
@@ -34,6 +34,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostPublic,
                     hostApi,
                     hostWs.href,
+                    connectUrl,
                     'https://*.posthog.com',
                     ...additionalConnectSources
                 ],

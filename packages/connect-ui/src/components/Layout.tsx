@@ -8,11 +8,11 @@ export const Layout: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     useClickAway(ref, () => {
-        triggerClose();
+        triggerClose('click:outside');
     });
 
     useKeyPressEvent('Escape', () => {
-        triggerClose();
+        triggerClose('click:outside');
     });
 
     return (
