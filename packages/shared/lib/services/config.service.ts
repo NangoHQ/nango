@@ -120,12 +120,14 @@ class ConfigService {
         providerConfigKey: string;
         orchestrator: Orchestrator;
     }): Promise<boolean> {
+        // TODO: might be useless since we are dropping the data after a while
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 
         if (isCloud) {
             await deleteSyncFilesForConfig(id, environmentId);
         }
 
+        // TODO: might be useless since we are dropping the data after a while
         await deleteSyncConfigByConfigId(id);
 
         const updated = await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
@@ -133,6 +135,7 @@ class ConfigService {
             return false;
         }
 
+        // TODO: might be useless since we are dropping the data after a while
         await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({ provider_config_key: providerConfigKey, environment_id: environmentId, deleted: false })

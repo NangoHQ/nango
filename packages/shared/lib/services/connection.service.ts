@@ -793,9 +793,10 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
+        // TODO: might be useless since we are dropping the data after a while
+        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator and logContextGetter dependencies
-        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         const slackService = new SlackService({ logContextGetter, orchestrator });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
