@@ -6,7 +6,7 @@ import {
     connectionRefreshFailed as connectionRefreshFailedHook,
     connectionRefreshSuccess as connectionRefreshSuccessHook,
     testConnectionCredentials as connectionTestHook
-} from './hooks/hooks.js';
+} from '../hooks/hooks.js';
 import tracer from 'dd-trace';
 import type { Lock } from '@nangohq/kvstore';
 import { getLocking } from '@nangohq/kvstore';
