@@ -14,25 +14,73 @@ import PreBuiltUseCases from "/snippets/generated/workday/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ⚠️ Required | Workday requires a paid account to access their API. |
+| Paid test account | ⚠️ Required | A Workday tenant is required for testing. |
+| Partnership | ⚠️ Conditional | Partnership may be required for certain API features. |
+| App review | ✅ Not required | No app review process for basic API access. |
+| Security audit | ⚠️ Conditional | May be required depending on data sensitivity. |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Obtain a Workday tenant">
+    To use the Workday API, you need access to a Workday tenant. Contact your Workday administrator or [Workday sales](https://www.workday.com/en-us/company/contact-sales.html) to obtain access.
+  </Step>
+  <Step title="Create API credentials">
+    1. Log in to your Workday tenant as an administrator.
+    2. Navigate to the **Integrations** section.
+    3. Select **API Credentials** or **Integration System User**.
+    4. Click **Create Integration System User**.
+    5. Provide a name for your integration user.
+    6. Assign the appropriate security groups and permissions based on the API endpoints you need to access.
+    7. Save the integration user.
+  </Step>
+  <Step title="Generate username and password">
+    1. After creating the integration system user, navigate to the user's details.
+    2. Generate or set a username and password for the integration user.
+    3. Make sure to securely store these credentials as they will be used for API authentication.
+  </Step>
+  <Step title="Determine your Workday tenant URL">
+    1. Your Workday tenant URL follows this format: `https://{tenant-name}.workday.com`
+    2. The `{tenant-name}` portion is your specific Workday subdomain.
+    3. Note this subdomain as it will be required for API requests.
+  </Step>
+  <Step title="Configure API access permissions">
+    1. In Workday, navigate to **Security Administration**.
+    2. Select **Domain Security Policies**.
+    3. Configure the appropriate security policies to allow API access for your integration user.
+    4. Ensure the integration user has the necessary permissions for the specific Web Services you plan to use.
+  </Step>
+  <Step title="Test API access">
+    Before integrating with Nango, you can test your API credentials using a tool like Postman:
+    
+    1. Create a new request in Postman.
+    2. Set the request URL to a Workday API endpoint (e.g., `https://{tenant-name}.workday.com/ccx/service/{tenant-name}/Human_Resources/v40.0`).
+    3. Set the authentication type to Basic Auth.
+    4. Enter your integration username and password.
+    5. Send the request to verify your credentials work correctly.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
 
 
 ## Useful links
 
-Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently supported.
+| Topic | Links | 
+| - | - | 
+| General | [Workday Developer Portal](https://developer.workday.com/) |
+| | [Workday Community](https://community.workday.com/) |
+| | [Workday Documentation](https://docs.workday.com/) |
+| Developer | [Workday Web Services Directory](https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html) |
+| | [Workday SOAP API Reference](https://community.workday.com/sites/default/files/file-hosting/productionapi/operations/index.html) |
+| | [Workday REST API Reference](https://community.workday.com/sites/default/files/file-hosting/restapi/index.html) |
+| | [Workday Integration Security](https://docs.workday.com/en-us/integration/security.html) |
+| | [Workday API Best Practices](https://community.workday.com/articles/1716) |
 
 ## Connection configuration in Nango
 
@@ -47,6 +95,16 @@ nango.auth('workday', '<CONNECTION-ID>', {params: {subdomain: '<workday-subdomai
 For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
+
+- Workday provides two APIs, a REST and a SOAP one. Only the SOAP API is currently supported in Nango.
+- The Workday API requires a tenant-specific subdomain in the API URL. Make sure to collect this from your users.
+- Workday API credentials are tied to specific security groups and permissions. Ensure your integration user has all necessary permissions for the endpoints you need to access.
+- Workday API responses can be quite verbose with extensive XML structures. Be prepared to parse complex responses.
+- API rate limits may vary based on your Workday contract and tenant configuration.
+- Workday API versions are updated regularly with major releases. Be aware of version compatibility when making API calls.
+- For security reasons, Workday may require IP whitelisting for API access. Contact your Workday administrator to ensure Nango's IP addresses are whitelisted if needed.
+- Session timeouts can occur with long-running processes. Implement proper error handling for authentication failures.
+- The Workday API follows a different structure than most REST APIs. Familiarize yourself with their specific request and response formats.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
 
