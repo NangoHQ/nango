@@ -170,9 +170,9 @@ export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit:
         });
 }
 
-export async function deleteJobsByDate({ deleteJobsOlderThan, limit }: { deleteJobsOlderThan: number; limit: number }): Promise<number> {
+export async function deleteJobsByDate({ olderThan, limit }: { olderThan: number; limit: number }): Promise<number> {
     const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() - deleteJobsOlderThan);
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
 
     return db.knex
         .from<SyncJob>('_nango_sync_jobs')

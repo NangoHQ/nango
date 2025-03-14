@@ -35,9 +35,14 @@ export const ENVS = z.object({
     NANGO_PUBLIC_CONNECT_URL: z.string().url().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
 
-    // Server
+    // Crons
     CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
+    CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
+    CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
@@ -55,9 +60,6 @@ export const ENVS = z.object({
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
     PROVIDERS_URL: z.string().url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
-    CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
-    CRON_DELETE_OLD_JOBS_EVERY_MIN: z.coerce.number().optional().default(10),
-    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(90),
 
     // Runner
     RUNNER_TYPE: z.enum(['LOCAL', 'REMOTE', 'RENDER']).default('LOCAL'),
