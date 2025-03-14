@@ -14,36 +14,96 @@ import PreBuiltUseCases from "/snippets/generated/notion/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Notion account](https://www.notion.so/signup). |
+| Paid test account | ✅ Not required | Free Notion account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for apps published to the Notion App Store. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Notion account">
+    If you don't already have one, sign up for a [Notion account](https://www.notion.so/signup).
+  </Step>
+  <Step title="Create a new integration">
+    1. Go to [My Integrations](https://www.notion.so/my-integrations) in your Notion account.
+    2. Click **+ New integration**.
+    3. Select the workspace where you want to create the integration.
+    4. Fill in the basic information:
+       - **Name**: Your integration's name
+       - **Logo** (optional): Upload an image for your integration
+    5. Click **Submit** to create the integration.
+  </Step>
+  <Step title="Configure integration settings">
+    1. In your newly created integration's page, navigate to the **Basic Information** tab.
+    2. Fill in the required fields:
+       - **Associated workspace**: This should be pre-selected
+       - **Company name**: Your company name
+       - **Website URL**: Your company website
+       - **Redirect URIs**: Add `https://api.nango.dev/oauth/callback`
+    3. Under **Capabilities**, select the appropriate capabilities your integration needs.
+    4. Click **Save changes**.
+  </Step>
+  <Step title="Make your integration public">
+    1. By default, your integration is set to "Internal" and can only be used within your workspace.
+    2. To enable OAuth for external users, you need to make it public:
+       - In the **Distribution** tab, select **Public**.
+       - Fill in all required fields including company information and privacy policy URL.
+       - Submit your integration for review.
+    3. Once approved, your integration will be public and you'll be able to access the OAuth credentials.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. After your integration is made public, go to the **Basic Information** tab.
+    2. Under **OAuth Domain & URIs**, you'll find your:
+       - **OAuth Client ID**
+       - **OAuth Client Secret**
+       - **Authorization URL**
+    3. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://developers.notion.com/docs/authorization)
--   [OAuth-related docs](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up)
--   [API reference](https://developers.notion.com/reference/intro)
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.notion.so/) |
+| | [Create a Notion account](https://www.notion.so/signup) |
+| | [My Integrations dashboard](https://www.notion.so/my-integrations) |
+| Developer | [API documentation](https://developers.notion.com/reference/intro) |
+| | [Developer documentation](https://developers.notion.com/docs) |
+| | [Authentication documentation](https://developers.notion.com/docs/authorization) |
+| | [OAuth setup guide](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up) |
+| | [How to register an application](https://developers.notion.com/docs/authorization#how-to-make-a-public-integration) |
+| | [API rate limits](https://developers.notion.com/reference/errors#rate-limiting) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
+
+## Connection configuration in Nango
+
+Notion OAuth does not require any special configuration parameters when creating a connection. You can use the standard authorization flow:
+
+```js
+nango.auth('notion', '<CONNECTION-ID>');
+```
+
+For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
 - The Notion OAuth API doesn't support refreshing tokens, and so doesn't return a refresh token. The access token never expires.
-- Your Notion OAuth app will have the status "internal". You need to [make it "public"](https://developers.notion.com/docs/authorization#how-to-make-an-integration-public) to be able to initiate an OAuth flow. Only then, you will be able to get the OAuth client ID/secret and register your callback URL.
-- No OAuth scope is required by default.
-- Notion SCIM is an enterprise only API that uses an API token. See the Notion [docs](https://www.notion.so/help/provision-users-and-groups-with-scim) for more information
+- Your Notion OAuth app will have the status "internal" by default. You need to [make it "public"](https://developers.notion.com/docs/authorization#how-to-make-an-integration-public) to be able to initiate an OAuth flow with external users. Only then will you be able to get the OAuth client ID/secret and register your callback URL.
+- No OAuth scope is required by default for Notion integrations.
+- After authorization, users need to explicitly share specific pages or databases with your integration before you can access them.
+- Notion has [rate limits](https://developers.notion.com/reference/errors#rate-limiting) that vary by endpoint.
+- Notion SCIM is an enterprise-only API that uses an API token. See the Notion [docs](https://www.notion.so/help/provision-users-and-groups-with-scim) for more information.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
 
