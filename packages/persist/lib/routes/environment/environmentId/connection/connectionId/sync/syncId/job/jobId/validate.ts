@@ -1,3 +1,4 @@
+import { operationIdRegex } from '@nangohq/logs';
 import { z } from 'zod';
 
 const mergingStrategySchema = z.discriminatedUnion('strategy', [
@@ -18,7 +19,7 @@ export const recordsRequestParser = {
                 records: z.array(z.object({ id: z.union([z.string().max(255).min(1), z.number()]) }).catchall(z.unknown())).nonempty(),
                 providerConfigKey: z.string(),
                 connectionId: z.string(),
-                activityLogId: z.string(),
+                activityLogId: operationIdRegex,
                 merging: mergingStrategySchema.default({ strategy: 'override' })
             })
             .strict()

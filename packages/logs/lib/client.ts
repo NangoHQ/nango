@@ -82,6 +82,8 @@ export class LogContextStateless {
         message: string,
         {
             error,
+            createdAt,
+            endedAt: userDefinedEndedAt,
             ...data
         }: {
             request: MessageHTTPRequest | undefined;
@@ -89,9 +91,13 @@ export class LogContextStateless {
             error?: unknown;
             meta?: MessageRow['meta'];
             level?: MessageRow['level'];
+            context?: MessageRow['context'];
+            createdAt: Date;
+            endedAt?: Date;
         }
     ): Promise<boolean> {
         const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
+        const endedAt = userDefinedEndedAt || new Date();
         return await this.log({
             type: 'http',
             level,
@@ -99,7 +105,9 @@ export class LogContextStateless {
             ...data,
             error: errorToDocument(error),
             source: 'internal',
-            createdAt: new Date().toISOString()
+            createdAt: createdAt.toISOString(),
+            endedAt: endedAt.toISOString(),
+            durationMs: endedAt.getTime() - createdAt.getTime()
         });
     }
 

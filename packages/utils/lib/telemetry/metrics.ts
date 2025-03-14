@@ -76,7 +76,9 @@ export enum Types {
     AUTH_FAILURE = 'nango.server.auth.failure',
 
     GET_RECORDS_COUNT = 'nango.server.getRecords.count',
-    GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes'
+    GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
+
+    CONNECTIONS_COUNT = 'nango.server.connections.count'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
@@ -89,8 +91,8 @@ export function decrement(metricName: Types, value = 1, dimensions?: Dimensions)
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
-export function gauge(metricName: Types, value?: number): void {
-    tracer.dogstatsd.gauge(metricName, value ?? 1);
+export function gauge(metricName: Types, value?: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.gauge(metricName, value ?? 1, dimensions ?? {});
 }
 
 export function histogram(metricName: Types, value: number): void {

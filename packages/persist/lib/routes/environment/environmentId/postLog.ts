@@ -2,13 +2,13 @@ import { z } from 'zod';
 import type { MessageRowInsert, PostLog } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
-import { logContextGetter } from '@nangohq/logs';
+import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import type { AuthLocals } from '../../../middleware/auth.middleware';
 
 const MAX_LOG_CHAR = 10000;
 
 export const logBodySchema = z.object({
-    activityLogId: z.string(),
+    activityLogId: operationIdRegex,
     log: z.object({
         type: z.enum(['log', 'http']),
         message: z.string(),
@@ -38,6 +38,8 @@ export const logBodySchema = z.object({
         meta: z.record(z.any()).optional().nullable(),
         createdAt: z.string(),
         endedAt: z.string().optional(),
+        durationMs: z.number().optional(),
+        context: z.enum(['script', 'proxy']).optional(),
         retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
     })
 });

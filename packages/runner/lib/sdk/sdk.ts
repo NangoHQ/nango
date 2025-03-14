@@ -35,7 +35,14 @@ export class NangoActionRunner extends NangoActionBase {
         this.nango = new Nango(
             { isSync: false, dryRun: isTest, ...props },
             {
-                interceptors: { response: { onFulfilled: this.logAPICall.bind(this) } }
+                interceptors: {
+                    request: (config) => {
+                        // @ts-expect-error yes it's internal
+                        config.metadata = { startTime: new Date() };
+                        return config;
+                    },
+                    response: { onFulfilled: this.logAPICall.bind(this) }
+                }
             }
         );
 
@@ -165,11 +172,15 @@ export class NangoActionRunner extends NangoActionBase {
         ];
 
         const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase
+        // @ts-expect-error yes it's internal
+        const createdAt = res.config.metadata.startTime || new Date();
+        const endedAt = new Date();
         void this.sendLogToPersist({
             type: 'http',
             message: `${method} ${res.config.url}`,
             source: 'internal',
             level: res.status >= 400 ? 'error' : 'info',
+            context: 'script',
             request: {
                 method: method || 'GET',
                 url: redactURL({ url: res.config.url, valuesToFilter }),
@@ -179,7 +190,9 @@ export class NangoActionRunner extends NangoActionBase {
                 code: res.status,
                 headers: redactHeaders({ headers: res.headers, valuesToFilter })
             },
-            createdAt: new Date().toISOString()
+            createdAt: createdAt,
+            endedAt: endedAt.toISOString(),
+            durationMs: endedAt.getTime() - createdAt.getTime()
         }).catch(() => {
             // this.log can throw when the script is aborted
             // since it is not awaited, the exception might not be caught
@@ -207,7 +220,14 @@ export class NangoSyncRunner extends NangoSyncBase {
         this.nango = new Nango(
             { isSync: true, dryRun: isTest, ...props },
             {
-                interceptors: { response: { onFulfilled: this.logAPICall.bind(this) } }
+                interceptors: {
+                    request: (config) => {
+                        // @ts-expect-error yes it's internal
+                        config.metadata = { startTime: new Date() };
+                        return config;
+                    },
+                    response: { onFulfilled: this.logAPICall.bind(this) }
+                }
             }
         );
 

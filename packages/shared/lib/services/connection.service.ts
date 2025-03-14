@@ -2049,6 +2049,22 @@ class ConnectionService {
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
     }
+
+    // return the number of active connections per account
+    async countMetric(): Promise<Result<{ accountId: number; count: number }[], NangoError>> {
+        const res = await db.knex
+            .from('_nango_connections')
+            .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
+            .count('_nango_connections.id as count')
+            .select<{ accountId: number; count: number }[]>('_nango_environments.account_id')
+            .where('_nango_connections.deleted_at', null)
+            .groupBy('_nango_environments.account_id');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new NangoError('failed_to_get_connections_count'));
+    }
 }
 
 export default new ConnectionService();
