@@ -96,12 +96,12 @@ export async function testConnectionCredentials({
     ];
 
     try {
-        if (provider?.credentials_verification_script) {
+        if (provider.credentials_verification_script) {
             await executeVerificationScript(config, credentials, connectionId, connectionConfig);
             return Ok({ logs, tested: true });
         }
 
-        if (provider?.proxy?.verification) {
+        if (provider.proxy?.verification) {
             const result = await credentialsTest({
                 config,
                 provider,

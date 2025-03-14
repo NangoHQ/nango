@@ -23,10 +23,10 @@ type VerificationScriptHandlersMap = Record<string, VerificationScriptHandler>;
 const handlers: VerificationScriptHandlersMap = verificationscriptHandlers as unknown as VerificationScriptHandlersMap;
 
 export interface InternalNango {
-    getCredentials: () => Promise<{
+    getCredentials: () => {
         credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
         providerConfigKey: string;
-    }>;
+    };
     proxy: <T = any>({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
 }
 
@@ -88,11 +88,10 @@ async function execute(
         }
 
         const internalNango: InternalNango = {
-            getCredentials: () =>
-                Promise.resolve({
-                    credentials,
-                    providerConfigKey
-                }),
+            getCredentials: () => ({
+                credentials,
+                providerConfigKey
+            }),
             proxy: async (requestConfig) => {
                 const proxyConfig = getProxyConfiguration({
                     externalConfig: { ...externalConfig, ...requestConfig },
