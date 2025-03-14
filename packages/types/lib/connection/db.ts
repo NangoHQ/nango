@@ -25,6 +25,12 @@ export interface DBConnection extends TimestampsAndDeletedCorrect {
     credentials_iv: string | null;
     credentials_tag: string | null;
     last_fetched_at: Date | null;
+
+    credentials_expires_at: Date | null;
+    last_refresh_success: Date | null;
+    last_refresh_failure: Date | null;
+    refresh_attempts: number | null;
+    refresh_exhausted: boolean | null;
 }
 export type DBConnectionDecrypted = Merge<DBConnection, { credentials: AllAuthCredentials }>;
 

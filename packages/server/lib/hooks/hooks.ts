@@ -10,7 +10,8 @@ import {
     AnalyticsTypes,
     syncManager,
     getProxyConfiguration,
-    ProxyRequest
+    ProxyRequest,
+    connectionService
 } from '@nangohq/shared';
 import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
@@ -136,6 +137,7 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
 }): Promise<void> => {
+    await connectionService.setRefreshSuccess(connection.id);
     await errorNotificationService.auth.clear({
         connection_id: connection.id
     });
@@ -170,6 +172,7 @@ export const connectionRefreshFailed = async ({
     logCtx: LogContext;
     action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
+    await connectionService.setRefreshFailure({ id: connection.id, currentAttempt: connection.refresh_attempts || 0 });
     await errorNotificationService.auth.create({
         type: 'auth',
         action,
@@ -244,7 +247,12 @@ export async function connectionTest({
         deleted: false,
         deleted_at: null,
         last_fetched_at: null,
-        metadata: null
+        metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false
     };
 
     const configBody: ApplicationConstructedProxyConfiguration = {

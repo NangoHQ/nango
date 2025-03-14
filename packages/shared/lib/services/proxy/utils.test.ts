@@ -18,6 +18,11 @@ export function getDefaultConnection(override?: Partial<DBConnectionDecrypted>):
         id: -1,
         last_fetched_at: null,
         metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false,
         ...override
     };
 }
