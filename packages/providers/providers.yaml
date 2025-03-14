@@ -7155,7 +7155,8 @@ readwise:
             authorization: Token ${apiKey}
         verification:
             method: GET
-            endpoint: /auth
+            endpoints:
+                - /auth
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/readwise
@@ -7181,7 +7182,8 @@ readwise-reader:
         verification:
             method: GET
             base_url_override: https://readwise.io
-            endpoint: /api/v2/auth
+            endpoints:
+                - /api/v2/auth
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/readwise-reader
