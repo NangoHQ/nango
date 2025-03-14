@@ -99,7 +99,9 @@ export type PostPublicConnectTelemetry = Endpoint<{
             | 'click:connect'
             | 'click:close'
             | 'click:finish'
-            | 'click:outside';
+            | 'click:outside'
+            | 'popup:blocked_by_browser'
+            | 'popup:closed_early';
         timestamp: Date;
         dimensions?: { integration?: string | undefined } | undefined;
     };

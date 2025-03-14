@@ -22,7 +22,9 @@ export const bodySchema = z
             'click:connect',
             'click:close',
             'click:finish',
-            'click:outside'
+            'click:outside',
+            'popup:blocked_by_browser',
+            'popup:closed_early'
         ]),
         timestamp: z.coerce.date(),
         dimensions: z.object({ integration: providerConfigKeySchema.optional() }).optional()
@@ -42,7 +44,9 @@ const mapEvents: Record<PostPublicConnectTelemetry['Body']['event'], string> = {
     'click:connect': 'Clicked button connect',
     'click:close': 'Clicked close',
     'click:finish': 'Clicked finish button to quit',
-    'click:outside': 'Clicked outside the UI to quit'
+    'click:outside': 'Clicked outside the UI to quit',
+    'popup:blocked_by_browser': 'Popup was blocked by the browser',
+    'popup:closed_early': 'Popup was closed by the user before connecting'
 };
 
 export const postConnectTelemetry = asyncWrapper<PostPublicConnectTelemetry>(async (req, res) => {
@@ -77,6 +81,8 @@ export const postConnectTelemetry = asyncWrapper<PostPublicConnectTelemetry>(asy
 
         case 'view:unknown_error':
         case 'view:credentials_error':
+        case 'popup:blocked_by_browser':
+        case 'popup:closed_early':
             await logCtx.log({
                 type: 'log',
                 level: 'error',
