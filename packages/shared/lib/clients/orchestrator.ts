@@ -99,11 +99,13 @@ export class Orchestrator {
     }
 
     async triggerAction<T = unknown>({
+        accountId,
         connection,
         actionName,
         input,
         logCtx
     }: {
+        accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
@@ -210,7 +212,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime, { accountId });
             span.finish();
         }
     }
@@ -346,12 +348,14 @@ export class Orchestrator {
     }
 
     async triggerOnEventScript<T = unknown>({
+        accountId,
         connection,
         version,
         name,
         fileLocation,
         logCtx
     }: {
+        accountId: number;
         connection: ConnectionJobs;
         version: string;
         name: string;
@@ -447,7 +451,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime, { accountId });
             span.finish();
         }
     }

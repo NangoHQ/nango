@@ -265,6 +265,7 @@ class SyncController {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
             const actionResponse = await getOrchestrator().triggerAction({
+                accountId: account.id,
                 connection,
                 actionName: action_name,
                 input,

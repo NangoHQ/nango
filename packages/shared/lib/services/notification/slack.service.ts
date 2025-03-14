@@ -209,6 +209,7 @@ export class SlackService {
 
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
+                accountId: adminEnvironment.account.id,
                 connection: slackConnection,
                 actionName: this.actionName,
                 input: payload,
@@ -345,6 +346,7 @@ export class SlackService {
 
         try {
             const actionResponse = await this.orchestrator.triggerAction<SlackActionResponse>({
+                accountId: adminEnvironment.account.id,
                 connection: slackConnection,
                 actionName: this.actionName,
                 input: payload,
