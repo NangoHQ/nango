@@ -152,9 +152,11 @@ GitHub Apps use a different authentication flow than standard OAuth. You can con
 {
   "appId": "123456",
   "appPublicLink": "https://github.com/apps/your-app-name",
-  "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIE...\n-----END RSA PRIVATE KEY-----\n"
+  "privateKey": "YOUR_PRIVATE_KEY"
 }
 ```
+
+The `privateKey` should be the contents of the private key file you downloaded when setting up your GitHub App. Make sure to store this securely and never expose it in client-side code.
 
 To initiate a connection with a GitHub App:
 
