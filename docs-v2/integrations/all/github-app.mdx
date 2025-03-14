@@ -144,29 +144,7 @@ import PreBuiltUseCases from "/snippets/generated/github-app/PreBuiltUseCases.md
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/github-app.mdx)</Note>
 
-## Connection configuration in Nango
 
-GitHub Apps use a different authentication flow than standard OAuth. You can configure your connection in Nango using the following parameters:
-
-```json
-{
-  "appId": "123456",
-  "appPublicLink": "https://github.com/apps/your-app-name",
-  "privateKey": "YOUR_PRIVATE_KEY"
-}
-```
-
-The `privateKey` should be the contents of the private key file you downloaded when setting up your GitHub App. Make sure to store this securely and never expose it in client-side code.
-
-To initiate a connection with a GitHub App:
-
-```js
-nango.auth('github-app', '<CONNECTION-ID>');
-```
-
-This will redirect the user to the GitHub App installation page. After installation, the user will be redirected back to your application.
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
