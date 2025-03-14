@@ -59,6 +59,7 @@ const validate = validateRequest<PostLog>({
 
 const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, AuthLocals>) => {
     const { body } = req;
+    const { account } = res.locals;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
 
@@ -66,7 +67,7 @@ const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, A
         ...body.log,
         message: truncate(body.log.message)
     };
-    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId) }, { logToConsole: false });
+    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId), accountId: account.id }, { logToConsole: false });
     void logCtx.log(log);
     res.status(204).send();
 

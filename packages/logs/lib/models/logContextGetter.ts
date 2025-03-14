@@ -62,7 +62,7 @@ export const logContextGetter = {
         return new LogContext({ parentId: id, operation: { id: nanoid(), createdAt: new Date().toISOString() } as OperationRow }, { ...options, dryRun: true });
     },
 
-    getStateLess({ id }: { id: OperationRow['id'] }, options?: Options): LogContextStateless {
-        return new LogContextStateless({ parentId: id }, options);
+    getStateLess({ id, accountId }: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
+        return new LogContextStateless({ parentId: id, accountId }, options);
     }
 };
