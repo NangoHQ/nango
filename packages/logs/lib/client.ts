@@ -17,11 +17,13 @@ interface Options {
  */
 export class LogContextStateless {
     id: OperationRow['id'];
+    accountId: OperationRow['accountId'];
     dryRun: boolean;
     logToConsole: boolean;
 
-    constructor(data: { parentId: OperationRow['id'] }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor(data: { parentId: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.parentId;
+        this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
     }
@@ -49,7 +51,7 @@ export class LogContextStateless {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId: this.accountId });
         }
     }
 
@@ -127,7 +129,8 @@ export class LogContext extends LogContextStateless {
     span?: OtlpSpan;
 
     constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
-        super(data, options);
+        const { operation, ...rest } = data;
+        super({ ...rest, accountId: data.operation.accountId }, options);
         this.operation = data.operation;
     }
 
