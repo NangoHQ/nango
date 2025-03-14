@@ -26,16 +26,18 @@ export async function exec(): Promise<void> {
         try {
             logger.info(`Starting`);
 
+            // CONNECTIONS COUNT
             const res = await connectionService.countMetric();
             if (res.isErr()) {
                 throw res.error;
             }
-            for (const { accountId, count, with_actions, with_syncs, with_webhooks } of res.value) {
-                metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, with_actions, { accountId });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, with_syncs, { accountId });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, with_webhooks, { accountId });
+            for (const { account_id, count, with_actions, with_syncs, with_webhooks } of res.value) {
+                metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: account_id });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, with_actions, { accountId: account_id });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, with_syncs, { accountId: account_id });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, with_webhooks, { accountId: account_id });
             }
+
             logger.info(`✅ done`);
         } catch (err) {
             span.setTag('error', err);

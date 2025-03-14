@@ -2054,7 +2054,7 @@ class ConnectionService {
     async countMetric(): Promise<
         Result<
             {
-                accountId: number;
+                account_id: number;
                 count: number;
                 with_actions: number;
                 with_syncs: number;
@@ -2076,14 +2076,14 @@ class ConnectionService {
             .leftJoin('_nango_sync_configs', '_nango_sync_configs.nango_config_id', '_nango_configs.id')
             .select<
                 {
-                    accountId: number;
+                    account_id: number;
                     count: number;
                     with_actions: number;
                     with_syncs: number;
                     with_webhooks: number;
                 }[]
             >(
-                db.knex.raw(`_nango_environments.account_id as accountId`),
+                db.knex.raw(`_nango_environments.account_id as account_id`),
                 db.knex.raw(`count(DISTINCT _nango_connections.id) AS count`),
                 db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as with_actions`),
                 db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as with_syncs`),
