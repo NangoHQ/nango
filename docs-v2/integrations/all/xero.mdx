@@ -76,17 +76,7 @@ import PreBuiltUseCases from "/snippets/generated/xero/PreBuiltUseCases.mdx"
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
 
-## Connection configuration in Nango
 
-Xero uses a multi-tenanted architecture where users can have access to multiple organizations (tenants). When a user authorizes your app, they will be asked to select which Xero organization(s) they want to connect.
-
-Nango automatically handles the tenant selection process during the OAuth flow. The tenant information is stored in the connection and can be accessed in your integration scripts.
-
-```js
-nango.auth('xero', '<CONNECTION-ID>');
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
