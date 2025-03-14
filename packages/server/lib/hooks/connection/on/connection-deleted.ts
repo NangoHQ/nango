@@ -44,6 +44,7 @@ export async function preConnectionDeletion({
         );
 
         const res = await getOrchestrator().triggerOnEventScript({
+            accountId: team.id,
             connection,
             version,
             name,
