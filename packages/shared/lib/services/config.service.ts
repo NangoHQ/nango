@@ -201,6 +201,22 @@ class ConfigService {
         return { copiedToId: providerConfigResponse.id!, copiedFromId: foundConfigId };
     }
 
+    async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<IntegrationConfig[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .select('*')
+            .from<IntegrationConfig>(`_nango_configs`)
+            .where('deleted', true)
+            .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+    }
+
+    async hardDelete(id: number): Promise<void> {
+        await db.knex.from<ProviderConfig>(`_nango_configs`).where({ id }).delete();
+    }
+
     VALIDATION_RULES: ValidationRule[] = [
         {
             field: 'oauth_client_id',

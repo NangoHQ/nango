@@ -544,3 +544,7 @@ export async function findRecentlyDeletedSync(): Promise<{ id: string; environme
 export async function trackFetch(nango_connection_id: number): Promise<void> {
     await db.knex.from<Sync>(`_nango_syncs`).where({ nango_connection_id, deleted: false }).update({ last_fetched_at: new Date() });
 }
+
+export async function hardDeleteSync(id: string) {
+    await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();
+}

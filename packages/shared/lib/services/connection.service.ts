@@ -2107,6 +2107,31 @@ class ConnectionService {
 
         return Err(new NangoError('failed_to_get_connections_count'));
     }
+
+    async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBConnection[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .select('*')
+            .from<DBConnection>(`_nango_connections`)
+            .where('deleted', true)
+            .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+    }
+
+    async hardDeleteByIntegration({ integrationId, limit }: { integrationId: number; limit: number }): Promise<number> {
+        return await db.knex
+            .from<DBConnection>('_nango_connections')
+            .whereIn('id', function (sub) {
+                sub.select('id').from<DBConnection>('_nango_connections').where('config_id', integrationId).limit(limit);
+            })
+            .delete();
+    }
+
+    async hardDelete(id: number): Promise<number> {
+        return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
+    }
 }
 
 export default new ConnectionService();

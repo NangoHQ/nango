@@ -1,9 +1,7 @@
 import './tracer.js';
 
-import * as cron from 'node-cron';
 import { Processor } from './processor/processor.js';
 import { server } from './server.js';
-import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError, once, initSentry, report } from '@nangohq/utils';
 import { envs } from './env.js';
 import db from '@nangohq/database';
@@ -62,8 +60,6 @@ try {
         logger.info('Closing...');
         clearTimeout(healthCheck);
 
-        cron.getTasks().forEach((task) => task.stop());
-
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             processor.stop();
@@ -100,9 +96,6 @@ try {
     runnersFleet.start();
 
     processor.start();
-
-    // Register recurring tasks
-    deleteSyncsData();
 
     otlp.register(getOtlpRoutes);
 } catch (err) {

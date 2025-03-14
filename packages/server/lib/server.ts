@@ -8,7 +8,6 @@ import { WebSocketServer } from 'ws';
 import http from 'node:http';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
 import { getLogger, once, requestLoggerMiddleware, initSentry, NANGO_VERSION, report } from '@nangohq/utils';
-import oAuthSessionService from './services/oauth-session.service.js';
 import db, { KnexDatabase } from '@nangohq/database';
 import migrate from './utils/migrate.js';
 import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
@@ -82,7 +81,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 // Preload providers
 getProviders();
 
-await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
 exportUsageMetricsCron();
 timeoutLogsOperations();
