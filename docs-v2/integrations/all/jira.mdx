@@ -92,25 +92,7 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>
 
-## Connection configuration in Nango
 
-Jira uses OAuth 2.0 for authentication. You can configure your connection in Nango using the standard authorization flow:
-
-```js
-nango.auth('jira', '<CONNECTION-ID>');
-```
-
-When configuring your integration in Nango, you can specify the scopes your application requires. For example:
-
-```json
-{
-  "scopes": ["read:jira-user", "read:jira-work", "write:jira-work", "offline_access"]
-}
-```
-
-The `offline_access` scope is required if you want to receive refresh tokens.
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
