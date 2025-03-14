@@ -224,9 +224,8 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async getAll(): Promise<DBEnvironment[]> {
-        const result = await db.knex.select('*').from<DBEnvironment>(TABLE);
-        // NOTE: we are not decrypting the environments
+    async getAll(): Promise<{ environmentId: number; accountId: number }[]> {
+        const result = await db.knex.select('id as environmentId', 'account_id as accountId').from<{ environmentId: number; accountId: number }[]>(TABLE);
         return result || [];
     }
 

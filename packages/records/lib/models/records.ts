@@ -50,14 +50,14 @@ export async function getRecordCountsByModel({
     }
 }
 
-export async function countMetric(): Promise<Result<{ environment_id: number; count: string }[]>> {
+export async function countMetric(): Promise<Result<{ environmentId: number; count: string }[]>> {
     // Note: count is a string because pg returns bigint as string
     try {
         const res = await db
             .from(RECORD_COUNTS_TABLE)
             .sum('count as count')
             .groupBy('environment_id')
-            .select<{ environment_id: number; count: string }[]>('environment_id');
+            .select<{ environmentId: number; count: string }[]>('environment_id as environmentId');
 
         return Ok(res);
     } catch {

@@ -38,11 +38,11 @@ async function exportConnectionsMetrics(): Promise<void> {
             if (connRes.isErr()) {
                 throw connRes.error;
             }
-            for (const { account_id, count, with_actions, with_syncs, with_webhooks } of connRes.value) {
-                metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: account_id });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, with_actions, { accountId: account_id });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, with_syncs, { accountId: account_id });
-                metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, with_webhooks, { accountId: account_id });
+            for (const { accountId, count, withActions, withSyncs, withWebhooks } of connRes.value) {
+                metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId: accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, withActions, { accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, withSyncs, { accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, withWebhooks, { accountId });
             }
         } catch (err) {
             span.setTag('error', err);
@@ -69,13 +69,13 @@ async function exportRecordsMetrics(): Promise<void> {
             if (envs.length <= 0) {
                 throw new Error('no_environments');
             }
-            const countByAccount = recordsRes.value.reduce((acc, { environment_id, count }) => {
-                const env = envs.find((e) => e.id === environment_id);
+            const countByAccount = recordsRes.value.reduce((acc, { environmentId, count }) => {
+                const env = envs.find((e) => e.environmentId === environmentId);
                 if (!env) {
                     return acc;
                 }
-                const prev = acc.get(env.account_id) || 0;
-                acc.set(env.account_id, prev + Number(count));
+                const prev = acc.get(env.accountId) || 0;
+                acc.set(env.accountId, prev + Number(count));
                 return acc;
             }, new Map<number, number>());
 
