@@ -2051,18 +2051,60 @@ class ConnectionService {
     }
 
     // return the number of active connections per account
-    async countMetric(): Promise<Result<{ accountId: number; count: number }[], NangoError>> {
-        const res = await db.knex
+    async countMetric(): Promise<
+        Result<
+            {
+                accountId: number;
+                count: number;
+                with_actions: number;
+                with_syncs: number;
+                with_webhooks: number;
+            }[],
+            NangoError
+        >
+    > {
+        const res = await db.readOnly
             .from('_nango_connections')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
-            .count('_nango_connections.id as count')
-            .select<{ accountId: number; count: number }[]>('_nango_environments.account_id')
-            .where('_nango_connections.deleted_at', null)
+            .join('_nango_configs', function () {
+                this.on('_nango_configs.unique_key', '=', '_nango_connections.provider_config_key').andOn(
+                    '_nango_configs.environment_id',
+                    '=',
+                    '_nango_connections.environment_id'
+                );
+            })
+            .leftJoin('_nango_sync_configs', '_nango_sync_configs.nango_config_id', '_nango_configs.id')
+            .select<
+                {
+                    accountId: number;
+                    count: number;
+                    with_actions: number;
+                    with_syncs: number;
+                    with_webhooks: number;
+                }[]
+            >(
+                db.knex.raw(`_nango_environments.account_id as accountId`),
+                db.knex.raw(`count(DISTINCT _nango_connections.id) AS count`),
+                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'action' THEN _nango_connections.id ELSE NULL END) as with_actions`),
+                db.knex.raw(`count(DISTINCT CASE WHEN _nango_sync_configs.type = 'sync' THEN _nango_connections.id ELSE NULL END) as with_syncs`),
+                db.knex.raw(
+                    `count(DISTINCT CASE WHEN _nango_sync_configs.webhook_subscriptions IS NOT NULL AND array_length(_nango_sync_configs.webhook_subscriptions, 1) > 0 THEN _nango_connections.id ELSE NULL END) as with_webhooks`
+                )
+            )
+            .whereNull('_nango_connections.deleted_at')
+            .whereNull('_nango_sync_configs.deleted_at')
+            .where(function () {
+                this.where('_nango_sync_configs.active', true).orWhereNull('_nango_sync_configs.active');
+            })
+            .where(function () {
+                this.where('_nango_sync_configs.enabled', true).orWhereNull('_nango_sync_configs.enabled');
+            })
             .groupBy('_nango_environments.account_id');
 
         if (res) {
             return Ok(res);
         }
+
         return Err(new NangoError('failed_to_get_connections_count'));
     }
 }
