@@ -56,14 +56,7 @@ Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reac
        - **Secret** (Client Secret)
     2. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
   </Step>
-  <Step title="Configure OAuth scopes">
-    When setting up your integration in Nango, you'll need to specify the scopes your application requires. Zendesk supports the following common scopes:
-    - `read` - Read access to the account
-    - `write` - Write access to the account
-    - `impersonate` - Act on behalf of users
-    
-    For a complete list of scopes, refer to the [Zendesk OAuth documentation](https://support.zendesk.com/hc/en-us/articles/4408845965210#topic_gql_kbd_gt).
-  </Step>
+
   <Step title="Request a global OAuth client (optional)">
     If your application needs to connect to multiple Zendesk instances, you should request a global OAuth client:
     
@@ -97,17 +90,7 @@ Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reac
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
 
-## Connection configuration in Nango
 
-Zendesk requires a user specific subdomain to run OAuth.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('zendesk', '<CONNECTION-ID>', {params: {subdomain: '<zendesk-subdomain>'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
