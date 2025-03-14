@@ -107,7 +107,7 @@ export interface MessageRow {
     level: LogLevel;
     type: MessageType;
     message: string;
-    context?: 'script' | 'proxy' | 'webhook';
+    context?: 'script' | 'proxy' | 'webhook' | undefined;
 
     // Operation row id
     parentId: string;

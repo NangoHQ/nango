@@ -17,7 +17,8 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { runnersFleet } from './fleet.js';
 import publisher from './clients/publisher.client.js';
 import { router } from './routes.js';
-import { refreshConnectionsCron } from './refreshConnections.js';
+import { refreshConnectionsCron } from './crons/refreshConnections.js';
+import { exportUsageMetricsCron } from './crons/exportMetrics.js';
 import { envs } from './env.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 
@@ -81,6 +82,7 @@ getProviders();
 
 await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
+exportUsageMetricsCron();
 otlp.register(getOtlpRoutes);
 
 const port = getServerPort();

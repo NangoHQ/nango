@@ -6,7 +6,7 @@ import { defaultOperationExpiration } from '../env.js';
 import type { LogContext } from '../client.js';
 import type { SetRequired } from 'type-fest';
 
-export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
+export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
 
 export interface AdditionalOperationData {
     account?: { id: number; name: string };
@@ -23,9 +23,10 @@ export function getFormattedOperation(
     { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
     const now = new Date();
+    const createdAt = data.createdAt ? new Date(data.createdAt) : now;
     return {
         message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
-        id: data.id || nanoid(),
+        id: data.id || `${createdAt.getTime()}_${nanoid(8)}`,
         operation: data.operation,
         state: data.state || 'waiting',
         source: 'internal',
@@ -69,6 +70,7 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         level: data.level || 'info',
         type: data.type || 'log',
         message: data.message || '',
+        context: data.context,
 
         parentId: data.parentId,
 
@@ -79,7 +81,8 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         meta: data.meta,
 
         createdAt: data.createdAt || now.toISOString(),
-        endedAt: data.endedAt
+        endedAt: data.endedAt,
+        durationMs: data.durationMs
     };
 }
 
