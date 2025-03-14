@@ -123,6 +123,7 @@ export class ProxyRequest {
     private async logErrorResponse({ error, retryAttempt, start }: { error: unknown; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
         const valuesToFilter = this.connection ? Object.values(this.connection.credentials) : [];
         const redactedURL = redactURL({ url: this.axiosConfig?.url || '', valuesToFilter });
+        const endedAt = new Date();
 
         if (isAxiosError(error)) {
             const safeHeaders = redactHeaders({ headers: this.axiosConfig?.headers, valuesToFilter });
@@ -130,8 +131,10 @@ export class ProxyRequest {
                 type: 'http',
                 level: 'error',
                 source: 'internal',
+                context: 'proxy',
                 createdAt: start.toISOString(),
-                endedAt: new Date().toISOString(),
+                endedAt: endedAt.toISOString(),
+                durationMs: endedAt.getTime() - start.getTime(),
                 message: `${this.config.method} ${redactedURL}`,
                 request: {
                     method: this.config.method,
@@ -157,8 +160,10 @@ export class ProxyRequest {
                 type: 'http',
                 level: 'error',
                 source: 'internal',
+                context: 'proxy',
                 createdAt: start.toISOString(),
-                endedAt: new Date().toISOString(),
+                endedAt: endedAt.toISOString(),
+                durationMs: endedAt.getTime() - start.getTime(),
                 message: `${this.config.method} ${redactedURL}`,
                 error: error as any,
                 retry: retryAttempt
@@ -170,13 +175,16 @@ export class ProxyRequest {
         const valuesToFilter = this.connection ? Object.values(this.connection.credentials) : [];
         const safeHeaders = redactHeaders({ headers: this.axiosConfig?.headers, valuesToFilter });
         const redactedURL = redactURL({ url: this.axiosConfig?.url || '', valuesToFilter });
+        const endedAt = new Date();
 
         await this.logger({
             type: 'http',
             level: 'info',
             source: 'internal',
+            context: 'proxy',
             createdAt: start.toISOString(),
-            endedAt: new Date().toISOString(),
+            endedAt: endedAt.toISOString(),
+            durationMs: endedAt.getTime() - start.getTime(),
             message: `${this.config.method} ${redactedURL}`,
             request: {
                 method: this.config.method,

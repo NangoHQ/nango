@@ -241,6 +241,47 @@ export class AccessMiddleware {
         }
     }
 
+    /**
+     * This is the same as connectSessionAuth expect we check the body
+     * Only used for /connect/telemetry because we use sendBeacon that does not accept headers
+     */
+    async connectSessionAuthBody(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('connectSessionAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const token = req.is('application/json') && req.body && req.body['token'];
+            if (!token) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const result = await this.validateConnectSessionToken(token);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'connectSession';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['connectSession'] = result.value.connectSession;
+            res.locals['endUser'] = result.value.endUser;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
+            span.setTag('error', err);
+            return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
+        }
+    }
+
     async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {

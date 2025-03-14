@@ -150,10 +150,11 @@ export const deliver = async ({
         try {
             await retryFlexible(
                 async () => {
+                    const createdAt = new Date();
                     try {
                         const res = await axios.post(url, body, { headers });
 
-                        void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res) });
+                        void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
                         if (res.status >= 200 && res.status < 300) {
                             void logCtx?.info(`Webhook "${webhookType}" sent successfully (${type} URL) ${endingMessage ? ` ${endingMessage}` : ''}`);
                         } else {
@@ -168,15 +169,19 @@ export const deliver = async ({
                             void logCtx?.http(`POST ${logRequest.url}`, {
                                 response: err.response ? formatLogResponse(err.response) : undefined,
                                 request: logRequest,
+                                context: 'webhook',
                                 error: !err.response ? err : null,
-                                level: 'error'
+                                level: 'error',
+                                createdAt
                             });
                         } else {
                             void logCtx?.http(`POST ${logRequest?.url}`, {
                                 request: logRequest,
                                 response: undefined,
+                                context: 'webhook',
                                 error: err,
-                                level: 'error'
+                                level: 'error',
+                                createdAt
                             });
                         }
                         throw err;

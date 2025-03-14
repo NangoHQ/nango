@@ -8,7 +8,13 @@ const logger = getLogger('Server.exportUsageMetrics');
 const cronMinutes = envs.CRON_EXPORT_USAGE_METRICS_MINUTES;
 
 export function exportUsageMetricsCron(): void {
-    cron.schedule(`*/${cronMinutes} * * * *`, () => {
+    // set env var CRON_EXPORT_USAGE_METRICS_MINUTES to 0 to disable
+    if (cronMinutes <= 0) {
+        return;
+    }
+    // add some jitter to avoid all instances running at the same time
+    const jitter = Math.floor(Math.random() * cronMinutes);
+    cron.schedule(`*/${cronMinutes + jitter} * * * *`, () => {
         (async () => {
             await exec();
         })();
@@ -24,8 +30,11 @@ export async function exec(): Promise<void> {
             if (res.isErr()) {
                 throw res.error;
             }
-            for (const { accountId, count } of res.value) {
+            for (const { accountId, count, with_actions, with_syncs, with_webhooks } of res.value) {
                 metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_ACTIONS_COUNT, with_actions, { accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_SYNCS_COUNT, with_syncs, { accountId });
+                metrics.gauge(metrics.Types.CONNECTIONS_WITH_WEBHOOKS_COUNT, with_webhooks, { accountId });
             }
             logger.info(`✅ done`);
         } catch (err) {
