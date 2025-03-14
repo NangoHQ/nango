@@ -2,7 +2,7 @@ import type { InternalNango as Nango } from '../credentials-verification-script.
 import type { UserResponse } from '../../response-types/lastpass.js';
 
 export default async function execute(nango: Nango) {
-    const { credentials, providerConfigKey } = await nango.getCredentials();
+    const { credentials, providerConfigKey } = nango.getCredentials();
 
     const { username, password } = credentials as { username: string; password: string };
 
