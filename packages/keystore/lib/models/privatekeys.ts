@@ -153,9 +153,9 @@ function decryptValue(encryptedValue: Buffer): Result<string, PrivateKeyError> {
     return Ok(encryption.decrypt(encrypted, iv, tag));
 }
 
-export async function deleteExpiredPrivateKeys(db: knex.Knex, { limit, deleteOlderThan }: { limit: number; deleteOlderThan: number }): Promise<number> {
+export async function deleteExpiredPrivateKeys(db: knex.Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
     const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() - deleteOlderThan);
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
 
     return await db
         .from<DbPrivateKey>(PRIVATE_KEYS_TABLE)

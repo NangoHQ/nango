@@ -21,6 +21,10 @@ const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MA
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
 
 export function deleteOldData(): void {
+    if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN === 0) {
+        return;
+    }
+
     cron.schedule(
         `*/${cronMinutes} * * * *`,
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -60,7 +64,7 @@ export async function exec(): Promise<void> {
 
         // Delete jobs
         while (true) {
-            const deleted = await deleteJobsByDate({ deleteJobsOlderThan, limit });
+            const deleted = await deleteJobsByDate({ olderThan: deleteJobsOlderThan, limit });
             logger.info(`Deleted ${deleted} jobs`);
             if (deleted < limit) {
                 break;
@@ -74,7 +78,7 @@ export async function exec(): Promise<void> {
 
         // Delete connect session
         while (true) {
-            const deleted = await deleteExpiredConnectSession(db.knex, { deleteOlderThan: deleteConnectionSessionOlderThan, limit });
+            const deleted = await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit });
             logger.info(`Deleted ${deleted} connect session`);
             if (deleted < limit) {
                 break;
@@ -88,7 +92,7 @@ export async function exec(): Promise<void> {
 
         // Delete private keys
         while (true) {
-            const deleted = await deleteExpiredPrivateKeys(db.knex, { deleteOlderThan: deletePrivateKeysOlderThan, limit });
+            const deleted = await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit });
             logger.info(`Deleted ${deleted} private keys`);
             if (deleted < limit) {
                 break;

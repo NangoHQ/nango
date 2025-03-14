@@ -168,9 +168,9 @@ export async function deleteConnectSession(
     return Ok(undefined);
 }
 
-export async function deleteExpiredConnectSession(db: Knex, { limit, deleteOlderThan }: { limit: number; deleteOlderThan: number }): Promise<number> {
+export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
     const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() - deleteOlderThan);
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
 
     return await db
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
