@@ -12,3 +12,4 @@ export { default as gustoPostConnection } from './gusto-post-connection.js';
 export { default as workablePostConnection } from './workable-post-connection.js';
 export { default as adobeUmapiPostConnection } from './adobe-umapi-post-connection.js';
 export { default as basecampPostConnection } from './basecamp-post-connection.js';
+export { default as dropboxPostConnection } from './dropbox-post-connection.js';

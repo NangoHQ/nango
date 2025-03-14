@@ -2725,6 +2725,8 @@ dropbox:
     proxy:
         base_url: https://api.dropboxapi.com
     docs: https://docs.nango.dev/integrations/all/dropbox
+    webhook_routing_script: dropboxWebhookRouting
+    post_connection_script: dropboxPostConnection
 
 drupal:
     display_name: Drupal

@@ -105,6 +105,7 @@ import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore
 import { postRollout } from './controllers/fleet/postRollout.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
+import { getWebhook } from './controllers/webhook/environmentUuid/getWebhook.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
@@ -210,6 +211,7 @@ publicAPI.use('/unauth', jsonContentTypeMiddleware);
 // @deprecated use /auth/unauthenticated
 publicAPI.route('/unauth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').get(getWebhook);
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
 
 // API Admin routes
