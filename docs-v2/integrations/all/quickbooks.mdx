@@ -75,15 +75,7 @@ import PreBuiltUseCases from "/snippets/generated/quickbooks/PreBuiltUseCases.md
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbooks.mdx)</Note>
 
-## Connection configuration in Nango
 
-QuickBooks requires a company ID/realmId for each API request. Nango automatically retrieves this for you during the OAuth flow, or you can manually override it by specifying the realmId when creating a new connection.
-
-```js
-nango.auth('quickbooks', '<CONNECTION-ID>', {connectionConfig: {realmId: '<REALM-ID>'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
