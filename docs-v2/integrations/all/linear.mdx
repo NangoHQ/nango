@@ -48,15 +48,7 @@ import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
        - **Client Secret**
     2. Make a copy of these credentials as they will be needed when configuring your integration in Nango.
   </Step>
-  <Step title="Configure OAuth scopes">
-    When setting up your integration in Nango, you'll need to specify the scopes your application requires. Linear supports the following scopes:
-    - `read` - (Default) Read access for the user's account
-    - `write` - Write access for the user's account
-    - `issues:create` - Allows creating new issues and their attachments
-    - `comments:create` - Allows creating new issue comments
-    - `timeSchedule:write` - Allows creating and modifying time schedules
-    - `admin` - Full access to admin level endpoints (only request if absolutely necessary)
-  </Step>
+
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
@@ -82,17 +74,7 @@ import PreBuiltUseCases from "/snippets/generated/linear/PreBuiltUseCases.mdx"
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/linear.mdx)</Note>
 
-## Connection configuration in Nango
 
-Linear uses OAuth 2.0 for authentication. You can configure your connection in Nango using the standard authorization flow:
-
-```js
-nango.auth('linear', '<CONNECTION-ID>');
-```
-
-When configuring your integration in Nango, you can specify the scopes your application requires. By default, Linear provides the `read` scope, but you can request additional scopes as needed.
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui).
 
 ## API gotchas
 
