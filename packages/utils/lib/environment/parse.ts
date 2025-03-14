@@ -37,11 +37,12 @@ export const ENVS = z.object({
 
     // Crons
     CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+    CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
-    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(30),
-    CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(30),
-    CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(30),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),

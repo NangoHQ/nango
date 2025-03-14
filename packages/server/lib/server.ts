@@ -21,6 +21,7 @@ import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { exportUsageMetricsCron } from './crons/exportMetrics.js';
 import { envs } from './env.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -84,6 +85,7 @@ getProviders();
 await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
 exportUsageMetricsCron();
+timeoutLogsOperations();
 deleteOldData();
 otlp.register(getOtlpRoutes);
 
