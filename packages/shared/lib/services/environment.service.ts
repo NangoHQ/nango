@@ -268,8 +268,8 @@ class EnvironmentService {
         return result.map((env) => encryptionManager.decryptEnvironment(env));
     }
 
-    async getSlackNotificationsEnabled(environmentId: number): Promise<boolean | null> {
-        const result = await db.knex.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
+    async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
+        const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;

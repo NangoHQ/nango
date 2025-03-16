@@ -532,7 +532,7 @@ export class SlackService {
         provider: string;
     }): Promise<void> {
         const update = await db.knex.transaction(async (trx) => {
-            const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
+            const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id, trx);
             if (!slackNotificationsEnabled) {
                 return;
             }
