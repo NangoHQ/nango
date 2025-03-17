@@ -16,7 +16,8 @@ import {
     configService,
     getProxyConfiguration,
     ProxyRequest,
-    ProxyError
+    ProxyError,
+    refreshOrTestCredentials
 } from '@nangohq/shared';
 import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
@@ -109,7 +110,7 @@ class ProxyController {
                 return;
             }
 
-            const credentialResponse = await connectionService.refreshOrTestCredentials({
+            const credentialResponse = await refreshOrTestCredentials({
                 account,
                 environment,
                 connection: connectionRes.response,
@@ -171,7 +172,7 @@ class ProxyController {
                     }
 
                     lastConnectionRefresh = Date.now();
-                    const credentialResponse = await connectionService.refreshOrTestCredentials({
+                    const credentialResponse = await refreshOrTestCredentials({
                         account,
                         environment,
                         connection,

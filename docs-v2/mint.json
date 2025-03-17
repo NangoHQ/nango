@@ -491,6 +491,7 @@
                 "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
+                "integrations/all/microsoft-oauth2-cc",
                 "integrations/all/mindbody",
                 "integrations/all/minimax",
                 "integrations/all/mip-cloud",
