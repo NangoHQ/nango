@@ -192,7 +192,7 @@ export const connectionRefreshSuccess = async ({
         connection_id: connection.id
     });
 
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
+    const slackNotificationService = new SlackService({ logContextGetter });
 
     await slackNotificationService.removeFailingConnection({
         connection,
@@ -244,9 +244,17 @@ export const connectionRefreshFailed = async ({
         account
     });
 
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
+    const slackNotificationService = new SlackService({ logContextGetter });
 
-    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, config.provider);
+    await slackNotificationService.reportFailure({
+        account,
+        environment,
+        connection,
+        name: connection.connection_id,
+        type: 'auth',
+        originalActivityLogId: logCtx.id,
+        provider: config.provider
+    });
 };
 
 export async function credentialsTest({

@@ -791,7 +791,7 @@ class ConnectionService {
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator and logContextGetter dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
-        const slackService = new SlackService({ logContextGetter, orchestrator });
+        const slackService = new SlackService({ logContextGetter });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;

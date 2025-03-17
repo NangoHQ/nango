@@ -68,7 +68,7 @@ class ConnectionController {
             });
 
             // Kill all notifications associated with this env
-            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
+            const slackNotificationService = new SlackService({ logContextGetter });
             await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
