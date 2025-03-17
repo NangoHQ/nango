@@ -156,3 +156,6 @@ export interface ProviderSignature extends BaseProvider {
     };
 }
 export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature;
+
+export type RefreshableProvider = ProviderOAuth2; // TODO: fix this type
+export type TestableProvider = ProviderJwt | ProviderSignature; // TODO: fix this type
