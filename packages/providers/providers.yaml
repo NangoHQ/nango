@@ -6389,6 +6389,29 @@ pandadoc:
         base_url: https://api.pandadoc.com
     docs: https://docs.nango.dev/integrations/all/pandadoc
 
+pandadoc-api-key:
+    display_name: Pandadoc (API Key)
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pandadoc.com
+        verification:
+            method: GET
+            endpoint: /public/v1/logs
+        headers:
+            authorization: API-Key ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/pandadoc-api-key
+    docs_connect: https://docs.nango.dev/integrations/all/pandadoc-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pandadoc account
+            doc_section: '#step-1-generating-your-api-key'
+            example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
+            pattern: '^[a-fA-F0-9]+$'
+
 payfit:
     display_name: Payfit
     categories:

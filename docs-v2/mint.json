@@ -522,6 +522,7 @@
                 "integrations/all/outreach",
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
+                "integrations/all/pandadoc-api-key",
                 "integrations/all/payfit",
                 "integrations/all/paylocity",
                 "integrations/all/paypal",
