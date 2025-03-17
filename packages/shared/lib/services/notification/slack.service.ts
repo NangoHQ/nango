@@ -12,6 +12,7 @@ import configService from '../config.service.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 import type { Config } from '../../models/Provider.js';
+import type { FeatureFlags } from '@nangohq/kvstore';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -80,13 +81,19 @@ export const generateSlackConnectionId = (accountUUID: string, environmentName: 
 
 export class SlackService {
     private logContextGetter: LogContextGetter;
+    private featureFlags: FeatureFlags;
 
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
-    constructor({ logContextGetter }: { logContextGetter: LogContextGetter }) {
+    constructor({ logContextGetter, featureFlags }: { logContextGetter: LogContextGetter; featureFlags: FeatureFlags }) {
         this.logContextGetter = logContextGetter;
+        this.featureFlags = featureFlags;
+    }
+
+    private async isDisabled() {
+        return this.featureFlags.isSet('disable-slack-notifications');
     }
 
     /**
@@ -131,6 +138,10 @@ export class SlackService {
         originalActivityLogId: string;
         provider: string;
     }) {
+        if (await this.isDisabled()) {
+            return;
+        }
+
         if (!environment.slack_notifications) {
             return;
         }
@@ -191,6 +202,10 @@ export class SlackService {
         slack_timestamp: string,
         connectionCount: number
     ) {
+        if (await this.isDisabled()) {
+            return;
+        }
+
         const accountEnv = await environmentService.getAccountAndEnvironment({ environmentId: connection.environment_id });
         if (!accountEnv) {
             throw new Error('failed_to_get_account');
