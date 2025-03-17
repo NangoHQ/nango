@@ -5576,6 +5576,30 @@ microsoft:
         decompress: true
     docs: https://docs.nango.dev/integrations/all/microsoft
 
+microsoft-oauth2-cc:
+    display_name: Microsoft (Client Credentials)
+    auth_mode: OAUTH2_CC
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://docs.nango.dev/integrations/all/microsoft-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/microsoft-oauth2-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 microsoft-teams:
     display_name: Microsoft Teams
     categories:
