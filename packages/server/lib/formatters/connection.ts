@@ -4,6 +4,7 @@ import type {
     ApiPublicConnection,
     ApiPublicConnectionFull,
     DBConnection,
+    DBConnectionAsJSONRow,
     DBConnectionDecrypted,
     DBEndUser
 } from '@nangohq/types';
@@ -15,7 +16,7 @@ export function connectionSimpleToApi({
     activeLog,
     endUser
 }: {
-    data: DBConnection;
+    data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
@@ -47,7 +48,7 @@ export function connectionSimpleToPublicApi({
     activeLog,
     endUser
 }: {
-    data: DBConnection;
+    data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
@@ -70,7 +71,7 @@ export function connectionFullToPublicApi({
     activeLog,
     endUser
 }: {
-    data: DBConnectionDecrypted;
+    data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;

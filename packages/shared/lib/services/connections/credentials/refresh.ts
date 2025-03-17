@@ -1,4 +1,5 @@
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
+
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
@@ -14,7 +15,7 @@ import type {
 } from '@nangohq/types';
 import type { Config } from '../../../models';
 import type { Result } from '@nangohq/utils';
-import { Err, metrics, Ok } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 import { NangoError } from '../../../utils/error.js';
 import { getProvider } from '@nangohq/providers';
 import type { Config as ProviderConfig } from '../../../models/index.js';
@@ -24,6 +25,7 @@ import { getLocking } from '@nangohq/kvstore';
 import connectionService from '../../connection.service.js';
 import providerClient from '../../../clients/provider.client.js';
 import { isTokenExpired } from '../../../utils/utils.js';
+import { getExpiresAtFromCredentials, REFRESH_MARGIN_S } from '../utils.js';
 
 interface RefreshProps {
     account: DBTeam;
@@ -54,7 +56,7 @@ interface RefreshProps {
         | undefined;
 }
 
-const REFRESH_MARGIN_S = 15 * 60;
+const logger = getLogger('connectionRefresh');
 
 /**
  * Take a connection and try to refresh or test based on it's type
@@ -111,9 +113,24 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         if (res.isErr()) {
             span.setTag('error', res.error);
+            await connectionService.setRefreshFailure({ id: props.connection.id, currentAttempt: props.connection.refresh_attempts || 0 });
             return res;
         }
-        return Ok(res.value);
+
+        let newConnection = res.value;
+        // Backfill
+        if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
+            newConnection = await connectionService.updateConnection({
+                ...newConnection,
+                credentials_expires_at: getExpiresAtFromCredentials(newConnection.credentials),
+                last_refresh_success: new Date(),
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false
+            });
+        }
+
+        return Ok(newConnection);
     });
 }
 
@@ -254,6 +271,16 @@ async function testCredentials(
             environment,
             config: integration as ProviderConfig
         });
+
+        const connection = await connectionService.updateConnection({
+            ...oldConnection,
+            last_refresh_failure: null,
+            last_refresh_success: new Date(),
+            refresh_attempts: null,
+            refresh_exhausted: false,
+            updated_at: new Date()
+        });
+        return Ok(connection);
     } else {
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
     }
@@ -282,6 +309,7 @@ async function refreshCredentialsIfNeeded({
     // fetch connection and return credentials if they are fresh
     const getConnectionAndFreshCredentials = async (): Promise<{
         connection: DBConnectionDecrypted;
+        shouldRefresh: { should: boolean; reason: string };
         freshCredentials: RefreshableCredentials | null;
     }> => {
         const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
@@ -300,7 +328,8 @@ async function refreshCredentialsIfNeeded({
 
         return {
             connection,
-            freshCredentials: shouldRefresh ? null : (connection.credentials as RefreshableCredentials)
+            shouldRefresh: shouldRefresh,
+            freshCredentials: shouldRefresh.should ? null : (connection.credentials as RefreshableCredentials)
         };
     };
 
@@ -318,13 +347,16 @@ async function refreshCredentialsIfNeeded({
         try {
             const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
             lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+
             // Another refresh was running so we check if the credentials were refreshed
             // If yes, we return the new credentials
             // If not, we proceed with the refresh
-            const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
+            const { connection, freshCredentials, shouldRefresh } = await getConnectionAndFreshCredentials();
             if (freshCredentials) {
                 return Ok({ connection, refreshed: false, credentials: freshCredentials });
             }
+
+            logger.info('Refreshing', connection.id, 'because', shouldRefresh.reason);
             connectionToRefresh = connection;
         } catch (err) {
             // lock acquisition might have timed out
@@ -346,7 +378,15 @@ async function refreshCredentialsIfNeeded({
         }
 
         connectionToRefresh.credentials = newCredentials;
-        connectionToRefresh = await connectionService.updateConnection({ ...connectionToRefresh, updated_at: new Date() });
+        connectionToRefresh = await connectionService.updateConnection({
+            ...connectionToRefresh,
+            credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
+            last_refresh_failure: null,
+            last_refresh_success: new Date(),
+            refresh_attempts: null,
+            refresh_exhausted: false,
+            updated_at: new Date()
+        });
 
         return Ok({ connection: connectionToRefresh, refreshed: true, credentials: newCredentials });
     } catch (err) {
@@ -369,17 +409,25 @@ async function shouldRefreshCredentials(
     providerConfig: ProviderConfig,
     provider: RefreshableProvider,
     instantRefresh: boolean
-): Promise<boolean> {
-    const refreshCondition =
-        instantRefresh ||
-        (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
-
-    let tokenExpirationCondition =
-        refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S));
-
-    if (credentials.type === 'OAUTH2' && providerConfig.provider !== 'facebook') {
-        tokenExpirationCondition = Boolean(credentials.refresh_token && tokenExpirationCondition);
+): Promise<{ should: boolean; reason: string }> {
+    if (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection))) {
+        return { should: true, reason: 'expired_introspected_token' };
+    }
+    if (providerConfig.provider === 'facebook') {
+        return { should: instantRefresh, reason: 'facebook' };
     }
 
-    return Boolean(tokenExpirationCondition);
+    if (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        return { should: false, reason: 'fresh' };
+    }
+
+    if (credentials.type === 'OAUTH2') {
+        if (credentials.refresh_token) {
+            return { should: true, reason: 'expired_oauth2_with_refresh_token' };
+        } else {
+            return { should: false, reason: 'expired_oauth2_no_refresh_token' };
+        }
+    }
+
+    return { should: true, reason: 'expired' };
 }
