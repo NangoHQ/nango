@@ -3,7 +3,7 @@ export { default as hubspotPostConnection } from './providers/hubspot/post-conne
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
-export { default as checkrPostConnection } from './providers/checkr/post-connection.js';
+export { default as checkrPartnerPostConnection } from './providers/checkr-partner/post-connection.js';
 export { default as xeroPostConnection } from './providers/xero/post-connection.js';
 export { default as microsoftTeamsPostConnection } from './providers/microsoft-teams/post-connection.js';
 export { default as calendlyPostConnection } from './providers/calendly/post-connection.js';
