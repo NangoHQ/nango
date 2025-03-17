@@ -38,8 +38,9 @@ const handler = async (req: EndpointRequest<GetRecords>, res: EndpointResponse<G
     } = req;
 
     let logCtx: LogContextStateless | undefined = undefined;
+    const { account } = res.locals;
     if (activityLogId) {
-        logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
+        logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     }
 
     const result = await records.getRecords({

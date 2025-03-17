@@ -218,6 +218,14 @@ function validateProvider(providerKey: string, provider: Provider) {
             error = true;
         }
     }
+    if (provider.proxy?.verification && provider?.credentials_verification_script) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `"cannot contain both "proxy.verification" and "credentials_verification_script". Only one should be defined.`
+        );
+        error = true;
+    }
 }
 
 /**
