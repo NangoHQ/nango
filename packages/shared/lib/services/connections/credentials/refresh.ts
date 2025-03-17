@@ -119,6 +119,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         let newConnection = res.value;
         // Backfill
+        // Connections that were created before adding the new columns do not have `credentials_expires_at` or `last_refresh_success`
+        // And because some connection will never refresh we are backfilling those information based on what we have
         if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
             newConnection = await connectionService.updateConnection({
                 ...newConnection,
@@ -318,17 +320,17 @@ async function refreshCredentialsIfNeeded({
             throw error as NangoError;
         }
 
-        const shouldRefresh = await shouldRefreshCredentials(
+        const shouldRefresh = await shouldRefreshCredentials({
             connection,
-            connection.credentials as RefreshableCredentials,
+            credentials: connection.credentials as RefreshableCredentials,
             providerConfig,
             provider,
             instantRefresh
-        );
+        });
 
         return {
             connection,
-            shouldRefresh: shouldRefresh,
+            shouldRefresh,
             freshCredentials: shouldRefresh.should ? null : (connection.credentials as RefreshableCredentials)
         };
     };
@@ -403,30 +405,48 @@ async function refreshCredentialsIfNeeded({
 /**
  * Determine if a credentials should be refreshed
  */
-async function shouldRefreshCredentials(
-    connection: DBConnectionDecrypted,
-    credentials: RefreshableCredentials,
-    providerConfig: ProviderConfig,
-    provider: RefreshableProvider,
-    instantRefresh: boolean
-): Promise<{ should: boolean; reason: string }> {
-    if (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection))) {
-        return { should: true, reason: 'expired_introspected_token' };
-    }
-    if (providerConfig.provider === 'facebook') {
-        return { should: instantRefresh, reason: 'facebook' };
+export async function shouldRefreshCredentials({
+    connection,
+    credentials,
+    providerConfig,
+    provider,
+    instantRefresh
+}: {
+    connection: DBConnectionDecrypted;
+    credentials: RefreshableCredentials;
+    providerConfig: ProviderConfig;
+    provider: RefreshableProvider;
+    instantRefresh: boolean;
+}): Promise<{ should: boolean; reason: string }> {
+    if (!instantRefresh) {
+        if (providerClient.shouldIntrospectToken(providerConfig.provider)) {
+            if (await providerClient.introspectedTokenExpired(providerConfig, connection)) {
+                return { should: true, reason: 'expired_introspected_token' };
+            }
+            return { should: false, reason: 'fresh_introspected_token' };
+        }
+
+        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+            return { should: false, reason: 'fresh' };
+        }
     }
 
-    if (credentials.expires_at && isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
-        return { should: false, reason: 'fresh' };
+    // -- At this stage credentials need a refresh whether it's forced or because they are expired
+
+    if (providerConfig.provider === 'facebook') {
+        return { should: instantRefresh, reason: 'facebook' };
     }
 
     if (credentials.type === 'OAUTH2') {
         if (credentials.refresh_token) {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
-        } else {
-            return { should: false, reason: 'expired_oauth2_no_refresh_token' };
         }
+        // We can't refresh since we don't have a refresh token even if we force it
+        return { should: false, reason: 'expired_oauth2_no_refresh_token' };
+    }
+
+    if (instantRefresh) {
+        return { should: true, reason: 'instant_refresh' };
     }
 
     return { should: true, reason: 'expired' };
