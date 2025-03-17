@@ -67,7 +67,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -306,7 +306,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -800,7 +800,7 @@ class OAuthController {
             await oAuthSessionService.delete(state as string);
         }
 
-        const logCtx = await logContextGetter.get({ id: session.activityLogId });
+        let logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -832,6 +832,8 @@ class OAuthController {
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
                 return;
             }
+
+            logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);

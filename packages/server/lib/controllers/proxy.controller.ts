@@ -20,7 +20,7 @@ import {
     refreshOrTestCredentials
 } from '@nangohq/shared';
 import { metrics, getLogger, getHeaders, redactHeaders } from '@nangohq/utils';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
+import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../hooks/hooks.js';
 import type { LogContext } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -62,10 +62,10 @@ class ProxyController {
             }
 
             logCtx = existingActivityLogId
-                ? await logContextGetter.get({ id: String(existingActivityLogId) })
+                ? await logContextGetter.get({ id: String(existingActivityLogId), accountId: account.id })
                 : await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment }, { dryRun: isDryRun });
 
-            if (!existingActivityLogId) {
+            if (logCtx instanceof LogContextOrigin) {
                 logCtx.attachSpan(new OtlpSpan(logCtx.operation));
             }
 
