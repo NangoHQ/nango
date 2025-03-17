@@ -6398,7 +6398,8 @@ pandadoc-api-key:
         base_url: https://api.pandadoc.com
         verification:
             method: GET
-            endpoint: /public/v1/logs
+            endpoints:
+                - /public/v1/logs
         headers:
             authorization: API-Key ${apiKey}
     docs: https://docs.nango.dev/integrations/all/pandadoc-api-key
