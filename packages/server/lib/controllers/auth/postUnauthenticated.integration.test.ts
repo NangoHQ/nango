@@ -165,10 +165,12 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(resReconnect.json);
 
         // Check that the connection was updated
-        // Nothing is different except the date
+        // Nothing is different except the dates
         const connectionAfter = await connectionService.checkIfConnectionExists(resConnect.json.connectionId, resConnect.json.providerConfigKey, env.id);
         expect(connectionAfter).toMatchObject({
             ...connectionBefore,
+            credentials_expires_at: expect.toBeIsoDate(), // new credentials means new date
+            last_refresh_success: expect.toBeIsoDate(),
             updated_at: expect.toBeIsoDate()
         });
         expect(connectionBefore?.updated_at.toISOString()).not.toBe(connectionAfter?.updated_at.toISOString());
