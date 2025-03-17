@@ -381,6 +381,33 @@ export async function listFilters(opts: {
     };
 }
 
+export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+    await client.updateByQuery({
+        index: indexMessages.index,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
+        query: {
+            bool: {
+                filter: [
+                    { range: { expiresAt: { lt: 'now' } } },
+                    { term: { 'operation.type': 'auth' } },
+                    { term: { 'operation.action': 'create_connection' } },
+                    {
+                        bool: {
+                            should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+                        }
+                    }
+                ],
+                must_not: { exists: { field: 'parentId' } },
+                should: []
+            }
+        },
+        script: {
+            source: "ctx._source.state = 'cancelled'"
+        }
+    });
+}
+
 export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
     await client.updateByQuery({
         index: indexMessages.index,

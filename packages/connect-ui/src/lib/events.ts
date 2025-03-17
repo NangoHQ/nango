@@ -1,13 +1,15 @@
 import type { AuthResult, ConnectUIEventClose, ConnectUIEventConnect, ConnectUIEventReady } from '@nangohq/frontend';
+import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 import { useGlobal } from './store';
+import { telemetry } from './telemetry';
 
 export function triggerReady() {
     const event: ConnectUIEventReady = { type: 'ready' };
     parent.postMessage(event, '*');
 }
 
-export function triggerClose() {
+export function triggerClose(eventName: PostPublicConnectTelemetry['Body']['event']) {
     const isDirty = useGlobal.getState().isDirty;
     const nango = useGlobal.getState().nango;
     if (isDirty) {
@@ -17,6 +19,7 @@ export function triggerClose() {
         }
     }
 
+    telemetry(eventName);
     const event: ConnectUIEventClose = { type: 'close' };
     parent.postMessage(event, '*');
     nango?.clear();

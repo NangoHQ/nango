@@ -5,14 +5,12 @@ import { Processor } from './processor/processor.js';
 import { server } from './server.js';
 import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { getLogger, stringifyError, once, initSentry, report } from '@nangohq/utils';
-import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import db from '@nangohq/database';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { runnersFleet } from './runner/fleet.js';
 import { generateImage } from '@nangohq/fleet';
-import { deleteOldJobsData } from './crons/deleteOldJobsData.js';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 
 const logger = getLogger('Jobs');
@@ -105,8 +103,6 @@ try {
 
     // Register recurring tasks
     deleteSyncsData();
-    timeoutLogsOperations();
-    deleteOldJobsData();
 
     otlp.register(getOtlpRoutes);
 } catch (err) {

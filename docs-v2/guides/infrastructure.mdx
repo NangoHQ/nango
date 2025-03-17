@@ -4,52 +4,39 @@ sidebarTitle: 'Infrastructure'
 description: 'Learn more about the infrastructure of Nango.'
 ---
 
-<Frame caption="Architecture overview.">
-  <img src="/images/architecture.png"/>
+### Architecture diagram
+
+<Frame caption="Nango's infrastructure components">
+  <img src="/images/nango-architecture.png" />
 </Frame>
 
-**API**
+### Infrastructure components
 
-The API layer, developed with Node, serves as the front door to Nango, handling requests from customer applications. It processes operations related to integrations, connections, actions, and syncs, offering a unified interface for developers.
+Nango consists of several core services, each handling specific responsibilities:
 
-**Control plane store**
+- **Server (Node service)**: Powers the dashboard, API, proxy requests, and incoming/outgoing webhooks.
+- **Orchestrator (Node service)**: Manages task scheduling and state tracking.
+- **Jobs (Node service)**: Processes tasks and dispatches them to the Runner.
+- **Runner (Node service)**: Executes integration code and interacts with external APIs.
+- **Persist (Node service)**: Stores synced records and logs.
+- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
+- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **ElasticSearch**: Stores execution data.
+- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
-This Control plane store, running on Postgres, handles configuration data for users, integrations, connections, and integration scripts.
+### Cloud vs. self-hosted architecture
 
-**Jobs queue**
+The Nango architecture is largely the same for both Cloud and [Enterprise self-hosting](/guides/self-hosting/enterprise-self-hosting). This ensures self-hosted instances benefit from continuous dogfooding and load testing.
 
-The Jobs queue, running on Postgres, manages the scheduling of script executions (along with the Orchestrator Node service). It’s responsible for orchestrating the timing and execution of data synchronization tasks, ensuring that sync scripts run according to their schedules without loss or delay.
+The primary differences are:
+- In the Cloud version, the Runner service runs as isolated instances per customer.
+- The Postgres database is segmented by use case (control plane, task scheduling, synced records).
 
-**Jobs service**
+### Email service
 
-The Jobs Service dispatches jobs to runner services. It acts as the central manager that allocates integration script execution tasks to available runners, balancing load and ensuring efficient processing of integration logic.
+Nango uses Mailgun exclusively for password reset emails. 
 
-**Runner service**
-
-Runner services, running on Node, are isolated per customer and responsible for running the integration scripts. These services directly interact with external APIs, executing the custom logic defined in action, sync, and webhook scripts. When self-hosting Nango, there is only one runner.
-
-**Records store**
-
-This Records storage, running on Postgres, component persists the records by syncs being executed in the runners.
-
-**Script store**
-
-Integration scripts, whether provided by Nango as [templates](/guides/pre-built-integrations/overview) or developed by customers ([step-by-step guide](/guides/custom-integrations/overview)), are stored in blob storage (S3). This provides a scalable, secure storage solution that ensures integration scripts are readily accessible for execution by the runner services.
-
-**Logs store**
-
-Logs are critical to have observability over how your integration scripts are run. Nango automatically generates logs, but you can add custom logs in your integration scripts as well. Logs are surfaced and searchable in the Nango UI. The Logs store runs on ElasticSearch.
-
-# Self-hosting
-
-Nango offers the flexibility to be self-hosted, appealing to enterprises with specific compliance or operational requirements. The infrastructure components, including the API, control plane, and all associated services, can be deployed within a customer's own environment. The self-hosting option comes in two editions:
-
-- **Free Edition:** Includes just the API and control plane, focuses on authorizing external APIs.
-- **Enterprise Self-Hosting Edition:** Offers the full suite of Nango components, providing the complete capabilities of Nango in a self-hosted configuration.
-
-# Conclusion
-
-Nango's infrastructure is designed for scalability, reliability, and flexibility, supporting the full range of integration scenarios. From handling real-time actions to managing complex sync schedules, each component plays a crucial role in delivering a seamless integration experience. Whether utilized as a cloud service or deployed in a self-hosted environment, Nango provides the foundation for a robust and tailored API integration infrastructure.
+For self-hosted instances, we provide a default Mailgun API key, but you can configure your own if preferred.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

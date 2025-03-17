@@ -16,21 +16,6 @@ export function defaultCallback() {
     return globalEnv.apiUrl + '/oauth/callback';
 }
 
-export function elapsedTime(start: Date | number, end: Date | number): string {
-    const startTime = start instanceof Date ? start.getTime() : new Date(start).getTime();
-    const endTime = end instanceof Date ? end.getTime() : new Date(end).getTime();
-
-    if (isNaN(startTime) || isNaN(endTime)) {
-        return '';
-    }
-
-    const elapsedTime = endTime - startTime;
-    const elapsedSeconds = Math.floor(elapsedTime / 1000);
-    const elapsedMilliseconds = elapsedTime % 1000;
-
-    return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
-}
-
 export function formatDateToShortUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
@@ -93,7 +78,7 @@ export function formatDateToInternationalFormat(dateString: string): string {
 
 export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
-    return format(date, 'MMM dd, HH:mm:ss:SS');
+    return format(date, 'MMM dd, HH:mm:ss.SSS');
 }
 
 function formatFutureRun(nextRun: number): Date | undefined {

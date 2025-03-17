@@ -107,7 +107,7 @@ export interface MessageRow {
     level: LogLevel;
     type: MessageType;
     message: string;
-    context?: 'script' | 'proxy' | 'webhook';
+    context?: 'script' | 'proxy' | 'webhook' | undefined;
 
     // Operation row id
     parentId: string;
@@ -191,6 +191,6 @@ export type OperationRowInsert = Merge<Partial<OperationRow>, Pick<OperationRow,
 /**
  * What is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt' | 'level'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
 
 export type MessageOrOperationRow = MessageRow | OperationRow;

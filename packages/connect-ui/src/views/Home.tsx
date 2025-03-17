@@ -10,6 +10,7 @@ import { LoadingView } from '@/components/LoadingView';
 import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
+import { telemetry } from '@/lib/telemetry';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -28,6 +29,8 @@ export const Home: React.FC = () => {
 
             const data = evt.data as ConnectUIEventToken;
             setSessionToken(data.sessionToken);
+            // Let the state propagate
+            setTimeout(() => telemetry('open'), 1);
         };
         window.addEventListener('message', listener, false);
 

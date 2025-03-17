@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.0] - 2025-03-12
+
+### Added
+
+- *(integrations)* Add support for razorpay (#3650) by @hassan254-prog
+- *(jobs)* Add index without deleted (#3651) by @bodinsamuel
+- *(integrations)* Add anthropic admin (#3645) by @viictoo
+- *(connect)* Store operation_id in DB (#3661) by @bodinsamuel
+- *(integrations)* Add support for tldv (#3659) by @hassan254-prog
+- *(link-pagination)* Add in baseUrlOverride (#3665) by @khaliqgant
+- *(insights)* Add auth graph, show all states (#3663) by @bodinsamuel
+- *(integration)* Add missive support (#3664) by @miles-kt-inkeep
+- *(providers)* Add verification endpoints (untested) (#3643) by @viictoo
+- *(providers)* Add api verification endpoint (3 of 6) (#3642) by @viictoo
+- *(providers)* Connect ui documentation (1 of 10) (#3648) by @lordsarcastic
+- Add AI use-cases link, improve services page, avoid duplicating real-time sync pages (#3668) by @bastienbeurier
+- *(sdk)* Allow a sync to be started from the sdk (#3671) by @khaliqgant
+- *(cli-deploy)* Deploy scripts for a specific api (#3660) by @viictoo
+- *(integrations)* Add support for readwise and readwise reader (#3669) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7a63ea86f4ec62b2370f93ca1acf894204554b30 by lordsarcastic. Commit message: feat(linear): GraphQL introspection (#254) by @github-actions[bot]
+- *(deps)* Bump axios from 1.7.9 to 1.8.2 (#3646) by @dependabot[bot]
+- Differentate runner database url (#3644) by @TBonnin
+
+### Fixed
+
+- *(otlp)* Manual span by @bodinsamuel
+- Show model in sync webhook log operation (#3641) by @TBonnin
+- *(logs)* Do not await more logs  (#3649) by @bodinsamuel
+- *(ui)* Tag padding, and SyncRow alignment (#3657) by @bodinsamuel
+- *(auth)* Log endUser (#3656) by @bodinsamuel
+- Set missing application_name in knex connection config (#3658) by @TBonnin
+- *(es)* Prepare fields for duration and context (#3655) by @bodinsamuel
+- *(connection)* Store metadata for refresh  (#3653) by @bodinsamuel
+- *(logs)* Stop awaiting logs (#3654) by @bodinsamuel
+- *(jobs)* Remove usage of deleted (#3652) by @bodinsamuel
+- *(otlp)* Manual span (#3647) by @bodinsamuel
+- *(webhooks)* Use same retry and logging as proxy (#3662) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/31bf1d42bcb17db1818e84163da38595dfc9a333 by Khaliq. Commit message: fix(compilation-test): resolve all aliases before compiling (#259) by @github-actions[bot]
+
 ## [v0.56.4] - 2025-03-07
 
 ### Fixed
@@ -3305,6 +3347,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.0]: https://github.com/NangoHQ/nango/compare/v0.56.4..v0.57.0
 [v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
 [v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3
 [v0.56.2]: https://github.com/NangoHQ/nango/compare/v0.56.1..v0.56.2

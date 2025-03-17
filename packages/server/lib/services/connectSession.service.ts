@@ -20,7 +20,7 @@ interface DBConnectSession {
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
 }
-type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at' | 'operation_id'>;
+type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
 const ConnectSessionMapper = {
     to: (session: ConnectSession): DBConnectSession => {
@@ -77,9 +77,13 @@ export async function createConnectSession(
         environmentId,
         connectionId,
         allowedIntegrations,
-        integrationsConfigDefaults
+        integrationsConfigDefaults,
+        operationId
     }: SetOptional<
-        Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>,
+        Pick<
+            ConnectSession,
+            'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId'
+        >,
         'connectionId'
     >
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
@@ -89,7 +93,8 @@ export async function createConnectSession(
         environment_id: environmentId,
         connection_id: connectionId || null,
         allowed_integrations: allowedIntegrations,
-        integrations_config_defaults: integrationsConfigDefaults
+        integrations_config_defaults: integrationsConfigDefaults,
+        operation_id: operationId
     };
     const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
@@ -166,4 +171,16 @@ export async function deleteConnectSession(
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(undefined);
+}
+
+export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db
+        .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
+        .whereIn('id', function (sub) {
+            sub.select('id').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+        })
+        .delete();
 }

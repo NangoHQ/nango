@@ -17,7 +17,7 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
-    JOBS_DELETE_OLD_JOBS_DATA = 'nango.jobs.cron.deleteOldJobs',
+    JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
 
     LOGS_LOG = 'nango.logs.log',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
@@ -73,37 +73,49 @@ export enum Types {
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
-    AUTH_FAILURE = 'nango.server.auth.failure'
+    AUTH_FAILURE = 'nango.server.auth.failure',
+
+    GET_RECORDS_COUNT = 'nango.server.getRecords.count',
+    GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
+
+    CONNECTIONS_COUNT = 'nango.connections.count',
+    CONNECTIONS_WITH_ACTIONS_COUNT = 'nango.connections.withActions.count',
+    CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
+    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
+
+    RECORDS_TOTAL_COUNT = 'nango.records.total.count'
 }
 
-export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+type Dimensions = Record<string, string | number> | undefined;
+
+export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
-export function decrement(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
-export function gauge(metricName: Types, value?: number): void {
-    tracer.dogstatsd.gauge(metricName, value ?? 1);
+export function gauge(metricName: Types, value?: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.gauge(metricName, value ?? 1, dimensions ?? {});
 }
 
 export function histogram(metricName: Types, value: number): void {
     tracer.dogstatsd.histogram(metricName, value);
 }
 
-export function duration(metricName: Types, value: number): void {
-    tracer.dogstatsd.distribution(metricName, value);
+export function duration(metricName: Types, value: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
 }
 
-export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F): F {
+export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F, dimensions?: Dimensions): F {
     const computeDuration = (start: [number, number]) => {
         const durationComponents = process.hrtime(start);
         const seconds = durationComponents[0];
         const nanoseconds = durationComponents[1];
         const total = seconds * 1000 + nanoseconds / 1e6;
 
-        duration(metricName, total);
+        duration(metricName, total, dimensions);
     };
 
     // This function should handle both async/sync function

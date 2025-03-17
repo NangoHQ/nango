@@ -2,12 +2,13 @@ import { z } from 'zod';
 import type { MessageRowInsert, PostLog } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
-import { logContextGetter } from '@nangohq/logs';
+import { logContextGetter, operationIdRegex } from '@nangohq/logs';
+import type { AuthLocals } from '../../../middleware/auth.middleware';
 
 const MAX_LOG_CHAR = 10000;
 
 export const logBodySchema = z.object({
-    activityLogId: z.string(),
+    activityLogId: operationIdRegex,
     log: z.object({
         type: z.enum(['log', 'http']),
         message: z.string(),
@@ -37,6 +38,8 @@ export const logBodySchema = z.object({
         meta: z.record(z.any()).optional().nullable(),
         createdAt: z.string(),
         endedAt: z.string().optional(),
+        durationMs: z.number().optional(),
+        context: z.enum(['script', 'proxy']).optional(),
         retry: z.object({ max: z.number(), waited: z.number(), attempt: z.number() }).optional()
     })
 });
@@ -54,8 +57,9 @@ const validate = validateRequest<PostLog>({
             .parse(data)
 });
 
-const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) => {
+const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog, AuthLocals>) => {
     const { body } = req;
+    const { account } = res.locals;
 
     const truncate = (str: string) => (str.length > MAX_LOG_CHAR ? `${str.substring(0, MAX_LOG_CHAR)}... (truncated)` : str);
 
@@ -63,7 +67,7 @@ const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) 
         ...body.log,
         message: truncate(body.log.message)
     };
-    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId) }, { logToConsole: false });
+    const logCtx = logContextGetter.getStateLess({ id: String(body.activityLogId), accountId: account.id }, { logToConsole: false });
     void logCtx.log(log);
     res.status(204).send();
 
@@ -72,7 +76,7 @@ const handler = (req: EndpointRequest<PostLog>, res: EndpointResponse<PostLog>) 
 
 export const route: Route<PostLog> = { method: 'POST', path: '/environment/:environmentId/log' };
 
-export const routeHandler: RouteHandler<PostLog> = {
+export const routeHandler: RouteHandler<PostLog, AuthLocals> = {
     ...route,
     validate,
     handler

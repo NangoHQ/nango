@@ -17,11 +17,13 @@ interface Options {
  */
 export class LogContextStateless {
     id: OperationRow['id'];
+    accountId: OperationRow['accountId'];
     dryRun: boolean;
     logToConsole: boolean;
 
-    constructor(data: { parentId: OperationRow['id'] }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor(data: { parentId: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.parentId;
+        this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
     }
@@ -35,7 +37,7 @@ export class LogContextStateless {
             const obj: Record<string, any> = {};
             if (data.error) obj['error'] = data.error;
             if (data.meta) obj['meta'] = data.meta;
-            logger[logLevelToLogger[data.level!]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
+            logger[logLevelToLogger[data.level]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
         }
         if (this.dryRun) {
             return true;
@@ -49,7 +51,7 @@ export class LogContextStateless {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId: this.accountId });
         }
     }
 
@@ -82,6 +84,8 @@ export class LogContextStateless {
         message: string,
         {
             error,
+            createdAt,
+            endedAt: userDefinedEndedAt,
             ...data
         }: {
             request: MessageHTTPRequest | undefined;
@@ -89,9 +93,13 @@ export class LogContextStateless {
             error?: unknown;
             meta?: MessageRow['meta'];
             level?: MessageRow['level'];
+            context?: MessageRow['context'];
+            createdAt: Date;
+            endedAt?: Date;
         }
     ): Promise<boolean> {
         const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
+        const endedAt = userDefinedEndedAt || new Date();
         return await this.log({
             type: 'http',
             level,
@@ -99,7 +107,9 @@ export class LogContextStateless {
             ...data,
             error: errorToDocument(error),
             source: 'internal',
-            createdAt: new Date().toISOString()
+            createdAt: createdAt.toISOString(),
+            endedAt: endedAt.toISOString(),
+            durationMs: endedAt.getTime() - createdAt.getTime()
         });
     }
 
@@ -119,7 +129,8 @@ export class LogContext extends LogContextStateless {
     span?: OtlpSpan;
 
     constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
-        super(data, options);
+        const { operation, ...rest } = data;
+        super({ ...rest, accountId: data.operation.accountId }, options);
         this.operation = data.operation;
     }
 

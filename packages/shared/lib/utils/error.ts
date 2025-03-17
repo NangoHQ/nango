@@ -294,6 +294,11 @@ export class NangoError extends Error {
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
                 break;
 
+            case 'no_verification_script_or_verification_method':
+                this.status = status || 400;
+                this.message = 'No verification script or provider verification method found.';
+                break;
+
             case 'invalid_auth_mode':
                 this.status = 400;
                 this.message = 'Invalid auth mode. The provider does not support this auth mode.';

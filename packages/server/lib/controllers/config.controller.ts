@@ -19,7 +19,7 @@ import {
     getProvider,
     getProviders
 } from '@nangohq/shared';
-import { parseConnectionConfigParamsFromTemplate, parseCredentialParamsFromTemplate } from '../utils/utils.js';
+import { parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../utils/utils.js';
 import type { RequestLocals } from '../utils/express.js';
 
 export interface Integration {
@@ -145,7 +145,7 @@ class ConfigController {
 
                         // Check if provider is of type ProviderTwoStep
                         if (provider.auth_mode === 'TWO_STEP') {
-                            integration['credentialParams'] = parseCredentialParamsFromTemplate(provider as ProviderTwoStep);
+                            integration['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
                         }
                     }
 

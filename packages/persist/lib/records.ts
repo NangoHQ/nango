@@ -13,6 +13,7 @@ export const recordsPath = '/environment/:environmentId/connection/:nangoConnect
 
 export async function persistRecords({
     persistType,
+    accountId,
     environmentId,
     connectionId,
     providerConfigKey,
@@ -25,6 +26,7 @@ export async function persistRecords({
     merging = { strategy: 'override' }
 }: {
     persistType: PersistType;
+    accountId: number;
     environmentId: number;
     connectionId: string;
     providerConfigKey: string;
@@ -84,7 +86,7 @@ export async function persistRecords({
         syncJobId,
         softDelete
     });
-    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
+    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
     if (formatting.isErr()) {
         void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
@@ -124,8 +126,8 @@ export async function persistRecords({
         });
         await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
-        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
-        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
+        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
 
         span.finish();
         return Ok(persistResult.value.nextMerging);

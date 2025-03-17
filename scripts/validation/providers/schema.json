@@ -258,14 +258,17 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["endpoint"],
+                            "required": ["endpoints"],
                             "properties": {
                                 "method": {
                                     "type": "string",
                                     "enum": ["GET", "POST"]
                                 },
-                                "endpoint": {
-                                    "type": "string"
+                                "endpoints": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "base_url_override": {
                                     "type": "string"
@@ -458,6 +461,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "credentials_verification_script": {
+                    "type": "string"
                 },
                 "token_url": {
                     "oneOf": [

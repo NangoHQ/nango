@@ -4,14 +4,86 @@ sidebarTitle: 'Enterprise self-hosting'
 description: 'Overview of the Enterprise self-hosted edition.'
 ---
 
-All paid features available on Nango Cloud are also available on the Enterprise self-hosted edition. 
+Nango offers an Enterprise Self-Hosted deployment option for customers who need full control over their infrastructure. This guide covers deployment, scaling, updates, and other key operational details.
 
-The Enterprise self-hosted edition requires a [Scale plan](https://www.nango.dev/pricing) subscription.
+## Features
 
-Enterprise self-hosting is optimized for large, regulated enterprises.
+All paid features available on Nango Cloud are also included in the Enterprise self-hosted edition.
 
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
+## Plan requirement
+
+A [Scale plan](https://www.nango.dev/pricing) subscription is required.
+
+## Intended users
+
+Optimized for large, regulated enterprises.
+
+## Deployment
+
+By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nango-helm-charts). Custom deployments (e.g., ECS) are possible with our guidance.
+
+We don't provide a CloudFormation template or AWS CDK script at this time, but we could if you need it.
+
+## Updates
+
+Updates are distributed via versioned Helm charts. A staging environment is recommended to test updates before production.
+
+Update cadence is flexible based on your needs.
+
+## Cloud provider support
+
+Supports all major cloud providers (AWS, GCP, Azure).
+
+## Infrastructure components
+
+See the detailed infrastructure components [here](/guides/infrastructure).
+
+## Recommended configuration
+
+- **5 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
+- **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
+- **Redis data store**: 128MB
+- **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
+- **Object storage (e.g. S3)**: less than 500MB of storage
+
+## Scaling
+
+The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
+
+Auto-scaling is not provided out-of-the-box yet, but the default configuration scales far. We can guide you on configuring auto-scaling when needed.
+
+Bottlenecks mostly depend on:
+- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
+- **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
+
+## Data storage
+
+- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
+- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **ElasticSearch**: Stores execution data.
+- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
+
+## Using existing data stores
+
+Yes, Nango is flexible with data store setups. However, we recommend a separate instance for independent scaling.
+
+## Internet access requirements
+
+- **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
+- **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
+
+## Multi-AZ support
+
+Multi-AZ deployments are not automated but can be manually configured. Helm chart support is planned.
+
+## Exporting billing metrics
+
+For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
+
+## Exporting metrics & logs
+
+Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
 
 <Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/chat).
 </Tip>

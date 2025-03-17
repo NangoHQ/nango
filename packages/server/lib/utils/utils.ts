@@ -146,10 +146,14 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
                     ...(provider.connection_configuration || [])
                 ].includes(cleanParamName(param))
         );
-        const proxyVerificationMatches =
-            provider.proxy?.verification?.endpoint.match(/\${connectionConfig\.([^{}]*)}/g) ||
-            provider.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) ||
-            [];
+        const proxyVerificationMatches = [
+            ...(provider.proxy?.verification?.endpoints
+                ? provider.proxy.verification.endpoints.flatMap((param) =>
+                      typeof param === 'string' ? param.match(/\${connectionConfig\.([^{}]*)}/g) || [] : []
+                  )
+                : []),
+            ...(provider.proxy?.verification?.base_url_override?.match(/\${connectionConfig\.([^{}]*)}/g) || [])
+        ];
 
         return [
             ...tokenUrlMatches,
@@ -167,15 +171,15 @@ export function parseConnectionConfigParamsFromTemplate(provider: Provider): str
     return [];
 }
 
-export function parseCredentialParamsFromTemplate(provider: ProviderTwoStep): string[] {
-    const cleanParamName = (param: string) => param.replace('${credential.', '').replace('}', '');
+export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep): string[] {
+    const cleanParamName = (param: string) => param.replace('${credentials.', '').replace('}', '');
 
     const extractCredentialParams = (params: Record<string, any>): string[] => {
         const matches: string[] = [];
 
         for (const value of Object.values(params)) {
             if (typeof value === 'string') {
-                const foundMatches = value.match(/\${credential\.([^{}]*)}/g) || [];
+                const foundMatches = value.match(/\${credentials\.([^{}]*)}/g) || [];
                 matches.push(...foundMatches);
             } else if (typeof value === 'object' && value !== null) {
                 matches.push(...extractCredentialParams(value)); // Recursively search in nested objects

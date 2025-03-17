@@ -1,5 +1,5 @@
-import type { InternalNango as Nango } from './post-connection.js';
-import type { BasecampAuthorizationResponse } from '../response-types/basecamp.js';
+import type { InternalNango as Nango } from '../post-connection.js';
+import type { BasecampAuthorizationResponse } from '../../response-types/basecamp.js';
 import { isAxiosError } from 'axios';
 
 export default async function execute(nango: Nango) {

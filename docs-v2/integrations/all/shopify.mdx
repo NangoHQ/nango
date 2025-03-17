@@ -16,29 +16,64 @@ import PreBuiltUseCases from "/snippets/generated/shopify/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Shopify Partner account](https://partners.shopify.com/signup/developer). |
+| Paid test account | ✅ Not required | Development stores can be created for free from your Partner account. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for public apps listed on the Shopify App Store. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Shopify Partner account">
+    Go to [Shopify's Partner signup page](https://partners.shopify.com/signup/developer) and create a free account.
+  </Step>
+  <Step title="Create a new app in your Partner account">
+    1. From your Partner Dashboard, navigate to **Apps** > **Create app**.
+    2. Choose **Create app manually** and provide a name for your app.
+    3. Click **Create app** to proceed.
+  </Step>
+  <Step title="Configure OAuth settings">
+    In the app you just created:
+    1. Navigate to the **Configuration** tab under **Build**.
+    2. In the **App URL** field, enter your application's URL.
+    3. Under **Allowed redirection URLs**, add the following URL: `https://api.nango.dev/oauth/callback`.
+    4. Save your changes.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. Navigate to the created app's **Overview** tab.
+    2. Copy the **Client ID** (also called API key) and **Client secret** (also called API secret key) from Client credentials.
+    3. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Create a development store for testing">
+    If you don't have a Shopify store already:
+    1. From your Partner Dashboard, go to **Stores** > **Add store**.
+    2. Select **Development store** and follow the prompts to create a test store.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://shopify.dev/docs/apps/auth/oauth/getting-started#step-1-retrieve-client-credentials)
--   [OAuth-related docs](https://shopify.dev/docs/apps/auth/oauth)
--   [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes)
--   [API](https://shopify.dev/docs/api/admin)
--   [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim)
+| Topic | Links |
+| - | - |
+| General | [Website](https://www.shopify.com/) |
+| | [Create a Partner account](https://partners.shopify.com/signup/developer) |
+| | [How to create a development store](https://help.shopify.com/en/partners/dashboard/development-stores) |
+| Developer | [API documentation](https://shopify.dev/docs/api/admin) |
+| | [Developer console](https://partners.shopify.com/) |
+| | [Authentication documentation](https://shopify.dev/docs/apps/auth/oauth) |
+| | [OAuth getting started guide](https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant) |
+| | [How to register an OAuth app](https://shopify.dev/docs/apps/build/authentication-authorization/client-secrets) |
+| | [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes) |
+| | [Details on rate limits](https://shopify.dev/docs/api/usage/rate-limits) |
+| | [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
 
@@ -56,7 +91,9 @@ For more details, see the [docs here](/guides/api-authorization/authorize-in-you
 
 ## API gotchas
 
-_None yet, add yours!_
+- Shopify's API requires a shop-specific subdomain in the authorization URL.
+- Access tokens are shop-specific and cannot be used across different shops.
+- Some API endpoints have different rate limits than others. Check the [rate limits documentation](https://shopify.dev/docs/api/usage/rate-limits) for details.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
 

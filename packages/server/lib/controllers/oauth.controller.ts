@@ -47,7 +47,7 @@ import { authHtml } from '../utils/html.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const { account, environment } = res.locals;
+        const { account, environment, connectSession } = res.locals;
         const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
@@ -65,14 +65,17 @@ class OAuthController {
         let logCtx: LogContext | undefined;
 
         try {
-            logCtx = await logContextGetter.create(
-                {
-                    operation: { type: 'auth', action: 'create_connection' },
-                    meta: { authType: 'oauth', connectSession: endUserToMeta(res.locals.endUser) },
-                    expiresAt: defaultOperationExpiration.auth()
-                },
-                { account, environment }
-            );
+            logCtx =
+                isConnectSession && connectSession.operationId
+                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    : await logContextGetter.create(
+                          {
+                              operation: { type: 'auth', action: 'create_connection' },
+                              meta: { authType: 'oauth', connectSession: endUserToMeta(res.locals.endUser) },
+                              expiresAt: defaultOperationExpiration.auth()
+                          },
+                          { account, environment }
+                      );
             if (!wsClientId) {
                 void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
@@ -144,12 +147,12 @@ class OAuthController {
 
             if (isConnectSession) {
                 // Session token always win
-                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
                 userScope = defaults?.user_scopes || undefined;
 
                 // Reconnect mechanism
-                if (res.locals.connectSession.connectionId) {
-                    const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+                if (connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(connectSession.connectionId);
                     if (!connection) {
                         void logCtx.error('Invalid connection');
                         await logCtx.failed();
@@ -168,7 +171,7 @@ class OAuthController {
                 authMode: provider.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
-                connectSessionId: res.locals.connectSession ? res.locals.connectSession.id : null,
+                connectSessionId: connectSession ? connectSession.id : null,
                 connectionConfig,
                 environmentId,
                 webSocketClientId: wsClientId,
@@ -207,7 +210,7 @@ class OAuthController {
             }
 
             if (isConnectSession) {
-                const defaults = res.locals.connectSession.integrationsConfigDefaults?.[config.unique_key];
+                const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
                 if (defaults?.connectionConfig.oauth_scopes_override) {
                     config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override;
                 }
@@ -271,7 +274,7 @@ class OAuthController {
     }
 
     public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account } = res.locals;
+        const { environment, account, connectSession } = res.locals;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
@@ -301,14 +304,17 @@ class OAuthController {
         let logCtx: LogContext | undefined;
 
         try {
-            logCtx = await logContextGetter.create(
-                {
-                    operation: { type: 'auth', action: 'create_connection' },
-                    meta: { authType: 'oauth2CC', connectSession: endUserToMeta(res.locals.endUser) },
-                    expiresAt: defaultOperationExpiration.auth()
-                },
-                { account, environment }
-            );
+            logCtx =
+                isConnectSession && connectSession.operationId
+                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    : await logContextGetter.create(
+                          {
+                              operation: { type: 'auth', action: 'create_connection' },
+                              meta: { authType: 'oauth2CC', connectSession: endUserToMeta(res.locals.endUser) },
+                              expiresAt: defaultOperationExpiration.auth()
+                          },
+                          { account, environment }
+                      );
             void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
 
             if (!providerConfigKey) {
@@ -360,8 +366,8 @@ class OAuthController {
             }
 
             // Reconnect mechanism
-            if (isConnectSession && res.locals.connectSession.connectionId) {
-                const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+            if (isConnectSession && connectSession.connectionId) {
+                const connection = await connectionService.getConnectionById(connectSession.connectionId);
                 if (!connection) {
                     void logCtx.error('Invalid connection');
                     await logCtx.failed();
@@ -414,8 +420,7 @@ class OAuthController {
             }
 
             if (isConnectSession) {
-                const session = res.locals.connectSession;
-                await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+                await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });

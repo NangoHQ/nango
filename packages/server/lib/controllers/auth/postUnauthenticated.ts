@@ -5,7 +5,7 @@ import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nang
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
-import { endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import type { LogContext } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
@@ -44,7 +44,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         return;
     }
 
-    const { account, environment } = res.locals;
+    const { account, environment, connectSession } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -60,10 +60,17 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     let logCtx: LogContext | undefined;
 
     try {
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'create_connection' }, meta: { authType: 'unauth', connectSession: endUserToMeta(res.locals.endUser) } },
-            { account, environment }
-        );
+        const logCtx =
+            isConnectSession && connectSession.operationId
+                ? await logContextGetter.get({ id: connectSession.operationId })
+                : await logContextGetter.create(
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'unauth', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
         void analytics.track(AnalyticsTypes.PRE_UNAUTH, account.id);
 
         if (!isConnectSession) {
@@ -101,8 +108,8 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         }
 
         // Reconnect mechanism
-        if (isConnectSession && res.locals.connectSession.connectionId) {
-            const connection = await connectionService.getConnectionById(res.locals.connectSession.connectionId);
+        if (isConnectSession && connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(connectSession.connectionId);
             if (!connection) {
                 void logCtx.error('Invalid connection');
                 await logCtx.failed();
@@ -131,8 +138,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
         }
 
         if (isConnectSession) {
-            const session = res.locals.connectSession;
-            await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
+            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
         }
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
