@@ -1,5 +1,5 @@
-import type { InternalNango as Nango } from '../post-connection.js';
-import type { GustoTokenInfoResponse } from '../../response-types/gusto.js';
+import type { InternalNango as Nango } from '../../post-connection.js';
+import type { GustoTokenInfoResponse } from './types.js';
 import { isAxiosError } from 'axios';
 
 export default async function execute(nango: Nango) {
