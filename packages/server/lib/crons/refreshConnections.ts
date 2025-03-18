@@ -1,11 +1,11 @@
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, connectionService, encryptionManager } from '@nangohq/shared';
+import { errorManager, ErrorSourceEnum, connectionService, encryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
 import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import { logContextGetter } from '@nangohq/logs';
 import {
     connectionRefreshFailed as connectionRefreshFailedHook,
     connectionRefreshSuccess as connectionRefreshSuccessHook,
-    connectionTest as connectionTestHook
+    testConnectionCredentials as connectionTestHook
 } from '../hooks/hooks.js';
 import tracer from 'dd-trace';
 import type { Lock } from '@nangohq/kvstore';
@@ -82,7 +82,7 @@ export async function exec(): Promise<void> {
                     }
 
                     try {
-                        const credentialResponse = await connectionService.refreshOrTestCredentials({
+                        const credentialResponse = await refreshOrTestCredentials({
                             account,
                             environment,
                             integration: decryptedIntegration,

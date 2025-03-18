@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 import type { GetPublicConnection } from '@nangohq/types';
-import { connectionService, configService } from '@nangohq/shared';
+import { connectionService, configService, refreshOrTestCredentials } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, providerConfigKeySchema, stringBool } from '../../../helpers/validation.js';
@@ -61,7 +61,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         return;
     }
 
-    const credentialResponse = await connectionService.refreshOrTestCredentials({
+    const credentialResponse = await refreshOrTestCredentials({
         account,
         environment,
         connection: connectionRes.response,

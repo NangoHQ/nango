@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.1] - 2025-03-17
+
+### Added
+
+- *(persist)* Add accountId dimension to records metrics (#3676) by @TBonnin
+- Add accountId dimension to secretKey auth (#3678) by @TBonnin
+- Add GET /records metrics (#3677) by @TBonnin
+- *(providers)* Normalize credentials interpolation within providers (#3679) by @hassan254-prog
+- *(logs)* Add http duration and context (#3680) by @bodinsamuel
+- *(connect)* Telemetry (#3684) by @bodinsamuel
+- Add comprehensive Shopify OAuth setup guide (#3683) by @devin-ai-integration[bot]
+- *(integrations)* Add support for oracle fusion cloud hcm (#3694) by @hassan254-prog
+- Add metric for records total count per account (#3709) by @TBonnin
+- *(verification)* Make verification check more robust  (#3666) by @hassan254-prog
+- *(integrations)* Add support for microsoft client credentials (#3715) by @hassan254-prog
+- *(integrations)* Add support for pandadoc api key (#3716) by @hassan254-prog
+
+### Changed
+
+- Enterprise self-hosted improvements (#3670) by @bastienbeurier
+- Update architecture diagram (#3685) by @bastienbeurier
+- Cron job to export connection count metric to dd (#3686) by @TBonnin
+- Move AI use-cases to getting started section (#3689) by @rguldener
+- *(metrics)* We also want connections with syncs/actions/webhooks count (#3688) by @TBonnin
+- Disable Slack notification by @TBonnin
+- Pass accountId to log context to use it in metrics (#3710) by @TBonnin
+
+### Fixed
+
+- Fix real-time sync docs info (#3673) by @bastienbeurier
+- *(ui)* Logs duration format, timestamp format (#3675) by @bodinsamuel
+- *(verification)* Fix verification for unipile (#3682) by @hassan254-prog
+- *(logs)* Put date in operation id (#3687) by @bodinsamuel
+- Remove withSchema in query by @TBonnin
+- *(jobs)* Drop where deleted index (#3681) by @bodinsamuel
+- *(cron)* Delete old data (#3690) by @bodinsamuel
+- *(logs)* Set auth operation as cancelled when expired (#3691) by @bodinsamuel
+- *(db)* Drop unused table schedules  (#3692) by @bodinsamuel
+- Use knex Transaction for all queries within a transaction (#3714) by @TBonnin
+- *(connection)* Split refresh function (#3674) by @bodinsamuel
+- *(node)* Remove leftover console.log (#3720) by @bodinsamuel
+
 ## [v0.57.0] - 2025-03-12
 
 ### Added
@@ -3347,6 +3389,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.1]: https://github.com/NangoHQ/nango/compare/v0.57.0..v0.57.1
 [v0.57.0]: https://github.com/NangoHQ/nango/compare/v0.56.4..v0.57.0
 [v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
 [v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3

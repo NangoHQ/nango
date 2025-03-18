@@ -81,6 +81,9 @@ export class SlackService {
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
+    // WARNING: disabling slack notifications while investigating sync issues
+    private disabled = true;
+
     constructor({ orchestrator, logContextGetter }: { orchestrator: Orchestrator; logContextGetter: LogContextGetter }) {
         this.orchestrator = orchestrator;
         this.logContextGetter = logContextGetter;
@@ -112,6 +115,11 @@ export class SlackService {
      *      3) Add an activity log entry for the notification to the admin account
      */
     async reportFailure(nangoConnection: ConnectionJobs, name: string, type: string, originalActivityLogId: string, provider: string) {
+        // WARNING: disabling slack notifications while investigating sync issues
+        if (this.disabled) {
+            return;
+        }
+
         if (name === this.actionName) {
             return;
         }
@@ -250,6 +258,11 @@ export class SlackService {
         slack_timestamp: string,
         connectionCount: number
     ) {
+        // WARNING: disabling slack notifications while investigating sync issues
+        if (this.disabled) {
+            return;
+        }
+
         if (syncName === this.actionName) {
             return;
         }
@@ -519,7 +532,7 @@ export class SlackService {
         provider: string;
     }): Promise<void> {
         const update = await db.knex.transaction(async (trx) => {
-            const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
+            const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id, trx);
             if (!slackNotificationsEnabled) {
                 return;
             }

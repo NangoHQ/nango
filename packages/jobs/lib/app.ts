@@ -1,18 +1,19 @@
 import './tracer.js';
 
 import * as cron from 'node-cron';
-import { Processor } from './processor/processor.js';
-import { server } from './server.js';
-import { deleteSyncsData } from './crons/deleteSyncsData.js';
-import { getLogger, stringifyError, once, initSentry, report } from '@nangohq/utils';
-import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
-import { envs } from './env.js';
+
 import db from '@nangohq/database';
-import { getOtlpRoutes } from '@nangohq/shared';
-import { destroy as destroyLogs, otlp } from '@nangohq/logs';
-import { runnersFleet } from './runner/fleet.js';
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { destroy as destroyLogs, otlp } from '@nangohq/logs';
+import { getOtlpRoutes } from '@nangohq/shared';
+import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
+
+import { deleteSyncsData } from './crons/deleteSyncsData.js';
+import { envs } from './env.js';
+import { Processor } from './processor/processor.js';
+import { runnersFleet } from './runner/fleet.js';
+import { server } from './server.js';
 
 const logger = getLogger('Jobs');
 
@@ -75,7 +76,6 @@ try {
             await db.readOnly.destroy();
             await destroyKvstore();
 
-            // TODO: close redis
             console.info('Closed');
 
             process.exit();
@@ -104,9 +104,8 @@ try {
 
     // Register recurring tasks
     deleteSyncsData();
-    timeoutLogsOperations();
 
-    otlp.register(getOtlpRoutes);
+    void otlp.register(getOtlpRoutes);
 } catch (err) {
     logger.error(stringifyError(err));
     process.exit(1);

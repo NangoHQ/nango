@@ -18,7 +18,11 @@ import type { BasicApiCredentials, MessageRowInsert, PostPublicBasicAuthorizatio
 import type { LogContext } from '@nangohq/logs';
 import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook, connectionTest } from '../../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    testConnectionCredentials
+} from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
@@ -86,7 +90,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -152,7 +156,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             password
         };
 
-        const connectionResponse = await connectionTest({ config, connectionConfig, connectionId, credentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider });
         if (connectionResponse.isErr()) {
             if ('logs' in connectionResponse.error.payload) {
                 await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
