@@ -5,7 +5,6 @@ import {
     getSyncConfigsWithConnections,
     analytics,
     errorNotificationService,
-    SlackService,
     externalWebhookService,
     AnalyticsTypes,
     syncManager,
@@ -33,12 +32,12 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
 import postConnection from './connection/post-connection.js';
 import { postConnectionCreation } from './connection/on/connection-created.js';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 import tracer from 'dd-trace';
 import executeVerificationScript from './connection/credentials-verification-script.js';
+import { slackService } from '../services/slack.js';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -111,15 +110,7 @@ export async function testConnectionCredentials({
             });
             return result;
         }
-
-        logs.push({
-            type: 'log',
-            level: 'error',
-            message: 'No verification script or provider verification method found.',
-            createdAt: new Date().toISOString()
-        });
-
-        return Err(new NangoError('no_verification_script_or_verification_method', { logs }));
+        return Ok({ logs: [], tested: false });
     } catch (err) {
         logs.push({
             type: 'log',
@@ -200,9 +191,7 @@ export const connectionRefreshSuccess = async ({
         connection_id: connection.id
     });
 
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
-
-    await slackNotificationService.removeFailingConnection({
+    await slackService.removeFailingConnection({
         connection,
         name: connection.connection_id,
         type: 'auth',
@@ -252,9 +241,15 @@ export const connectionRefreshFailed = async ({
         account
     });
 
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
-
-    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, config.provider);
+    await slackService.reportFailure({
+        account,
+        environment,
+        connection,
+        name: connection.connection_id,
+        type: 'auth',
+        originalActivityLogId: logCtx.id,
+        provider: config.provider
+    });
 };
 
 export async function credentialsTest({

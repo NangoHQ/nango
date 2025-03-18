@@ -4,25 +4,27 @@
  * Copyright (c) 2024 Nango, all rights reserved.
  */
 
-import { Command } from 'commander';
 import fs from 'fs';
-import chalk from 'chalk';
-import figlet from 'figlet';
 import path from 'path';
-import * as dotenv from 'dotenv';
 
-import { generate, tscWatch, configWatch, version } from './cli.js';
-import deployService from './services/deploy.service.js';
-import { compileAllFiles } from './services/compile.service.js';
-import verificationService from './services/verification.service.js';
-import { DryRunService } from './services/dryrun.service.js';
-import { v1toV2Migration, directoryMigration, endpointMigration } from './services/migration.service.js';
-import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug, isCI } from './utils.js';
-import type { DeployOptions } from './types.js';
-import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { init } from './services/init.service.js';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import * as dotenv from 'dotenv';
+import figlet from 'figlet';
+
+import { configWatch, generate, tscWatch, version } from './cli.js';
+import { compileAllFiles } from './services/compile.service.js';
+import { parse } from './services/config.service.js';
+import deployService from './services/deploy.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
+import { DryRunService } from './services/dryrun.service.js';
+import { init } from './services/init.service.js';
+import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
+import verificationService from './services/verification.service.js';
+import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+
+import type { DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {

@@ -51,7 +51,7 @@ class AppAuthController {
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
-        const logCtx = await logContextGetter.get({ id: session.activityLogId });
+        const logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
         try {
             if (!providerConfigKey) {

@@ -1,13 +1,13 @@
-import unicorn from 'eslint-plugin-unicorn';
-import globals from 'globals';
+import eslint from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
+import prettier from 'eslint-config-prettier';
+import importPlugin from 'eslint-plugin-import';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import unicorn from 'eslint-plugin-unicorn';
+import globals from 'globals';
 import * as tseslint from 'typescript-eslint';
-import prettier from 'eslint-config-prettier';
-import prettierRecommended from 'eslint-plugin-prettier/recommended';
-import eslint from '@eslint/js';
-import importPlugin from 'eslint-plugin-import';
 
 export default tseslint.config(
     {
@@ -67,6 +67,41 @@ export default tseslint.config(
             'import/newline-after-import': 'error',
             'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
             'import/namespace': 'off',
+            'import/order': [
+                'warn',
+                {
+                    'newlines-between': 'always',
+                    named: true,
+
+                    alphabetize: {
+                        order: 'asc'
+                    },
+                    distinctGroup: false,
+
+                    warnOnUnassignedImports: false,
+                    // sortTypesGroup: true, not avail yet
+
+                    pathGroupsExcludedImportTypes: [
+                        // allows us to split npm package from our @nango
+                        'builtin',
+                        // allow us to have our own types at the end anyway
+                        'type'
+                    ],
+                    pathGroups: [
+                        {
+                            pattern: '@nangohq/**',
+                            group: 'internal',
+                            position: 'after'
+                        },
+                        {
+                            pattern: '@/**',
+                            group: 'parent',
+                            position: 'after'
+                        }
+                    ],
+                    groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'type', 'object']
+                }
+            ],
 
             'unicorn/catch-error-name': [
                 'error',
@@ -318,33 +353,6 @@ export default tseslint.config(
                     callbacksLast: true,
                     shorthandFirst: true,
                     reservedFirst: true
-                }
-            ],
-
-            'import/order': [
-                'error',
-                {
-                    groups: ['builtin', 'external', 'unknown', 'internal', 'parent', 'sibling', 'type', 'index', 'object'],
-
-                    'newlines-between': 'always',
-
-                    alphabetize: {
-                        order: 'asc'
-                    },
-
-                    warnOnUnassignedImports: true,
-
-                    pathGroups: [
-                        {
-                            pattern: '@/**',
-                            group: 'parent'
-                        },
-                        {
-                            pattern: '@nangohq/*',
-                            group: 'internal',
-                            position: 'after'
-                        }
-                    ]
                 }
             ]
         }

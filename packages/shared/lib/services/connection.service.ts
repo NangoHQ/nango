@@ -62,10 +62,10 @@ import {
     extractStepNumber,
     getStepResponse
 } from '../utils/utils.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext } from '@nangohq/logs';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import type { Orchestrator } from '../clients/orchestrator.js';
-import { SlackService } from './notification/slack.service.js';
+import type { SlackService } from './notification/slack.service.js';
 import { v4 as uuidv4 } from 'uuid';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, getExpiresAtFromCredentials, MAX_FAILED_REFRESH } from './connections/utils.js';
@@ -810,14 +810,14 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         orchestrator,
-        logContextGetter,
-        preDeletionHook
+        preDeletionHook,
+        slackService
     }: {
         connection: DBConnectionDecrypted;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
-        logContextGetter: LogContextGetter;
+        slackService: SlackService;
         preDeletionHook: () => Promise<void>;
     }): Promise<number> {
         await preDeletionHook();
@@ -833,9 +833,8 @@ class ConnectionService {
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
         // TODO: move the following side effects to a post deletion hook
-        // so we can remove the orchestrator and logContextGetter dependencies
+        // so we can remove the orchestrator dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
-        const slackService = new SlackService({ logContextGetter, orchestrator });
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;
