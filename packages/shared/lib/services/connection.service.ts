@@ -1,74 +1,76 @@
-import jwt from 'jsonwebtoken';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import jwt from 'jsonwebtoken';
 import ms from 'ms';
-import type { Knex } from '@nangohq/database';
+import { v4 as uuidv4 } from 'uuid';
+
 import db, { dbNamespace } from '@nangohq/database';
-import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials } from '../models/index.js';
-import providerClient from '../clients/provider.client.js';
+import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+
 import configService from './config.service.js';
+import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
+import providerClient from '../clients/provider.client.js';
+import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
+import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
-import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
+import { generateWsseSignature } from '../signatures/wsse.signature.js';
+import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import {
+    extractStepNumber,
+    extractValueByPath,
+    getStepResponse,
+    interpolateObject,
+    interpolateObjectValues,
+    interpolateString,
+    interpolateStringFromObject,
+    parseTableauTokenExpirationDate,
+    parseTokenExpirationDate,
+    stripCredential,
+    stripStepResponse
+} from '../utils/utils.js';
 
+import type { Orchestrator } from '../clients/orchestrator.js';
 import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    BasicApiCredentials,
+    ConnectionUpsertResponse,
+    OAuth2ClientCredentials,
+    OAuth2Credentials
+} from '../models/Auth.js';
+import type { ServiceResponse } from '../models/Generic.js';
+import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { SlackService } from './notification/slack.service.js';
+import type { Knex } from '@nangohq/database';
+import type { LogContext } from '@nangohq/logs';
+import type {
+    AuthModeType,
+    BillCredentials,
+    ConnectionConfig,
+    ConnectionInternal,
+    DBConnection,
+    DBConnectionAsJSONRow,
+    DBConnectionDecrypted,
+    DBEndUser,
+    DBEnvironment,
+    DBTeam,
+    JwtCredentials,
+    MaybePromise,
     Metadata,
     Provider,
     ProviderJwt,
     ProviderOAuth2,
-    AuthModeType,
-    TbaCredentials,
-    TableauCredentials,
-    MaybePromise,
-    DBTeam,
-    DBEnvironment,
-    JwtCredentials,
-    BillCredentials,
-    DBConnection,
-    DBEndUser,
-    TwoStepCredentials,
-    ProviderTwoStep,
     ProviderSignature,
+    ProviderTwoStep,
     SignatureCredentials,
-    DBConnectionDecrypted,
-    ConnectionConfig,
-    ConnectionInternal,
-    DBConnectionAsJSONRow
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials
 } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { ServiceResponse } from '../models/Generic.js';
-import encryptionManager from '../utils/encryption.manager.js';
-import type {
-    AppCredentials,
-    AppStoreCredentials,
-    OAuth2Credentials,
-    OAuth2ClientCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    ConnectionUpsertResponse
-} from '../models/Auth.js';
-import {
-    interpolateStringFromObject,
-    interpolateString,
-    parseTokenExpirationDate,
-    parseTableauTokenExpirationDate,
-    interpolateObject,
-    extractValueByPath,
-    stripCredential,
-    interpolateObjectValues,
-    stripStepResponse,
-    extractStepNumber,
-    getStepResponse
-} from '../utils/utils.js';
-import type { LogContext } from '@nangohq/logs';
-import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
-import type { Orchestrator } from '../clients/orchestrator.js';
-import type { SlackService } from './notification/slack.service.js';
-import { v4 as uuidv4 } from 'uuid';
-import { generateWsseSignature } from '../signatures/wsse.signature.js';
-import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, getExpiresAtFromCredentials, MAX_FAILED_REFRESH } from './connections/utils.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -579,7 +581,7 @@ class ConnectionService {
                 db.knex.raw('row_to_json(_nango_accounts.*) as account')
             )
             .where('_nango_connections.deleted', false)
-            .where('_nango_connections.refresh_exhausted', false)
+            .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
             .andWhere((builder) => builder.where('last_fetched_at', '<', dateThreshold).orWhereNull('last_fetched_at'))
             .orderBy('_nango_connections.id', 'asc')
             .limit(limit);

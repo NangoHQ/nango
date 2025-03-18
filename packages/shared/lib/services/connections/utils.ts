@@ -1,4 +1,5 @@
 import ms from 'ms';
+
 import type { AllAuthCredentials, DBConnection, DBConnectionAsJSONRow } from '@nangohq/types';
 
 export const DEFAULT_EXPIRES_AT_MS = ms('1day');
