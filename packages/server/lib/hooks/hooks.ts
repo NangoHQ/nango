@@ -111,15 +111,7 @@ export async function testConnectionCredentials({
             });
             return result;
         }
-
-        logs.push({
-            type: 'log',
-            level: 'error',
-            message: 'No verification script or provider verification method found.',
-            createdAt: new Date().toISOString()
-        });
-
-        return Err(new NangoError('no_verification_script_or_verification_method', { logs }));
+        return Ok({ logs: [], tested: false });
     } catch (err) {
         logs.push({
             type: 'log',
