@@ -1,10 +1,8 @@
-import { getKVStore } from '@nangohq/kvstore';
 import { report } from '@nangohq/utils';
 
 import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js';
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
-
 import { getFormattedOperation } from './helpers.js';
 import { createOperation } from './messages.js';
 
@@ -33,9 +31,7 @@ export const logContextGetter = {
         try {
             if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
                 // TODO: remove this after full deploy
-                const res = await createOperation(msg);
-                const store = await getKVStore();
-                await store.set(`es:operation:${msg.id}:indexName`, res.index, { ttlInMs: 5 * 60 * 1000 });
+                await createOperation(msg);
             } else if (options?.logToConsole !== false) {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }

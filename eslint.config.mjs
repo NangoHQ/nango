@@ -99,7 +99,7 @@ export default tseslint.config(
                             position: 'after'
                         }
                     ],
-                    groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type', 'object']
+                    groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'type', 'object']
                 }
             ],
 
