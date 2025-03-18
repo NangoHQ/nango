@@ -33,7 +33,8 @@ import type {
     SignatureCredentials,
     DBConnectionDecrypted,
     ConnectionConfig,
-    ConnectionInternal
+    ConnectionInternal,
+    DBConnectionAsJSONRow
 } from '@nangohq/types';
 import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -67,11 +68,10 @@ import type { Orchestrator } from '../clients/orchestrator.js';
 import type { SlackService } from './notification/slack.service.js';
 import { v4 as uuidv4 } from 'uuid';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
+import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, getExpiresAtFromCredentials, MAX_FAILED_REFRESH } from './connections/utils.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
-const DEFAULT_EXPIRES_AT_MS = 55 * 60 * 1000; // This ensures we have an expiresAt value
-const DEFAULT_BILL_EXPIRES_AT_MS = 35 * 60 * 1000; //This ensures we have an expireAt value for Bill
 
 type KeyValuePairs = Record<string, string | boolean>;
 
@@ -111,7 +111,12 @@ class ConnectionService {
                 connection_config: connectionConfig || storedConnection.connection_config,
                 environment_id: environmentId,
                 config_id: config_id as number,
-                metadata: metadata || storedConnection.metadata || null
+                metadata: metadata || storedConnection.metadata || null,
+                credentials_expires_at: getExpiresAtFromCredentials(parsedRawCredentials),
+                last_refresh_success: new Date(),
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false
             });
 
             const connection = await db.knex
@@ -137,6 +142,11 @@ class ConnectionService {
             updated_at: new Date(),
             id: -1,
             last_fetched_at: null,
+            credentials_expires_at: getExpiresAtFromCredentials(parsedRawCredentials),
+            last_refresh_success: new Date(),
+            last_refresh_failure: null,
+            refresh_attempts: null,
+            refresh_exhausted: false,
             deleted: false,
             deleted_at: null
         });
@@ -186,6 +196,11 @@ class ConnectionService {
             updated_at: new Date(),
             id: -1,
             last_fetched_at: null,
+            credentials_expires_at: getExpiresAtFromCredentials(credentials),
+            last_refresh_success: new Date(),
+            last_refresh_failure: null,
+            refresh_attempts: null,
+            refresh_exhausted: false,
             deleted: false,
             deleted_at: null
         });
@@ -204,6 +219,11 @@ class ConnectionService {
                 connection_config: encryptedConnection.connection_config,
                 environment_id: encryptedConnection.environment_id,
                 metadata: encryptedConnection.connection_config,
+                credentials_expires_at: encryptedConnection.credentials_expires_at,
+                last_refresh_success: encryptedConnection.last_refresh_success,
+                last_refresh_failure: encryptedConnection.last_refresh_failure,
+                refresh_attempts: encryptedConnection.refresh_attempts,
+                refresh_exhausted: encryptedConnection.refresh_exhausted,
                 updated_at: new Date()
             })
             .returning('*');
@@ -240,6 +260,7 @@ class ConnectionService {
     }): Promise<ConnectionUpsertResponse[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment.id);
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
+        const expiresAt = getExpiresAtFromCredentials({});
 
         if (storedConnection) {
             const connection = await db.knex
@@ -251,7 +272,12 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
-                    metadata: metadata || storedConnection.metadata || null
+                    metadata: metadata || storedConnection.metadata || null,
+                    credentials_expires_at: expiresAt,
+                    last_refresh_success: new Date(),
+                    last_refresh_failure: null,
+                    refresh_attempts: null,
+                    refresh_exhausted: false
                 })
                 .returning('*');
 
@@ -268,7 +294,12 @@ class ConnectionService {
                 connection_config: connectionConfig || {},
                 metadata: metadata || {},
                 environment_id: environment.id,
-                config_id: config_id!
+                config_id: config_id!,
+                credentials_expires_at: expiresAt,
+                last_refresh_success: new Date(),
+                last_refresh_failure: null,
+                refresh_attempts: null,
+                refresh_exhausted: false
             })
             .returning('*');
 
@@ -419,7 +450,7 @@ class ConnectionService {
     }): Promise<Result<{ connection: DBConnectionDecrypted; end_user: DBEndUser }>> {
         const result = await db.knex
             .select<{
-                connection: DBConnection;
+                connection: DBConnectionAsJSONRow;
                 end_user: DBEndUser;
             }>(db.knex.raw('row_to_json(_nango_connections.*) as connection'), db.knex.raw('row_to_json(end_users.*) as end_user'))
             .from(`_nango_connections`)
@@ -445,6 +476,18 @@ class ConnectionService {
             .update(encryptionManager.encryptConnection(connection))
             .returning('*');
         return encryptionManager.decryptConnection(res[0]!);
+    }
+
+    public async setRefreshFailure({ id, currentAttempt }: { id: number; currentAttempt: number }) {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id })
+            .update({
+                last_refresh_failure: new Date(),
+                last_refresh_success: null,
+                refresh_attempts: currentAttempt + 1,
+                refresh_exhausted: currentAttempt >= MAX_FAILED_REFRESH
+            });
     }
 
     public async getConnectionConfig(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<ConnectionConfig> {
@@ -518,7 +561,7 @@ class ConnectionService {
         days: number;
         limit: number;
         cursor?: number | undefined;
-    }): Promise<{ connection: DBConnection; account: DBTeam; environment: DBEnvironment; cursor: number; integration: ProviderConfig }[]> {
+    }): Promise<{ connection: DBConnectionAsJSONRow; account: DBTeam; environment: DBEnvironment; cursor: number; integration: ProviderConfig }[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
@@ -536,6 +579,7 @@ class ConnectionService {
                 db.knex.raw('row_to_json(_nango_accounts.*) as account')
             )
             .where('_nango_connections.deleted', false)
+            .where('_nango_connections.refresh_exhausted', false)
             .andWhere((builder) => builder.where('last_fetched_at', '<', dateThreshold).orWhereNull('last_fetched_at'))
             .orderBy('_nango_connections.id', 'asc')
             .limit(limit);
@@ -698,10 +742,10 @@ class ConnectionService {
         endUserOrganizationId?: string | undefined;
         limit?: number;
         page?: number | undefined;
-    }): Promise<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
             .from<DBConnection>(`_nango_connections`)
-            .select<{ connection: DBConnection; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
+            .select<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`
@@ -860,7 +904,7 @@ class ConnectionService {
                     const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
                 } else {
-                    expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_AT_MS);
+                    expiresAt = new Date(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS);
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
