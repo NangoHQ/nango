@@ -75,8 +75,8 @@ export async function exec(): Promise<void> {
     logger.info(`Starting`);
 
     const ttlMs = cronMinutes * 60 * 1000 - 1000;
-    const startTimestamp = Date.now();
     const lockKey = `lock:deleteOldData:cron`;
+    const deadline = new Date(Date.now() + ttlMs);
     let lock: Lock | undefined;
     try {
         try {
@@ -89,48 +89,42 @@ export async function exec(): Promise<void> {
         // Delete jobs
         await batchDelete({
             name: 'jobs',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => await deleteJobsByDate({ olderThan: deleteJobsOlderThan, limit })
         });
 
         // Delete connect session
         await batchDelete({
             name: 'connect session',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit })
         });
 
         // Delete private keys
         await batchDelete({
             name: 'private keys',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit })
         });
 
         // Delete oauth sessions
         await batchDelete({
             name: 'oauth sessions',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => await oauthSessionService.deleteExpiredSessions({ limit, olderThan: deleteOauthSessionOlderThan })
         });
 
         // Delete invitations
         await batchDelete({
             name: 'invitations',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
         });
 
         // Delete integrations and all associated data
         await batchDelete({
             name: 'integration',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => {
                 const integrations = await configService.getSoftDeleted({ limit, olderThan: deleteConfigsOlderThan });
                 for (const integration of integrations) {
@@ -138,8 +132,7 @@ export async function exec(): Promise<void> {
 
                     await batchDelete({
                         name: 'sync configs < integration',
-                        startTimestamp,
-                        ttlMs,
+                        deadline,
                         deleteFn: async () => {
                             const syncsConfigs = await db.knex
                                 .from<DBSyncConfig>('_nango_sync_configs')
@@ -148,7 +141,7 @@ export async function exec(): Promise<void> {
                                 .limit(limit);
 
                             for (const syncConfig of syncsConfigs) {
-                                await deleteSyncConfigData({ syncConfig, startTimestamp, ttlMs });
+                                await deleteSyncConfigData({ syncConfig, deadline });
                             }
 
                             return syncsConfigs.length;
@@ -158,12 +151,11 @@ export async function exec(): Promise<void> {
                     // Delete connections
                     await batchDelete({
                         name: 'connections < integration',
-                        startTimestamp,
-                        ttlMs,
+                        deadline,
                         deleteFn: async () => await connectionService.hardDeleteByIntegration({ limit, integrationId: integration.id! })
                     });
 
-                    await configService.hardDelete(integration.id);
+                    await configService.hardDelete(integration.id!);
                 }
 
                 return integrations.length;
@@ -173,13 +165,12 @@ export async function exec(): Promise<void> {
         // Delete sync configs and all associated data
         await batchDelete({
             name: 'sync configs',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => {
                 const syncsConfigs = await getSoftDeletedSyncConfig({ limit, olderThan: deleteSyncConfigsOlderThan });
 
                 for (const syncConfig of syncsConfigs) {
-                    await deleteSyncConfigData({ syncConfig, startTimestamp, ttlMs });
+                    await deleteSyncConfigData({ syncConfig, deadline });
                 }
 
                 return syncsConfigs.length;
@@ -189,8 +180,7 @@ export async function exec(): Promise<void> {
         // Delete connections and all associated data
         await batchDelete({
             name: 'connections',
-            startTimestamp,
-            ttlMs,
+            deadline,
             deleteFn: async () => {
                 const connections = await connectionService.getSoftDeleted({ limit, olderThan: deleteConnectionsOlderThan });
 
@@ -223,17 +213,7 @@ export async function exec(): Promise<void> {
     }
 }
 
-async function batchDelete({
-    name,
-    deleteFn,
-    startTimestamp,
-    ttlMs
-}: {
-    name: string;
-    deleteFn: () => Promise<number>;
-    startTimestamp: number;
-    ttlMs: number;
-}) {
+async function batchDelete({ name, deleteFn, deadline }: { name: string; deleteFn: () => Promise<number>; deadline: Date }) {
     while (true) {
         const deleted = await deleteFn();
         if (deleted) {
@@ -242,7 +222,7 @@ async function batchDelete({
         if (deleted < limit) {
             break;
         }
-        if (Date.now() - startTimestamp > ttlMs) {
+        if (Date.now() > deadline.getTime()) {
             logger.info(`Time limit reached, stopping`);
             return;
         }
@@ -250,13 +230,12 @@ async function batchDelete({
     }
 }
 
-async function deleteSyncConfigData({ syncConfig, startTimestamp, ttlMs }: { syncConfig: DBSyncConfig; startTimestamp: number; ttlMs: number }) {
+async function deleteSyncConfigData({ syncConfig, deadline }: { syncConfig: DBSyncConfig; deadline: Date }) {
     logger.info('Deleting sync config...', syncConfig.id, syncConfig.sync_name);
 
     await batchDelete({
         name: 'syncs',
-        startTimestamp,
-        ttlMs,
+        deadline,
         deleteFn: async () => {
             const syncs = await db.knex.from<Sync>('_nango_syncs').select<Sync[]>().where({ sync_config_id: syncConfig.id }).limit(limit);
 
