@@ -1,31 +1,35 @@
-import * as cron from 'node-cron';
-import type { Sync } from '@nangohq/shared';
-import {
-    errorManager,
-    ErrorSourceEnum,
-    deleteJobsByDate,
-    deleteExpiredInvitations,
-    configService,
-    connectionService,
-    hardDeleteSync,
-    hardDeleteSyncConfig,
-    hardDeleteEndpoints,
-    getSoftDeletedSyncConfig
-} from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
-import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
-import type { Lock } from '@nangohq/kvstore';
-import { getLocking } from '@nangohq/kvstore';
+
+import tracer from 'dd-trace';
+import * as cron from 'node-cron';
+
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
+import { getLocking } from '@nangohq/kvstore';
+import { records } from '@nangohq/records';
+import {
+    ErrorSourceEnum,
+    configService,
+    connectionService,
+    deleteExpiredInvitations,
+    deleteJobsByDate,
+    errorManager,
+    getSoftDeletedSyncConfig,
+    hardDeleteEndpoints,
+    hardDeleteSync,
+    hardDeleteSyncConfig
+} from '@nangohq/shared';
+import { getLogger, metrics } from '@nangohq/utils';
+
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
-import type { DBSyncConfig } from '@nangohq/types';
-import { records } from '@nangohq/records';
 
-const logger = getLogger('cron.deleteOldData');
+import type { Lock } from '@nangohq/kvstore';
+import type { Sync } from '@nangohq/shared';
+import type { DBSyncConfig } from '@nangohq/types';
+
+const logger = getLogger('Jobs.deleteOldData');
 
 const cronMinutes = envs.CRON_DELETE_OLD_DATA_EVERY_MIN;
 
@@ -159,7 +163,7 @@ export async function exec(): Promise<void> {
                         deleteFn: async () => await connectionService.hardDeleteByIntegration({ limit, integrationId: integration.id! })
                     });
 
-                    await configService.hardDelete(integration.id!);
+                    await configService.hardDelete(integration.id);
                 }
 
                 return integrations.length;

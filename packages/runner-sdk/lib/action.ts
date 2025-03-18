@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
-import type { Nango } from '@nangohq/node';
+import { getProvider } from '@nangohq/providers';
+
+import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
-import type { AxiosResponse } from 'axios';
-import type { ZodSchema, SafeParseSuccess } from 'zod';
+
+import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
     ApiPublicConnectionFull,
@@ -32,8 +34,8 @@ import type {
     UserLogParameters,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
-import { getProvider } from '@nangohq/providers';
-import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
+import type { AxiosResponse } from 'axios';
+import type { SafeParseSuccess, ZodSchema } from 'zod';
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;

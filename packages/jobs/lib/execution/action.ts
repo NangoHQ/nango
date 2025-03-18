@@ -58,7 +58,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
+        const logCtx = await logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
         void logCtx.info(`Starting action '${task.actionName}'`, {
             input: task.input,
             action: task.actionName,
@@ -213,7 +213,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: activityLogId });
+    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
     try {
         await slackService.reportFailure(connection, syncName, 'action', logCtx.id, provider);
     } catch {

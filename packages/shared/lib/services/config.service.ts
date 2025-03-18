@@ -31,8 +31,8 @@ class ConfigService {
         return result.id;
     }
 
-    async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
-        const result = await db.readOnly
+    async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
+        const result = await trx
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: providerConfigKey, environment_id, deleted: false })
@@ -45,9 +45,9 @@ class ConfigService {
         return encryptionManager.decryptProviderConfig(result);
     }
 
-    async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
+    async listProviderConfigs(environment_id: number, trx = db.knex): Promise<ProviderConfig[]> {
         return (
-            await db.knex
+            await trx
                 .select('*')
                 .from<ProviderConfig>(`_nango_configs`)
                 .where({ environment_id, deleted: false })

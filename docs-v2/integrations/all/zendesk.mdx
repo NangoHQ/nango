@@ -14,12 +14,11 @@ import PreBuiltUseCases from "/snippets/generated/zendesk/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
-
+| Paid dev account | ✅ Not required | Free, self-signup for a [Zendesk account](https://www.zendesk.com/register/). |
+| Paid test account | ✅ Not required | Free trial account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for apps published to the Zendesk Marketplace. |
+| Security audit | ✅ Not required | |
 
 
 <Note>
@@ -29,41 +28,79 @@ Zendesk has two kinds of OAuth apps:
 
 Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reach out or contribute it :)
 </Note>
+
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Zendesk account">
+    If you don't already have one, sign up for a [Zendesk account](https://www.zendesk.com/register/).
+  </Step>
+  <Step title="Create an OAuth client">
+    1. Log in to your Zendesk account.
+    2. Navigate to **Admin Center** > **Apps and Integrations** > **APIs** > **Zendesk API**.
+    3. In the **OAuth Clients** tab, click **Add OAuth Client**.
+  </Step>
+  <Step title="Configure your OAuth client">
+    1. Fill in the required information:
+       - **Client Name**: Your application's name
+       - **Description**: Brief description of your app
+       - **Company**: Your company name
+       - **Logo** (optional): Upload a logo for your application
+       - **Unique Identifier**: A unique identifier for your app (e.g., your-app-name)
+       - **Redirect URLs**: Add `https://api.nango.dev/oauth/callback`
+    2. Click **Save** to create your OAuth client.
+  </Step>
+  <Step title="Obtain OAuth credentials">
+    1. After creating your OAuth client, you'll be provided with:
+       - **Unique Identifier** (Client ID)
+       - **Secret** (Client Secret)
+    2. Make a copy of these credentials, as they will be needed when configuring your integration in Nango. The **Secret** will not be shown again, so ensure you store it securely.
+  </Step>
+
+  <Step title="Request a global OAuth client (optional)">
+    If your application needs to connect to multiple Zendesk instances, you should request a global OAuth client:
+    
+    1. Develop your app using a local OAuth client first.
+    2. Ensure your Unique Identifier is prefixed with "zdg-" (e.g., "zdg-your-app-name").
+    3. Fill out all fields in the local client, even those labeled as "optional".
+    4. When your app is ready for multiple Zendesk accounts, follow the [global OAuth client request process](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/).
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk)
--   [List of OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210#topic_gql_kbd_gt)
--   [Setting up a global oAuth client](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/)
--   [API](https://developer.zendesk.com/api-reference/)
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.zendesk.com/) |
+| | [Create a Zendesk account](https://www.zendesk.com/register/) |
+| | [Zendesk Help Center](https://support.zendesk.com/) |
+| Developer | [API documentation](https://developer.zendesk.com/api-reference/) |
+| | [OAuth authentication guide](https://developer.zendesk.com/api-reference/sales-crm/authentication/reference/) |
+| | [OAuth client setup](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk) |
+| | [OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_qkc_dcm_dcc) |
+| | [Global OAuth client setup](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) |
+| | [API rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 
 
-## Connection configuration in Nango
 
-Zendesk requires a user specific subdomain to run OAuth.
-
-You should request this from the user and pass it to Nango in the `nango.auth()` call:
-
-```js
-nango.auth('zendesk', '<CONNECTION-ID>', {params: {subdomain: '<zendesk-subdomain>'}});
-```
-
-For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
 -   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
--   Zendesk oAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
+-   Zendesk OAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
+-   The subdomain is a critical part of the OAuth flow and API calls. It's the unique identifier in the Zendesk URL: `https://<subdomain>.zendesk.com`.
+-   Zendesk has [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) that vary by plan.
+-   OAuth tokens expire after a certain period, but Nango automatically handles token refresh for you.
+-   When creating an OAuth client, make sure to fill out all fields, even those marked as "optional", especially if you plan to request a global OAuth client later.
+-   For security reasons, Zendesk doesn't allow developers to create their own global OAuth clients. You must request one from Zendesk.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
 

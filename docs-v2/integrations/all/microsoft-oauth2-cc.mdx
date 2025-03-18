@@ -1,0 +1,52 @@
+---
+title: Microsoft (Client Credentials)
+sidebarTitle: Microsoft (Client Credentials)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/microsoft-oauth2-cc/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/microsoft-oauth2-cc/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-oauth2-cc.mdx)</Note>
+
+
+## Useful links
+
+-   [OAuth related docs](https://learn.microsoft.com/en-us/graph/auth-v2-service?tabs=http#token-request)
+-   [How to register an Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2)
+-   [How to configure permissions](https://learn.microsoft.com/en-us/graph/auth-v2-service?tabs=curl#step-1-configure-permissions-for-microsoft-graph)
+-   [Overview of Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-oauth2-cc.mdx)</Note>
+
+## API gotchas
+
+-   Microsoft has a unified OAuth system for their various APIs. This provider should work for most of them (e.g. Microsoft EntraID, OneNote, Onedrive, Outlook, Sharepoint Online, Microsoft Teams etc.).
+-   Microsoft offers a tool that allows you to construct and perform Graph API queries and see their response for any apps on which you have an admin, developer, or tester role. For more information you can check [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
+-   Please be aware that the Microsoft Graph API implements throttling to manage the volume of requests. For more information on handling throttling, refer to the [Microsoft Graph Throttling Guidance](https://learn.microsoft.com/en-us/graph/throttling).
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/microsoft-oauth2-cc.mdx)</Note>
+
+<Card title="Connect to Microsoft (Client Credentials)" icon="link" href="/integrations/all/microsoft-oauth2-cc/connect" horizontal>
+  Guide to connect to Microsoft (Client Credentials) API using Nango Connect.
+</Card>

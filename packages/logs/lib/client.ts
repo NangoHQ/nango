@@ -1,11 +1,13 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHTTPResponse, MessageHTTPRequest } from '@nangohq/types';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
-import { getFormattedMessage } from './models/helpers.js';
 import { metrics, report } from '@nangohq/utils';
-import { isCli, logger, logLevelToLogger } from './utils.js';
+
 import { envs } from './env.js';
-import type { OtlpSpan } from './otlp/otlpSpan.js';
 import { errorToDocument } from './formatters.js';
+import { getFormattedMessage } from './models/helpers.js';
+import { createMessage, setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
+import { isCli, logLevelToLogger, logger } from './utils.js';
+
+import type { OtlpSpan } from './otlp/otlpSpan.js';
+import type { MessageHTTPRequest, MessageHTTPResponse, MessageMeta, MessageRow, MessageRowInsert, OperationRow } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
@@ -14,14 +16,17 @@ interface Options {
 
 /**
  * Context without operation (stateless)
+ * Only useful for logging
  */
 export class LogContextStateless {
     id: OperationRow['id'];
+    accountId?: OperationRow['accountId'] | undefined;
     dryRun: boolean;
     logToConsole: boolean;
 
-    constructor(data: { parentId: OperationRow['id'] }, options: Options = { dryRun: false, logToConsole: true }) {
-        this.id = data.parentId;
+    constructor(data: { id: OperationRow['id']; accountId?: OperationRow['accountId'] | undefined }, options: Options = { dryRun: false, logToConsole: true }) {
+        this.id = data.id;
+        this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
     }
@@ -49,7 +54,7 @@ export class LogContextStateless {
             report(new Error('failed_to_insert_in_es', { cause: err }));
             return false;
         } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
+            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId: this.accountId as number });
         }
     }
 
@@ -120,15 +125,22 @@ export class LogContextStateless {
 }
 
 /**
- * Context with operation (can modify state)
+ * Main class that contain operation level methods
+ * With recent refactor it could be re-grouped with Stateless
  */
 export class LogContext extends LogContextStateless {
-    operation: OperationRow;
+    /**
+     * This date is used to build the index name since we can update an alias in Elasticsearch
+     */
+    createdAt: string;
     span?: OtlpSpan;
 
-    constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
-        super(data, options);
-        this.operation = data.operation;
+    constructor(
+        { id, createdAt, accountId }: { id: string; createdAt: string; accountId?: number | undefined },
+        options: Options = { dryRun: false, logToConsole: true }
+    ) {
+        super({ id, accountId }, options);
+        this.createdAt = createdAt;
     }
 
     /**
@@ -141,13 +153,13 @@ export class LogContext extends LogContextStateless {
     }
 
     /**
-     * Add more data to the parentId
+     * Add more data to the operation id
      */
     async enrichOperation(data: Partial<OperationRow>): Promise<void> {
         this.span?.enrich(data);
         await this.logOrExec(
             `enrich(${JSON.stringify(data)})`,
-            async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
+            async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.createdAt } })
         );
     }
 
@@ -155,33 +167,33 @@ export class LogContext extends LogContextStateless {
      * ------ State
      */
     async start(): Promise<void> {
-        await this.logOrExec('start', async () => await setRunning(this.operation));
+        await this.logOrExec('start', async () => await setRunning({ id: this.id, createdAt: this.createdAt }));
     }
 
     async failed(): Promise<void> {
         await this.logOrExec('failed', async () => {
-            await setFailed(this.operation);
+            await setFailed({ id: this.id, createdAt: this.createdAt });
             this.span?.end('failed');
         });
     }
 
     async success(): Promise<void> {
         await this.logOrExec('success', async () => {
-            await setSuccess(this.operation);
+            await setSuccess({ id: this.id, createdAt: this.createdAt });
             this.span?.end('success');
         });
     }
 
     async cancel(): Promise<void> {
         await this.logOrExec('cancel', async () => {
-            await setCancelled(this.operation);
+            await setCancelled({ id: this.id, createdAt: this.createdAt });
             this.span?.end('cancelled');
         });
     }
 
     async timeout(): Promise<void> {
         await this.logOrExec('timeout', async () => {
-            await setTimeouted(this.operation);
+            await setTimeouted({ id: this.id, createdAt: this.createdAt });
             this.span?.end('timeout');
         });
     }
@@ -199,5 +211,19 @@ export class LogContext extends LogContextStateless {
         } catch (err) {
             report(new Error(`failed_to_set_${log}`, { cause: err }));
         }
+    }
+}
+
+/**
+ * Small extend that allows code to access the created operation
+ * Only useful for OTLP and debugging.
+ * It should be relied too much upon as we don't have access to the `operation` as soon as an operation becomes multi-services
+ */
+export class LogContextOrigin extends LogContext {
+    operation: OperationRow;
+
+    constructor({ operation }: { operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
+        super({ id: operation.id, createdAt: operation.createdAt, accountId: operation.accountId }, options);
+        this.operation = operation;
     }
 }
