@@ -1,12 +1,15 @@
-import { report } from '@nangohq/utils';
-import { createOperation } from './messages.js';
-import { envs } from '../env.js';
-import type { AdditionalOperationData } from './helpers.js';
-import { getFormattedOperation } from './helpers.js';
-import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js';
-import { logger } from '../utils.js';
-import type { OperationRow, OperationRowInsert } from '@nangohq/types';
 import { getKVStore } from '@nangohq/kvstore';
+import { report } from '@nangohq/utils';
+
+import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js';
+import { envs } from '../env.js';
+import { logger } from '../utils.js';
+
+import { getFormattedOperation } from './helpers.js';
+import { createOperation } from './messages.js';
+
+import type { AdditionalOperationData } from './helpers.js';
+import type { OperationRow, OperationRowInsert } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
@@ -47,8 +50,18 @@ export const logContextGetter = {
      * Return a Context without creating an operation
      */
     async get({ id, accountId }: { id: OperationRow['id']; accountId?: number | undefined }, options?: Options): Promise<LogContext> {
-        const split = id.split('_');
-        const createdAt = split[0] ? new Date(parseInt(split[0], 10)).toISOString() : new Date().toISOString(); // Fallback to default date
+        let createdAt: string | undefined;
+        try {
+            const split = id.split('_');
+            if (split[0]) {
+                createdAt = new Date(parseInt(split[0], 10)).toISOString();
+            }
+        } catch (err) {
+            report(new Error('failed_to_parse_id', { cause: err }), { id });
+        }
+        if (!createdAt) {
+            createdAt = new Date().toISOString(); // Fallback to default date
+        }
         return Promise.resolve(new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED }));
     },
 

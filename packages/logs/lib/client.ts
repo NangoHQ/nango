@@ -1,11 +1,13 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow, MessageHTTPResponse, MessageHTTPRequest } from '@nangohq/types';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, updateOperation } from './models/messages.js';
-import { getFormattedMessage } from './models/helpers.js';
 import { metrics, report } from '@nangohq/utils';
-import { isCli, logger, logLevelToLogger } from './utils.js';
+
 import { envs } from './env.js';
-import type { OtlpSpan } from './otlp/otlpSpan.js';
 import { errorToDocument } from './formatters.js';
+import { getFormattedMessage } from './models/helpers.js';
+import { createMessage, setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
+import { isCli, logLevelToLogger, logger } from './utils.js';
+
+import type { OtlpSpan } from './otlp/otlpSpan.js';
+import type { MessageHTTPRequest, MessageHTTPResponse, MessageMeta, MessageRow, MessageRowInsert, OperationRow } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
@@ -127,6 +129,9 @@ export class LogContextStateless {
  * With recent refactor it could be re-grouped with Stateless
  */
 export class LogContext extends LogContextStateless {
+    /**
+     * This date is used to build the index name since we can update an alias in Elasticsearch
+     */
     createdAt: string;
     span?: OtlpSpan;
 
