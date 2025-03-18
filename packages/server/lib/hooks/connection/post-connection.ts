@@ -1,7 +1,7 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import { connectionService, getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import * as postConnectionHandlers from './index.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 import type {
     ConnectionConfig,
@@ -25,7 +25,7 @@ export interface InternalNango {
 
 async function execute(createdConnection: RecentlyCreatedConnection, providerName: string, logContextGetter: LogContextGetter) {
     const { connection: upsertedConnection, environment, account } = createdConnection;
-    let logCtx: LogContext | undefined;
+    let logCtx: LogContextOrigin | undefined;
     try {
         const connectionRes = await connectionService.getConnection(upsertedConnection.connection_id, upsertedConnection.provider_config_key, environment.id);
         if (connectionRes.error || !connectionRes.response) {
