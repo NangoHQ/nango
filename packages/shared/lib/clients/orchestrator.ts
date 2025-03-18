@@ -1,6 +1,6 @@
 import ms from 'ms';
 import type { StringValue } from 'ms';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
@@ -630,7 +630,7 @@ export class Orchestrator {
         logContextGetter: LogContextGetter;
         debug?: boolean;
     }): Promise<Result<void>> {
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
 
         try {
             const syncConfig = await getSyncConfigRaw({

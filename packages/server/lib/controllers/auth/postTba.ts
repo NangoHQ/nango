@@ -19,8 +19,8 @@ import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextG
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
-    connectionTest as connectionTestHook,
-    connectionCreationFailed as connectionCreationFailedHook
+    connectionCreationFailed as connectionCreationFailedHook,
+    testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
@@ -95,7 +95,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -182,7 +182,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             }
         }
 
-        const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider });
         if (connectionResponse.isErr()) {
             if ('logs' in connectionResponse.error.payload) {
                 await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);

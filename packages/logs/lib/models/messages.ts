@@ -200,15 +200,21 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
 /**
  * Update a row (can be a partial update)
  */
-export async function updateOperation(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'> }): Promise<void> {
+export async function updateOperation({
+    id,
+    data: { createdAt, ...rest }
+}: {
+    id: OperationRow['id'];
+    data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'>;
+}): Promise<void> {
     await client.update({
-        index: getFullIndexName(indexMessages.index, opts.data.createdAt),
-        id: opts.id,
+        index: getFullIndexName(indexMessages.index, createdAt),
+        id: id,
         retry_on_conflict: 3,
         refresh: isTest,
         body: {
             doc: {
-                ...opts.data,
+                ...rest,
                 updatedAt: new Date().toISOString()
             }
         }
@@ -379,6 +385,33 @@ export async function listFilters(opts: {
     return {
         items: agg.buckets as any
     };
+}
+
+export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+    await client.updateByQuery({
+        index: indexMessages.index,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
+        query: {
+            bool: {
+                filter: [
+                    { range: { expiresAt: { lt: 'now' } } },
+                    { term: { 'operation.type': 'auth' } },
+                    { term: { 'operation.action': 'create_connection' } },
+                    {
+                        bool: {
+                            should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+                        }
+                    }
+                ],
+                must_not: { exists: { field: 'parentId' } },
+                should: []
+            }
+        },
+        script: {
+            source: "ctx._source.state = 'cancelled'"
+        }
+    });
 }
 
 export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {

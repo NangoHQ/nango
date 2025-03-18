@@ -695,7 +695,6 @@ export class Nango {
 
         const formattedSyncs = syncs === '*' ? '*' : syncs.map(getSyncFullName).join(',');
 
-        console.log(formattedSyncs);
         const params = {
             syncs: formattedSyncs,
             provider_config_key: providerConfigKey,

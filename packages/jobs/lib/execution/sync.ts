@@ -28,7 +28,7 @@ import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContextOrigin } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
@@ -38,7 +38,7 @@ import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
-    let logCtx: LogContext | undefined;
+    let logCtx: LogContextOrigin | undefined;
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let syncJob: Job | null = null;
@@ -196,7 +196,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 }
 
 export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
+    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
             getFormattedOperation(
@@ -671,7 +671,7 @@ async function onFailure({
         });
     }
 
-    const logCtx = await logContextGetter.get({ id: activityLogId });
+    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
     if (team) {
         logCtx.attachSpan(
             new OtlpSpan(
