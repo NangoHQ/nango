@@ -529,18 +529,10 @@ export const getAndReconcileDifferences = async ({
     };
 };
 
-export async function findRecentlyDeletedSync(): Promise<{ id: string; environmentId: number; connectionId: number; models: string[] }[]> {
-    const q = db.readOnly
-        .from('_nango_syncs')
-        .select<
-            { id: string; environmentId: number; connectionId: number; models: string[] }[]
-        >('_nango_syncs.id as id', '_nango_connections.environment_id as environmentId', '_nango_connections.id as connectionId', '_nango_sync_configs.models as models')
-        .join('_nango_connections', '_nango_connections.id', '_nango_syncs.nango_connection_id')
-        .join('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
-        .where(db.knex.raw("_nango_syncs.deleted_at >  NOW() - INTERVAL '6h'"));
-    return await q;
-}
-
 export async function trackFetch(nango_connection_id: number): Promise<void> {
     await db.knex.from<Sync>(`_nango_syncs`).where({ nango_connection_id, deleted: false }).update({ last_fetched_at: new Date() });
+}
+
+export async function hardDeleteSync(id: string) {
+    await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();
 }

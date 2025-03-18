@@ -106,3 +106,15 @@ export async function getInvitation(token: string): Promise<DBInvitation | null>
 
     return result || null;
 }
+
+export async function deleteExpiredInvitations({ limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db.knex
+        .from<DBInvitation>('_nango_invited_users')
+        .whereIn('id', function (sub) {
+            sub.select('id').from<DBInvitation>('_nango_invited_users').where('expires_at', '<=', dateThreshold.toISOString()).limit(limit);
+        })
+        .delete();
+}

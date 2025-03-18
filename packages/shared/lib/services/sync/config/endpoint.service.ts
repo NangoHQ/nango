@@ -1,7 +1,7 @@
-import { schema, dbNamespace } from '@nangohq/database';
+import db, { schema, dbNamespace } from '@nangohq/database';
 import configService from '../../config.service.js';
 import type { HTTP_METHOD } from '../../../models/Generic.js';
-import type { DBConnection, DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
+import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint } from '@nangohq/types';
 
 const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
@@ -39,4 +39,8 @@ export async function getActionOrModelByEndpoint(connection: DBConnection | DBCo
     } else {
         return { model: result['model'] };
     }
+}
+
+export async function hardDeleteEndpoints({ syncConfigId }: { syncConfigId: number }): Promise<number> {
+    return await db.knex.from<DBSyncEndpoint>('_nango_sync_endpoints').where({ sync_config_id: syncConfigId }).delete();
 }
