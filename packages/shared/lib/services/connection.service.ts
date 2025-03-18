@@ -1,72 +1,75 @@
-import jwt from 'jsonwebtoken';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import jwt from 'jsonwebtoken';
 import ms from 'ms';
-import type { Knex } from '@nangohq/database';
+import { v4 as uuidv4 } from 'uuid';
+
 import db, { dbNamespace } from '@nangohq/database';
-import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import type { Config as ProviderConfig, AuthCredentials, OAuth1Credentials } from '../models/index.js';
+import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+
+import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
+import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
+import environmentService from '../services/environment.service.js';
+import { generateWsseSignature } from '../signatures/wsse.signature.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
+import encryptionManager from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
+import {
+    extractStepNumber,
+    extractValueByPath,
+    getStepResponse,
+    interpolateObject,
+    interpolateObjectValues,
+    interpolateString,
+    interpolateStringFromObject,
+    parseTableauTokenExpirationDate,
+    parseTokenExpirationDate,
+    stripCredential,
+    stripStepResponse
+} from '../utils/utils.js';
+
 import configService from './config.service.js';
 import syncManager from './sync/manager.service.js';
-import environmentService from '../services/environment.service.js';
-import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
-import { NangoError } from '../utils/error.js';
 
+import type { Orchestrator } from '../clients/orchestrator.js';
 import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    BasicApiCredentials,
+    ConnectionUpsertResponse,
+    OAuth2ClientCredentials,
+    OAuth2Credentials
+} from '../models/Auth.js';
+import type { ServiceResponse } from '../models/Generic.js';
+import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
+import type { SlackService } from './notification/slack.service.js';
+import type { Knex } from '@nangohq/database';
+import type { LogContext } from '@nangohq/logs';
+import type {
+    AuthModeType,
+    BillCredentials,
+    ConnectionConfig,
+    ConnectionInternal,
+    DBConnection,
+    DBEndUser,
+    DBEnvironment,
+    DBTeam,
+    MaybePromise,
     Metadata,
     Provider,
     ProviderJwt,
     ProviderOAuth2,
-    AuthModeType,
-    TbaCredentials,
     TableauCredentials,
-    MaybePromise,
-    DBTeam,
-    DBEnvironment,
+    TbaCredentials,
     JwtCredentials,
-    BillCredentials,
-    DBConnection,
-    DBEndUser,
     TwoStepCredentials,
     ProviderTwoStep,
     ProviderSignature,
     SignatureCredentials,
-    DBConnectionDecrypted,
-    ConnectionConfig,
-    ConnectionInternal
+    DBConnectionDecrypted
 } from '@nangohq/types';
-import { getLogger, stringifyError, Ok, Err, axiosInstance as axios } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
-import type { ServiceResponse } from '../models/Generic.js';
-import encryptionManager from '../utils/encryption.manager.js';
-import type {
-    AppCredentials,
-    AppStoreCredentials,
-    OAuth2Credentials,
-    OAuth2ClientCredentials,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    ConnectionUpsertResponse
-} from '../models/Auth.js';
-import {
-    interpolateStringFromObject,
-    interpolateString,
-    parseTokenExpirationDate,
-    parseTableauTokenExpirationDate,
-    interpolateObject,
-    extractValueByPath,
-    stripCredential,
-    interpolateObjectValues,
-    stripStepResponse,
-    extractStepNumber,
-    getStepResponse
-} from '../utils/utils.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
-import type { Orchestrator } from '../clients/orchestrator.js';
-import { SlackService } from './notification/slack.service.js';
-import { v4 as uuidv4 } from 'uuid';
-import { generateWsseSignature } from '../signatures/wsse.signature.js';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -766,14 +769,14 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         orchestrator,
-        logContextGetter,
-        preDeletionHook
+        preDeletionHook,
+        slackService
     }: {
         connection: DBConnectionDecrypted;
         providerConfigKey: string;
         environmentId: number;
         orchestrator: Orchestrator;
-        logContextGetter: LogContextGetter;
+        slackService: SlackService;
         preDeletionHook: () => Promise<void>;
     }): Promise<number> {
         await preDeletionHook();
@@ -791,8 +794,8 @@ class ConnectionService {
         // TODO: might be useless since we are dropping the data after a while
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         // TODO: move the following side effects to a post deletion hook
-        // so we can remove the orchestrator and logContextGetter dependencies
-        const slackService = new SlackService({ logContextGetter, orchestrator });
+        // so we can remove the orchestrator dependencies
+        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;

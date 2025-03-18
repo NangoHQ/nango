@@ -648,7 +648,34 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
+    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
+
     if (team && environment) {
+        try {
+            void slackService.reportFailure({
+                account: team,
+                environment,
+                connection,
+                name: syncName,
+                type: 'sync',
+                originalActivityLogId: logCtx.id,
+                provider
+            });
+        } catch {
+            errorManager.report('slack notification service reported a failure', {
+                environmentId: connection.environment_id,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                metadata: {
+                    syncName: syncName,
+                    connectionDetails: connection,
+                    syncId: syncId,
+                    syncJobId: syncJobId,
+                    syncType: syncType,
+                    debug: debug
+                }
+            });
+        }
         void bigQueryClient.insert({
             executionType: 'sync',
             connectionId: connection.connection_id,
@@ -671,7 +698,6 @@ async function onFailure({
         });
     }
 
-    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
     if (team) {
         logCtx.attachSpan(
             new OtlpSpan(
@@ -691,24 +717,6 @@ async function onFailure({
                 new Date(startedAt)
             )
         );
-    }
-
-    try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, provider);
-    } catch {
-        errorManager.report('slack notification service reported a failure', {
-            environmentId: connection.environment_id,
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.SYNC,
-            metadata: {
-                syncName: syncName,
-                connectionDetails: connection,
-                syncId: syncId,
-                syncJobId: syncJobId,
-                syncType: syncType,
-                debug: debug
-            }
-        });
     }
 
     if (environment) {
