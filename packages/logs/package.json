@@ -15,7 +15,6 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "8.17.0",
-        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.0",
         "@opentelemetry/core": "1.27.0",
