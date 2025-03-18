@@ -1,5 +1,19 @@
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import tracer from 'dd-trace';
 
+import { getLocking } from '@nangohq/kvstore';
+import { getProvider } from '@nangohq/providers';
+import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
+
+import providerClient from '../../../clients/provider.client.js';
+import { NangoError } from '../../../utils/error.js';
+import { isTokenExpired } from '../../../utils/utils.js';
+import connectionService from '../../connection.service.js';
+import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
+
+import type { Config } from '../../../models';
+import type { Config as ProviderConfig } from '../../../models/index.js';
+import type { Lock } from '@nangohq/kvstore';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
@@ -13,19 +27,7 @@ import type {
     TestableCredentials,
     TestableProvider
 } from '@nangohq/types';
-import type { Config } from '../../../models';
 import type { Result } from '@nangohq/utils';
-import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
-import { NangoError } from '../../../utils/error.js';
-import { getProvider } from '@nangohq/providers';
-import type { Config as ProviderConfig } from '../../../models/index.js';
-import tracer from 'dd-trace';
-import type { Lock } from '@nangohq/kvstore';
-import { getLocking } from '@nangohq/kvstore';
-import connectionService from '../../connection.service.js';
-import providerClient from '../../../clients/provider.client.js';
-import { isTokenExpired } from '../../../utils/utils.js';
-import { getExpiresAtFromCredentials, REFRESH_MARGIN_S } from '../utils.js';
 
 interface RefreshProps {
     account: DBTeam;
@@ -276,6 +278,7 @@ async function testCredentials(
 
         const connection = await connectionService.updateConnection({
             ...oldConnection,
+            credentials_expires_at: getExpiresAtFromCredentials(oldConnection.credentials),
             last_refresh_failure: null,
             last_refresh_success: new Date(),
             refresh_attempts: null,
