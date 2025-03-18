@@ -1704,6 +1704,31 @@ calendly:
     webhook_routing_script: calendlyWebhookRouting
     docs: https://docs.nango.dev/integrations/all/calendly
 
+callrail:
+    display_name: Callrail
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.callrail.com
+        headers:
+            authorization: Token token=${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v3/a.json
+    docs_connect: https://docs.nango.dev/integrations/all/callrail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Callrail account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-1-finding-your-api-key'
+    docs: https://docs.nango.dev/integrations/all/callrail
+
 canny:
     display_name: Canny
     categories:
