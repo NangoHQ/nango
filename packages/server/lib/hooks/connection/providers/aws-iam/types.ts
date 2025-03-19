@@ -42,3 +42,13 @@ export interface ErrorResponse {
     };
     RequestId: string;
 }
+
+export interface AWSAuthHeaderParams {
+    method: string;
+    service: string;
+    path: string;
+    querystring: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    region: string;
+}

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
-import type { AWSAuthHeader, AWSIAMRequestParams, ListUsersResponse, ErrorResponse } from './types.js';
+import type { AWSAuthHeader, AWSIAMRequestParams, ListUsersResponse, ErrorResponse, AWSAuthHeaderParams } from './types.js';
 
 export default async function execute(nango: Nango) {
     try {
@@ -19,18 +19,17 @@ export default async function execute(nango: Nango) {
         };
 
         const queryParams = new URLSearchParams(requestParams.params).toString();
-        const { authorizationHeader, date } = getAWSAuthHeader(
-            requestParams.method,
-            requestParams.service,
-            requestParams.path,
-            queryParams,
-            username,
-            password,
-            connection_config['region']
-        );
+        const { authorizationHeader, date } = getAWSAuthHeader({
+            method: requestParams.method,
+            service: requestParams.service,
+            path: requestParams.path,
+            querystring: queryParams,
+            accessKeyId: username,
+            secretAccessKey: password,
+            region: connection_config['region']
+        });
 
         await nango.proxy<ErrorResponse | { ListUsersResponse: ListUsersResponse }>({
-            baseUrlOverride: 'https://iam.amazonaws.com',
             endpoint: '/',
             params: requestParams.params,
             headers: {
@@ -44,15 +43,9 @@ export default async function execute(nango: Nango) {
     }
 }
 
-function getAWSAuthHeader(
-    method: string,
-    service: string,
-    path: string,
-    querystring: string,
-    accessKeyId: string,
-    secretAccessKey: string,
-    region: string
-): AWSAuthHeader {
+function getAWSAuthHeader(params: AWSAuthHeaderParams): AWSAuthHeader {
+    const { method, service, path, querystring, accessKeyId, secretAccessKey, region } = params;
+
     const host = 'iam.amazonaws.com';
 
     const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
