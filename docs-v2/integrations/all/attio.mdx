@@ -102,16 +102,10 @@ import { Steps, Step } from 'nextra/components'
 
 ## API gotchas
 
-- Attio access tokens are scoped to a single workspace. When your integration is created, Attio generates a single access token for you to use, but you can create more if needed.
-
 - For security reasons, new OAuth apps require publication approval before being usable across workspaces. While developing, your integration will only be able to grant tokens for the workspace it is hosted in.
 
 - When you're ready to publish your integration for wider use, you need to request publication by clicking "request publication" in the settings page of your integration.
 
 - It's recommended to host integrations in dedicated development workspaces to maintain data integrity and ease the publication process.
-
-- When using OAuth 2.0, it's advisable to delete all access tokens and instead rely purely on OAuth-generated tokens for connecting other workspaces.
-
-- The OAuth flow uses the Authorization Code Grant Flow (RFC 6749 section 4.1) and requires the `response_type` parameter to be set to `code`.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
