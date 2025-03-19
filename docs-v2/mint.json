@@ -152,6 +152,7 @@
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/credentials-refresh-and-validity",
                         "guides/api-authorization/public-key-deprecation"
                     ]
                 },
