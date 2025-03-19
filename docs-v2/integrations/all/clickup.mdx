@@ -108,18 +108,8 @@ import { Steps, Step } from 'nextra/components'
 
 - ClickUp does not use scopes in their OAuth implementation, so you can leave the scope field empty when configuring your integration.
 
-- The access token currently does not expire. However, ClickUp notes that this is subject to change in the future.
-
-- ClickUp uses the [authorization code](https://oauth.net/2/grant-types/authorization-code/) grant type for their OAuth flow.
-
-- When making API requests, include the access token in the Authorization header: `Authorization: Bearer {access_token}`.
-
 - Users can authorize one or more Workspaces for your application. Use the [Get Authorized Teams (Workspaces)](https://developer.clickup.com/reference/getauthorizedteams) endpoint to see which Workspaces are authorized.
 
 - If you need to modify Workspace permissions, redirect users back to the authorization URL.
-
-- Non-SSL redirect URIs may not be supported in the future, so always use HTTPS for your redirect URI.
-
-- You can add a `state` parameter to the authorization URL for additional security: `https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}&state={state}`
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/clickup.mdx)</Note>
