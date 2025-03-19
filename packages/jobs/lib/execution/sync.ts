@@ -28,7 +28,7 @@ import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { startScript } from './operations/start.js';
 import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContextOrigin } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import { abortScript } from './operations/abort.js';
@@ -38,7 +38,7 @@ import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
-    let logCtx: LogContext | undefined;
+    let logCtx: LogContextOrigin | undefined;
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let syncJob: Job | null = null;
@@ -196,7 +196,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 }
 
 export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
+    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
             getFormattedOperation(
@@ -436,7 +436,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             endUser: nangoProps.endUser
         });
 
-        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
+        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime(), { accountId: nangoProps.team?.id });
         metrics.increment(metrics.Types.SYNC_SUCCESS);
 
         await logCtx.success();
@@ -648,7 +648,34 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
+    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
+
     if (team && environment) {
+        try {
+            void slackService.reportFailure({
+                account: team,
+                environment,
+                connection,
+                name: syncName,
+                type: 'sync',
+                originalActivityLogId: logCtx.id,
+                provider
+            });
+        } catch {
+            errorManager.report('slack notification service reported a failure', {
+                environmentId: connection.environment_id,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                metadata: {
+                    syncName: syncName,
+                    connectionDetails: connection,
+                    syncId: syncId,
+                    syncJobId: syncJobId,
+                    syncType: syncType,
+                    debug: debug
+                }
+            });
+        }
         void bigQueryClient.insert({
             executionType: 'sync',
             connectionId: connection.connection_id,
@@ -671,7 +698,6 @@ async function onFailure({
         });
     }
 
-    const logCtx = await logContextGetter.get({ id: activityLogId });
     if (team) {
         logCtx.attachSpan(
             new OtlpSpan(
@@ -691,24 +717,6 @@ async function onFailure({
                 new Date(startedAt)
             )
         );
-    }
-
-    try {
-        await slackService.reportFailure(connection, syncName, 'sync', logCtx.id, provider);
-    } catch {
-        errorManager.report('slack notification service reported a failure', {
-            environmentId: connection.environment_id,
-            source: ErrorSourceEnum.PLATFORM,
-            operation: LogActionEnum.SYNC,
-            metadata: {
-                syncName: syncName,
-                connectionDetails: connection,
-                syncId: syncId,
-                syncJobId: syncJobId,
-                syncType: syncType,
-                debug: debug
-            }
-        });
     }
 
     if (environment) {
