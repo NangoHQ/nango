@@ -1,8 +1,8 @@
-import type { AuthResult, ConnectUIEventClose, ConnectUIEventConnect, ConnectUIEventReady } from '@nangohq/frontend';
-import type { PostPublicConnectTelemetry } from '@nangohq/types';
-
 import { useGlobal } from './store';
 import { telemetry } from './telemetry';
+
+import type { AuthResult, ConnectUIEventClose, ConnectUIEventConnect, ConnectUIEventReady } from '@nangohq/frontend';
+import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
 export function triggerReady() {
     const event: ConnectUIEventReady = { type: 'ready' };
