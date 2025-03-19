@@ -6,6 +6,7 @@ sidebarTitle: Attio
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/attio/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/attio/PreBuiltUseCases.mdx"
+import { Steps, Step } from 'nextra/components'
 
 <Overview />
 <PreBuiltTooling />
@@ -14,29 +15,103 @@ import PreBuiltUseCases from "/snippets/generated/attio/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Attio account](https://app.attio.com/sign-up). |
+| Paid test account | ✅ Not required | Free account can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create an Attio account">
+    1. Go to the [Attio sign-up page](https://app.attio.com/sign-up).
+    2. Enter your email address, name, and create a password.
+    3. Complete the account setup process.
+  </Step>
+  <Step title="Create a new integration">
+    1. Log in to your Attio account.
+    2. Navigate to **Settings > Developers** in your Attio workspace.
+    3. Click on **Create integration**.
+    4. Enter a name for your integration.
+    5. Click **Create** to generate your integration.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In your integration settings page, locate the **OAuth 2.0** section.
+    2. Add `https://api.nango.dev/oauth/callback` as a redirect URI.
+    3. Save your changes.
+  </Step>
+  <Step title="Configure integration scopes">
+    1. In your integration settings, navigate to the **Scopes** section.
+    2. Select the appropriate scopes for your integration needs:
+       - **Object configuration**: For access to object configuration data
+       - **Record read**: For read access to records
+       - **Record write**: For write access to records
+       - **List read**: For read access to lists
+       - **List write**: For write access to lists
+    3. Save your scope configuration.
+  </Step>
+  <Step title="Obtain your OAuth credentials">
+    1. In your integration settings page, locate the **Client ID** and **Client Secret**.
+    2. Copy these values as you'll need them when configuring your integration in Nango.
+    
+    Note: Keep your Client Secret secure and never expose it in client-side code.
+  </Step>
+  <Step title="Configure your integration in Nango">
+    When setting up your Attio integration in Nango:
+    
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://app.attio.com/authorize`
+    - For the token URL, use: `https://app.attio.com/oauth/token`
+  </Step>
+  <Step title="Test the OAuth flow">
+    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
+    2. The authorization flow will redirect users to Attio where they can approve access to their workspace.
+    3. After approval, users will be redirected back to your application with an authorization code.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://developers.attio.com/docs/integrations)
--   [OAuth-related docs](https://developers.attio.com/reference/using-oauth)
+| Topic | Links | 
+| - | - | 
+| General | [Attio Developer Documentation](https://developers.attio.com/docs) |
+| | [Attio API Reference](https://developers.attio.com/reference) |
+| OAuth | [Using the OAuth 2.0 Flow](https://developers.attio.com/reference/using-oauth) |
+| | [Authorize Endpoint](https://developers.attio.com/reference/get_authorize) |
+| | [Token Endpoint](https://developers.attio.com/reference/post_oauth-token) |
+| API | [Attio API Overview](https://developers.attio.com/docs/introduction) |
+| | [API Rate Limits](https://developers.attio.com/reference/rate-limits) |
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| object_configuration | Access to object configuration data |
+| record_read | Read access to records |
+| record_write | Write access to records |
+| list_read | Read access to lists |
+| list_write | Write access to lists |
 
 ## API gotchas
+
+- Attio access tokens are scoped to a single workspace. When your integration is created, Attio generates a single access token for you to use, but you can create more if needed.
+
+- For security reasons, new OAuth apps require publication approval before being usable across workspaces. While developing, your integration will only be able to grant tokens for the workspace it is hosted in.
+
+- When you're ready to publish your integration for wider use, you need to request publication by clicking "request publication" in the settings page of your integration.
+
+- It's recommended to host integrations in dedicated development workspaces to maintain data integrity and ease the publication process.
+
+- When using OAuth 2.0, it's advisable to delete all access tokens and instead rely purely on OAuth-generated tokens for connecting other workspaces.
+
+- The OAuth flow uses the Authorization Code Grant Flow (RFC 6749 section 4.1) and requires the `response_type` parameter to be set to `code`.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/attio.mdx)</Note>
