@@ -108,18 +108,6 @@ import { Steps, Step } from 'nextra/components'
 
 ## API gotchas
 
-- Refresh tokens have a rolling expiry of 100 days. If 100 days pass, or your refresh token expires, users need to go through the authorization flow again and reauthorize your app.
-
-- Access tokens are valid for 60 minutes (3,600 seconds). When they expire, use refresh tokens to refresh them without prompting users for permission.
-
 - When making API calls, you must include the `realmId` (company ID) in your requests. This is returned during the OAuth flow and identifies the specific QuickBooks Online company the user has authorized your app to access.
-
-- The `state` parameter is required for security in the OAuth flow to prevent CSRF attacks. It should contain an anti-forgery token that your app can verify when the user is redirected back to your app.
-
-- When refreshing tokens, you must use the most recent refresh token received from the Intuit OAuth 2.0 Server. Each time you refresh an access token, you'll receive a new refresh token that you should store and use for future refreshes.
-
-- For production apps, you must implement proper error handling for cases where refresh tokens expire or are revoked. This typically involves redirecting users through the authorization flow again.
-
-- Intuit's OAuth implementation requires the `Authorization` header with the client credentials encoded in Base64 format when exchanging authorization codes for tokens or refreshing tokens: `Authorization: Basic base64(client_id:client_secret)`.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intuit.mdx)</Note>
