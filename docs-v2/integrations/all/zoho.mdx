@@ -168,21 +168,9 @@ Each Zoho service has its own set of scopes. Here are some common scopes for pop
 
 - Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
 
-- Access tokens are valid for 1 hour by default. Use the refresh token to obtain a new access token when needed.
-
-- When requesting an access token, include `access_type=offline` in your authorization request to receive a refresh token.
-
-- Refresh tokens do not expire unless explicitly revoked by the user or if they remain unused for 6 months.
-
-- For security reasons, redirect URIs must use HTTPS as their protocol.
-
-- When making API requests, include the access token in the Authorization header: `Authorization: Zoho-oauthtoken {access_token}`
-
 - Zoho has rate limits that vary by service. Check the specific service documentation for details.
 
 - If your application needs to access multiple Zoho services, you need to request scopes for each service during the authorization process.
-
-- The `location` parameter in the authorization response indicates the user's datacenter. Use this to determine which datacenter to use for token and API requests.
 
 - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
 
