@@ -1,5 +1,5 @@
-import type { InternalNango as Nango } from '../credentials-verification-script.js';
-import type { UserResponse } from '../../response-types/lastpass.js';
+import type { InternalNango as Nango } from '../../credentials-verification-script.js';
+import type { UserResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
     const { credentials, providerConfigKey } = nango.getCredentials();

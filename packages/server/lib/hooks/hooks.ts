@@ -299,7 +299,12 @@ export async function credentialsTest({
         deleted: false,
         deleted_at: null,
         last_fetched_at: null,
-        metadata: null
+        metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false
     };
 
     const logs: MessageRowInsert[] = [

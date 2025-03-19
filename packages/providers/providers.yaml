@@ -1704,6 +1704,31 @@ calendly:
     webhook_routing_script: calendlyWebhookRouting
     docs: https://docs.nango.dev/integrations/all/calendly
 
+callrail:
+    display_name: Callrail
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.callrail.com
+        headers:
+            authorization: Token token=${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v3/a.json
+    docs_connect: https://docs.nango.dev/integrations/all/callrail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Callrail account
+            pattern: '^[a-f0-9]{32}$'
+            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            doc_section: '#step-1-finding-your-api-key'
+    docs: https://docs.nango.dev/integrations/all/callrail
+
 canny:
     display_name: Canny
     categories:
@@ -1904,8 +1929,8 @@ checkr-partner:
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkrWebhookRouting
-    post_connection_script: checkrPostConnection
+    webhook_routing_script: checkrPartnerWebhookRouting
+    post_connection_script: checkrPartnerPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner
     connection_config:
         client_id:
@@ -1929,8 +1954,8 @@ checkr-partner-staging:
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkrWebhookRouting
-    post_connection_script: checkrPostConnection
+    webhook_routing_script: checkrPartnerWebhookRouting
+    post_connection_script: checkrPartnerPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner-staging
     connection_config:
         client_id:

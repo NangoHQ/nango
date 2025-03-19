@@ -1,5 +1,5 @@
-import type { InternalNango as Nango } from '../post-connection.js';
-import type { CalendlyUser } from '../../response-types/calendly.js';
+import type { InternalNango as Nango } from '../../post-connection.js';
+import type { CalendlyUser } from './types.js';
 import { isAxiosError } from 'axios';
 
 export default async function execute(nango: Nango) {

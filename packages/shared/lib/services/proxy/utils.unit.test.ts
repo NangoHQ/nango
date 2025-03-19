@@ -2,7 +2,8 @@ import { expect, describe, it } from 'vitest';
 import { buildProxyHeaders, buildProxyURL, getProxyConfiguration, ProxyError } from './utils.js';
 import type { UserProvidedProxyConfiguration, InternalProxyConfiguration } from '@nangohq/types';
 
-import { getDefaultConnection, getDefaultProxy } from './utils.test.js';
+import { getDefaultProxy } from './utils.test.js';
+import { getTestConnection } from '../connections/utils.test.js';
 
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
@@ -24,7 +25,7 @@ describe('buildProxyHeaders', () => {
         const headers = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: {
                     instance_url: 'bar'
@@ -49,7 +50,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
             })
         });
@@ -70,7 +71,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'BASIC', username: 'testuser', password: '' }
             })
         });
@@ -96,7 +97,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
             })
         });
@@ -120,7 +121,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' }
             })
         });
@@ -146,7 +147,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'OAUTH2', access_token: 'some-oauth-access-token', raw: {} }
             })
         });
@@ -177,7 +178,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'some-abc-token' }
             })
         });
@@ -206,7 +207,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
                 connection_config: {
                     API_PASSWORD: 'api-password-value'
@@ -236,7 +237,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'SIGNATURE', username: 't', password: 'some-oauth-access-token', token: 'some-oauth-access-token' }
             })
         });
@@ -263,7 +264,7 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://api.nangostarter.com',
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: {
                     type: 'TWO_STEP',
                     username: 't',
@@ -304,7 +305,7 @@ describe('buildProxyHeaders', () => {
             foo: 'Bar'
         });
 
-        const merge = buildProxyHeaders({ config: val, url: 'http://example.com', connection: getDefaultConnection() });
+        const merge = buildProxyHeaders({ config: val, url: 'http://example.com', connection: getTestConnection() });
         expect(merge).toStrictEqual({
             authorization: 'my custom auth',
             foo: 'Bar'
@@ -323,7 +324,7 @@ describe('buildProxyURL', () => {
             endpoint: 'api/test'
         });
 
-        const result = buildProxyURL({ config, connection: getDefaultConnection() });
+        const result = buildProxyURL({ config, connection: getTestConnection() });
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -337,7 +338,7 @@ describe('buildProxyURL', () => {
             }
         });
 
-        const result = buildProxyURL({ config, connection: getDefaultConnection() });
+        const result = buildProxyURL({ config, connection: getTestConnection() });
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -353,7 +354,7 @@ describe('buildProxyURL', () => {
             baseUrlOverride: 'https://override.com'
         });
 
-        const result = buildProxyURL({ config, connection: getDefaultConnection() });
+        const result = buildProxyURL({ config, connection: getTestConnection() });
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -369,7 +370,7 @@ describe('buildProxyURL', () => {
             baseUrlOverride: 'https://override.com'
         });
 
-        const result = buildProxyURL({ config, connection: getDefaultConnection() });
+        const result = buildProxyURL({ config, connection: getTestConnection() });
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -391,7 +392,7 @@ describe('buildProxyURL', () => {
 
         const result = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
             })
         });
@@ -417,7 +418,7 @@ describe('buildProxyURL', () => {
 
         const result = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
             })
         });
@@ -442,7 +443,7 @@ describe('buildProxyURL', () => {
 
         const result = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
             })
         });
@@ -469,7 +470,7 @@ describe('buildProxyURL', () => {
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         });
-        const connection = getDefaultConnection({
+        const connection = getTestConnection({
             credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
         });
         const url = buildProxyURL({ config, connection });
@@ -497,7 +498,7 @@ describe('buildProxyURL', () => {
 
         const url = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: { extension: 'eu' }
             })
@@ -518,7 +519,7 @@ describe('buildProxyURL', () => {
 
         const url = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 metadata: { instance_url: 'https://myinstanceurl.com' }
             })
@@ -539,7 +540,7 @@ describe('buildProxyURL', () => {
 
         const url = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' },
                 connection_config: { api_base_url_for_customer: 'https://company-17.api.gong.io' }
             })
@@ -560,7 +561,7 @@ describe('buildProxyURL', () => {
 
         const url = buildProxyURL({
             config,
-            connection: getDefaultConnection({
+            connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
             })
         });
@@ -579,7 +580,7 @@ describe('buildProxyURL', () => {
                 },
                 params: '?foo=bar'
             }),
-            connection: getDefaultConnection()
+            connection: getTestConnection()
         });
 
         expect(url).toBe('https://example.com/api/test?foo=bar');
@@ -596,7 +597,7 @@ describe('buildProxyURL', () => {
                 },
                 params: 'foo=bar'
             }),
-            connection: getDefaultConnection()
+            connection: getTestConnection()
         });
 
         expect(url).toBe('https://example.com/api/test?foo=bar');
@@ -615,7 +616,7 @@ describe('buildProxyURL', () => {
                     endpoint: 'https://example.com?bar=foo',
                     params: '?foo=bar'
                 }),
-                connection: getDefaultConnection()
+                connection: getTestConnection()
             });
         }).toThrow(new Error('Can not set query params in endpoint and in params'));
     });
@@ -631,7 +632,7 @@ describe('buildProxyURL', () => {
                 },
                 params: { ids: [1, 2] }
             }),
-            connection: getDefaultConnection()
+            connection: getTestConnection()
         });
 
         expect(url).toBe('https://example.com/api/test?ids=1%2C2');
