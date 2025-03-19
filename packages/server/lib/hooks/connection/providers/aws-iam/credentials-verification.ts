@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
-import type { AWSAuthHeader, AWSIAMRequestParams, ListUsersResponse, ErrorResponse, AWSAuthHeaderParams } from './types.js';
+import type { AWSAuthHeader, AWSIAMRequestParams, ErrorResponse, GetCallerIdentityResponse, AWSAuthHeaderParams } from './types.js';
 
 export default async function execute(nango: Nango) {
     try {
@@ -10,11 +10,11 @@ export default async function execute(nango: Nango) {
 
         const requestParams: AWSIAMRequestParams = {
             method: 'GET',
-            service: 'iam',
+            service: 'sts',
             path: '/',
             params: {
-                Action: 'ListUsers',
-                Version: '2010-05-08'
+                Action: 'GetCallerIdentity',
+                Version: '2011-06-15'
             }
         };
 
@@ -29,7 +29,8 @@ export default async function execute(nango: Nango) {
             region: connection_config['region']
         });
 
-        await nango.proxy<ErrorResponse | { ListUsersResponse: ListUsersResponse }>({
+        await nango.proxy<ErrorResponse | GetCallerIdentityResponse>({
+            baseUrlOverride: `https://sts.amazonaws.com`,
             endpoint: '/',
             params: requestParams.params,
             headers: {
@@ -46,7 +47,7 @@ export default async function execute(nango: Nango) {
 function getAWSAuthHeader(params: AWSAuthHeaderParams): AWSAuthHeader {
     const { method, service, path, querystring, accessKeyId, secretAccessKey, region } = params;
 
-    const host = 'iam.amazonaws.com';
+    const host = 'sts.amazonaws.com';
 
     const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
     const payloadHash = crypto.createHash('sha256').update('').digest('hex');

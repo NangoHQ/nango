@@ -10,30 +10,16 @@ export interface AWSIAMRequestParams {
     params: Record<string, string>;
 }
 
-export interface ListUsersResponse {
-    '@xmlns': string;
-    ListUsersResult: ListUsersResult;
-    ResponseMetadata: ResponseMetadata;
+export interface GetCallerIdentityResponse {
+    GetCallerIdentityResult: {
+        Account: string;
+        Arn: string;
+        UserId: string;
+    };
+    ResponseMetadata: {
+        RequestId: string;
+    };
 }
-interface ListUsersResult {
-    Users: AWSIAMUser[];
-    IsTruncated: boolean;
-    Marker?: string;
-}
-
-interface ResponseMetadata {
-    RequestId: string;
-}
-
-export interface AWSIAMUser {
-    UserId: string;
-    Path: string;
-    UserName: string;
-    Arn: string;
-    CreateDate: string;
-    PasswordLastUsed?: string;
-}
-
 export interface ErrorResponse {
     Error: {
         Code: string;
