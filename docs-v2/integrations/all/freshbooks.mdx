@@ -139,20 +139,6 @@ import { Steps, Step } from 'nextra/components'
 
 ## API gotchas
 
-- FreshBooks uses OAuth 2.0 for authentication and authorization. Access tokens are valid for 12 hours.
-
-- FreshBooks provides refresh tokens that can be used to obtain new access tokens when the current ones expire.
-
-- For security reasons, redirect URIs must use HTTPS as their protocol.
-
-- When making API requests, include the access token in the Authorization header: `Authorization: Bearer {access_token}`.
-
-- The FreshBooks API uses JSON for request and response bodies.
-
 - FreshBooks API endpoints are account-specific. The account ID is required for most API calls and is included in the URL path.
-
-- Rate limits may apply to the FreshBooks API. If you exceed the rate limit, you'll receive a 429 Too Many Requests response.
-
-- The API version is specified in the request header: `Api-Version: test-version` for testing or a specific version number for production.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshbooks.mdx)</Note>
