@@ -126,6 +126,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
             newConnection = await connectionService.updateConnection({
                 ...newConnection,
+                last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newConnection.credentials),
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
