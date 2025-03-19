@@ -1,14 +1,18 @@
-import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, deleteJobsByDate } from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
-import tracer from 'dd-trace';
 import { setTimeout } from 'node:timers/promises';
-import type { Lock } from '@nangohq/kvstore';
-import { getLocking } from '@nangohq/kvstore';
+
+import tracer from 'dd-trace';
+import * as cron from 'node-cron';
+
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
+import { getLocking } from '@nangohq/kvstore';
+import { ErrorSourceEnum, deleteJobsByDate, errorManager } from '@nangohq/shared';
+import { getLogger, metrics } from '@nangohq/utils';
+
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
+
+import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('Jobs.deleteOldData');
 

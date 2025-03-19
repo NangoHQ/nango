@@ -1,14 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthError } from '@nangohq/frontend';
 import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
 import { z } from 'zod';
 
-import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
 import { Button } from '@/components/ui/button';
@@ -19,6 +17,8 @@ import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
 import { cn, jsonSchemaToZod } from '@/lib/utils';
 
+import type { AuthResult } from '@nangohq/frontend';
+import type { AuthModeType } from '@nangohq/types';
 import type { Resolver } from 'react-hook-form';
 
 const formSchema: Record<AuthModeType, z.AnyZodObject> = {

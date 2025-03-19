@@ -94,7 +94,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
     }
 
     // We get connection one last time to get endUser, errors
-    // This is very unoptimized unfortunately
+    // We are using listConnections because it has everything we need, but this is a bit wrong
     const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
     if (finalConnections.length !== 1 || !finalConnections[0]) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get connection' } });
