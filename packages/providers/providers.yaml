@@ -3252,6 +3252,46 @@ figma:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
 
+figma-scim:
+    display_name: Figma (SCIM)
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.host}/scim
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/${connectionConfig.tenantId}/Users
+    docs: https://docs.nango.dev/integrations/all/figma-scim
+    docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Figma account
+            doc_section: '#step-3-generating-your-api-token'
+    connection_config:
+        host:
+            type: string
+            title: Host
+            description: The host to your Figma account
+            example: www.figma.com
+            format: hostname
+            prefix: https://
+            pattern: ^(www\.figma\.com|figma-gov\.com)+$
+            order: 1
+            doc_section: '#step-1-finding-your-host'
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The tenant ID of your Figma account
+            order: 2
+            doc_section: '#step-2-finding-your-tenant-id'
+
 falai:
     display_name: fal.ai
     categories:
@@ -3841,7 +3881,12 @@ ghost-admin:
         headers:
             accept: application/json
             accept-version: ${connectionConfig.version}
+            authorization: Ghost ${accessToken}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
+        verification:
+            method: GET
+            endpoints:
+                - /users
     docs: https://docs.nango.dev/integrations/all/ghost-admin
     connection_config:
         adminDomain:
