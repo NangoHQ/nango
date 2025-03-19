@@ -1,6 +1,6 @@
-import type { InternalNango as Nango } from '../post-connection.js';
+import type { InternalNango as Nango } from '../../post-connection.js';
 import { isAxiosError } from 'axios';
-import type { WorkableAccountsResponse } from '../../response-types/workable.js';
+import type { WorkableAccountsResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
