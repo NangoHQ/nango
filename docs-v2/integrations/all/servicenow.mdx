@@ -122,20 +122,10 @@ import { Steps, Step } from 'nextra/components'
 
 ## API gotchas
 
-- For security purposes, access tokens will expire after 30 minutes by default. When this happens, you can use `nango.getConnection()` to generate a new set of tokens.
-
 - ServiceNow instances have unique URLs in the format `https://[your-instance-name].service-now.com/`. You must use your specific instance URL when configuring OAuth endpoints.
-
-- The OAuth endpoints for ServiceNow are:
-  - Authorization endpoint: `https://[your-instance-name].service-now.com/oauth_auth.do`
-  - Token endpoint: `https://[your-instance-name].service-now.com/oauth_token.do`
 
 - ServiceNow's REST API is table-based. Most API calls follow the pattern: `https://[your-instance-name].service-now.com/api/now/table/[table_name]`.
 
 - When making API calls, you must include the `Accept` header with the value `application/json` to receive JSON responses.
-
-- ServiceNow supports both OAuth 2.0 and Basic Authentication. OAuth 2.0 is recommended for better security.
-
-- When refreshing tokens, you must use the most recent refresh token received from ServiceNow. Each time you refresh an access token, you'll receive a new refresh token that you should store and use for future refreshes.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/servicenow.mdx)</Note>
