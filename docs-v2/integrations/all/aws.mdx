@@ -155,14 +155,6 @@ AWS offers multiple authentication methods. This guide covers two main approache
 
 - AWS uses different domain extensions for different regions, i.e., `us-east-2` for the US East (Ohio) region, `us-east-1` for the US East (N. Virginia) region, or `eu-west-1` for Europe (Ireland) region. It also uses different subdomains for different user pools.
 
-- For AWS IAM authentication, you'll need to sign your requests using AWS Signature Version 4 (SigV4). This is a complex process that involves creating a canonical request, calculating a signature, and adding the appropriate headers to your request.
-
-- When using AWS Cognito, the token endpoint requires the `Authorization` header with the client credentials encoded in Base64 format: `Authorization: Basic base64(client_id:client_secret)`.
-
-- AWS Cognito access tokens expire after 1 hour by default. Refresh tokens can be configured to last between 1 hour and 10 years, with a default of 30 days.
-
-- For AWS IAM, access keys do not expire automatically. It's a security best practice to rotate them regularly.
-
 - AWS Cognito user pools can be configured with custom attributes, but these must be prefixed with `custom:` when referenced in API calls.
 
 - When using AWS IAM, be mindful of the principle of least privilege. Only grant the permissions that are absolutely necessary for your integration to function.
