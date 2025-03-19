@@ -927,6 +927,7 @@ aws-iam:
             region: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/aws-iam
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
