@@ -3880,7 +3880,12 @@ ghost-admin:
         headers:
             accept: application/json
             accept-version: ${connectionConfig.version}
+            authorization: Ghost ${accessToken}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
+        verification:
+            method: GET
+            endpoints:
+                - /users
     docs: https://docs.nango.dev/integrations/all/ghost-admin
     connection_config:
         adminDomain:
