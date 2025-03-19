@@ -1904,8 +1904,8 @@ checkr-partner:
         base_url: https://api.checkr.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkrWebhookRouting
-    post_connection_script: checkrPostConnection
+    webhook_routing_script: checkrPartnerWebhookRouting
+    post_connection_script: checkrPartnerPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner
     connection_config:
         client_id:
@@ -1929,8 +1929,8 @@ checkr-partner-staging:
         base_url: https://api.checkr-staging.com
     token_response_metadata:
         - checkr_account_id
-    webhook_routing_script: checkrWebhookRouting
-    post_connection_script: checkrPostConnection
+    webhook_routing_script: checkrPartnerWebhookRouting
+    post_connection_script: checkrPartnerPostConnection
     docs: https://docs.nango.dev/integrations/all/checkr-partner-staging
     connection_config:
         client_id:
