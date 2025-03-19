@@ -138,22 +138,6 @@ import { Steps, Step } from 'nextra/components'
 
 ## API gotchas
 
-- Outreach uses OAuth 2.0 for authentication and authorization. Access tokens are valid for 2 hours.
-
-- Outreach provides refresh tokens that can be used to obtain new access tokens when the current ones expire. Refresh tokens are valid for 14 days.
-
-- Starting January 1, 2021, all authentication tokens issued by Outreach are short-lived. Tokens older than 1.5 years are being deleted.
-
-- When making API requests, include the access token in the Authorization header: `Authorization: Bearer {access_token}`.
-
-- The Outreach API uses JSON for request and response bodies.
-
 - Rate limits apply to the Outreach API. If you exceed the rate limit, you'll receive a 429 Too Many Requests response.
-
-- The `state` parameter can be used in the authorization URL for additional security and to maintain state across the authorization flow.
-
-- Outreach has both development and production credentials. Development credentials are provisioned immediately but are intended only for development and testing. Production credentials require going through the publishing process.
-
-- Development credentials have limitations: they expire more frequently and are limited to 10 users from the organization that owns the app.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
