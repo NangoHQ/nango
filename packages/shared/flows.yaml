@@ -10545,6 +10545,20 @@ integrations:
                     - email
                     - w_organization_social
                     - r_organization_social
+        syncs:
+            messages:
+                runs: every 1h
+                sync_type: incremental
+                description: >
+                    This sync captures all LinkedIn messages for a Linkedin member for
+                    archiving purposes
+                output: LinkedInMessage
+                endpoint:
+                    method: GET
+                    path: /messages
+                    group: messages
+                scopes:
+                    - r_dma_portability_3rd_party
         models:
             LinkedinVideoPost:
                 text: string
@@ -10553,6 +10567,52 @@ integrations:
                 ownerId: string
             CreateLinkedInPostWithVideoResponse:
                 succcess: boolean
+            LinkedInMessageContent:
+                format: string
+                fallback: string
+                formatVersion: number
+                content?:
+                    string?: string
+            ContentClassification:
+                classification: string
+            LinkedInActivityData:
+                actor: string
+                createdAt: number
+                attachments: string[]
+                author: string
+                messageContexts: any[]
+                thread: string
+                message?: string
+                version?: number
+                contentCertificationToken?: string
+                extensionContent?: any
+            LinkedInMessage:
+                id: number
+                resourceId: string
+                method: string
+                owner: string
+                actor: string
+                activityId: string
+                processedAt: number
+                capturedAt: number
+                activityStatus: string
+                thread: string | null
+                author: string | null
+                createdAt: number | null
+                isDeleted: boolean
+                configVersion: number | null
+                methodName?: string
+                processedActivity?: any
+                deletedAt?: number
+                activityData?: LinkedInActivityData
+                content?: LinkedInMessageContent | null
+                deliveredAt?: number
+                mailbox?: string
+                contentClassification?: ContentClassification | null
+                attachments?: string[]
+                contentUrns?: string[]
+                extensionContent?: any
+                messageContexts?: string[]
     luma:
         syncs:
             list-events:
