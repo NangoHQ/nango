@@ -1,49 +1,53 @@
-import type { Request, Response, NextFunction } from 'express';
 import * as crypto from 'node:crypto';
-import * as uuid from 'uuid';
+
 import simpleOauth2 from 'simple-oauth2';
+import * as uuid from 'uuid';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import {
+    AnalyticsTypes,
+    ErrorSourceEnum,
+    LogActionEnum,
+    analytics,
+    configService,
+    connectionService,
+    environmentService,
+    errorManager,
+    getConnectionConfig,
+    getConnectionMetadataFromTokenResponse,
+    getProvider,
+    hmacService,
+    interpolateObjectValues,
+    interpolateStringFromObject,
+    linkConnection,
+    oauth2Client,
+    providerClientManager
+} from '@nangohq/shared';
+import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
+
 import { OAuth1Client } from '../clients/oauth1.client.js';
+import publisher from '../clients/publisher.client.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { getConnectSession } from '../services/connectSession.service.js';
+import oAuthSessionService from '../services/oauth-session.service.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
+import { hmacCheck } from '../utils/hmac.js';
+import { authHtml } from '../utils/html.js';
 import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
-import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
-import type { Config as ProviderConfig, OAuthSession, OAuth1RequestTokenResult, OAuth2Credentials, ConnectionUpsertResponse } from '@nangohq/shared';
-import {
-    getConnectionConfig,
-    interpolateStringFromObject,
-    LogActionEnum,
-    configService,
-    connectionService,
-    environmentService,
-    oauth2Client,
-    providerClientManager,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    hmacService,
-    ErrorSourceEnum,
-    interpolateObjectValues,
-    getProvider,
-    linkConnection,
-    getConnectionMetadataFromTokenResponse
-} from '@nangohq/shared';
-import publisher from '../clients/publisher.client.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
-import oAuthSessionService from '../services/oauth-session.service.js';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
-import type { RequestLocals } from '../utils/express.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import db from '@nangohq/database';
+
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import { getConnectSession } from '../services/connectSession.service.js';
-import { hmacCheck } from '../utils/hmac.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
-import { authHtml } from '../utils/html.js';
+import type { RequestLocals } from '../utils/express.js';
+import type { LogContext } from '@nangohq/logs';
+import type { Config as ProviderConfig, ConnectionUpsertResponse, OAuth1RequestTokenResult, OAuth2Credentials, OAuthSession } from '@nangohq/shared';
+import type { ConnectionConfig, DBEnvironment, DBTeam, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -67,7 +71,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -82,7 +86,7 @@ class OAuthController {
 
             const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
-            const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
+            let authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
             const overrideCredentials = req.query['credentials'] != null ? getAdditionalAuthorizationParams(req.query['credentials']) : {};
 
             if (providerConfigKey == null) {
@@ -161,6 +165,9 @@ class OAuthController {
                     }
                     connectionId = connection?.connection_id;
                 }
+                if (defaults?.authorization_params) {
+                    authorizationParams = defaults.authorization_params;
+                }
             }
 
             const session: OAuthSession = {
@@ -211,7 +218,7 @@ class OAuthController {
 
             if (isConnectSession) {
                 const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
-                if (defaults?.connectionConfig.oauth_scopes_override) {
+                if (defaults?.connectionConfig?.oauth_scopes_override) {
                     config.oauth_scopes = defaults?.connectionConfig.oauth_scopes_override;
                 }
             } else if (connectionConfig['oauth_scopes_override']) {
@@ -306,7 +313,7 @@ class OAuthController {
         try {
             logCtx =
                 isConnectSession && connectSession.operationId
-                    ? await logContextGetter.get({ id: connectSession.operationId })
+                    ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                     : await logContextGetter.create(
                           {
                               operation: { type: 'auth', action: 'create_connection' },
@@ -800,7 +807,7 @@ class OAuthController {
             await oAuthSessionService.delete(state as string);
         }
 
-        const logCtx = await logContextGetter.get({ id: session.activityLogId });
+        let logCtx = await logContextGetter.get({ id: session.activityLogId });
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -832,6 +839,8 @@ class OAuthController {
                 await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
                 return;
             }
+
+            logCtx = await logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);

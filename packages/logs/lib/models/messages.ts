@@ -200,15 +200,21 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
 /**
  * Update a row (can be a partial update)
  */
-export async function updateOperation(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'> }): Promise<void> {
+export async function updateOperation({
+    id,
+    data: { createdAt, ...rest }
+}: {
+    id: OperationRow['id'];
+    data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'>;
+}): Promise<void> {
     await client.update({
-        index: getFullIndexName(indexMessages.index, opts.data.createdAt),
-        id: opts.id,
+        index: getFullIndexName(indexMessages.index, createdAt),
+        id: id,
         retry_on_conflict: 3,
         refresh: isTest,
         body: {
             doc: {
-                ...opts.data,
+                ...rest,
                 updatedAt: new Date().toISOString()
             }
         }
