@@ -2501,6 +2501,10 @@ components:
                             user_scopes:
                                 type: string
                                 description: User scopes (for Slack only)
+                            authorization_params:
+                                type: object
+                                description: Query params passed to the OAuth flow (for OAuth2 only)
+                                additionalProperties: true
                             connection_config:
                                 type: object
                                 additionalProperties: true
