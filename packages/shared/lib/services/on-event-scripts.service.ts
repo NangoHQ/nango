@@ -85,7 +85,7 @@ export const onEventScriptService = {
             for (const onEventScriptByProvider of onEventScriptsByProvider) {
                 const { providerConfigKey, scripts } = onEventScriptByProvider;
 
-                const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+                const config = await configService.getProviderConfig(providerConfigKey, environment.id, trx);
                 if (!config || !config.id) {
                     continue;
                 }

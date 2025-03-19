@@ -7,10 +7,13 @@ export interface ConnectSessionInput {
               string,
               {
                   user_scopes?: string | undefined;
-                  connection_config: {
-                      [key: string]: unknown;
-                      oauth_scopes_override?: string | undefined;
-                  };
+                  authorization_params?: Record<string, string> | undefined;
+                  connection_config?:
+                      | {
+                            [key: string]: unknown;
+                            oauth_scopes_override?: string | undefined;
+                        }
+                      | undefined;
               }
           >
         | undefined;
@@ -78,7 +81,7 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization'>;
+    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults'>;
 }>;
 
 export type PostPublicConnectTelemetry = Endpoint<{

@@ -6,8 +6,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffectOnce } from 'react-use';
 
-import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
-
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { LoadingView } from '@/components/LoadingView';
 import { Button } from '@/components/ui/button';
@@ -16,6 +14,8 @@ import { triggerClose } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
 import NoIntegrationSVG from '@/svg/nointegrations.svg?react';
+
+import type { ApiPublicIntegration, GetPublicProvider } from '@nangohq/types';
 
 export const IntegrationsList: React.FC = () => {
     return (
