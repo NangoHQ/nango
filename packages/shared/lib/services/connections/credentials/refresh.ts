@@ -78,6 +78,14 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         span.setTag('connectionId', props.connection.connection_id).setTag('authType', props.connection.credentials.type);
 
+        // TODO: remove this when cron is using other columns
+        await connectionService.updateLastFetched(props.connection.id);
+
+        // short-circuit if we know the refresh will fail
+        if (props.connection.refresh_exhausted && !props.instantRefresh) {
+            return Ok(props.connection);
+        }
+
         let res: Result<DBConnectionDecrypted, NangoError>;
         switch (props.connection.credentials.type) {
             case 'OAUTH2':
@@ -109,9 +117,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 throw new Error('Unsupported credentials type');
             }
         }
-
-        // TODO: remove this
-        await connectionService.updateLastFetched(props.connection.id);
 
         if (res.isErr()) {
             span.setTag('error', res.error);
