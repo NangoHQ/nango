@@ -14,36 +14,68 @@ import PreBuiltUseCases from "/snippets/generated/intercom/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Intercom Developer account](https://app.intercom.com/a/developer-signup). |
+| Paid test account | ✅ Not required | Your developer workspace can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for apps published to the Intercom App Store. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create an Intercom Developer account">
+    Go to [Intercom's Developer signup page](https://app.intercom.com/a/developer-signup) and create a free account.
+  </Step>
+  <Step title="Create a new app in your Developer account">
+    1. From your Developer Workspace, navigate to **Settings** > **Integrations** > **Developer Hub** > **Your apps**.
+    2. Click **New app** and provide a name for your app.
+    3. Select the **Workspace** to associate with the application, then click **Create app**.
+  </Step>
+  <Step title="Configure OAuth settings">
+    In the app you just created:
+    1. Navigate to the **Authentication** tab under **Configure** then click the **Edit** button.
+    2. Check the **Use OAuth** checkbox, then go to **Redirect URLs** and add the following URL: `https://api.nango.dev/oauth/callback`.
+    3. Select the appropriate permissions your app will need under **Permissions**.
+    4. Save your changes.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. Navigate to the **Basic Information** tab under **Configure**, then locate your app's credentials.
+    2. Copy the **Client ID** and **Client Secret**.
+    3. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intercom.mdx)</Note>
 
 
 ## Useful links
 
--   [Create a Developer Workspace](https://app.intercom.com/a/developer-signup)
--   [How to register an Application](https://developers.intercom.com/building-apps/docs/setting-up-oauth)
--   [OAuth-related docs](https://developers.intercom.com/building-apps/docs/setting-up-oauth)
--   [List of OAuth scopes](https://developers.intercom.com/building-apps/docs/oauth-scopes)
--   [Web API docs (their REST API)](https://developers.intercom.com/building-apps/docs/rest-apis)
--   [API rate limiting](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting)
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.intercom.com/) |
+| | [Create a Developer account](https://app.intercom.com/a/developer-signup) |
+| | [Developer Hub](https://developers.intercom.com/) |
+| Developer | [API documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis) |
+| | [Developer console](https://app.intercom.com/a/apps/_/developer-hub) |
+| | [Authentication documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication) |
+| | [OAuth setup guide](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth) |
+| | [How to register an application](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth#provide-the-initial-information) |
+| | [List of OAuth scopes](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes) |
+| | [API rate limiting](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intercom.mdx)</Note>
+
+
 
 ## API gotchas
 
 -   Intercom access tokens do not expire. Logically, Intercom doesn't return a refresh token along with the access token.
 -   You do not need to pass API scopes/permissions during the authorization request. Permissions are only set in the Intercom Developer Portal.
+-   Intercom has [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting) that vary by endpoint and plan type.
+-   When working with the Intercom API, be aware that some endpoints require specific permissions that must be enabled in your app's configuration.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/intercom.mdx)</Note>

@@ -6,9 +6,6 @@
     },
     "references": [
         {
-            "path": "../kvstore"
-        },
-        {
             "path": "../types"
         },
         {
