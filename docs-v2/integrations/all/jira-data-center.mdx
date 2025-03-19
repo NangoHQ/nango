@@ -110,18 +110,4 @@ import { Steps, Step } from 'nextra/components'
 
 - Jira Data Center enforces HTTPS for the base URL of production environments. You can use insecure URIs and base URLs for staging or development environments by enabling the relevant [system properties](https://confluence.atlassian.com/adminjiraserver/oauth-2-0-provider-system-properties-1115659073.html).
 
-- Jira Data Center supports two OAuth 2.0 flows: Authorization Code and Authorization Code with PKCE (Proof Key for Code Exchange). The PKCE flow is recommended for public clients for enhanced security.
-
-- Access tokens have a default expiration time of 2 hours (7200 seconds). After expiration, you'll need to use the refresh token to obtain a new access token.
-
-- When refreshing tokens, the existing access token and refresh token are invalidated, and new ones are issued in the response.
-
-- For security, it's recommended to use the `state` parameter in the authorization request to prevent CSRF attacks.
-
-- The OAuth endpoints for Jira Data Center are:
-  - Authorization endpoint: `/rest/oauth2/latest/authorize`
-  - Token endpoint: `/rest/oauth2/latest/token`
-
-- When making API calls, include the access token in the Authorization header: `Authorization: Bearer YOUR_ACCESS_TOKEN`.
-
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-data-center.mdx)</Note>
