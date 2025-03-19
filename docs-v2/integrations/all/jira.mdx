@@ -25,24 +25,24 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 
 <Steps>
   <Step title="Create an Atlassian developer account">
-    If you don't already have one, sign up for an [Atlassian developer account](https://developer.atlassian.com/).
+    If you don't already have one, sign up for an [Atlassian developer account](https://id.atlassian.com/signup/).
   </Step>
   <Step title="Create a new OAuth 2.0 (3LO) app">
     1. Go to the [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/).
     2. Click **Create** and select **OAuth 2.0 integration**.
-    3. Enter a name for your app and click **Create**.
+    3. Enter a name, agree to Atlassian's developer terms by checking the agreement checkbox for your app and click **Create**.
     4. Your app will be created and you'll be taken to the app management page.
   </Step>
   <Step title="Configure OAuth 2.0 (3LO)">
     1. In the left sidebar, select **Authorization**.
-    2. Next to OAuth 2.0 (3LO), click **Configure**.
+    2. Next to OAuth 2.0 (3LO), click **Add**.
     3. Enter `https://api.nango.dev/oauth/callback` as the Callback URL.
-    4. Click **Save changes**.
+    4. Click **Save** to save your changes.
   </Step>
   <Step title="Add API permissions">
     1. In the left sidebar, select **Permissions**.
-    2. Find the Jira API and click **Add**.
-    3. Select the scopes your application requires. Common scopes include:
+    2. Find the Jira API and click **Add**, and then click **Configure**.
+    3. Click **Edit Scopes** then select the scopes your application requires. Common scopes include:
        - `read:jira-user` - Read user information
        - `read:jira-work` - Read issues, projects, and workflows
        - `write:jira-work` - Create and update issues
@@ -50,19 +50,18 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
        - `manage:jira-project` - Manage project settings
        - `manage:jira-configuration` - Manage Jira instance settings
        - `offline_access` - Get refresh tokens (required for long-term access)
-    4. Click **Save changes**.
+    4. Click **Save** to save your changes.
   </Step>
   <Step title="Obtain your client credentials">
     1. In the left sidebar, select **Settings**.
     2. Note your **Client ID**.
-    3. Click **View** next to **Secret** to reveal your client secret.
-    4. Copy both the Client ID and Secret as you'll need them when configuring your integration in Nango.
+    3. Copy both the Client ID and Secret by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
   </Step>
   <Step title="Make your app available to users (optional)">
     If you want to distribute your app to other users:
     
     1. In the left sidebar, select **Distribution**.
-    2. Toggle the switch to enable sharing.
+    2. In **Distribution controls**, click the **Edit** button, then select the **Sharing** radio button.
     3. Return to the Authorization page and copy the Authorization URL to share with your users.
     
     Note: By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.
