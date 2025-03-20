@@ -3706,6 +3706,19 @@ integrations:
                 input: string
                 scopes:
                     - files.content.read
+            folder-content:
+                description: >-
+                    Fetches the top-level content (files and folders) of a Dropbox folder
+                    given its path. If no path is provided, it fetches content from the
+                    root folder.
+                endpoint:
+                    method: POST
+                    path: /folder-content
+                    group: Folders
+                output: FolderContent
+                input: FolderContentInput
+                scopes:
+                    - files.metadata.read
         syncs:
             users:
                 runs: every day
@@ -3757,6 +3770,13 @@ integrations:
                 path: string
                 title: string
                 modified_date: string
+            FolderContentInput:
+                path?: string
+                cursor?: string
+            FolderContent:
+                files: Document[]
+                folders: Document[]
+                cursor?: string
     evaluagent:
         syncs:
             users:
