@@ -1,43 +1,46 @@
-import type { Span } from 'dd-trace';
+import tracer from 'dd-trace';
+
 import {
+    AnalyticsTypes,
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
-    getSyncConfigsWithConnections,
+    ProxyRequest,
     analytics,
     errorNotificationService,
     externalWebhookService,
-    AnalyticsTypes,
-    syncManager,
     getProxyConfiguration,
-    ProxyRequest
+    getSyncConfigsWithConnections,
+    syncManager
 } from '@nangohq/shared';
-import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
-import { getLogger, Ok, Err, isHosted, stringifyError } from '@nangohq/utils';
-import { getOrchestrator } from '../utils/utils.js';
-import type {
-    TbaCredentials,
-    IntegrationConfig,
-    DBEnvironment,
-    Provider,
-    JwtCredentials,
-    SignatureCredentials,
-    MessageRowInsert,
-    RecentlyFailedConnection,
-    RecentlyCreatedConnection,
-    ConnectionConfig,
-    DBConnectionDecrypted,
-    DBTeam,
-    ApplicationConstructedProxyConfiguration,
-    InternalProxyConfiguration
-} from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import postConnection from './connection/post-connection.js';
-import { postConnectionCreation } from './connection/on/connection-created.js';
+import { Err, Ok, getLogger, isHosted, report, stringifyError } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
-import tracer from 'dd-trace';
+
+import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
+import { postConnectionCreation } from './connection/on/connection-created.js';
+import postConnection from './connection/post-connection.js';
+
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type {
+    ApplicationConstructedProxyConfiguration,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBTeam,
+    IntegrationConfig,
+    InternalProxyConfiguration,
+    JwtCredentials,
+    MessageRowInsert,
+    Provider,
+    RecentlyCreatedConnection,
+    RecentlyFailedConnection,
+    SignatureCredentials,
+    TbaCredentials
+} from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -187,17 +190,21 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
 }): Promise<void> => {
-    await errorNotificationService.auth.clear({
-        connection_id: connection.id
-    });
+    try {
+        await errorNotificationService.auth.clear({
+            connection_id: connection.id
+        });
 
-    await slackService.removeFailingConnection({
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: null,
-        provider: config.provider
-    });
+        await slackService.removeFailingConnection({
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: null,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export const connectionRefreshFailed = async ({
@@ -219,37 +226,41 @@ export const connectionRefreshFailed = async ({
     logCtx: LogContext;
     action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
-    await errorNotificationService.auth.create({
-        type: 'auth',
-        action,
-        connection_id: connection.id,
-        log_id: logCtx.id,
-        active: true
-    });
+    try {
+        await errorNotificationService.auth.create({
+            type: 'auth',
+            action,
+            connection_id: connection.id,
+            log_id: logCtx.id,
+            active: true
+        });
 
-    const webhookSettings = await externalWebhookService.get(environment.id);
+        const webhookSettings = await externalWebhookService.get(environment.id);
 
-    void sendAuthWebhook({
-        connection,
-        environment,
-        webhookSettings,
-        auth_mode: provider.auth_mode,
-        operation: 'refresh',
-        error: authError,
-        success: false,
-        providerConfig: config,
-        account
-    });
+        void sendAuthWebhook({
+            connection,
+            environment,
+            webhookSettings,
+            auth_mode: provider.auth_mode,
+            operation: 'refresh',
+            error: authError,
+            success: false,
+            providerConfig: config,
+            account
+        });
 
-    await slackService.reportFailure({
-        account,
-        environment,
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: logCtx.id,
-        provider: config.provider
-    });
+        await slackService.reportFailure({
+            account,
+            environment,
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: logCtx.id,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export async function credentialsTest({
