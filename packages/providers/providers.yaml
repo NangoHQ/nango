@@ -8670,6 +8670,36 @@ thrivecart-api-key:
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
 
+trakstar-hire:
+    display_name: Trakstar Hire
+    categories:
+        - ats
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.recruiterbox.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/openings
+            headers:
+                content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/trakstar-hire
+    docs_connect: https://docs.nango.dev/integrations/all/trakstar-hire/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Trakstar API Key
+            pattern: '^[a-f0-9]+$'
+            example: a3f8b92c4d6e715f0a1b3c4d5e6f7890
+            doc_section: '#step-1-generating-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 tremendous:
     display_name: Tremendous
     categories:
