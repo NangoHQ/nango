@@ -5122,6 +5122,20 @@ integrations:
                     path: /fetch-folders
                     group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
+                version: 1.0.0
+            folder-content:
+                input: FolderContentInput
+                description: >
+                    Fetches the top-level content (files and folders) of a folder given
+                    its ID.
+
+                    If no folder ID is provided, it fetches content from the root folder.
+                output: FolderContent
+                endpoint:
+                    method: GET
+                    path: /folder-content
+                    group: Folders
+                scopes: https://www.googleapis.com/auth/drive.readonly
             upload-document:
                 input: UploadFileInput
                 description: >
@@ -5188,10 +5202,10 @@ integrations:
                 positionedObjects: object
             FetchFoldersInput:
                 id?: string
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDriveFolder:
                 folders?: GoogleDocument[]
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDocument:
                 id: string
                 name: string
@@ -5208,6 +5222,13 @@ integrations:
                 folderId?: string | undefined
                 description?: string | undefined
                 isBase64?: boolean | undefined
+            FolderContentInput:
+                id?: string
+                cursor?: string
+            FolderContent:
+                files: GoogleDocument[]
+                folders: GoogleDocument[]
+                cursor?: string
     google-mail:
         syncs:
             emails:
