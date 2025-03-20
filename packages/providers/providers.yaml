@@ -7596,7 +7596,6 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://docs.nango.dev/integrations/all/salesforce
-    docs_connect: https://docs.nango.dev/integrations/all/salesforce/connect
     connection_config:
         instance_url:
             type: string
