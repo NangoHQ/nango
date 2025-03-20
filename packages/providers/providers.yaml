@@ -1770,6 +1770,7 @@ canva-scim:
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
+    docs_connect: https://docs.nango.dev/integrations/all/canva-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2754,6 +2755,7 @@ docusign:
         base_url: https://www.docusign.net
     post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
+    docs_connect: https://docs.nango.dev/integrations/all/docusign/connect
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
@@ -2887,6 +2889,7 @@ emarsys-oauth:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/emarsys-oauth/connect
 
 ebay:
     display_name: eBay
@@ -5048,6 +5051,7 @@ klaviyo:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
+    docs_connect: https://docs.nango.dev/integrations/all/klaviyo/connect
     credentials:
         apiKey:
             type: string
@@ -5580,6 +5584,7 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
+    docs_connect: https://docs.nango.dev/integrations/all/marketo/connect
     connection_config:
         endpointURL:
             type: string
@@ -5590,6 +5595,7 @@ marketo:
             prefix: https://
             suffix: /
             order: 1
+            doc_section: '#step-3-find-your-domain-and-identity-url'
         identityURL:
             type: string
             title: Identity URL
@@ -5599,6 +5605,7 @@ marketo:
             example: xxx.mktorest.com
             suffix: /identity/oauth/token
             order: 2
+            doc_section: '#step-3-find-your-domain-and-identity-url'
 
 malwarebytes:
     display_name: Malwarebytes
@@ -7589,6 +7596,7 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://docs.nango.dev/integrations/all/salesforce
+    docs_connect: https://docs.nango.dev/integrations/all/salesforce/connect
     connection_config:
         instance_url:
             type: string
@@ -8738,6 +8746,7 @@ trello-scim:
             endpoints:
                 - /v2/users?sortBy=displayName&count=10
     docs: https://docs.nango.dev/integrations/all/trello-scim
+    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
@@ -9605,6 +9614,7 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string
