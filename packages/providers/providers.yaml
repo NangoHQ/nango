@@ -7336,6 +7336,30 @@ recharge:
             pattern: '^[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-token'
 
+recruitee:
+    display_name: Recruitee
+    categories:
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.recruitee.com/c/${connectionConfig.company_id}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /candidates
+    docs: https://docs.recruitee.com
+    connection_config:
+        company_id:
+            type: string
+            title: Recruitee Company ID
+            description: The ID of your Recruitee company
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Tokens
+            description: The Personal API Tokens from your setting page
 reddit:
     display_name: Reddit
     categories:
