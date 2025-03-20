@@ -5040,7 +5040,7 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 2.0.0
+                version: 2.0.1
                 output: Document
                 sync_type: full
                 endpoint:
