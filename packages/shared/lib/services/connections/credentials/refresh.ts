@@ -430,8 +430,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        const expires_at = credentials.expires_at || connection.credentials_expires_at;
-        if (expires_at && !isTokenExpired(expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }
