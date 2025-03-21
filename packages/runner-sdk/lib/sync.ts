@@ -77,7 +77,7 @@ export abstract class NangoSyncBase extends NangoActionBase {
 
     protected removeMetadata<T extends object>(results: T[]) {
         return results.map((result) => {
-            if ('_nango_metadata' in result) {
+            if (result && '_nango_metadata' in result) {
                 delete result._nango_metadata;
             }
 
