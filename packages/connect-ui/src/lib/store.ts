@@ -33,7 +33,7 @@ export const useGlobal = create<State>((set) => ({
     session: null,
     nango: null,
     apiURL: 'https://api.nango.dev',
-    detectClosedAuthWindow: true,
+    detectClosedAuthWindow: false,
     setApiURL: (value) => set({ apiURL: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
