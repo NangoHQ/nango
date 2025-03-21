@@ -3753,23 +3753,30 @@ guru-scim:
     display_name: Guru (SCIM)
     categories:
         - knowledge-base
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/scim
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/scim+json
         verification:
             method: GET
             endpoints:
                 - /v2/Users
+            headers:
+                content-type: application/scim+json
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: Guru API Token
-            description: The SCIM API token for your Guru account
-            doc_section: '#step-1-finding-guru-api-token'
+            title: SCIM Username
+            description: The SCIM username for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
+        password:
+            type: string
+            title: SCIM Token
+            description: The SCIM token for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
 
 github:
     display_name: GitHub (User OAuth)
