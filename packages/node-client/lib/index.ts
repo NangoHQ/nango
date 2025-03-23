@@ -28,6 +28,7 @@ import type {
     SignatureCredentials,
     PostPublicConnectSessionsReconnect,
     GetPublicConnection,
+    StandardNangoConfig,
     NangoRecord,
     PostSyncVariant,
     DeleteSyncVariant
@@ -42,7 +43,6 @@ import type {
     MetadataChangeResponse,
     NangoProps,
     ProxyConfiguration,
-    StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';

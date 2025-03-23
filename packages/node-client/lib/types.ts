@@ -212,14 +212,6 @@ export interface UpdateSyncFrequencyResponse {
     frequency: string;
 }
 
-export interface StandardNangoConfig {
-    providerConfigKey: string;
-    provider?: string;
-    syncs: NangoSyncConfig[];
-    actions: NangoSyncConfig[];
-    postConnectionScripts?: string[];
-}
-
 export enum SyncConfigType {
     SYNC = 'sync',
     ACTION = 'action'
