@@ -23,10 +23,7 @@ type VerificationScriptHandlersMap = Record<string, VerificationScriptHandler>;
 const handlers: VerificationScriptHandlersMap = verificationscriptHandlers as unknown as VerificationScriptHandlersMap;
 
 export interface InternalNango {
-    getCredentials: () => {
-        credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
-        providerConfigKey: string;
-    };
+    getConnection: () => DBConnectionDecrypted;
     proxy: <T = any>({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
 }
 
@@ -54,7 +51,12 @@ async function execute(
         deleted: false,
         deleted_at: null,
         last_fetched_at: null,
-        metadata: null
+        metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false
     };
 
     const activeSpan = tracer.scope().active();
@@ -88,10 +90,7 @@ async function execute(
         }
 
         const internalNango: InternalNango = {
-            getCredentials: () => ({
-                credentials,
-                providerConfigKey
-            }),
+            getConnection: () => connection,
             proxy: async (requestConfig) => {
                 const proxyConfig = getProxyConfiguration({
                     externalConfig: { ...externalConfig, ...requestConfig },

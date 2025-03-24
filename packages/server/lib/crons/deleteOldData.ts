@@ -8,18 +8,16 @@ import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
 import {
-    ErrorSourceEnum,
     configService,
     connectionService,
     deleteExpiredInvitations,
     deleteJobsByDate,
-    errorManager,
     getSoftDeletedSyncConfig,
     hardDeleteEndpoints,
     hardDeleteSync,
     hardDeleteSyncConfig
 } from '@nangohq/shared';
-import { getLogger, metrics } from '@nangohq/utils';
+import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
@@ -29,7 +27,7 @@ import type { Lock } from '@nangohq/kvstore';
 import type { Sync } from '@nangohq/shared';
 import type { DBSyncConfig } from '@nangohq/types';
 
-const logger = getLogger('Jobs.deleteOldData');
+const logger = getLogger('cron.deleteOldData');
 
 const cronMinutes = envs.CRON_DELETE_OLD_DATA_EVERY_MIN;
 
@@ -45,7 +43,7 @@ const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
 
 export function deleteOldData(): void {
-    if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN === 0) {
+    if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN <= 0) {
         return;
     }
 
@@ -61,8 +59,7 @@ export function deleteOldData(): void {
 
                 logger.info('✅ done');
             } catch (err) {
-                const e = new Error('failed_to_hard_delete_old_data', { cause: err instanceof Error ? err.message : err });
-                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+                report(new Error('cron_failed_to_hard_delete_old_data', { cause: err }));
             }
             metrics.duration(metrics.Types.JOBS_DELETE_OLD_DATA, Date.now() - start);
         }

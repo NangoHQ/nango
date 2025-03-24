@@ -1,0 +1,51 @@
+---
+title: Figma (SCIM) - How do I link my account?
+sidebarTitle: Figma (SCIM)
+---
+
+
+# Overview
+
+To authenticate with Figma (SCIM), you need:
+1. **Host** - The base domain for API requests.
+2. **Tenant ID** - The unique identifier for your organization.
+3. **API Token** - A key that grants Nango permission to interact with Figma SCIM APIs resources and services.
+
+
+This guide will walk you through finding or creating these credentials within Figma.
+
+
+### Prerequisites:
+
+- You must have an Organization or Enterprise plan.
+
+#### Step 1: Finding your Host
+
+1. For Figma organizations, use `www.figma.com` as the host, and for Figma for Government organizations, use `figma-gov.com`.
+
+#### Step 2: Finding your Tenant ID
+
+1. Log in to your Figma account.  
+2. Select **Admin** in the sidebar.  
+3. Go to the **Settings** tab.  
+4. Navigate to the **Login and Provisioning** section.  
+5. Click **SAML SSO** to view your **Tenant ID**.  
+
+#### Step 3: Generating Your API Token
+1. Select **Admin** in the sidebar. 
+2. Go to the **Settings** tab.
+3. Navigate to the **Login and Provisioning** section and click **SCIM provisioning**.
+4. Click **Generate API token** to generate you **API Token**.
+
+
+#### Step 4: Connect Your Figma (SCIM) Account
+
+Once you have your **Host**, **Tenant ID** and **API Token**:
+1. Open the form where you need to authenticate with Figma (SCIM).
+2. Enter your **Host**, **Tenant ID** and **API Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/figma-scim/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Figma (SCIM).
