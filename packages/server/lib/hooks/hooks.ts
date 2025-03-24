@@ -1,43 +1,46 @@
-import type { Span } from 'dd-trace';
+import tracer from 'dd-trace';
+
 import {
+    AnalyticsTypes,
     CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
-    getSyncConfigsWithConnections,
+    ProxyRequest,
     analytics,
     errorNotificationService,
     externalWebhookService,
-    AnalyticsTypes,
-    syncManager,
     getProxyConfiguration,
-    ProxyRequest
+    getSyncConfigsWithConnections,
+    syncManager
 } from '@nangohq/shared';
-import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
-import { getLogger, Ok, Err, isHosted, stringifyError } from '@nangohq/utils';
-import { getOrchestrator } from '../utils/utils.js';
-import type {
-    TbaCredentials,
-    IntegrationConfig,
-    DBEnvironment,
-    Provider,
-    JwtCredentials,
-    SignatureCredentials,
-    MessageRowInsert,
-    RecentlyFailedConnection,
-    RecentlyCreatedConnection,
-    ConnectionConfig,
-    DBConnectionDecrypted,
-    DBTeam,
-    ApplicationConstructedProxyConfiguration,
-    InternalProxyConfiguration
-} from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import postConnection from './connection/post-connection.js';
-import { postConnectionCreation } from './connection/on/connection-created.js';
+import { Err, Ok, getLogger, isHosted } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
-import tracer from 'dd-trace';
+
+import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { slackService } from '../services/slack.js';
+import { postConnectionCreation } from './connection/on/connection-created.js';
+import postConnection from './connection/post-connection.js';
+
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
+import type {
+    ApplicationConstructedProxyConfiguration,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBTeam,
+    IntegrationConfig,
+    InternalProxyConfiguration,
+    JwtCredentials,
+    MessageRowInsert,
+    Provider,
+    RecentlyCreatedConnection,
+    RecentlyFailedConnection,
+    SignatureCredentials,
+    TbaCredentials
+} from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -353,15 +356,8 @@ export async function credentialsTest({
             if (response.status && response.status >= 200 && response.status < 300) {
                 return Ok({ logs, tested: true });
             }
-
-            logs.push({ type: 'log', level: 'error', message: `Failed verification for endpoint: ${endpoint}`, createdAt: new Date().toISOString() });
-        } catch (err) {
-            logs.push({
-                type: 'log',
-                level: 'error',
-                message: `Error testing endpoint: ${endpoint},  ${stringifyError(err)}`,
-                createdAt: new Date().toISOString()
-            });
+        } catch {
+            // Already covered
         }
     }
 
