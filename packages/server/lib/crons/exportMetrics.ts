@@ -1,11 +1,13 @@
-import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, connectionService, environmentService } from '@nangohq/shared';
-import { stringifyError, getLogger, metrics } from '@nangohq/utils';
 import tracer from 'dd-trace';
-import { envs } from '../env.js';
-import { records } from '@nangohq/records';
+import * as cron from 'node-cron';
 
-const logger = getLogger('Server.exportUsageMetrics');
+import { records } from '@nangohq/records';
+import { connectionService, environmentService } from '@nangohq/shared';
+import { getLogger, metrics, report } from '@nangohq/utils';
+
+import { envs } from '../env.js';
+
+const logger = getLogger('cron.exportUsageMetrics');
 const cronMinutes = envs.CRON_EXPORT_USAGE_METRICS_MINUTES;
 
 export function exportUsageMetricsCron(): void {
@@ -46,11 +48,7 @@ async function exportConnectionsMetrics(): Promise<void> {
             }
         } catch (err) {
             span.setTag('error', err);
-            logger.error(`failed: ${stringifyError(err)}`);
-            const e = new Error('failed_to_export_connections_metrics', {
-                cause: err instanceof Error ? err.message : String(err)
-            });
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+            report(new Error('cron_failed_to_export_connections_metrics', { cause: err }));
         }
     });
 }
@@ -84,11 +82,7 @@ async function exportRecordsMetrics(): Promise<void> {
             }
         } catch (err) {
             span.setTag('error', err);
-            logger.error(`failed: ${stringifyError(err)}`);
-            const e = new Error('failed_to_export_records_metrics', {
-                cause: err instanceof Error ? err.message : String(err)
-            });
-            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+            report(new Error('cron_failed_to_export_records_metrics', { cause: err }));
         }
     });
 }
