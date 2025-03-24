@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.3] - 2025-03-21
+
+### Added
+
+- *(integrations)* Add support for trakstar hire (#3752) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bee0032882d7169ec818a79b56bb0c18a470c86c by devin-ai-integration[bot]. Commit message: feat(dropbox): add folder-content action (#267) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/40232a42fa89e73045ce320640d3212dd1b340b3 by devin-ai-integration[bot]. Commit message: feat(google-drive): update schema for folder-content action (#268) by @github-actions[bot]
+- Credentials refresh & validity (#3739) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/50a138a00917f508e60c929e2197ad7fc2f9c474 by Khaliq. Commit message: fix(google-drive): support all drives (#272) by @github-actions[bot]
+- *(CLI)* Nango.proxy should throw if request fails (#3753) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/4082e738d90d3501418d3c697e877f713157c6d4 by Khaliq. Commit message: fix(google-cal): minor cleanup and add whoami (#274) by @github-actions[bot]
+
+## [v0.57.2] - 2025-03-20
+
+### Added
+
+- Add comprehensive Zendesk OAuth setup guide (#3701) by @devin-ai-integration[bot]
+- Add comprehensive Intercom OAuth setup guide (#3695) by @devin-ai-integration[bot]
+- Add accountId dimension to execution duration metrics (#3711) by @TBonnin
+- *(hooks)* Reorder provider specific code under the provider instead of the type  (#3717) by @hassan254-prog
+- *(integrations)* Add support for Callrail (#3728) by @thomask
+- *(connect)* Allow authorization_params (#3726) by @bodinsamuel
+- *(connect)* Accept param detectClosedAuthWindow (#3732) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f27ad9f14703a95af2af01868b718ace1a2c5b49 by Victor Lang'at. Commit message: feat: add Linkedin messages sync. (#263) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0c343e6a682f3807f56736dab1982267bb7d5a52 by devin-ai-integration[bot]. Commit message: feat(box): add folder-content action (#265) by @github-actions[bot]
+- Add comprehensive Jira OAuth setup guide (#3704) by @devin-ai-integration[bot]
+- Add comprehensive Confluence OAuth setup guide (#3705) by @devin-ai-integration[bot]
+- *(verification)* Add verification method for ghost admin (#3737) by @hassan254-prog
+- *(integrations)* Add support for figma scim (#3733) by @hassan254-prog
+- *(verification)* Add verification script for aws-iam (#3735) by @hassan254-prog
+
+### Changed
+
+- *(eslint)* Import order as warning (#3721) by @bodinsamuel
+- Slack notification sent via proxy instead of using an action (#3722) by @TBonnin
+
+### Fixed
+
+- *(logs)* Compute index name from operation id (#3719) by @bodinsamuel
+- *(verification)* Not all providers have a valid method or script (#3723) by @hassan254-prog
+- *(logs)* Catch parsing error (#3724) by @bodinsamuel
+- *(logs)* Remove usage of kvstore (#3725) by @bodinsamuel
+- *(connections)* Fill refresh columns, fix row_to_json types (#3718) by @bodinsamuel
+- *(refresh)* Incorrect condition for stale connections, missing expires_at for api_key (#3727) by @bodinsamuel
+- *(refresh)* Missing last_fetched_at update (#3730) by @bodinsamuel
+
 ## [v0.57.1] - 2025-03-17
 
 ### Added
@@ -3389,6 +3441,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.3]: https://github.com/NangoHQ/nango/compare/v0.57.2..v0.57.3
+[v0.57.2]: https://github.com/NangoHQ/nango/compare/v0.57.1..v0.57.2
 [v0.57.1]: https://github.com/NangoHQ/nango/compare/v0.57.0..v0.57.1
 [v0.57.0]: https://github.com/NangoHQ/nango/compare/v0.56.4..v0.57.0
 [v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
