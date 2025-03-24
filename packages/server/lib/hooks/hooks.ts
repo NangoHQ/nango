@@ -194,7 +194,11 @@ export const connectionRefreshSuccess = async ({
         await errorNotificationService.auth.clear({
             connection_id: connection.id
         });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 
+    try {
         await slackService.removeFailingConnection({
             connection,
             name: connection.connection_id,
@@ -234,21 +238,24 @@ export const connectionRefreshFailed = async ({
             log_id: logCtx.id,
             active: true
         });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 
-        const webhookSettings = await externalWebhookService.get(environment.id);
+    const webhookSettings = await externalWebhookService.get(environment.id);
+    void sendAuthWebhook({
+        connection,
+        environment,
+        webhookSettings,
+        auth_mode: provider.auth_mode,
+        operation: 'refresh',
+        error: authError,
+        success: false,
+        providerConfig: config,
+        account
+    });
 
-        void sendAuthWebhook({
-            connection,
-            environment,
-            webhookSettings,
-            auth_mode: provider.auth_mode,
-            operation: 'refresh',
-            error: authError,
-            success: false,
-            providerConfig: config,
-            account
-        });
-
+    try {
         await slackService.reportFailure({
             account,
             environment,
