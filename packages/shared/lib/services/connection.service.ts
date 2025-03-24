@@ -11,7 +11,12 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
+import {
+    DEFAULT_BILL_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
@@ -481,7 +486,7 @@ class ConnectionService {
     }
 
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
-        let attempt = currentAttempt;
+        let attempt = currentAttempt || 1;
         const now = new Date();
 
         // Only increment once per day to avoid burst failed refresh invalidating a connection (e.g: provider being down)
@@ -501,7 +506,7 @@ class ConnectionService {
                 last_refresh_failure: new Date(),
                 last_refresh_success: null,
                 refresh_attempts: attempt,
-                refresh_exhausted: attempt >= MAX_FAILED_REFRESH
+                refresh_exhausted: attempt >= MAX_CONSECUTIVE_DAYS_FAILED_REFRESH
             });
     }
 
