@@ -23,7 +23,6 @@ import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
 import { router } from './routes.js';
-import oAuthSessionService from './services/oauth-session.service.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
@@ -86,7 +85,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 // Preload providers
 getProviders();
 
-await oAuthSessionService.clearStaleSessions();
 refreshConnectionsCron();
 exportUsageMetricsCron();
 timeoutLogsOperations();

@@ -2234,6 +2234,17 @@ integrations:
                     group: Files
                 output: string
                 input: IdEntity
+            folder-content:
+                description: >-
+                    Fetches the top-level content (files and folders) of a folder given
+                    its ID. If no folder ID is provided, it fetches content from the root
+                    folder.
+                endpoint:
+                    method: GET
+                    path: /folder-content
+                    group: Folders
+                output: FolderContent
+                input: FolderContentInput
         syncs:
             users:
                 runs: every day
@@ -2361,6 +2372,13 @@ integrations:
                 name: string
                 modified_at: string
                 url: string | null
+            FolderContentInput:
+                id?: string
+                marker?: string
+            FolderContent:
+                files: BoxDocument[]
+                folders: Folder[]
+                next_marker?: string
     brightcrowd:
         syncs:
             books:
@@ -3688,6 +3706,19 @@ integrations:
                 input: string
                 scopes:
                     - files.content.read
+            folder-content:
+                description: >-
+                    Fetches the top-level content (files and folders) of a Dropbox folder
+                    given its path. If no path is provided, it fetches content from the
+                    root folder.
+                endpoint:
+                    method: POST
+                    path: /folder-content
+                    group: Folders
+                output: FolderContent
+                input: FolderContentInput
+                scopes:
+                    - files.metadata.read
         syncs:
             users:
                 runs: every day
@@ -3739,6 +3770,13 @@ integrations:
                 path: string
                 title: string
                 modified_date: string
+            FolderContentInput:
+                path?: string
+                cursor?: string
+            FolderContent:
+                files: Document[]
+                folders: Document[]
+                cursor?: string
     evaluagent:
         syncs:
             users:
@@ -4758,6 +4796,15 @@ integrations:
                 anonymous_app: boolean
                 scopes: string
     google-calendar:
+        actions:
+            whoami:
+                description: |
+                    description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
         syncs:
             events:
                 description: |
@@ -4782,6 +4829,9 @@ integrations:
                     path: /google-calendar/calendars
                 scopes: https://www.googleapis.com/auth/calendar.readonly
         models:
+            UserInformation:
+                id: string
+                email: string
             GoogleCalendar:
                 kind: string
                 etag: string
@@ -5002,7 +5052,7 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 2.0.0
+                version: 2.0.1
                 output: Document
                 sync_type: full
                 endpoint:
@@ -5084,6 +5134,20 @@ integrations:
                     path: /fetch-folders
                     group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
+                version: 1.0.0
+            folder-content:
+                input: FolderContentInput
+                description: >
+                    Fetches the top-level content (files and folders) of a folder given
+                    its ID.
+
+                    If no folder ID is provided, it fetches content from the root folder.
+                output: FolderContent
+                endpoint:
+                    method: GET
+                    path: /folder-content
+                    group: Folders
+                scopes: https://www.googleapis.com/auth/drive.readonly
             upload-document:
                 input: UploadFileInput
                 description: >
@@ -5150,10 +5214,10 @@ integrations:
                 positionedObjects: object
             FetchFoldersInput:
                 id?: string
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDriveFolder:
                 folders?: GoogleDocument[]
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDocument:
                 id: string
                 name: string
@@ -5170,6 +5234,13 @@ integrations:
                 folderId?: string | undefined
                 description?: string | undefined
                 isBase64?: boolean | undefined
+            FolderContentInput:
+                id?: string
+                cursor?: string
+            FolderContent:
+                files: GoogleDocument[]
+                folders: GoogleDocument[]
+                cursor?: string
     google-mail:
         syncs:
             emails:
@@ -10545,6 +10616,20 @@ integrations:
                     - email
                     - w_organization_social
                     - r_organization_social
+        syncs:
+            messages:
+                runs: every 1h
+                sync_type: incremental
+                description: >
+                    This sync captures all LinkedIn messages for a Linkedin member for
+                    archiving purposes
+                output: LinkedInMessage
+                endpoint:
+                    method: GET
+                    path: /messages
+                    group: messages
+                scopes:
+                    - r_dma_portability_3rd_party
         models:
             LinkedinVideoPost:
                 text: string
@@ -10553,6 +10638,52 @@ integrations:
                 ownerId: string
             CreateLinkedInPostWithVideoResponse:
                 succcess: boolean
+            LinkedInMessageContent:
+                format: string
+                fallback: string
+                formatVersion: number
+                content?:
+                    string?: string
+            ContentClassification:
+                classification: string
+            LinkedInActivityData:
+                actor: string
+                createdAt: number
+                attachments: string[]
+                author: string
+                messageContexts: any[]
+                thread: string
+                message?: string
+                version?: number
+                contentCertificationToken?: string
+                extensionContent?: any
+            LinkedInMessage:
+                id: number
+                resourceId: string
+                method: string
+                owner: string
+                actor: string
+                activityId: string
+                processedAt: number
+                capturedAt: number
+                activityStatus: string
+                thread: string | null
+                author: string | null
+                createdAt: number | null
+                isDeleted: boolean
+                configVersion: number | null
+                methodName?: string
+                processedActivity?: any
+                deletedAt?: number
+                activityData?: LinkedInActivityData
+                content?: LinkedInMessageContent | null
+                deliveredAt?: number
+                mailbox?: string
+                contentClassification?: ContentClassification | null
+                attachments?: string[]
+                contentUrns?: string[]
+                extensionContent?: any
+                messageContexts?: string[]
     luma:
         syncs:
             list-events:

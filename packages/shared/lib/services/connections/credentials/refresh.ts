@@ -127,6 +127,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
             newConnection = await connectionService.updateConnection({
                 ...newConnection,
+                last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newConnection.credentials),
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
@@ -430,7 +431,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }

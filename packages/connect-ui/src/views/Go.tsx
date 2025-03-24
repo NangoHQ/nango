@@ -94,7 +94,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, isSingleIntegration, setIsDirty } = useGlobal();
+    const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
     const nango = useNango();
 
     const [loading, setLoading] = useState(false);
@@ -233,13 +233,13 @@ export const Go: React.FC = () => {
                 } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'CUSTOM') {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 } else {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 }
                 setResult(res);

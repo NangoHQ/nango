@@ -152,6 +152,7 @@
                         "guides/api-authorization/authorize-in-your-app-custom-ui",
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/credentials-refresh-and-validity",
                         "guides/api-authorization/public-key-deprecation"
                     ]
                 },
@@ -309,6 +310,7 @@
                 "integrations/all/cal-com-v1",
                 "integrations/all/cal-com-v2",
                 "integrations/all/calendly",
+                "integrations/all/callrail",
                 "integrations/all/canny",
                 "integrations/all/canva-scim",
                 "integrations/all/certn",
@@ -379,6 +381,7 @@
                 "integrations/all/falai",
                 "integrations/all/figjam",
                 "integrations/all/figma",
+                "integrations/all/figma-scim",
                 "integrations/all/findymail",
                 "integrations/all/firefish",
                 "integrations/all/fireflies",
@@ -621,6 +624,7 @@
                 "integrations/all/tiktok-ads",
                 "integrations/all/timely",
                 "integrations/all/todoist",
+                "integrations/all/trakstar-hire",
                 "integrations/all/trello",
                 "integrations/all/tldv",
                 "integrations/all/trello-scim",

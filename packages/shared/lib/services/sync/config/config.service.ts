@@ -745,3 +745,19 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
 
     return res || null;
 }
+
+export async function getSoftDeletedSyncConfig({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBSyncConfig[]> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db.knex
+        .select('*')
+        .from<DBSyncConfig>(`_nango_sync_configs`)
+        .where('deleted', true)
+        .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+        .limit(limit);
+}
+
+export async function hardDeleteSyncConfig(id: number) {
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id }).delete();
+}
