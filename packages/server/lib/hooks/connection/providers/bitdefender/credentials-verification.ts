@@ -13,6 +13,7 @@ export default async function execute(nango: Nango) {
 
     await nango.proxy<APIDetailsResponse>({
         method: 'POST',
+        // https://www.bitdefender.com/business/support/en/77209-140282-getapikeydetails.html
         endpoint: '/v1.0/jsonrpc/general',
         providerConfigKey,
         data: bitInput
