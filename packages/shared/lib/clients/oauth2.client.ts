@@ -1,15 +1,19 @@
-import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
-import type { DBConnectionDecrypted, Provider, ProviderOAuth2 } from '@nangohq/types';
-import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
-import { AuthorizationCode } from 'simple-oauth2';
-import connectionsManager from '../services/connection.service.js';
-import type { ServiceResponse } from '../models/Generic.js';
-import { LogActionEnum } from '../models/Telemetry.js';
-import { interpolateString, encodeParameters } from '../utils/utils.js';
 import Boom from '@hapi/boom';
+import { AuthorizationCode } from 'simple-oauth2';
+
+import { httpAgent, httpsAgent, redactHeaders } from '@nangohq/utils';
+
+import { LogActionEnum } from '../models/Telemetry.js';
+import connectionsManager from '../services/connection.service.js';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { httpAgent, httpsAgent } from '@nangohq/utils';
+import { encodeParameters, interpolateString } from '../utils/utils.js';
+
+import type { ServiceResponse } from '../models/Generic.js';
+import type { Config as ProviderConfig, OAuth2Credentials } from '../models/index.js';
+import type { LogContextStateless } from '@nangohq/logs';
+import type { DBConnectionDecrypted, Provider, ProviderOAuth2 } from '@nangohq/types';
+import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2';
 import type { Merge } from 'type-fest';
 
 // we specify these agents as getters so that they aren't cloned by simple-oauth2,
@@ -64,11 +68,17 @@ export function getSimpleOAuth2ClientConfig(
     };
 }
 
-export async function getFreshOAuth2Credentials(
-    connection: DBConnectionDecrypted,
-    config: ProviderConfig,
-    provider: ProviderOAuth2
-): Promise<ServiceResponse<OAuth2Credentials>> {
+export async function getFreshOAuth2Credentials({
+    connection,
+    config,
+    provider,
+    logCtx
+}: {
+    connection: DBConnectionDecrypted;
+    config: ProviderConfig;
+    provider: ProviderOAuth2;
+    logCtx: LogContextStateless;
+}): Promise<ServiceResponse<OAuth2Credentials>> {
     const credentials = connection.credentials as OAuth2Credentials;
     if (credentials.config_override && credentials.config_override.client_id && credentials.config_override.client_secret) {
         config = {
@@ -100,9 +110,20 @@ export async function getFreshOAuth2Credentials(
     }
 
     let rawNewAccessToken: AccessToken;
+    const createdAt = new Date();
+    const url = `${simpleOAuth2ClientConfig.auth.tokenHost}${simpleOAuth2ClientConfig.auth.tokenPath}`;
 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
+        void logCtx.http(`POST ${url}`, {
+            createdAt,
+            request: {
+                method: 'POST',
+                url,
+                headers: redactHeaders({ headers: simpleOAuth2ClientConfig.http.headers, valuesToFilter: [config.oauth_client_secret] })
+            },
+            response: { code: 200, headers: {} }
+        });
     } catch (err) {
         let nangoErr: NangoError;
         if (Boom.isBoom(err)) {
@@ -111,12 +132,28 @@ export async function getFreshOAuth2Credentials(
                 errorPayload = err.data.payload;
             }
             const payload = {
-                external_message: err.message,
-                external_request_details: err.output,
                 dataMessage: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload
             };
+            void logCtx.http(`POST ${url}`, {
+                level: 'error',
+                createdAt,
+                request: {
+                    method: 'POST',
+                    url,
+                    headers: redactHeaders({ headers: simpleOAuth2ClientConfig.http.headers, valuesToFilter: [config.oauth_client_secret] })
+                },
+                response: { code: err.output.statusCode, headers: err.output.headers as Record<string, any> },
+                meta: { body: errorPayload instanceof Buffer ? errorPayload.toString() : errorPayload }
+            });
             nangoErr = new NangoError(`refresh_token_external_error`, payload);
         } else {
+            void logCtx.http(`POST ${url}`, {
+                level: 'error',
+                createdAt,
+                request: { method: 'POST', url, headers: {} },
+                response: undefined,
+                error: err
+            });
             nangoErr = new NangoError(`refresh_token_external_error`, { message: err instanceof Error ? err.message : 'unknown Error' });
         }
 

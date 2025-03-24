@@ -1,9 +1,12 @@
-import { nanoid } from '@nangohq/utils';
-import type { ConcatOperationList, MessageRow, MessageRowInsert, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
-import type { estypes } from '@elastic/elasticsearch';
+
+import { nanoid } from '@nangohq/utils';
+
 import { defaultOperationExpiration } from '../env.js';
+
 import type { LogContext } from '../client.js';
+import type { estypes } from '@elastic/elasticsearch';
+import type { ConcatOperationList, MessageRow, MessageRowInsert, OperationRow, OperationRowInsert } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
@@ -131,7 +134,7 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
 export async function flushLogsBuffer(logs: MessageRowInsert[], logCtx: LogContext) {
     await Promise.all(
         logs.map(async (log) => {
-            await logCtx.log(log);
+            await logCtx.transport.log(log, { dryRun: logCtx.dryRun, logToConsole: logCtx.logToConsole, operationId: logCtx.id, accountId: logCtx.accountId });
         })
     );
 }

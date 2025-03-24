@@ -14,9 +14,9 @@ import {
     getProvider,
     linkConnection
 } from '@nangohq/shared';
-import type { BasicApiCredentials, MessageRowInsert, PostPublicBasicAuthorization } from '@nangohq/types';
+import type { BasicApiCredentials, PostPublicBasicAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -156,18 +156,13 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             password
         };
 
-        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider, logCtx });
         if (connectionResponse.isErr()) {
-            if ('logs' in connectionResponse.error.payload) {
-                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
-            }
-            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid');
             await logCtx.failed();
             res.status(400).send({ error: { code: 'connection_test_failed', message: connectionResponse.error.message } });
             return;
         }
-
-        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
