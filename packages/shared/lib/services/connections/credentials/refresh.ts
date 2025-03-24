@@ -434,7 +434,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }

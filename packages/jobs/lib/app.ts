@@ -1,7 +1,5 @@
 import './tracer.js';
 
-import * as cron from 'node-cron';
-
 import db from '@nangohq/database';
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
@@ -9,7 +7,6 @@ import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
 
-import { deleteSyncsData } from './crons/deleteSyncsData.js';
 import { envs } from './env.js';
 import { Processor } from './processor/processor.js';
 import { runnersFleet } from './runner/fleet.js';
@@ -64,8 +61,6 @@ try {
         logger.info('Closing...');
         clearTimeout(healthCheck);
 
-        cron.getTasks().forEach((task) => task.stop());
-
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             processor.stop();
@@ -101,9 +96,6 @@ try {
     runnersFleet.start();
 
     processor.start();
-
-    // Register recurring tasks
-    deleteSyncsData();
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {
