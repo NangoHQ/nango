@@ -1,37 +1,44 @@
+import tracer from 'dd-trace';
 import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum, connectionService, encryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
-import { stringifyError, getLogger, metrics } from '@nangohq/utils';
+
+import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionService, encryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
+import { getLogger, metrics, report } from '@nangohq/utils';
+
+import { envs } from '../env.js';
 import {
     connectionRefreshFailed as connectionRefreshFailedHook,
     connectionRefreshSuccess as connectionRefreshSuccessHook,
     testConnectionCredentials as connectionTestHook
 } from '../hooks/hooks.js';
-import tracer from 'dd-trace';
-import type { Lock } from '@nangohq/kvstore';
-import { getLocking } from '@nangohq/kvstore';
 
-const logger = getLogger('Server');
-const cronName = '[refreshConnections]';
-const cronMinutes = 10;
+import type { Lock } from '@nangohq/kvstore';
+
+const logger = getLogger('cron.refreshConnection');
+const cronMinutes = envs.CRON_REFRESH_CONNECTIONS_EVERY_MIN;
+const limit = envs.CRON_REFRESH_CONNECTIONS_LIMIT;
 
 export function refreshConnectionsCron(): void {
+    // set env var CRON_REFRESH_CONNECTIONS_EVERY_MIN to 0 to disable
+    if (cronMinutes <= 0) {
+        return;
+    }
+
     cron.schedule(`*/${cronMinutes} * * * *`, () => {
         (async () => {
             const start = Date.now();
             try {
                 await exec();
             } catch (err) {
-                const e = new Error('failed_to_refresh_connections', {
-                    cause: err instanceof Error ? err.message : String(err)
-                });
-                errorManager.report(e, { source: ErrorSourceEnum.PLATFORM });
+                report(new Error('cron_failed_to_refresh_connections', { cause: err }));
             } finally {
                 metrics.duration(metrics.Types.CRON_REFRESH_CONNECTIONS, Date.now() - start);
+                logger.info('✅ done');
             }
         })().catch((err: unknown) => {
             logger.error('Failed to execute refreshConnections cron job');
-            logger.error(err);
+            report(new Error('cron_failed_to_refresh_connections', { cause: err }));
         });
     });
 }
@@ -42,7 +49,7 @@ export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.server.cron.refreshConnections', async (span) => {
         let lock: Lock | undefined;
         try {
-            logger.info(`${cronName} starting`);
+            logger.info(`Starting`);
 
             const ttlMs = cronMinutes * 60 * 1000;
             const startTimestamp = Date.now();
@@ -51,19 +58,17 @@ export async function exec(): Promise<void> {
             try {
                 lock = await locking.acquire(lockKey, ttlMs);
             } catch {
-                logger.info(`${cronName} could not acquire lock, skipping`);
+                logger.info(`Could not acquire lock, skipping`);
                 return;
             }
 
             let cursor = undefined;
-            const limit = 1000;
-
             while (true) {
                 const staleConnections = await connectionService.getStaleConnections({ days: 1, limit, cursor });
-                logger.info(`${cronName} found ${staleConnections.length} stale connections`);
+                logger.info(`Found ${staleConnections.length} stale connections`);
                 for (const staleConnection of staleConnections) {
                     if (Date.now() - startTimestamp > ttlMs) {
-                        logger.info(`${cronName} time limit reached, stopping`);
+                        logger.info(`Time limit reached, stopping`);
                         return;
                     }
 
@@ -71,13 +76,13 @@ export async function exec(): Promise<void> {
 
                     const decryptedConnection = encryptionManager.decryptConnection(connection);
                     if (!decryptedConnection) {
-                        logger.error(`${cronName} failed to decrypt stale connection '${connection.id}'`);
+                        logger.error(`Failed to decrypt stale connection '${connection.id}'`);
                         continue;
                     }
 
                     const decryptedIntegration = encryptionManager.decryptProviderConfig(integration);
                     if (!decryptedIntegration) {
-                        logger.error(`${cronName} failed to decrypt integration '${integration.id} for stale connection '${connection.id}'`);
+                        logger.error(`Failed to decrypt integration '${integration.id} for stale connection '${connection.id}'`);
                         continue;
                     }
 
@@ -99,7 +104,7 @@ export async function exec(): Promise<void> {
                             metrics.increment(metrics.Types.CRON_REFRESH_CONNECTIONS_FAILED);
                         }
                     } catch (err) {
-                        logger.error(`${cronName} failed to refresh connection '${connection.connection_id}' ${stringifyError(err)}`);
+                        report(new Error('cron_failed_to_refresh_connection', { cause: err }));
                         metrics.increment(metrics.Types.CRON_REFRESH_CONNECTIONS_FAILED);
                     }
                     cursor = staleConnection.cursor;
@@ -108,10 +113,8 @@ export async function exec(): Promise<void> {
                     break;
                 }
             }
-
-            logger.info(`${cronName} ✅ done`);
         } catch (err) {
-            logger.error(`${cronName} failed: ${stringifyError(err)}`);
+            report(new Error('cron_failed_to_refresh_connections', { cause: err }));
             span.setTag('error', err);
         } finally {
             if (lock) {

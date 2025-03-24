@@ -31,12 +31,16 @@ export class NangoActionCLI extends NangoActionBase {
         this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
     }
 
-    public override proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+    public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (!config.method) {
             config.method = 'GET';
         }
 
-        return this.nango.proxy(config);
+        const res = await this.nango.proxy(config);
+        if (isAxiosError(res)) {
+            throw res;
+        }
+        return res;
     }
 
     public override log(...args: [...any]): void {

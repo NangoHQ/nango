@@ -927,6 +927,7 @@ aws-iam:
             region: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/aws-iam
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
@@ -1188,6 +1189,7 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: 'retry-after'
+    credentials_verification_script: bitdefenderCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -3251,6 +3253,46 @@ figma:
         base_url: https://api.figma.com
     docs: https://docs.nango.dev/integrations/all/figma
 
+figma-scim:
+    display_name: Figma (SCIM)
+    categories:
+        - design
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.host}/scim
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/${connectionConfig.tenantId}/Users
+    docs: https://docs.nango.dev/integrations/all/figma-scim
+    docs_connect: https://docs.nango.dev/integrations/all/figma-scim/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Figma account
+            doc_section: '#step-3-generating-your-api-token'
+    connection_config:
+        host:
+            type: string
+            title: Host
+            description: The host to your Figma account
+            example: www.figma.com
+            format: hostname
+            prefix: https://
+            pattern: ^(www\.figma\.com|figma-gov\.com)+$
+            order: 1
+            doc_section: '#step-1-finding-your-host'
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The tenant ID of your Figma account
+            order: 2
+            doc_section: '#step-2-finding-your-tenant-id'
+
 falai:
     display_name: fal.ai
     categories:
@@ -3712,23 +3754,30 @@ guru-scim:
     display_name: Guru (SCIM)
     categories:
         - knowledge-base
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/scim
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/scim+json
         verification:
             method: GET
             endpoints:
                 - /v2/Users
+            headers:
+                content-type: application/scim+json
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: Guru API Token
-            description: The SCIM API token for your Guru account
-            doc_section: '#step-1-finding-guru-api-token'
+            title: SCIM Username
+            description: The SCIM username for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
+        password:
+            type: string
+            title: SCIM Token
+            description: The SCIM token for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
 
 github:
     display_name: GitHub (User OAuth)
@@ -3840,7 +3889,12 @@ ghost-admin:
         headers:
             accept: application/json
             accept-version: ${connectionConfig.version}
+            authorization: Ghost ${accessToken}
         base_url: https://${connectionConfig.adminDomain}/ghost/api/admin/
+        verification:
+            method: GET
+            endpoints:
+                - /users
     docs: https://docs.nango.dev/integrations/all/ghost-admin
     connection_config:
         adminDomain:
@@ -8623,6 +8677,36 @@ thrivecart-api-key:
             description: The API key for your ThriveCart account
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
+
+trakstar-hire:
+    display_name: Trakstar Hire
+    categories:
+        - ats
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.recruiterbox.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/openings
+            headers:
+                content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/trakstar-hire
+    docs_connect: https://docs.nango.dev/integrations/all/trakstar-hire/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Trakstar API Key
+            pattern: '^[a-f0-9]+$'
+            example: a3f8b92c4d6e715f0a1b3c4d5e6f7890
+            doc_section: '#step-1-generating-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 tremendous:
     display_name: Tremendous
