@@ -43,6 +43,13 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),

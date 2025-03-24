@@ -40,9 +40,8 @@ try {
     });
 
     process.on('unhandledRejection', (reason) => {
-        logger.error(`${id} Received unhandledRejection...`, reason);
-        process.exitCode = 1;
-        close();
+        logger.error(`${id} Received uncaughtException...`, reason);
+        // not closing on purpose
     });
 
     process.on('uncaughtException', (e) => {
