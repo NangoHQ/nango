@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { Nango } from '@nangohq/node';
+import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
+
+import { PersistClient } from './persist.js';
+import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
+
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
-import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
-import { AbortedSDKError, InvalidRecordSDKError } from '@nangohq/runner-sdk';
-import { PersistClient } from './persist.js';
-import { Ok } from '@nangohq/utils';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -406,7 +409,7 @@ describe('Log', () => {
 
     it('should enforce activityLogId', () => {
         expect(() => {
-            new NangoActionRunner({ ...nangoProps, activityLogId: undefined });
+            new NangoActionRunner({ ...nangoProps, activityLogId: undefined as unknown as string });
         }).toThrowError(new Error('Parameter activityLogId is required'));
     });
 

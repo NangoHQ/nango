@@ -1,7 +1,7 @@
-import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { RunnerFlags } from '.';
-import type { DBTeam } from '../team/db';
 import type { DBSyncConfig } from '../syncConfigs/db';
+import type { DBTeam } from '../team/db';
+import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
@@ -11,7 +11,7 @@ export interface NangoProps {
     connectionId: string;
     environmentId: number;
     environmentName: string;
-    activityLogId?: string | undefined;
+    activityLogId: string;
     providerConfigKey: string;
     provider: string;
     lastSyncDate?: Date;
