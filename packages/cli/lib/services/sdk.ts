@@ -128,7 +128,21 @@ export class NangoSyncCLI extends NangoSyncBase {
             return true;
         }
 
-        const resultsWithoutMetadata = this.removeMetadata(results);
+        // Deduplicate results first before removing metadata keeping order and last occurrence
+        const seenIds = new Set<string | number>();
+        const deduplicatedResults: (T & { id: string | number })[] = [];
+
+        for (let i = results.length - 1; i >= 0; i--) {
+            const record = results[i] as T & { id: string | number };
+            if (!seenIds.has(record.id)) {
+                seenIds.add(record.id);
+                deduplicatedResults.unshift(record);
+            } else {
+                console.warn(`batchSave detected duplicate records for ID: ${record.id}. Keeping the last occurrence.`);
+            }
+        }
+
+        const resultsWithoutMetadata = this.removeMetadata(deduplicatedResults);
 
         // Validate records
         const hasErrors = this.validateRecords(model, resultsWithoutMetadata);
@@ -147,14 +161,14 @@ export class NangoSyncCLI extends NangoSyncBase {
             this.logMessages?.messages.push(msg);
         }
         if (this.logMessages && this.logMessages.counts) {
-            this.logMessages.counts.added = Number(this.logMessages.counts.added) + results.length;
+            this.logMessages.counts.added = Number(this.logMessages.counts.added) + deduplicatedResults.length;
         }
         const modelFullName = this.modelFullName(model);
         if (this.rawSaveOutput) {
             if (!this.rawSaveOutput.has(modelFullName)) {
                 this.rawSaveOutput.set(modelFullName, []);
             }
-            this.rawSaveOutput.get(modelFullName)?.push(...results);
+            this.rawSaveOutput.get(modelFullName)?.push(...deduplicatedResults);
         }
         return true;
     }

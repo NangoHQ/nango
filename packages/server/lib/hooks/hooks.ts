@@ -12,7 +12,7 @@ import {
     getSyncConfigsWithConnections,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted, report, stringifyError } from '@nangohq/utils';
+import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { getOrchestrator } from '../utils/utils.js';
@@ -364,15 +364,8 @@ export async function credentialsTest({
             if (response.status && response.status >= 200 && response.status < 300) {
                 return Ok({ logs, tested: true });
             }
-
-            logs.push({ type: 'log', level: 'error', message: `Failed verification for endpoint: ${endpoint}`, createdAt: new Date().toISOString() });
-        } catch (err) {
-            logs.push({
-                type: 'log',
-                level: 'error',
-                message: `Error testing endpoint: ${endpoint},  ${stringifyError(err)}`,
-                createdAt: new Date().toISOString()
-            });
+        } catch {
+            // Already covered
         }
     }
 

@@ -120,7 +120,11 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         if (res.isErr()) {
             span.setTag('error', res.error);
-            await connectionService.setRefreshFailure({ id: props.connection.id, currentAttempt: props.connection.refresh_attempts || 0 });
+            await connectionService.setRefreshFailure({
+                id: props.connection.id,
+                lastRefreshFailure: props.connection.last_refresh_failure,
+                currentAttempt: props.connection.refresh_attempts || 0
+            });
             return res;
         }
 
