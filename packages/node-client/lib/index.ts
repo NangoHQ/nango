@@ -28,7 +28,6 @@ import type {
     SignatureCredentials,
     PostPublicConnectSessionsReconnect,
     GetPublicConnection,
-    StandardNangoConfig,
     NangoRecord,
     PostSyncVariant,
     DeleteSyncVariant
@@ -41,6 +40,7 @@ import type {
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
+    StandardNangoConfig,
     NangoProps,
     ProxyConfiguration,
     SyncStatusResponse,
