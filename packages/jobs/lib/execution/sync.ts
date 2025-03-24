@@ -293,7 +293,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
                     syncType,
                     syncJobId: nangoProps.syncJobId,
                     debug: nangoProps.debug,
-                    activityLogId: nangoProps.activityLogId!,
+                    activityLogId: nangoProps.activityLogId,
                     models: [model],
                     runTime,
                     syncConfig: nangoProps.syncConfig,
@@ -409,7 +409,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             connection,
             name: nangoProps.syncConfig.sync_name,
             type: 'sync',
-            originalActivityLogId: nangoProps.activityLogId as unknown as string,
+            originalActivityLogId: nangoProps.activityLogId,
             provider: nangoProps.provider
         });
 
@@ -460,7 +460,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             syncName: nangoProps.syncConfig.sync_name,
             syncType,
             syncJobId: nangoProps.syncJobId!,
-            activityLogId: nangoProps.activityLogId!,
+            activityLogId: nangoProps.activityLogId,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
             models: nangoProps.syncConfig.models || [],
@@ -512,7 +512,7 @@ export async function handleSyncError({ taskId, nangoProps, error }: { taskId: s
         syncName: nangoProps.syncConfig.sync_name,
         syncType: nangoProps.syncConfig.sync_type!,
         syncJobId: nangoProps.syncJobId!,
-        activityLogId: nangoProps.activityLogId!,
+        activityLogId: nangoProps.activityLogId,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
         models: nangoProps.syncConfig.models || [],
