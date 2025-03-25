@@ -10,12 +10,17 @@ import configService from './config.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
-import analytics, { AnalyticsTypes } from '../utils/analytics.js';
-import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import {
+    DEFAULT_BILL_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import {
     extractStepNumber,
@@ -480,15 +485,28 @@ class ConnectionService {
         return encryptionManager.decryptConnection(res[0]!);
     }
 
-    public async setRefreshFailure({ id, currentAttempt }: { id: number; currentAttempt: number }) {
+    public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
+        let attempt = currentAttempt || 1;
+        const now = new Date();
+
+        // Only increment once per day to avoid burst failed refresh invalidating a connection (e.g: provider being down)
+        if (
+            lastRefreshFailure &&
+            (lastRefreshFailure.getFullYear() < now.getFullYear() ||
+                lastRefreshFailure.getMonth() < now.getMonth() ||
+                lastRefreshFailure.getDate() < now.getDate())
+        ) {
+            attempt += 1;
+        }
+
         await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({ id })
             .update({
                 last_refresh_failure: new Date(),
                 last_refresh_success: null,
-                refresh_attempts: currentAttempt + 1,
-                refresh_exhausted: currentAttempt >= MAX_FAILED_REFRESH
+                refresh_attempts: attempt,
+                refresh_exhausted: attempt >= MAX_CONSECUTIVE_DAYS_FAILED_REFRESH
             });
     }
 
@@ -834,6 +852,8 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
+        // TODO: might be useless since we are dropping the data after a while
+        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
@@ -1786,6 +1806,31 @@ class ConnectionService {
         }
 
         return Err(new NangoError('failed_to_get_connections_count'));
+    }
+
+    async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBConnection[]> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .select('*')
+            .from<DBConnection>(`_nango_connections`)
+            .where('deleted', true)
+            .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+    }
+
+    async hardDeleteByIntegration({ integrationId, limit }: { integrationId: number; limit: number }): Promise<number> {
+        return await db.knex
+            .from<DBConnection>('_nango_connections')
+            .whereIn('id', function (sub) {
+                sub.select('id').from<DBConnection>('_nango_connections').where('config_id', integrationId).limit(limit);
+            })
+            .delete();
+    }
+
+    async hardDelete(id: number): Promise<number> {
+        return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
     }
 }
 

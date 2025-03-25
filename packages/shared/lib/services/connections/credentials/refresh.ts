@@ -115,7 +115,11 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         if (res.isErr()) {
             span.setTag('error', res.error);
-            await connectionService.setRefreshFailure({ id: props.connection.id, currentAttempt: props.connection.refresh_attempts || 0 });
+            await connectionService.setRefreshFailure({
+                id: props.connection.id,
+                lastRefreshFailure: props.connection.last_refresh_failure,
+                currentAttempt: props.connection.refresh_attempts || 0
+            });
             return res;
         }
 
@@ -430,7 +434,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }
