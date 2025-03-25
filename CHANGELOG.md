@@ -2,6 +2,131 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.4] - 2025-03-25
+
+### Added
+
+- *(credentials-check)* Add bitdefender verification script (#3760) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f2d2c6b9565c9fe84d72ae1503949d6fd3b8cd59 by Hassan_Wari. Commit message: feat(quickbooks): add write actions for journal entry (#285) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d2fd05d76c0c409bb37dddd8c451118a0d6e20e5 by Khaliq. Commit message: feat(databricks): add list warehouses action (#287) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ae0732ad718ce5910ef0e3890e4f304b62220870 by Khaliq. Commit message: feat(cursor+google-car): More cursor tweaks + settings action (#284) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/37bbc8985fa36d0ab6368fd2c117cce780a638b2 by lordsarcastic. Commit message: feat(netsuite-tba): Add a fetch-fields action for netsuite-tba (#283) by @github-actions[bot]
+
+### Fixed
+
+- ShouldRefreshCredentials to return false if credentials_expires_at is set (#3754) by @TBonnin
+- *(runner)* Do not exit on unhandledRejection (#3756) by @TBonnin
+- *(guru-scim)* Update guru scim (#3757) by @khaliqgant
+- *(types)* Use nango standard config from types (#3759) by @khaliqgant
+- *(cron)* Unify error reporting, envs, logging (#3731) by @bodinsamuel
+- *(cron)* Delete all old data (#3712) by @bodinsamuel
+- *(cli)* Deduplicate records when using batchSave in CLI (#3761) by @hassan254-prog
+- Check record is not null in removeMetadata (#3758) by @TBonnin
+- *(ui)* Show correct message for credentials error (#3762) by @bodinsamuel
+- *(logs)* Do not fallback on unknown operation id (#3738) by @bodinsamuel
+- *(refresh)* Only update attempts once per day (#3736) by @bodinsamuel
+- *(refresh)* Short-circuit if exhausted, trycatch hooks (#3734) by @bodinsamuel
+- *(credentials)* Split JWT from connection (#3729) by @bodinsamuel
+- *(connection)* Merge issue (#3763) by @bodinsamuel
+- *(connect-ui)* Do not detect closed auth-window (#3755) by @hassan254-prog
+
+## [v0.57.3] - 2025-03-21
+
+### Added
+
+- *(integrations)* Add support for trakstar hire (#3752) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bee0032882d7169ec818a79b56bb0c18a470c86c by devin-ai-integration[bot]. Commit message: feat(dropbox): add folder-content action (#267) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/40232a42fa89e73045ce320640d3212dd1b340b3 by devin-ai-integration[bot]. Commit message: feat(google-drive): update schema for folder-content action (#268) by @github-actions[bot]
+- Credentials refresh & validity (#3739) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/50a138a00917f508e60c929e2197ad7fc2f9c474 by Khaliq. Commit message: fix(google-drive): support all drives (#272) by @github-actions[bot]
+- *(CLI)* Nango.proxy should throw if request fails (#3753) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/4082e738d90d3501418d3c697e877f713157c6d4 by Khaliq. Commit message: fix(google-cal): minor cleanup and add whoami (#274) by @github-actions[bot]
+
+## [v0.57.2] - 2025-03-20
+
+### Added
+
+- Add comprehensive Zendesk OAuth setup guide (#3701) by @devin-ai-integration[bot]
+- Add comprehensive Intercom OAuth setup guide (#3695) by @devin-ai-integration[bot]
+- Add accountId dimension to execution duration metrics (#3711) by @TBonnin
+- *(hooks)* Reorder provider specific code under the provider instead of the type  (#3717) by @hassan254-prog
+- *(integrations)* Add support for Callrail (#3728) by @thomask
+- *(connect)* Allow authorization_params (#3726) by @bodinsamuel
+- *(connect)* Accept param detectClosedAuthWindow (#3732) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f27ad9f14703a95af2af01868b718ace1a2c5b49 by Victor Lang'at. Commit message: feat: add Linkedin messages sync. (#263) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0c343e6a682f3807f56736dab1982267bb7d5a52 by devin-ai-integration[bot]. Commit message: feat(box): add folder-content action (#265) by @github-actions[bot]
+- Add comprehensive Jira OAuth setup guide (#3704) by @devin-ai-integration[bot]
+- Add comprehensive Confluence OAuth setup guide (#3705) by @devin-ai-integration[bot]
+- *(verification)* Add verification method for ghost admin (#3737) by @hassan254-prog
+- *(integrations)* Add support for figma scim (#3733) by @hassan254-prog
+- *(verification)* Add verification script for aws-iam (#3735) by @hassan254-prog
+
+### Changed
+
+- *(eslint)* Import order as warning (#3721) by @bodinsamuel
+- Slack notification sent via proxy instead of using an action (#3722) by @TBonnin
+
+### Fixed
+
+- *(logs)* Compute index name from operation id (#3719) by @bodinsamuel
+- *(verification)* Not all providers have a valid method or script (#3723) by @hassan254-prog
+- *(logs)* Catch parsing error (#3724) by @bodinsamuel
+- *(logs)* Remove usage of kvstore (#3725) by @bodinsamuel
+- *(connections)* Fill refresh columns, fix row_to_json types (#3718) by @bodinsamuel
+- *(refresh)* Incorrect condition for stale connections, missing expires_at for api_key (#3727) by @bodinsamuel
+- *(refresh)* Missing last_fetched_at update (#3730) by @bodinsamuel
+
+## [v0.57.1] - 2025-03-17
+
+### Added
+
+- *(persist)* Add accountId dimension to records metrics (#3676) by @TBonnin
+- Add accountId dimension to secretKey auth (#3678) by @TBonnin
+- Add GET /records metrics (#3677) by @TBonnin
+- *(providers)* Normalize credentials interpolation within providers (#3679) by @hassan254-prog
+- *(logs)* Add http duration and context (#3680) by @bodinsamuel
+- *(connect)* Telemetry (#3684) by @bodinsamuel
+- Add comprehensive Shopify OAuth setup guide (#3683) by @devin-ai-integration[bot]
+- *(integrations)* Add support for oracle fusion cloud hcm (#3694) by @hassan254-prog
+- Add metric for records total count per account (#3709) by @TBonnin
+- *(verification)* Make verification check more robust  (#3666) by @hassan254-prog
+- *(integrations)* Add support for microsoft client credentials (#3715) by @hassan254-prog
+- *(integrations)* Add support for pandadoc api key (#3716) by @hassan254-prog
+
+### Changed
+
+- Enterprise self-hosted improvements (#3670) by @bastienbeurier
+- Update architecture diagram (#3685) by @bastienbeurier
+- Cron job to export connection count metric to dd (#3686) by @TBonnin
+- Move AI use-cases to getting started section (#3689) by @rguldener
+- *(metrics)* We also want connections with syncs/actions/webhooks count (#3688) by @TBonnin
+- Disable Slack notification by @TBonnin
+- Pass accountId to log context to use it in metrics (#3710) by @TBonnin
+
+### Fixed
+
+- Fix real-time sync docs info (#3673) by @bastienbeurier
+- *(ui)* Logs duration format, timestamp format (#3675) by @bodinsamuel
+- *(verification)* Fix verification for unipile (#3682) by @hassan254-prog
+- *(logs)* Put date in operation id (#3687) by @bodinsamuel
+- Remove withSchema in query by @TBonnin
+- *(jobs)* Drop where deleted index (#3681) by @bodinsamuel
+- *(cron)* Delete old data (#3690) by @bodinsamuel
+- *(logs)* Set auth operation as cancelled when expired (#3691) by @bodinsamuel
+- *(db)* Drop unused table schedules  (#3692) by @bodinsamuel
+- Use knex Transaction for all queries within a transaction (#3714) by @TBonnin
+- *(connection)* Split refresh function (#3674) by @bodinsamuel
+- *(node)* Remove leftover console.log (#3720) by @bodinsamuel
+
 ## [v0.57.0] - 2025-03-12
 
 ### Added
@@ -3347,6 +3472,10 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.4]: https://github.com/NangoHQ/nango/compare/v0.57.3..v0.57.4
+[v0.57.3]: https://github.com/NangoHQ/nango/compare/v0.57.2..v0.57.3
+[v0.57.2]: https://github.com/NangoHQ/nango/compare/v0.57.1..v0.57.2
+[v0.57.1]: https://github.com/NangoHQ/nango/compare/v0.57.0..v0.57.1
 [v0.57.0]: https://github.com/NangoHQ/nango/compare/v0.56.4..v0.57.0
 [v0.56.4]: https://github.com/NangoHQ/nango/compare/v0.56.3..v0.56.4
 [v0.56.3]: https://github.com/NangoHQ/nango/compare/v0.56.2..v0.56.3

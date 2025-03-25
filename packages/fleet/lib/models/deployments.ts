@@ -36,7 +36,7 @@ export async function create(db: knex.Knex, image: string): Promise<Result<Deplo
     try {
         return await db.transaction(async (trx) => {
             // do nothing if already active deployment
-            const active = await getActive(db);
+            const active = await getActive(trx);
             if (active.isErr()) {
                 return Err(active.error);
             }

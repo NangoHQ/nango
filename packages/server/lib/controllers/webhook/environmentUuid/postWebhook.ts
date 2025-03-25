@@ -71,7 +71,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
 
-            metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, totalRunTime, { accountId: account.id });
 
             if (!responsePayload) {
                 res.status(200).send();

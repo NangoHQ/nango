@@ -13,14 +13,14 @@ import {
     LogActionEnum,
     linkConnection
 } from '@nangohq/shared';
-import type { TbaCredentials, PostPublicTbaAuthorization, MessageRowInsert } from '@nangohq/types';
+import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
 import {
     connectionCreated as connectionCreatedHook,
-    connectionTest as connectionTestHook,
-    connectionCreationFailed as connectionCreationFailedHook
+    connectionCreationFailed as connectionCreationFailedHook,
+    testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
@@ -95,7 +95,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -182,12 +182,9 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             }
         }
 
-        const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider, logCtx });
         if (connectionResponse.isErr()) {
-            if ('logs' in connectionResponse.error.payload) {
-                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
-            }
-            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid');
             await logCtx.failed();
 
             res.send({
@@ -196,8 +193,6 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
             return;
         }
-
-        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,

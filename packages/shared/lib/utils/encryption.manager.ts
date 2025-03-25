@@ -1,11 +1,15 @@
-import utils from 'node:util';
 import crypto from 'crypto';
-import { getLogger, Encryption } from '@nangohq/utils';
-import type { Config as ProviderConfig } from '../models/Provider';
-import type { DBConfig } from '../models/Generic.js';
-import type { DBConnection, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
+import utils from 'node:util';
+
 import db from '@nangohq/database';
+import { Encryption, getLogger } from '@nangohq/utils';
+
+import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
+
+import type { DBConfig } from '../models/Generic.js';
+import type { Config as ProviderConfig } from '../models/Provider';
+import type { DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -79,17 +83,29 @@ export class EncryptionManager extends Encryption {
         return storedConnection;
     }
 
-    public decryptConnection(connection: DBConnection): DBConnectionDecrypted {
-        // Check if the individual row is encrypted.
-        if (connection.credentials_iv == null || connection.credentials_tag == null) {
-            return connection as unknown as DBConnectionDecrypted;
+    public decryptConnection(connection: DBConnection | DBConnectionAsJSONRow): DBConnectionDecrypted {
+        const credentials =
+            connection.credentials['encrypted_credentials'] && connection.credentials_iv && connection.credentials_tag
+                ? JSON.parse(this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
+                : {};
+        if (isConnectionJsonRow(connection)) {
+            const parsed: DBConnectionDecrypted = {
+                ...connection,
+                credentials,
+                last_fetched_at: connection.last_fetched_at ? new Date(connection.last_fetched_at) : null,
+                credentials_expires_at: connection.credentials_expires_at ? new Date(connection.credentials_expires_at) : null,
+                last_refresh_success: connection.last_refresh_success ? new Date(connection.last_refresh_success) : null,
+                last_refresh_failure: connection.last_refresh_failure ? new Date(connection.last_refresh_failure) : null,
+                created_at: new Date(connection.created_at),
+                updated_at: new Date(connection.updated_at),
+                deleted_at: connection.deleted_at ? new Date(connection.deleted_at) : null
+            };
+            return parsed;
         }
 
         return {
             ...connection,
-            credentials: connection.credentials['encrypted_credentials']
-                ? JSON.parse(this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
-                : {}
+            credentials
         } satisfies DBConnectionDecrypted;
     }
 

@@ -1,15 +1,17 @@
-import { Err, metrics, Ok, tagTraceUser } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
-import type { Config } from '@nangohq/shared';
-import { configService, environmentService, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
-import { startScript } from './operations/start.js';
-import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+
+import { bigQueryClient } from '../clients.js';
+import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+
+import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -37,7 +39,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId) });
+        const logCtx = await logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
 
         void logCtx.info(`Starting script '${task.onEventName}'`, {
             postConnection: task.onEventName,
@@ -133,7 +135,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
 export async function handleOnEventSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
     await setTaskSuccess({ taskId, output: null });
 
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId) });
+    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
     await logCtx.success();
 
     const content = `Script "${nangoProps.syncConfig.sync_name}" has been run successfully.`;
@@ -141,12 +143,12 @@ export async function handleOnEventSuccess({ taskId, nangoProps }: { taskId: str
         executionType: 'on-event',
         connectionId: nangoProps.connectionId,
         internalConnectionId: nangoProps.nangoConnectionId,
-        accountId: nangoProps.team?.id,
-        accountName: nangoProps.team?.name || 'unknown',
+        accountId: nangoProps.team.id,
+        accountName: nangoProps.team.name,
         scriptName: nangoProps.syncConfig.sync_name,
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
-        environmentName: nangoProps.environmentName || 'unknown',
+        environmentName: nangoProps.environmentName,
         providerConfigKey: nangoProps.providerConfigKey,
         status: 'success',
         syncId: null as unknown as string,
@@ -171,7 +173,7 @@ export async function handleOnEventError({ taskId, nangoProps, error }: { taskId
         },
         syncName: nangoProps.syncConfig.sync_name,
         providerConfigKey: nangoProps.providerConfigKey,
-        activityLogId: nangoProps.activityLogId!,
+        activityLogId: nangoProps.activityLogId,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
@@ -204,7 +206,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: activityLogId });
+    const logCtx = await logContextGetter.get({ id: activityLogId, accountId: team?.id });
     void logCtx.error(error.message, { error });
 
     if (team) {

@@ -195,6 +195,18 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
     expires_in?: number;
 }
 
+export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+export type RefreshableCredentials =
+    | OAuth2Credentials
+    | AppCredentials
+    | AppStoreCredentials
+    | OAuth2ClientCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | TwoStepCredentials
+    | BillCredentials
+    | SignatureCredentials;
+
 export type AllAuthCredentials =
     | OAuth1Credentials
     | OAuth2Credentials

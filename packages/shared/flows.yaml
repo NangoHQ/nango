@@ -2234,6 +2234,17 @@ integrations:
                     group: Files
                 output: string
                 input: IdEntity
+            folder-content:
+                description: >-
+                    Fetches the top-level content (files and folders) of a folder given
+                    its ID. If no folder ID is provided, it fetches content from the root
+                    folder.
+                endpoint:
+                    method: GET
+                    path: /folder-content
+                    group: Folders
+                output: FolderContent
+                input: FolderContentInput
         syncs:
             users:
                 runs: every day
@@ -2361,6 +2372,13 @@ integrations:
                 name: string
                 modified_at: string
                 url: string | null
+            FolderContentInput:
+                id?: string
+                marker?: string
+            FolderContent:
+                files: BoxDocument[]
+                folders: Folder[]
+                next_marker?: string
     brightcrowd:
         syncs:
             books:
@@ -3289,6 +3307,38 @@ integrations:
             Storage:
                 value?: string | undefined
                 representation?: string | undefined
+    databricks-workspace:
+        actions:
+            list-warehouses:
+                description: List all SQL warehouses in the workspace
+                endpoint:
+                    method: GET
+                    path: /warehouses
+                    group: Warehouses
+                output: ListWarehousesResponse
+        models:
+            ListWarehousesResponse:
+                warehouses: DatabricksWarehouse[]
+            DatabricksWarehouse:
+                id: string
+                name: string
+                cluster_size: string
+                min_num_clusters: number
+                max_num_clusters: number
+                auto_stop_mins: number
+                creator_name: string
+                spot_instance_policy: string
+                enable_photon: boolean
+                enable_serverless_compute: boolean
+                channel: string
+                warehouse_type: string
+                num_active_sessions: number
+                num_clusters: number
+                state: string
+                tags: object
+                health:
+                    status: string
+                    message: string | undefined
     datadog:
         actions:
             create-user:
@@ -3688,6 +3738,19 @@ integrations:
                 input: string
                 scopes:
                     - files.content.read
+            folder-content:
+                description: >-
+                    Fetches the top-level content (files and folders) of a Dropbox folder
+                    given its path. If no path is provided, it fetches content from the
+                    root folder.
+                endpoint:
+                    method: POST
+                    path: /folder-content
+                    group: Folders
+                output: FolderContent
+                input: FolderContentInput
+                scopes:
+                    - files.metadata.read
         syncs:
             users:
                 runs: every day
@@ -3739,6 +3802,13 @@ integrations:
                 path: string
                 title: string
                 modified_date: string
+            FolderContentInput:
+                path?: string
+                cursor?: string
+            FolderContent:
+                files: Document[]
+                folders: Document[]
+                cursor?: string
     evaluagent:
         syncs:
             users:
@@ -4758,6 +4828,24 @@ integrations:
                 anonymous_app: boolean
                 scopes: string
     google-calendar:
+        actions:
+            whoami:
+                description: |
+                    description: Fetch current user information
+                output: UserInformation
+                endpoint:
+                    method: GET
+                    path: /whoami
+                    group: Users
+            settings:
+                description: |
+                    Fetch all user settings from Google Calendar
+                output: SettingsResponse
+                endpoint:
+                    method: GET
+                    path: /google-calendar/settings
+                    group: Users
+                scopes: https://www.googleapis.com/auth/calendar.settings.readonly
         syncs:
             events:
                 description: |
@@ -4782,6 +4870,16 @@ integrations:
                     path: /google-calendar/calendars
                 scopes: https://www.googleapis.com/auth/calendar.readonly
         models:
+            SettingsResponse:
+                settings: CalendarSetting[]
+            CalendarSetting:
+                kind: string
+                etag: string
+                id: string
+                value: string
+            UserInformation:
+                id: string
+                email: string
             GoogleCalendar:
                 kind: string
                 etag: string
@@ -5002,7 +5100,7 @@ integrations:
                     (https://developers.google.com/drive/picker/reference/results)
                 input: DocumentMetadata
                 auto_start: false
-                version: 2.0.0
+                version: 2.0.1
                 output: Document
                 sync_type: full
                 endpoint:
@@ -5084,6 +5182,20 @@ integrations:
                     path: /fetch-folders
                     group: Folders
                 scopes: https://www.googleapis.com/auth/drive.readonly
+                version: 1.0.0
+            folder-content:
+                input: FolderContentInput
+                description: >
+                    Fetches the top-level content (files and folders) of a folder given
+                    its ID.
+
+                    If no folder ID is provided, it fetches content from the root folder.
+                output: FolderContent
+                endpoint:
+                    method: GET
+                    path: /folder-content
+                    group: Folders
+                scopes: https://www.googleapis.com/auth/drive.readonly
             upload-document:
                 input: UploadFileInput
                 description: >
@@ -5150,10 +5262,10 @@ integrations:
                 positionedObjects: object
             FetchFoldersInput:
                 id?: string
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDriveFolder:
                 folders?: GoogleDocument[]
-                nextPageToken?: string | undefined
+                cursor?: string | undefined
             GoogleDocument:
                 id: string
                 name: string
@@ -5170,6 +5282,13 @@ integrations:
                 folderId?: string | undefined
                 description?: string | undefined
                 isBase64?: boolean | undefined
+            FolderContentInput:
+                id?: string
+                cursor?: string
+            FolderContent:
+                files: GoogleDocument[]
+                folders: GoogleDocument[]
+                cursor?: string
     google-mail:
         syncs:
             emails:
@@ -10545,6 +10664,20 @@ integrations:
                     - email
                     - w_organization_social
                     - r_organization_social
+        syncs:
+            messages:
+                runs: every 1h
+                sync_type: incremental
+                description: >
+                    This sync captures all LinkedIn messages for a Linkedin member for
+                    archiving purposes
+                output: LinkedInMessage
+                endpoint:
+                    method: GET
+                    path: /messages
+                    group: messages
+                scopes:
+                    - r_dma_portability_3rd_party
         models:
             LinkedinVideoPost:
                 text: string
@@ -10553,6 +10686,52 @@ integrations:
                 ownerId: string
             CreateLinkedInPostWithVideoResponse:
                 succcess: boolean
+            LinkedInMessageContent:
+                format: string
+                fallback: string
+                formatVersion: number
+                content?:
+                    string?: string
+            ContentClassification:
+                classification: string
+            LinkedInActivityData:
+                actor: string
+                createdAt: number
+                attachments: string[]
+                author: string
+                messageContexts: any[]
+                thread: string
+                message?: string
+                version?: number
+                contentCertificationToken?: string
+                extensionContent?: any
+            LinkedInMessage:
+                id: number
+                resourceId: string
+                method: string
+                owner: string
+                actor: string
+                activityId: string
+                processedAt: number
+                capturedAt: number
+                activityStatus: string
+                thread: string | null
+                author: string | null
+                createdAt: number | null
+                isDeleted: boolean
+                configVersion: number | null
+                methodName?: string
+                processedActivity?: any
+                deletedAt?: number
+                activityData?: LinkedInActivityData
+                content?: LinkedInMessageContent | null
+                deliveredAt?: number
+                mailbox?: string
+                contentClassification?: ContentClassification | null
+                attachments?: string[]
+                contentUrns?: string[]
+                extensionContent?: any
+                messageContexts?: string[]
     luma:
         syncs:
             list-events:
@@ -10942,6 +11121,16 @@ integrations:
                     method: PUT
                     path: /bills
                     group: Bills
+            fetch-fields:
+                version: 1.0.0
+                description: |
+                    Fetches all fields in Netsuite
+                input: FetchFieldsInput
+                output: FetchFieldsOutput
+                endpoint:
+                    method: GET
+                    path: /fetch-fields
+                    group: Fields
         models:
             NetsuiteMetadata:
                 timezone?: string | undefined
@@ -11279,6 +11468,21 @@ integrations:
                     taxRate?: number
             NetsuiteBillUpdateOutput:
                 success: boolean
+            FetchFieldsInput:
+                name: string
+            FetchFieldsOutput:
+                id?: string | undefined
+                schema?: string | undefined
+                title?: string | undefined
+                description?: string | undefined
+                type?: string | string[] | undefined
+                properties?: object | undefined
+                required?: string[] | undefined
+                items?: FetchFieldsOutput | FetchFieldsOutput[] | undefined
+                enum?: any[] | undefined
+                definitions?: object | undefined
+                additionalProperties?: boolean | FetchFieldsOutput | undefined
+                default?: any | undefined
     next-cloud-ocs:
         syncs:
             users:
@@ -12864,6 +13068,7 @@ integrations:
                 runs: every hour
                 output: JournalEntry
                 sync_type: incremental
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /journal-entries
@@ -12925,6 +13130,26 @@ integrations:
                     method: PUT
                     path: /customers
                     group: Customers
+            create-journal-entry:
+                description: |
+                    Creates a single journal entry in QuickBooks.
+                input: CreateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: POST
+                    path: /journal-entries
+                    group: Journal Entries
+            update-journal-entry:
+                description: |
+                    Update a single journal entry in QuickBooks.
+                input: UpdateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: PUT
+                    path: /journal-entries
+                    group: Journal Entries
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -13257,9 +13482,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 id: string
-                date: string
+                date: string | null
                 currency: string
-                note: string
+                note?: string | undefined
                 lines: JournalEntryLine[]
             JournalEntryLine:
                 id: string
@@ -13498,6 +13723,72 @@ integrations:
                 txn_tax_code_ref?: Reference
                 total_tax_cents?: number
                 tax_line?: TaxLine[]
+            CreateJournalEntry:
+                line_items:
+                    - detail_type: string
+                      amount: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                journal_code_ref?: Reference
+                currency_ref?: Reference
+            UpdateJournalEntry:
+                id: string
+                sync_token: string
+                sparse?: boolean
+                line_items:
+                    - id?: string
+                      detail_type: string
+                      amount?: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                currency_ref?: Reference
+                global_tax_calculation?: string
+                doc_number?: string
+                private_note?: string
+                exchange_rate?: number
+                transaction_location_type?: string
+                txn_tax_detail?:
+                    txn_tax_code_ref?: Reference
+                    total_tax?: number
+                    tax_line?:
+                        - detail_type: string
+                          tax_line_detail?:
+                              tax_rate_ref?: Reference
+                              net_amount_taxable?: number
+                              percent_based?: boolean
+                              tax_percent?: number
+                          amount?: number
+                adjustment?: boolean
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -13598,6 +13889,7 @@ integrations:
                 runs: every hour
                 output: JournalEntry
                 sync_type: incremental
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /journal-entries
@@ -13659,6 +13951,26 @@ integrations:
                     method: PUT
                     path: /customers
                     group: Customers
+            create-journal-entry:
+                description: |
+                    Creates a single journal entry in QuickBooks.
+                input: CreateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: POST
+                    path: /journal-entries
+                    group: Journal Entries
+            update-journal-entry:
+                description: |
+                    Update a single journal entry in QuickBooks.
+                input: UpdateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: PUT
+                    path: /journal-entries
+                    group: Journal Entries
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -13991,9 +14303,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 id: string
-                date: string
+                date: string | null
                 currency: string
-                note: string
+                note?: string | undefined
                 lines: JournalEntryLine[]
             JournalEntryLine:
                 id: string
@@ -14232,6 +14544,72 @@ integrations:
                 txn_tax_code_ref?: Reference
                 total_tax_cents?: number
                 tax_line?: TaxLine[]
+            CreateJournalEntry:
+                line_items:
+                    - detail_type: string
+                      amount: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                journal_code_ref?: Reference
+                currency_ref?: Reference
+            UpdateJournalEntry:
+                id: string
+                sync_token: string
+                sparse?: boolean
+                line_items:
+                    - id?: string
+                      detail_type: string
+                      amount?: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                currency_ref?: Reference
+                global_tax_calculation?: string
+                doc_number?: string
+                private_note?: string
+                exchange_rate?: number
+                transaction_location_type?: string
+                txn_tax_detail?:
+                    txn_tax_code_ref?: Reference
+                    total_tax?: number
+                    tax_line?:
+                        - detail_type: string
+                          tax_line_detail?:
+                              tax_rate_ref?: Reference
+                              net_amount_taxable?: number
+                              percent_based?: boolean
+                              tax_percent?: number
+                          amount?: number
+                adjustment?: boolean
     ramp:
         syncs:
             users:

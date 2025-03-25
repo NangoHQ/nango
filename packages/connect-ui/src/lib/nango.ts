@@ -1,5 +1,6 @@
-import Nango from '@nangohq/frontend';
 import { useEffect } from 'react';
+
+import Nango from '@nangohq/frontend';
 
 import { useGlobal } from './store';
 

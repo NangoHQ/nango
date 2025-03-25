@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type { OAuth2Credentials, AuthCredentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
 import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
-import { configService, connectionService, errorManager, NangoError, accountService, SlackService, getProvider } from '@nangohq/shared';
+import { configService, connectionService, errorManager, NangoError, accountService, getProvider } from '@nangohq/shared';
 import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
@@ -13,6 +13,7 @@ import {
 } from '../hooks/hooks.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
+import { slackService } from '../services/slack.js';
 
 const orchestrator = getOrchestrator();
 
@@ -63,13 +64,12 @@ class ConnectionController {
                 providerConfigKey: integration_key,
                 environmentId: info!.environmentId,
                 orchestrator,
-                logContextGetter,
+                slackService,
                 preDeletionHook
             });
 
             // Kill all notifications associated with this env
-            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
-            await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
+            await slackService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
         } catch (err) {

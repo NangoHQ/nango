@@ -5,7 +5,7 @@ export { default as jiraWebhookRouting } from './jira-webhook-routing.js';
 export { default as linearWebhookRouting } from './linear-webhook-routing.js';
 export { default as salesforceWebhookRouting } from './salesforce-webhook-routing.js';
 export { default as slackWebhookRouting } from './slack-webhook-routing.js';
-export { default as checkrWebhookRouting } from './checkr-webhook-routing.js';
+export { default as checkrPartnerWebhookRouting } from './checkr-partner-webhook-routing.js';
 export { default as microsoftTeamsWebhookRouting } from './microsoft-teams-webhook-routing.js';
 export { default as unauthenticatedWebhookRouting } from './unauthenticated-webhook-routing.js';
 export { default as airtableWebhookRouting } from './airtable-webhook-routing.js';

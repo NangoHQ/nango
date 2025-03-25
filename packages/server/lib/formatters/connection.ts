@@ -1,13 +1,15 @@
+import { endUserToApi } from './endUser.js';
+
 import type {
     ApiConnectionFull,
     ApiConnectionSimple,
     ApiPublicConnection,
     ApiPublicConnectionFull,
     DBConnection,
+    DBConnectionAsJSONRow,
     DBConnectionDecrypted,
     DBEndUser
 } from '@nangohq/types';
-import { endUserToApi } from './endUser.js';
 
 export function connectionSimpleToApi({
     data,
@@ -15,7 +17,7 @@ export function connectionSimpleToApi({
     activeLog,
     endUser
 }: {
-    data: DBConnection;
+    data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
@@ -33,9 +35,20 @@ export function connectionSimpleToApi({
 }
 export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConnectionFull {
     return {
-        ...connection,
         id: connection.id,
         config_id: connection.config_id,
+        environment_id: connection.environment_id,
+        connection_id: connection.connection_id,
+        provider_config_key: connection.provider_config_key,
+        connection_config: connection.connection_config,
+        credentials: connection.credentials,
+        metadata: connection.metadata,
+        last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,
+        credentials_expires_at: connection.credentials_expires_at ? String(connection.credentials_expires_at) : null,
+        last_refresh_failure: connection.last_refresh_failure ? String(connection.last_refresh_failure) : null,
+        last_refresh_success: connection.last_refresh_success ? String(connection.last_refresh_success) : null,
+        refresh_attempts: connection.refresh_attempts,
+        refresh_exhausted: connection.refresh_exhausted,
         created_at: String(connection.created_at),
         updated_at: String(connection.updated_at)
     };
@@ -47,7 +60,7 @@ export function connectionSimpleToPublicApi({
     activeLog,
     endUser
 }: {
-    data: DBConnection;
+    data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
@@ -70,7 +83,7 @@ export function connectionFullToPublicApi({
     activeLog,
     endUser
 }: {
-    data: DBConnectionDecrypted;
+    data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;

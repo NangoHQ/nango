@@ -40,9 +40,9 @@ import type {
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
+    StandardNangoConfig,
     NangoProps,
     ProxyConfiguration,
-    StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
@@ -695,7 +695,6 @@ export class Nango {
 
         const formattedSyncs = syncs === '*' ? '*' : syncs.map(getSyncFullName).join(',');
 
-        console.log(formattedSyncs);
         const params = {
             syncs: formattedSyncs,
             provider_config_key: providerConfigKey,

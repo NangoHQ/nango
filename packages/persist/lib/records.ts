@@ -86,7 +86,7 @@ export async function persistRecords({
         syncJobId,
         softDelete
     });
-    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId) });
+    const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId });
     if (formatting.isErr()) {
         void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);

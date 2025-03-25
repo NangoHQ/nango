@@ -50,6 +50,22 @@ export async function getRecordCountsByModel({
     }
 }
 
+export async function countMetric(): Promise<Result<{ environmentId: number; count: string }[]>> {
+    // Note: count is a string because pg returns bigint as string
+    try {
+        const res = await db
+            .from(RECORD_COUNTS_TABLE)
+            .sum('count as count')
+            .groupBy('environment_id')
+            .select<{ environmentId: number; count: string }[]>('environment_id as environmentId');
+
+        return Ok(res);
+    } catch {
+        const e = new Error(`Failed to count records`);
+        return Err(e);
+    }
+}
+
 /**
  * Get Records is using the read replicas (when possible)
  */
@@ -581,7 +597,7 @@ export async function deleteRecordsBySyncId({
             .from(RECORDS_TABLE)
             .where({ connection_id: connectionId, model })
             .whereIn('id', function (sub) {
-                void sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(limit);
+                sub.select('id').from(RECORDS_TABLE).where({ connection_id: connectionId, model, sync_id: syncId }).limit(limit);
             })
             .del();
         totalDeletedRecords += deletedRecords;

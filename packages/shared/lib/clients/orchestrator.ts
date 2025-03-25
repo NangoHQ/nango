@@ -1,6 +1,6 @@
 import ms from 'ms';
 import type { StringValue } from 'ms';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
@@ -99,11 +99,13 @@ export class Orchestrator {
     }
 
     async triggerAction<T = unknown>({
+        accountId,
         connection,
         actionName,
         input,
         logCtx
     }: {
+        accountId: number;
         connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
@@ -210,7 +212,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime, { accountId });
             span.finish();
         }
     }
@@ -346,12 +348,14 @@ export class Orchestrator {
     }
 
     async triggerOnEventScript<T = unknown>({
+        accountId,
         connection,
         version,
         name,
         fileLocation,
         logCtx
     }: {
+        accountId: number;
         connection: ConnectionJobs;
         version: string;
         name: string;
@@ -447,7 +451,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime, { accountId });
             span.finish();
         }
     }
@@ -630,7 +634,7 @@ export class Orchestrator {
         logContextGetter: LogContextGetter;
         debug?: boolean;
     }): Promise<Result<void>> {
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
 
         try {
             const syncConfig = await getSyncConfigRaw({
