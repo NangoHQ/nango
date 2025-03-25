@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.4] - 2025-03-25
+
+### Added
+
+- *(credentials-check)* Add bitdefender verification script (#3760) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f2d2c6b9565c9fe84d72ae1503949d6fd3b8cd59 by Hassan_Wari. Commit message: feat(quickbooks): add write actions for journal entry (#285) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d2fd05d76c0c409bb37dddd8c451118a0d6e20e5 by Khaliq. Commit message: feat(databricks): add list warehouses action (#287) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ae0732ad718ce5910ef0e3890e4f304b62220870 by Khaliq. Commit message: feat(cursor+google-car): More cursor tweaks + settings action (#284) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/37bbc8985fa36d0ab6368fd2c117cce780a638b2 by lordsarcastic. Commit message: feat(netsuite-tba): Add a fetch-fields action for netsuite-tba (#283) by @github-actions[bot]
+
+### Fixed
+
+- ShouldRefreshCredentials to return false if credentials_expires_at is set (#3754) by @TBonnin
+- *(runner)* Do not exit on unhandledRejection (#3756) by @TBonnin
+- *(guru-scim)* Update guru scim (#3757) by @khaliqgant
+- *(types)* Use nango standard config from types (#3759) by @khaliqgant
+- *(cron)* Unify error reporting, envs, logging (#3731) by @bodinsamuel
+- *(cron)* Delete all old data (#3712) by @bodinsamuel
+- *(cli)* Deduplicate records when using batchSave in CLI (#3761) by @hassan254-prog
+- Check record is not null in removeMetadata (#3758) by @TBonnin
+- *(ui)* Show correct message for credentials error (#3762) by @bodinsamuel
+- *(logs)* Do not fallback on unknown operation id (#3738) by @bodinsamuel
+- *(refresh)* Only update attempts once per day (#3736) by @bodinsamuel
+- *(refresh)* Short-circuit if exhausted, trycatch hooks (#3734) by @bodinsamuel
+- *(credentials)* Split JWT from connection (#3729) by @bodinsamuel
+- *(connection)* Merge issue (#3763) by @bodinsamuel
+- *(connect-ui)* Do not detect closed auth-window (#3755) by @hassan254-prog
+
 ## [v0.57.3] - 2025-03-21
 
 ### Added
@@ -3441,6 +3472,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.4]: https://github.com/NangoHQ/nango/compare/v0.57.3..v0.57.4
 [v0.57.3]: https://github.com/NangoHQ/nango/compare/v0.57.2..v0.57.3
 [v0.57.2]: https://github.com/NangoHQ/nango/compare/v0.57.1..v0.57.2
 [v0.57.1]: https://github.com/NangoHQ/nango/compare/v0.57.0..v0.57.1
