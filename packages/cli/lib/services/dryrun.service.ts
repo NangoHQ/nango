@@ -1,27 +1,30 @@
-import promptly from 'promptly';
+import { Buffer } from 'buffer';
+import * as crypto from 'crypto';
+import { createRequire } from 'module';
 import fs from 'node:fs';
-import { AxiosError } from 'axios';
-import type { AxiosResponse } from 'axios';
-import chalk from 'chalk';
+import * as vm from 'node:vm';
+import * as url from 'url';
 
-import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
-import type { GlobalOptions } from '../types.js';
-import { parseSecretKey, printDebug, hostport, getConnection, getConfig } from '../utils.js';
+import { AxiosError } from 'axios';
+import chalk from 'chalk';
+import promptly from 'promptly';
+import { serializeError } from 'serialize-error';
+import * as unzipper from 'unzipper';
+import * as zod from 'zod';
+
+import { ActionError, BASE_VARIANT, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData } from '@nangohq/runner-sdk';
+
 import { compileAllFiles } from './compile.service.js';
 import { parse } from './config.service.js';
 import { loadSchemaJson } from './model.service.js';
-import { displayValidationError } from '../utils/errors.js';
 import * as responseSaver from './response-saver.service.js';
-import * as vm from 'node:vm';
-import * as url from 'url';
-import * as crypto from 'crypto';
-import * as zod from 'zod';
-import * as unzipper from 'unzipper';
-import { Buffer } from 'buffer';
-import { serializeError } from 'serialize-error';
-import { ActionError, InvalidActionInputSDKError, InvalidActionOutputSDKError, SDKError, validateData, BASE_VARIANT } from '@nangohq/runner-sdk';
+import { displayValidationError } from '../utils/errors.js';
+import { getConfig, getConnection, hostport, parseSecretKey, printDebug } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
-import { createRequire } from 'module';
+
+import type { GlobalOptions } from '../types.js';
+import type { DBSyncConfig, Metadata, NangoProps, ParsedNangoAction, ParsedNangoSync, ScriptFileType } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
@@ -348,6 +351,7 @@ export class DryRunService {
                 environmentId: -1,
                 environmentName: environment,
                 providerConfigKey: nangoConnection.provider_config_key,
+                activityLogId: '',
                 provider,
                 secretKey: process.env['NANGO_SECRET_KEY'] || '',
                 nangoConnectionId: nangoConnection.id,

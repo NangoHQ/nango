@@ -12,6 +12,7 @@ import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
 import type { Config } from '../../../models';
 import type { Config as ProviderConfig } from '../../../models/index.js';
+import type { NangoInternalError } from '../../../utils/error.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
@@ -78,6 +79,15 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
 
         span.setTag('connectionId', props.connection.connection_id).setTag('authType', props.connection.credentials.type);
 
+        // TODO: remove this when cron is using other columns
+        await connectionService.updateLastFetched(props.connection.id);
+
+        // short-circuit if we know the refresh will fail
+        // we can't return an error because it would a breaking change in GET /connection
+        if (props.connection.refresh_exhausted && !props.instantRefresh) {
+            return Ok(props.connection);
+        }
+
         let res: Result<DBConnectionDecrypted, NangoError>;
         switch (props.connection.credentials.type) {
             case 'OAUTH2':
@@ -110,12 +120,13 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             }
         }
 
-        // TODO: remove this
-        await connectionService.updateLastFetched(props.connection.id);
-
         if (res.isErr()) {
             span.setTag('error', res.error);
-            await connectionService.setRefreshFailure({ id: props.connection.id, currentAttempt: props.connection.refresh_attempts || 0 });
+            await connectionService.setRefreshFailure({
+                id: props.connection.id,
+                lastRefreshFailure: props.connection.last_refresh_failure,
+                currentAttempt: props.connection.refresh_attempts || 0
+            });
             return res;
         }
 
@@ -123,7 +134,11 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         // Backfill
         // Connections that were created before adding the new columns do not have `credentials_expires_at` or `last_refresh_success`
         // And because some connection will never refresh we are backfilling those information based on what we have
-        if (!newConnection.credentials_expires_at || newConnection.credentials_expires_at.getTime() < Date.now() || !newConnection.last_refresh_success) {
+        if (
+            !newConnection.credentials_expires_at ||
+            newConnection.credentials_expires_at.getTime() < Date.now() ||
+            (!newConnection.last_refresh_success && !newConnection.last_refresh_failure)
+        ) {
             newConnection = await connectionService.updateConnection({
                 ...newConnection,
                 last_fetched_at: new Date(),
@@ -308,7 +323,7 @@ async function refreshCredentialsIfNeeded({
     provider: RefreshableProvider;
     environment_id: number;
     instantRefresh?: boolean;
-}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoError>> {
+}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
     const locking = await getLocking();
 
@@ -430,7 +445,9 @@ export async function shouldRefreshCredentials({
             return { should: false, reason: 'fresh_introspected_token' };
         }
 
-        if (credentials.expires_at && !isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
+        if (!credentials.expires_at) {
+            return { should: false, reason: 'no_expires_at' };
+        } else if (!isTokenExpired(credentials.expires_at, provider.token_expiration_buffer || REFRESH_MARGIN_S)) {
             return { should: false, reason: 'fresh' };
         }
     }
