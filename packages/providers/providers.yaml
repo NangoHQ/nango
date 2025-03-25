@@ -58,6 +58,41 @@ accelo:
             suffix: .api.accelo.com
             prefix: https://
 
+active-campaign:
+    display_name: ActiveCampaign
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api-token: ${apiKey}
+        base_url: https://${connectionConfig.apiUrl}/api
+        verification:
+            method: GET
+            endpoints:
+                - /3/users/me
+    docs: https://docs.nango.dev/integrations/all/active-campaign
+    docs_connect: https://docs.nango.dev/integrations/all/active-campaign/connect
+    connection_config:
+        apiUrl:
+            type: string
+            title: API URL
+            description: The API URL for your ActiveCampaign account
+            format: hostname
+            prefix: https://
+            example: company.activehosted.com
+            doc_section: '#step-1-finding-your-api-url'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your ActiveCampaign account
+            pattern: '^[a-f0-9]{72}$'
+            example: b4f1a7c9d8e56320a9db472fe6c8351f2e0a4d98b7f6c3e5d9a2f4701b3e8d6c3455abbe
+            doc_section: '#step-2-finding-your-api-key'
+
 acuity-scheduling:
     display_name: Acuity Scheduling
     categories:
