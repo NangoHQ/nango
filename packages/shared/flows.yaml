@@ -11089,6 +11089,16 @@ integrations:
                     method: PUT
                     path: /bills
                     group: Bills
+            fetch-fields:
+                version: 1.0.0
+                description: |
+                    Fetches all fields in Netsuite
+                input: FetchFieldsInput
+                output: FetchFieldsOutput
+                endpoint:
+                    method: GET
+                    path: /fetch-fields
+                    group: Fields
         models:
             NetsuiteMetadata:
                 timezone?: string | undefined
@@ -11426,6 +11436,21 @@ integrations:
                     taxRate?: number
             NetsuiteBillUpdateOutput:
                 success: boolean
+            FetchFieldsInput:
+                name: string
+            FetchFieldsOutput:
+                id?: string | undefined
+                schema?: string | undefined
+                title?: string | undefined
+                description?: string | undefined
+                type?: string | string[] | undefined
+                properties?: object | undefined
+                required?: string[] | undefined
+                items?: FetchFieldsOutput | FetchFieldsOutput[] | undefined
+                enum?: any[] | undefined
+                definitions?: object | undefined
+                additionalProperties?: boolean | FetchFieldsOutput | undefined
+                default?: any | undefined
     next-cloud-ocs:
         syncs:
             users:
