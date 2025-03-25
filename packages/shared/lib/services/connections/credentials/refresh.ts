@@ -12,6 +12,7 @@ import { REFRESH_MARGIN_S, getExpiresAtFromCredentials } from '../utils.js';
 
 import type { Config } from '../../../models';
 import type { Config as ProviderConfig } from '../../../models/index.js';
+import type { NangoInternalError } from '../../../utils/error.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
@@ -322,7 +323,7 @@ async function refreshCredentialsIfNeeded({
     provider: RefreshableProvider;
     environment_id: number;
     instantRefresh?: boolean;
-}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoError>> {
+}): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
     const locking = await getLocking();
 
