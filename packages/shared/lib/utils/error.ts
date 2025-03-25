@@ -14,6 +14,8 @@ export class NangoInternalError extends Error {
         this.type = type;
     }
 
+    // For compat with NangoError
+    // If we end up needing it we could pass use options as payload
     public setPayload(payload: any) {
         this.payload = payload;
     }
