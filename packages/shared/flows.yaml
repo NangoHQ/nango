@@ -2203,6 +2203,28 @@ integrations:
                 email: string
                 roleId?: string
                 acceptTermsOfService?: boolean
+    bitdefender:
+        actions:
+            get-company-details:
+                description: >
+                    Retrieves detailed information about the current company in
+                    Bitdefender GravityZone.
+                output: BitdefenderCompany
+                endpoint:
+                    method: GET
+                    path: /company-details
+                    group: Company
+        models:
+            BitdefenderCompany:
+                id: string
+                name: string
+                type: number
+                country: string | undefined
+                subscribedServices:
+                    endpoint: boolean
+                    exchange: boolean
+                    network: boolean
+                    sos: boolean
     box:
         actions:
             create-user:
