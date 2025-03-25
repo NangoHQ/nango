@@ -15,7 +15,12 @@ import syncManager from './sync/manager.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { DEFAULT_BILL_EXPIRES_AT_MS, DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
+import {
+    DEFAULT_BILL_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    getExpiresAtFromCredentials
+} from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import {
     extractStepNumber,
@@ -480,15 +485,28 @@ class ConnectionService {
         return encryptionManager.decryptConnection(res[0]!);
     }
 
-    public async setRefreshFailure({ id, currentAttempt }: { id: number; currentAttempt: number }) {
+    public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
+        let attempt = currentAttempt || 1;
+        const now = new Date();
+
+        // Only increment once per day to avoid burst failed refresh invalidating a connection (e.g: provider being down)
+        if (
+            lastRefreshFailure &&
+            (lastRefreshFailure.getFullYear() < now.getFullYear() ||
+                lastRefreshFailure.getMonth() < now.getMonth() ||
+                lastRefreshFailure.getDate() < now.getDate())
+        ) {
+            attempt += 1;
+        }
+
         await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({ id })
             .update({
                 last_refresh_failure: new Date(),
                 last_refresh_success: null,
-                refresh_attempts: currentAttempt + 1,
-                refresh_exhausted: currentAttempt >= MAX_FAILED_REFRESH
+                refresh_attempts: attempt,
+                refresh_exhausted: attempt >= MAX_CONSECUTIVE_DAYS_FAILED_REFRESH
             });
     }
 

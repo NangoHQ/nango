@@ -1,15 +1,17 @@
-import { Err, metrics, Ok, tagTraceUser } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
-import type { Config } from '@nangohq/shared';
-import { configService, environmentService, getApiUrl, getEndUserByConnectionId, NangoError } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
-import { startScript } from './operations/start.js';
-import { bigQueryClient } from '../clients.js';
 import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { NangoError, configService, environmentService, getApiUrl, getEndUserByConnectionId } from '@nangohq/shared';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+
+import { bigQueryClient } from '../clients.js';
+import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+
+import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -171,7 +173,7 @@ export async function handleOnEventError({ taskId, nangoProps, error }: { taskId
         },
         syncName: nangoProps.syncConfig.sync_name,
         providerConfigKey: nangoProps.providerConfigKey,
-        activityLogId: nangoProps.activityLogId!,
+        activityLogId: nangoProps.activityLogId,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         environment: { id: nangoProps.environmentId, name: nangoProps.environmentName || 'unknown' },
