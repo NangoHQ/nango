@@ -12,7 +12,7 @@ import {
     getSyncConfigsWithConnections,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted } from '@nangohq/utils';
+import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { getOrchestrator } from '../utils/utils.js';
@@ -190,17 +190,25 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
 }): Promise<void> => {
-    await errorNotificationService.auth.clear({
-        connection_id: connection.id
-    });
+    try {
+        await errorNotificationService.auth.clear({
+            connection_id: connection.id
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 
-    await slackService.removeFailingConnection({
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: null,
-        provider: config.provider
-    });
+    try {
+        await slackService.removeFailingConnection({
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: null,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export const connectionRefreshFailed = async ({
@@ -222,16 +230,19 @@ export const connectionRefreshFailed = async ({
     logCtx: LogContext;
     action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
-    await errorNotificationService.auth.create({
-        type: 'auth',
-        action,
-        connection_id: connection.id,
-        log_id: logCtx.id,
-        active: true
-    });
+    try {
+        await errorNotificationService.auth.create({
+            type: 'auth',
+            action,
+            connection_id: connection.id,
+            log_id: logCtx.id,
+            active: true
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
-
     void sendAuthWebhook({
         connection,
         environment,
@@ -244,15 +255,19 @@ export const connectionRefreshFailed = async ({
         account
     });
 
-    await slackService.reportFailure({
-        account,
-        environment,
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: logCtx.id,
-        provider: config.provider
-    });
+    try {
+        await slackService.reportFailure({
+            account,
+            environment,
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: logCtx.id,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export async function credentialsTest({

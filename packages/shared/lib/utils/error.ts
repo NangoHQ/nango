@@ -1,4 +1,5 @@
 import { stringifyError } from '@nangohq/utils';
+
 import type { JsonValue } from 'type-fest';
 
 export class NangoError extends Error {
