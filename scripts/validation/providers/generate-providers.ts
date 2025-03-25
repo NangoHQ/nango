@@ -52,7 +52,8 @@ export const writeProvidersToFile = (providers: Record<string, Provider>) => {
         yaml.dump(providers, {
             indent: 4,
             noRefs: true,
-            quotingType: "'"
+            quotingType: "'",
+            lineWidth: 1000
         })
     );
 };

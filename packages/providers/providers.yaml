@@ -115,8 +115,7 @@ adyen:
     categories:
         - payment
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
+    authorization_url: https://ca-${connectionConfig.environment}.adyen.com/ca/ca/oauth/connect.shtml
     token_url: https://oauth-${connectionConfig.environment}.adyen.com/v1/token
     scope_separator: ' '
     token_request_auth_method: basic
@@ -127,8 +126,7 @@ adyen:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: >-
-            https://${connectionConfig.resource}-${connectionConfig.environment}.adyen.com
+        base_url: https://${connectionConfig.resource}-${connectionConfig.environment}.adyen.com
     docs: https://docs.nango.dev/integrations/all/adyen
     connection_config:
         environment:
@@ -221,16 +219,14 @@ aircall-basic:
             title: API ID
             description: The Application ID (API ID) for your Aircall account
             pattern: ^[a-zA-Z0-9_-]+$
-            doc_section: >-
-                #step-1-finding-your-admin-api-key-api-token-and-application-id-api-id
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
         password:
             type: string
             title: API Token
             description: The Admin API Key (API Token) for your Aircall account
             pattern: ^[a-zA-Z0-9_-]+$
             secret: true
-            doc_section: >-
-                #step-1-finding-your-admin-api-key-api-token-and-application-id-api-id
+            doc_section: '#step-1-finding-your-admin-api-key-api-token-and-application-id-api-id'
 airtable:
     display_name: Airtable
     categories:
@@ -262,8 +258,7 @@ airtable-pat:
             type: string
             title: Personal Access Token
             description: The Personal Access Token for your Airtable account
-            example: >-
-                patoXxYzA1B2C3D4Ef.98a7b6c5d4e3f2g1h0i9j8k7l6m5n4o3p2q1r0s9t8u7v6w5x4y3z2a1b0cdef
+            example: patoXxYzA1B2C3D4Ef.98a7b6c5d4e3f2g1h0i9j8k7l6m5n4o3p2q1r0s9t8u7v6w5x4y3z2a1b0cdef
             pattern: ^[a-zA-Z0-9\.]+$
             doc_section: '#step-1-generating-your-personal-access-token'
 autodesk:
@@ -300,6 +295,7 @@ algolia:
             endpoints:
                 - /1/keys/${credentials.apiKey}
     docs: https://docs.nango.dev/integrations/all/algolia
+    docs_connect: https://docs.nango.dev/integrations/all/algolia/connect
     connection_config:
         APP_ID:
             type: string
@@ -317,7 +313,6 @@ algolia:
             example: c5c28261f9ade4e34891ccf761491b94
             pattern: ^[a-zA-Z0-9]+$
             doc_section: '#step-2-finding-your-admin-api-key'
-    docs_connect: https://docs.nango.dev/integrations/all/algolia/connect
 amazon:
     display_name: Amazon
     categories:
@@ -368,9 +363,7 @@ amazon-selling-partner:
         applicationId:
             type: string
             title: Application ID
-            description: >-
-                The unique identifier for your Amazon Selling Partner
-                application
+            description: The unique identifier for your Amazon Selling Partner application
             example: amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28
             pattern: ^[a-zA-Z0-9.-]+$
             doc_section: '#step-1-finding-your-app-id'
@@ -378,9 +371,7 @@ amazon-selling-partner:
         domain:
             type: string
             title: Domain
-            description: >-
-                The domain representing the Amazon platform you are integrating
-                with
+            description: The domain representing the Amazon platform you are integrating with
             example: sellercentral.amazon.com
             pattern: ^[a-z0-9.-]+\.amazon\.[a-z.]+$
             doc_section: '#step-2-finding-your-domain'
@@ -411,20 +402,16 @@ amazon-selling-partner-beta:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: >-
-            https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
+        base_url: https://sandbox.sellingpartnerapi-${connectionConfig.region}.amazon.com
         headers:
             x-amz-access-token: ${accessToken}
     docs: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta
-    docs_connect: >-
-        https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
+    docs_connect: https://docs.nango.dev/integrations/all/amazon-selling-partner-beta/connect
     connection_config:
         applicationId:
             type: string
             title: Application ID
-            description: >-
-                The unique identifier for your Amazon Selling Partner
-                application
+            description: The unique identifier for your Amazon Selling Partner application
             example: amzn1.sellerapps.app.0bf296b5-36a6-4942-a13e-EXAMPLEfcd28
             pattern: ^[a-zA-Z0-9.-]+$
             doc_section: '#step-1-finding-your-app-id'
@@ -432,9 +419,7 @@ amazon-selling-partner-beta:
         domain:
             type: string
             title: Domain
-            description: >-
-                The domain representing the Amazon platform you are integrating
-                with
+            description: The domain representing the Amazon platform you are integrating with
             example: sellercentral.amazon.com
             pattern: ^[a-z0-9.-]+\.amazon\.[a-z.]+$
             doc_section: '#step-2-finding-your-domain'
@@ -859,10 +844,8 @@ aws:
         - dev-tools
         - e-commerce
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
-    token_url: >-
-        https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
+    authorization_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/authorize
+    token_url: https://${connectionConfig.subdomain}.auth.${connectionConfig.extension}.amazoncognito.com/oauth2/token
     token_params:
         grant_type: authorization_code
     auth:
@@ -944,8 +927,7 @@ bamboohr:
         grant_type: authorization_code
         request: token
     proxy:
-        base_url: >-
-            https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
     docs: https://docs.nango.dev/integrations/all/bamboohr
     connection_config:
         subdomain:
@@ -963,8 +945,7 @@ bamboohr-basic:
         - hr
     auth_mode: BASIC
     proxy:
-        base_url: >-
-            https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
         verification:
             method: GET
             endpoints:
@@ -1070,8 +1051,7 @@ beehiiv:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: >-
-            https://api.beehiiv.com/v2/publications/${connectionConfig.publicationId}
+        base_url: https://api.beehiiv.com/v2/publications/${connectionConfig.publicationId}
         verification:
             method: GET
             endpoints:
@@ -1159,6 +1139,7 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: retry-after
+    credentials_verification_script: bitdefenderCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -1717,13 +1698,13 @@ canva-scim:
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
-    docs_connect: https://docs.nango.dev/integrations/all/canva-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+    docs_connect: https://docs.nango.dev/integrations/all/canva-scim/connect
 certn:
     display_name: Certn
     categories:
@@ -1883,8 +1864,7 @@ checkr-partner-staging:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://partners.checkrhq-staging.net/authorize/${connectionConfig.client_id}
+    authorization_url: https://partners.checkrhq-staging.net/authorize/${connectionConfig.client_id}
     token_url: https://api.checkr-staging.com/oauth/tokens
     disable_pkce: true
     token_params:
@@ -2010,14 +1990,12 @@ cloudentity:
     auth_mode: OAUTH2_CC
     categories:
         - other
-    token_url: >-
-        https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token
+    token_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: >-
-            https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
+        base_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}
     docs: https://docs.nango.dev/integrations/all/cloudentity
     docs_connect: https://docs.nango.dev/integrations/all/cloudentity/connect
     connection_config:
@@ -2108,15 +2086,13 @@ commercetools:
     categories:
         - e-commerce
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://auth.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/oauth/token
+    token_url: https://auth.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/oauth/token
     token_request_auth_method: basic
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: >-
-            https://api.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/${connectionConfig.projectKey}
+        base_url: https://api.${connectionConfig.region}.${connectionConfig.cloudProvider}.commercetools.com/${connectionConfig.projectKey}
         headers:
             authorization: Bearer ${accessToken}
     docs: https://docs.nango.dev/integrations/all/commercetools
@@ -2125,9 +2101,7 @@ commercetools:
         region:
             type: string
             title: Region
-            description: >-
-                The region of your Commercetools account. Use the full region
-                identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
+            description: The region of your Commercetools account. Use the full region identifier (e.g., 'us-central1' for GCP or 'us-east-2' for AWS).
             example: us-central1
             pattern: ^[a-z]+-[a-z0-9-]+$
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
@@ -2141,9 +2115,7 @@ commercetools:
         cloudProvider:
             type: string
             title: Cloud Provider
-            description: >-
-                Cloud provider used to host your Commercetools project (e.g.,
-                'gcp' or 'aws')
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
             example: gcp
             pattern: ^(gcp|aws)$
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
@@ -2203,12 +2175,9 @@ connectwise-psa:
         - ticketing
     auth_mode: BASIC
     proxy:
-        base_url: >-
-            https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
-            accept: >-
-                application/vnd.connectwise.com+json;
-                version=${connectionConfig.apiVersion}
+            accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
     docs: https://docs.nango.dev/integrations/all/connectwise-psa
     connection_config:
@@ -2232,15 +2201,11 @@ connectwise-psa:
         username:
             type: string
             title: Username
-            description: >-
-                The ConnectWise PSA CompanyId followed by either the Public Key,
-                Integrator Username, or MemberId
+            description: The ConnectWise PSA CompanyId followed by either the Public Key, Integrator Username, or MemberId
         password:
             type: string
             title: Password
-            description: >-
-                Your ConnectWise PSA private key, integrator password, or member
-                hash
+            description: Your ConnectWise PSA private key, integrator password, or member hash
 connectwise-psa-staging:
     display_name: ConnectWise PSA (Staging)
     categories:
@@ -2250,9 +2215,7 @@ connectwise-psa-staging:
     proxy:
         base_url: https://api-staging.connectwisedev.com/v4_6_release/apis/3.0
         headers:
-            accept: >-
-                application/vnd.connectwise.com+json;
-                version=${connectionConfig.apiVersion}
+            accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
     docs: https://docs.nango.dev/integrations/all/connectwise-psa-staging
     connection_config:
@@ -2323,10 +2286,8 @@ contentstack:
     categories:
         - cms
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
-    token_url: >-
-        https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
+    authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
+    token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
     docs: https://docs.nango.dev/integrations/all/contentstack
     proxy:
         base_url: https://${connectionConfig.apiDomain}
@@ -2414,13 +2375,11 @@ databricks-account:
     categories:
         - analytics
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://accounts.cloud.databricks.com/oidc/accounts/${connectionConfig.accountId}/v1/token
+    token_url: https://accounts.cloud.databricks.com/oidc/accounts/${connectionConfig.accountId}/v1/token
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: >-
-            https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
+        base_url: https://accounts.cloud.databricks.com/api/2.0/accounts/${connectionConfig.accountId}
     docs: https://docs.nango.dev/integrations/all/databricks-account
     connection_config:
         accountId:
@@ -3657,23 +3616,30 @@ guru-scim:
     display_name: Guru (SCIM)
     categories:
         - knowledge-base
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/scim
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/scim+json
         verification:
             method: GET
             endpoints:
                 - /v2/Users
+            headers:
+                content-type: application/scim+json
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: Guru API Token
-            description: The SCIM API token for your Guru account
-            doc_section: '#step-1-finding-guru-api-token'
+            title: SCIM Username
+            description: The SCIM username for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
+        password:
+            type: string
+            title: SCIM Token
+            description: The SCIM token for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
 github:
     display_name: GitHub (User OAuth)
     categories:
@@ -3702,8 +3668,7 @@ github-app:
         - ticketing
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
-    token_url: >-
-        https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+    token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     proxy:
         base_url: https://api.github.com
         retry:
@@ -3739,8 +3704,7 @@ github-app-oauth:
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url:
         OAUTH2: https://github.com/login/oauth/access_token
-        APP: >-
-            https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+        APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     proxy:
         base_url: https://api.github.com
         retry:
@@ -3811,9 +3775,7 @@ ghost-admin:
         adminDomain:
             type: string
             title: Ghost Admin Domain
-            description: >-
-                The domain of your Ghost Admin which can be different from your
-                main domain
+            description: The domain of your Ghost Admin which can be different from your main domain
             example: mock.ghost.io
             pattern: ^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$
         version:
@@ -3850,9 +3812,7 @@ ghost-content:
         adminDomain:
             type: string
             title: Ghost Admin Domain
-            description: >-
-                The domain of your Ghost Admin which can be different from your
-                main domain
+            description: The domain of your Ghost Admin which can be different from your main domain
             example: mock.ghost.io
             pattern: ^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$
     credentials:
@@ -4394,8 +4354,7 @@ greenhouse-onboarding:
         base_url: https://onboarding-api.greenhouse.io/graphql
         verification:
             endpoints:
-                - >-
-                    ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - '?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D'
     credentials:
         username:
             type: string
@@ -4970,13 +4929,13 @@ klaviyo:
         retry:
             after: retry-after
     docs: https://docs.nango.dev/integrations/all/klaviyo
-    docs_connect: https://docs.nango.dev/integrations/all/klaviyo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Klaviyo account
             doc_section: '#step-1-finding-klaviyo-api-key'
+    docs_connect: https://docs.nango.dev/integrations/all/klaviyo/connect
 klaviyo-oauth:
     display_name: Klaviyo (OAuth)
     categories:
@@ -5478,7 +5437,6 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
-    docs_connect: https://docs.nango.dev/integrations/all/marketo/connect
     connection_config:
         endpointURL:
             type: string
@@ -5489,7 +5447,6 @@ marketo:
             prefix: https://
             suffix: /
             order: 1
-            doc_section: '#step-3-find-your-domain-and-identity-url'
         identityURL:
             type: string
             title: Identity URL
@@ -5499,7 +5456,7 @@ marketo:
             example: xxx.mktorest.com
             suffix: /identity/oauth/token
             order: 2
-            doc_section: '#step-3-find-your-domain-and-identity-url'
+    docs_connect: https://docs.nango.dev/integrations/all/marketo/connect
 malwarebytes:
     display_name: Malwarebytes
     categories:
@@ -5519,8 +5476,7 @@ malwarebytes:
             type: string
             title: Account Id
             description: Your Nebula account id
-            pattern: >-
-                [\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$
+            pattern: '[\da-fA-F]{8}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{4}-?[\da-fA-F]{12}$'
             example: 9256034b-7967-4253-a5d9-260663e4fa4f
             order: 1
             doc_section: '#step-1-finding-your-account-id'
@@ -5533,8 +5489,7 @@ medallia:
         - support
         - surveys
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://${connectionConfig.reportingInstance}/oauth/${connectionConfig.tenantName}/token
+    token_url: https://${connectionConfig.reportingInstance}/oauth/${connectionConfig.tenantName}/token
     token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
@@ -5626,8 +5581,7 @@ microsoft-oauth2-cc:
         - communication
         - dev-tools
         - productivity
-    token_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     token_params:
         grant_type: client_credentials
     proxy:
@@ -5638,9 +5592,7 @@ microsoft-oauth2-cc:
         tenantId:
             type: string
             title: Tenant ID
-            description: >-
-                The unique identifier for your organization that uses Microsoft
-                services
+            description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -5678,10 +5630,8 @@ microsoft-tenant-specific:
     categories:
         - erp
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
-    token_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
     disable_pkce: true
     default_scopes:
         - offline_access
@@ -5706,23 +5656,18 @@ microsoft-business-central:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: >-
-            https://api.businesscentral.dynamics.com/v2.0/${connectionConfig.tenantId}/${connectionConfig.environmentName}
+        base_url: https://api.businesscentral.dynamics.com/v2.0/${connectionConfig.tenantId}/${connectionConfig.environmentName}
     docs: https://docs.nango.dev/integrations/all/microsoft-business-central
-    docs_connect: >-
-        https://docs.nango.dev/integrations/all/microsoft-business-central/connect
+    docs_connect: https://docs.nango.dev/integrations/all/microsoft-business-central/connect
     connection_config:
         tenantId:
             type: string
             title: Tenant ID
-            description: >-
-                The unique identifier for your organization that uses Microsoft
-                services
+            description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -5862,9 +5807,7 @@ minimax:
         groupId:
             type: string
             title: Group ID
-            description: >-
-                The unique identifier for your MiniMax account, linked to your
-                account's privileges.
+            description: The unique identifier for your MiniMax account, linked to your account's privileges.
             example: '1234567890123456789'
             pattern: ^\d{19}$
             doc_section: '#step-1-retrieve-your-group-id'
@@ -6088,17 +6031,14 @@ netsuite:
         - accounting
         - erp
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
         prompt: consent
-    token_url: >-
-        https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - rest_webservices
     proxy:
-        base_url: >-
-            https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
+        base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
         retry:
             after: retry-after
     docs: https://docs.nango.dev/integrations/all/netsuite
@@ -6116,17 +6056,14 @@ netsuite-tba:
         - erp
         - popular
     auth_mode: TBA
-    authorization_url: >-
-        https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
     authorization_params:
         prompt: consent
-    token_url: >-
-        https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - rest_webservices
     proxy:
-        base_url: >-
-            https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
+        base_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
         retry:
             after: retry-after
     docs: https://docs.nango.dev/integrations/all/netsuite-tba
@@ -6208,10 +6145,8 @@ odoo:
     categories:
         - erp
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/authorize
-    token_url: >-
-        https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    authorization_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/authorize
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
     authorization_params:
         response_type: code
     token_params:
@@ -6234,8 +6169,7 @@ odoo-cc:
         - erp
     auth_mode: TWO_STEP
     body_format: form
-    token_url: >-
-        https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
+    token_url: https://${connectionConfig.serverUrl}/restapi/1.0/common/oauth2/access_token
     token_params:
         client_id: ${credentials.consumerId}
         client_secret: ${credentials.consumerSecret}
@@ -6310,8 +6244,7 @@ okta-preview:
     auth_mode: OAUTH2
     categories:
         - dev-tools
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
+    authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
     authorization_params:
         response_type: code
@@ -6470,8 +6403,7 @@ ory:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.projectSlug}.projects.oryapis.com
-    token_url: >-
-        https://${connectionConfig.projectSlug}.projects.oryapis.com/oauth2/token
+    token_url: https://${connectionConfig.projectSlug}.projects.oryapis.com/oauth2/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
@@ -6626,8 +6558,7 @@ paylocity:
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.environment}.paylocity.com
-    token_url: >-
-        https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
+    token_url: https://${connectionConfig.environment}.paylocity.com/IdentityServer/connect/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
@@ -6953,8 +6884,7 @@ plain:
         verification:
             method: GET
             endpoints:
-                - >-
-                    ?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D
+                - '?query=%7B__schema%7Btypes%7Bname,kind,fields%7Bname%7D%7D%7D%7D'
     docs: https://docs.nango.dev/integrations/all/plain
     docs_connect: https://docs.nango.dev/integrations/all/plain/connect
     credentials:
@@ -7604,8 +7534,7 @@ salesforce-sandbox:
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
+    authorization_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/token
     default_scopes:
         - offline_access
@@ -7673,8 +7602,7 @@ sap-concur:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://${connectionConfig.region}.api.concursolutions.com/oauth2/v0/token
+    token_url: https://${connectionConfig.region}.api.concursolutions.com/oauth2/v0/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
@@ -7936,22 +7864,18 @@ sharepoint-online-oauth2-cc:
         - storage
         - communication
     auth_mode: OAUTH2_CC
-    token_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     token_params:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
     docs: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc
-    docs_connect: >-
-        https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc/connect
+    docs_connect: https://docs.nango.dev/integrations/all/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
             title: Tenant ID
-            description: >-
-                The unique identifier for your organization that uses Microsoft
-                services
+            description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -7962,8 +7886,7 @@ sharepoint-online-v1:
         - storage
         - communication
     auth_mode: TWO_STEP
-    token_url: >-
-        https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
     body_format: form
     token_params:
         client_id: ${credentials.clientId}
@@ -7987,9 +7910,7 @@ sharepoint-online-v1:
         tenantId:
             type: string
             title: Tenant ID
-            description: >-
-                The unique identifier for your organization that uses Microsoft
-                services
+            description: The unique identifier for your organization that uses Microsoft services
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -8047,10 +7968,8 @@ shopify:
         - e-commerce
         - popular
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
-    token_url: >-
-        https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
+    authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
         headers:
@@ -8080,8 +7999,7 @@ shopify-api-key:
         verification:
             method: POST
             endpoints:
-                - >-
-                    /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
+                - /admin/api/2024-10/graphql.json?query=%7B__schema%7Btypes%7Bname%2Ckind%2Cfields%7Bname%7D%7D%7D%7D
     docs: https://docs.nango.dev/integrations/all/shopify-api-key
     docs_connect: https://docs.nango.dev/integrations/all/shopify-api-key/connect
     connection_config:
@@ -8101,7 +8019,7 @@ shopify-api-key:
             title: API Access Token
             description: The API access token generated
             example: shpat_***************c03266f
-            pattern: ^shpat_[a-f0-9]{32}$
+            pattern: ^(shpat|shpca|shppa)_[a-f0-9]{32}$
             doc_section: '#step-2-generating-your-api-access-token'
 shopify-scim:
     display_name: Shopify (SCIM API)
@@ -8126,9 +8044,7 @@ shopify-scim:
         apiKey:
             type: string
             title: SCIM API Token
-            description: >-
-                The SCIM API token generated from your Shopify organization
-                settings.
+            description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 shortcut:
     display_name: Shortcut
@@ -8430,8 +8346,7 @@ stripe-app:
 stripe-app-sandbox:
     display_name: Stripe App (Sandbox)
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
+    authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
     token_url: https://api.stripe.com/v1/oauth/token
     disable_pkce: true
     proxy:
@@ -8477,8 +8392,7 @@ tableau:
     categories:
         - analytics
     auth_mode: TABLEAU
-    token_url: >-
-        https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
+    token_url: https://${connectionConfig.myServer}/api/${connectionConfig.version}/auth/signin
     proxy:
         headers:
             accept: application/json
@@ -8559,8 +8473,7 @@ tiktok-accounts:
     auth_mode: OAUTH2
     authorization_url: https://www.tiktok.com/v2/auth/authorize/
     token_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/token/
-    refresh_url: >-
-        https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
+    refresh_url: https://business-api.tiktok.com/open_api/v1.3/tt_user/oauth2/refresh_token/
     proxy:
         base_url: https://business-api.tiktok.com/open_api/v1.3/
     authorization_params:
@@ -8636,9 +8549,8 @@ thrivecart-api-key:
             type: string
             title: API Key
             description: The API key for your ThriveCart account
-            example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
-            pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
-
+            example: ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ
+            pattern: ^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$
 trakstar-hire:
     display_name: Trakstar Hire
     categories:
@@ -8659,7 +8571,7 @@ trakstar-hire:
             type: string
             title: API Key
             description: Your Trakstar API Key
-            pattern: '^[a-f0-9]+$'
+            pattern: ^[a-f0-9]+$
             example: a3f8b92c4d6e715f0a1b3c4d5e6f7890
             doc_section: '#step-1-generating-your-api-key'
         password:
@@ -8668,7 +8580,6 @@ trakstar-hire:
             description: ''
             default_value: ''
             hidden: true
-
 tremendous:
     display_name: Tremendous
     categories:
@@ -8734,13 +8645,13 @@ trello-scim:
             endpoints:
                 - /v2/users?sortBy=displayName&count=10
     docs: https://docs.nango.dev/integrations/all/trello-scim
-    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Trello scim account
             doc_section: '#step-1-finding-your-trello-api-key'
+    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
 tldv:
     display_name: tl;dv
     categories:
@@ -8926,8 +8837,7 @@ twenty-crm:
             type: string
             title: API Key
             description: The API key for your Twenty CRM account
-            example: >-
-                eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc
             pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
 twenty-crm-self-hosted:
     display_name: Twenty CRM (Self Hosted)
@@ -8950,8 +8860,7 @@ twenty-crm-self-hosted:
             type: string
             title: API Key
             description: The API key for your Twenty CRM account
-            example: >-
-                eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMTIxMjEyMS0yNmExLTRkODktYjQ2YS0wNDI0NTViODM3N2YiLCJ0eXBlIjoiQVBJX0tFWSIsIndvcmtzcGFjZUlkIjoiMjEyMTIxMjEtMjZhMS00ZDg5LWI0NmEtMDQyNDU1YjgzNzdmIiwiaWF0IjoxNzMxMzA5MzQwLCJleHAiOjQ4ODQ5MDU3MzksImp0aSI6ImVmZTg4MjcxLTM4OWItNDk5Mi04MjYwLWZjNGIxZmYxYjRiMSJ9.n3tohFIEBBRMsyas_agbh3-KvKXYUnjyhrYzTHYC3vc
             pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
     connection_config:
         domain:
@@ -9095,8 +9004,7 @@ unipile:
         - marketing
     auth_mode: API_KEY
     proxy:
-        base_url: >-
-            https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
+        base_url: https://${connectionConfig.subdomain}.unipile.com:${connectionConfig.port}
         headers:
             x-api-key: ${apiKey}
         verification:
@@ -9249,8 +9157,7 @@ wildix-pbx:
     display_name: Wildix PBX
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
-    token_url: >-
-        https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
+    token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
     authorization_params:
         response_type: code
     redirect_uri_metadata:
@@ -9579,15 +9486,13 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
-    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string
             title: SCIM API Token
-            description: >-
-                The SCIM API token generated from the Provision tab in your
-                Zapier account.
+            description: The SCIM API token generated from the Provision tab in your Zapier account.
             doc_section: '#getting-your-scim-api-token'
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
 zendesk:
     display_name: Zendesk
     categories:
@@ -9595,8 +9500,7 @@ zendesk:
         - support
         - ticketing
     auth_mode: OAUTH2
-    authorization_url: >-
-        https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
+    authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
