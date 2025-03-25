@@ -1,131 +1,136 @@
-import bodyParser from 'body-parser';
-import multer from 'multer';
-import oauthController from './controllers/oauth.controller.js';
-import configController from './controllers/config.controller.js';
-import providerController from './controllers/provider.controller.js';
-import connectionController from './controllers/connection.controller.js';
-import authController from './controllers/auth.controller.js';
-import authMiddleware from './middleware/access.middleware.js';
-import userController from './controllers/user.controller.js';
-import proxyController from './controllers/proxy.controller.js';
-import syncController from './controllers/sync.controller.js';
-import flowController from './controllers/flow.controller.js';
-import appAuthController from './controllers/appAuth.controller.js';
-import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { resourceCapping } from './middleware/resource-capping.middleware.js';
 import path from 'path';
-import { dirname, isBinaryContentType } from './utils/utils.js';
-import express from 'express';
+
+import bodyParser from 'body-parser';
 import cors from 'cors';
-import { setupAuth } from './clients/auth.client.js';
+import express from 'express';
+import multer from 'multer';
 import passport from 'passport';
-import environmentController from './controllers/environment.controller.js';
-import accountController from './controllers/account.controller.js';
-import type { Response, Request, RequestHandler } from 'express';
+
+import { errorManager } from '@nangohq/shared';
 import {
-    isCloud,
-    isEnterprise,
-    isBasicAuthEnabled,
-    isTest,
     basePublicUrl,
     baseUrl,
+    connectUrl,
     flagHasAuth,
     flagHasManagedAuth,
-    connectUrl,
-    isLocal
+    isBasicAuthEnabled,
+    isCloud,
+    isEnterprise,
+    isLocal,
+    isTest
 } from '@nangohq/utils';
-import { errorManager } from '@nangohq/shared';
-import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
-import { searchOperations } from './controllers/v1/logs/searchOperations.js';
-import { getOperation } from './controllers/v1/logs/getOperation.js';
-import {
-    getEmailByUuid,
-    resendVerificationEmailByUuid,
-    resendVerificationEmailByEmail,
-    signup,
-    signin,
-    validateEmailAndLogin,
-    getEmailByExpiredToken
-} from './controllers/v1/account/index.js';
-import { searchMessages } from './controllers/v1/logs/searchMessages.js';
-import type { ApiError } from '@nangohq/types';
-import { searchFilters } from './controllers/v1/logs/searchFilters.js';
+
+import { setupAuth } from './clients/auth.client.js';
+import accountController from './controllers/account.controller.js';
+import appAuthController from './controllers/appAuth.controller.js';
+import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
+import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
+import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
+import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
+import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
+import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
+import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
+import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
+import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import authController from './controllers/auth.controller.js';
+import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
+import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
+import configController from './controllers/config.controller.js';
+import { deleteConnectSession } from './controllers/connect/deleteSession.js';
+import { getConnectSession } from './controllers/connect/getSession.js';
+import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
+import { postConnectSessions } from './controllers/connect/postSessions.js';
+import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
+import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
+import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
+import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
+import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
+import { getPublicConnections } from './controllers/connection/getConnections.js';
+import connectionController from './controllers/connection.controller.js';
+import environmentController from './controllers/environment.controller.js';
+import { postRollout } from './controllers/fleet/postRollout.js';
+import flowController from './controllers/flow.controller.js';
+import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
+import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
+import oauthController from './controllers/oauth.controller.js';
+import providerController from './controllers/provider.controller.js';
+import { getPublicProvider } from './controllers/providers/getProvider.js';
+import { getPublicProviders } from './controllers/providers/getProviders.js';
+import proxyController from './controllers/proxy.controller.js';
+import { getPublicRecords } from './controllers/records/getRecords.js';
+import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
+import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
-import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
-import { postPublicTableauAuthorization } from './controllers/auth/postTableau.js';
-import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
-import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
-import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
-import { postPublicSignatureAuthorization } from './controllers/auth/postSignature.js';
-import { getTeam } from './controllers/v1/team/getTeam.js';
-import { putTeam } from './controllers/v1/team/putTeam.js';
-import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
-import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
-import { postInvite } from './controllers/v1/invite/postInvite.js';
-import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
-import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
-import { getUser } from './controllers/v1/user/getUser.js';
-import { patchUser } from './controllers/v1/user/patchUser.js';
-import { postInsights } from './controllers/v1/logs/postInsights.js';
-import { getInvite } from './controllers/v1/invite/getInvite.js';
-import { declineInvite } from './controllers/v1/invite/declineInvite.js';
-import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
-import { getMeta } from './controllers/v1/meta/getMeta.js';
-import { securityMiddlewares } from './middleware/security.js';
-import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
+import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
+import syncController from './controllers/sync.controller.js';
+import userController from './controllers/user.controller.js';
+import {
+    getEmailByExpiredToken,
+    getEmailByUuid,
+    resendVerificationEmailByEmail,
+    resendVerificationEmailByUuid,
+    signin,
+    signup,
+    validateEmailAndLogin
+} from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
-import { getEnvJs } from './controllers/v1/getEnvJs.js';
-import { getPublicListIntegrationsLegacy } from './controllers/config/getListIntegrations.js';
-import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
-import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
-import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
-import { deletePublicIntegration } from './controllers/config/providerConfigKey/deleteIntegration.js';
-import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
-import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
-import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
-import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
+import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
+import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
+import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
+import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
+import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { getConnections } from './controllers/v1/connections/getConnections.js';
+import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
+import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
+import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
+import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
+import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
 import { patchFlowDisable } from './controllers/v1/flows/id/patchDisable.js';
 import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
-import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
-import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
-import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
-import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
-import { getPublicProviders } from './controllers/providers/getProviders.js';
-import { getPublicProvider } from './controllers/providers/getProvider.js';
-import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
-import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
-import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
-import { postConnectSessions } from './controllers/connect/postSessions.js';
-import { getConnectSession } from './controllers/connect/getSession.js';
-import { deleteConnectSession } from './controllers/connect/deleteSession.js';
-import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
-import { getConnections } from './controllers/v1/connections/getConnections.js';
-import { getPublicConnections } from './controllers/connection/getConnections.js';
-import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
-import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
-import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
+import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
+import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
+import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
+import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
+import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
+import { declineInvite } from './controllers/v1/invite/declineInvite.js';
+import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
+import { getInvite } from './controllers/v1/invite/getInvite.js';
+import { postInvite } from './controllers/v1/invite/postInvite.js';
+import { getOperation } from './controllers/v1/logs/getOperation.js';
+import { postInsights } from './controllers/v1/logs/postInsights.js';
+import { searchFilters } from './controllers/v1/logs/searchFilters.js';
+import { searchMessages } from './controllers/v1/logs/searchMessages.js';
+import { searchOperations } from './controllers/v1/logs/searchOperations.js';
+import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { patchOnboarding } from './controllers/v1/onboarding/patchOnboarding.js';
-import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
-import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
-import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
-import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
-import { postRollout } from './controllers/fleet/postRollout.js';
-import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
+import { getTeam } from './controllers/v1/team/getTeam.js';
+import { putTeam } from './controllers/v1/team/putTeam.js';
+import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
+import { getUser } from './controllers/v1/user/getUser.js';
+import { patchUser } from './controllers/v1/user/patchUser.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
-import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
+import authMiddleware from './middleware/access.middleware.js';
+import { cliMinVersion } from './middleware/cliVersionCheck.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
-import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
-import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
-import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
-import { getPublicRecords } from './controllers/records/getRecords.js';
-import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
-import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
-import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
-import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
+import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { resourceCapping } from './middleware/resource-capping.middleware.js';
+import { securityMiddlewares } from './middleware/security.js';
+import { dirname, isBinaryContentType } from './utils/utils.js';
+
+import type { ApiError } from '@nangohq/types';
+import type { Request, RequestHandler, Response } from 'express';
 
 export const router = express.Router();
 
@@ -375,10 +380,9 @@ web.route('/api/v1/invite/:id').post(webAuth, acceptInvite);
 web.route('/api/v1/invite/:id').delete(webAuth, declineInvite);
 web.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 
-web.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
-
 web.route('/api/v1/environments').post(webAuth, postEnvironment);
 web.route('/api/v1/environments/').patch(webAuth, patchEnvironment);
+web.route('/api/v1/environments/current').get(webAuth, getEnvironment);
 web.route('/api/v1/environments/webhook').patch(webAuth, patchWebhook);
 web.route('/api/v1/environments/variables').post(webAuth, postEnvironmentVariables);
 
