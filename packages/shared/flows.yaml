@@ -13036,6 +13036,7 @@ integrations:
                 runs: every hour
                 output: JournalEntry
                 sync_type: incremental
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /journal-entries
@@ -13097,6 +13098,26 @@ integrations:
                     method: PUT
                     path: /customers
                     group: Customers
+            create-journal-entry:
+                description: |
+                    Creates a single journal entry in QuickBooks.
+                input: CreateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: POST
+                    path: /journal-entries
+                    group: Journal Entries
+            update-journal-entry:
+                description: |
+                    Update a single journal entry in QuickBooks.
+                input: UpdateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: PUT
+                    path: /journal-entries
+                    group: Journal Entries
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -13429,9 +13450,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 id: string
-                date: string
+                date: string | null
                 currency: string
-                note: string
+                note?: string | undefined
                 lines: JournalEntryLine[]
             JournalEntryLine:
                 id: string
@@ -13670,6 +13691,72 @@ integrations:
                 txn_tax_code_ref?: Reference
                 total_tax_cents?: number
                 tax_line?: TaxLine[]
+            CreateJournalEntry:
+                line_items:
+                    - detail_type: string
+                      amount: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                journal_code_ref?: Reference
+                currency_ref?: Reference
+            UpdateJournalEntry:
+                id: string
+                sync_token: string
+                sparse?: boolean
+                line_items:
+                    - id?: string
+                      detail_type: string
+                      amount?: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                currency_ref?: Reference
+                global_tax_calculation?: string
+                doc_number?: string
+                private_note?: string
+                exchange_rate?: number
+                transaction_location_type?: string
+                txn_tax_detail?:
+                    txn_tax_code_ref?: Reference
+                    total_tax?: number
+                    tax_line?:
+                        - detail_type: string
+                          tax_line_detail?:
+                              tax_rate_ref?: Reference
+                              net_amount_taxable?: number
+                              percent_based?: boolean
+                              tax_percent?: number
+                          amount?: number
+                adjustment?: boolean
     quickbooks-sandbox:
         syncs:
             accounts:
@@ -13770,6 +13857,7 @@ integrations:
                 runs: every hour
                 output: JournalEntry
                 sync_type: incremental
+                version: 1.0.1
                 endpoint:
                     method: GET
                     path: /journal-entries
@@ -13831,6 +13919,26 @@ integrations:
                     method: PUT
                     path: /customers
                     group: Customers
+            create-journal-entry:
+                description: |
+                    Creates a single journal entry in QuickBooks.
+                input: CreateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: POST
+                    path: /journal-entries
+                    group: Journal Entries
+            update-journal-entry:
+                description: |
+                    Update a single journal entry in QuickBooks.
+                input: UpdateJournalEntry
+                scopes: com.intuit.quickbooks.accounting
+                output: JournalEntry
+                endpoint:
+                    method: PUT
+                    path: /journal-entries
+                    group: Journal Entries
             create-item:
                 description: |
                     Creates a single item in QuickBooks.
@@ -14163,9 +14271,9 @@ integrations:
                 created_at: string
                 updated_at: string
                 id: string
-                date: string
+                date: string | null
                 currency: string
-                note: string
+                note?: string | undefined
                 lines: JournalEntryLine[]
             JournalEntryLine:
                 id: string
@@ -14404,6 +14512,72 @@ integrations:
                 txn_tax_code_ref?: Reference
                 total_tax_cents?: number
                 tax_line?: TaxLine[]
+            CreateJournalEntry:
+                line_items:
+                    - detail_type: string
+                      amount: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                journal_code_ref?: Reference
+                currency_ref?: Reference
+            UpdateJournalEntry:
+                id: string
+                sync_token: string
+                sparse?: boolean
+                line_items:
+                    - id?: string
+                      detail_type: string
+                      amount?: number
+                      project_ref?: Reference
+                      description?: string
+                      line_num?: number
+                      journal_entry_line_detail:
+                          journal_code_ref?: Reference
+                          posting_type: Debit | Credit
+                          account_ref: Reference
+                          tax_applicable_on?: string
+                          entity?:
+                              type?: string
+                              entity_ref?: Reference
+                          tax_inclusive_amt?: number
+                          class_ref?: Reference
+                          department_ref?: Reference
+                          tax_code_ref?: Reference
+                          billable_status?: string
+                          tax_amount?: number
+                currency_ref?: Reference
+                global_tax_calculation?: string
+                doc_number?: string
+                private_note?: string
+                exchange_rate?: number
+                transaction_location_type?: string
+                txn_tax_detail?:
+                    txn_tax_code_ref?: Reference
+                    total_tax?: number
+                    tax_line?:
+                        - detail_type: string
+                          tax_line_detail?:
+                              tax_rate_ref?: Reference
+                              net_amount_taxable?: number
+                              percent_based?: boolean
+                              tax_percent?: number
+                          amount?: number
+                adjustment?: boolean
     ramp:
         syncs:
             users:
