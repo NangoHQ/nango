@@ -3307,6 +3307,38 @@ integrations:
             Storage:
                 value?: string | undefined
                 representation?: string | undefined
+    databricks-workspace:
+        actions:
+            list-warehouses:
+                description: List all SQL warehouses in the workspace
+                endpoint:
+                    method: GET
+                    path: /warehouses
+                    group: Warehouses
+                output: ListWarehousesResponse
+        models:
+            ListWarehousesResponse:
+                warehouses: DatabricksWarehouse[]
+            DatabricksWarehouse:
+                id: string
+                name: string
+                cluster_size: string
+                min_num_clusters: number
+                max_num_clusters: number
+                auto_stop_mins: number
+                creator_name: string
+                spot_instance_policy: string
+                enable_photon: boolean
+                enable_serverless_compute: boolean
+                channel: string
+                warehouse_type: string
+                num_active_sessions: number
+                num_clusters: number
+                state: string
+                tags: object
+                health:
+                    status: string
+                    message: string | undefined
     datadog:
         actions:
             create-user:
