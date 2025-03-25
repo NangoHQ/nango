@@ -48,6 +48,7 @@ export async function postConnectionCreation(
             version,
             name,
             fileLocation,
+            async: true,
             logCtx
         });
         if (res.isErr()) {
