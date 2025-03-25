@@ -136,8 +136,9 @@ export async function persistRecords({
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
 
         span.addTags({
-            'records.count': allModifiedKeys.size,
-            'records.sizeInBytes': recordsSizeInBytes
+            'records.in.count': records.length,
+            'records.modified.count': allModifiedKeys.size,
+            'records.modified.sizeInBytes': recordsSizeInBytes
         });
         span.finish();
 
