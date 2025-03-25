@@ -1,5 +1,3 @@
-import ms from 'ms';
-import type { StringValue } from 'ms';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
@@ -27,6 +25,7 @@ import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
+import { getFrequencyMs } from '../services/sync/utils.js';
 import environmentService from '../services/environment.service.js';
 import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { RecordCount } from '@nangohq/records';
@@ -471,7 +470,7 @@ export class Orchestrator {
     }): Promise<Result<void>> {
         const scheduleName = ScheduleName.get({ environmentId, syncId });
 
-        const frequencyMs = this.getFrequencyMs(interval);
+        const frequencyMs = getFrequencyMs(interval);
         if (frequencyMs.isErr()) {
             errorManager.report(frequencyMs.error, {
                 source: ErrorSourceEnum.CUSTOMER,
@@ -657,7 +656,7 @@ export class Orchestrator {
                 }
             );
 
-            const frequencyMs = this.getFrequencyMs(syncData.runs!);
+            const frequencyMs = getFrequencyMs(syncData.runs!);
 
             if (frequencyMs.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;
@@ -739,31 +738,5 @@ export class Orchestrator {
             }
             return Err(new Error('Failed to schedule sync', { cause: err }));
         }
-    }
-
-    private getFrequencyMs(runs: string): Result<number> {
-        const runsMap = new Map([
-            ['every half day', '12h'],
-            ['every half hour', '30m'],
-            ['every quarter hour', '15m'],
-            ['every hour', '1h'],
-            ['every day', '1d'],
-            ['every month', '30d'],
-            ['every week', '7d']
-        ]);
-        const interval = runsMap.get(runs) || runs.replace('every ', '');
-
-        const intervalMs = ms(interval as StringValue);
-        if (!intervalMs) {
-            const error = new NangoError('sync_interval_invalid');
-            return Err(error);
-        }
-
-        if (intervalMs < ms('30s')) {
-            const error = new NangoError('sync_interval_too_short');
-            return Err(error);
-        }
-
-        return Ok(intervalMs);
     }
 }

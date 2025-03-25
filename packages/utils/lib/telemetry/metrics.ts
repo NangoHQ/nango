@@ -48,6 +48,8 @@ export enum Types {
     RUNNER_INVALID_ACTION_OUTPUT = 'nango.runner.invalidActionOutput',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
 
+    SYNC_LOW_FREQUENCY_MS = 'nango.jobs.sync.lowFrequencyMs',
+    SYNC_HIGH_FREQUENCY_MS = 'nango.jobs.sync.highFrequencyMs',
     SYNC_EXECUTION = 'nango.jobs.syncExecution',
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     SYNC_SUCCESS = 'nango.orch.sync.success',

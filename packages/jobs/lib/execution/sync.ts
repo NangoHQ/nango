@@ -17,7 +17,9 @@ import {
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
+    getFrequencyMs,
     getLastSyncDate,
+    getSync,
     getSyncConfigRaw,
     getSyncJobByRunId,
     setLastSyncDate,
@@ -154,6 +156,28 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         if (task.debug) {
             void logCtx.debug(`Last sync date is ${lastSyncDate?.toISOString()}`);
+        }
+
+        // tracking active schedule time
+        // by pushing the frequency of the sync as a metric
+        // that can be sumed up to get the total active
+        // time of the sync for a given period/account
+        const sync = await getSync({ connectionId: task.connection.id, name: task.syncName, variant: task.syncVariant });
+        const frequencyStr = sync?.frequency || syncConfig.runs;
+        if (frequencyStr) {
+            const frequencyMs = getFrequencyMs(frequencyStr);
+            if (frequencyMs.isErr()) {
+                logger.error(`Failed to get frequency for sync ${task.syncId}`, frequencyMs.error);
+            } else {
+                // we track 2 metrics
+                // high frequency if the frequency is less than 1 hour
+                // low frequency if the frequency is >= 1 hour
+                if (frequencyMs.value < 3_600_000) {
+                    metrics.gauge(metrics.Types.SYNC_HIGH_FREQUENCY_MS, frequencyMs.value, { accountId: team.id });
+                } else {
+                    metrics.gauge(metrics.Types.SYNC_LOW_FREQUENCY_MS, frequencyMs.value, { accountId: team.id });
+                }
+            }
         }
 
         metrics.increment(metrics.Types.SYNC_EXECUTION, 1, { accountId: team.id });
