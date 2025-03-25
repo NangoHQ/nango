@@ -121,6 +121,10 @@ export class LogContextStateless {
             { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
         );
     }
+
+    async merge(logCtx: LogContextStateless) {
+        await this.transport.merge(logCtx, this);
+    }
 }
 
 /**

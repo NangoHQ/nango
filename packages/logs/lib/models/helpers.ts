@@ -4,9 +4,8 @@ import { nanoid } from '@nangohq/utils';
 
 import { defaultOperationExpiration } from '../env.js';
 
-import type { LogContext } from '../client.js';
 import type { estypes } from '@elastic/elasticsearch';
-import type { ConcatOperationList, MessageRow, MessageRowInsert, OperationRow, OperationRowInsert } from '@nangohq/types';
+import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
@@ -126,15 +125,3 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions'
 };
-
-/**
- * Send buffered logs to elasticsearch
- * Ultimately it would be better to have LogContextBuffer (or an option in LogContext)
- */
-export async function flushLogsBuffer(logs: MessageRowInsert[], logCtx: LogContext) {
-    await Promise.all(
-        logs.map(async (log) => {
-            await logCtx.transport.log(log, { dryRun: logCtx.dryRun, logToConsole: logCtx.logToConsole, operationId: logCtx.id, accountId: logCtx.accountId });
-        })
-    );
-}

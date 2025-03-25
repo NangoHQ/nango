@@ -1,7 +1,6 @@
 import tracer from 'dd-trace';
 
 import { getLocking } from '@nangohq/kvstore';
-import { flushLogsBuffer } from '@nangohq/logs';
 import { getProvider } from '@nangohq/providers';
 import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
 
@@ -16,7 +15,6 @@ import type { Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
-import type { BufferTransport } from '@nangohq/logs/lib/transport.js';
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
@@ -186,7 +184,7 @@ async function refreshCredentials(
                 connection: { id: oldConnection.id, name: oldConnection.connection_id }
             }
         );
-        void flushLogsBuffer((logsBuffer.transport as BufferTransport).buffer, logCtx);
+        logCtx.merge(logsBuffer);
 
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
         void logCtx.error('Failed to refresh credentials', err);
@@ -259,8 +257,7 @@ async function testCredentials(
                 connection: { id: oldConnection.id, name: oldConnection.connection_id }
             }
         );
-
-        void flushLogsBuffer((logsBuffer.transport as BufferTransport).buffer, logCtx);
+        logCtx.merge(logsBuffer);
 
         void logCtx.error('Failed to verify connection', result.error);
         await logCtx.failed();
