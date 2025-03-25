@@ -39,7 +39,6 @@ export async function persistRecords({
     merging?: MergingStrategy;
 }): Promise<Result<MergingStrategy>> {
     const active = tracer.scope().active();
-    const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
     const span = tracer.startSpan('persistRecords', {
         childOf: active as Span,
         tags: {
@@ -51,9 +50,7 @@ export async function persistRecords({
             syncId,
             syncJobId,
             model,
-            activityLogId,
-            'records.count': records.length,
-            'records.sizeInBytes': recordsSizeInBytes
+            activityLogId
         }
     });
 
@@ -78,8 +75,9 @@ export async function persistRecords({
             break;
     }
 
+    const recordsData = records as UnencryptedRecordData[];
     const formatting = recordsFormatter.formatRecords({
-        data: records as UnencryptedRecordData[],
+        data: recordsData,
         connectionId: nangoConnectionId,
         model,
         syncId,
@@ -119,17 +117,31 @@ export async function persistRecords({
             void logCtx.error(`Found duplicate key '${nonUniqueKey}' for model ${baseModel}. The record was ignored.`);
         }
 
-        const total = summary.addedKeys.length + summary.updatedKeys.length + (summary.deletedKeys?.length || 0);
-        void logCtx.info(`Successfully batched ${total} record${total > 1 ? 's' : ''}`, {
+        await updateSyncJobResult(syncJobId, updatedResults, baseModel);
+
+        const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
+        void logCtx.info(`Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''}`, {
             persistType,
             updatedResults
         });
-        await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
-        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length, { accountId });
+        const recordsSizeInBytes = recordsData.reduce((acc, record) => {
+            if (allModifiedKeys.has(record.id)) {
+                return acc + Buffer.byteLength(JSON.stringify(record), 'utf8');
+            }
+            return acc;
+        }, 0);
+
+        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, allModifiedKeys.size, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
 
+        span.addTags({
+            'records.in.count': records.length,
+            'records.modified.count': allModifiedKeys.size,
+            'records.modified.sizeInBytes': recordsSizeInBytes
+        });
         span.finish();
+
         return Ok(persistResult.value.nextMerging);
     } else {
         const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;

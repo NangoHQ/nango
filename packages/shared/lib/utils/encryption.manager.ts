@@ -87,7 +87,7 @@ export class EncryptionManager extends Encryption {
         const credentials =
             connection.credentials['encrypted_credentials'] && connection.credentials_iv && connection.credentials_tag
                 ? JSON.parse(this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
-                : {};
+                : connection.credentials;
         if (isConnectionJsonRow(connection)) {
             const parsed: DBConnectionDecrypted = {
                 ...connection,

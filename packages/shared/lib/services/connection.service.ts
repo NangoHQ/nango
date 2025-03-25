@@ -50,7 +50,7 @@ import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type {
     AuthModeType,
     BillCredentials,
@@ -1541,11 +1541,17 @@ class ConnectionService {
         return false;
     }
 
-    public async getNewCredentials(
-        connection: DBConnectionDecrypted,
-        providerConfig: ProviderConfig,
-        provider: Provider
-    ): Promise<
+    public async getNewCredentials({
+        connection,
+        providerConfig,
+        provider,
+        logCtx
+    }: {
+        connection: DBConnectionDecrypted;
+        providerConfig: ProviderConfig;
+        provider: Provider;
+        logCtx: LogContextStateless;
+    }): Promise<
         ServiceResponse<
             | OAuth2Credentials
             | OAuth2ClientCredentials
@@ -1647,7 +1653,11 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else {
-            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, provider as ProviderOAuth2);
+            const {
+                success,
+                error,
+                response: creds
+            } = await getFreshOAuth2Credentials({ connection, config: providerConfig, provider: provider as ProviderOAuth2, logCtx });
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }

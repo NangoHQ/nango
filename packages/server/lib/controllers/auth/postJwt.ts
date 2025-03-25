@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
-import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     AnalyticsTypes,
     ErrorSourceEnum,
@@ -28,7 +28,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/aut
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { MessageRowInsert, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
+import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -173,21 +173,15 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
         }
 
         const credentials = create.value;
-
-        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider, logCtx });
         if (connectionResponse.isErr()) {
-            if ('logs' in connectionResponse.error.payload) {
-                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
-            }
-            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid');
             await logCtx.failed();
 
             errorManager.errResFromNangoErr(res, connectionResponse.error);
 
             return;
         }
-
-        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,

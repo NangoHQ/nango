@@ -5,6 +5,7 @@ import { envs } from '../env.js';
 import { logger } from '../utils.js';
 import { getFormattedOperation } from './helpers.js';
 import { createOperation } from './messages.js';
+import { BufferTransport } from '../transport.js';
 
 import type { AdditionalOperationData } from './helpers.js';
 import type { OperationRow, OperationRowInsert } from '@nangohq/types';
@@ -63,5 +64,9 @@ export const logContextGetter = {
 
     getStateLess({ id, accountId }: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
         return new LogContextStateless({ id, accountId }, options);
+    },
+
+    getBuffer({ id, accountId }: { id?: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
+        return new LogContextStateless({ id: id || '-1', accountId }, { ...options, transport: new BufferTransport() });
     }
 };
