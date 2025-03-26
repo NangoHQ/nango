@@ -7433,6 +7433,8 @@ ring-central:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.ringcentral.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central
 
 ring-central-sandbox:
@@ -7449,6 +7451,8 @@ ring-central-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.devtest.ringcentral.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central-sandbox
 
 rippling:
