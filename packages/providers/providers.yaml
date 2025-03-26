@@ -960,6 +960,7 @@ azure-devops:
     proxy:
         base_url: https://${connectionConfig.organizationUrl}
     docs: https://docs.nango.dev/integrations/all/azure-devops
+    docs_connect: https://docs.nango.dev/integrations/all/azure-devops/connect
     credentials_verification_script: azureDevopsCredentialsVerification
     connection_config:
         organizationUrl:
@@ -967,7 +968,6 @@ azure-devops:
             title: Organization URL
             description: The URL of your Azure DevOps organization
             example: dev.azure.com/myorg or myorg.visualstudio.com
-            format: hostname
             doc_section: '#step-1-finding-your-organization-url'
             prefix: https://
     credentials:
@@ -979,9 +979,9 @@ azure-devops:
             hidden: true
         password:
             type: string
-            title: Password
-            description: The password of your Azure DevOps account
-            doc_section: '#step-3-finding-your-password'
+            title: Personal Access Token
+            description: The Personal Access Token of your Azure DevOps account
+            doc_section: '#step-2-creating-a-personal-access-token'
 
 bamboohr:
     display_name: BambooHR (OAuth)
