@@ -162,7 +162,7 @@ export class OrchestratorClient {
         }
     }
 
-    private async execute(props: ExecuteProps): Promise<ExecuteReturn> {
+    private async immediateAndWait(props: ExecuteProps): Promise<ExecuteReturn> {
         const scheduleProps = {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
@@ -235,7 +235,7 @@ export class OrchestratorClient {
                 type: 'action' as const
             }
         };
-        return this.execute(schedulingProps);
+        return this.immediateAndWait(schedulingProps);
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
@@ -252,10 +252,10 @@ export class OrchestratorClient {
                 type: 'webhook' as const
             }
         };
-        return this.execute(schedulingProps);
+        return this.immediateAndWait(schedulingProps);
     }
 
-    public async executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn> {
+    public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
         const { args, ...rest } = props;
         const schedulingProps = {
             retry: { count: 0, max: 0 },
@@ -270,7 +270,8 @@ export class OrchestratorClient {
                 type: 'on-event' as const
             }
         };
-        const res = await this.immediate(schedulingProps);
+
+        const res: Result<any, ClientError> = props.async ? await this.immediate(schedulingProps) : await this.immediateAndWait(schedulingProps);
         if (res.isErr()) {
             return Err(res.error);
         }
