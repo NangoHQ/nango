@@ -65,6 +65,7 @@ import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmati
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
+import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import syncController from './controllers/sync.controller.js';
 import userController from './controllers/user.controller.js';
 import {
@@ -292,7 +293,7 @@ publicAPI.use('/records', jsonContentTypeMiddleware);
 publicAPI.route('/records').get(apiAuth, getPublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
+publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
