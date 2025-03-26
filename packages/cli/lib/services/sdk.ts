@@ -150,6 +150,7 @@ export class NangoSyncCLI extends NangoSyncBase {
         if (hasErrors.length > 0) {
             this.log('Invalid record payload. Use `--validation` option to see the details', { level: 'warn' });
             if (this.runnerFlags?.validateSyncRecords) {
+                console.log(JSON.stringify(hasErrors, null, 2));
                 throw new InvalidRecordSDKError({ ...hasErrors[0], model });
             }
         }
