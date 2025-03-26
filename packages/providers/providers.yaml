@@ -67,7 +67,7 @@ active-campaign:
     proxy:
         headers:
             api-token: ${apiKey}
-        base_url: https://${connectionConfig.apiUrl}/api
+        base_url: https://${connectionConfig.hostname}/api
         verification:
             method: GET
             endpoints:
@@ -75,14 +75,14 @@ active-campaign:
     docs: https://docs.nango.dev/integrations/all/active-campaign
     docs_connect: https://docs.nango.dev/integrations/all/active-campaign/connect
     connection_config:
-        apiUrl:
+        hostname:
             type: string
-            title: API URL
-            description: The API URL for your ActiveCampaign account
+            title: Hostname
+            description: The Hostname for your ActiveCampaign account
             format: hostname
             prefix: https://
             example: company.activehosted.com
-            doc_section: '#step-1-finding-your-api-url'
+            doc_section: '#step-1-finding-your-hostname'
             order: 1
     credentials:
         apiKey:
