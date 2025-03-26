@@ -8,9 +8,9 @@ import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
-import { internalApi } from './routes.api.internal.js';
-import { privateApi } from './routes.api.private.js';
-import { publicAPI } from './routes.api.public.js';
+import { internalApi } from './routes.internal.js';
+import { privateApi } from './routes.private.js';
+import { publicAPI } from './routes.public.js';
 import { dirname } from './utils/utils.js';
 
 import type { ApiError } from '@nangohq/types';

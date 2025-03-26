@@ -1,32 +1,35 @@
-import { Helmet } from 'react-helmet';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import DashboardLayout from '../../layout/DashboardLayout';
-import { Button, ButtonLink } from '../../components/ui/button/Button';
-import { useToast } from '../../hooks/useToast';
-import { useStore } from '../../store';
+import { IconBook, IconCheck, IconChevronDown, IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
+import { Helmet } from 'react-helmet';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSearchParam, useUnmount } from 'react-use';
+import { useSWRConfig } from 'swr';
+
+import Nango from '@nangohq/frontend';
+
+import { Info } from '../../components/Info';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/Collapsible';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/Command';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/Popover';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
+import { Input } from '../../components/ui/input/Input';
+import { apiConnectSessions } from '../../hooks/useConnect';
+import { clearConnectionsCache } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { clearIntegrationsCache, useListIntegration } from '../../hooks/useIntegration';
-import { globalEnv } from '../../utils/env';
-import Nango from '@nangohq/frontend';
-import { useUnmount, useSearchParam } from 'react-use';
-import { apiConnectSessions } from '../../hooks/useConnect';
-import { IconBook, IconCheck, IconChevronDown, IconChevronRight, IconHelpCircle } from '@tabler/icons-react';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../../components/ui/Collapsible';
-import { Input } from '../../components/ui/input/Input';
+import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
-import { SimpleTooltip } from '../../components/SimpleTooltip';
-import { Link, useNavigate } from 'react-router-dom';
-import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/Popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../components/ui/Command';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
+import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
+
+import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { Integration } from '@nangohq/server';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { clearConnectionsCache } from '../../hooks/useConnections';
-import { useSWRConfig } from 'swr';
-import { Info } from '../../components/Info';
 
 export const ConnectionCreate: React.FC = () => {
     const toast = useToast();
@@ -81,7 +84,7 @@ export const ConnectionCreate: React.FC = () => {
         }
 
         const nango = new Nango({
-            host: environmentAndAccount.host,
+            host: globalEnv.apiUrl,
             websocketsPath: environmentAndAccount.environment.websockets_path || ''
         });
 

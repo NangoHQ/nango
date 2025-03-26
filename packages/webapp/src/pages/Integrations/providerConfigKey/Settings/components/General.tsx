@@ -1,20 +1,21 @@
-import { useState } from 'react';
-import type { GetIntegration } from '@nangohq/types';
 import { Pencil1Icon } from '@radix-ui/react-icons';
-import { formatDateToInternationalFormat } from '../../../../../utils/utils';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { mutate } from 'swr';
+
+import { Info } from '../../../../../components/Info';
+import { InfoBloc } from '../../../../../components/InfoBloc';
+import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
 import { Button } from '../../../../../components/ui/button/Button';
+import { CopyButton } from '../../../../../components/ui/button/CopyButton';
 import { Input } from '../../../../../components/ui/input/Input';
+import SecretInput from '../../../../../components/ui/input/SecretInput';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
 import { useStore } from '../../../../../store';
-import { useNavigate } from 'react-router-dom';
-import { mutate } from 'swr';
-import { InfoBloc } from '../../../../../components/InfoBloc';
-import { CopyButton } from '../../../../../components/ui/button/CopyButton';
-import SecretInput from '../../../../../components/ui/input/SecretInput';
-import type { EnvironmentAndAccount } from '@nangohq/server';
-import { Info } from '../../../../../components/Info';
-import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
+import { formatDateToInternationalFormat } from '../../../../../utils/utils';
+
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
 const FIELD_DISPLAY_NAMES: Record<string, Record<string, string>> = {
     OAUTH1: {
@@ -55,7 +56,7 @@ function missingFieldsMessage(
 
 export const SettingsGeneral: React.FC<{
     data: GetIntegration['Success']['data'];
-    environment: EnvironmentAndAccount['environment'];
+    environment: ApiEnvironment;
 }> = ({ data: { integration, meta, template }, environment }) => {
     const { toast } = useToast();
     const navigate = useNavigate();

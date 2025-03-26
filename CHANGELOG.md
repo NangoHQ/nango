@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.5] - 2025-03-25
+
+### Added
+
+- Add comprehensive Quickbooks OAuth setup guide (#3693) by @devin-ai-integration[bot]
+
+### Changed
+
+- *(deploy)* Staging use unified image (#3767) by @bodinsamuel
+
+### Fixed
+
+- *(logs)* Buffer context, log oauth2 http calls (#3765) by @bodinsamuel
+- *(persist)* Only report the size and count of modified records (#3764) by @TBonnin
+- *(connection)* Decryption without a secret key would void credentials (#3769) by @bodinsamuel
+- *(api)* GET /api/v1/environment new format (#3766) by @bodinsamuel
+
 ## [v0.57.4] - 2025-03-25
 
 ### Added
@@ -3472,6 +3489,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.5]: https://github.com/NangoHQ/nango/compare/v0.57.4..v0.57.5
 [v0.57.4]: https://github.com/NangoHQ/nango/compare/v0.57.3..v0.57.4
 [v0.57.3]: https://github.com/NangoHQ/nango/compare/v0.57.2..v0.57.3
 [v0.57.2]: https://github.com/NangoHQ/nango/compare/v0.57.1..v0.57.2
