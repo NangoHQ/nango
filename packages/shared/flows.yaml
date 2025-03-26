@@ -14920,6 +14920,25 @@ integrations:
                 input: IdEntity
                 scopes:
                     - EditAccounts
+            get-company-info:
+                description: |
+                    Retrieves information about the current RingCentral account/company.
+                endpoint:
+                    method: GET
+                    path: /account/current
+                    group: Company
+                output: CompanyInfo
+            create-contact:
+                description: |
+                    Creates a new external contact in RingCentral.
+                input: CreateContact
+                output: Contact
+                endpoint:
+                    method: POST
+                    path: /contacts
+                    group: Contacts
+                scopes:
+                    - Contacts
         syncs:
             users:
                 description: |
@@ -14934,6 +14953,19 @@ integrations:
                 output: User
                 scopes:
                     - ReadAccounts
+            contacts:
+                description: |
+                    Fetches the list of external contacts from RingCentral
+                endpoint:
+                    method: GET
+                    path: /contacts
+                    group: Contacts
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: Contact
+                scopes:
+                    - ReadContacts
         models:
             IdEntity:
                 id: string
@@ -14944,6 +14976,38 @@ integrations:
                 email: string
                 firstName: string
                 lastName: string
+            Contact:
+                id: string
+                firstName: string | undefined
+                lastName: string | undefined
+                email: string | undefined
+                phoneNumbers?: PhoneNumber[] | undefined
+                company: string | undefined
+                jobTitle: string | undefined
+                notes: string | undefined
+            CreateContact:
+                firstName?: string
+                lastName?: string
+                email?: string
+                phoneNumbers?: PhoneNumber[]
+                company?: string
+                jobTitle?: string
+                notes?: string
+            CompanyInfo:
+                id: string
+                name: string
+                status: string
+                serviceInfo:
+                    brand:
+                        id: string
+                        name: string
+                    servicePlan:
+                        id: string
+                        name: string
+                mainNumber: string | undefined
+                operator:
+                    id: string | undefined
+                    extensionNumber: string | undefined
             CreateUser:
                 firstName: string
                 lastName: string
@@ -14995,6 +15059,25 @@ integrations:
                 input: IdEntity
                 scopes:
                     - EditAccounts
+            get-company-info:
+                description: |
+                    Retrieves information about the current RingCentral account/company.
+                endpoint:
+                    method: GET
+                    path: /account/current
+                    group: Company
+                output: CompanyInfo
+            create-contact:
+                description: |
+                    Creates a new external contact in RingCentral.
+                input: CreateContact
+                output: Contact
+                endpoint:
+                    method: POST
+                    path: /contacts
+                    group: Contacts
+                scopes:
+                    - Contacts
         syncs:
             users:
                 description: |
@@ -15009,6 +15092,19 @@ integrations:
                 output: User
                 scopes:
                     - ReadAccounts
+            contacts:
+                description: |
+                    Fetches the list of external contacts from RingCentral
+                endpoint:
+                    method: GET
+                    path: /contacts
+                    group: Contacts
+                sync_type: full
+                track_deletes: true
+                runs: every day
+                output: Contact
+                scopes:
+                    - ReadContacts
         models:
             IdEntity:
                 id: string
@@ -15019,6 +15115,38 @@ integrations:
                 email: string
                 firstName: string
                 lastName: string
+            Contact:
+                id: string
+                firstName: string | undefined
+                lastName: string | undefined
+                email: string | undefined
+                phoneNumbers?: PhoneNumber[] | undefined
+                company: string | undefined
+                jobTitle: string | undefined
+                notes: string | undefined
+            CreateContact:
+                firstName?: string
+                lastName?: string
+                email?: string
+                phoneNumbers?: PhoneNumber[]
+                company?: string
+                jobTitle?: string
+                notes?: string
+            CompanyInfo:
+                id: string
+                name: string
+                status: string
+                serviceInfo:
+                    brand:
+                        id: string
+                        name: string
+                    servicePlan:
+                        id: string
+                        name: string
+                mainNumber: string | undefined
+                operator:
+                    id: string | undefined
+                    extensionNumber: string | undefined
             CreateUser:
                 firstName: string
                 lastName: string
