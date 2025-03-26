@@ -1,20 +1,20 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiError, Endpoint, ResDefaultErrors } from '../api.js';
 
-export type PostTrigger = Endpoint<{
+export type PostPublicTrigger = Endpoint<{
     Method: 'POST';
     Path: '/sync/trigger';
     Body: {
         syncs: (string | { name: string; variant: string })[];
-        full_resync: boolean;
-        provider_config_key?: string;
-        connection_id?: string;
+        full_resync?: boolean | undefined;
+        provider_config_key?: string | undefined;
+        connection_id?: string | undefined;
     };
     Headers: {
-        'Provider-Config-Key'?: string;
-        'Connection-Id'?: string;
+        'provider-config-key'?: string | undefined;
+        'connection-id'?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'invalid_query_params' | 'invalid_body' | 'invalid_sync' | 'invalid_headers' | 'missing_provider_config_key' | 'missing_connection_id'>;
+    Error: ResDefaultErrors;
 }>;
 
 export type PostSyncVariant = Endpoint<{
