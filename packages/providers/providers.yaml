@@ -9682,6 +9682,7 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string
