@@ -952,6 +952,37 @@ aws-iam:
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
 
+azure-devops:
+    display_name: Azure DevOps
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.organizationUrl}
+    docs: https://docs.nango.dev/integrations/all/azure-devops
+    credentials_verification_script: azureDevopsCredentialsVerification
+    connection_config:
+        organizationUrl:
+            type: string
+            title: Organization URL
+            description: The URL of your Azure DevOps organization
+            example: dev.azure.com/myorg or myorg.visualstudio.com
+            format: hostname
+            doc_section: '#step-1-finding-your-organization-url'
+            prefix: https://
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: Password
+            description: The password of your Azure DevOps account
+            doc_section: '#step-3-finding-your-password'
+
 bamboohr:
     display_name: BambooHR (OAuth)
     categories:
