@@ -49,6 +49,7 @@ export async function preConnectionDeletion({
             version,
             name,
             fileLocation,
+            async: false,
             logCtx
         });
         if (res.isErr()) {

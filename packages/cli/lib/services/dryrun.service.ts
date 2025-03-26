@@ -412,10 +412,10 @@ export class DryRunService {
             if (results.error) {
                 const err = results.error;
                 console.error(chalk.red('An error occurred during execution'));
-                if (err instanceof SDKError) {
+                if (err instanceof SDKError || err.type === 'invalid_sync_record') {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
-                    if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.code === 'invalid_sync_record') {
-                        displayValidationError(err.payload as any);
+                    if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
+                        displayValidationError(err.payload);
                         return;
                     }
 
@@ -652,6 +652,16 @@ export class DryRunService {
                         error: {
                             type: err.type,
                             payload: err.payload || {},
+                            status: 500
+                        },
+                        response: null
+                    };
+                } else if (err instanceof SDKError) {
+                    return {
+                        success: false,
+                        error: {
+                            type: err.code,
+                            payload: err.payload,
                             status: 500
                         },
                         response: null
