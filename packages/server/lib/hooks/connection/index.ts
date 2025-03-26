@@ -15,3 +15,4 @@ export { default as basecampPostConnection } from './providers/basecamp/post-con
 export { default as lastpassCredentialsVerification } from './providers/lastpass/credentials-verification.js';
 export { default as expensifyCredentialsVerification } from './providers/expensify/credentials-verification.js';
 export { default as awsIamCredentialsVerification } from './providers/aws-iam/credentials-verification.js';
+export { default as bitdefenderCredentialsVerification } from './providers/bitdefender/credentials-verification.js';

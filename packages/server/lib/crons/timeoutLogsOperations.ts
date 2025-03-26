@@ -1,14 +1,15 @@
-import * as cron from 'node-cron';
-import { errorManager, ErrorSourceEnum } from '@nangohq/shared';
-import { envs, model } from '@nangohq/logs';
-import { getLogger } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
+
+import * as cron from 'node-cron';
+
+import { envs, model } from '@nangohq/logs';
+import { getLogger, report } from '@nangohq/utils';
 
 const logger = getLogger('cron.timeoutLogsOperations');
 const cronMinutes = envs.CRON_TIMEOUT_LOGS_MINUTES;
 
 export function timeoutLogsOperations(): void {
-    if (!envs.NANGO_LOGS_ENABLED) {
+    if (!envs.NANGO_LOGS_ENABLED || envs.CRON_TIMEOUT_LOGS_MINUTES <= 0) {
         return;
     }
 
@@ -25,7 +26,7 @@ export function timeoutLogsOperations(): void {
                 await model.setTimeoutForAll();
                 logger.info(`✅ Timeouted`);
             } catch (err) {
-                errorManager.report(err, { source: ErrorSourceEnum.PLATFORM });
+                report(new Error('cron_failed_to_timeout_operation', { cause: err }));
             }
         },
         { runOnInit: true }

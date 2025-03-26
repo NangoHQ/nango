@@ -1224,6 +1224,7 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: 'retry-after'
+    credentials_verification_script: bitdefenderCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -3788,23 +3789,30 @@ guru-scim:
     display_name: Guru (SCIM)
     categories:
         - knowledge-base
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/scim
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/scim+json
         verification:
             method: GET
             endpoints:
                 - /v2/Users
+            headers:
+                content-type: application/scim+json
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: Guru API Token
-            description: The SCIM API token for your Guru account
-            doc_section: '#step-1-finding-guru-api-token'
+            title: SCIM Username
+            description: The SCIM username for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
+        password:
+            type: string
+            title: SCIM Token
+            description: The SCIM token for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
 
 github:
     display_name: GitHub (User OAuth)
@@ -8142,7 +8150,7 @@ shopify-api-key:
             title: API Access Token
             description: The API access token generated
             example: shpat_***************c03266f
-            pattern: '^shpat_[a-f0-9]{32}$'
+            pattern: '^(shpat|shpca|shppa)_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
 
 shopify-scim:

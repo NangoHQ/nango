@@ -1,15 +1,17 @@
 import { IconBell, IconExternalLink } from '@tabler/icons-react';
-import { useStore } from '../../../store';
-import { apiPatchEnvironment, apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
-import { Button } from '../../../components/ui/button/Button';
 import { useState } from 'react';
-import { useToast } from '../../../hooks/useToast';
-import { apiFetch } from '../../../utils/api';
-import { connectSlack } from '../../../utils/slack-connection';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { WebhookCheckboxes } from './WebhookCheckboxes';
-import { EditableInput } from './EditableInput';
 import { Link } from 'react-router-dom';
+
+import { EditableInput } from './EditableInput';
+import { WebhookCheckboxes } from './WebhookCheckboxes';
+import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+import { Button } from '../../../components/ui/button/Button';
+import { apiPatchEnvironment, apiPatchWebhook, useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { apiFetch } from '../../../utils/api';
+import { globalEnv } from '../../../utils/env';
+import { connectSlack } from '../../../utils/slack-connection';
 
 export const NotificationSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -30,7 +32,7 @@ export const NotificationSettings: React.FC = () => {
             toast({ title: `Failed to create Slack connection!`, variant: 'error' });
             setSlackIsConnecting(false);
         };
-        await connectSlack({ accountUUID: environmentAndAccount!.uuid, env, hostUrl: environmentAndAccount!.host, onFinish, onFailure });
+        await connectSlack({ accountUUID: environmentAndAccount!.uuid, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
     };
 
     const slackDisconnect = async () => {

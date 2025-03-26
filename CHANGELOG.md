@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.57.5] - 2025-03-25
+
+### Added
+
+- Add comprehensive Quickbooks OAuth setup guide (#3693) by @devin-ai-integration[bot]
+
+### Changed
+
+- *(deploy)* Staging use unified image (#3767) by @bodinsamuel
+
+### Fixed
+
+- *(logs)* Buffer context, log oauth2 http calls (#3765) by @bodinsamuel
+- *(persist)* Only report the size and count of modified records (#3764) by @TBonnin
+- *(connection)* Decryption without a secret key would void credentials (#3769) by @bodinsamuel
+- *(api)* GET /api/v1/environment new format (#3766) by @bodinsamuel
+
+## [v0.57.4] - 2025-03-25
+
+### Added
+
+- *(credentials-check)* Add bitdefender verification script (#3760) by @khaliqgant
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f2d2c6b9565c9fe84d72ae1503949d6fd3b8cd59 by Hassan_Wari. Commit message: feat(quickbooks): add write actions for journal entry (#285) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/d2fd05d76c0c409bb37dddd8c451118a0d6e20e5 by Khaliq. Commit message: feat(databricks): add list warehouses action (#287) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/ae0732ad718ce5910ef0e3890e4f304b62220870 by Khaliq. Commit message: feat(cursor+google-car): More cursor tweaks + settings action (#284) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/37bbc8985fa36d0ab6368fd2c117cce780a638b2 by lordsarcastic. Commit message: feat(netsuite-tba): Add a fetch-fields action for netsuite-tba (#283) by @github-actions[bot]
+
+### Fixed
+
+- ShouldRefreshCredentials to return false if credentials_expires_at is set (#3754) by @TBonnin
+- *(runner)* Do not exit on unhandledRejection (#3756) by @TBonnin
+- *(guru-scim)* Update guru scim (#3757) by @khaliqgant
+- *(types)* Use nango standard config from types (#3759) by @khaliqgant
+- *(cron)* Unify error reporting, envs, logging (#3731) by @bodinsamuel
+- *(cron)* Delete all old data (#3712) by @bodinsamuel
+- *(cli)* Deduplicate records when using batchSave in CLI (#3761) by @hassan254-prog
+- Check record is not null in removeMetadata (#3758) by @TBonnin
+- *(ui)* Show correct message for credentials error (#3762) by @bodinsamuel
+- *(logs)* Do not fallback on unknown operation id (#3738) by @bodinsamuel
+- *(refresh)* Only update attempts once per day (#3736) by @bodinsamuel
+- *(refresh)* Short-circuit if exhausted, trycatch hooks (#3734) by @bodinsamuel
+- *(credentials)* Split JWT from connection (#3729) by @bodinsamuel
+- *(connection)* Merge issue (#3763) by @bodinsamuel
+- *(connect-ui)* Do not detect closed auth-window (#3755) by @hassan254-prog
+
+## [v0.57.3] - 2025-03-21
+
+### Added
+
+- *(integrations)* Add support for trakstar hire (#3752) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/bee0032882d7169ec818a79b56bb0c18a470c86c by devin-ai-integration[bot]. Commit message: feat(dropbox): add folder-content action (#267) by @github-actions[bot]
+
+### Changed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/40232a42fa89e73045ce320640d3212dd1b340b3 by devin-ai-integration[bot]. Commit message: feat(google-drive): update schema for folder-content action (#268) by @github-actions[bot]
+- Credentials refresh & validity (#3739) by @bastienbeurier
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/50a138a00917f508e60c929e2197ad7fc2f9c474 by Khaliq. Commit message: fix(google-drive): support all drives (#272) by @github-actions[bot]
+- *(CLI)* Nango.proxy should throw if request fails (#3753) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/4082e738d90d3501418d3c697e877f713157c6d4 by Khaliq. Commit message: fix(google-cal): minor cleanup and add whoami (#274) by @github-actions[bot]
+
 ## [v0.57.2] - 2025-03-20
 
 ### Added
@@ -3423,6 +3489,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.57.5]: https://github.com/NangoHQ/nango/compare/v0.57.4..v0.57.5
+[v0.57.4]: https://github.com/NangoHQ/nango/compare/v0.57.3..v0.57.4
+[v0.57.3]: https://github.com/NangoHQ/nango/compare/v0.57.2..v0.57.3
 [v0.57.2]: https://github.com/NangoHQ/nango/compare/v0.57.1..v0.57.2
 [v0.57.1]: https://github.com/NangoHQ/nango/compare/v0.57.0..v0.57.1
 [v0.57.0]: https://github.com/NangoHQ/nango/compare/v0.56.4..v0.57.0
