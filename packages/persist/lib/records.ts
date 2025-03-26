@@ -125,20 +125,24 @@ export async function persistRecords({
             updatedResults
         });
 
-        const recordsSizeInBytes = recordsData.reduce((acc, record) => {
+        const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
+        const modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {
             if (allModifiedKeys.has(record.id)) {
                 return acc + Buffer.byteLength(JSON.stringify(record), 'utf8');
             }
             return acc;
         }, 0);
 
-        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, allModifiedKeys.size, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size, { accountId });
+        metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES, modifiedRecordsSizeInBytes, { accountId });
 
         span.addTags({
             'records.in.count': records.length,
+            'records.in.sizeInBytes': recordsSizeInBytes,
             'records.modified.count': allModifiedKeys.size,
-            'records.modified.sizeInBytes': recordsSizeInBytes
+            'records.modified.sizeInBytes': modifiedRecordsSizeInBytes
         });
         span.finish();
 
