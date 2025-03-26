@@ -407,7 +407,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
 
         await slackService.removeFailingConnection({
             connection,
-            name: nangoProps.syncConfig.sync_name,
+            name: nangoProps.syncVariant === 'base' ? nangoProps.syncConfig.sync_name : `${nangoProps.syncConfig.sync_name}::${nangoProps.syncVariant}`,
             type: 'sync',
             originalActivityLogId: nangoProps.activityLogId,
             provider: nangoProps.provider
@@ -660,7 +660,7 @@ async function onFailure({
                     account: team,
                     environment,
                     connection,
-                    name: syncName,
+                    name: syncVariant === 'base' ? syncName : `${syncName}::${syncVariant}`,
                     type: 'sync',
                     originalActivityLogId: logCtx.id,
                     provider
