@@ -4645,15 +4645,15 @@ hibob-service-user:
     credentials:
         username:
             type: string
-            title: User name
+            title: Hibob ID
             description: Your Hibob ID
             doc_section: '#step-1-finding-your-hibob-service-user-id'
         password:
             type: string
-            title: Password
+            title: Hibob Token
             description: Your Hibob Token
             default_value: ''
-            hidden: true
+            secret: true
             doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob-service-user
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
