@@ -805,6 +805,8 @@ attio:
         grant_type: refresh_token
     proxy:
         base_url: https://app.attio.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
@@ -4092,6 +4094,8 @@ google-calendar:
             limit_name_in_request: maxSize
             cursor_name_in_request: pageToken
             response_path: items
+        retry:
+            error_code: 403
     docs: https://docs.nango.dev/integrations/all/google-calendar
 
 google-docs:
@@ -4643,15 +4647,15 @@ hibob-service-user:
     credentials:
         username:
             type: string
-            title: User name
+            title: Hibob ID
             description: Your Hibob ID
             doc_section: '#step-1-finding-your-hibob-service-user-id'
         password:
             type: string
-            title: Password
+            title: Hibob Token
             description: Your Hibob Token
             default_value: ''
-            hidden: true
+            secret: true
             doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob-service-user
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
@@ -5035,7 +5039,7 @@ keeper-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/keeper-scim
-    docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
+    docs_connect: https://docs.nango.dev/integrations/all/keeper-scim/connect
     credentials:
         apiKey:
             type: string
@@ -9682,6 +9686,7 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string

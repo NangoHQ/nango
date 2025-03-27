@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { basePublicUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostManagedSignup } from '@nangohq/types';
+
+import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { PostManagedSignup } from '@nangohq/types';
 
 export interface InviteAccountState {
     token: string;
@@ -37,8 +40,7 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
     const oAuthUrl = workos.userManagement.getAuthorizationUrl({
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
-        // TODO: change to baseUrl but the cookie is not working as intended
-        redirectUri: `${basePublicUrl}/api/v1/login/callback`,
+        redirectUri: `${baseUrl}/api/v1/login/callback`,
         state: body.token ? Buffer.from(JSON.stringify({ token: body.token } satisfies InviteAccountState)).toString('base64') : ''
     });
 
