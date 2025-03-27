@@ -40,7 +40,6 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
     const oAuthUrl = workos.userManagement.getAuthorizationUrl({
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
-        // TODO: change to baseUrl but the cookie is not working as intended
         redirectUri: `${baseUrl}/api/v1/login/callback`,
         state: body.token ? Buffer.from(JSON.stringify({ token: body.token } satisfies InviteAccountState)).toString('base64') : ''
     });
