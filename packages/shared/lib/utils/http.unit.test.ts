@@ -26,7 +26,7 @@ describe('loggedFetch', () => {
                 error: undefined,
                 level: 'info',
                 message: 'GET https://httpstatuses.maor.io/200',
-                request: { headers: {}, method: 'GET', url: 'https://httpstatuses.maor.io/200' },
+                request: { headers: {}, method: 'GET', url: 'https://httpstatuses.maor.io/200', body: undefined },
                 response: { code: 200, headers: {} },
                 source: 'internal',
                 type: 'http'
@@ -53,7 +53,7 @@ describe('loggedFetch', () => {
                 error: undefined,
                 level: 'error',
                 message: 'GET https://httpstatuses.maor.io/500',
-                request: { headers: {}, method: 'GET', url: 'https://httpstatuses.maor.io/500' },
+                request: { headers: {}, method: 'GET', url: 'https://httpstatuses.maor.io/500', body: undefined },
                 response: { code: 500, headers: {} },
                 meta: {
                     body: { code: 500, description: 'Internal Server Error' }
@@ -84,7 +84,7 @@ describe('loggedFetch', () => {
                 endedAt: expect.toBeIsoDate(),
                 level: 'error',
                 message: 'GET https://doesnotexists.dev/500',
-                request: { headers: {}, method: 'GET', url: 'https://doesnotexists.dev/500' },
+                request: { headers: {}, method: 'GET', url: 'https://doesnotexists.dev/500', body: undefined },
                 response: undefined,
                 error: {
                     message: 'getaddrinfo ENOTFOUND doesnotexists.dev',
