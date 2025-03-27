@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
+import { SyncMode } from '@nangohq/types/lib/sync/index.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { normalizeSyncParams } from './helpers.js';
@@ -18,11 +19,22 @@ const bodyValidation = z
                 errorMap: () => ({ message: 'Each sync must be either a string or a { name: string, variant: string } object' })
             })
         ),
+        sync_mode: z.string().toUpperCase().pipe(z.nativeEnum(SyncMode)).optional(),
         full_resync: z.boolean().optional(),
         connection_id: z.string().optional(),
         provider_config_key: z.string().optional()
     })
-    .strict();
+    .strict()
+    // Either sync_mode or full_resync is required. Error message incentive to use sync_mode.
+    .refine(
+        (input) => {
+            if (input.sync_mode === undefined && input.full_resync === undefined) {
+                return false;
+            }
+            return true;
+        },
+        { message: 'sync_mode is required' }
+    );
 
 const headersValidation = z.object({
     'provider-config-key': z.string().optional(),
@@ -56,8 +68,8 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
     const body: PostPublicTrigger['Body'] = valBody.data;
     const headers: PostPublicTrigger['Headers'] = valHeaders.data;
 
-    const provider_config_key: string | undefined = body.provider_config_key || headers['provider-config-key'];
-    if (!provider_config_key) {
+    const providerConfigKey: string | undefined = body.provider_config_key || headers['provider-config-key'];
+    if (!providerConfigKey) {
         res.status(400).send({ error: { code: 'missing_provider_config_key', message: 'Missing provider_config_key. Provide it in the body or headers.' } });
         return;
     }
@@ -68,19 +80,23 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
         return;
     }
 
-    const { syncs, full_resync } = body;
+    const { syncs, sync_mode, full_resync } = body;
 
     const syncIdentifiers = normalizeSyncParams(syncs);
 
     const { environment } = res.locals;
 
+    const command = getCommandFromSyncModeOrFullResync(sync_mode, full_resync);
+    const shouldDeleteRecords = sync_mode === SyncMode.FULL_REFRESH_AND_CLEAR_CACHE;
+
     const { success, error } = await syncManager.runSyncCommand({
         recordsService,
         orchestrator,
         environment,
-        providerConfigKey: provider_config_key,
+        providerConfigKey,
+        deleteRecords: shouldDeleteRecords,
         syncIdentifiers,
-        command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
+        command,
         logContextGetter,
         connectionId,
         initiator: 'API call'
@@ -93,3 +109,14 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 
     res.status(200).send({ success: true });
 });
+
+/**
+ * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
+ */
+function getCommandFromSyncModeOrFullResync(sync_mode: SyncMode | undefined, full_resync: boolean | undefined) {
+    if (sync_mode) {
+        return sync_mode === SyncMode.INCREMENTAL ? SyncCommand.RUN : SyncCommand.RUN_FULL;
+    }
+
+    return full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN;
+}
