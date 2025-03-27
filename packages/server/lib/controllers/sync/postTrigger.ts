@@ -5,6 +5,7 @@ import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { normalizeSyncParams } from './helpers.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
@@ -69,7 +70,7 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 
     const { syncs, full_resync } = body;
 
-    const syncIdentifiers = normalizedSyncParams(syncs);
+    const syncIdentifiers = normalizeSyncParams(syncs);
 
     const { environment } = res.locals;
 
@@ -92,17 +93,3 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 
     res.status(200).send({ success: true });
 });
-
-function normalizedSyncParams(syncs: (string | { name: string; variant: string })[]): { syncName: string; syncVariant: string }[] {
-    return syncs.map((sync) => {
-        if (typeof sync === 'string') {
-            if (sync.includes('::')) {
-                const [name, variant] = sync.split('::');
-                return { syncName: name ?? '', syncVariant: variant ?? '' };
-            }
-            return { syncName: sync, syncVariant: 'base' };
-        }
-
-        return { syncName: sync.name, syncVariant: sync.variant };
-    });
-}
