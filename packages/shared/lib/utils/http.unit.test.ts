@@ -9,11 +9,12 @@ import type { BufferTransport } from '@nangohq/logs/lib/transport';
 describe('loggedFetch', () => {
     it('should get and log success', async () => {
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
-        const fetchRes = await loggedFetch({
-            url: new URL('https://httpstatuses.maor.io/200'),
-            context: 'auth',
-            logCtx: buffer
-        });
+        const fetchRes = await loggedFetch(
+            {
+                url: new URL('https://httpstatuses.maor.io/200')
+            },
+            { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+        );
         const { body } = fetchRes.unwrap();
         expect(body).toStrictEqual({ code: 200, description: 'OK' });
         expect((buffer.transport as BufferTransport).buffer).toStrictEqual([
@@ -35,11 +36,12 @@ describe('loggedFetch', () => {
 
     it('should get and log failure', async () => {
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
-        const fetchRes = await loggedFetch({
-            url: new URL('https://httpstatuses.maor.io/500'),
-            context: 'auth',
-            logCtx: buffer
-        });
+        const fetchRes = await loggedFetch(
+            {
+                url: new URL('https://httpstatuses.maor.io/500')
+            },
+            { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+        );
         const { body } = fetchRes.unwrap();
         expect(body).toStrictEqual({ code: 500, description: 'Internal Server Error' });
         expect((buffer.transport as BufferTransport).buffer).toStrictEqual([
@@ -64,11 +66,12 @@ describe('loggedFetch', () => {
 
     it('should handle network error', async () => {
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
-        const fetchRes = await loggedFetch({
-            url: new URL('https://doesnotexists.dev/500'),
-            context: 'auth',
-            logCtx: buffer
-        });
+        const fetchRes = await loggedFetch(
+            {
+                url: new URL('https://doesnotexists.dev/500')
+            },
+            { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+        );
         if (fetchRes.isOk()) {
             throw new Error('should have failed');
         }
