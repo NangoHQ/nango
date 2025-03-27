@@ -88,7 +88,7 @@ setupAuth(web);
 // --- Security
 const webCorsHandler = cors({
     maxAge: 600,
-    allowedHeaders: 'Origin, Content-Type',
+    allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
     origin: [basePublicUrl, baseUrl],
     credentials: true
