@@ -92,7 +92,7 @@ describe(`POST ${endpoint}`, () => {
             expect(res.res.status).toEqual(400);
             expect(res.json).toStrictEqual({
                 error: {
-                    code: 'invalid_body',
+                    code: 'missing_provider_config_key',
                     message: 'Missing provider_config_key. Provide it in the body or headers.'
                 }
             });
@@ -115,7 +115,7 @@ describe(`POST ${endpoint}`, () => {
             expect(res.res.status).toEqual(400);
             expect(res.json).toStrictEqual({
                 error: {
-                    code: 'invalid_body',
+                    code: 'missing_connection_id',
                     message: 'Missing connection_id. Provide it in the body or headers.'
                 }
             });

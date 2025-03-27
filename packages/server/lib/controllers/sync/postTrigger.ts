@@ -58,13 +58,13 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 
     const provider_config_key: string | undefined = body.provider_config_key || headers['provider-config-key'];
     if (!provider_config_key) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Missing provider_config_key. Provide it in the body or headers.' } });
+        res.status(400).send({ error: { code: 'missing_provider_config_key', message: 'Missing provider_config_key. Provide it in the body or headers.' } });
         return;
     }
 
     const connectionId: string | undefined = body.connection_id || headers['connection-id'];
     if (!connectionId) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Missing connection_id. Provide it in the body or headers.' } });
+        res.status(400).send({ error: { code: 'missing_connection_id', message: 'Missing connection_id. Provide it in the body or headers.' } });
         return;
     }
 

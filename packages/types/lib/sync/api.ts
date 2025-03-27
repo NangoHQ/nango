@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint, ResDefaultErrors } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 
 export type PostPublicTrigger = Endpoint<{
     Method: 'POST';
@@ -14,7 +14,7 @@ export type PostPublicTrigger = Endpoint<{
         'connection-id'?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ResDefaultErrors;
+    Error: ApiError<'missing_provider_config_key' | 'missing_connection_id'>;
 }>;
 
 export type PostSyncVariant = Endpoint<{
