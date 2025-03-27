@@ -42,6 +42,7 @@ import { getPublicProviders } from './controllers/providers/getProviders.js';
 import proxyController from './controllers/proxy.controller.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { getPublicScriptsConfig } from './controllers/scripts/config/getScriptsConfig.js';
+import { getPublicScriptsConfigOpenAI } from './controllers/scripts/config/getScriptsConfigOpenAI.js';
 import { deleteSyncVariant } from './controllers/sync/deleteSyncVariant.js';
 import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmation.js';
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
@@ -210,6 +211,8 @@ publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
 // @deprecated use /flow/configs
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
+// OpenAI function format
+publicAPI.route('/scripts/config/openai').get(apiAuth, getPublicScriptsConfigOpenAI);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
