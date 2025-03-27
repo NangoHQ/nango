@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { envs } from '@nangohq/logs';
 import { seeders, syncManager } from '@nangohq/shared';
-import { SyncMode } from '@nangohq/types/lib/sync/index.js';
 
 import { runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -71,7 +70,7 @@ describe(`POST ${endpoint}`, () => {
                         {
                             code: 'invalid_enum_value',
                             message:
-                                "Invalid enum value. Expected 'INCREMENTAL' | 'FULL_REFRESH' | 'FULL_REFRESH_AND_CLEAR_CACHE', received 'INVALID-SYNC-MODE'",
+                                "Invalid enum value. Expected 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache', received 'invalid-sync-mode'",
                             path: ['sync_mode']
                         },
                         {
@@ -121,7 +120,7 @@ describe(`POST ${endpoint}`, () => {
                 token: env.secret_key,
                 body: {
                     syncs: ['sync1'],
-                    sync_mode: SyncMode.FULL_REFRESH,
+                    sync_mode: 'full_refresh',
                     connection_id: '123'
                 },
                 headers: {}
@@ -144,7 +143,7 @@ describe(`POST ${endpoint}`, () => {
                 token: env.secret_key,
                 body: {
                     syncs: ['sync1'],
-                    sync_mode: SyncMode.FULL_REFRESH,
+                    sync_mode: 'full_refresh',
                     provider_config_key: 'test-key'
                 },
                 headers: {}
@@ -168,7 +167,8 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 syncs: ['sync1'],
-                sync_mode: SyncMode.FULL_REFRESH
+                sync_mode: 'full_refresh',
+                connection_id: '123'
             },
             headers: {
                 'provider-config-key': 'test-key',
@@ -187,7 +187,7 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 syncs: ['sync1', 'sync2'],
-                sync_mode: SyncMode.FULL_REFRESH,
+                sync_mode: 'full_refresh',
                 provider_config_key: 'test-key',
                 connection_id: '123'
             },
@@ -217,7 +217,7 @@ describe(`POST ${endpoint}`, () => {
                     { name: 'sync1', variant: 'v1' },
                     { name: 'sync2', variant: 'v2' }
                 ],
-                sync_mode: SyncMode.FULL_REFRESH,
+                sync_mode: 'full_refresh',
                 provider_config_key: 'test-key',
                 connection_id: '123'
             },

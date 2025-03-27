@@ -1,5 +1,1 @@
-export enum SyncMode {
-    INCREMENTAL = 'INCREMENTAL',
-    FULL_REFRESH = 'FULL_REFRESH',
-    FULL_REFRESH_AND_CLEAR_CACHE = 'FULL_REFRESH_AND_CLEAR_CACHE'
-}
+export type SyncMode = 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache';

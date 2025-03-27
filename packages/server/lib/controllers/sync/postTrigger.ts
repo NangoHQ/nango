@@ -3,14 +3,13 @@ import { z } from 'zod';
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
-import { SyncMode } from '@nangohq/types/lib/sync/index.js';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { normalizeSyncParams } from './helpers.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { PostPublicTrigger } from '@nangohq/types';
+import type { PostPublicTrigger, SyncMode } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
@@ -19,7 +18,11 @@ const bodyValidation = z
                 errorMap: () => ({ message: 'Each sync must be either a string or a { name: string, variant: string } object' })
             })
         ),
-        sync_mode: z.string().toUpperCase().pipe(z.nativeEnum(SyncMode)).optional(),
+        sync_mode: z
+            .string()
+            .toLowerCase()
+            .pipe(z.enum(['incremental', 'full_refresh', 'full_refresh_and_clear_cache']))
+            .optional(),
         full_resync: z.boolean().optional(),
         connection_id: z.string().optional(),
         provider_config_key: z.string().optional()
@@ -87,7 +90,7 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
     const { environment } = res.locals;
 
     const command = getCommandFromSyncModeOrFullResync(sync_mode, full_resync);
-    const shouldDeleteRecords = sync_mode === SyncMode.FULL_REFRESH_AND_CLEAR_CACHE;
+    const shouldDeleteRecords = sync_mode === 'full_refresh_and_clear_cache';
 
     const { success, error } = await syncManager.runSyncCommand({
         recordsService,
@@ -115,7 +118,7 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
  */
 function getCommandFromSyncModeOrFullResync(sync_mode: SyncMode | undefined, full_resync: boolean | undefined) {
     if (sync_mode) {
-        return sync_mode === SyncMode.INCREMENTAL ? SyncCommand.RUN : SyncCommand.RUN_FULL;
+        return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
     }
 
     return full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN;
