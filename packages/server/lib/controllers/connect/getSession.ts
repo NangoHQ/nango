@@ -1,8 +1,10 @@
-import type { GetConnectSession } from '@nangohq/types';
 import db from '@nangohq/database';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import * as endUserService from '@nangohq/shared';
-import { requireEmptyQuery, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import type { GetConnectSession } from '@nangohq/types';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -61,7 +63,14 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     }
     if (connectSession.integrationsConfigDefaults) {
         response.data.integrations_config_defaults = Object.fromEntries(
-            Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [key, { connection_config: value.connectionConfig }])
+            Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [
+                key,
+                {
+                    connection_config: value.connectionConfig,
+                    // For debugging reason, it's enforced in the backend
+                    authorization_params: value.authorization_params
+                }
+            ])
         );
     }
     if (connectSession.connectionId) {

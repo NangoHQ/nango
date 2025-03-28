@@ -1,14 +1,18 @@
+import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { TimestampsAndDeletedCorrect } from '../db.js';
-import type { AuthModeType, AuthOperationType, AllAuthCredentials } from '../auth/api.js';
+import type { EndUser } from '../endUser/index.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { DBTeam } from '../team/db.js';
-import type { Merge, Simplify } from 'type-fest';
-import type { EndUser } from '../endUser/index.js';
 import type { ReplaceInObject } from '../utils.js';
+import type { Merge, Simplify } from 'type-fest';
 
 export type Metadata = Record<string, unknown>;
 
-export type ConnectionConfig = Record<string, any>;
+export interface ConnectionConfig {
+    [key: string]: any;
+    oauth_scopes?: string;
+    authorization_params?: Record<string, string>;
+}
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {
     id: number;
