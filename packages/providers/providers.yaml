@@ -3930,7 +3930,7 @@ github-pat:
             description: The Personal Access Token to your Github account
             pattern: '^(?:github_pat|ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,255}$'
             example: 'github_pat_***********************xRIoxmseCYRHDDIOFfTOyKex'
-            doc_section: '#step-2-finding-your-pat'
+            doc_section: '#step-1-finding-your-personal-access-token'
 
 gitlab:
     display_name: GitLab
