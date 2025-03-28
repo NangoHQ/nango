@@ -1,10 +1,11 @@
 import useSWR from 'swr';
-import type { EnvironmentAndAccount } from '@nangohq/server';
+
 import { apiFetch, swrFetcher } from '../utils/api';
-import type { PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
+
+import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
 
 export function useEnvironment(env: string) {
-    const { data, error, mutate } = useSWR<{ environmentAndAccount: EnvironmentAndAccount }>(`/api/v1/environment?env=${env}`, swrFetcher, {});
+    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(`/api/v1/environments/current?env=${env}`, swrFetcher, {});
 
     const loading = !data && !error;
 

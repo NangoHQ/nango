@@ -1,7 +1,5 @@
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import type { TaskAction } from '@nangohq/nango-orchestrator';
-import type { Config } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
     LogActionEnum,
@@ -13,14 +11,18 @@ import {
     getEndUserByConnectionId,
     getSyncConfigRaw
 } from '@nangohq/shared';
-import { logContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
-import { startScript } from './operations/start.js';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
+
 import { bigQueryClient, slackService } from '../clients.js';
+import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import db from '@nangohq/database';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+
+import type { TaskAction } from '@nangohq/nango-orchestrator';
+import type { Config } from '@nangohq/shared';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
-import { setTaskSuccess, setTaskFailed } from './operations/state.js';
 
 export async function startAction(task: TaskAction): Promise<Result<void>> {
     let account: DBTeam | undefined;
@@ -184,7 +186,7 @@ export async function handleActionError({ taskId, nangoProps, error }: { taskId:
         syncName: nangoProps.syncConfig.sync_name,
         provider: nangoProps.provider,
         providerConfigKey: nangoProps.providerConfigKey,
-        activityLogId: nangoProps.activityLogId!,
+        activityLogId: nangoProps.activityLogId,
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         team: account,

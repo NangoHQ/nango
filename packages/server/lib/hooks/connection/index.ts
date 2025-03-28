@@ -14,3 +14,6 @@ export { default as adobeUmapiPostConnection } from './providers/adobe-umapi/pos
 export { default as basecampPostConnection } from './providers/basecamp/post-connection.js';
 export { default as lastpassCredentialsVerification } from './providers/lastpass/credentials-verification.js';
 export { default as expensifyCredentialsVerification } from './providers/expensify/credentials-verification.js';
+export { default as awsIamCredentialsVerification } from './providers/aws-iam/credentials-verification.js';
+export { default as bitdefenderCredentialsVerification } from './providers/bitdefender/credentials-verification.js';
+export { default as ripplingShopAppPostConnection } from './providers/rippling-shop-app/post-connection.js';

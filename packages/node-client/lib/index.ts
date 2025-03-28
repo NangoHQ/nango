@@ -40,9 +40,9 @@ import type {
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
+    StandardNangoConfig,
     NangoProps,
     ProxyConfiguration,
-    StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';

@@ -1,15 +1,20 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { Result } from '@nangohq/utils';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok, stringTimingSafeEqual, tagTraceUser } from '@nangohq/utils';
-import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
-import db from '@nangohq/database';
-import * as connectSessionService from '../services/connectSession.service.js';
-import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
+import path from 'node:path';
+
 import tracer from 'dd-trace';
+
+import db from '@nangohq/database';
+import { ErrorSourceEnum, LogActionEnum, environmentService, errorManager, userService } from '@nangohq/shared';
+import { Err, Ok, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
+
+import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
+import { envs } from '../env.js';
+import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import * as connectSessionService from '../services/connectSession.service.js';
+
 import type { RequestLocals } from '../utils/express.js';
 import type { ConnectSession, DBEnvironment, DBTeam, EndUser } from '@nangohq/types';
-import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
-import { envs } from '../env.js';
+import type { Result } from '@nangohq/utils';
+import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
 
@@ -456,7 +461,8 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         res.locals['user'] = user;
 
-        if (ignoreEnvPaths.includes(req.route.path)) {
+        const fullPath = path.join(req.baseUrl, req.route.path);
+        if (ignoreEnvPaths.includes(fullPath)) {
             next();
             return;
         }

@@ -1,10 +1,12 @@
 import { toast } from 'react-toastify';
+
+import { globalEnv } from './env';
 import { useSignout } from './user';
 
 import type { PostSignup } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(input, {
+    return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
         credentials: 'include' // For cookies

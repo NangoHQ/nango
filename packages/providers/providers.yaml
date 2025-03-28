@@ -58,6 +58,41 @@ accelo:
             suffix: .api.accelo.com
             prefix: https://
 
+active-campaign:
+    display_name: ActiveCampaign
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            api-token: ${apiKey}
+        base_url: https://${connectionConfig.hostname}/api
+        verification:
+            method: GET
+            endpoints:
+                - /3/users/me
+    docs: https://docs.nango.dev/integrations/all/active-campaign
+    docs_connect: https://docs.nango.dev/integrations/all/active-campaign/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname for your ActiveCampaign account
+            format: hostname
+            prefix: https://
+            example: company.activehosted.com
+            doc_section: '#step-1-finding-your-hostname'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your ActiveCampaign account
+            pattern: '^[a-f0-9]{72}$'
+            example: b4f1a7c9d8e56320a9db472fe6c8351f2e0a4d98b7f6c3e5d9a2f4701b3e8d6c3455abbe
+            doc_section: '#step-2-finding-your-api-key'
+
 acuity-scheduling:
     display_name: Acuity Scheduling
     categories:
@@ -770,6 +805,8 @@ attio:
         grant_type: refresh_token
     proxy:
         base_url: https://app.attio.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
@@ -927,6 +964,7 @@ aws-iam:
             region: ${connectionConfig.region}
         retry:
             at: 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/aws-iam
     docs_connect: https://docs.nango.dev/integrations/all/aws-iam/connect
     credentials:
@@ -1188,6 +1226,7 @@ bitdefender:
         base_url: ${connectionConfig.ACCESS_URL}
         retry:
             after: 'retry-after'
+    credentials_verification_script: bitdefenderCredentialsVerification
     docs: https://docs.nango.dev/integrations/all/bitdefender
     docs_connect: https://docs.nango.dev/integrations/all/bitdefender/connect
     credentials:
@@ -3752,23 +3791,30 @@ guru-scim:
     display_name: Guru (SCIM)
     categories:
         - knowledge-base
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://api.getguru.com/api/scim
         headers:
-            authorization: Bearer ${apiKey}
+            content-type: application/scim+json
         verification:
             method: GET
             endpoints:
                 - /v2/Users
+            headers:
+                content-type: application/scim+json
     docs: https://docs.nango.dev/integrations/all/guru-scim
     docs_connect: https://docs.nango.dev/integrations/all/guru-scim/connect
     credentials:
-        apiKey:
+        username:
             type: string
-            title: Guru API Token
-            description: The SCIM API token for your Guru account
-            doc_section: '#step-1-finding-guru-api-token'
+            title: SCIM Username
+            description: The SCIM username for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
+        password:
+            type: string
+            title: SCIM Token
+            description: The SCIM token for your Guru account
+            doc_section: '#step-1-finding-guru-scim-credentials'
 
 github:
     display_name: GitHub (User OAuth)
@@ -4048,6 +4094,8 @@ google-calendar:
             limit_name_in_request: maxSize
             cursor_name_in_request: pageToken
             response_path: items
+        retry:
+            error_code: 403
     docs: https://docs.nango.dev/integrations/all/google-calendar
 
 google-docs:
@@ -4599,15 +4647,15 @@ hibob-service-user:
     credentials:
         username:
             type: string
-            title: User name
+            title: Hibob ID
             description: Your Hibob ID
             doc_section: '#step-1-finding-your-hibob-service-user-id'
         password:
             type: string
-            title: Password
+            title: Hibob Token
             description: Your Hibob Token
             default_value: ''
-            hidden: true
+            secret: true
             doc_section: '#step-2-finding-your-hibob-token'
     docs: https://docs.nango.dev/integrations/all/hibob-service-user
     docs_connect: https://docs.nango.dev/integrations/all/hibob-service-user/connect
@@ -4991,7 +5039,7 @@ keeper-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/keeper-scim
-    docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
+    docs_connect: https://docs.nango.dev/integrations/all/keeper-scim/connect
     credentials:
         apiKey:
             type: string
@@ -7424,6 +7472,8 @@ ring-central:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.ringcentral.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central
 
 ring-central-sandbox:
@@ -7440,6 +7490,8 @@ ring-central-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://platform.devtest.ringcentral.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/ring-central-sandbox
 
 rippling:
@@ -7459,6 +7511,31 @@ rippling:
             title: API Token
             description: The API Token for your Rippling account
             doc_section: '#step-1-generating-your-api-token'
+
+rippling-shop-app:
+    display_name: Rippling Shop App
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://app.rippling.com/apps/PLATFORM/${connectionConfig.appName}/authorize
+    token_url: https://api.rippling.com/api/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.rippling.com
+    post_connection_script: ripplingShopAppPostConnection
+    docs: https://docs.nango.dev/integrations/all/rippling-shop-app
+    connection_config:
+        appName:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 segment:
     display_name: Segment
     categories:
@@ -8106,7 +8183,7 @@ shopify-api-key:
             title: API Access Token
             description: The API access token generated
             example: shpat_***************c03266f
-            pattern: '^shpat_[a-f0-9]{32}$'
+            pattern: '^(shpat|shpca|shppa)_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
 
 shopify-scim:
@@ -8668,6 +8745,36 @@ thrivecart-api-key:
             description: The API key for your ThriveCart account
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
+
+trakstar-hire:
+    display_name: Trakstar Hire
+    categories:
+        - ats
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.recruiterbox.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/openings
+            headers:
+                content-type: application/json
+    docs: https://docs.nango.dev/integrations/all/trakstar-hire
+    docs_connect: https://docs.nango.dev/integrations/all/trakstar-hire/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Trakstar API Key
+            pattern: '^[a-f0-9]+$'
+            example: a3f8b92c4d6e715f0a1b3c4d5e6f7890
+            doc_section: '#step-1-generating-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 tremendous:
     display_name: Tremendous
@@ -9508,6 +9615,23 @@ xero:
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
+xero-oauth2-cc:
+    display_name: Xero (Client Credentials)
+    categories:
+        - accounting
+        - popular
+    auth_mode: OAUTH2_CC
+    token_url: https://identity.xero.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.xero.com
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/xero-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/xero-oauth2-cc/connect
+
 yahoo:
     display_name: Yahoo
     categories:
@@ -9604,6 +9728,7 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string

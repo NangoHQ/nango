@@ -1,12 +1,11 @@
 import tracer from 'dd-trace';
-import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
-import type { Result } from '@nangohq/utils';
-import type { TaskWebhook } from '@nangohq/nango-orchestrator';
-import type { Config, Job, Sync } from '@nangohq/shared';
+
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
 import {
     NangoError,
-    SyncStatus,
     SyncJobsType,
+    SyncStatus,
     configService,
     createSyncJob,
     environmentService,
@@ -17,14 +16,18 @@ import {
     getSyncConfigRaw,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { bigQueryClient } from '../clients.js';
-import { logContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
-import { startScript } from './operations/start.js';
+import { Err, Ok, metrics, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
-import db from '@nangohq/database';
+
+import { bigQueryClient } from '../clients.js';
+import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+
+import type { TaskWebhook } from '@nangohq/nango-orchestrator';
+import type { Config, Job, Sync } from '@nangohq/shared';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, NangoProps } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
     let team: DBTeam | undefined;
@@ -291,7 +294,7 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         syncJobId,
         providerConfigKey: nangoProps.providerConfigKey,
         providerConfig,
-        activityLogId: nangoProps.activityLogId || 'unknown',
+        activityLogId: nangoProps.activityLogId,
         models: nangoProps.syncConfig.models || [],
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
@@ -327,7 +330,7 @@ async function onFailure({
     providerConfig: Config | null;
     providerConfigKey: string;
     models: string[];
-    activityLogId: string;
+    activityLogId?: string | undefined;
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];

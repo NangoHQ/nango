@@ -1,21 +1,19 @@
-import type { GetIntegration } from '@nangohq/types';
-import type { EnvironmentAndAccount } from '@nangohq/server';
-import { Input } from '../../../../../components/ui/input/Input';
-import { InfoBloc } from '../../../../../components/InfoBloc';
-import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
-import { CopyButton } from '../../../../../components/ui/button/CopyButton';
-import { DeleteIntegrationButton } from './Delete';
-import { Button } from '../../../../../components/ui/button/Button';
 import { useState } from 'react';
-import { useStore } from '../../../../../store';
-import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
-import { useToast } from '../../../../../hooks/useToast';
 import { mutate } from 'swr';
 
-export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration },
-    environment
-}) => {
+import { DeleteIntegrationButton } from './Delete';
+import { InfoBloc } from '../../../../../components/InfoBloc';
+import { Button } from '../../../../../components/ui/button/Button';
+import { CopyButton } from '../../../../../components/ui/button/CopyButton';
+import { Input } from '../../../../../components/ui/input/Input';
+import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
+import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
+import { useToast } from '../../../../../hooks/useToast';
+import { useStore } from '../../../../../store';
+
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
+
+export const SettingsApp: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data: { integration }, environment }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);
