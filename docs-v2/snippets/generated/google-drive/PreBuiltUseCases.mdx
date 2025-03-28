@@ -15,10 +15,16 @@
 </Accordion>
 
 
+<Accordion title="Drives">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /drives` | Lists all shared drives the user has access to. Returns paginated results with up to 100 drives per page. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/list-drives.md) |
+</Accordion>
+
+
 <Accordion title="Folders">
 | Endpoint | Description | Readme |
 | - | - | - |
-| `GET /fetch-folders` | Fetches the content of a folder given its ID. The output is a<br />list of folders within the specified folder if an id is provided.<br />If no id is provided, the output is a list of folders at the root level. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/fetch-folders.md) |
 | `GET /folder-content` | Fetches the top-level content (files and folders) of a folder given its ID.<br />If no folder ID is provided, it fetches content from the root folder. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/actions/folder-content.md) |
 | `GET /root-folders` | Sync the folders at the root level of a google drive. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/syncs/folders.md) |
 </Accordion>

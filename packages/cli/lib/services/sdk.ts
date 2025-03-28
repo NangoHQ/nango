@@ -1,12 +1,14 @@
-import { Nango } from '@nangohq/node';
-import type { ProxyConfiguration } from '@nangohq/runner-sdk';
-import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase, BASE_VARIANT } from '@nangohq/runner-sdk';
-import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { Metadata, NangoProps, UserLogParameters, GetPublicConnection } from '@nangohq/types';
 import { isAxiosError } from 'axios';
-import type { AxiosError, AxiosResponse } from 'axios';
-import type { DryRunService } from './dryrun.service';
 import chalk from 'chalk';
+
+import { Nango } from '@nangohq/node';
+import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+
+import type { DryRunService } from './dryrun.service';
+import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
+import type { ProxyConfiguration } from '@nangohq/runner-sdk';
+import type { GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
     info: 'info',
@@ -16,6 +18,12 @@ const logLevelToLogger = {
     http: 'info',
     verbose: 'debug',
     silly: 'debug'
+} as const;
+const logLevelToColor = {
+    info: 'white',
+    debug: 'gray',
+    error: 'red',
+    warn: 'yellow'
 } as const;
 
 export class NangoActionCLI extends NangoActionBase {
@@ -65,7 +73,7 @@ export class NangoActionCLI extends NangoActionBase {
         if (args.length > 1 && 'type' in args[1] && args[1].type === 'http') {
             console[logLevel](args[0], { status: args[1]?.response?.code || 'xxx' });
         } else {
-            console[logLevel](...args);
+            console[logLevel](chalk[logLevelToColor[logLevel]](...args));
         }
     }
 

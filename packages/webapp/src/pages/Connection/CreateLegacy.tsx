@@ -1,28 +1,30 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { useState, useEffect } from 'react';
-import { useSWRConfig } from 'swr';
-import Nango, { AuthError } from '@nangohq/frontend';
-import { Prism } from '@mantine/prism';
-import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
-import type { Integration } from '@nangohq/server';
+import { HelpCircle } from '@geist-ui/icons';
+import { Prism } from '@mantine/prism';
+import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useSearchParam } from 'react-use';
+import { useSWRConfig } from 'swr';
 
-import useSet from '../../hooks/useSet';
-import { isCloudProd } from '../../utils/utils';
-import { useGetIntegrationListAPI, useGetHmacAPI } from '../../utils/api';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import DashboardLayout from '../../layout/DashboardLayout';
-import TagsInput from '../../components/ui/input/TagsInput';
+import Nango, { AuthError } from '@nangohq/frontend';
+
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import SecretInput from '../../components/ui/input/SecretInput';
 import SecretTextArea from '../../components/ui/input/SecretTextArea';
-import { useStore } from '../../store';
-import type { AuthModeType } from '@nangohq/types';
+import TagsInput from '../../components/ui/input/TagsInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { Helmet } from 'react-helmet';
-import { useSearchParam } from 'react-use';
+import useSet from '../../hooks/useSet';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
+import { useAnalyticsTrack } from '../../utils/analytics';
+import { useGetHmacAPI, useGetIntegrationListAPI } from '../../utils/api';
 import { globalEnv } from '../../utils/env';
+import { isCloudProd } from '../../utils/utils';
+
+import type { Integration } from '@nangohq/server';
+import type { AuthModeType } from '@nangohq/types';
 
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
@@ -107,9 +109,9 @@ export const ConnectionCreateLegacy: React.FC = () => {
         };
 
         if (environmentAndAccount) {
-            const { environment, host } = environmentAndAccount;
+            const { environment } = environmentAndAccount;
             setPublicKey(environment.public_key);
-            setHostUrl(host || globalEnv.apiUrl);
+            setHostUrl(globalEnv.apiUrl);
             setWebsocketsPath(environment.websockets_path || '');
             setIsHmacEnabled(Boolean(environment.hmac_key));
         }

@@ -245,7 +245,8 @@ export class SyncManagerService {
         command,
         logContextGetter,
         connectionId,
-        initiator
+        initiator,
+        deleteRecords
     }: {
         recordsService: RecordsServiceInterface;
         orchestrator: Orchestrator;
@@ -256,6 +257,7 @@ export class SyncManagerService {
         logContextGetter: LogContextGetter;
         connectionId?: string;
         initiator: string;
+        deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
@@ -295,7 +297,8 @@ export class SyncManagerService {
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         } else {
@@ -320,7 +323,8 @@ export class SyncManagerService {
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         }

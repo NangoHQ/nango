@@ -293,6 +293,7 @@ async function testCredentials(
 
         const connection = await connectionService.updateConnection({
             ...oldConnection,
+            last_fetched_at: new Date(),
             credentials_expires_at: getExpiresAtFromCredentials(oldConnection.credentials),
             last_refresh_failure: null,
             last_refresh_success: new Date(),
@@ -406,6 +407,7 @@ async function refreshCredentialsIfNeeded({
         connectionToRefresh.credentials = newCredentials;
         connectionToRefresh = await connectionService.updateConnection({
             ...connectionToRefresh,
+            last_fetched_at: new Date(),
             credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
             last_refresh_failure: null,
             last_refresh_success: new Date(),

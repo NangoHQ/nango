@@ -383,6 +383,6 @@ export abstract class NangoActionBase {
             props.body = options.body;
         }
 
-        return await fetch(options.url);
+        return await fetch(options.url, props);
     }
 }

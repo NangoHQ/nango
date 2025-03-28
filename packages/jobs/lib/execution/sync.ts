@@ -29,7 +29,7 @@ import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { logger } from '../logger.js';
-import { abortScript } from './operations/abort.js';
+import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
@@ -407,7 +407,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
 
         await slackService.removeFailingConnection({
             connection,
-            name: nangoProps.syncConfig.sync_name,
+            name: nangoProps.syncVariant === 'base' ? nangoProps.syncConfig.sync_name : `${nangoProps.syncConfig.sync_name}::${nangoProps.syncVariant}`,
             type: 'sync',
             originalActivityLogId: nangoProps.activityLogId,
             provider: nangoProps.provider
@@ -533,7 +533,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         }
         const { account: team, environment } = accountAndEnv;
 
-        const abortedScript = await abortScript({ taskId: task.abortedTask.id, teamId: team.id });
+        const abortedScript = await abortTaskWithId({ taskId: task.abortedTask.id, teamId: team.id });
         if (abortedScript.isErr()) {
             logger.error(`failed to abort script for task ${task.abortedTask.id}`, abortedScript.error);
         }
@@ -660,7 +660,7 @@ async function onFailure({
                     account: team,
                     environment,
                     connection,
-                    name: syncName,
+                    name: syncVariant === 'base' ? syncName : `${syncName}::${syncVariant}`,
                     type: 'sync',
                     originalActivityLogId: logCtx.id,
                     provider
