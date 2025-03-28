@@ -1,6 +1,6 @@
 import type { Scheduler, Task } from '@nangohq/scheduler';
 import { validateTask } from './clients/validate.js';
-import { Err, stringifyError } from '@nangohq/utils';
+import { Err } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { JsonValue } from 'type-fest';
@@ -38,7 +38,7 @@ export async function scheduleAbortTask({ scheduler, task }: { scheduler: Schedu
         heartbeatTimeoutSecs: 60
     });
     if (abortTask.isErr()) {
-        logger.error(`Failed to create abort task: ${stringifyError(abortTask.error)}`);
+        logger.error(`Failed to create abort task`, abortTask.error);
         return Err(abortTask.error);
     }
     return abortTask;

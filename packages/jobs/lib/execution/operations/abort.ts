@@ -8,7 +8,7 @@ import type { TaskAbort } from '@nangohq/nango-orchestrator';
 export async function abortTask(task: TaskAbort): Promise<Result<void>> {
     const accountAndEnv = await environmentService.getAccountAndEnvironment({ environmentId: task.connection.environment_id });
     if (!accountAndEnv) {
-        throw new Error(`Account and environment not found`);
+        return Err(`Account and environment not found`);
     }
     const { account: team } = accountAndEnv;
 
