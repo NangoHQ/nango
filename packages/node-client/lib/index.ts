@@ -30,7 +30,8 @@ import type {
     GetPublicConnection,
     NangoRecord,
     PostSyncVariant,
-    DeleteSyncVariant
+    DeleteSyncVariant,
+    OpenAIFunction
 } from '@nangohq/types';
 import type {
     CreateConnectionOAuth1,
@@ -505,6 +506,22 @@ export class Nango {
     }
 
     /**
+     * Retrieves the configuration for all integration scripts in OpenAI function calling format
+     * @returns A promise that resolves with an array of OpenAI function definitions
+     */
+    public async getScriptsConfigOpenAI(): Promise<OpenAIFunction[]> {
+        const url = `${this.serverUrl}/scripts/config/openai`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
+    }
+
+    /**
      * =======
      * SYNCS
      *      GET RECORDS
@@ -707,7 +724,7 @@ export class Nango {
     }
 
     /**
-     * Override a sync’s default frequency for a specific connection, or revert to the default frequency
+     * Override a sync's default frequency for a specific connection, or revert to the default frequency
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param sync - The name of the sync to update (or an object with name and variant properties)
      * @param connectionId - The ID of the connection for which to update the sync frequency
