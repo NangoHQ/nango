@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { transformToOpenAIFunctions } from '../getScriptsConfigOpenAI.js';
+import { transformToOpenAIFunctions } from './getScriptsConfigOpenAI.js';
 import type { StandardNangoConfig, NangoSyncConfig, NangoModel, NangoModelField } from '@nangohq/types';
 
 describe('transformToOpenAIFunctions', () => {
