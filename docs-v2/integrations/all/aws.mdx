@@ -127,19 +127,19 @@ AWS offers multiple authentication methods. This guide covers two main approache
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
-| General | [AWS Management Console](https://console.aws.amazon.com/) |
-| | [AWS Documentation](https://docs.aws.amazon.com/) |
-| IAM | [IAM User Guide](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) |
-| | [Creating IAM Users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) |
-| | [Managing Access Keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) |
-| | [IAM API Reference](https://docs.aws.amazon.com/IAM/latest/APIReference/welcome.html) |
-| Cognito | [Amazon Cognito User Pools](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-as-user-directory.html) |
-| | [Setting Up the Hosted UI](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html) |
-| | [OAuth 2.0 Authorization Endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html) |
-| | [OAuth 2.0 Token Endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html) |
-| | [Cognito Service Endpoints](https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html) |
+-   [AWS Management Console](https://console.aws.amazon.com/)
+-   [AWS Documentation](https://docs.aws.amazon.com/)
+-   [IAM User Guide](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html)
+-   [Creating IAM Users](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html)
+-   [Managing Access Keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
+-   [IAM API Reference](https://docs.aws.amazon.com/IAM/latest/APIReference/welcome.html)
+-   [Amazon Cognito User Pools](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-as-user-directory.html)
+-   [Setting Up the Hosted UI](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html)
+-   [OAuth 2.0 Authorization Endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html)
+-   [OAuth 2.0 Token Endpoint](https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html)
+-   [Cognito Service Endpoints](https://docs.aws.amazon.com/general/latest/gr/cognito_identity.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws.mdx)</Note>
 
 ## Common Scopes
 
@@ -152,14 +152,6 @@ AWS offers multiple authentication methods. This guide covers two main approache
 | phone | Access to user's phone number |
 
 ## API gotchas
-
-- AWS uses different domain extensions for different regions, i.e., `us-east-2` for the US East (Ohio) region, `us-east-1` for the US East (N. Virginia) region, or `eu-west-1` for Europe (Ireland) region. It also uses different subdomains for different user pools.
-
-- AWS Cognito user pools can be configured with custom attributes, but these must be prefixed with `custom:` when referenced in API calls.
-
-- When using AWS IAM, be mindful of the principle of least privilege. Only grant the permissions that are absolutely necessary for your integration to function.
-
-- AWS service endpoints vary by region. Make sure you're using the correct endpoint for your region.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/aws.mdx)</Note>
 
