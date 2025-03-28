@@ -1,19 +1,22 @@
-import { useParams, Routes, Route, useLocation } from 'react-router-dom';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { ButtonLink } from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { useStore } from '../../../store';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { useGetIntegration } from '../../../hooks/useIntegration';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+
 import { Skeleton } from '../../../components/ui/Skeleton';
 import PageNotFound from '../../PageNotFound';
-import { useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
-import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { LeftNavBarItems } from '../../../components/LeftNavBar';
+import { Alert } from '../../../components/ui/Alert';
+import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+import { ButtonLink } from '../../../components/ui/button/Button';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useGetIntegration } from '../../../hooks/useIntegration';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -22,6 +25,7 @@ export const ShowIntegration: React.FC = () => {
 
     const env = useStore((state) => state.env);
 
+    const { plan } = useEnvironment(env);
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
 
@@ -40,6 +44,14 @@ export const ShowIntegration: React.FC = () => {
             ref.current.scrollTo({ top: 150 });
         }
     }, [location]);
+
+    const [isTrial, daysRemaining] = useMemo<[boolean, number]>(() => {
+        if (!plan || plan.name !== 'free' || !plan.trial_end_at) {
+            return [false, 0];
+        }
+        const days = Math.floor((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
+        return [days >= 0, days];
+    }, [plan]);
 
     if (loading) {
         return (
@@ -117,6 +129,11 @@ export const ShowIntegration: React.FC = () => {
                     {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
                 </ButtonLink>
             </nav>
+            {isTrial && (
+                <div className="mb-7">
+                    <Alert variant="warning">Integration endpoints are subject to a 2-week trial ({daysRemaining} days left)</Alert>
+                </div>
+            )}
             <Routes>
                 <Route path="/*" element={<EndpointsShow integration={data} />} />
                 <Route path="/settings" element={<SettingsShow data={data} />} />

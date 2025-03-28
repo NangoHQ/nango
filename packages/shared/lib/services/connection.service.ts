@@ -9,7 +9,6 @@ import configService from './config.service.js';
 import * as jwtClient from '../auth/jwt.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
 import environmentService from '../services/environment.service.js';
 import syncManager from './sync/manager.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
@@ -1520,15 +1519,17 @@ class ConnectionService {
     public async shouldCapUsage({
         providerConfigKey,
         environmentId,
-        type
+        type,
+        limit
     }: {
         providerConfigKey: string;
         environmentId: number;
         type: 'activate' | 'deploy';
+        limit: number;
     }): Promise<boolean> {
         const count = await this.countConnections({ environmentId, providerConfigKey });
 
-        if (count > CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (count > limit) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
                 void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);

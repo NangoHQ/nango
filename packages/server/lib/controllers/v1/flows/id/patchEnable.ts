@@ -1,10 +1,12 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { PatchFlowEnable } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { configService, connectionService, enableScriptConfig, getSyncConfigById, syncManager } from '@nangohq/shared';
-import { validationBody, validationParams } from './patchDisable.js';
 import { logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, enableScriptConfig, getSyncConfigById, syncManager } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { validationBody, validationParams } from './patchDisable.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+
+import type { PatchFlowEnable } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) => {
@@ -31,7 +33,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, account } = res.locals;
+    const { environment, plan } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -45,8 +47,13 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId: environment.id, type: 'activate' });
+    if (plan && plan.max_connection_with_scripts) {
+        const isCapped = await connectionService.shouldCapUsage({
+            providerConfigKey: body.providerConfigKey,
+            environmentId: environment.id,
+            type: 'activate',
+            limit: plan.max_connection_with_scripts
+        });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });
             return;
