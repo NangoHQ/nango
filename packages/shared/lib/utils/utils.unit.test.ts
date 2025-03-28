@@ -62,6 +62,14 @@ describe('interpolateIfNeeded', () => {
         expect(result).toBe('fallback@example.com');
     });
 
+    it('should return the fallback value when the first part cannot be interpolated', () => {
+        const input = '${connectionConfig.version} || 2022-11-28';
+        const result = utils.interpolateIfNeeded(input, {
+            connectionConfig: {}
+        });
+        expect(result).toBe('2022-11-28');
+    });
+
     it('should return only the first part if "||" is not present', () => {
         const input = '${connectionConfig.appDetails}';
         const result = utils.interpolateIfNeeded(input, {
