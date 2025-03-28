@@ -7536,7 +7536,7 @@ rippling-shop-app:
             title: Application Name
             description: The name of the application
             example: my-app
-            doc_section: '#step-1-find-your-application-name'
+            doc_section: '#step-1-finding-your-application-name'
 
 segment:
     display_name: Segment
