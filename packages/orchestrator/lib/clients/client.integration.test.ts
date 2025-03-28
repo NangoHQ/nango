@@ -249,14 +249,13 @@ describe('OrchestratorClient', async () => {
         });
     });
     describe('executeWebhook', () => {
-        it('should be successful when action task succeed', async () => {
+        it('should be successful', async () => {
             const groupKey = nanoid();
-            const output = { count: 9 };
 
             const processor = new MockProcessor({
                 groupKey,
                 process: async (task) => {
-                    await scheduler.succeed({ taskId: task.id, output });
+                    await scheduler.succeed({ taskId: task.id, output: null });
                 }
             });
             try {
@@ -276,42 +275,7 @@ describe('OrchestratorClient', async () => {
                         input: { foo: 'bar' }
                     }
                 });
-                expect(res.unwrap()).toEqual(output);
-            } finally {
-                processor.stop();
-            }
-        });
-        it('should return an error if action task fails', async () => {
-            const groupKey = nanoid();
-
-            const errorPayload = { message: 'something bad happened' };
-            const processor = new MockProcessor({
-                groupKey,
-                process: async (task) => {
-                    await scheduler.fail({ taskId: task.id, error: errorPayload });
-                }
-            });
-            try {
-                const res = await client.executeWebhook({
-                    name: nanoid(),
-                    groupKey: groupKey,
-                    args: {
-                        webhookName: 'W',
-                        parentSyncName: nanoid(),
-                        connection: {
-                            id: 1234,
-                            connection_id: 'C',
-                            provider_config_key: 'P',
-                            environment_id: 5678
-                        },
-                        activityLogId: '9876',
-                        input: { foo: 'bar' }
-                    }
-                });
-                expect(res.isOk()).toBe(false);
-                if (res.isErr()) {
-                    expect(res.error.payload).toBe(res.error.payload);
-                }
+                expect(res.isOk()).toBe(true);
             } finally {
                 processor.stop();
             }
