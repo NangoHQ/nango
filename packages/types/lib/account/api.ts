@@ -96,10 +96,7 @@ export type PostSignin = Endpoint<{
 export type PostLogout = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/account/logout';
-    Error: ApiError<'email_not_verified'> | ApiError<'unauthorized'>;
-    Success: {
-        user: ApiUser;
-    };
+    Success: never;
 }>;
 
 export type PostForgotPassword = Endpoint<{
