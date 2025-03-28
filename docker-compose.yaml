@@ -32,6 +32,7 @@ services:
             - SERVER_PORT
             - CSP_REPORT_ONLY=true
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
+            - NANGO_PUBLIC_SERVER_URL=${NANGO_PUBLIC_SERVER_URL:-http://localhost:3000}
             - FLAG_AUTH_ENABLED
             - NANGO_DASHBOARD_USERNAME
             - NANGO_DASHBOARD_PASSWORD
