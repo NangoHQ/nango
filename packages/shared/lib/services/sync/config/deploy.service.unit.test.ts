@@ -1,15 +1,18 @@
-import { expect, describe, it, vi } from 'vitest';
-import environmentService from '../../environment.service.js';
+import { describe, expect, it, vi } from 'vitest';
+
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+
 import * as SyncConfigService from './config.service.js';
+import { Orchestrator } from '../../../clients/orchestrator.js';
+import configService from '../../config.service.js';
+import environmentService from '../../environment.service.js';
 import * as SyncService from '../sync.service.js';
 import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
-import configService from '../../config.service.js';
-import { logContextGetter } from '@nangohq/logs';
-import { Orchestrator } from '../../../clients/orchestrator.js';
+
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { DBTeam, DBEnvironment, CleanedIncomingFlowConfig } from '@nangohq/types';
-import db from '@nangohq/database';
+import type { CleanedIncomingFlowConfig, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -43,6 +46,7 @@ describe('Sync config create', () => {
         const emptyConfig = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -83,6 +87,7 @@ describe('Sync config create', () => {
         const { error } = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -237,6 +242,7 @@ describe('Sync config create', () => {
             DeployConfigService.deploy({
                 environment,
                 account,
+                plan: null,
                 flows: syncs,
                 nangoYamlBody: '',
                 logContextGetter,

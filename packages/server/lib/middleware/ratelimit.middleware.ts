@@ -83,9 +83,10 @@ function getPointsToConsume(req: Request, res: Response<any, RequestLocals>): nu
     if (specialPaths.includes(fullPath)) {
         // limiting to 6 requests per period to avoid brute force attacks
         return Math.floor(rateLimiter.points / 6);
-    } else if (!res.locals.account || res.locals.account.is_capped) {
+    } else if (res.locals.plan && res.locals.plan.name === 'free') {
         // Free account get way less requests
         return 10;
     }
+
     return 1;
 }

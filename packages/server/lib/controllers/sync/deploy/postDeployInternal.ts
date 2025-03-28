@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { PostDeployInternal } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { deploy, errorManager, getAndReconcileDifferences, environmentService, configService, connectionService, cleanIncomingFlow } from '@nangohq/shared';
-import { getOrchestrator } from '../../../utils/utils.js';
+
 import { logContextGetter } from '@nangohq/logs';
+import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationWithNangoYaml as validation } from './validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { PostDeployInternal } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -83,6 +86,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     } = await deploy({
         environment,
         account,
+        plan: null, // We don't care it's our own stuff
         flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,

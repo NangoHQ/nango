@@ -13,6 +13,7 @@ export function useEnvironment(env: string) {
         loading,
         error,
         environmentAndAccount: data?.environmentAndAccount,
+        plan: data?.plan,
         mutate
     };
 }

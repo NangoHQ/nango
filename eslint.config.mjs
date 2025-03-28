@@ -214,6 +214,12 @@ export default tseslint.config(
         }
     },
     {
+        files: ['packages/**/*/migrations/**'],
+        rules: {
+            'import/order': 'off'
+        }
+    },
+    {
         files: ['packages/frontend/**/*.ts'],
         languageOptions: {
             globals: {

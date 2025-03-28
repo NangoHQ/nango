@@ -1,8 +1,9 @@
-import { ChatBubbleBottomCenterIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, ChatBubbleBottomCenterIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
-import { useSignout } from '../utils/user';
+
 import { Info } from './Info';
 import { useUser } from '../hooks/useUser';
+import { useSignout } from '../utils/user';
 
 export default function NavBar() {
     const signout = useSignout();

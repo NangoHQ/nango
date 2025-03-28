@@ -1,12 +1,15 @@
 import { z } from 'zod';
-import { zodErrorToHTTP, requireEmptyQuery } from '@nangohq/utils';
-import type { DBConnection, PostSyncVariant } from '@nangohq/types';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { connectionService, getSyncConfigByParams, getSyncsByConnectionId, createSync, getSyncConfig, configService } from '@nangohq/shared';
-import { variantSchema, connectionIdSchema, syncNameSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { getOrchestrator } from '../../utils/utils.js';
+
 import { logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, createSync, getSyncConfig, getSyncConfigByParams, getSyncsByConnectionId } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { envs } from '../../env.js';
+import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../utils/utils.js';
+
+import type { DBConnection, PostSyncVariant } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -44,9 +47,9 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
     }
     const body: PostSyncVariant['Body'] = parsedBody.data;
     const params: PostSyncVariant['Params'] = parsedParams.data;
-    const { environment, account } = res.locals;
+    const { environment, plan } = res.locals;
 
-    if (account?.is_capped) {
+    if (plan && !plan.has_sync_variant) {
         res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating sync variant is only available for paying customer' } });
         return;
     }

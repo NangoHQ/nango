@@ -1,11 +1,13 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetTeam } from '@nangohq/types';
-import { NANGO_ADMIN_UUID } from '../../account.controller.js';
 import { listInvitations, userService } from '@nangohq/shared';
-import { userToAPI } from '../../../formatters/user.js';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { invitationToApi } from '../../../formatters/invitation.js';
 import { teamToApi } from '../../../formatters/team.js';
+import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { NANGO_ADMIN_UUID } from '../../account.controller.js';
+
+import type { GetTeam } from '@nangohq/types';
 
 export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
