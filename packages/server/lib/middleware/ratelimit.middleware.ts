@@ -62,7 +62,8 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
             }
 
             logger.error('Failed to compute rate limit', { error: err });
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to compute rate limit' } });
+            // If we can't get the rate limit (ex: redis is unreachable), we should not block the request
+            next();
         });
 };
 
