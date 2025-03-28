@@ -242,6 +242,7 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
                 startedToCompleted: 15 * 60,
@@ -252,7 +253,7 @@ export class OrchestratorClient {
                 type: 'webhook' as const
             }
         };
-        return this.immediateAndWait(schedulingProps);
+        return this.immediate(schedulingProps);
     }
 
     public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {

@@ -16,7 +16,7 @@ export type PostPublicTrigger = Endpoint<{
         'connection-id'?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'missing_provider_config_key' | 'missing_connection_id'>;
+    Error: ApiError<'missing_provider_config_key'>;
 }>;
 
 export type PostSyncVariant = Endpoint<{

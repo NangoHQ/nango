@@ -74,10 +74,6 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
     }
 
     const connectionId: string | undefined = body.connection_id || headers['connection-id'];
-    if (!connectionId) {
-        res.status(400).send({ error: { code: 'missing_connection_id', message: 'Missing connection_id. Provide it in the body or headers.' } });
-        return;
-    }
 
     const { syncs, sync_mode, full_resync } = body;
 
