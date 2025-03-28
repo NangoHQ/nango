@@ -242,6 +242,7 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
+            retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
                 startedToCompleted: 15 * 60,
