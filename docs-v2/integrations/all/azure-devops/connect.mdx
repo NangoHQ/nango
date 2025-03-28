@@ -1,0 +1,48 @@
+---
+title: Azure DevOps - How do I link my account?
+sidebarTitle: Azure DevOps
+---
+
+# Overview
+
+To authenticate with Azure DevOps, you will need:
+1. **Organization URL** - The URL of your Azure DevOps organization
+2. **Personal Access Token (PAT)** - A token that grants Nango permission to interact with Azure DevOps APIs resources and services.
+
+This guide will walk you through finding your Organization URL and generating a Personal Access Token within Azure DevOps.
+
+## Prerequisites:
+- You should have a registered account with Azure DevOps. Create one on [Azure DevOps Getting Started page](https://azure.microsoft.com/en-us/services/devops/).
+- Permission to generate a **Personal Access Token**.
+
+#### Step 1: Finding your Organization URL
+1. Log in to your Azure DevOps account at https://dev.azure.com
+2. Your organization URL will be in one of these formats:
+   - `https://dev.azure.com/{your-organization}`
+   - `https://{your-organization}.visualstudio.com`
+3. Note down your organization URL as you'll need it for the connection.
+
+#### Step 2: Creating a Personal Access Token
+1. While logged in to Azure DevOps, click on your profile picture in the top right corner
+2. Select "Security" from the dropdown menu
+3. Navigate to the "Personal access tokens" section
+4. Click on "New Token"
+5. Fill in the following details:
+   - Name: Give your token a descriptive name
+   - Organization: Select the organization you want to access
+   - Expiration: Choose when the token should expire
+   - Scopes: For full access, select "Full access". Otherwise, select at least **"Read"** under "Project and team".
+6. Click "Create" to generate the token
+7. Copy the generated token immediately and store it securely - you won't be able to see it again
+
+#### Step 3: Connect Your Azure DevOps Account
+
+To authenticate using your credentials, navigate to the Azure DevOps authentication form.
+Enter your credentials as follows:
+- Organization URL: Your Azure DevOps organization URL (e.g., `dev.azure.com/your-organization` or `your-organization.visualstudio.com`)
+- Personal Access Token: Your generated PAT
+
+Click "Connect" to complete the authentication.
+
+Note: Make sure to match the credentials exactly as shown above - the field names in the form may differ from your Azure DevOps dashboard.
+
