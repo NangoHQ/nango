@@ -3,6 +3,7 @@ import type {
     GetEmailByUuid,
     GetManagedCallback,
     PostForgotPassword,
+    PostLogout,
     PostManagedSignup,
     PostSignin,
     PostSignup,
@@ -105,6 +106,7 @@ export type PublicApiEndpoints =
 export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin
+    | PostLogout
     | GetTeam
     | PutTeam
     | GetUser

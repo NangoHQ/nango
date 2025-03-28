@@ -9615,6 +9615,23 @@ xero:
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
+xero-oauth2-cc:
+    display_name: Xero (Client Credentials)
+    categories:
+        - accounting
+        - popular
+    auth_mode: OAUTH2_CC
+    token_url: https://identity.xero.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.xero.com
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/xero-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/xero-oauth2-cc/connect
+
 yahoo:
     display_name: Yahoo
     categories:

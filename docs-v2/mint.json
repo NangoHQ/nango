@@ -665,6 +665,7 @@
                 "integrations/all/wrike",
                 "integrations/all/xai",
                 "integrations/all/xero",
+                "integrations/all/xero-oauth2-cc",
                 "integrations/all/yahoo",
                 "integrations/all/yandex",
                 "integrations/all/youtube",
