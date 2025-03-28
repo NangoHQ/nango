@@ -3909,7 +3909,7 @@ github-pat:
             error_code: 403
         headers:
             authorization: Bearer ${apiKey}
-            x-github-api-version: '2022-11-28'
+            x-github-api-version: ${connectionConfig.version} || 2022-11-28
             accept: application/vnd.github+json
         verification:
             method: GET
@@ -3917,6 +3917,12 @@ github-pat:
                 - /user
     docs: https://docs.nango.dev/integrations/all/github-pat
     docs_connect: https://docs.nango.dev/integrations/all/github-pat/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
     credentials:
         apiKey:
             type: string
