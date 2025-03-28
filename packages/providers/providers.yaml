@@ -7511,6 +7511,31 @@ rippling:
             title: API Token
             description: The API Token for your Rippling account
             doc_section: '#step-1-generating-your-api-token'
+
+rippling-shop-app:
+    display_name: Rippling Shop App
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://app.rippling.com/apps/PLATFORM/${connectionConfig.appName}/authorize
+    token_url: https://api.rippling.com/api/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.rippling.com
+    post_connection_script: ripplingShopAppPostConnection
+    docs: https://docs.nango.dev/integrations/all/rippling-shop-app
+    connection_config:
+        appName:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 segment:
     display_name: Segment
     categories:
