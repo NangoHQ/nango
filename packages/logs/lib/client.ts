@@ -1,17 +1,19 @@
-import { metrics, report } from '@nangohq/utils';
+import { report } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { errorToDocument } from './formatters.js';
-import { getFormattedMessage } from './models/helpers.js';
-import { createMessage, setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
-import { isCli, logLevelToLogger, logger } from './utils.js';
+import { setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
+import { ESTransport } from './transport.js';
+import { isCli, logger } from './utils.js';
 
 import type { OtlpSpan } from './otlp/otlpSpan.js';
+import type { LogTransportAbstract } from './transport.js';
 import type { MessageHTTPRequest, MessageHTTPResponse, MessageMeta, MessageRow, MessageRowInsert, OperationRow } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
     logToConsole?: boolean;
+    transport?: LogTransportAbstract;
 }
 
 /**
@@ -23,64 +25,55 @@ export class LogContextStateless {
     accountId?: OperationRow['accountId'] | undefined;
     dryRun: boolean;
     logToConsole: boolean;
+    transport: LogTransportAbstract;
 
     constructor(data: { id: OperationRow['id']; accountId?: OperationRow['accountId'] | undefined }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.id;
         this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
+        this.transport = options.transport ?? new ESTransport();
     }
 
-    async log(data: MessageRowInsert): Promise<boolean> {
-        if (data.error && data.error.constructor.name !== 'Object') {
-            data.error = errorToDocument(data.error);
-        }
-
-        if (this.logToConsole) {
-            const obj: Record<string, any> = {};
-            if (data.error) obj['error'] = data.error;
-            if (data.meta) obj['meta'] = data.meta;
-            logger[logLevelToLogger[data.level]](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
-        }
-        if (this.dryRun) {
-            return true;
-        }
-
-        const start = Date.now();
-        try {
-            await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
-            return true;
-        } catch (err) {
-            report(new Error('failed_to_insert_in_es', { cause: err }));
-            return false;
-        } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start, { accountId: this.accountId as number });
-        }
+    async log(msg: MessageRowInsert) {
+        return await this.transport.log(msg, { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId });
     }
 
     async debug(message: string, meta?: MessageMeta): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
+        return await this.transport.log(
+            { type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async info(message: string, meta?: MessageMeta): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() });
+        return await this.transport.log(
+            { type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async warn(message: string, meta?: MessageMeta): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() });
+        return await this.transport.log(
+            { type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
         const { error, ...rest } = meta || {};
-        return await this.log({
-            type: 'log',
-            level: 'error',
-            message,
-            error: errorToDocument(error),
-            meta: Object.keys(rest).length > 0 ? rest : undefined,
-            source: 'internal',
-            createdAt: new Date().toISOString()
-        });
+        return await this.transport.log(
+            {
+                type: 'log',
+                level: 'error',
+                message,
+                error: errorToDocument(error),
+                meta: Object.keys(rest).length > 0 ? rest : undefined,
+                source: 'internal',
+                createdAt: new Date().toISOString()
+            },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async http(
@@ -103,24 +96,34 @@ export class LogContextStateless {
     ): Promise<boolean> {
         const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
         const endedAt = userDefinedEndedAt || new Date();
-        return await this.log({
-            type: 'http',
-            level,
-            message,
-            ...data,
-            error: errorToDocument(error),
-            source: 'internal',
-            createdAt: createdAt.toISOString(),
-            endedAt: endedAt.toISOString(),
-            durationMs: endedAt.getTime() - createdAt.getTime()
-        });
+        return await this.transport.log(
+            {
+                type: 'http',
+                level,
+                message,
+                ...data,
+                error: errorToDocument(error),
+                source: 'internal',
+                createdAt: createdAt.toISOString(),
+                endedAt: endedAt.toISOString(),
+                durationMs: endedAt.getTime() - createdAt.getTime()
+            },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     /**
      * @deprecated Only there for retro compat
      */
     async trace(message: string, meta?: MessageMeta): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() });
+        return await this.transport.log(
+            { type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
+    }
+
+    async merge(logCtx: LogContextStateless) {
+        await this.transport.merge(logCtx, this);
     }
 }
 

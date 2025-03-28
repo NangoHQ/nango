@@ -1,2 +1,1 @@
-export type { EnvironmentAndAccount } from './controllers/environment.controller.js';
-export type { ListIntegration, Integration } from './controllers/config.controller.js';
+export type { Integration, ListIntegration } from './controllers/config.controller.js';
