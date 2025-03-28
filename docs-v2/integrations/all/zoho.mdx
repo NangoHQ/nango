@@ -121,28 +121,31 @@ While each Zoho service has its own specific API endpoints and scopes, the OAuth
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>
+
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
-| General | [Zoho API Console](https://api-console.zoho.com/) |
-| | [Zoho Developer Hub](https://www.zoho.com/developer/hub/) |
-| OAuth | [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html) |
-| | [Server-based Applications](https://www.zoho.com/accounts/protocol/oauth/web-server-applications.html) |
-| | [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html) |
-| | [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html) |
-| | [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-refresh.html) |
-| Multi-DC | [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) |
-| Scopes | [OAuth Scopes](https://www.zoho.com/accounts/protocol/oauth/scope.html) |
-| Zoho Services | [Zoho Bigin](./zoho-bigin.mdx) |
-| | [Zoho Books](./zoho-books.mdx) |
-| | [Zoho CRM](./zoho-crm.mdx) |
-| | [Zoho Desk](./zoho-desk.mdx) |
-| | [Zoho Inventory](./zoho-inventory.mdx) |
-| | [Zoho Invoice](./zoho-invoice.mdx) |
-| | [Zoho Mail](./zoho-mail.mdx) |
-| | [Zoho People](./zoho-people.mdx) |
+- [Zoho API Console](https://api-console.zoho.com/)
+- [Zoho Developer Hub](https://www.zoho.com/developer/hub/)
+- [OAuth 2.0 Overview](https://www.zoho.com/accounts/protocol/oauth.html)
+- [Server-based Applications](https://www.zoho.com/accounts/protocol/oauth/web-server-applications.html)
+- [Get Authorization Code](https://www.zoho.com/accounts/protocol/oauth/web-apps/authorization.html)
+- [Get Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token.html)
+- [Refresh Access Token](https://www.zoho.com/accounts/protocol/oauth/web-apps/access-token-refresh.html)
+- [Multi DC Support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html)
+- [OAuth Scopes](https://www.zoho.com/accounts/protocol/oauth/scope.html)
+- [Zoho Bigin](./zoho-bigin.mdx)
+- [Zoho Books](./zoho-books.mdx)
+- [Zoho CRM](./zoho-crm.mdx)
+- [Zoho Desk](./zoho-desk.mdx)
+- [Zoho Inventory](./zoho-inventory.mdx)
+- [Zoho Invoice](./zoho-invoice.mdx)
+- [Zoho Mail](./zoho-mail.mdx)
+- [Zoho People](./zoho-people.mdx)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>
+
 
 ## Common Scopes
 
@@ -164,6 +167,7 @@ Each Zoho service has its own set of scopes. Here are some common scopes for pop
 | AaaServer | AaaServer.profile.READ | Read access to user profile |
 | AaaServer | AaaServer.profile.UPDATE | Update access to user profile |
 
+
 ## API gotchas
 
 - Zoho uses datacenter-specific URLs for authentication. Make sure to use the correct datacenter domain extension (`com`, `eu`, `in`, `com.cn`, `com.au`) based on where your user's account is registered.
@@ -175,3 +179,9 @@ Each Zoho service has its own set of scopes. Here are some common scopes for pop
 - For production applications, consider implementing [multi-datacenter support](https://www.zoho.com/accounts/protocol/oauth/multi-dc.html) to handle users from different regions.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Zoho" icon="link" href="/integrations/all/zoho/connect" horizontal>
+  Guide to connect to Zoho using Connect UI
+</Card>
