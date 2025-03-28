@@ -1,4 +1,3 @@
-import type { SyncTriggerMode } from './index.js';
 import type { ApiError, Endpoint } from '../api.js';
 
 export type PostPublicTrigger = Endpoint<{
@@ -6,7 +5,7 @@ export type PostPublicTrigger = Endpoint<{
     Path: '/sync/trigger';
     Body: {
         syncs: (string | { name: string; variant: string })[];
-        sync_mode?: SyncTriggerMode | undefined;
+        sync_mode?: 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache' | undefined;
         provider_config_key?: string | undefined;
         connection_id?: string | undefined;
         // @deprecrated in favor of sync_mode

@@ -9,7 +9,7 @@ import { normalizeSyncParams } from './helpers.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { PostPublicTrigger, SyncTriggerMode } from '@nangohq/types';
+import type { PostPublicTrigger } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
@@ -112,7 +112,7 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 /**
  * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
  */
-function getCommandFromSyncModeOrFullResync(sync_mode: SyncTriggerMode | undefined, full_resync: boolean | undefined) {
+function getCommandFromSyncModeOrFullResync(sync_mode: PostPublicTrigger['Body']['sync_mode'] | undefined, full_resync: boolean | undefined) {
     if (sync_mode) {
         return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
     }
