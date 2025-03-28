@@ -9,7 +9,7 @@ import { normalizeSyncParams } from './helpers.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { PostPublicTrigger, SyncMode } from '@nangohq/types';
+import type { PostPublicTrigger, SyncTriggerMode } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
@@ -18,11 +18,7 @@ const bodyValidation = z
                 errorMap: () => ({ message: 'Each sync must be either a string or a { name: string, variant: string } object' })
             })
         ),
-        sync_mode: z
-            .string()
-            .toLowerCase()
-            .pipe(z.enum(['incremental', 'full_refresh', 'full_refresh_and_clear_cache']))
-            .optional(),
+        sync_mode: z.enum(['incremental', 'full_refresh', 'full_refresh_and_clear_cache']).optional(),
         full_resync: z.boolean().optional(),
         connection_id: z.string().optional(),
         provider_config_key: z.string().optional()
@@ -116,7 +112,7 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
 /**
  * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
  */
-function getCommandFromSyncModeOrFullResync(sync_mode: SyncMode | undefined, full_resync: boolean | undefined) {
+function getCommandFromSyncModeOrFullResync(sync_mode: SyncTriggerMode | undefined, full_resync: boolean | undefined) {
     if (sync_mode) {
         return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
     }
