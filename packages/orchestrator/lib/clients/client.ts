@@ -252,7 +252,7 @@ export class OrchestratorClient {
                 type: 'webhook' as const
             }
         };
-        return this.immediateAndWait(schedulingProps);
+        return this.immediate(schedulingProps);
     }
 
     public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
