@@ -7529,14 +7529,12 @@ rippling-shop-app:
         base_url: https://api.rippling.com
     post_connection_script: ripplingShopAppPostConnection
     docs: https://docs.nango.dev/integrations/all/rippling-shop-app
-    docs_connect: https://docs.nango.dev/integrations/all/rippling-shop-app/connect
     connection_config:
         appName:
             type: string
-            title: Application Name
-            description: The name of the application
-            example: my-app
-            doc_section: '#step-1-finding-your-application-name'
+            title: ''
+            description: ''
+            automated: true
 
 segment:
     display_name: Segment
