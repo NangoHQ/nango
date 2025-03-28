@@ -70,32 +70,6 @@ import { Steps, Step } from 'nextra/components'
     Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango. Note that the Client Secret will only be displayed once, so make sure to copy it immediately.
   </Step>
   
-  <Step title="Configure your integration in Nango">
-    When setting up your Outreach integration in Nango:
-    
-    - Use your **Client ID** and **Client Secret** from the previous step
-    - For the authorization URL, use: `https://api.outreach.io/oauth/authorize`
-    - For the token URL, use: `https://api.outreach.io/oauth/token`
-  </Step>
-  
-  <Step title="Understand the OAuth flow">
-    The Outreach OAuth flow follows these steps:
-    
-    1. Users are redirected to Outreach's authorization page
-    2. Users log in to Outreach and approve access for your application
-    3. After authorization, users are redirected back to your redirect URL with an authorization code
-    4. Your application exchanges this code for an access token using the token endpoint
-    5. The access token is used in the `Authorization: Bearer {access_token}` header for all API requests
-    6. Outreach also provides a refresh token that can be used to obtain a new access token when the current one expires
-  </Step>
-  
-  <Step title="Test the OAuth flow">
-    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
-    2. The authorization flow will redirect users to Outreach where they can approve access to their account.
-    3. After approval, users will be redirected back to your application with an authorization code.
-    4. This code will be exchanged for an access token that can be used to make API requests.
-  </Step>
-  
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
@@ -103,19 +77,22 @@ import { Steps, Step } from 'nextra/components'
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
-| General | [Outreach Developer Portal](https://developers.outreach.io/) |
-| | [API Overview](https://developers.outreach.io/api/) |
-| OAuth | [Authentication Documentation](https://developers.outreach.io/api/oauth/) |
-| | [OAuth in a Nutshell](https://developers.outreach.io/api/oauth/#oauth-in-a-nutshell) |
-| | [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth) |
-| API | [API Reference](https://developers.outreach.io/api/reference/overview/) |
-| | [Getting Started](https://developers.outreach.io/api/getting-started/) |
-| | [Making Requests](https://developers.outreach.io/api/making-requests/) |
+-   [Outreach Developer Portal](https://developers.outreach.io/)
+-   [API Overview](https://developers.outreach.io/api/)
+-   [Authentication Documentation](https://developers.outreach.io/api/oauth/)
+-   [OAuth in a Nutshell](https://developers.outreach.io/api/oauth/#oauth-in-a-nutshell)
+-   [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth)
+-   [API Reference](https://developers.outreach.io/api/reference/overview/)
+-   [Getting Started](https://developers.outreach.io/api/getting-started/)
+-   [Making Requests](https://developers.outreach.io/api/making-requests/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+
 
 ## Common Scopes
 
@@ -136,8 +113,15 @@ import { Steps, Step } from 'nextra/components'
 | `emails.all` | Read and write access to email information |
 | `emails.read` | Read-only access to email information |
 
+
 ## API gotchas
 
 - Rate limits apply to the Outreach API. If you exceed the rate limit, you'll receive a 429 Too Many Requests response.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Outreach" icon="link" href="/integrations/all/outreach/connect" horizontal>
+  Guide to connect to Outreach using Connect UI
+</Card>
