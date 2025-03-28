@@ -22,6 +22,7 @@ interface AbortArgs {
         state: TaskState;
     };
     reason: string;
+    connection: ConnectionJobs;
 }
 interface ActionArgs {
     actionName: string;
@@ -61,7 +62,7 @@ export interface OrchestratorSchedule {
     nextDueDate: Date | null;
 }
 
-export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent;
+export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent | TaskAbort;
 
 interface TaskCommonFields {
     id: string;
@@ -76,6 +77,26 @@ interface TaskCommon extends TaskCommonFields {
     isAction(this: OrchestratorTask): this is TaskAction;
     isOnEvent(this: OrchestratorTask): this is TaskOnEvent;
     isSyncAbort(this: OrchestratorTask): this is TaskSyncAbort;
+    isAbort(this: OrchestratorTask): this is TaskAbort;
+}
+export interface TaskAbort extends TaskCommon, AbortArgs {}
+export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
+    return {
+        id: props.id,
+        abortedTask: props.abortedTask,
+        name: props.name,
+        state: props.state,
+        attempt: props.attempt,
+        connection: props.connection,
+        groupKey: props.groupKey,
+        reason: props.reason,
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => true
+    };
 }
 
 export interface TaskSync extends TaskCommon, SyncArgs {}
@@ -95,7 +116,8 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
-        isSyncAbort: (): this is TaskSyncAbort => false
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
 }
 
@@ -118,7 +140,8 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
-        isSyncAbort: (): this is TaskSyncAbort => true
+        isSyncAbort: (): this is TaskSyncAbort => true,
+        isAbort: (): this is TaskAbort => false
     };
 }
 
@@ -138,7 +161,8 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => true,
         isOnEvent: (): this is TaskOnEvent => false,
-        isSyncAbort: (): this is TaskSyncAbort => false
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
 }
 
@@ -159,7 +183,8 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         isWebhook: (): this is TaskWebhook => true,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
-        isSyncAbort: (): this is TaskSyncAbort => false
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
 }
 
@@ -180,7 +205,8 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => true,
-        isSyncAbort: (): this is TaskSyncAbort => false
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
 }
 
