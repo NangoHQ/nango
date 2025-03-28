@@ -63,6 +63,7 @@ import type { PatchOnboarding } from './onboarding/api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { GetPublicRecords } from './record/api';
 import type { GetPublicScriptsConfig } from './scripts/http.api';
+import type { PostPublicTrigger } from './sync/api';
 import type { DeleteTeamUser, GetTeam, PutTeam } from './team/api';
 import type { GetUser, PatchUser } from './user/api';
 import type { PostPublicWebhook } from './webhooks/http.api';
@@ -72,6 +73,7 @@ export type PublicApiEndpoints =
     | UpdateMetadata
     | PostDeploy
     | PostDeployConfirmation
+    | PostPublicTrigger
     | PostPublicTbaAuthorization
     | PostPublicTableauAuthorization
     | PostPublicJwtAuthorization
