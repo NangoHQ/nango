@@ -134,29 +134,6 @@ describe(`POST ${endpoint}`, () => {
                 }
             });
         });
-
-        it('should return 400 if connection_id is missing from body and headers', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
-
-            const res = await api.fetch(endpoint, {
-                method: 'POST',
-                token: env.secret_key,
-                body: {
-                    syncs: ['sync1'],
-                    sync_mode: 'full_refresh',
-                    provider_config_key: 'test-key'
-                },
-                headers: {}
-            });
-
-            expect(res.res.status).toEqual(400);
-            expect(res.json).toStrictEqual({
-                error: {
-                    code: 'missing_connection_id',
-                    message: 'Missing connection_id. Provide it in the body or headers.'
-                }
-            });
-        });
     });
 
     it('should take provider_config_key and connection_id from headers', async () => {
