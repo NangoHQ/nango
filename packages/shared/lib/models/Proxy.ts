@@ -1,3 +1,5 @@
+import type { AxiosResponse } from 'axios';
+
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 
 export interface RetryHeaderConfig {
@@ -19,6 +21,7 @@ export interface Pagination {
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse; pageIndex: number }) => Promise<void>;
 }
 
 export interface CursorPagination extends Pagination {
