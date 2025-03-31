@@ -83,35 +83,6 @@ describe(`POST ${endpoint}`, () => {
             });
         });
 
-        it('should return 400 if sync_mode and full_resync are missing', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
-
-            const res = await api.fetch(endpoint, {
-                method: 'POST',
-                token: env.secret_key,
-                body: {
-                    syncs: ['sync1'],
-                    connection_id: '123',
-                    provider_config_key: 'test-key'
-                },
-                headers: {}
-            });
-
-            expect(res.res.status).toEqual(400);
-            expect(res.json).toStrictEqual({
-                error: {
-                    code: 'invalid_body',
-                    errors: [
-                        {
-                            code: 'custom',
-                            message: 'sync_mode is required',
-                            path: []
-                        }
-                    ]
-                }
-            });
-        });
-
         it('should return 400 if provider_config_key is missing from body and headers', async () => {
             const { env } = await seeders.seedAccountEnvAndUser();
 
@@ -144,7 +115,6 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 syncs: ['sync1'],
-                sync_mode: 'full_refresh',
                 connection_id: '123'
             },
             headers: {
@@ -164,7 +134,6 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 syncs: ['sync1', 'sync2'],
-                sync_mode: 'full_refresh',
                 provider_config_key: 'test-key',
                 connection_id: '123'
             },
@@ -174,7 +143,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toEqual(200);
         expect(mockRunSyncCommand).toHaveBeenCalledWith(
             expect.objectContaining({
-                command: 'RUN_FULL',
+                command: 'RUN',
                 syncIdentifiers: [
                     { syncName: 'sync1', syncVariant: 'base' },
                     { syncName: 'sync2', syncVariant: 'base' }
@@ -194,7 +163,6 @@ describe(`POST ${endpoint}`, () => {
                     { name: 'sync1', variant: 'v1' },
                     { name: 'sync2', variant: 'v2' }
                 ],
-                sync_mode: 'full_refresh',
                 provider_config_key: 'test-key',
                 connection_id: '123'
             },
@@ -204,7 +172,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toEqual(200);
         expect(mockRunSyncCommand).toHaveBeenCalledWith(
             expect.objectContaining({
-                command: 'RUN_FULL',
+                command: 'RUN',
                 syncIdentifiers: [
                     { syncName: 'sync1', syncVariant: 'v1' },
                     { syncName: 'sync2', syncVariant: 'v2' }
