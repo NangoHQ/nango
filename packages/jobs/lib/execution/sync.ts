@@ -803,4 +803,5 @@ async function onFailure({
     }
 
     metrics.increment(metrics.Types.SYNC_FAILURE);
+    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime(), team ? { accountId: team.id } : {});
 }

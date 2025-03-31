@@ -285,7 +285,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -372,16 +372,24 @@ class OAuthController {
                 return;
             }
 
-            // Reconnect mechanism
-            if (isConnectSession && connectSession.connectionId) {
-                const connection = await connectionService.getConnectionById(connectSession.connectionId);
-                if (!connection) {
-                    void logCtx.error('Invalid connection');
-                    await logCtx.failed();
-                    res.status(400).send({ error: { code: 'invalid_connection' } });
-                    return;
+            if (isConnectSession) {
+                const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
+
+                // Reconnect mechanism
+                if (connectSession.connectionId) {
+                    const connection = await connectionService.getConnectionById(connectSession.connectionId);
+                    if (!connection) {
+                        void logCtx.error('Invalid connection');
+                        await logCtx.failed();
+                        res.status(400).send({ error: { code: 'invalid_connection' } });
+                        return;
+                    }
+                    connectionId = connection?.connection_id;
                 }
-                connectionId = connection?.connection_id;
+
+                if (defaults?.authorization_params) {
+                    connectionConfig['authorization_params'] = defaults.authorization_params;
+                }
             }
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
@@ -399,7 +407,13 @@ class OAuthController {
                 success,
                 error,
                 response: credentials
-            } = await connectionService.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connectionConfig);
+            } = await connectionService.getOauthClientCredentials({
+                provider: provider as ProviderOAuth2,
+                client_id,
+                client_secret,
+                connectionConfig,
+                logCtx
+            });
 
             if (!success || !credentials) {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
