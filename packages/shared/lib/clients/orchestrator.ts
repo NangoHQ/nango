@@ -308,7 +308,6 @@ export class Orchestrator {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -339,7 +338,6 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {

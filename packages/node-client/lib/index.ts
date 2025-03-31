@@ -1,38 +1,10 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
 import https from 'node:https';
 
-import type {
-    ApiKeyCredentials,
-    AppCredentials,
-    OAuth1Token,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    CredentialsCommon,
-    CustomCredentials,
-    OAuth2ClientCredentials,
-    TbaCredentials,
-    TableauCredentials,
-    UnauthCredentials,
-    BillCredentials,
-    GetPublicProviders,
-    GetPublicProvider,
-    GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
-    GetPublicIntegration,
-    PostConnectSessions,
-    JwtCredentials,
-    TwoStepCredentials,
-    GetPublicConnections,
-    SignatureCredentials,
-    PostPublicConnectSessionsReconnect,
-    GetPublicConnection,
-    NangoRecord,
-    PostSyncVariant,
-    DeleteSyncVariant,
-    OpenAIFunction
-} from '@nangohq/types';
+import axios from 'axios';
+
+import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+
 import type {
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
@@ -41,13 +13,43 @@ import type {
     ListRecordsRequestConfig,
     Metadata,
     MetadataChangeResponse,
-    StandardNangoConfig,
     NangoProps,
     ProxyConfiguration,
+    StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    BasicApiCredentials,
+    BillCredentials,
+    CredentialsCommon,
+    CustomCredentials,
+    DeleteSyncVariant,
+    GetPublicConnection,
+    GetPublicConnections,
+    GetPublicIntegration,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicProvider,
+    GetPublicProviders,
+    JwtCredentials,
+    NangoRecord,
+    OAuth1Token,
+    OAuth2ClientCredentials,
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect,
+    PostPublicTrigger,
+    PostSyncVariant,
+    SignatureCredentials,
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials,
+    UnauthCredentials
+} from '@nangohq/types';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 export const prodHost = 'https://api.nango.dev';
 
@@ -577,14 +579,14 @@ export class Nango {
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
+     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
      * @returns A promise that resolves when the sync trigger request is sent
      */
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean // boolean kept for backwards compatibility
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
@@ -592,11 +594,17 @@ export class Nango {
             throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
+        if (typeof syncMode === 'boolean') {
+            syncMode = syncMode ? 'full_refresh' : 'incremental';
+        }
+
+        syncMode ??= 'incremental';
+
         const body = {
             syncs: syncs || [],
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
-            full_resync: fullResync
+            sync_mode: syncMode
         };
 
         return this.http.post(url, body, { headers: this.enrichHeaders() });
