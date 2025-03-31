@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getTrialCloseToFinish, userService } from '@nangohq/shared';
+import { getTrialCloseToFinish, updatePlan, userService } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
 import { sendTrialAlmostOverEmail } from '../helpers/email.js';
@@ -60,13 +60,20 @@ export async function exec(): Promise<void> {
         }
 
         for (const plan of res) {
+            await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
+
+            logger.info('Trial over for account', plan.account_id);
+
             const users = await userService.getUsersByAccountId(plan.account_id);
 
+            // Send in parallel
             await Promise.all(
                 users.map(async (user) => {
                     if (!user.email_verified) {
                         return;
                     }
+
+                    logger.info('  Sending mail to', user.id);
                     await sendTrialAlmostOverEmail({ user, inDays: daysBeforeTrialIsOver });
                 })
             );

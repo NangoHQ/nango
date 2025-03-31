@@ -28,11 +28,21 @@ export async function createPlan(
         .ignore();
 }
 
+export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> & Partial<Omit<DBPlan, 'id'>>) {
+    await db
+        .from<DBPlan>('plans')
+        .where('id', id)
+        .update({ ...data, updated_at: new Date() });
+}
+
 export async function getTrialCloseToFinish(db: Knex, { inDays }: { inDays: number }): Promise<DBPlan[]> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() + inDays);
 
-    const q = db.from<DBPlan>('plans').select<DBPlan[]>('plans.*').join('_nango_accounts', 'id', 'account_id').where('trial_end_at', '<=', 'dateThreshold');
-    console.log(q.toQuery());
-    return await q;
+    return await db
+        .from<DBPlan>('plans')
+        .select<DBPlan[]>('plans.*')
+        .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
+        .where('trial_end_at', '<=', dateThreshold.toISOString())
+        .whereNull('trial_end_notified_at');
 }

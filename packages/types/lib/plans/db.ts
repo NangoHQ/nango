@@ -7,6 +7,7 @@ export interface DBPlan extends Timestamps {
     trial_start_at: Date | null;
     trial_end_at: Date | null;
     trial_extension_count: number;
+    trial_end_notified_at: Date | null;
 
     /**
      * Limit the number of connections with active scripts

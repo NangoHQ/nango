@@ -12,10 +12,11 @@ exports.up = async function (knex) {
 	"trial_start_at" timestamptz,
 	"trial_end_at" timestamptz,
 	"trial_extension_count" int2 DEFAULT 0,
+	"trial_end_notified_at" timestamptz,
 	"max_connection_with_scripts" int2 DEFAULT 3,
 	"max_environments" int2 DEFAULT 2,
 	"min_sync_frequency" int4 DEFAULT 86400,
-	"has_sync_variants" bool DEFAULT true,
+	"has_sync_variants" bool DEFAULT false,
 	PRIMARY KEY ("id")
 )`
     );
