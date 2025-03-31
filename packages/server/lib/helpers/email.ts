@@ -1,5 +1,6 @@
-import { EmailClient } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
+
+import { EmailClient } from '../clients/email.client.js';
 
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 

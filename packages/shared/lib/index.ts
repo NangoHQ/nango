@@ -33,7 +33,6 @@ export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 
-export { EmailClient } from './clients/email.client.js';
 export * as oauth2Client from './clients/oauth2.client.js';
 
 export * from './models/index.js';
