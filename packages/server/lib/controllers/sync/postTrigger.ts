@@ -23,17 +23,7 @@ const bodyValidation = z
         connection_id: z.string().optional(),
         provider_config_key: z.string().optional()
     })
-    .strict()
-    // Either sync_mode or full_resync is required. Error message incentive to use sync_mode.
-    .refine(
-        (input) => {
-            if (input.sync_mode === undefined && input.full_resync === undefined) {
-                return false;
-            }
-            return true;
-        },
-        { message: 'sync_mode is required' }
-    );
+    .strict();
 
 const headersValidation = z.object({
     'provider-config-key': z.string().optional(),
