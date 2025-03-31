@@ -15,7 +15,7 @@ exports.up = async function (knex) {
 	"max_connection_with_scripts" int2 DEFAULT 3,
 	"max_environments" int2 DEFAULT 2,
 	"min_sync_frequency" int4 DEFAULT 86400,
-	"has_sync_variants" bool DEFAULT true,
+	"has_sync_variants" bool DEFAULT false,
 	PRIMARY KEY ("id")
 )`
     );
