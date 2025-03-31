@@ -33,10 +33,11 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
-import { Root } from './pages/Root';
 import { globalEnv } from './utils/env';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { Helmet } from 'react-helmet';
+import storage, { LocalStorageKeys } from './utils/local-storage';
+import { AutoRedirect } from './components/AutoRedirect';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -50,6 +51,9 @@ const App = () => {
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
+        if (env) {
+            storage.setItem(LocalStorageKeys.LastEnvironment, env);
+        }
     }, [env, setShowGettingStarted]);
 
     return (
@@ -85,7 +89,7 @@ const App = () => {
                     }}
                 >
                     <SentryRoutes>
-                        <Route path="/" element={<Root />} />
+                        <Route path="/" element={<AutoRedirect />} />
                         <Route element={<PrivateRoute />} key={env}>
                             <Route path="/:env" element={<Homepage />} />
                             {showGettingStarted && (
