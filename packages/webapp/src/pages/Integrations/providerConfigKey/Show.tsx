@@ -1,5 +1,6 @@
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@radix-ui/react-icons';
+import { IconBolt, IconClockHour4Filled, IconRefresh } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Route, Routes, useLocation, useParams } from 'react-router-dom';
@@ -10,9 +11,9 @@ import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import { Alert } from '../../../components/ui/Alert';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { ButtonLink } from '../../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../../components/ui/button/Button';
+import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useGetIntegration } from '../../../hooks/useIntegration';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -49,7 +50,7 @@ export const ShowIntegration: React.FC = () => {
         if (!plan || plan.name !== 'free' || !plan.trial_end_at) {
             return [false, 0];
         }
-        const days = Math.floor((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
+        const days = Math.ceil((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
         return [days >= 0, days];
     }, [plan]);
 
@@ -130,8 +131,29 @@ export const ShowIntegration: React.FC = () => {
                 </ButtonLink>
             </nav>
             {isTrial && (
-                <div className="mb-7">
-                    <Alert variant="warning">Integration endpoints are subject to a 2-week trial ({daysRemaining} days left)</Alert>
+                <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
+                    <div className="flex flex-col gap-2">
+                        <div className="flex gap-3 items-center">
+                            <div className="bg-warning-400 bg-opacity-40 rounded-full p-0.5">
+                                <div className="bg-transparent text-warning-500 rounded-full">
+                                    <IconClockHour4Filled stroke={1} size={16} />
+                                </div>
+                            </div>
+                            <Tag variant={'warning'}>Trial Plan</Tag>
+                            <span className="text-white font-semibold">{daysRemaining} days left</span>
+                        </div>
+                        <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button size={'sm'} variant={'tertiary'}>
+                            <IconRefresh stroke={1} size={18} />
+                            Extend trial
+                        </Button>
+                        <Button size={'sm'} variant={'secondary'}>
+                            <IconBolt stroke={1} size={18} />
+                            Upgrade plan
+                        </Button>
+                    </div>
                 </div>
             )}
             <Routes>

@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getTrialCloseToFinish, updatePlan, userService } from '@nangohq/shared';
+import { AnalyticsTypes, analytics, getTrialCloseToFinish, updatePlan, userService } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
 import { sendTrialAlmostOverEmail } from '../helpers/email.js';
@@ -54,30 +54,32 @@ export async function exec(): Promise<void> {
             return;
         }
 
+        // Send email to team that are close to expiration
         const res = await getTrialCloseToFinish(db.knex, { inDays: daysBeforeTrialIsOver });
-        if (res.length <= 0) {
-            return;
+        if (res.length > 0) {
+            for (const plan of res) {
+                await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
+
+                logger.info('Trial over for account', plan.account_id);
+                void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXPIRING_MAIL, plan.account_id);
+
+                const users = await userService.getUsersByAccountId(plan.account_id);
+
+                // Send in parallel
+                await Promise.all(
+                    users.map(async (user) => {
+                        if (!user.email_verified) {
+                            return;
+                        }
+
+                        logger.info('  Sending mail to', user.id);
+                        await sendTrialAlmostOverEmail({ user, inDays: daysBeforeTrialIsOver });
+                    })
+                );
+            }
         }
 
-        for (const plan of res) {
-            await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
-
-            logger.info('Trial over for account', plan.account_id);
-
-            const users = await userService.getUsersByAccountId(plan.account_id);
-
-            // Send in parallel
-            await Promise.all(
-                users.map(async (user) => {
-                    if (!user.email_verified) {
-                        return;
-                    }
-
-                    logger.info('  Sending mail to', user.id);
-                    await sendTrialAlmostOverEmail({ user, inDays: daysBeforeTrialIsOver });
-                })
-            );
-        }
+        // TODO: Do something when trial end
     } finally {
         if (lock) {
             locking.release(lock);
