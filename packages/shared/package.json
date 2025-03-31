@@ -37,6 +37,7 @@
         "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
         "lodash-es": "^4.17.21",
+        "mailgun.js": "8.2.1",
         "ms": "3.0.0-canary.1",
         "oauth-1.0a": "2.2.6",
         "parse-link-header": "^2.0.0",

@@ -1,6 +1,8 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
+
 import { getLogger } from '@nangohq/utils';
+
 import type Client from 'mailgun.js/client';
 
 const logger = getLogger('Server.EmailClient');
