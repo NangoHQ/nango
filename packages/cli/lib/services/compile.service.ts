@@ -12,6 +12,19 @@ import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangoh
 import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
+let lastYamlModifiedTime = 0;
+let cachedParsed: NangoYamlParsed | null = null;
+
+function getOrLoadParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): NangoYamlParsed | null {
+    const yamlPath = path.join(fullPath, 'nango.yaml');
+    const stats = fs.statSync(yamlPath);
+
+    if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
+        cachedParsed = loadYamlAndGenerate({ fullPath, debug });
+        lastYamlModifiedTime = stats.mtimeMs;
+    }
+    return cachedParsed;
+}
 
 export async function compileAllFiles({
     debug,
@@ -36,7 +49,7 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    const parsed = getOrLoadParsed({ fullPath, debug });
     if (!parsed) {
         return false;
     }
@@ -58,28 +71,36 @@ export async function compileAllFiles({
     }
 
     const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug, providerConfigKey });
-    let success = true;
+    let allSuccess = true;
+    const compilationErrors: string[] = [];
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, parsed, compiler, debug });
+            const completed = await compile({ fullPath, file, compiler, debug });
             if (completed === false) {
-                return false;
+                allSuccess = false;
+                compilationErrors.push(`Failed to compile ${file.inputPath}`);
+                continue;
             }
         } catch (err) {
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
             console.error(err);
-            success = false;
+            allSuccess = false;
+            compilationErrors.push(`Error compiling ${file.inputPath}: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
 
-    return success;
+    if (debug && compilationErrors.length > 0) {
+        printDebug('Compilation errors summary:');
+        compilationErrors.forEach((error) => printDebug(`- ${error}`));
+    }
+
+    return allSuccess;
 }
 
 export async function compileSingleFile({
     fullPath,
     file,
-    parsed,
     tsconfig,
     debug = false
 }: {
@@ -100,7 +121,6 @@ export async function compileSingleFile({
         const result = await compile({
             fullPath,
             file,
-            parsed,
             compiler,
             debug
         });
@@ -180,23 +200,32 @@ function compileImportedFile({
 async function compile({
     fullPath,
     file,
-    parsed,
     compiler,
     debug = false
 }: {
     fullPath: string;
     file: ListedFile;
-    parsed: NangoYamlParsed;
     compiler: tsNode.Service;
     debug: boolean;
 }): Promise<boolean | null> {
+    const parsed = getOrLoadParsed({ fullPath, debug });
+    if (!parsed) {
+        return false;
+    }
+
     const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
     if (!providerConfiguration) {
         return null;
     }
 
-    const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
-    const type = syncConfig?.type || 'sync';
+    const config = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((config) => config.name === file.baseName);
+
+    if (!config) {
+        console.log(chalk.red(`Skipping compilation: No configuration found for ${file.baseName}`));
+        return false;
+    }
+
+    const type = config.type;
 
     const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
     if (!success) {
