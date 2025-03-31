@@ -222,7 +222,7 @@ async function compile({
 
     if (!config) {
         console.log(chalk.red(`Skipping compilation: No configuration found for ${file.baseName}`));
-        return false;
+        return null;
     }
 
     const type = config.type;
