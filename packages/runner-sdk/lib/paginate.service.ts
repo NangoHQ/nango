@@ -56,7 +56,6 @@ class PaginationService {
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
         const cursorPagination: CursorPagination = paginationConfig;
-        let pageIndex = 0;
 
         let nextCursor: string | number | undefined;
 
@@ -90,12 +89,9 @@ class PaginationService {
             if (paginationConfig.on_page) {
                 await paginationConfig.on_page({
                     nextPageParam: nextCursor,
-                    response,
-                    pageIndex
+                    response
                 });
             }
-
-            pageIndex++;
         } while (typeof nextCursor !== 'undefined');
     }
 
@@ -107,7 +103,6 @@ class PaginationService {
         proxy: (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>
     ): AsyncGenerator<T[], undefined, void> {
         const linkPagination: LinkPagination = paginationConfig;
-        let pageIndex = 0;
 
         this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
@@ -124,7 +119,7 @@ class PaginationService {
             const nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
 
             if (paginationConfig.on_page) {
-                await paginationConfig.on_page({ nextPageParam: nextPageLink, response, pageIndex });
+                await paginationConfig.on_page({ nextPageParam: nextPageLink, response });
             }
 
             if (!nextPageLink) {
@@ -144,7 +139,6 @@ class PaginationService {
             }
 
             delete config.params;
-            pageIndex++;
         }
     }
 
@@ -159,9 +153,6 @@ class PaginationService {
         const offsetParameterName: string = offsetPagination.offset_name_in_request;
         const offsetCalculationMethod: OffsetCalculationMethod = offsetPagination.offset_calculation_method || 'by-response-size';
         let offset = offsetPagination.offset_start_value || 0;
-        // Start from 0 as we want to count the number of pages processed,
-        // independent of the offset value (which tracks data position).
-        let pageIndex = 0;
 
         while (true) {
             updatedBodyOrParams[offsetParameterName] = passPaginationParamsInBody ? offset : String(offset);
@@ -184,8 +175,7 @@ class PaginationService {
             if (paginationConfig.on_page) {
                 await paginationConfig.on_page({
                     nextPageParam: offset,
-                    response,
-                    pageIndex
+                    response
                 });
             }
 
@@ -199,8 +189,6 @@ class PaginationService {
             } else {
                 offset += responseData.length;
             }
-
-            pageIndex++;
         }
     }
 

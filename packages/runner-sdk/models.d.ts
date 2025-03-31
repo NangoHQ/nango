@@ -23,7 +23,6 @@ interface Pagination {
         paginationState: {
             nextPageParam?: string | number | undefined;
             response: AxiosResponse;
-            pageIndex: number;
         }
     ) => Promise<void>;
 }

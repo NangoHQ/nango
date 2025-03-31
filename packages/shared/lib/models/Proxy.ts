@@ -21,7 +21,7 @@ export interface Pagination {
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;
-    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse; pageIndex: number }) => Promise<void>;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }
 
 export interface CursorPagination extends Pagination {
