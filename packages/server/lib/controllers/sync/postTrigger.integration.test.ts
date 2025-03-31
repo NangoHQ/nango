@@ -83,35 +83,6 @@ describe(`POST ${endpoint}`, () => {
             });
         });
 
-        it('should return 400 if sync_mode and full_resync are missing', async () => {
-            const { env } = await seeders.seedAccountEnvAndUser();
-
-            const res = await api.fetch(endpoint, {
-                method: 'POST',
-                token: env.secret_key,
-                body: {
-                    syncs: ['sync1'],
-                    connection_id: '123',
-                    provider_config_key: 'test-key'
-                },
-                headers: {}
-            });
-
-            expect(res.res.status).toEqual(400);
-            expect(res.json).toStrictEqual({
-                error: {
-                    code: 'invalid_body',
-                    errors: [
-                        {
-                            code: 'custom',
-                            message: 'sync_mode is required',
-                            path: []
-                        }
-                    ]
-                }
-            });
-        });
-
         it('should return 400 if provider_config_key is missing from body and headers', async () => {
             const { env } = await seeders.seedAccountEnvAndUser();
 
@@ -144,7 +115,6 @@ describe(`POST ${endpoint}`, () => {
             token: env.secret_key,
             body: {
                 syncs: ['sync1'],
-                sync_mode: 'full_refresh',
                 connection_id: '123'
             },
             headers: {
