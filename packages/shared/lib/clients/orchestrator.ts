@@ -524,7 +524,7 @@ export class Orchestrator {
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
-        delete_records?: boolean;
+        delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
