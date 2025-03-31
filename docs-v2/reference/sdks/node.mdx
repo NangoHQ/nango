@@ -932,6 +932,12 @@ const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
+    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
+        The mode in which to trigger the syncs.
+        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
+    </ResponseField>
 </Expandable>
 
 **Response**
