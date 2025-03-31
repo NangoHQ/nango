@@ -33,3 +33,11 @@ jobs:
 
             - name: Validate OpenAPI
               run: npm run test:openapi
+
+            - name: Ensure there are no broken mintlify links
+              run: |
+                  npm install -g mintlify
+                  if ! mintlify broken-links | grep -q "No broken links found."; then
+                    echo "Broken links found in documentation"
+                    exit 1
+                  fi
