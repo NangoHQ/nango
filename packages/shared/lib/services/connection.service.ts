@@ -22,6 +22,7 @@ import {
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
+import { loggedFetch } from '../utils/http.js';
 import {
     extractStepNumber,
     extractValueByPath,
@@ -1167,18 +1168,25 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
-    public async getOauthClientCredentials(
-        provider: ProviderOAuth2,
-        client_id: string,
-        client_secret: string,
-        connectionConfig: Record<string, string>
-    ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
+    public async getOauthClientCredentials({
+        provider,
+        client_id,
+        client_secret,
+        connectionConfig,
+        logCtx
+    }: {
+        provider: ProviderOAuth2;
+        client_id: string;
+        client_secret: string;
+        connectionConfig: ConnectionConfig;
+        logCtx: LogContextStateless;
+    }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
         let tokenParams = provider.token_params && Object.keys(provider.token_params).length > 0 ? new URLSearchParams(provider.token_params).toString() : '';
 
-        if (connectionConfig['oauth_scopes']) {
+        if (connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string') {
             const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
             tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
@@ -1205,36 +1213,32 @@ class ConnectionService {
                 params.append(key, value);
             }
         }
-        try {
-            const requestOptions = { headers };
-
-            const response = await axios.post(
-                url.toString(),
-                bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                requestOptions
-            );
-
-            const { data } = response;
-
-            if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
+        if (connectionConfig['authorization_params']) {
+            for (const [key, value] of Object.entries(connectionConfig['authorization_params'])) {
+                params.set(key, value);
             }
+        }
 
-            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
-
-            parsedCreds.client_id = client_id;
-            parsedCreds.client_secret = client_secret;
-
-            return { success: true, error: null, response: parsedCreds };
-        } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching client credentials ${stringifyError(err)}`);
-            const error = new NangoError('client_credentials_fetch_error', errorPayload);
+        const fetchRes = await loggedFetch<Record<string, any>>(
+            {
+                url,
+                method: 'POST',
+                headers,
+                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString()
+            },
+            { logCtx, context: 'auth', valuesToFilter: [client_secret] }
+        );
+        if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
+            const error = new NangoError('client_credentials_fetch_error');
             return { success: false, error, response: null };
         }
+
+        const parsedCreds = this.parseRawCredentials(fetchRes.value.body, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
+
+        parsedCreds.client_id = client_id;
+        parsedCreds.client_secret = client_secret;
+
+        return { success: true, error: null, response: parsedCreds };
     }
 
     public async getTableauCredentials(
@@ -1575,7 +1579,13 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connection.connection_config);
+            } = await this.getOauthClientCredentials({
+                provider: provider as ProviderOAuth2,
+                client_id,
+                client_secret,
+                connectionConfig: connection.connection_config,
+                logCtx
+            });
 
             if (!success || !credentials) {
                 return { success, error, response: null };
