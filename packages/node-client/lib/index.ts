@@ -39,6 +39,7 @@ import type {
     NangoRecord,
     OAuth1Token,
     OAuth2ClientCredentials,
+    OpenAIFunction,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicTrigger,
