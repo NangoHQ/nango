@@ -308,7 +308,6 @@ export class Orchestrator {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -339,7 +338,6 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
@@ -524,7 +522,7 @@ export class Orchestrator {
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
-        delete_records?: boolean;
+        delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {

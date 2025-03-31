@@ -805,6 +805,8 @@ attio:
         grant_type: refresh_token
     proxy:
         base_url: https://app.attio.com
+        retry:
+            after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
 
 auth0:
@@ -5037,7 +5039,7 @@ keeper-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/keeper-scim
-    docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
+    docs_connect: https://docs.nango.dev/integrations/all/keeper-scim/connect
     credentials:
         apiKey:
             type: string
@@ -7509,6 +7511,31 @@ rippling:
             title: API Token
             description: The API Token for your Rippling account
             doc_section: '#step-1-generating-your-api-token'
+
+rippling-shop-app:
+    display_name: Rippling Shop App
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://app.rippling.com/apps/PLATFORM/${connectionConfig.appName}/authorize
+    token_url: https://api.rippling.com/api/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.rippling.com
+    post_connection_script: ripplingShopAppPostConnection
+    docs: https://docs.nango.dev/integrations/all/rippling-shop-app
+    connection_config:
+        appName:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 segment:
     display_name: Segment
     categories:
@@ -9588,6 +9615,23 @@ xero:
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
 
+xero-oauth2-cc:
+    display_name: Xero (Client Credentials)
+    categories:
+        - accounting
+        - popular
+    auth_mode: OAUTH2_CC
+    token_url: https://identity.xero.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.xero.com
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/xero-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/xero-oauth2-cc/connect
+
 yahoo:
     display_name: Yahoo
     categories:
@@ -9684,6 +9728,7 @@ zapier-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/zapier-scim
+    docs_connect: https://docs.nango.dev/integrations/all/zapier-scim/connect
     credentials:
         apiKey:
             type: string
