@@ -841,6 +841,14 @@ paths:
     /scripts/config:
         get:
             description: Return the configuration for all integration scripts.
+            parameters:
+                - name: format
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [nango, openai]
+                  description: The output type of the script configuration
             responses:
                 '200':
                     description: Successfully returned integration scripts config

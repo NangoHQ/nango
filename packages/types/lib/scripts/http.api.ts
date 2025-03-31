@@ -1,12 +1,6 @@
 import type { Endpoint } from '../api';
 import type { StandardNangoConfig } from '../flow';
 
-export type GetPublicScriptsConfig = Endpoint<{
-    Method: 'GET';
-    Path: `/scripts/config`;
-    Success: StandardNangoConfig[];
-}>;
-
 export interface OpenAIFunction {
     name: string;
     description: string;
@@ -17,8 +11,11 @@ export interface OpenAIFunction {
     };
 }
 
-export type GetPublicScriptsConfigOpenAI = Endpoint<{
+export type GetPublicScriptsConfig = Endpoint<{
     Method: 'GET';
-    Path: `/scripts/config/openai`;
-    Success: OpenAIFunction[];
+    Path: `/scripts/config`;
+    Query: {
+        format?: 'nango' | 'openai';
+    };
+    Success: StandardNangoConfig[] | { data: OpenAIFunction[] };
 }>;

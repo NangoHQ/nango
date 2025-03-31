@@ -491,32 +491,22 @@ export class Nango {
 
     /**
      * Retrieves the configuration for all integration scripts
+     * @param format The format to return the configuration in ('nango' | 'openai')
      * @returns A promise that resolves with an array of configuration objects for all integration scripts
      */
-    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+    public async getScriptsConfig(format: 'nango' | 'openai' = 'nango'): Promise<StandardNangoConfig[] | { data: OpenAIFunction[] }> {
         const url = `${this.serverUrl}/scripts/config`;
 
         const headers = {
             'Content-Type': 'application/json'
         };
 
-        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
-
-        return response.data;
-    }
-
-    /**
-     * Retrieves the configuration for all integration scripts in OpenAI function calling format
-     * @returns A promise that resolves with an array of OpenAI function definitions
-     */
-    public async getScriptsConfigOpenAI(): Promise<OpenAIFunction[]> {
-        const url = `${this.serverUrl}/scripts/config/openai`;
-
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-
-        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, {
+            headers: this.enrichHeaders(headers),
+            params: {
+                format
+            }
+        });
 
         return response.data;
     }

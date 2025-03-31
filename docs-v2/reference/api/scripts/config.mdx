@@ -5,12 +5,12 @@ openapi: 'GET /scripts/config'
 
 The `/scripts/config` endpoint returns the configuration for all integration scripts. There are two variants of this endpoint:
 
-1. `/scripts/config` - Returns the standard configuration format
-2. `/scripts/config/openai` - Returns the configuration in OpenAI's function calling format
+1. `/scripts/config?format=nango` - Returns the standard configuration format
+2. `/scripts/config?format=openai` - Returns the configuration in OpenAI's function calling format
 
 ## OpenAI Function Format
 
-The `/scripts/config/openai` endpoint transforms the script configurations into OpenAI's function calling format. This format is particularly useful when working with OpenAI's API to enable function calling capabilities.
+The `/scripts/config?format=openai` endpoint transforms the script configurations into OpenAI's function calling format. This format is particularly useful when working with OpenAI's API to enable function calling capabilities.
 
 ### Parameter Descriptions
 
