@@ -1,0 +1,79 @@
+import tracer from 'dd-trace';
+import * as cron from 'node-cron';
+
+import db from '@nangohq/database';
+import { getLocking } from '@nangohq/kvstore';
+import { getTrialCloseToFinish, userService } from '@nangohq/shared';
+import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
+
+import { sendTrialAlmostOverEmail } from '../helpers/email.js';
+
+import type { Lock } from '@nangohq/kvstore';
+
+const cronMinutes = 120;
+const daysBeforeTrialIsOver = 3;
+
+const logger = getLogger('cron.trial');
+
+export function trialCron(): void {
+    if (!flagHasPlan) {
+        return;
+    }
+
+    cron.schedule(
+        `*/${cronMinutes} * * * *`,
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        async () => {
+            const start = Date.now();
+            try {
+                await tracer.trace<Promise<void>>('nango.cron.trial', async () => {
+                    await exec();
+                });
+
+                logger.info('✅ done');
+            } catch (err) {
+                report(new Error('cron_failed_to_check_trial', { cause: err }));
+            }
+            metrics.duration(metrics.Types.CRON_TRIAL, Date.now() - start);
+        }
+    );
+}
+
+export async function exec(): Promise<void> {
+    const locking = await getLocking();
+
+    logger.info(`Starting`);
+
+    const lockKey = `lock:trial:cron`;
+    let lock: Lock | undefined;
+    try {
+        try {
+            lock = await locking.acquire(lockKey, 60 * 1000);
+        } catch (err) {
+            logger.info(`Could not acquire lock, skipping`, err);
+            return;
+        }
+
+        const res = await getTrialCloseToFinish(db.knex, { inDays: daysBeforeTrialIsOver });
+        if (res.length <= 0) {
+            return;
+        }
+
+        for (const plan of res) {
+            const users = await userService.getUsersByAccountId(plan.account_id);
+
+            await Promise.all(
+                users.map(async (user) => {
+                    if (!user.email_verified) {
+                        return;
+                    }
+                    await sendTrialAlmostOverEmail({ user, inDays: daysBeforeTrialIsOver });
+                })
+            );
+        }
+    } finally {
+        if (lock) {
+            locking.release(lock);
+        }
+    }
+}
