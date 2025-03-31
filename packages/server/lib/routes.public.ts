@@ -205,10 +205,10 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVarian
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
+// @deprecated use /scripts/configs
 publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
-// @deprecated use /flow/configs
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);
