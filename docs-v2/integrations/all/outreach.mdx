@@ -6,7 +6,6 @@ sidebarTitle: Outreach
 import Overview from "/snippets/overview.mdx"
 import PreBuiltTooling from "/snippets/generated/outreach/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/outreach/PreBuiltUseCases.mdx"
-import { Steps, Step } from 'nextra/components'
 
 <Overview />
 <PreBuiltTooling />
@@ -29,13 +28,13 @@ import { Steps, Step } from 'nextra/components'
     1. If you don't already have an Outreach account, go to [Outreach's signup page](https://www.outreach.io/free-trial) and create one.
     2. Sign in to your Outreach account.
   </Step>
-  
+
   <Step title="Access the developer portal">
     1. Go to the [Outreach Developer Portal](https://developers.outreach.io/).
     2. Sign in with your Outreach credentials.
     3. Navigate to "My apps" in the top navigation bar.
   </Step>
-  
+
   <Step title="Create a new Outreach app">
     1. In the developer portal, click on **Create App**.
     2. Fill in the required information for your application:
@@ -45,31 +44,31 @@ import { Steps, Step } from 'nextra/components'
        - **App Website**: Enter the URL of your application's website.
        - **Support Email**: Enter an email address for support inquiries.
   </Step>
-  
+
   <Step title="Configure API access">
     1. After creating your app, navigate to the **API access** tab.
     2. Enable the Outreach API access by toggling the switch.
     3. Add the following redirect URI:
        - `https://api.nango.dev/oauth/callback`
-    
+
     4. Select the appropriate scopes for your application based on your needs. Common scopes include:
        - `accounts.all` - Access to account information
        - `prospects.all` - Access to prospect information
        - `sequences.all` - Access to sequence information
        - `users.all` - Access to user information
-    
+
     5. Save your application settings.
   </Step>
-  
+
   <Step title="Obtain your OAuth credentials">
     After configuring API access, you'll receive:
-    
+
     - **Client ID**: A unique identifier for your application
     - **Client Secret**: A secret key for your application
-    
+
     Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango. Note that the Client Secret will only be displayed once, so make sure to copy it immediately.
   </Step>
-  
+
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
@@ -119,9 +118,3 @@ import { Steps, Step } from 'nextra/components'
 - Rate limits apply to the Outreach API. If you exceed the rate limit, you'll receive a 429 Too Many Requests response.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
-
-## Going further
-
-<Card title="Connect to Outreach" icon="link" href="/integrations/all/outreach/connect" horizontal>
-  Guide to connect to Outreach using Connect UI
-</Card>
