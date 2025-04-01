@@ -1,8 +1,19 @@
 import db from '@nangohq/database';
-import type { DBExternalWebhook } from '@nangohq/types';
+import type { DBExternalWebhook, DBEnvironment } from '@nangohq/types';
 
-export async function get(id: number): Promise<DBExternalWebhook | null> {
+export async function get(id: number): Promise<Omit<DBExternalWebhook, 'id'> | null> {
+    // First, get the environment information so we can check if there is a related env var by its name
+    const environment = await db.knex.select('name').from<DBEnvironment>('_nango_environments').where({ id }).first();
+
+    // Now get the webhook settings
     const result = await db.knex.select('*').from<DBExternalWebhook>('_nango_external_webhooks').where({ environment_id: id }).first();
+
+    // Apply environment variable for primary_url, if it exists
+    if (result && environment) {
+        if (process.env[`NANGO_WEBHOOK_PRIMARY_URL_${environment.name.toUpperCase()}`]) {
+            result.primary_url = process.env[`NANGO_WEBHOOK_PRIMARY_URL_${environment.name.toUpperCase()}`] as string;
+        }
+    }
 
     return result || null;
 }
