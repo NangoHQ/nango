@@ -908,13 +908,13 @@ Triggers an additional, one-off execution of specified sync(s) for a given conne
 
 ```ts
 // Simple usage with sync names
-const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>', 'incremental');
 
 // Using variants
 const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
   { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
   'SYNC_NAME2' // Uses default base variant
-], '<CONNECTION_ID>');
+], '<CONNECTION_ID>', 'incremental');
 ```
 
 **Parameters**
