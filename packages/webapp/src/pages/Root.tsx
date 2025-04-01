@@ -16,6 +16,11 @@ export const Root: React.FC = () => {
             return;
         }
 
+        if (location.pathname === '/' && env) {
+            navigate(`/${env}`, { replace: true });
+            return;
+        }
+
         if (env === 'dev' && showGettingStarted && !meta.onboardingComplete) {
             navigate('/dev/getting-started');
             return;

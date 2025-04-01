@@ -34,10 +34,11 @@ import { SentryRoutes } from './utils/sentry';
 import { TeamSettings } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { globalEnv } from './utils/env';
+import { Root } from './pages/Root';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { Helmet } from 'react-helmet';
-import storage, { LocalStorageKeys } from './utils/local-storage';
-import { AutoRedirect } from './components/AutoRedirect';
+import { LocalStorageKeys } from './utils/local-storage';
+import { useLocalStorage } from 'react-use';
 
 const theme = createTheme({
     fontFamily: 'Inter'
@@ -48,13 +49,14 @@ const App = () => {
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment, 'dev');
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
         if (env) {
-            storage.setItem(LocalStorageKeys.LastEnvironment, env);
+            setLastEnvironment(env);
         }
-    }, [env, setShowGettingStarted]);
+    }, [env, setShowGettingStarted, setLastEnvironment]);
 
     return (
         <MantineProvider theme={theme}>
@@ -89,7 +91,7 @@ const App = () => {
                     }}
                 >
                     <SentryRoutes>
-                        <Route path="/" element={<AutoRedirect />} />
+                        <Route path="/" element={<Root />} />
                         <Route element={<PrivateRoute />} key={env}>
                             <Route path="/:env" element={<Homepage />} />
                             {showGettingStarted && (
