@@ -2926,6 +2926,24 @@ emarsys-oauth:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
 
+employment-hero:
+    display_name: Employment Hero
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.employmenthero.com/oauth2/authorize
+    token_url: https://oauth.employmenthero.com/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.employmenthero.com/api
+    docs: https://docs.nango.dev/integrations/all/employment-hero
+
 ebay:
     display_name: eBay
     categories:
