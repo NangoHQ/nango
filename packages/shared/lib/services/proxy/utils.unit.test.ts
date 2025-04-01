@@ -6,8 +6,6 @@ import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
 
-import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
-
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
