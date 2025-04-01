@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.0] - 2025-04-01
+
+### Added
+
+- *(attio)* Add retry parsing (#3791) by @khaliqgant
+- Add AI demo (#3793) by @bastienbeurier
+- *(integrations)* Add support for xero client credentials (#3798) by @hassan254-prog
+- *(integrations)* Add sipport for rippling shop app (#3799) by @hassan254-prog
+- Add Outreach integration setup guide (ext-368) (#3749) by @devin-ai-integration[bot]
+- *(api)* Add sync_mode param to /sync/trigger (#3795) by @kaposke
+- Nango to respond/forward webhook immediately (#3801) by @TBonnin
+- *(node-client)* Support sync_mode in triggerSync (#3805) by @kaposke
+- *(ai-toolkit)* Openai scripts format (#3796) by @khaliqgant
+- *(integrations)* Add support for github pat (#3800) by @hassan254-prog
+- *(pagination)* Add pagination callback function  (#3810) by @hassan254-prog
+
+### Changed
+
+- *(api)* Refactor POST /sync/trigger (#3782) by @kaposke
+
+### Fixed
+
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0e151ef434f0216827ff9efd05f1edc445554889 by Khaliq. Commit message: fix(action-retries): Action default (#291) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/7a609effae7837d0a6e022fb7f603c0acb54b57e by Khaliq. Commit message: fix(hibob): Fix hibob employees sync (#292) by @github-actions[bot]
+- *(refresh)* Missing last_fetched_at (#3789) by @bodinsamuel
+- *(ui)* Use correct API hostname (#3777) by @bodinsamuel
+- *(providers.yaml)* Retry for 403 for google cal and hibob connect UI (#3788) by @khaliqgant
+- *(docs)* Reported documentation issues (#3786) by @lordsarcastic
+- Cors issue (#3790) by @bodinsamuel
+- Fleet fallback db url (#3787) by @TBonnin
+- *(api)* POST /logout new format (#3794) by @bodinsamuel
+- Abort all scripts when timing out (#3797) by @TBonnin
+- *(env)* Missing NANGO_PUBLIC_SERVER_URL (#3804) by @bodinsamuel
+- *(auth)* Oauth2_cc support authorization_params (#3792) by @bodinsamuel
+- *(docs)* Fix bad imports (#3808) by @khaliqgant
+- *(api)* Make sync_mode optional in /sync/trigger (#3813) by @kaposke
+- Do not block request if rate limit cannot be computed (#3806) by @TBonnin
+- *(email)* Upgrade client, missing async/await (#3809) by @bodinsamuel
+
 ## [v0.57.6] - 2025-03-26
 
 ### Added
@@ -3514,6 +3553,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.0]: https://github.com/NangoHQ/nango/compare/v0.57.6..v0.58.0
 [v0.57.6]: https://github.com/NangoHQ/nango/compare/v0.57.5..v0.57.6
 [v0.57.5]: https://github.com/NangoHQ/nango/compare/v0.57.4..v0.57.5
 [v0.57.4]: https://github.com/NangoHQ/nango/compare/v0.57.3..v0.57.4
