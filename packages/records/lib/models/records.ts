@@ -405,13 +405,12 @@ export async function upsert({
                 // A record is billed only once per month. ie:
                 // - If a record is inserted, it is billed
                 // - If a record is updated, it is billed if it has not been billed yet during the current month
-                // - If a record is undeleted, it is billed if it has not been billed yet during the current month
-                // - If a record is deleted, it is billed if it has not been billed yet during the current month
+                // - If a record is undeleted, it is not billed
+                // - If a record is deleted, it is not billed
 
                 if (softDelete) {
                     const deleted = res.filter((r) => r.status === 'deleted');
                     summary.deletedKeys?.push(...deleted.map((r) => r.external_id));
-                    summary.billedKeys.push(...billable(deleted).map((r) => r.external_id));
                 } else {
                     const undeletedRes = res.filter((r) => r.status === 'undeleted');
                     const changedRes = res.filter((r) => r.status === 'changed');
@@ -420,7 +419,7 @@ export async function upsert({
                     const undeletedKeys = undeletedRes.map((r) => r.external_id);
                     const addedKeys = insertedKeys.concat(undeletedKeys);
                     const updatedKeys = changedRes.map((r) => r.external_id);
-                    const billableKeys = [...insertedKeys, ...billable([...changedRes, ...undeletedRes]).map((r) => r.external_id)];
+                    const billableKeys = [...insertedKeys, ...billable(changedRes).map((r) => r.external_id)];
 
                     summary.addedKeys.push(...addedKeys);
                     summary.updatedKeys.push(...updatedKeys);
