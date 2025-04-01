@@ -5,16 +5,18 @@ export type PostPublicTrigger = Endpoint<{
     Path: '/sync/trigger';
     Body: {
         syncs: (string | { name: string; variant: string })[];
-        full_resync?: boolean | undefined;
+        sync_mode?: 'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache' | undefined;
         provider_config_key?: string | undefined;
         connection_id?: string | undefined;
+        // @deprecrated in favor of sync_mode
+        full_resync?: boolean | undefined;
     };
     Headers: {
         'provider-config-key'?: string | undefined;
         'connection-id'?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'missing_provider_config_key' | 'missing_connection_id'>;
+    Error: ApiError<'missing_provider_config_key'>;
 }>;
 
 export type PostSyncVariant = Endpoint<{

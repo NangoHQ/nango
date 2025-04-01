@@ -1,6 +1,7 @@
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { HTTP_METHOD } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
+import type { AxiosResponse } from 'axios';
 
 export interface ProxyFile {
     fieldname: string;
@@ -67,6 +68,7 @@ export interface PaginationBase {
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }
 
 export type Pagination = CursorPagination | LinkPagination | OffsetPagination;
