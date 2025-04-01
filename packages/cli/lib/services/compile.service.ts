@@ -95,6 +95,10 @@ export async function compileAllFiles({
         compilationErrors.forEach((error) => printDebug(`- ${error}`));
     }
 
+    if (allSuccess) {
+        console.log(chalk.green('Successfully compiled all files present in the Nango YAML config file.'));
+    }
+
     return allSuccess;
 }
 
@@ -218,10 +222,18 @@ async function compile({
         return null;
     }
 
-    const config = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((config) => config.name === file.baseName);
+    const syncsAndActions = [...providerConfiguration.syncs, ...providerConfiguration.actions];
+
+    const onEventScripts: { name: string; type: ScriptTypeLiteral; event: string }[] = Object.entries(providerConfiguration.onEventScripts).flatMap(
+        ([event, scripts]) => scripts.map((name) => ({ name, type: 'on-event' as const, event }))
+    );
+
+    const config = [...syncsAndActions, ...onEventScripts].find((script) => script.name === file.baseName);
+
+    const absoluteFullPath = path.resolve(fullPath, file.inputPath);
 
     if (!config) {
-        console.log(chalk.red(`Skipping compilation: No configuration found for ${file.baseName}`));
+        console.log(chalk.red(`Skipping compilation: No configuration found for ${absoluteFullPath}`));
         return null;
     }
 
