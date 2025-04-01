@@ -3895,6 +3895,43 @@ github-app-oauth:
             example: '38631545'
             automated: true
 
+github-pat:
+    display_name: Github (Personal Access Token)
+    categories:
+        - dev-tools
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+            error_code: 403
+        headers:
+            authorization: Bearer ${apiKey}
+            x-github-api-version: ${connectionConfig.version} || 2022-11-28
+            accept: application/vnd.github+json
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://docs.nango.dev/integrations/all/github-pat
+    docs_connect: https://docs.nango.dev/integrations/all/github-pat/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token to your Github account
+            pattern: '^(?:github_pat|ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,255}$'
+            example: 'github_pat_***********************xRIoxmseCYRHDDIOFfTOyKex'
+            doc_section: '#step-1-finding-your-personal-access-token'
+
 gitlab:
     display_name: GitLab
     categories:
@@ -7511,6 +7548,31 @@ rippling:
             title: API Token
             description: The API Token for your Rippling account
             doc_section: '#step-1-generating-your-api-token'
+
+rippling-shop-app:
+    display_name: Rippling Shop App
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://app.rippling.com/apps/PLATFORM/${connectionConfig.appName}/authorize
+    token_url: https://api.rippling.com/api/o/token/
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.rippling.com
+    post_connection_script: ripplingShopAppPostConnection
+    docs: https://docs.nango.dev/integrations/all/rippling-shop-app
+    connection_config:
+        appName:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 segment:
     display_name: Segment
     categories:
@@ -9589,6 +9651,23 @@ xero:
             after: 'retry-after'
     post_connection_script: xeroPostConnection
     docs: https://docs.nango.dev/integrations/all/xero
+
+xero-oauth2-cc:
+    display_name: Xero (Client Credentials)
+    categories:
+        - accounting
+        - popular
+    auth_mode: OAUTH2_CC
+    token_url: https://identity.xero.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.xero.com
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/xero-oauth2-cc
+    docs_connect: https://docs.nango.dev/integrations/all/xero-oauth2-cc/connect
 
 yahoo:
     display_name: Yahoo
