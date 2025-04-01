@@ -406,6 +406,7 @@
                 "integrations/all/github",
                 "integrations/all/github-app",
                 "integrations/all/github-app-oauth",
+                "integrations/all/github-pat",
                 "integrations/all/gitlab",
                 "integrations/all/gong",
                 "integrations/all/gong-oauth",
