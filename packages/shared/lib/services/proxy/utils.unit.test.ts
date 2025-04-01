@@ -1,9 +1,10 @@
-import { expect, describe, it } from 'vitest';
-import { buildProxyHeaders, buildProxyURL, getProxyConfiguration, ProxyError } from './utils.js';
-import type { UserProvidedProxyConfiguration, InternalProxyConfiguration } from '@nangohq/types';
+import { describe, expect, it } from 'vitest';
 
+import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../connections/utils.test.js';
+
+import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
