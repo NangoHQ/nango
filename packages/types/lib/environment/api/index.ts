@@ -38,6 +38,7 @@ export type PatchEnvironment = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
+        name?: string | undefined;
         callback_url?: string | undefined;
         hmac_key?: string | undefined;
         hmac_enabled?: boolean | undefined;

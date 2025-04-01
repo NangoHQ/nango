@@ -1,13 +1,18 @@
 import { z } from 'zod';
-import { isEnterprise, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { DBEnvironment, DBTeam, PatchEnvironment } from '@nangohq/types';
+
 import { environmentService } from '@nangohq/shared';
+import { isEnterprise, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { environmentToApi } from '../../../formatters/environment.js';
+import { envSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { featureFlags } from '../../../utils/utils.js';
+
+import type { DBEnvironment, DBTeam, PatchEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
+        name: envSchema.optional(),
         callback_url: z.string().url().optional(),
         hmac_key: z.string().min(0).max(1000).optional(),
         hmac_enabled: z.boolean().optional(),
@@ -37,6 +42,9 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
     const { environment, account } = res.locals;
 
     const data: Partial<DBEnvironment> = {};
+    if (typeof body.name !== 'undefined') {
+        data.name = body.name;
+    }
     if (typeof body.callback_url !== 'undefined') {
         data.callback_url = body.callback_url;
     }
