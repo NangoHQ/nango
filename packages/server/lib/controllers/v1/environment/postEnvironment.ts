@@ -1,9 +1,13 @@
 import { z } from 'zod';
+
+import db from '@nangohq/database';
+import { environmentService, externalWebhookService, getPlan } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { PostEnvironment } from '@nangohq/types';
-import { accountService, environmentService, externalWebhookService } from '@nangohq/shared';
+
 import { envSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PostEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -27,16 +31,16 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
     const body: PostEnvironment['Body'] = valBody.data;
 
     const accountId = res.locals.user.account_id;
-
-    const account = await accountService.getAccountById(accountId);
-    if (account?.is_capped) {
-        res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating environment is only available for paying customer' } });
-        return;
-    }
+    const plan = await getPlan(db.knex, { accountId });
 
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
-    if (environments.length >= 10) {
-        res.status(400).send({ error: { code: 'resource_capped', message: "Can't create more environments" } });
+    if (plan && environments.length >= plan.environments_max) {
+        res.status(400).send({
+            error: {
+                code: 'resource_capped',
+                message: plan.name === 'free' ? 'Creating environment is only available for paying customer' : "Can't create more environments. "
+            }
+        });
         return;
     }
 
