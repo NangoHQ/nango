@@ -1,9 +1,8 @@
 import type { ReplaceInObject } from '../utils';
 import type { DBPlan } from './db.js';
+import type { Endpoint } from '../api';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
-
-import type { Endpoint } from '../api';
 
 export type PostPlanExtendTrial = Endpoint<{
     Method: 'POST';

@@ -4,9 +4,9 @@ import { EmailClient } from '../clients/email.client.js';
 
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 
-export function sendVerificationEmail(email: string, name: string, token: string) {
+export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
-    emailClient.send(
+    await emailClient.send(
         email,
         `Verify your email address`,
         `

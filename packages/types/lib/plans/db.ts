@@ -14,25 +14,30 @@ export interface DBPlan extends Timestamps {
      * Set to null to remove limit
      * @default 3
      */
-    max_connection_with_scripts: number | null;
+    connection_with_scripts_max: number | null;
 
     /**
      * Limit the number of environments that can be created
-     * Set to null to remove limit
      * @default 2
      */
-    max_environments: number | null;
+    environments_max: number;
 
     /**
      * Limit the minimum frequency of a sync
      * Not used yet
      * @default 86400
      */
-    min_sync_frequency: number;
+    sync_frequency_secs_min: number;
 
     /**
      * Enable or disabled sync variant
      * @default false
      */
     has_sync_variant: boolean;
+
+    /**
+     * Enable or disabled open telemetry export
+     * @default false
+     */
+    has_otel: boolean;
 }

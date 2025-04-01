@@ -85,6 +85,13 @@ class PaginationService {
             } else if (typeof nextCursor !== 'number') {
                 nextCursor = undefined;
             }
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({
+                    nextPageParam: nextCursor,
+                    response
+                });
+            }
         } while (typeof nextCursor !== 'undefined');
     }
 
@@ -110,6 +117,10 @@ class PaginationService {
             yield responseData;
 
             const nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({ nextPageParam: nextPageLink, response });
+            }
 
             if (!nextPageLink) {
                 return;
@@ -159,6 +170,13 @@ class PaginationService {
 
             if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
                 return;
+            }
+
+            if (paginationConfig.on_page) {
+                await paginationConfig.on_page({
+                    nextPageParam: offset,
+                    response
+                });
             }
 
             if (responseData.length < 1) {

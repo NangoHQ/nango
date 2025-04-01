@@ -11,12 +11,13 @@ exports.up = async function (knex) {
 	"name" varchar(256) NOT NULL,
 	"trial_start_at" timestamptz,
 	"trial_end_at" timestamptz,
-	"trial_extension_count" int2 DEFAULT 0,
+	"trial_extension_count" int2 NOT NULL DEFAULT 0,
 	"trial_end_notified_at" timestamptz,
-	"max_connection_with_scripts" int2 DEFAULT 3,
-	"max_environments" int2 DEFAULT 2,
-	"min_sync_frequency" int4 DEFAULT 86400,
-	"has_sync_variants" bool DEFAULT false,
+	"connection_with_scripts_max" int2 DEFAULT 3,
+	"environments_max" int2 NOT NULL DEFAULT 2,
+	"sync_frequency_secs_min" int4 NOT NULL DEFAULT 86400,
+	"has_sync_variants" bool NOT NULL DEFAULT false,
+	"has_otel" bool NOT NULL DEFAULT false,
 	PRIMARY KEY ("id")
 )`
     );

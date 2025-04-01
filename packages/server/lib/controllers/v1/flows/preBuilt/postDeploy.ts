@@ -48,12 +48,12 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         return;
     }
 
-    if (plan && plan.max_connection_with_scripts) {
+    if (plan && plan.connection_with_scripts_max) {
         const isCapped = await connectionService.shouldCapUsage({
             providerConfigKey: body.providerConfigKey,
             environmentId,
             type: 'deploy',
-            limit: plan.max_connection_with_scripts
+            limit: plan.connection_with_scripts_max
         });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });

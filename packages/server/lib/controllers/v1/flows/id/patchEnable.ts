@@ -47,12 +47,12 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    if (plan && plan.max_connection_with_scripts) {
+    if (plan && plan.connection_with_scripts_max) {
         const isCapped = await connectionService.shouldCapUsage({
             providerConfigKey: body.providerConfigKey,
             environmentId: environment.id,
             type: 'activate',
-            limit: plan.max_connection_with_scripts
+            limit: plan.connection_with_scripts_max
         });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });

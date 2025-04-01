@@ -9,12 +9,12 @@ export const resourceCapping = asyncWrapper<Endpoint<{ Method: 'POST'; Path: '';
 
         const { providerConfigKey } = req.params;
 
-        if (plan && plan.max_connection_with_scripts && providerConfigKey) {
+        if (plan && plan.connection_with_scripts_max && providerConfigKey) {
             const isCapped = await connectionCreationStartCapCheckHook({
                 providerConfigKey,
                 environmentId: environment.id,
                 creationType: 'create',
-                limit: plan.max_connection_with_scripts
+                limit: plan.connection_with_scripts_max
             });
             if (isCapped) {
                 res.status(400).send({ error: { code: 'resource_capped', message: 'Reached maximum number of connections with scripts enabled' } });

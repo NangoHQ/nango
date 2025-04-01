@@ -34,7 +34,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
     const plan = await getPlan(db.knex, { accountId });
 
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
-    if (plan && plan.max_environments && environments.length >= plan.max_environments) {
+    if (plan && environments.length >= plan.environments_max) {
         res.status(400).send({
             error: {
                 code: 'resource_capped',
