@@ -1,19 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { OAuth2Credentials, AuthCredentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
-import { configService, connectionService, errorManager, NangoError, accountService, getProvider } from '@nangohq/shared';
-import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
+import { NangoError, accountService, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+
+import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
-import { getOrchestrator } from '../utils/utils.js';
-import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 import { slackService } from '../services/slack.js';
+import { getOrchestrator } from '../utils/utils.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { AuthCredentials, ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
+import type { ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials, TbaCredentials } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -30,7 +32,7 @@ class ConnectionController {
 
             const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
             const nangoAdminUUID = NANGO_ADMIN_UUID;
-            const env = 'prod';
+            const env = process.env['NANGO_ADMIN_PROD_ENV'] || 'prod';
 
             const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
             const {
