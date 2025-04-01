@@ -2926,6 +2926,24 @@ emarsys-oauth:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
 
+employment-hero:
+    display_name: Employment Hero
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.employmenthero.com/oauth2/authorize
+    token_url: https://oauth.employmenthero.com/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.employmenthero.com/api
+    docs: https://docs.nango.dev/integrations/all/employment-hero
+
 ebay:
     display_name: eBay
     categories:
@@ -3894,6 +3912,43 @@ github-app-oauth:
             description: The installation ID of your GitHub App
             example: '38631545'
             automated: true
+
+github-pat:
+    display_name: Github (Personal Access Token)
+    categories:
+        - dev-tools
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+            error_code: 403
+        headers:
+            authorization: Bearer ${apiKey}
+            x-github-api-version: ${connectionConfig.version} || 2022-11-28
+            accept: application/vnd.github+json
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://docs.nango.dev/integrations/all/github-pat
+    docs_connect: https://docs.nango.dev/integrations/all/github-pat/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token to your Github account
+            pattern: '^(?:github_pat|ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,255}$'
+            example: 'github_pat_***********************xRIoxmseCYRHDDIOFfTOyKex'
+            doc_section: '#step-1-finding-your-personal-access-token'
 
 gitlab:
     display_name: GitLab
