@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { flagHasPlan } from '@nangohq/utils';
+import { flagHasPlan, report } from '@nangohq/utils';
 
 import environmentService from './environment.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -97,7 +97,10 @@ class AccountService {
 
         await environmentService.createDefaultEnvironments(result[0].id);
         if (flagHasPlan) {
-            await createPlan(db.knex, { account_id: result[0].id, name: 'free' });
+            const res = await createPlan(db.knex, { account_id: result[0].id, name: 'free' });
+            if (res.isErr()) {
+                report(res.error);
+            }
         }
 
         return result[0];
