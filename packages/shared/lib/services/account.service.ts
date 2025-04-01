@@ -96,7 +96,7 @@ class AccountService {
 
         await environmentService.createDefaultEnvironments(result[0].id);
         if (flagHasPlan) {
-            await createPlan(db.knex, { account_id: result[0].id });
+            await createPlan(db.knex, { account_id: result[0].id, name: 'free' });
         }
 
         return result[0];

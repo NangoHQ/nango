@@ -3,7 +3,7 @@ import ms from 'ms';
 import type { DBPlan } from '@nangohq/types';
 import type { Knex } from 'knex';
 
-const TRIAL_DURATION = ms('15days');
+export const TRIAL_DURATION = ms('15days');
 
 export async function getPlan(db: Knex, { accountId }: { accountId: number }): Promise<DBPlan | null> {
     const res = await db.from<DBPlan>('plans').select<DBPlan>('*').where('account_id', accountId).first();
@@ -12,9 +12,9 @@ export async function getPlan(db: Knex, { accountId }: { accountId: number }): P
 
 export async function createPlan(
     db: Knex,
-    { account_id, ...rest }: Pick<DBPlan, 'account_id'> & Partial<Omit<DBPlan, 'account_id' | 'created_at' | 'updated_at'>>
-) {
-    await db
+    { account_id, ...rest }: Pick<DBPlan, 'account_id' | 'name'> & Partial<Omit<DBPlan, 'account_id' | 'created_at' | 'updated_at'>>
+): Promise<DBPlan> {
+    const res = await db
         .from<DBPlan>('plans')
         .insert({
             trial_start_at: new Date(),
@@ -25,7 +25,9 @@ export async function createPlan(
             account_id
         })
         .onConflict('account_id')
-        .ignore();
+        .ignore()
+        .returning('*');
+    return res[0]!;
 }
 
 export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> & Partial<Omit<DBPlan, 'id'>>) {

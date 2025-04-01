@@ -128,6 +128,9 @@ export const ENVS = z.object({
         .default(2 * 60 * 1000), // 2 minutes
     FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
+    // Billing
+    FLAG_PLAN_ENABLED: bool,
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),

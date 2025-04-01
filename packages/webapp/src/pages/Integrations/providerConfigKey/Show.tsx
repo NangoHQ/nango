@@ -3,7 +3,7 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { IconBolt, IconClockHour4Filled, IconRefresh } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
 import { Skeleton } from '../../../components/ui/Skeleton';
 import PageNotFound from '../../PageNotFound';
@@ -16,19 +16,23 @@ import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useGetIntegration } from '../../../hooks/useIntegration';
+import { apiPostPlanExtendTrial } from '../../../hooks/usePlan';
+import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 
 export const ShowIntegration: React.FC = () => {
+    const { toast } = useToast();
     const { providerConfigKey } = useParams();
     const location = useLocation();
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
 
-    const { plan } = useEnvironment(env);
+    const { plan, mutate } = useEnvironment(env);
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
+    const [trialLoading, setTrialLoading] = useState(false);
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -53,6 +57,21 @@ export const ShowIntegration: React.FC = () => {
         const days = Math.ceil((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
         return [days >= 0, days];
     }, [plan]);
+
+    const onClickTrialExtend = async () => {
+        setTrialLoading(true);
+        const res = await apiPostPlanExtendTrial(env);
+        setTrialLoading(false);
+
+        if ('error' in res.json) {
+            toast({ title: 'There was an issue extending your trial', variant: 'error' });
+            return;
+        }
+
+        void mutate();
+
+        toast({ title: 'Your trial was extended successfully!', variant: 'success' });
+    };
 
     if (loading) {
         return (
@@ -145,14 +164,16 @@ export const ShowIntegration: React.FC = () => {
                         <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
                     </div>
                     <div className="flex gap-2">
-                        <Button size={'sm'} variant={'tertiary'}>
+                        <Button size={'sm'} variant={'tertiary'} onClick={onClickTrialExtend} isLoading={trialLoading}>
                             <IconRefresh stroke={1} size={18} />
                             Extend trial
                         </Button>
-                        <Button size={'sm'} variant={'secondary'}>
-                            <IconBolt stroke={1} size={18} />
-                            Upgrade plan
-                        </Button>
+                        <Link to={`mailto:support@nango.dev?subject=Upgrade%20my%20plan%20`}>
+                            <Button size={'sm'} variant={'secondary'}>
+                                <IconBolt stroke={1} size={18} />
+                                Upgrade plan
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             )}

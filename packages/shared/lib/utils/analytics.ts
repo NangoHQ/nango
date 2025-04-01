@@ -15,6 +15,7 @@ export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
     ACCOUNT_JOINED = 'server:account_joined',
     ACCOUNT_TRIAL_EXPIRING_MAIL = 'account:trial:expiring:mail',
+    ACCOUNT_TRIAL_EXTEND = 'account:trial:extend',
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
