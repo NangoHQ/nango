@@ -3,10 +3,21 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { AnalyticsTypes, analytics, getTrialCloseToFinish, updatePlan, userService } from '@nangohq/shared';
+import {
+    AnalyticsTypes,
+    analytics,
+    disableScriptConfig,
+    errorNotificationService,
+    getAccountWithFinishedTrialAndSyncs,
+    getTrialCloseToFinish,
+    syncManager,
+    updatePlan,
+    userService
+} from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
 import { sendTrialAlmostOverEmail } from '../helpers/email.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 import type { Lock } from '@nangohq/kvstore';
 
@@ -60,7 +71,7 @@ export async function exec(): Promise<void> {
             for (const plan of res) {
                 await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
 
-                logger.info('Trial over for account', plan.account_id);
+                logger.info('Trial soon to be over for account', plan.account_id);
                 void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXPIRING_MAIL, plan.account_id);
 
                 const users = await userService.getUsersByAccountId(plan.account_id);
@@ -79,7 +90,19 @@ export async function exec(): Promise<void> {
             }
         }
 
-        // TODO: Do something when trial end
+        // Disable all scripts
+        const orchestrator = getOrchestrator();
+        const accountsToPause = await getAccountWithFinishedTrialAndSyncs(db.knex);
+        for (const account of accountsToPause) {
+            logger.info('Trial over for account', account);
+
+            const updated = await disableScriptConfig({ id: account.sync_config_id, environmentId: account.environment_id });
+            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: account.sync_config_id });
+
+            if (updated > 0) {
+                await syncManager.pauseSchedules({ syncConfigId: account.sync_config_id, environmentId: account.environment_id, orchestrator });
+            }
+        }
     } finally {
         if (lock) {
             locking.release(lock);

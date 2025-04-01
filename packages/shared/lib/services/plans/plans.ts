@@ -48,3 +48,21 @@ export async function getTrialCloseToFinish(db: Knex, { inDays }: { inDays: numb
         .where('trial_end_at', '<=', dateThreshold.toISOString())
         .whereNull('trial_end_notified_at');
 }
+
+export async function getAccountWithFinishedTrialAndSyncs(db: Knex): Promise<{ account_id: number; environment_id: number; sync_config_id: number }[]> {
+    return await db
+        .from('_nango_accounts as na')
+        .select<{ account_id: number; sync_config_id: number; environment_id: number }[]>(
+            'na.id as account_id',
+            'nsc.environment_id',
+            'nsc.id as sync_config_id'
+        )
+        .join('plans', 'plans.account_id', 'na.id')
+        .join('_nango_environments as ne', 'ne.account_id', 'na.id')
+        .join('_nango_sync_configs as nsc', 'nsc.environment_id', 'ne.id')
+        .where('plans.name', 'free')
+        .whereBetween('plans.trial_end_at', [db.raw("NOW() - INTERVAL '24 hours'"), db.raw('NOW()')])
+        .where('nsc.active', true)
+        .where('nsc.deleted', false)
+        .where('nsc.enabled', true);
+}
