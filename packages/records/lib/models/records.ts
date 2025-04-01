@@ -34,14 +34,18 @@ interface UpsertResult {
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
+function isBillable(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
+    const firstDayOfMonth = dayjs().utc().startOf('month');
+    const previousLastModifiedAt = dayjs(record.previous_last_modified_at).utc();
+    return previousLastModifiedAt.isBefore(firstDayOfMonth);
+}
+
 function billable(records: UpsertResult[]): UpsertResult[] {
     return records.filter((r) => {
         if (!r.previous_last_modified_at) {
             return true;
         }
-        const firstDayOfMonth = dayjs().utc().startOf('month');
-        const previousLastModifiedAt = dayjs(r.previous_last_modified_at).utc();
-        return previousLastModifiedAt.isBefore(firstDayOfMonth);
+        return isBillable({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
     });
 }
 
@@ -577,16 +581,15 @@ export async function update({
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
-                    const firstUpdateThisMonth = updated.filter((r) => {
-                        const firstDayOfMonth = dayjs().startOf('month').toDate();
-                        const oldRecord = oldRecords.find((old) => old.external_id === r.external_id);
-                        if (!oldRecord) {
-                            return false;
+                    for (const record of updated) {
+                        const oldRecord = oldRecords.find((old) => old.external_id === record.external_id);
+                        if (!oldRecord?.updated_at) {
+                            continue;
                         }
-                        const previousLastModifiedAt = dayjs(oldRecord.updated_at);
-                        return previousLastModifiedAt.isBefore(firstDayOfMonth);
-                    });
-                    billedKeys.push(...firstUpdateThisMonth.map((r) => r.external_id));
+                        if (isBillable({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
+                            billedKeys.push(record.external_id);
+                        }
+                    }
 
                     const lastRecord = updated[updated.length - 1];
                     if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
