@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../connections/utils.test.js';
+import { getTestConnection } from '../../seeders/connection.seeder.js';
+
+import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
 
