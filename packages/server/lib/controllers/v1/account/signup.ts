@@ -1,10 +1,14 @@
-import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import crypto from 'crypto';
 import util from 'util';
-import { sendVerificationEmail } from '../../../helpers/email.js';
+
+import { z } from 'zod';
+
+import { AnalyticsTypes, acceptInvitation, accountService, analytics, getInvitation, userService } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { userService, accountService, getInvitation, analytics, AnalyticsTypes, acceptInvitation } from '@nangohq/shared';
+
+import { sendVerificationEmail } from '../../../helpers/email.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { DBTeam, PostSignup } from '@nangohq/types';
 
 export const passwordSchema = z
@@ -112,7 +116,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        sendVerificationEmail(email, name, user.email_verification_token);
+        await sendVerificationEmail(email, name, user.email_verification_token);
 
         // We don't login because we want to enforce email validation
         res.status(200).send({ data: { uuid: user.uuid, verified: false } });

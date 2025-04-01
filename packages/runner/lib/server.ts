@@ -67,9 +67,7 @@ function startProcedure() {
                 }, heartbeatIntervalMs);
                 try {
                     const abortController = new AbortController();
-                    if (nangoProps.scriptType == 'sync' && nangoProps.activityLogId) {
-                        abortControllers.set(taskId, abortController);
-                    }
+                    abortControllers.set(taskId, abortController);
 
                     const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
 
