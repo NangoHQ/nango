@@ -48,6 +48,8 @@ export type * from './connect/session.js';
 export type * from './endUser/index.js';
 export type * from './runner/index.js';
 export type * from './runner/sdk.js';
+export type * from './plans/db.js';
+export type * from './plans/http.api.js';
 
 export type * from './nangoYaml/index.js';
 

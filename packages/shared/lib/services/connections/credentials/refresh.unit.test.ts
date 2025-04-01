@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+
 import { shouldRefreshCredentials } from './refresh.js';
-import { getTestConnection } from '../utils.test';
-import type { ProviderOAuth2 } from '@nangohq/types';
-import type { Config } from '../../../models';
+import { getTestConnection } from '../../../seeders/connection.seeder.js';
 import { REFRESH_MARGIN_S } from '../utils.js';
+
+import type { Config } from '../../../models';
+import type { ProviderOAuth2 } from '@nangohq/types';
 
 describe('shouldRefreshCredentials', () => {
     describe('facebook', () => {

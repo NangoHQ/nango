@@ -73,6 +73,7 @@ describe('Records service', () => {
             addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
             updatedKeys: [],
             deletedKeys: [],
+            billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
         });
@@ -85,9 +86,9 @@ describe('Records service', () => {
         expect(upserted).toStrictEqual({
             addedKeys: [],
             updatedKeys: ['2'],
+            billedKeys: [],
             deletedKeys: [],
             nonUniqueKeys: [],
-
             nextMerging: { strategy: 'override' }
         });
 
@@ -98,7 +99,14 @@ describe('Records service', () => {
         expect(after.find((r) => r.external_id === '4')?.sync_job_id).toBe(1);
 
         const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 3 });
-        expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+        expect(updated).toStrictEqual({
+            addedKeys: [],
+            updatedKeys: ['1'],
+            deletedKeys: [],
+            billedKeys: [],
+            nonUniqueKeys: [],
+            nextMerging: { strategy: 'override' }
+        });
     });
 
     describe('upserting records', () => {
@@ -120,6 +128,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
+                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
                 });
@@ -133,6 +142,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['2'],
                     deletedKeys: [],
+                    billedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
                 });
@@ -170,6 +180,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
+                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -186,6 +197,7 @@ describe('Records service', () => {
                 expect(added).toStrictEqual({
                     addedKeys: ['5'],
                     updatedKeys: ['4'],
+                    billedKeys: ['5'],
                     deletedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
@@ -210,6 +222,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
+                    billedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -259,6 +272,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: [],
                     deletedKeys: [],
+                    billedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -284,6 +298,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['3'],
                     deletedKeys: [],
+                    billedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -322,10 +337,18 @@ describe('Records service', () => {
                     updatedKeys: acc.updatedKeys.concat(curr.updatedKeys),
                     deletedKeys: (acc.deletedKeys || []).concat(curr.deletedKeys || []),
                     nonUniqueKeys: acc.nonUniqueKeys.concat(curr.nonUniqueKeys),
+                    billedKeys: acc.billedKeys.concat(curr.billedKeys),
                     nextMerging: curr.nextMerging
                 };
             });
-            expect(agg).toStrictEqual({ addedKeys: ['1'], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+            expect(agg).toStrictEqual({
+                addedKeys: ['1'],
+                updatedKeys: [],
+                deletedKeys: [],
+                billedKeys: ['1'],
+                nonUniqueKeys: [],
+                nextMerging: { strategy: 'override' }
+            });
         });
     });
 
@@ -342,6 +365,7 @@ describe('Records service', () => {
                 addedKeys: ['1'],
                 updatedKeys: [],
                 deletedKeys: [],
+                billedKeys: ['1'],
                 nonUniqueKeys: [],
                 nextMerging: {
                     strategy: 'override'
@@ -370,6 +394,7 @@ describe('Records service', () => {
                 addedKeys: [],
                 updatedKeys: ['1'],
                 deletedKeys: [],
+                billedKeys: [],
                 nonUniqueKeys: [],
                 nextMerging: {
                     strategy: 'override'
@@ -408,12 +433,20 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
+                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
                 });
 
                 const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, model, syncId, syncJobId: 2 });
-                expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['1'], deletedKeys: [], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+                expect(updated).toStrictEqual({
+                    addedKeys: [],
+                    updatedKeys: ['1'],
+                    deletedKeys: [],
+                    billedKeys: [],
+                    nonUniqueKeys: [],
+                    nextMerging: { strategy: 'override' }
+                });
             });
             it('when strategy = ignore_if_modified_after_cursor', async () => {
                 const connectionId = rnd.number();
@@ -441,6 +474,7 @@ describe('Records service', () => {
                     addedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     updatedKeys: [],
                     deletedKeys: [],
+                    billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -456,7 +490,14 @@ describe('Records service', () => {
                     syncId,
                     syncJobId: 2
                 });
-                expect(updated).toStrictEqual({ addedKeys: [], updatedKeys: ['4'], deletedKeys: [], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+                expect(updated).toStrictEqual({
+                    addedKeys: [],
+                    updatedKeys: ['4'],
+                    deletedKeys: [],
+                    billedKeys: [],
+                    nonUniqueKeys: [],
+                    nextMerging: { strategy: 'override' }
+                });
 
                 // update records with merging strategy 'ignore_if_modified_after_cursor'
                 const upserted = await updateRecords({
@@ -476,6 +517,7 @@ describe('Records service', () => {
                     addedKeys: [],
                     updatedKeys: ['1'],
                     deletedKeys: [],
+                    billedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'ignore_if_modified_after_cursor', cursor: nextCursor }
                 });
@@ -530,6 +572,7 @@ describe('Records service', () => {
             addedKeys: [],
             updatedKeys: [],
             deletedKeys: expect.arrayContaining(['1', '2']),
+            billedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
@@ -537,7 +580,14 @@ describe('Records service', () => {
         // Try to delete the same records again
         // Should not have any effect
         const res2 = await upsertRecords({ records: toDelete, connectionId, environmentId, model, syncId, softDelete: true });
-        expect(res2).toStrictEqual({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [], nextMerging: { strategy: 'override' } });
+        expect(res2).toStrictEqual({
+            addedKeys: [],
+            updatedKeys: [],
+            deletedKeys: [],
+            billedKeys: [],
+            nonUniqueKeys: [],
+            nextMerging: { strategy: 'override' }
+        });
     });
 
     describe('getRecords', () => {
