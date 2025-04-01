@@ -1,0 +1,239 @@
+---
+title: 'Nango on AWS ECS'
+sidebarTitle: 'AWS ECS'
+description: 'Detailed steps to deploy Nango on AWS ECS (Fargate)'
+---
+
+Nango can be deployed on an AWS ECS (Elastic Container Service) cluster using AWS Fargate. Below are the detailed steps, based on common configuration practices, to get a Nango stack up and running.
+
+**Note:** This guide assumes the use of AWS Fargate for running containers.
+
+## Overview
+
+We will first set up the necessary AWS infrastructure, including a VPC, security groups, an RDS PostgreSQL database, and an S3 bucket.
+
+Then, we will configure an ECS cluster using AWS Fargate, define the necessary task definitions for Nango's microservices, and create the corresponding ECS services.
+
+Finally, we'll set up a load balancer to expose the Nango server.
+
+## 1. VPC and Security Groups
+
+A Virtual Private Cloud (VPC) is recommended to host the resources.
+
+1.  **Create VPC:**
+    * Define a VPC with a specified CIDR block (e.g., `10.0.0.0/16`).
+    * Ensure it spans multiple Availability Zones (AZs) for high availability.
+    * Create both public and private subnets across the AZs. Public subnets will need an Internet Gateway and appropriate route tables for internet access.
+2.  **Create Security Groups:**
+    * **RDS Security Group:** Create a security group for the RDS database, allowing inbound traffic on the PostgreSQL port (5432) only from within the VPC
+    * **ALB Security Group:** Create a security group for the Application Load Balancer (ALB), allowing inbound HTTP traffic (port 80) from the internet (`0.0.0.0/0`). Egress should allow traffic to the ECS service security group.
+    * **ECS Service Security Groups:** Create security groups for each Nango service.
+        * *Nango Server:* Allow inbound traffic on its port (e.g., 8080) from the ALB security group.
+        * *Other Services (Jobs, Persist, Orchestrator, Runner):* Allow inbound traffic on their respective ports (e.g., 3005, 3007, 3008, 3006) from within the VPC.
+    * Ensure all security groups allow necessary outbound traffic
+
+## 2. RDS PostgreSQL Database
+
+Nango requires a PostgreSQL database.
+
+1.  **Go to AWS RDS.**
+2.  **Create Database:** Choose "Standard Create".
+3.  **Engine:** Select `aurora-postgresql`. Use a compatible version (>= 16.1).
+5.  **Settings:**
+    * **DB Cluster Identifier:** Set a unique name
+    * **Database Name:** `nango`.
+    * **Master Username:** `postgres` (or choose another).
+    * **Password Management:** Use AWS Secrets Manager to manage the master password
+6.  **Instance Configuration:** Choose an appropriate instance class (a `large` instance type is recommended).
+7.  **Storage:** Configure storage settings. Aurora storage scales automatically. Enable storage encryption.
+9.  **Connectivity:**
+    * Attach it to the VPC created earlier.
+    * Place it in the **private** subnets using a DB Subnet Group.
+    * Set **Public Access** to `No`.
+    * Assign the **RDS Security Group** created earlier.
+10. **Database Authentication:** Password authentication is used.
+11. **Additional Configuration:**
+    * Enable Backups.
+    * Configure monitoring (e.g., Enhanced Monitoring).
+    * Enable Deletion Protection for production environments.
+
+## 3. S3 Bucket for Integrations
+
+Nango may require an S3 bucket for storing integration-related data.
+
+1.  **Go to AWS S3.**
+2.  **Create Bucket:**
+    * **Bucket Name:** Set a unique name (e.g., `nango-integrations`).
+    * **Region:** Choose your desired AWS region.
+3.  **Configuration:**
+    * Block all public access.
+    * Enable Server-Side Encryption (e.g., AES256).
+4.  **(Optional) IAM User for Access:**
+    * Create an IAM user specifically for Nango to access this bucket.
+    * Create an access key for this user. Store the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` securely.
+    * Attach an IAM policy to the user granting necessary S3 permissions (`GetObject`, `PutObject`, `DeleteObject`, `ListBucket`) limited to this specific bucket. These keys will be needed as environment variables for Nango services.
+
+## 4. Secrets Manager Secret
+
+Store the Nango encryption key securely.
+
+1.  **Go to AWS Secrets Manager.**
+2.  **Store a new secret:**
+    * Choose "Other type of secret".
+    * Store a secure, randomly generated 256-bit key, base64 encoded, as a plain text value. A secure random generator should be used for this key.
+    * **Secret Name:** Give it a descriptive name (e.g., `nango/nango-encryption-key`).
+    * Note the ARN or name of the secret; it will be referenced in the task definitions.
+
+## 5. ECS Cluster
+
+1.  **Go to AWS ECS.**
+2.  **Create Cluster:**
+    * **Cluster Name:** Set a name (e.g., `nango-cluster`).
+    * **Infrastructure:** Select **AWS Fargate (Serverless)**.
+    * **Monitoring:** Enable Container Insights.
+    * **Networking:** Associate the cluster with the VPC created earlier.
+
+## 6. Load Balancer and Target Group
+
+An Application Load Balancer (ALB) is used to expose the Nango server service.
+
+1.  **Create Target Group:**
+    * **Go to EC2 > Target Groups.**
+    * **Target type:** IP addresses.
+    * **Target group name:** e.g., `nango-server-tg`.
+    * **Protocol/Port:** HTTP / 8080
+    * **VPC:** Select the VPC created earlier.
+    * **Health Check:** protocol HTTP, `/health`
+2.  **Create Application Load Balancer:**
+    * **Go to EC2 > Load Balancers.**
+    * **Type:** Application Load Balancer.
+    * **Name:** e.g., `nango-alb`.
+    * **Scheme:** Internet-facing.
+    * **Network Mapping:** Select the VPC and map it to the **public** subnets.
+    * **Security Group:** Select the **ALB Security Group** created earlier.
+    * **Listeners:** Add a listener for HTTP on port 80. Set the default action to forward traffic to the `nango-server-tg` target group created above.
+    * **(Optional) HTTPS:** For HTTPS, create a listener on port 443, select an SSL certificate (from ACM or uploaded), and forward to the target group.
+
+## 7. Task Definitions
+
+Define the container configurations for each Nango service using Fargate.
+
+1.  **Go to AWS ECS > Task Definitions.**
+2.  **Create New Task Definition:**
+    * **Launch Type:** AWS Fargate.
+    * **Network Mode:** `awsvpc`.
+    * **Operating System Family:** Linux.
+    * **Task execution IAM role:** Select the default `ecsTaskExecutionRole` or ensure one exists with permissions to pull images and write logs. It also needs permission to access the Secrets Manager secret for the encryption key.
+    * **Task size:** Define CPU and Memory (e.g., 1 vCPU / 1024 MiB, adjust as needed).
+
+3.  **Define Containers:** Create one task definition for *each* Nango service (Server, Jobs, Persist, Orchestrator, Runner), configuring the container settings within each:
+
+    * **Common Settings for all Containers:**
+        * **Image:** `nangohq/nango:<TAG>` (use a specific, stable tag, e.g., `nangohq/nango:cbacc6a4fd4306a4245d774204a2b837e6f39599`).
+        * **Essential:** Yes.
+        * **Environment Variables (Shared):**
+            * `NANGO_ENTERPRISE`: `true`
+            * `NODE_ENV`: `production`
+            * `NANGO_DATABASE_URL`: The database connection URL from RDS (use dynamic reference or Secrets Manager). Format: `postgresql://<user>:<password>@<host>:<port>/<db_name>`.
+            * `NANGO_ENCRYPTION_KEY`: Reference the value from the AWS Secrets Manager secret created earlier.
+            * `NANGO_LOGS_ENABLED`: `false` #TODO
+        * **Log Configuration:** Configure `awslogs` driver pointing to a CloudWatch log group (e.g., `ecs/nango`).
+
+    * **Nango Server Container:**
+        * **Name:** `server`.
+        * **Port Mapping:** Container port 8080.
+        * **Command:** `["packages/server/entrypoint.sh"]`.
+        * **Environment Variables (Specific):**
+            * `FLAG_SERVE_CONNECT_UI`: `true`
+            * `NANGO_SERVER_URL`: The public URL of the ALB (e.g., `http://<ALB_DNS_NAME>`).
+            * `NANGO_PUBLIC_SERVER_URL`: Same as `NANGO_SERVER_URL`.
+            * `NANGO_PUBLIC_CONNECT_URL`: URL for the connect UI (this requires specific configuration based on your setup).
+            * `MAILGUN_API_KEY`: Your Mailgun key (Used for signup verification email. Mailgun is the only email provider currently supported).
+            * `AWS_BUCKET_NAME`: Name of the S3 bucket.
+            * `AWS_ACCESS_KEY_ID`: Access key for S3 bucket user.
+            * `AWS_SECRET_ACCESS_KEY`: Secret key for S3 bucket user.
+            * `AWS_REGION`: AWS region for the S3 bucket.
+            * `ORCHESTRATOR_SERVICE_URL`: Internal URL for the orchestrator service (e.g., `http://orchestrator.nango.internal:3008` using service discovery).
+
+    * **Nango Jobs Container:**
+        * **Name:** `jobs`.
+        * **Port Mapping:** Container port 3005.
+        * **Command:** `["node", "packages/jobs/dist/app.js"]`.
+        * **Environment Variables (Specific):**
+            * `ORCHESTRATOR_SERVICE_URL`: Internal URL (e.g., `http://orchestrator.nango.internal:3008`).
+            * `PERSIST_SERVICE_URL`: Internal URL (e.g., `http://persist.nango.internal:3007`).
+            * `RUNNER_TYPE`: `REMOTE`
+            * `RUNNER_SERVICE_URL`: Internal URL (e.g., `http://runner.nango.internal:3006`).
+            * S3 Bucket/AWS credentials (similar to Server).
+
+    * **Nango Persist Container:**
+        * **Name:** `persist`.
+        * **Port Mapping:** Container port 3007.
+        * **Command:** `["node", "packages/persist/dist/app.js"]`.
+        * **Environment Variables (Specific):** Only shared variables are typically required.
+
+    * **Nango Orchestrator Container:**
+        * **Name:** `orchestrator`.
+        * **Port Mapping:** Container port 3008.
+        * **Command:** `["node", "packages/orchestrator/dist/app.js"]`.
+        * **Environment Variables (Specific):** Only shared variables are typically required.
+
+    * **Nango Runner Container:**
+        * **Name:** `runner`.
+        * **Port Mapping:** Container port 3006.
+        * **Command:** `["node", "packages/runner/dist/app.js"]`.
+        * **Environment Variables (Specific):**
+            * `RUNNER_NODE_ID`: (e.g., `1`)
+            * `PERSIST_SERVICE_URL`: Internal URL (e.g., `http://persist.nango.internal:3007`).
+            * `JOBS_SERVICE_URL`: Internal URL (e.g., `http://jobs.nango.internal:3005`).
+
+4.  **Create each Task Definition.**
+
+## 8. Services and Service Discovery
+
+Create an ECS service for each task definition to run and maintain the desired number of instances.
+
+1.  **Create Service Discovery Namespace:**
+    * **Go to Cloud Map.**
+    * Create a **private** DNS namespace.
+    * **Namespace name:** e.g., `nango.internal`.
+    * Select the VPC created earlier.
+2.  **Go to AWS ECS > Clusters > Your Cluster.**
+3.  **For each Task Definition (Server, Jobs, Persist, Orchestrator, Runner):**
+    * Click "Create" under the "Services" tab.
+    * **Launch Type:** FARGATE.
+    * **Task Definition:** Select the corresponding Family and Revision created above.
+    * **Service Name:** Set a name (e.g., `nango-server`, `nango-jobs`).
+    * **Desired Tasks:** Set the number of replicas (e.g., 1).
+    * **Networking:**
+        * Select the VPC.
+        * Select appropriate private **subnets**
+        * Select the corresponding **Security Group** for the service.
+    * **Load Balancing (ONLY for Nango Server service):**
+        * Select "Application Load Balancer".
+        * Choose the ALB created earlier.
+        * Choose the `nango-server` container to load balance.
+        * Click "Add to load balancer".
+        * Select the **Target Group** (`nango-server-tg`) created for the server.
+    * **Service Discovery:**
+        * Check "Enable service discovery integration".
+        * Select the `nango.internal` namespace created earlier.
+        * **Service discovery name:** Enter the service name (e.g., `server`, `jobs`, `persist`, `orchestrator`, `runner`). This allows services to find each other at `<service-name>.nango.internal`.
+        * Configure DNS record type (e.g., A) and TTL.
+    * **(Optional) Auto Scaling:** Configure service auto-scaling based on metrics like CPU/Memory utilization.
+    * **Create the Service.** Repeat for all Nango components.
+
+## 9. Access Nango
+
+Once the Nango Server service and ALB are running:
+
+1.  **Go to EC2 > Load Balancers.**
+2.  Select the `nango-alb`.
+3.  Copy the **DNS name**.
+4.  Open this DNS name in your web browser (e.g., `http://<ALB_DNS_NAME>`). You should see the Nango interface.
+
+<Tip>
+Remember to replace placeholder values with your actual configuration details and adjust resource sizes based on your expected load.
+
+For further assistance, reach out to the Nango customer support.
+</Tip>
