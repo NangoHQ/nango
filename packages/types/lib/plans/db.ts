@@ -18,10 +18,9 @@ export interface DBPlan extends Timestamps {
 
     /**
      * Limit the number of environments that can be created
-     * Set to null to remove limit
      * @default 2
      */
-    environments_max: number | null;
+    environments_max: number;
 
     /**
      * Limit the minimum frequency of a sync
