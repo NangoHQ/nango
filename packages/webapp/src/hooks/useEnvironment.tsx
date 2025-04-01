@@ -4,8 +4,11 @@ import { apiFetch, swrFetcher } from '../utils/api';
 
 import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
 
-export function useEnvironment(env: string) {
-    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(`/api/v1/environments/current?env=${env}`, swrFetcher, {});
+export function useEnvironment(env: string, ready: boolean = true) {
+    const { data, error, mutate } = useSWR<GetEnvironment['Success'], GetEnvironment['Errors']>(
+        ready ? `/api/v1/environments/current?env=${env}` : null,
+        swrFetcher
+    );
 
     const loading = !data && !error;
 

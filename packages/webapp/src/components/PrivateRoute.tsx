@@ -1,11 +1,12 @@
-import { Outlet, Navigate } from 'react-router-dom';
-import { useMeta } from '../hooks/useMeta';
 import { useEffect, useState } from 'react';
-import { useStore } from '../store';
-import { useAnalyticsIdentify } from '../utils/analytics';
+import { Navigate, Outlet } from 'react-router-dom';
+
+import { useEnvironment } from '../hooks/useEnvironment';
+import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import PageNotFound from '../pages/PageNotFound';
-import { useEnvironment } from '../hooks/useEnvironment';
+import { useStore } from '../store';
+import { useAnalyticsIdentify } from '../utils/analytics';
 
 export const PrivateRoute: React.FC = () => {
     const { meta, error, loading: loadingMeta } = useMeta();
@@ -19,7 +20,7 @@ export const PrivateRoute: React.FC = () => {
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { environmentAndAccount } = useEnvironment(env, ready);
 
     useEffect(() => {
         if (!meta || error) {

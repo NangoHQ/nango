@@ -1,16 +1,18 @@
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import DashboardLayout from '../../../layout/DashboardLayout';
+
 import { AuthorizationSettings } from './Authorization';
-import { VariablesSettings } from './Variables';
-import { NotificationSettings } from './Notification';
 import { BackendSettings } from './Backend';
 import { ExportSettings } from './Export';
+import { MainSettings } from './Main';
+import { NotificationSettings } from './Notification';
+import { VariablesSettings } from './Variables';
+import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/ui/Accordion';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useStore } from '../../../store';
 import { Skeleton } from '../../../components/ui/Skeleton';
-import { useEffect, useState } from 'react';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
 
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -64,6 +66,7 @@ export const EnvironmentSettings: React.FC = () => {
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Environment Settings</h2>
             </div>
             <div className="flex flex-col gap-20 h-fit" key={env}>
+                <MainSettings />
                 <BackendSettings />
                 <NotificationSettings />
                 <VariablesSettings />

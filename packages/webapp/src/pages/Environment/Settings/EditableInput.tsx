@@ -1,14 +1,16 @@
-import type { ReactNode } from 'react';
-import { useState } from 'react';
-import type { InputProps } from '../../../components/ui/input/Input';
-import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
-import { Button } from '../../../components/ui/button/Button';
 import { IconEdit, IconExternalLink } from '@tabler/icons-react';
-import { useToast } from '../../../hooks/useToast';
-import type { ApiError } from '@nangohq/types';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { Button } from '../../../components/ui/button/Button';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
+import { Input } from '../../../components/ui/input/Input';
+import { useToast } from '../../../hooks/useToast';
+import { cn } from '../../../utils/utils';
+
+import type { InputProps } from '../../../components/ui/input/Input';
+import type { ApiError } from '@nangohq/types';
+import type { ReactNode } from 'react';
 
 export const EditableInput: React.FC<
     {
@@ -20,7 +22,7 @@ export const EditableInput: React.FC<
         docs?: string;
         editInfo?: ReactNode;
         apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
-        onSuccess: () => void;
+        onSuccess: (name: string) => void;
     } & InputProps
 > = ({ title, subTitle, secret, name, originalValue, docs, editInfo, apiCall, onSuccess, ...rest }) => {
     const { toast } = useToast();
@@ -44,7 +46,7 @@ export const EditableInput: React.FC<
         }
 
         toast({ title: `${title} updated successfully!`, variant: 'success' });
-        onSuccess();
+        onSuccess(value);
 
         setEdit(false);
         setError(null);
