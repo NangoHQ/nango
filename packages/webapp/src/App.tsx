@@ -49,7 +49,7 @@ const App = () => {
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment, 'dev');
+    const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
