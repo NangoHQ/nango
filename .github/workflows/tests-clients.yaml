@@ -9,26 +9,12 @@ on:
     merge_group:
 
 jobs:
-    compute-matrix:
-        runs-on: ubuntu-latest
-        outputs:
-            os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
-        steps:
-            - name: Set OS Matrix
-              id: set-os-matrix
-              run: |
-                  if [[ '${{ github.ref }}' == 'refs/heads/master' ]]; then
-                    echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
-                  else
-                    echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
-                  fi
     tests:
-        needs: compute-matrix
         strategy:
             fail-fast: false
             matrix:
                 node-version: [18.x, 20.x, 22.x]
-                os: ${{ fromJson(needs.compute-matrix.outputs.os-matrix) }}
+                os: [ubuntu-latest, windows-latest]
 
         runs-on: ${{ matrix.os }}
 
