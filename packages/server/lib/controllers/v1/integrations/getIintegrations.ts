@@ -16,42 +16,42 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
 
     const { environment } = res.locals;
 
-    const configs = await configService.listIntegrationForApi(environment.id);
+    const integrations = await configService.listIntegrationForApi(environment.id);
+    const rawSyncConfig = await countSyncConfigByConfigId(environment.id);
+    const activeSyncConfig = new Map();
+    for (const syncConfig of rawSyncConfig) {
+        activeSyncConfig.set(syncConfig.nango_config_id, Number(syncConfig.count));
+    }
 
-    const integrations = await Promise.all(
-        configs.map(async (config) => {
-            const provider = getProvider(config.provider)!;
-            const activeFlows = await countSyncConfigByConfigId(environment.id, config.id!);
+    const formattedList = integrations.map((integration) => {
+        const provider = getProvider(integration.provider)!;
 
-            const integration: ApiIntegrationList = {
-                ...integrationToApi(config),
-                meta: {
-                    authMode: provider.auth_mode,
-                    scriptsCount: Number(activeFlows.count),
-                    connectionCount: Number(config.connection_count),
-                    creationDate: config.created_at.toISOString(),
-                    missingFieldsCount: config.missing_fields.length
-                }
-            };
+        const formatted: ApiIntegrationList = {
+            ...integrationToApi(integration),
+            meta: {
+                authMode: provider.auth_mode,
+                scriptsCount: activeSyncConfig.get(integration.id!) || 0,
+                connectionCount: Number(integration.connection_count),
+                creationDate: integration.created_at.toISOString(),
+                missingFieldsCount: integration.missing_fields.length
+            }
+        };
 
-            // Used by legacy connection create
-            // TODO: remove this when we remove CreateLegacy.tsx
-            if (provider) {
-                if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
-                    integration.meta['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
-                }
-
-                // Check if provider is of type ProviderTwoStep
-                if (provider.auth_mode === 'TWO_STEP') {
-                    integration.meta['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
-                }
+        // Used by legacy connection create
+        // TODO: remove this when we remove CreateLegacy.tsx
+        if (provider) {
+            if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
+                formatted.meta['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
             }
 
-            return integration;
-        })
-    );
+            // Check if provider is of type ProviderTwoStep
+            if (provider.auth_mode === 'TWO_STEP') {
+                formatted.meta['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
+            }
+        }
 
-    res.status(200).send({
-        data: integrations
+        return formatted;
     });
+
+    res.status(200).send({ data: formattedList });
 });

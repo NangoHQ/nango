@@ -163,13 +163,16 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function countSyncConfigByConfigId(environmentId: number, configId: number): Promise<{ count: string }> {
-    const result = await db.knex.from<DBSyncConfig>(TABLE).count<{ count: string }>('*').where({
-        environment_id: environmentId,
-        nango_config_id: configId,
-        active: true,
-        deleted: false
-    });
+export async function countSyncConfigByConfigId(environmentId: number): Promise<{ nango_config_id: number; count: string }[]> {
+    const result = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .select<{ nango_config_id: number; count: string }[]>('nango_config_id', db.knex.raw('COUNT(1) as count'))
+        .where({
+            environment_id: environmentId,
+            active: true,
+            deleted: false
+        })
+        .groupBy('nango_config_id');
 
     return result;
 }
