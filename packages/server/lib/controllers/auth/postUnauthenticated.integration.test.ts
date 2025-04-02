@@ -1,5 +1,7 @@
-import { connectionService, seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { connectionService, seeders } from '@nangohq/shared';
+
 import { isError, isSuccess, runServer } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -15,7 +17,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection with connection_id', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const res = await api.fetch(endpoint, {
@@ -32,7 +34,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection without connection_id', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const res = await api.fetch(endpoint, {
@@ -49,7 +51,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection with sessionToken', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
@@ -73,7 +75,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
         await seeders.createConfigSeed(env, 'not_this_one', 'unauthenticated');
 
@@ -97,7 +99,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be allowed to pass a connection_id with session token', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
