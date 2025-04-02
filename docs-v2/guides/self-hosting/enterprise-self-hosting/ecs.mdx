@@ -1,12 +1,12 @@
 ---
-title: 'Nango on AWS ECS'
+title: 'AWS ECS'
 sidebarTitle: 'AWS ECS'
-description: 'Detailed steps to deploy Nango on AWS ECS (Fargate)'
+description: 'Step-by-step guide to deploy Nango on AWS ECS (Fargate)'
 ---
 
-Nango can be deployed on an AWS ECS (Elastic Container Service) cluster using AWS Fargate. Below are the detailed steps, based on common configuration practices, to get a Nango stack up and running.
+Nango can be deployed on an AWS ECS (Elastic Container Service) cluster using AWS Fargate. Below are the detailed steps, based on common configuration practices, to get a Nango stack up and running. Before proceeding, it's helpful to understand the core components of a Nango self-hosted deployment, which are detailed in the [Nango Infrastructure Components documentation](https://docs.nango.dev/guides/self-hosting/infrastructure).
 
-**Note:** This guide assumes the use of AWS Fargate for running containers.
+<Note>This guide assumes the use of AWS Fargate for running containers.</Note>
 
 ## Overview
 
@@ -16,6 +16,10 @@ Then, we will configure an ECS cluster using AWS Fargate, define the necessary t
 
 Finally, we'll set up a load balancer to expose the Nango server.
 
+<Warning>
+Remember to replace placeholder values with your actual configuration and adjust resource sizes based on your expected load. For further assistance, reach out to the Nango customer support.
+</Warning>
+
 ## 1. VPC and Security Groups
 
 A Virtual Private Cloud (VPC) is recommended to host the resources.
@@ -23,7 +27,7 @@ A Virtual Private Cloud (VPC) is recommended to host the resources.
 1.  **Create VPC:**
     * Define a VPC with a specified CIDR block (e.g., `10.0.0.0/16`).
     * Ensure it spans multiple Availability Zones (AZs) for high availability.
-    * Create both public and private subnets across the AZs. Public subnets will need an Internet Gateway and appropriate route tables for internet access.
+    * Create both public and private subnets across the AZs. Public subnets will need an Internet Gateway and appropriate route tables for internet access. Private subnets will requires NAT Gateway(s) and appropriate route tables for internet access
 2.  **Create Security Groups:**
     * **RDS Security Group:** Create a security group for the RDS database, allowing inbound traffic on the PostgreSQL port (5432) only from within the VPC
     * **ALB Security Group:** Create a security group for the Application Load Balancer (ALB), allowing inbound HTTP traffic (port 80) from the internet (`0.0.0.0/0`). Egress should allow traffic to the ECS service security group.
@@ -35,6 +39,14 @@ A Virtual Private Cloud (VPC) is recommended to host the resources.
 ## 2. RDS PostgreSQL Database
 
 Nango requires a PostgreSQL database.
+
+<Note>
+If you already have a PostgreSQL database (version 16.1 or higher recommended) that you want to use, you can skip the creation steps below.
+
+* **Ensure Network Accessibility:** Make sure your existing database is network-accessible from the private subnets within your VPC where the Nango ECS tasks will run. This might involve configuring security groups, network ACLs, VPC peering, Transit Gateway connections, or ensuring the database resides within the same VPC.
+* **Obtain Connection URL:** You will need the full database connection URL in the format: `postgresql://<user>:<password>@<host>:<port>/<database_name>`.
+* **Configure Services:** This connection URL must be provided as the value for the `NANGO_DATABASE_URL` environment variable in the task definitions of Nango services (see details below).
+</Note>
 
 1.  **Go to AWS RDS.**
 2.  **Create Database:** Choose "Standard Create".
@@ -124,7 +136,7 @@ Define the container configurations for each Nango service using Fargate.
     * **Network Mode:** `awsvpc`.
     * **Operating System Family:** Linux.
     * **Task execution IAM role:** Select the default `ecsTaskExecutionRole` or ensure one exists with permissions to pull images and write logs. It also needs permission to access the Secrets Manager secret for the encryption key.
-    * **Task size:** Define CPU and Memory (e.g., 1 vCPU / 1024 MiB, adjust as needed).
+    * **Task size:** Define CPU and Memory (1 vCPU / 1024 MiB minimum recommended, adjust as needed).
 
 3.  **Define Containers:** Create one task definition for *each* Nango service (Server, Jobs, Persist, Orchestrator, Runner), configuring the container settings within each:
 
@@ -136,7 +148,10 @@ Define the container configurations for each Nango service using Fargate.
             * `NODE_ENV`: `production`
             * `NANGO_DATABASE_URL`: The database connection URL from RDS (use dynamic reference or Secrets Manager). Format: `postgresql://<user>:<password>@<host>:<port>/<db_name>`.
             * `NANGO_ENCRYPTION_KEY`: Reference the value from the AWS Secrets Manager secret created earlier.
-            * `NANGO_LOGS_ENABLED`: `false` #TODO
+            * `NANGO_LOGS_ENABLED`: `'true'` (Set to `'false'` to disable Nango logs).
+            * `NANGO_LOGS_ES_URL`: `'https://my.elastic.cluster:9500'` (Replace with your actual Elasticsearch endpoint URL if `NANGO_LOGS_ENABLED` is true).
+            * `NANGO_LOGS_ES_USER`: Your Elasticsearch username.
+            * `NANGO_LOGS_ES_PWD`: Your Elasticsearch password.
         * **Log Configuration:** Configure `awslogs` driver pointing to a CloudWatch log group (e.g., `ecs/nango`).
 
     * **Nango Server Container:**
@@ -154,6 +169,11 @@ Define the container configurations for each Nango service using Fargate.
             * `AWS_SECRET_ACCESS_KEY`: Secret key for S3 bucket user.
             * `AWS_REGION`: AWS region for the S3 bucket.
             * `ORCHESTRATOR_SERVICE_URL`: Internal URL for the orchestrator service (e.g., `http://orchestrator.nango.internal:3008` using service discovery).
+    <Accordion title="Task Definition JSON">
+        ```json
+            { TBD }
+        ```
+    </Accordion>
 
     * **Nango Jobs Container:**
         * **Name:** `jobs`.
@@ -231,9 +251,3 @@ Once the Nango Server service and ALB are running:
 2.  Select the `nango-alb`.
 3.  Copy the **DNS name**.
 4.  Open this DNS name in your web browser (e.g., `http://<ALB_DNS_NAME>`). You should see the Nango interface.
-
-<Tip>
-Remember to replace placeholder values with your actual configuration details and adjust resource sizes based on your expected load.
-
-For further assistance, reach out to the Nango customer support.
-</Tip>
