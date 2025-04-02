@@ -12314,7 +12314,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /emails
-                version: 1.1.1
+                version: 1.1.2
             events:
                 description: |
                     Sync calendar events on the primary calendar going back one month and

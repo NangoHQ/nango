@@ -66,9 +66,13 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
+            const response = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
 
-            res.status(200).send();
+            if (!response) {
+                res.status(200).send();
+                return;
+            }
+            res.status(200).send(response);
         } catch (err) {
             span.setTag('nango.error', err);
 

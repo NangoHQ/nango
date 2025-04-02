@@ -94,7 +94,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No proxy requests sent in the last 14 days.{' '}
-                            <Link to="https://docs.nango.dev/guides/individual-requests" className="underline text-white">
+                            <Link to="https://docs.nango.dev/guides/proxy-requests" className="underline text-white">
                                 Learn more
                             </Link>
                         </div>

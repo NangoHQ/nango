@@ -39,6 +39,7 @@ import type {
     NangoRecord,
     OAuth1Token,
     OAuth2ClientCredentials,
+    OpenAIFunction,
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicTrigger,
@@ -493,16 +494,22 @@ export class Nango {
 
     /**
      * Retrieves the configuration for all integration scripts
+     * @param format The format to return the configuration in ('nango' | 'openai')
      * @returns A promise that resolves with an array of configuration objects for all integration scripts
      */
-    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+    public async getScriptsConfig(format: 'nango' | 'openai' = 'nango'): Promise<StandardNangoConfig[] | { data: OpenAIFunction[] }> {
         const url = `${this.serverUrl}/scripts/config`;
 
         const headers = {
             'Content-Type': 'application/json'
         };
 
-        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, {
+            headers: this.enrichHeaders(headers),
+            params: {
+                format
+            }
+        });
 
         return response.data;
     }
@@ -716,7 +723,7 @@ export class Nango {
     }
 
     /**
-     * Override a sync’s default frequency for a specific connection, or revert to the default frequency
+     * Override a sync's default frequency for a specific connection, or revert to the default frequency
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param sync - The name of the sync to update (or an object with name and variant properties)
      * @param connectionId - The ID of the connection for which to update the sync frequency

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import encryptionManager from './encryption.manager';
-import { getTestConnection } from '../services/connections/utils.test';
+import { getTestConnection } from '../seeders/connection.seeder.js';
 
 import type { DBConnection } from '@nangohq/types';
 

@@ -1,13 +1,15 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
+
 import { getLogger } from '@nangohq/utils';
-import type Client from 'mailgun.js/client';
+
+import type { Interfaces } from 'mailgun.js/definitions';
 
 const logger = getLogger('Server.EmailClient');
 
 export class EmailClient {
     private static instance: EmailClient | undefined;
-    private client: Client;
+    private client: Interfaces.IMailgunClient;
 
     private constructor(config: { username: string; key: string; url?: string }) {
         const mailgun = new Mailgun(formData);
