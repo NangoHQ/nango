@@ -5,6 +5,8 @@ import { logContextGetter } from '@nangohq/logs';
 
 import * as SyncConfigService from './config.service.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
+import { getTestTeam } from '../../../seeders/account.seeder.js';
+import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
 import configService from '../../config.service.js';
 import environmentService from '../../environment.service.js';
 import * as SyncService from '../sync.service.js';
@@ -12,7 +14,7 @@ import * as DeployConfigService from './deploy.service.js';
 import connectionService from '../../connection.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { CleanedIncomingFlowConfig, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
@@ -30,8 +32,8 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
 describe('Sync config create', () => {
-    const environment = { id: 1, name: '' } as DBEnvironment;
-    const account = { id: 1, name: '' } as DBTeam;
+    const environment = getTestEnvironment();
+    const account = getTestTeam();
     const debug = true;
 
     it('Create sync configs correctly', async () => {

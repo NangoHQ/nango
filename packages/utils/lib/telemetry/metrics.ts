@@ -21,6 +21,7 @@ export enum Types {
     CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+    BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
     PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
