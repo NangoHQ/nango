@@ -1,8 +1,8 @@
-import type { Merge } from 'type-fest';
 import type { ApiError, ApiTimestamps, Endpoint } from '../api';
+import type { DBTeam } from './db';
 import type { DBInvitation } from '../invitations/db';
 import type { ApiUser } from '../user/api';
-import type { DBTeam } from './db';
+import type { Merge } from 'type-fest';
 
 export type GetTeam = Endpoint<{
     Method: 'GET';

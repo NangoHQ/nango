@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
+
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test';
-import { getTestConnection } from '../connections/utils.test.js';
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 describe('call', () => {
     it('should make a single successful http call', async () => {

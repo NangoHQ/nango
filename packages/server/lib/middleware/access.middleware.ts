@@ -39,10 +39,11 @@ export class AccessMiddleware {
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {
-            plan = await getPlan(db.knex, { accountId: result.account.id });
-            if (!plan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
                 return Err('invalid_plan');
             }
+            plan = planRes.value;
         }
 
         return Ok({ ...result, plan });
@@ -123,10 +124,11 @@ export class AccessMiddleware {
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {
-            plan = await getPlan(db.knex, { accountId: result.account.id });
-            if (!plan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
                 return Err('invalid_plan');
             }
+            plan = planRes.value;
         }
 
         return Ok({ ...result, plan });
@@ -221,10 +223,11 @@ export class AccessMiddleware {
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {
-            plan = await getPlan(db.knex, { accountId: result.account.id });
-            if (!plan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
                 return Err('invalid_plan');
             }
+            plan = planRes.value;
         }
 
         return Ok({
@@ -522,11 +525,12 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {
-            plan = await getPlan(db.knex, { accountId: result.account.id });
-            if (!plan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
                 res.status(401).send({ error: { code: 'invalid_plan' } });
                 return;
             }
+            plan = planRes.value;
         }
 
         res.locals['account'] = result.account;

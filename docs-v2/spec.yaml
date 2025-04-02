@@ -1153,9 +1153,9 @@ paths:
                                     enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
                                     description: |
                                         The mode in which to trigger the syncs.
-                                        - `incremental`: Only syncs records that have been updated since the last sync.
-                                        - `full_refresh`: Syncs all records from scratch.
-                                        - `full_refresh_and_clear_cache`: Deletes all records and syncs all records from scratch.
+                                        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+                                        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
                                 full_resync:
                                     deprecated: true
                                     type: boolean
