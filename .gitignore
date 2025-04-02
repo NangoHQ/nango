@@ -6,6 +6,7 @@ logs/*
 .env
 nango-integrations/*
 dist/
+build/
 tsconfig.tsbuildinfo
 node_modules
 integration-templates/**/.nango
