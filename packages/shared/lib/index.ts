@@ -32,6 +32,7 @@ export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
+export * from './services/plans/plans.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 
