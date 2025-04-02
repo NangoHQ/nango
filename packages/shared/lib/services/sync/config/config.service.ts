@@ -1,12 +1,15 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '@nangohq/database';
+
+import db, { dbNamespace, schema } from '@nangohq/database';
+
+import { LogActionEnum } from '../../../models/Telemetry.js';
+import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
-import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
+
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
-import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -160,16 +163,10 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<DBSyncConfig[]> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
-    const result = await db.knex.from<DBSyncConfig>(TABLE).select<DBSyncConfig[]>('*').where({
-        environment_id,
-        nango_config_id: config.id!,
+export async function countSyncConfigByConfigId(environmentId: number, configId: number): Promise<{ count: string }> {
+    const result = await db.knex.from<DBSyncConfig>(TABLE).count<{ count: string }>('*').where({
+        environment_id: environmentId,
+        nango_config_id: configId,
         active: true,
         deleted: false
     });

@@ -1,11 +1,13 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PatchIntegration } from '@nangohq/types';
-import { configService, connectionService } from '@nangohq/shared';
 import { z } from 'zod';
 
-import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { configService, connectionService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationParams } from './getIntegration.js';
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { PatchIntegration } from '@nangohq/types';
 
 const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 const validationBody = z
