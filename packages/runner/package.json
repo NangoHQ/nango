@@ -30,7 +30,7 @@
         "connect-timeout": "1.9.0",
         "dd-trace": "5.21.0",
         "express": "^4.20.0",
-        "soap": "1.1.8",
+        "soap": "1.1.10",
         "superjson": "2.2.1",
         "undici": "6.21.1",
         "unzipper": "^0.12.3",
