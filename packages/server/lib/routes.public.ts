@@ -47,6 +47,7 @@ import { postDeployConfirmation } from './controllers/sync/deploy/postConfirmati
 import { postDeploy } from './controllers/sync/deploy/postDeploy.js';
 import { postDeployInternal } from './controllers/sync/deploy/postDeployInternal.js';
 import { postSyncVariant } from './controllers/sync/postSyncVariant.js';
+import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import authMiddleware from './middleware/access.middleware.js';
@@ -195,7 +196,7 @@ publicAPI.use('/records', jsonContentTypeMiddleware);
 publicAPI.route('/records').get(apiAuth, getPublicRecords);
 
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
+publicAPI.route('/sync/trigger').post(apiAuth, postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 publicAPI.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 publicAPI.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
@@ -204,10 +205,10 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, deleteSyncVarian
 
 publicAPI.use('/flow', jsonContentTypeMiddleware);
 publicAPI.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
+// @deprecated use /scripts/configs
 publicAPI.route('/flow/configs').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
-// @deprecated use /flow/configs
 publicAPI.route('/scripts/config').get(apiAuth, getPublicScriptsConfig);
 
 publicAPI.use('/action', jsonContentTypeMiddleware);

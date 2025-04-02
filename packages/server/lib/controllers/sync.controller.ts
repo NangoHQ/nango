@@ -101,55 +101,6 @@ class SyncController {
         }
     }
 
-    public async trigger(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { syncs, full_resync } = req.body;
-
-            const provider_config_key: string | undefined = req.body.provider_config_key || req.get('Provider-Config-Key');
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            const connection_id: string | undefined = req.body.connection_id || req.get('Connection-Id');
-
-            const syncIdentifiers = normalizedSyncParams(syncs);
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: syncIdentifiers.error.message });
-                return;
-            }
-
-            if (full_resync && typeof full_resync !== 'boolean') {
-                res.status(400).send({ message: 'full_resync must be a boolean' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const { success, error } = await syncManager.runSyncCommand({
-                recordsService,
-                orchestrator,
-                environment,
-                providerConfigKey: provider_config_key,
-                syncIdentifiers: syncIdentifiers.value,
-                command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
-                logContextGetter,
-                connectionId: connection_id!,
-                initiator: 'API call'
-            });
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            res.status(200).send({ success: true });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async actionOrModel(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;

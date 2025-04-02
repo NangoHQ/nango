@@ -160,7 +160,8 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             runTime: 0,
             error,
             syncConfig,
-            endUser
+            endUser,
+            startedAt: new Date()
         });
         return Err(error);
     }
@@ -256,6 +257,9 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
             });
         }
     }
+
+    metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
 export async function handleWebhookError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
@@ -299,7 +303,8 @@ export async function handleWebhookError({ taskId, nangoProps, error }: { taskId
         runTime: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         error,
         syncConfig: nangoProps.syncConfig,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        startedAt: nangoProps.startedAt
     });
 }
 
@@ -317,7 +322,8 @@ async function onFailure({
     models,
     runTime,
     error,
-    endUser
+    endUser,
+    startedAt
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -334,6 +340,7 @@ async function onFailure({
     runTime: number;
     error: NangoError;
     endUser: NangoProps['endUser'];
+    startedAt: Date;
 }): Promise<void> {
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
@@ -403,4 +410,7 @@ async function onFailure({
             endUser
         });
     }
+
+    metrics.increment(metrics.Types.WEBHOOK_FAILURE);
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

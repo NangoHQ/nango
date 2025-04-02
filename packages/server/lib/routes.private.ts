@@ -7,7 +7,6 @@ import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, isBasicAuthEna
 
 import { setupAuth } from './clients/auth.client.js';
 import accountController from './controllers/account.controller.js';
-import authController from './controllers/auth.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -26,6 +25,7 @@ import {
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
+import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
@@ -106,7 +106,7 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 // --- No auth
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, signup);
-    web.route('/account/logout').post(rateLimiterMiddleware, authController.logout.bind(authController));
+    web.route('/account/logout').post(rateLimiterMiddleware, postLogout);
     web.route('/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
     web.route('/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
