@@ -59,7 +59,7 @@ export function transformToOpenAIFunctions(configs: StandardNangoConfig[]): Open
         // Process syncs - they don't have parameters
         for (const sync of config.syncs) {
             functions.push({
-                name: `${config.provider}.${sync.name}`,
+                name: `${config.provider}-${sync.name}`,
                 description: sync.description || `Execute the ${sync.name} sync for ${config.provider}`,
                 parameters: {
                     type: 'object',
@@ -107,7 +107,7 @@ export function transformToOpenAIFunctions(configs: StandardNangoConfig[]): Open
             }
 
             functions.push({
-                name: `${config.provider}.${action.name}`,
+                name: `${config.provider}-${action.name}`,
                 description: action.description || `Execute the ${action.name} action for ${config.provider}`,
                 parameters: {
                     type: 'object',

@@ -31,7 +31,7 @@ describe('transformToOpenAIFunctions', () => {
 
         expect(result).toEqual([
             {
-                name: 'google-calendar.sync-events',
+                name: 'google-calendar-sync-events',
                 description: 'Sync calendar events',
                 parameters: {
                     type: 'object',
@@ -93,7 +93,7 @@ describe('transformToOpenAIFunctions', () => {
 
         expect(result).toEqual([
             {
-                name: 'google-calendar.delete-event',
+                name: 'google-calendar-delete-event',
                 description:
                     'Delete a calendar event with the following parameters:\n- eventId: The ID of the event to delete\n- calendar: Optional calendar ID (defaults to primary calendar)',
                 parameters: {
