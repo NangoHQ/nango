@@ -46,7 +46,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
     const isSync = req.headers['Nango-Is-Sync'] === 'true';
 
     if (!isSync) {
-        metrics.increment(metrics.Types.GET_CONNECTION, 1, { accountId: account.id });
+        metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);

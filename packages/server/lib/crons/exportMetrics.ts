@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import { records } from '@nangohq/records';
-import { connectionService, environmentService } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -56,30 +56,11 @@ async function exportConnectionsMetrics(): Promise<void> {
 async function exportRecordsMetrics(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.exportUsageMetrics.records', async (span) => {
         try {
-            // Records count
-            // Records db doesn't store account so we first get records count per environment
-            // and then we aggregate environments per account
-            const recordsRes = await records.countMetric();
-            if (recordsRes.isErr()) {
-                throw recordsRes.error;
+            const countRes = await records.countMetric();
+            if (countRes.isErr()) {
+                throw countRes.error;
             }
-            const envs = await environmentService.getAll();
-            if (envs.length <= 0) {
-                throw new Error('no_environments');
-            }
-            const countByAccount = recordsRes.value.reduce((acc, { environmentId, count }) => {
-                const env = envs.find((e) => e.environmentId === environmentId);
-                if (!env) {
-                    return acc;
-                }
-                const prev = acc.get(env.accountId) || 0;
-                acc.set(env.accountId, prev + Number(count));
-                return acc;
-            }, new Map<number, number>());
-
-            for (const [accountId, count] of countByAccount) {
-                metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
-            }
+            metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, Number(countRes.value.count));
         } catch (err) {
             span.setTag('error', err);
             report(new Error('cron_failed_to_export_records_metrics', { cause: err }));
