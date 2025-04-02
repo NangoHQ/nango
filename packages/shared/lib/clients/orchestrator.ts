@@ -113,6 +113,7 @@ export class Orchestrator {
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'action.name': actionName,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -212,7 +213,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -364,6 +365,7 @@ export class Orchestrator {
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'onEventScript.name': name,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -452,7 +454,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
     }

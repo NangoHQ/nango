@@ -135,7 +135,7 @@ export async function persistRecords({
 
         metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, new Set(summary.billedKeys).size, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
-        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes);
+        metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES, modifiedRecordsSizeInBytes);
 
