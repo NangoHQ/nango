@@ -1,5 +1,4 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
-import jwt from 'jsonwebtoken';
 import ms from 'ms';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,11 +6,12 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as jwtClient from '../auth/jwt.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT } from '../constants.js';
-import syncManager from './sync/manager.service.js';
 import environmentService from '../services/environment.service.js';
+import syncManager from './sync/manager.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -22,6 +22,7 @@ import {
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
+import { loggedFetch } from '../utils/http.js';
 import {
     extractStepNumber,
     extractValueByPath,
@@ -50,7 +51,7 @@ import type { ServiceResponse } from '../models/Generic.js';
 import type { AuthCredentials, Config as ProviderConfig, OAuth1Credentials } from '../models/index.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type {
     AuthModeType,
     BillCredentials,
@@ -852,8 +853,6 @@ class ConnectionService {
             })
             .update({ deleted: true, credentials: {}, credentials_iv: null, credentials_tag: null, deleted_at: new Date() });
 
-        // TODO: might be useless since we are dropping the data after a while
-        await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator dependencies
         await syncManager.softDeleteSyncsByConnection(connection, orchestrator);
@@ -1053,28 +1052,31 @@ class ConnectionService {
             payload['scope'] = connectionConfig['scope'];
         }
 
-        const {
-            success,
-            error,
-            response: rawCredentials
-        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, null, {
-            header: {
-                alg: 'ES256',
-                kid: connectionConfig['privateKeyId'],
-                typ: 'JWT'
+        const create = await jwtClient.createCredentialsFromURL({
+            privateKey,
+            url: tokenUrl,
+            payload,
+            additionalApiHeaders: null,
+            options: {
+                header: {
+                    alg: 'ES256',
+                    kid: connectionConfig['privateKeyId'],
+                    typ: 'JWT'
+                }
             }
         });
 
-        if (!success || !rawCredentials) {
-            return { success, error, response: null };
+        if (create.isErr()) {
+            return { success: false, error: create.error, response: null };
         }
 
+        const rawCredentials = create.value;
         const credentials: AppStoreCredentials = {
             type: 'APP_STORE',
-            access_token: rawCredentials?.token,
+            access_token: rawCredentials.token!,
             private_key: Buffer.from(privateKey).toString('base64'),
-            expires_at: rawCredentials?.expires_at,
-            raw: rawCredentials as unknown as Record<string, unknown>
+            expires_at: rawCredentials.expires_at,
+            raw: rawCredentials
         };
 
         return { success: true, error: null, response: credentials };
@@ -1143,38 +1145,48 @@ class ConnectionService {
             payload['iss'] = connectionConfig['app_id'];
         }
 
-        const {
-            success,
-            error,
-            response: rawCredentials
-        } = await this.formatAndGetJWTCredentials(privateKey, tokenUrl, payload, headers, { algorithm: 'RS256' });
+        const create = await jwtClient.createCredentialsFromURL({
+            privateKey,
+            url: tokenUrl,
+            payload,
+            additionalApiHeaders: headers,
+            options: { algorithm: 'RS256' }
+        });
 
-        if (!success || !rawCredentials) {
-            return { success, error, response: null };
+        if (create.isErr()) {
+            return { success: false, error: create.error, response: null };
         }
 
+        const rawCredentials = create.value;
         const credentials: AppCredentials = {
             type: 'APP',
-            access_token: rawCredentials?.token,
-            expires_at: rawCredentials?.expires_at,
-            raw: rawCredentials as unknown as Record<string, unknown>
+            access_token: rawCredentials.token!,
+            expires_at: rawCredentials.expires_at,
+            raw: rawCredentials
         };
 
         return { success: true, error: null, response: credentials };
     }
 
-    public async getOauthClientCredentials(
-        provider: ProviderOAuth2,
-        client_id: string,
-        client_secret: string,
-        connectionConfig: Record<string, string>
-    ): Promise<ServiceResponse<OAuth2ClientCredentials>> {
+    public async getOauthClientCredentials({
+        provider,
+        client_id,
+        client_secret,
+        connectionConfig,
+        logCtx
+    }: {
+        provider: ProviderOAuth2;
+        client_id: string;
+        client_secret: string;
+        connectionConfig: ConnectionConfig;
+        logCtx: LogContextStateless;
+    }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
         const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
 
         let tokenParams = provider.token_params && Object.keys(provider.token_params).length > 0 ? new URLSearchParams(provider.token_params).toString() : '';
 
-        if (connectionConfig['oauth_scopes']) {
+        if (connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string') {
             const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
             tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
@@ -1201,36 +1213,32 @@ class ConnectionService {
                 params.append(key, value);
             }
         }
-        try {
-            const requestOptions = { headers };
-
-            const response = await axios.post(
-                url.toString(),
-                bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                requestOptions
-            );
-
-            const { data } = response;
-
-            if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_client_credentials'), response: null };
+        if (connectionConfig['authorization_params']) {
+            for (const [key, value] of Object.entries(connectionConfig['authorization_params'])) {
+                params.set(key, value);
             }
+        }
 
-            const parsedCreds = this.parseRawCredentials(data, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
-
-            parsedCreds.client_id = client_id;
-            parsedCreds.client_secret = client_secret;
-
-            return { success: true, error: null, response: parsedCreds };
-        } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching client credentials ${stringifyError(err)}`);
-            const error = new NangoError('client_credentials_fetch_error', errorPayload);
+        const fetchRes = await loggedFetch<Record<string, any>>(
+            {
+                url,
+                method: 'POST',
+                headers,
+                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString()
+            },
+            { logCtx, context: 'auth', valuesToFilter: [client_secret] }
+        );
+        if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
+            const error = new NangoError('client_credentials_fetch_error');
             return { success: false, error, response: null };
         }
+
+        const parsedCreds = this.parseRawCredentials(fetchRes.value.body, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
+
+        parsedCreds.client_id = client_id;
+        parsedCreds.client_secret = client_secret;
+
+        return { success: true, error: null, response: parsedCreds };
     }
 
     public async getTableauCredentials(
@@ -1283,67 +1291,6 @@ class ConnectionService {
             const error = new NangoError('tableau_tokens_fetch_error', errorPayload);
 
             return { success: false, error, response: null };
-        }
-    }
-
-    public getJwtCredentials(
-        provider: ProviderJwt,
-        privateKey: { id: string; secret: string } | string,
-        privateKeyId?: string,
-        issuerId?: string
-    ): ServiceResponse<JwtCredentials> {
-        const originalPrivateKey = privateKey;
-        const originalPrivateKeyId = privateKeyId;
-
-        if (typeof privateKey === 'object') {
-            privateKeyId = privateKey.id;
-            privateKey = privateKey.secret;
-        }
-
-        if (!privateKey) {
-            throw new NangoError('invalid_jwt_private_key');
-        }
-        if (!privateKeyId) {
-            throw new NangoError('invalid_jwt_private_key_id');
-        }
-
-        const now = Math.floor(Date.now() / 1000);
-        const payload = {
-            ...provider.token.payload,
-            iat: now,
-            exp: now + provider.token.expires_in_ms / 1000
-        };
-        const header = {
-            ...provider.token.headers,
-            alg: provider.token.headers.alg,
-            kid: privateKeyId
-        };
-
-        try {
-            const token = this.generateJWT(payload, Buffer.from(privateKey, 'hex'), { algorithm: provider.token.headers.alg, header });
-            const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
-
-            const credentials: JwtCredentials = {
-                type: 'JWT',
-                privateKeyId: originalPrivateKeyId || '',
-                issuerId: issuerId || '',
-                privateKey: originalPrivateKey,
-                token,
-                expires_at: expiresAt
-            };
-
-            return { success: true, error: null, response: credentials };
-        } catch (err) {
-            const error = new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
-            return { success: false, error, response: null };
-        }
-    }
-
-    private generateJWT(payload: Record<string, string | number>, secretOrPrivateKey: string | Buffer, options: object): string {
-        try {
-            return jwt.sign(payload, secretOrPrivateKey, options);
-        } catch (err) {
-            throw new NangoError('jwt_generation_error', { message: err instanceof Error ? err.message : 'unknown error' });
         }
     }
 
@@ -1598,51 +1545,17 @@ class ConnectionService {
         return false;
     }
 
-    private async formatAndGetJWTCredentials(
-        privateKey: string,
-        url: string,
-        payload: Record<string, string | number>,
-        additionalApiHeaders: Record<string, string> | null,
-        options: object
-    ): Promise<ServiceResponse> {
-        const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
-
-        if (!hasLineBreak) {
-            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-        }
-
-        try {
-            const token = this.generateJWT(payload, privateKey, options);
-
-            const headers = {
-                Authorization: `Bearer ${token}`
-            };
-
-            if (additionalApiHeaders) {
-                Object.assign(headers, additionalApiHeaders);
-            }
-
-            const tokenResponse = await axios.post(
-                url,
-                {},
-                {
-                    headers
-                }
-            );
-
-            return { success: true, error: null, response: tokenResponse.data };
-        } catch (err) {
-            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
-            return { success: false, error, response: null };
-        }
-    }
-
-    public async getNewCredentials(
-        connection: DBConnectionDecrypted,
-        providerConfig: ProviderConfig,
-        provider: Provider
-    ): Promise<
+    public async getNewCredentials({
+        connection,
+        providerConfig,
+        provider,
+        logCtx
+    }: {
+        connection: DBConnectionDecrypted;
+        providerConfig: ProviderConfig;
+        provider: Provider;
+        logCtx: LogContextStateless;
+    }): Promise<
         ServiceResponse<
             | OAuth2Credentials
             | OAuth2ClientCredentials
@@ -1666,7 +1579,13 @@ class ConnectionService {
                 success,
                 error,
                 response: credentials
-            } = await this.getOauthClientCredentials(provider as ProviderOAuth2, client_id, client_secret, connection.connection_config);
+            } = await this.getOauthClientCredentials({
+                provider: provider as ProviderOAuth2,
+                client_id,
+                client_secret,
+                connectionConfig: connection.connection_config,
+                logCtx
+            });
 
             if (!success || !credentials) {
                 return { success, error, response: null };
@@ -1684,13 +1603,13 @@ class ConnectionService {
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'JWT') {
             const { privateKeyId, issuerId, privateKey } = connection.credentials as JwtCredentials;
-            const { success, error, response: credentials } = this.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
+            const create = jwtClient.createCredentials({ privateKey, privateKeyId, issuerId, provider: provider as ProviderJwt });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'APP' || (provider.auth_mode === 'CUSTOM' && connection.credentials.type !== 'OAUTH2')) {
             const { success, error, response: credentials } = await this.getAppCredentials(provider, providerConfig, connection.connection_config);
 
@@ -1744,7 +1663,11 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else {
-            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, provider as ProviderOAuth2);
+            const {
+                success,
+                error,
+                response: creds
+            } = await getFreshOAuth2Credentials({ connection, config: providerConfig, provider: provider as ProviderOAuth2, logCtx });
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }

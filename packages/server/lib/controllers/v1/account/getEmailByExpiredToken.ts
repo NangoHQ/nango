@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import { userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { sendVerificationEmail } from '../../../helpers/email.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { GetEmailByExpiredToken } from '@nangohq/types';
 
 const logger = getLogger('Server.GetEmailByExpiredToken');
@@ -41,7 +44,7 @@ export const getEmailByExpiredToken = asyncWrapper<GetEmailByExpiredToken>(async
         return;
     }
 
-    sendVerificationEmail(user.email, user.name, user.email_verification_token);
+    await sendVerificationEmail(user.email, user.name, user.email_verification_token);
 
     if (!user) {
         res.status(404).send({ error: { code: 'user_not_found' } });

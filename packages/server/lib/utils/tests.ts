@@ -64,7 +64,9 @@ export function apiFetch(baseUrl: string) {
         }
         if (additionalHeaders) {
             for (const [k, v] of Object.entries(additionalHeaders)) {
-                headers.set(k, v);
+                if (v) {
+                    headers.set(k, v);
+                }
             }
         }
 

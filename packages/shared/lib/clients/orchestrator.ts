@@ -52,7 +52,7 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
-    executeOnEvent(props: ExecuteOnEventProps): Promise<VoidReturn>;
+    executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
@@ -113,6 +113,7 @@ export class Orchestrator {
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'action.name': actionName,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -212,7 +213,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ACTION_TRACK_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -308,7 +309,6 @@ export class Orchestrator {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -339,7 +339,6 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
@@ -353,6 +352,7 @@ export class Orchestrator {
         version,
         name,
         fileLocation,
+        async,
         logCtx
     }: {
         accountId: number;
@@ -360,10 +360,12 @@ export class Orchestrator {
         version: string;
         name: string;
         fileLocation: string;
+        async: boolean;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'onEventScript.name': name,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
@@ -393,7 +395,8 @@ export class Orchestrator {
             const result = await this.client.executeOnEvent({
                 name: executionId,
                 groupKey,
-                args
+                args,
+                async
             });
 
             const res = result.mapError((err) => {
@@ -451,7 +454,7 @@ export class Orchestrator {
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime, { accountId });
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -521,7 +524,7 @@ export class Orchestrator {
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
-        delete_records?: boolean;
+        delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {

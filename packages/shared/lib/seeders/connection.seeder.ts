@@ -1,8 +1,10 @@
 import db from '@nangohq/database';
+
 import connectionService from '../services/connection.service.js';
-import type { AuthCredentials } from '../models/Auth.js';
-import type { ConnectionConfig, DBConnection, DBEnvironment, EndUser } from '@nangohq/types';
 import { linkConnection } from '../services/endUser.service.js';
+
+import type { AuthCredentials } from '../models/Auth.js';
+import type { ConnectionConfig, DBConnection, DBConnectionDecrypted, DBEnvironment, EndUser } from '@nangohq/types';
 
 export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[]> => {
     const connectionIds = [];
@@ -69,3 +71,30 @@ export const createConnectionSeed = async ({
 export const deleteAllConnectionSeeds = async (): Promise<void> => {
     await db.knex.raw('TRUNCATE TABLE _nango_connections CASCADE');
 };
+
+export function getTestConnection(override?: Partial<DBConnectionDecrypted>): DBConnectionDecrypted {
+    return {
+        connection_id: 'a',
+        created_at: new Date(),
+        credentials: { type: 'API_KEY', apiKey: 'random_token' },
+        end_user_id: null,
+        environment_id: 1,
+        provider_config_key: 'freshteam',
+        updated_at: new Date(),
+        connection_config: {},
+        config_id: 1,
+        credentials_iv: null,
+        credentials_tag: null,
+        deleted: false,
+        deleted_at: null,
+        id: -1,
+        last_fetched_at: null,
+        metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false,
+        ...override
+    };
+}

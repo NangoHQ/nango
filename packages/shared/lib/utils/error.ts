@@ -1,17 +1,35 @@
 import { stringifyError } from '@nangohq/utils';
+
 import type { JsonValue } from 'type-fest';
 
-export class NangoError extends Error {
-    public readonly status: number = 500;
-    public readonly type: string;
-    public payload: Record<string, unknown>;
+export class NangoInternalError extends Error {
+    public type: string;
+
+    // -- Legacy stuff to remove
+    public status: number = 500;
+    public payload: Record<string, unknown> = {};
+
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+        this.type = type;
+    }
+
+    // For compat with NangoError
+    // If we end up needing it we could pass use options as payload
+    public setPayload(payload: any) {
+        this.payload = payload;
+    }
+}
+
+export class AuthCredentialsError extends NangoInternalError {}
+
+export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
 
     constructor(type: string, payload = {}, status?: number, additional_properties?: Record<string, JsonValue>) {
-        super();
+        super(type);
 
-        this.type = type;
         this.payload = payload;
         this.additional_properties = additional_properties;
 
@@ -516,10 +534,6 @@ export class NangoError extends Error {
                 this.type = 'unhandled_' + type;
                 this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
-    }
-
-    public setPayload(payload: any) {
-        this.payload = payload;
     }
 }
 

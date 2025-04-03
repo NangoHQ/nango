@@ -1,9 +1,13 @@
-import type { Request, Response, NextFunction } from 'express';
+import path from 'node:path';
+
+import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
-import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
+
 import { getRedisUrl } from '@nangohq/shared';
 import { flagHasAPIRateLimit, getLogger } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express';
+import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('RateLimiter');
 
@@ -58,7 +62,8 @@ export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFun
             }
 
             logger.error('Failed to compute rate limit', { error: err });
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to compute rate limit' } });
+            // If we can't get the rate limit (ex: redis is unreachable), we should not block the request
+            next();
         });
 };
 
@@ -75,7 +80,8 @@ function getKey(req: Request, res: Response<any, RequestLocals>): string {
 
 const specialPaths = ['/api/v1/account'];
 function getPointsToConsume(req: Request, res: Response<any, RequestLocals>): number {
-    if (specialPaths.some((path) => req.path.startsWith(path))) {
+    const fullPath = path.join(req.baseUrl, req.route.path);
+    if (specialPaths.includes(fullPath)) {
         // limiting to 6 requests per period to avoid brute force attacks
         return Math.floor(rateLimiter.points / 6);
     } else if (!res.locals.account || res.locals.account.is_capped) {

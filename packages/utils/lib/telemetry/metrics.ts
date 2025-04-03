@@ -20,8 +20,11 @@ export enum Types {
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
 
     LOGS_LOG = 'nango.logs.log',
+    BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
+    PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES = 'nango.persist.records.modified.sizeInBytes',
 
     ON_EVENT_SCRIPT_EXECUTION = 'nango.jobs.onEventScriptExecution',
     ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',

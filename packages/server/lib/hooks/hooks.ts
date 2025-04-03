@@ -12,7 +12,7 @@ import {
     getSyncConfigsWithConnections,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted } from '@nangohq/utils';
+import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { getOrchestrator } from '../utils/utils.js';
@@ -21,7 +21,7 @@ import { slackService } from '../services/slack.js';
 import { postConnectionCreation } from './connection/on/connection-created.js';
 import postConnection from './connection/post-connection.js';
 
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
 import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -32,7 +32,6 @@ import type {
     IntegrationConfig,
     InternalProxyConfiguration,
     JwtCredentials,
-    MessageRowInsert,
     Provider,
     RecentlyCreatedConnection,
     RecentlyFailedConnection,
@@ -80,27 +79,21 @@ export async function testConnectionCredentials({
     connectionConfig,
     connectionId,
     credentials,
-    provider
+    provider,
+    logCtx
 }: {
     config: Config;
     connectionConfig: ConnectionConfig;
     connectionId: string;
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
     provider: Provider;
-}): Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>> {
-    const logs: MessageRowInsert[] = [
-        {
-            type: 'log',
-            level: 'info',
-            message: 'Running automatic credentials verification via verification script',
-            createdAt: new Date().toISOString()
-        }
-    ];
-
+    logCtx: LogContextStateless;
+}): Promise<Result<{ tested: boolean }, NangoError>> {
     try {
         if (provider.credentials_verification_script) {
+            void logCtx.info('Running automatic credentials verification via verification script');
             await executeVerificationScript(config, credentials, connectionId, connectionConfig);
-            return Ok({ logs, tested: true });
+            return Ok({ tested: true });
         }
 
         if (provider.proxy?.verification) {
@@ -109,20 +102,16 @@ export async function testConnectionCredentials({
                 provider,
                 credentials,
                 connectionId,
-                connectionConfig
+                connectionConfig,
+                logCtx
             });
             return result;
         }
-        return Ok({ logs: [], tested: false });
+        return Ok({ tested: false });
     } catch (err) {
-        logs.push({
-            type: 'log',
-            level: 'error',
-            message: 'Connection test verification failed',
-            createdAt: new Date().toISOString()
-        });
+        void logCtx.error('Connection test verification failed');
 
-        return Err(new NangoError('connection_test_failed', { err, logs }));
+        return Err(new NangoError('connection_test_failed', { err }));
     }
 }
 
@@ -190,17 +179,25 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
 }): Promise<void> => {
-    await errorNotificationService.auth.clear({
-        connection_id: connection.id
-    });
+    try {
+        await errorNotificationService.auth.clear({
+            connection_id: connection.id
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 
-    await slackService.removeFailingConnection({
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: null,
-        provider: config.provider
-    });
+    try {
+        await slackService.removeFailingConnection({
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: null,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export const connectionRefreshFailed = async ({
@@ -222,16 +219,19 @@ export const connectionRefreshFailed = async ({
     logCtx: LogContext;
     action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
-    await errorNotificationService.auth.create({
-        type: 'auth',
-        action,
-        connection_id: connection.id,
-        log_id: logCtx.id,
-        active: true
-    });
+    try {
+        await errorNotificationService.auth.create({
+            type: 'auth',
+            action,
+            connection_id: connection.id,
+            log_id: logCtx.id,
+            active: true
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
-
     void sendAuthWebhook({
         connection,
         environment,
@@ -244,15 +244,19 @@ export const connectionRefreshFailed = async ({
         account
     });
 
-    await slackService.reportFailure({
-        account,
-        environment,
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: logCtx.id,
-        provider: config.provider
-    });
+    try {
+        await slackService.reportFailure({
+            account,
+            environment,
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: logCtx.id,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export async function credentialsTest({
@@ -260,18 +264,20 @@ export async function credentialsTest({
     provider,
     credentials,
     connectionId,
-    connectionConfig
+    connectionConfig,
+    logCtx
 }: {
     config: Config;
     provider: Provider;
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
     connectionId: string;
     connectionConfig: ConnectionConfig;
-}): Promise<Result<{ logs: MessageRowInsert[]; tested: boolean }, NangoError>> {
+    logCtx: LogContextStateless;
+}): Promise<Result<{ tested: boolean }, NangoError>> {
     const providerVerification = provider?.proxy?.verification;
 
     if (!providerVerification?.endpoints?.length) {
-        return Ok({ logs: [], tested: false });
+        return Ok({ tested: false });
     }
 
     const active = tracer.scope().active();
@@ -310,9 +316,7 @@ export async function credentialsTest({
         refresh_exhausted: false
     };
 
-    const logs: MessageRowInsert[] = [
-        { type: 'log', level: 'info', message: `Running automatic credentials verification`, createdAt: new Date().toISOString() }
-    ];
+    void logCtx.info(`Running automatic credentials verification`);
 
     const internalConfig: InternalProxyConfiguration = {
         providerName: config.provider
@@ -343,7 +347,7 @@ export async function credentialsTest({
             const proxyConfig = getProxyConfiguration({ externalConfig: configBody, internalConfig }).unwrap();
             const proxy = new ProxyRequest({
                 logger: (msg) => {
-                    logs.push(msg);
+                    void logCtx.log(msg);
                 },
                 proxyConfig,
                 getConnection: () => {
@@ -354,14 +358,14 @@ export async function credentialsTest({
             const response = (await proxy.request()).unwrap();
 
             if (response.status && response.status >= 200 && response.status < 300) {
-                return Ok({ logs, tested: true });
+                return Ok({ tested: true });
             }
         } catch {
             // Already covered
         }
     }
 
-    const error = new NangoError('connection_test_failed', { logs });
+    const error = new NangoError('connection_test_failed');
     span.setTag('error', error);
     span.finish();
     return Err(error);

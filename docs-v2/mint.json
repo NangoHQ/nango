@@ -129,6 +129,22 @@
         {
             "source": "guides/custom-integration-builder/event-based-scripts",
             "destination": "guides/custom-integrations/event-based-scripts"
+        },
+        {
+            "source": "guides/services",
+            "destination": "guides/custom-integrations/service"
+        },
+        {
+            "source": "guides/individual-requests",
+            "destination": "guides/proxy-requests"
+        },
+        {
+            "source": "guides/infrastructure",
+            "destination": "guides/self-hosting/infrastructure"
+        },
+        {
+            "source": "guides/new-api-support",
+            "destination": "guides/api-authorization/new-api-support"
         }
     ],
     "navigation": [
@@ -153,10 +169,11 @@
                         "guides/api-authorization/re-authorize-a-connection",
                         "guides/api-authorization/whitelabel-the-oauth-flow",
                         "guides/api-authorization/credentials-refresh-and-validity",
-                        "guides/api-authorization/public-key-deprecation"
+                        "guides/api-authorization/public-key-deprecation",
+                        "guides/api-authorization/authorization-logs",
+                        "guides/api-authorization/new-api-support"
                     ]
                 },
-                "guides/new-api-support",
                 {
                     "group": "Pre-built integrations",
                     "pages": [
@@ -170,7 +187,8 @@
                         "guides/custom-integrations/overview",
                         "guides/custom-integrations/build-a-custom-integration",
                         "guides/custom-integrations/extend-a-pre-built-integration",
-                        "guides/custom-integrations/event-based-scripts"
+                        "guides/custom-integrations/event-based-scripts",
+                        "guides/custom-integrations/service"
                     ]
                 },
                 {
@@ -190,7 +208,7 @@
                         "guides/actions/use-an-action"
                     ]
                 },
-                "guides/individual-requests",
+                "guides/proxy-requests",
                 {
                     "group": "Webhooks",
                     "pages": [
@@ -210,18 +228,18 @@
                 {
                     "group": "Logs",
                     "pages": [
-                        "guides/logs/opentelemetry-exporter"
+                        "guides/logs/opentelemetry-exporter",
+                        "guides/api-authorization/authorization-logs"
                     ]
                 },
                 "guides/data-validation",
                 "guides/rate-limits",
                 "guides/environments",
-                "guides/infrastructure",
                 "guides/resource-limits",
-                "guides/services",
                 {
                     "group": "Self-hosting",
                     "pages": [
+                        "guides/self-hosting/infrastructure",
                         "guides/self-hosting/enterprise-self-hosting",
                         {
                             "group": "Free self-hosting",
@@ -245,6 +263,7 @@
                 "integrations/all/1password-scim",
                 "integrations/all/accelo",
                 "integrations/all/acuity-scheduling",
+                "integrations/all/active-campaign",
                 "integrations/all/adobe",
                 "integrations/all/adobe-umapi",
                 "integrations/all/adyen",
@@ -367,6 +386,7 @@
                 "integrations/all/elevio",
                 "integrations/all/emarsys",
                 "integrations/all/emarsys-oauth",
+                "integrations/all/employment-hero",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
                 "integrations/all/epic-games",
@@ -405,6 +425,7 @@
                 "integrations/all/github",
                 "integrations/all/github-app",
                 "integrations/all/github-app-oauth",
+                "integrations/all/github-pat",
                 "integrations/all/gitlab",
                 "integrations/all/gong",
                 "integrations/all/gong-oauth",
@@ -567,6 +588,7 @@
                 "integrations/all/ring-central",
                 "integrations/all/ring-central-sandbox",
                 "integrations/all/rippling",
+                "integrations/all/rippling-shop-app",
                 "integrations/all/sage",
                 "integrations/all/sage-intacct",
                 "integrations/all/sage-intacct-oauth",
@@ -663,6 +685,7 @@
                 "integrations/all/wrike",
                 "integrations/all/xai",
                 "integrations/all/xero",
+                "integrations/all/xero-oauth2-cc",
                 "integrations/all/yahoo",
                 "integrations/all/yandex",
                 "integrations/all/youtube",
