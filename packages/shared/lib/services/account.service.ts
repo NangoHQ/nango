@@ -1,7 +1,11 @@
 import db from '@nangohq/database';
-import { LogActionEnum } from '../models/Telemetry.js';
+import { flagHasPlan, report } from '@nangohq/utils';
+
 import environmentService from './environment.service.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { createPlan } from './plans/plans.js';
+
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 class AccountService {
@@ -84,15 +88,22 @@ class AccountService {
      * @desc create a new account and assign to the default environments
      */
     async createAccount(name: string): Promise<DBTeam | null> {
+        // TODO: use transaction
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
 
-        if (result[0]?.id) {
-            await environmentService.createDefaultEnvironments(result[0].id);
-
-            return result[0];
+        if (!result[0]) {
+            return null;
         }
 
-        return null;
+        await environmentService.createDefaultEnvironments(result[0].id);
+        if (flagHasPlan) {
+            const res = await createPlan(db.knex, { account_id: result[0].id, name: 'free' });
+            if (res.isErr()) {
+                report(res.error);
+            }
+        }
+
+        return result[0];
     }
 
     /**

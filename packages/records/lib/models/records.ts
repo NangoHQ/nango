@@ -26,6 +26,29 @@ dayjs.extend(utc);
 
 const BATCH_SIZE = 1000;
 
+interface UpsertResult {
+    external_id: string;
+    id: string;
+    last_modified_at: string;
+    previous_last_modified_at: string | null;
+    status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
+}
+
+function isBillable(record: { last_modified_at: string | Date; previous_last_modified_at: string | Date }): boolean {
+    const firstDayOfMonth = dayjs().utc().startOf('month');
+    const previousLastModifiedAt = dayjs(record.previous_last_modified_at).utc();
+    return previousLastModifiedAt.isBefore(firstDayOfMonth);
+}
+
+function billable(records: UpsertResult[]): UpsertResult[] {
+    return records.filter((r) => {
+        if (!r.previous_last_modified_at) {
+            return true;
+        }
+        return isBillable({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
+    });
+}
+
 export async function getRecordCountsByModel({
     connectionId,
     environmentId
@@ -50,19 +73,16 @@ export async function getRecordCountsByModel({
     }
 }
 
-export async function countMetric(): Promise<Result<{ environmentId: number; count: string }[]>> {
+export async function countMetric(): Promise<Result<{ count: string }>> {
     // Note: count is a string because pg returns bigint as string
     try {
-        const res = await db
-            .from(RECORD_COUNTS_TABLE)
-            .sum('count as count')
-            .groupBy('environment_id')
-            .select<{ environmentId: number; count: string }[]>('environment_id as environmentId');
-
-        return Ok(res);
+        const [count] = await db.from(RECORD_COUNTS_TABLE).sum('count as count');
+        if (!count) {
+            return Err(new Error(`Failed to count records`));
+        }
+        return Ok({ count });
     } catch {
-        const e = new Error(`Failed to count records`);
-        return Err(e);
+        return Err(new Error(`Failed to count records`));
     }
 }
 
@@ -295,7 +315,7 @@ export async function upsert({
         );
     }
 
-    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging };
+    const summary: UpsertSummary = { addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys, nextMerging: merging, billedKeys: [] };
     try {
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent upserts
@@ -320,19 +340,12 @@ export async function upsert({
                     });
                 };
 
-                interface UpsertResult {
-                    external_id: string;
-                    id: string;
-                    last_modified_at: string;
-                    status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
-                }
-
                 // we need to know which records were updated, deleted, undeleted or unchanged
                 // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
                 const externalIds = chunk.map((r) => r.external_id);
                 const query = trx
                     .with('existing', (qb) => {
-                        qb.select('external_id', 'data_hash', 'deleted_at')
+                        qb.select('external_id', 'data_hash', 'deleted_at', 'updated_at')
                             .from(RECORDS_TABLE)
                             .where({
                                 connection_id: connectionId,
@@ -362,6 +375,10 @@ export async function upsert({
                             upsert.external_id as external_id,
                             to_json(upsert.updated_at) as last_modified_at,
                             CASE
+                              WHEN existing.updated_at IS NULL THEN NULL
+                              ELSE to_json(existing.updated_at)
+                            END as previous_last_modified_at,
+                            CASE
                                 WHEN existing.external_id IS NULL THEN 'inserted'
                                 ELSE
                                     CASE
@@ -375,21 +392,35 @@ export async function upsert({
                     .from('upsert')
                     .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
                     .orderBy([
-                        { column: 'updated_at', order: 'asc' },
-                        { column: 'id', order: 'asc' }
+                        { column: 'upsert.updated_at', order: 'asc' },
+                        { column: 'upsert.id', order: 'asc' }
                     ]);
-                const updatedRes = await withRetry(query);
 
-                const inserted = updatedRes.filter((r) => r.status === 'inserted').map((r) => r.external_id);
-                const undeleted = updatedRes.filter((r) => r.status === 'undeleted').map((r) => r.external_id);
-                const deleted = updatedRes.filter((r) => r.status === 'deleted').map((r) => r.external_id);
-                const updated = updatedRes.filter((r) => r.status === 'changed').map((r) => r.external_id);
+                const res = await withRetry(query);
+
+                // Billing:
+                // A record is billed only once per month. ie:
+                // - If a record is inserted, it is billed
+                // - If a record is updated, it is billed if it has not been billed yet during the current month
+                // - If a record is undeleted, it is not billed
+                // - If a record is deleted, it is not billed
 
                 if (softDelete) {
-                    summary.deletedKeys?.push(...deleted);
+                    const deleted = res.filter((r) => r.status === 'deleted');
+                    summary.deletedKeys?.push(...deleted.map((r) => r.external_id));
                 } else {
-                    summary.addedKeys.push(...inserted.concat(undeleted));
-                    summary.updatedKeys.push(...updated);
+                    const undeletedRes = res.filter((r) => r.status === 'undeleted');
+                    const changedRes = res.filter((r) => r.status === 'changed');
+
+                    const insertedKeys = res.filter((r) => r.status === 'inserted').map((r) => r.external_id);
+                    const undeletedKeys = undeletedRes.map((r) => r.external_id);
+                    const addedKeys = insertedKeys.concat(undeletedKeys);
+                    const updatedKeys = changedRes.map((r) => r.external_id);
+                    const billableKeys = [...insertedKeys, ...billable(changedRes).map((r) => r.external_id)];
+
+                    summary.addedKeys.push(...addedKeys);
+                    summary.updatedKeys.push(...updatedKeys);
+                    summary.billedKeys.push(...billableKeys);
                 }
 
                 if (merging.strategy === 'ignore_if_modified_after_cursor') {
@@ -402,7 +433,7 @@ export async function upsert({
                         }
                         return undefined;
                     };
-                    const lastRecord = getLastModifiedRecord(updatedRes);
+                    const lastRecord = getLastModifiedRecord(res);
                     if (lastRecord) {
                         summary.nextMerging = {
                             strategy: merging.strategy,
@@ -476,6 +507,7 @@ export async function update({
 
     try {
         const updatedKeys: string[] = [];
+        const billedKeys: string[] = [];
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent updates
             await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
@@ -545,6 +577,16 @@ export async function update({
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
+                    for (const record of updated) {
+                        const oldRecord = oldRecords.find((old) => old.external_id === record.external_id);
+                        if (!oldRecord?.updated_at) {
+                            continue;
+                        }
+                        if (isBillable({ last_modified_at: record.last_modified_at, previous_last_modified_at: oldRecord.updated_at })) {
+                            billedKeys.push(record.external_id);
+                        }
+                    }
+
                     const lastRecord = updated[updated.length - 1];
                     if (merging.strategy === 'ignore_if_modified_after_cursor' && lastRecord) {
                         nextMerging = {
@@ -559,6 +601,7 @@ export async function update({
             addedKeys: [],
             updatedKeys,
             deletedKeys: [],
+            billedKeys,
             nonUniqueKeys,
             nextMerging
         });
