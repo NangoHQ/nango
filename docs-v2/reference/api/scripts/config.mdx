@@ -44,7 +44,7 @@ The endpoint will generate a function definition like this:
 
 ```json
 {
-    "name": "google-calendar.move-event",
+    "name": "move-event",
     "description": "Move an event to a different time or calendar with the following parameters:\n- eventId: The ID of the event to move\n- start: New start time in ISO format (e.g., \"2024-03-28T14:00:00\")\n- end: New end time in ISO format (e.g., \"2024-03-28T15:00:00\")\n- calendar: Optional new calendar ID to move the event to",
     "parameters": {
         "type": "object",
@@ -97,7 +97,7 @@ It will be transformed into:
 
 ```json
 {
-    "name": "google-calendar.create-event",
+    "name": "create-event",
     "description": "Create a new calendar event with the following parameters:\n- summary: The title of the event\n- attendees: List of email addresses of event attendees",
     "parameters": {
         "type": "object",
@@ -118,11 +118,3 @@ It will be transformed into:
     }
 }
 ```
-
-### Function Naming
-
-The functions are named using the format `${integration}.${syncOrActionName}`. For example:
-- `google-calendar.move-event`
-- `github.create-issue`
-- `hubspot.create-deal`
-

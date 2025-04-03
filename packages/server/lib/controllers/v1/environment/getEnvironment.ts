@@ -10,6 +10,7 @@ import {
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { environmentToApi } from '../../../formatters/environment.js';
+import { planToApi } from '../../../formatters/plan.js';
 import { webhooksToApi } from '../../../formatters/webhooks.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { NANGO_ADMIN_UUID } from '../../account.controller.js';
@@ -23,7 +24,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
         return;
     }
 
-    const { environment, account, user } = res.locals;
+    const { environment, account, user, plan } = res.locals;
 
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
@@ -66,6 +67,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
     const webhookSettings = await externalWebhookService.get(environment.id);
 
     res.status(200).send({
+        plan: plan ? planToApi(plan) : null,
         environmentAndAccount: {
             environment: environmentToApi(environment),
             env_variables:

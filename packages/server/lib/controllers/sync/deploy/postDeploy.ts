@@ -1,12 +1,14 @@
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostDeploy } from '@nangohq/types';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { AnalyticsTypes, analytics, NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
-import { getOrchestrator } from '../../../utils/utils.js';
-import { logContextGetter } from '@nangohq/logs';
-import type { Lock } from '@nangohq/kvstore';
 import { getLocking } from '@nangohq/kvstore';
+import { logContextGetter } from '@nangohq/logs';
+import { AnalyticsTypes, NangoError, analytics, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationWithNangoYaml as validation } from './validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { Lock } from '@nangohq/kvstore';
+import type { PostDeploy } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -24,7 +26,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     }
 
     const body: PostDeploy['Body'] = val.data;
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
 
     // we don't allow concurrent deploys so we need to lock this
     // and reject this deploy if there is already a deploy in progress
@@ -53,6 +55,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     } = await deploy({
         environment,
         account,
+        plan,
         flows: cleanIncomingFlow(body.flowConfigs),
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,

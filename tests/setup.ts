@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
+
+import { ElasticsearchContainer } from '@testcontainers/elasticsearch';
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { Wait } from 'testcontainers';
+
 import type { StartedTestContainer } from 'testcontainers';
-import { Wait, PostgreSqlContainer, ElasticsearchContainer } from 'testcontainers';
 
 const containers: StartedTestContainer[] = [];
 
