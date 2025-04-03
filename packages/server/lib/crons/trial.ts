@@ -9,7 +9,7 @@ import {
     disableScriptConfig,
     errorNotificationService,
     getAccountWithFinishedTrialAndSyncs,
-    getTrialCloseToFinish,
+    getTrialsApproachingExpiration,
     syncManager,
     updatePlan,
     userService
@@ -66,9 +66,9 @@ export async function exec(): Promise<void> {
         }
 
         // Send email to team that are close to expiration
-        const res = await getTrialCloseToFinish(db.knex, { inDays: daysBeforeTrialIsOver });
-        if (res.length > 0) {
-            for (const plan of res) {
+        const res = await getTrialsApproachingExpiration(db.knex, { daysLeft: daysBeforeTrialIsOver });
+        if (res.isOk()) {
+            for (const plan of res.value) {
                 await updatePlan(db.knex, { id: plan.id, trial_end_notified_at: new Date() });
 
                 logger.info('Trial soon to be over for account', plan.account_id);

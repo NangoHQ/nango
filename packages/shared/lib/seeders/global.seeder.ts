@@ -10,7 +10,7 @@ import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 export async function seedAccountEnvAndUser(): Promise<{ account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan }> {
     const account = await createAccount();
     const env = await createEnvironmentSeed(account.id, 'dev');
-    const plan = await createPlan(db.knex, { account_id: account.id, name: 'test' });
+    const plan = (await createPlan(db.knex, { account_id: account.id, name: 'test' })).unwrap();
     const user = await seedUser(account.id);
     return { account, env, user, plan };
 }

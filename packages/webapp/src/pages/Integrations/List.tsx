@@ -1,30 +1,29 @@
-import { useNavigate, Link } from 'react-router-dom';
 import { Loading } from '@geist-ui/core';
 import { PlusIcon } from '@heroicons/react/24/outline';
-
-import DashboardLayout from '../../layout/DashboardLayout';
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-
-import { useStore } from '../../store';
-import { useListIntegration } from '../../hooks/useIntegration';
-import { ErrorCircle } from '../../components/ErrorCircle';
-import { SimpleTooltip } from '../../components/SimpleTooltip';
 import { Helmet } from 'react-helmet';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { ErrorCircle } from '../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { useListIntegration } from '../../hooks/useIntegration';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
 
 export default function IntegrationList() {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
 
-    const { list: data, error } = useListIntegration(env);
+    const { list, error } = useListIntegration(env);
 
     if (error) {
-        return <ErrorPageComponent title="Integrations" error={error} page={LeftNavBarItems.Integrations} />;
+        return <ErrorPageComponent title="Integrations" error={error.json} page={LeftNavBarItems.Integrations} />;
     }
 
-    if (!data) {
+    if (!list) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Helmet>
@@ -35,8 +34,6 @@ export default function IntegrationList() {
         );
     }
 
-    const { integrations } = data;
-
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             <Helmet>
@@ -44,7 +41,7 @@ export default function IntegrationList() {
             </Helmet>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
-                {integrations.length > 0 && (
+                {list.length > 0 && (
                     <Link
                         to={`/${env}/integrations/create`}
                         className="flex items-center mt-auto px-4 h-8 rounded-md text-sm text-black bg-white hover:bg-gray-300"
@@ -54,7 +51,7 @@ export default function IntegrationList() {
                     </Link>
                 )}
             </div>
-            {integrations?.length > 0 && (
+            {list.length > 0 && (
                 <>
                     <div className="h-fit rounded-md text-white text-sm">
                         <div className="w-full">
@@ -63,32 +60,32 @@ export default function IntegrationList() {
                                 <div className="w-1/3">Connections</div>
                                 <div className="w-24">Active Scripts</div>
                             </div>
-                            {integrations?.map(({ uniqueKey, provider, connection_count, scripts, missing_fields_count }) => (
+                            {list.map((integration) => (
                                 <div
-                                    key={`tr-${uniqueKey}`}
+                                    key={`tr-${integration.unique_key}`}
                                     className={`flex gap-4 ${
-                                        uniqueKey !== integrations.at(-1)?.uniqueKey ? 'border-b border-border-gray' : ''
+                                        integration.unique_key !== list.at(-1)?.unique_key ? 'border-b border-border-gray' : ''
                                     } min-h-[4em] px-2 justify-between items-center hover:bg-hover-gray cursor-pointer`}
                                     onClick={() => {
-                                        navigate(`/${env}/integrations/${uniqueKey}`);
+                                        navigate(`/${env}/integrations/${integration.unique_key}`);
                                     }}
                                 >
                                     <div className="flex items-center w-2/3 gap-2 py-2 truncate">
                                         <div className="w-10 shrink-0">
-                                            <IntegrationLogo provider={provider} height={7} width={7} />
+                                            <IntegrationLogo provider={integration.provider} height={7} width={7} />
                                         </div>
-                                        <p className="truncate">{uniqueKey}</p>
-                                        {missing_fields_count > 0 && (
+                                        <p className="truncate">{integration.unique_key}</p>
+                                        {integration.meta.missingFieldsCount > 0 && (
                                             <SimpleTooltip tooltipContent="Missing configuration">
                                                 <ErrorCircle icon="!" variant="warning" />
                                             </SimpleTooltip>
                                         )}
                                     </div>
                                     <div className="flex items-center w-1/3">
-                                        <p className="">{connection_count}</p>
+                                        <p className="">{integration.meta.connectionCount}</p>
                                     </div>
                                     <div className="flex items-center w-24">
-                                        <p className="">{scripts}</p>
+                                        <p className="">{integration.meta.scriptsCount}</p>
                                     </div>
                                 </div>
                             ))}
@@ -96,7 +93,7 @@ export default function IntegrationList() {
                     </div>
                 </>
             )}
-            {integrations?.length === 0 && (
+            {list.length === 0 && (
                 <div className="flex flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                     <h2 className="text-2xl text-center w-full">Configure a new integration</h2>
                     <div className="my-2 text-gray-400">Before exchanging data with an external API, you need to configure it on Nango.</div>

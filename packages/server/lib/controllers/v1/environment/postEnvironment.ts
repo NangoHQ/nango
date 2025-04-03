@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { environmentService, externalWebhookService, getPlan } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -31,17 +31,25 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
     const body: PostEnvironment['Body'] = valBody.data;
 
     const accountId = res.locals.user.account_id;
-    const plan = await getPlan(db.knex, { accountId });
-
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
-    if (plan && environments.length >= plan.environments_max) {
-        res.status(400).send({
-            error: {
-                code: 'resource_capped',
-                message: plan.name === 'free' ? 'Creating environment is only available for paying customer' : "Can't create more environments. "
-            }
-        });
-        return;
+
+    if (flagHasPlan) {
+        const planRes = await getPlan(db.knex, { accountId });
+        if (planRes.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Unable to get plan' } });
+            return;
+        }
+
+        const plan = planRes.value;
+        if (plan && environments.length >= plan.environments_max) {
+            res.status(400).send({
+                error: {
+                    code: 'resource_capped',
+                    message: plan.name === 'free' ? 'Creating environment is only available for paying customer' : "Can't create more environments. "
+                }
+            });
+            return;
+        }
     }
 
     const exists = environments.some((env) => env.name === body.name);

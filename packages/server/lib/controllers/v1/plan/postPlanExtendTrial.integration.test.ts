@@ -83,7 +83,7 @@ describe(`POST ${route}`, () => {
             data: { success: true }
         });
 
-        const newPlan = await getPlan(db.knex, { accountId: plan.account_id });
-        expect(newPlan?.trial_end_at?.getTime()).toBeGreaterThan(plan.trial_end_at!.getTime());
+        const newPlan = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
+        expect(newPlan.trial_end_at?.getTime()).toBeGreaterThan(plan.trial_end_at!.getTime());
     });
 });

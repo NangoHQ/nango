@@ -108,30 +108,6 @@ export function useHostedSigninAPI() {
     };
 }
 
-export function useGetIntegrationListAPI(env: string) {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await apiFetch(`/api/v1/integrations?env=${env}`);
-
-            if (res.status === 401) {
-                await signout();
-                return;
-            }
-
-            if (res.status !== 200) {
-                serverErrorToast();
-                return;
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useGetProvidersAPI(env: string) {
     const signout = useSignout();
 
