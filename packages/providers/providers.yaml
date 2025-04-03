@@ -998,6 +998,8 @@ azure-devops:
         base_url: https://${connectionConfig.organizationUrl}
     docs: https://docs.nango.dev/integrations/all/azure-devops
     docs_connect: https://docs.nango.dev/integrations/all/azure-devops/connect
+    # Azure DevOps returns a 202 when the credentials are invalid,
+    # so we need to explicitly check for this and return respective error message
     credentials_verification_script: azureDevopsCredentialsVerification
     connection_config:
         organizationUrl:
