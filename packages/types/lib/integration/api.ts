@@ -1,9 +1,9 @@
-import type { Merge } from 'type-fest';
 import type { ApiTimestamps, Endpoint } from '../api';
 import type { IntegrationConfig } from './db';
-import type { Provider } from '../providers/provider';
 import type { AuthModeType, AuthModes } from '../auth/api';
 import type { NangoSyncConfig } from '../flow';
+import type { Provider } from '../providers/provider';
+import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
     logo: string;
@@ -50,12 +50,23 @@ export type DeletePublicIntegration = Endpoint<{
 }>;
 
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
+export type ApiIntegrationList = ApiIntegration & {
+    meta: {
+        authMode: AuthModeType;
+        scriptsCount: number;
+        connectionCount: number;
+        creationDate: string;
+        missingFieldsCount: number;
+        connectionConfigParams?: string[];
+        credentialParams?: string[];
+    };
+};
 
 export type GetIntegrations = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {
-        data: ApiIntegration[];
+        data: ApiIntegrationList[];
     };
 }>;
 
