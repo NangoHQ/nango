@@ -1,7 +1,7 @@
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { IconBolt, IconClockHour4Filled, IconRefresh } from '@tabler/icons-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { IconBolt, IconRefresh } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import PageNotFound from '../../PageNotFound';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
+import { ErrorCircle } from '../../../components/ErrorCircle';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
@@ -16,7 +17,7 @@ import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useGetIntegration } from '../../../hooks/useIntegration';
-import { apiPostPlanExtendTrial } from '../../../hooks/usePlan';
+import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
@@ -50,13 +51,7 @@ export const ShowIntegration: React.FC = () => {
         }
     }, [location]);
 
-    const [isTrial, daysRemaining] = useMemo<[boolean, number]>(() => {
-        if (!plan || plan.name !== 'free' || !plan.trial_end_at) {
-            return [false, 0];
-        }
-        const days = Math.ceil((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
-        return [days >= 0, days];
-    }, [plan]);
+    const [isTrial, daysRemaining] = useTrial(plan);
 
     const onClickTrialExtend = async () => {
         setTrialLoading(true);
@@ -153,11 +148,7 @@ export const ShowIntegration: React.FC = () => {
                 <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-3 items-center">
-                            <div className="bg-warning-400 bg-opacity-40 rounded-full p-0.5">
-                                <div className="bg-transparent text-warning-500 rounded-full">
-                                    <IconClockHour4Filled stroke={1} size={16} />
-                                </div>
-                            </div>
+                            <ErrorCircle icon="clock" variant="warning" />
                             <Tag variant={'warning'}>Trial Plan</Tag>
                             <span className="text-white font-semibold">{daysRemaining} days left</span>
                         </div>

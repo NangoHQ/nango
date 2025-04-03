@@ -8,7 +8,9 @@ import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { SimpleTooltip } from '../../components/SimpleTooltip';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegration } from '../../hooks/useIntegration';
+import { useTrial } from '../../hooks/usePlan';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 
@@ -17,6 +19,8 @@ export default function IntegrationList() {
 
     const env = useStore((state) => state.env);
 
+    const { plan } = useEnvironment(env);
+    const [isTrial] = useTrial(plan);
     const { list, error } = useListIntegration(env);
 
     if (error) {
@@ -78,6 +82,11 @@ export default function IntegrationList() {
                                         {integration.meta.missingFieldsCount > 0 && (
                                             <SimpleTooltip tooltipContent="Missing configuration">
                                                 <ErrorCircle icon="!" variant="warning" />
+                                            </SimpleTooltip>
+                                        )}
+                                        {isTrial && integration.meta.scriptsCount > 0 && (
+                                            <SimpleTooltip tooltipContent="Some integration endpoints will deactivate at the end of your trial.">
+                                                <ErrorCircle icon="clock" variant="warning" />
                                             </SimpleTooltip>
                                         )}
                                     </div>
