@@ -1,8 +1,8 @@
-import { promises as fs } from 'node:fs';
-import { parse } from './config.service.js';
-import type { NangoYamlV2Endpoint, NangoYamlModel, NangoYamlV2IntegrationSync, NangoYamlV2IntegrationAction } from '@nangohq/types';
+import type { NangoYamlModel, NangoYamlV2Endpoint, NangoYamlV2IntegrationAction, NangoYamlV2IntegrationSync } from '@nangohq/types';
 import chalk from 'chalk';
+import { promises as fs } from 'node:fs';
 import { printDebug } from '../utils.js';
+import { parse } from './config.service.js';
 
 type NangoSyncOrAction = NangoYamlV2IntegrationSync | NangoYamlV2IntegrationAction;
 
@@ -106,7 +106,7 @@ function updateReadme(
         `<!-- BEGIN GENERATED CONTENT -->`,
         `# ${prettyName}`,
         ``,
-        generalInfo(scriptPath, endpointType, scriptConfig, isForIntegrationTemplates),
+        generalInfo(scriptPath, endpointType, scriptConfig, models, isForIntegrationTemplates),
         ``,
         '## Endpoint Reference',
         ``,
@@ -127,8 +127,9 @@ function updateReadme(
     return `${generatedLines.join('\n')}\n${divider}\n${custom.trim()}\n`;
 }
 
-function generalInfo(scriptPath: string, endpointType: string, scriptConfig: NangoSyncOrAction, isForIntegrationTemplates: boolean) {
+function generalInfo(scriptPath: string, endpointType: string, scriptConfig: NangoSyncOrAction, models: NangoYamlModel, isForIntegrationTemplates: boolean) {
     const scopes = Array.isArray(scriptConfig.scopes) ? scriptConfig.scopes.join(', ') : scriptConfig.scopes;
+    const output = Array.isArray(models) ? models.join(", ") : models
 
     if (!scriptConfig.description) {
         console.warn(`Warning: no description for ${scriptPath}`);
@@ -144,7 +145,8 @@ function generalInfo(scriptPath: string, endpointType: string, scriptConfig: Nan
         `- **Version:** ${scriptConfig.version ? scriptConfig.version : '0.0.1'}`,
         `- **Group:** ${endpoint && typeof endpoint !== 'string' && 'group' in endpoint ? endpoint?.group : 'Others'}`,
         `- **Scopes:** ${scopes ? `\`${scopes}\`` : '_None_'}`,
-        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`
+        `- **Endpoint Type:** ${endpointType.slice(0, 1).toUpperCase()}${endpointType.slice(1)}`,
+        `- **Output:** ${output}`
     ];
 
     if (isForIntegrationTemplates) {
