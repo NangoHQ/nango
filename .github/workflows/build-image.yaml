@@ -48,16 +48,7 @@ jobs:
             - name: (self-hosted) Build and push
               # if: github.ref == 'refs/heads/master'
               run: |
-                  echo "Building self-hosted"
-                  VERSION=$(node -p "require('./package.json').version")
-
-                  docker buildx build -f Dockerfile.self_hosted \
-                    --platform linux/amd64 \
-                    --build-arg BASE_IMAGE_HASH="${{ env.SHA }}" \
-                    -t nangohq/nango-server:hosted \
-                    -t nangohq/nango-server:hosted-${{ env.SHA }} \
-                    -t nangohq/nango-server:hosted-${VERSION} \
-                     .
+                  ./scripts/build_docker.sh build ${{ env.SHA }}
 
                   if [ "$CAN_PUSH" == "true" ]; then
                     docker push nangohq/nango-server:hosted
