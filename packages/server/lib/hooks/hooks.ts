@@ -27,6 +27,7 @@ import type {
     ConnectionConfig,
     DBConnectionDecrypted,
     DBEnvironment,
+    DBPlan,
     DBTeam,
     IntegrationConfig,
     InternalProxyConfiguration,
@@ -47,14 +48,17 @@ export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
     creationType,
-    limit
+    plan
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
     creationType: 'create' | 'import';
-    limit: number;
+    plan: DBPlan;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
+        return false;
+    }
+    if (!plan.connection_with_scripts_max) {
         return false;
     }
 
@@ -63,7 +67,7 @@ export const connectionCreationStartCapCheck = async ({
     for (const script of scriptConfigs) {
         const { connections } = script;
 
-        if (connections && connections.length >= limit) {
+        if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             const analyticsType =
                 creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;

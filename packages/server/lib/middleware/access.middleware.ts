@@ -41,7 +41,7 @@ export class AccessMiddleware {
         if (flagHasPlan) {
             const planRes = await getPlan(db.knex, { accountId: result.account.id });
             if (planRes.isErr()) {
-                return Err('invalid_plan');
+                return Err('plan_not_found');
             }
             plan = planRes.value;
         }
@@ -126,7 +126,7 @@ export class AccessMiddleware {
         if (flagHasPlan) {
             const planRes = await getPlan(db.knex, { accountId: result.account.id });
             if (planRes.isErr()) {
-                return Err('invalid_plan');
+                return Err('plan_not_found');
             }
             plan = planRes.value;
         }
@@ -225,7 +225,7 @@ export class AccessMiddleware {
         if (flagHasPlan) {
             const planRes = await getPlan(db.knex, { accountId: result.account.id });
             if (planRes.isErr()) {
-                return Err('invalid_plan');
+                return Err('plan_not_found');
             }
             plan = planRes.value;
         }
@@ -527,7 +527,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         if (flagHasPlan) {
             const planRes = await getPlan(db.knex, { accountId: result.account.id });
             if (planRes.isErr()) {
-                res.status(401).send({ error: { code: 'invalid_plan' } });
+                res.status(401).send({ error: { code: 'plan_not_found' } });
                 return;
             }
             plan = planRes.value;
