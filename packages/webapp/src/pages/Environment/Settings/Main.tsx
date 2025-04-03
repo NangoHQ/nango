@@ -2,6 +2,7 @@ import { IconSettings } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 import { EditableInput } from './EditableInput';
+import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { apiPatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
@@ -31,6 +32,8 @@ export const MainSettings: React.FC = () => {
                         await mutateMeta();
                         setEnv(newName);
                     }}
+                    blocked={env === PROD_ENVIRONMENT_NAME}
+                    blockedTooltip={`You cannot rename the ${PROD_ENVIRONMENT_NAME} environment`}
                 />
             </div>
         </div>

@@ -67,3 +67,13 @@ export async function apiPostVariables(env: string, body: PostEnvironmentVariabl
         json: (await res.json()) as PostEnvironmentVariables['Reply']
     };
 }
+
+export async function apiDeleteEnvironment(env: string) {
+    const res = await apiFetch(`/api/v1/environments?env=${env}`, {
+        method: 'DELETE'
+    });
+
+    return {
+        res
+    };
+}

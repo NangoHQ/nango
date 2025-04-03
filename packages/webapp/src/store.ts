@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { PROD_ENVIRONMENT_NAME } from './constants';
+
 interface Env {
     name: string;
 }
@@ -18,8 +20,8 @@ interface State {
 }
 
 export const useStore = create<State>((set, get) => ({
-    env: 'dev',
-    envs: [],
+    env: PROD_ENVIRONMENT_NAME,
+    envs: [{ name: PROD_ENVIRONMENT_NAME }],
     baseUrl: 'https://api.nango.dev',
     showGettingStarted: true,
     debugMode: false,
