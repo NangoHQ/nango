@@ -1,28 +1,27 @@
-import {
-    AdjustmentsHorizontalIcon,
-    ArrowRightOnRectangleIcon as LogoutIcon,
-    EllipsisHorizontalIcon,
-    LinkIcon,
-    QueueListIcon,
-    SquaresPlusIcon,
-    UserCircleIcon,
-    UserGroupIcon
-} from '@heroicons/react/24/outline';
-import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
-import { IconX } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+    SquaresPlusIcon,
+    LinkIcon,
+    QueueListIcon,
+    AdjustmentsHorizontalIcon,
+    EllipsisHorizontalIcon,
+    UserCircleIcon,
+    UserGroupIcon,
+    ArrowRightOnRectangleIcon as LogoutIcon
+} from '@heroicons/react/24/outline';
 
-import { EnvironmentPicker } from './EnvironmentPicker';
-import { useConnectionsCount } from '../hooks/useConnections';
-import { useMeta } from '../hooks/useMeta';
-import { apiPatchOnboarding } from '../hooks/useOnboarding';
-import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
-import { globalEnv } from '../utils/env';
+import { useMeta } from '../hooks/useMeta';
 import { useSignout } from '../utils/user';
-
+import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
+import { useConnectionsCount } from '../hooks/useConnections';
+import { useUser } from '../hooks/useUser';
+import { globalEnv } from '../utils/env';
+import { IconX } from '@tabler/icons-react';
 import type { MaybePromise } from '@nangohq/types';
+import { apiPatchOnboarding } from '../hooks/useOnboarding';
+import { EnvironmentPicker } from './EnvironmentPicker';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -115,9 +114,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     <div className="flex items-center mx-4">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />
                         <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
-                        <span className="ml-3 text-xs text-black mono">
-                            {meta.version} {globalEnv.gitHash && `(${globalEnv.gitHash})`}
-                        </span>
+                        <span className="ml-3 text-xs text-black mono">{meta.version}</span>
                     </div>
 
                     <div className="pt-8 pb-8 border-b border-b-grayscale-700 mx-4">
