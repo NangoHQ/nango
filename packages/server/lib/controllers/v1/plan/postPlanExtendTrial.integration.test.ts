@@ -52,22 +52,6 @@ describe(`POST ${route}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    // it('should not extend trial because feature is disabled', async () => {
-    //     const { env } = await seeders.seedAccountEnvAndUser();
-
-    //     const res = await api.fetch(route, {
-    //         method: 'POST',
-    //         query: { env: 'dev' },
-    //         token: env.secret_key
-    //     });
-
-    //     isError(res.json);
-    //     expect(res.res.status).toBe(400);
-    //     expect(res.json).toStrictEqual<typeof res.json>({
-    //         error: { code: 'feature_disabled' }
-    //     });
-    // });
-
     it('should extend trial', async () => {
         const { env, plan } = await seeders.seedAccountEnvAndUser();
 
