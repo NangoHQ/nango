@@ -146,11 +146,11 @@ export const ShowIntegration: React.FC = () => {
             </nav>
             {isTrial && (
                 <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
-                    <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 items-center">
                         <div className="flex gap-3 items-center">
                             <ErrorCircle icon="clock" variant="warning" />
-                            <Tag variant={'warning'}>Trial Plan</Tag>
-                            <span className="text-white font-semibold">{isTrialOver ? 'Trial is over' : `${daysRemaining} days left`}</span>
+                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial Plan'}</Tag>
+                            {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left!</span>}
                         </div>
                         <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
                     </div>
