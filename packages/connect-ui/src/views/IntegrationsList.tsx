@@ -58,6 +58,20 @@ const Integrations: React.FC = () => {
         telemetry('view:list');
     });
 
+    const integrationCounts = data.data.reduce<Record<string, number>>((acc, { display_name }) => {
+        acc[display_name] = (acc[display_name] || 0) + 1;
+        return acc;
+    }, {});
+
+    const visibleIntegrations = data.data.map((integration) => {
+        const isDuplicate = integrationCounts[integration.display_name] > 1;
+        const displayName = isDuplicate ? `${integration.display_name} - (${integration.unique_key})` : integration.display_name;
+        return {
+            ...integration,
+            display_name: displayName
+        };
+    });
+
     if (data.data.length <= 0) {
         return (
             <main className="h-full overflow-auto m-9 p-1">
@@ -95,7 +109,7 @@ const Integrations: React.FC = () => {
             </header>
             <main className="h-full overflow-auto m-9 mt-1 p-1 ">
                 <div className="flex flex-col">
-                    {data.data.map((integration) => {
+                    {visibleIntegrations.map((integration) => {
                         return <Integration key={integration.unique_key} integration={integration} />;
                     })}
                 </div>
