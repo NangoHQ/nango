@@ -27,7 +27,7 @@
         "@nangohq/utils": "file:../utils",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
-        "archiver": "^6.0.1",
+        "archiver": "^7.0.1",
         "axios": "^1.8.2",
         "braintree": "^3.15.0",
         "dd-trace": "5.21.0",
@@ -51,6 +51,7 @@
         "npm": ">=6.14.11"
     },
     "devDependencies": {
+        "@types/archiver": "6.0.3",
         "@nangohq/logs": "file:../logs",
         "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/types": "file:../types",
