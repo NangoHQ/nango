@@ -48,10 +48,4 @@ jobs:
             - name: (self-hosted) Build and push
               # if: github.ref == 'refs/heads/master'
               run: |
-                  ./scripts/build_docker_self_hosted.sh build ${{ env.SHA }}
-
-                  if [ "$CAN_PUSH" == "true" ]; then
-                    docker push nangohq/nango-server:hosted
-                    docker push nangohq/nango-server:hosted-${{ env.SHA }}
-                    docker push nangohq/nango-server:hosted-${VERSION}
-                  fi
+                  ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}
