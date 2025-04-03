@@ -1,18 +1,20 @@
-import db, { schema, dbNamespace } from '@nangohq/database';
-import type { ServiceResponse } from '../../models/Generic.js';
-import environmentService from '../environment.service.js';
-import type { Result } from '@nangohq/utils';
-import { basePublicUrl, Err, getLogger, Ok, stringToHash, truncateJson } from '@nangohq/utils';
-import connectionService from '../connection.service.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
-import type { NangoError } from '../../utils/error.js';
-import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
+import db, { dbNamespace, schema } from '@nangohq/database';
+import { Err, Ok, basePublicUrl, getLogger, stringToHash, truncateJson } from '@nangohq/utils';
+
 import configService from '../config.service.js';
+import connectionService from '../connection.service.js';
+import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
+import environmentService from '../environment.service.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
+
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { Config } from '../../models/Provider.js';
+import type { NangoError } from '../../utils/error.js';
 import type { FeatureFlags } from '@nangohq/kvstore';
+import type { LogContextGetter } from '@nangohq/logs';
+import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('SlackService');
 const TABLE = dbNamespace + 'slack_notifications';
@@ -85,7 +87,7 @@ export class SlackService {
 
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
-    private env = 'prod';
+    private env = process.env['NANGO_ADMIN_PROD_ENV'] || 'prod';
 
     constructor({ logContextGetter, featureFlags }: { logContextGetter: LogContextGetter; featureFlags: FeatureFlags }) {
         this.logContextGetter = logContextGetter;

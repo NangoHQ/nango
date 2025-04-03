@@ -47,7 +47,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
         const connectionId = generateSlackConnectionId(account.uuid, environment.name);
         const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
         const nangoAdminUUID = NANGO_ADMIN_UUID;
-        const env = 'prod';
+        const env = process.env['NANGO_ADMIN_PROD_ENV'] || 'prod';
         const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
         if (info) {
             const connectionConfig = await connectionService.getConnectionConfig({
