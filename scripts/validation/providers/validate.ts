@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import jsYaml from 'js-yaml';
+
 import Ajv from 'ajv';
 import chalk from 'chalk';
+import jsYaml from 'js-yaml';
+
 import type { Provider } from '@nangohq/types';
 
 // Function to recursively search for connectionConfig in the provider value
@@ -86,12 +88,22 @@ console.log('✅ All providers are valid');
  * Validate one provider
  */
 function validateProvider(providerKey: string, provider: Provider) {
-    const filename = provider.docs.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
+    const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
     const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
     let hasValidConnect = false;
     const headers = new Set<string>();
+
+    // Check for missing docs_connect and docs properties
+    if (!provider.docs_connect) {
+        console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
+        error = true;
+    }
+    if (!provider.docs) {
+        console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs" property defined`);
+        error = true;
+    }
 
     if (!fs.existsSync(mdx)) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `Documentation file not found`);

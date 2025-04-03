@@ -51,8 +51,7 @@
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
         "changelog:providers": "tsx scripts/provider-changelog.ts",
-        "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts",
-        "providers:generate": "tsx scripts/validation/providers/generate-providers.ts"
+        "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
     },
     "devDependencies": {
         "@eslint/js": "9.17.0",
