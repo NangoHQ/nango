@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import type { GetIntegration } from '@nangohq/types';
-import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
-import { Button } from '../../../components/ui/button/Button';
-import { useStore } from '../../../store';
-import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
-import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
+
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import Spinner from '../../../components/ui/Spinner';
 import { Switch } from '../../../components/ui/Switch';
+import { Button } from '../../../components/ui/button/Button';
+import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+
+import type { NangoSyncConfigWithEndpoint } from '../providerConfigKey/Endpoints/components/List';
+import type { GetIntegration } from '@nangohq/types';
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
@@ -58,11 +60,8 @@ export const ScriptToggle: React.FC<{
             });
         }
         if ('error' in res.json) {
-            if (res.json.error.code === 'resource_capped') {
-                toast({
-                    title: 'Free accounts can only enable endpoints for integrations with 3 connections or less',
-                    variant: 'error'
-                });
+            if (res.json.error.code === 'resource_capped' || res.json.error.code === 'plan_limit') {
+                toast({ title: res.json.error.message, variant: 'error' });
             } else {
                 toast({ title: 'An unexpected error occurred', variant: 'error' });
             }

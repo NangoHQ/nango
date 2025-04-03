@@ -48,17 +48,17 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         return;
     }
 
-    if (plan && plan.connection_with_scripts_max) {
-        const isCapped = await connectionService.shouldCapUsage({
-            providerConfigKey: body.providerConfigKey,
-            environmentId,
-            type: 'deploy',
-            limit: plan.connection_with_scripts_max
+    const isCapped = await connectionService.shouldCapUsage({
+        providerConfigKey: body.providerConfigKey,
+        environmentId,
+        type: 'deploy',
+        plan
+    });
+    if (isCapped) {
+        res.status(400).send({
+            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
         });
-        if (isCapped) {
-            res.status(400).send({ error: { code: 'resource_capped' } });
-            return;
-        }
+        return;
     }
 
     const flow = flowService.getFlowByIntegrationAndName({ provider: body.provider, type: body.type, scriptName: body.scriptName });

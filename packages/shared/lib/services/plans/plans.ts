@@ -27,6 +27,7 @@ export async function createPlan(
             .insert({
                 trial_start_at: new Date(),
                 trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+                connection_with_scripts_max: 50,
                 ...rest,
                 created_at: new Date(),
                 updated_at: new Date(),

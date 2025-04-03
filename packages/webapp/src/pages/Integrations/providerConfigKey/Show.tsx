@@ -51,7 +51,7 @@ export const ShowIntegration: React.FC = () => {
         }
     }, [location]);
 
-    const [isTrial, daysRemaining] = useTrial(plan);
+    const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
     const onClickTrialExtend = async () => {
         setTrialLoading(true);
@@ -150,14 +150,14 @@ export const ShowIntegration: React.FC = () => {
                         <div className="flex gap-3 items-center">
                             <ErrorCircle icon="clock" variant="warning" />
                             <Tag variant={'warning'}>Trial Plan</Tag>
-                            <span className="text-white font-semibold">{daysRemaining} days left</span>
+                            <span className="text-white font-semibold">{isTrialOver ? 'Trial is over' : `${daysRemaining} days left`}</span>
                         </div>
                         <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
                     </div>
                     <div className="flex gap-2">
                         <Button size={'sm'} variant={'tertiary'} onClick={onClickTrialExtend} isLoading={trialLoading}>
                             <IconRefresh stroke={1} size={18} />
-                            Extend trial
+                            {isTrialOver ? 'Restart trial' : 'Extend trial'}
                         </Button>
                         <Link to={`mailto:support@nango.dev?subject=Upgrade%20my%20plan%20`}>
                             <Button size={'sm'} variant={'secondary'}>

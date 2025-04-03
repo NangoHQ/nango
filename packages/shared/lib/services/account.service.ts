@@ -69,10 +69,16 @@ class AccountService {
         const account: DBTeam[] = await db.knex.select('id').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            const newAccount: DBTeam[] = await db.knex.insert({ name, created_at: new Date() }).into<DBTeam>(`_nango_accounts`).returning('*');
+            const newAccount = await db.knex.insert({ name, created_at: new Date() }).into<DBTeam>(`_nango_accounts`).returning('*');
 
             if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
                 throw new Error('Failed to create account');
+            }
+            if (flagHasPlan) {
+                const res = await createPlan(db.knex, { account_id: newAccount[0].id, name: 'free' });
+                if (res.isErr()) {
+                    report(res.error);
+                }
             }
 
             await environmentService.createDefaultEnvironments(newAccount[0]['id']);

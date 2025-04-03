@@ -20,7 +20,7 @@ export default function IntegrationList() {
     const env = useStore((state) => state.env);
 
     const { plan } = useEnvironment(env);
-    const [isTrial] = useTrial(plan);
+    const { isTrial } = useTrial(plan);
     const { list, error } = useListIntegration(env);
 
     if (error) {

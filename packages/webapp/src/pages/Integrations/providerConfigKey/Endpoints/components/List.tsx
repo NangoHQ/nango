@@ -31,7 +31,7 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
     const env = useStore((state) => state.env);
 
     const { plan } = useEnvironment(env);
-    const [isTrial] = useTrial(plan);
+    const { isTrial } = useTrial(plan);
 
     if (byGroup.length <= 0 && v1Flow.length <= 0) {
         return (
