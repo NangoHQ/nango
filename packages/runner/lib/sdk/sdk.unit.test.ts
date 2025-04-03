@@ -390,7 +390,34 @@ describe('batchSave', () => {
             } as any
         });
 
-        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(new InvalidRecordSDKError());
+        await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
+            new InvalidRecordSDKError({
+                data: {
+                    foo: 'bar'
+                },
+                model: 'Test',
+                validation: [
+                    {
+                        instancePath: '',
+                        keyword: 'required',
+                        message: "must have required property 'id'",
+                        params: {
+                            missingProperty: 'id'
+                        },
+                        schemaPath: '#/required'
+                    },
+                    {
+                        instancePath: '',
+                        keyword: 'additionalProperties',
+                        message: 'must NOT have additional properties',
+                        params: {
+                            additionalProperty: 'foo'
+                        },
+                        schemaPath: '#/additionalProperties'
+                    }
+                ]
+            })
+        );
     });
 });
 

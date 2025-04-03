@@ -2,7 +2,6 @@ import tracer from 'dd-trace';
 
 import {
     AnalyticsTypes,
-    CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
     NangoError,
     ProxyRequest,
     analytics,
@@ -28,6 +27,7 @@ import type {
     ConnectionConfig,
     DBConnectionDecrypted,
     DBEnvironment,
+    DBPlan,
     DBTeam,
     IntegrationConfig,
     InternalProxyConfiguration,
@@ -47,13 +47,18 @@ const orchestrator = getOrchestrator();
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
-    creationType
+    creationType,
+    plan
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
     creationType: 'create' | 'import';
+    plan: DBPlan;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
+        return false;
+    }
+    if (!plan.connection_with_scripts_max) {
         return false;
     }
 
@@ -62,7 +67,7 @@ export const connectionCreationStartCapCheck = async ({
     for (const script of scriptConfigs) {
         const { connections } = script;
 
-        if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             const analyticsType =
                 creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;

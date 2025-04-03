@@ -1793,6 +1793,17 @@ integrations:
                     method: GET
                     path: /employees
                     group: Employees
+            unified-employees:
+                runs: every 6 hours
+                description: >
+                    Fetches a list of current employees from bamboohr and maps them to the
+                    standard HRIS model
+                output: StandardEmployee
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         actions:
             create-employee:
                 description: |
@@ -1924,6 +1935,89 @@ integrations:
                 id: string
             BamboohrResponseStatus:
                 status: string
+            StandardEmployeeEmail:
+                email: string
+                type: string
+            StandardEmployeeWorkingHours:
+                days: string[]
+                hours: string[]
+                time_zone: string
+            StandardEmployeeLocation:
+                name?: string
+                type: string
+                address?: StandardEmployeeAddress
+            StandardEmployeeAddress:
+                line1?: string
+                line2?: string
+                city?: string
+                state?: string
+                postal_code?: string
+                country?: string
+                type: string
+            StandardEmployeePhone:
+                type: WORK | HOME | MOBILE
+                number: string
+            StandardEmployeeBankAccount:
+                bank_name?: string
+                account_number?: string
+                routing_number?: string
+                type?: string
+                currency?: string
+            StandardEmployeeManager:
+                id: string
+                first_name: string
+                last_name: string
+                email?: string
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string | undefined
+                manager?:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?:
+                        street?: string
+                        city?: string
+                        state?: string
+                        country?: string
+                        postalCode?: string
+                        type: WORK | HOME
+                addresses?: Address[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Address:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     basecamp:
         actions:
             fetch-accounts:
@@ -6279,6 +6373,28 @@ integrations:
                     group: Users
                 scopes:
                     - employees:read
+            employees:
+                runs: every 5m
+                description: Fetches all employees from Gusto
+                output: GustoEmployee
+                sync_type: incremental
+                auto_start: false
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Employees
+            unified-employees:
+                runs: every 5m
+                description: >-
+                    Fetches all employees from Gusto and maps them to the standard HRIS
+                    model
+                output: StandardEmployee
+                sync_type: incremental
+                auto_start: false
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         models:
             SuccessResponse:
                 success: boolean
@@ -6306,6 +6422,80 @@ integrations:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
+            GustoEmployee:
+                id: string
+                uuid: string
+                first_name: string
+                last_name: string
+                email: string
+                work_email: string
+                phone: string
+                department: string
+                department_uuid: string
+                manager_uuid: string
+                version: string
+                terminated: boolean
+                onboarded: boolean
+                onboarding_status: string
+                date_of_birth: string
+                has_ssn: boolean
+                custom_fields: string
+                jobs:
+                    - id: string
+                      title: string
+                      hire_date: string
+                      payment_unit: string
+                      primary: boolean
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?:
+                        street?: string
+                        city?: string
+                        state?: string
+                        country?: string
+                        postalCode?: string
+                        type: WORK | HOME
+                addresses?: Address[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Address:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     gusto-demo:
         actions:
             create-user:
@@ -6342,6 +6532,28 @@ integrations:
                     group: Users
                 scopes:
                     - employees:read
+            employees:
+                runs: every 5m
+                description: Fetches all employees from Gusto
+                output: GustoEmployee
+                sync_type: incremental
+                auto_start: false
+                endpoint:
+                    method: GET
+                    path: /employees
+                    group: Employees
+            unified-employees:
+                runs: every 5m
+                description: >-
+                    Fetches all employees from Gusto and maps them to the standard HRIS
+                    model
+                output: StandardEmployee
+                sync_type: incremental
+                auto_start: false
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         models:
             SuccessResponse:
                 success: boolean
@@ -6369,6 +6581,80 @@ integrations:
                 id: string
                 effectiveDate?: string
                 runTerminationPayroll?: boolean
+            GustoEmployee:
+                id: string
+                uuid: string
+                first_name: string
+                last_name: string
+                email: string
+                work_email: string
+                phone: string
+                department: string
+                department_uuid: string
+                manager_uuid: string
+                version: string
+                terminated: boolean
+                onboarded: boolean
+                onboarding_status: string
+                date_of_birth: string
+                has_ssn: boolean
+                custom_fields: string
+                jobs:
+                    - id: string
+                      title: string
+                      hire_date: string
+                      payment_unit: string
+                      primary: boolean
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id?: string
+                    firstName?: string
+                    lastName?: string
+                    email?: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?:
+                        street?: string
+                        city?: string
+                        state?: string
+                        country?: string
+                        postalCode?: string
+                        type: WORK | HOME
+                addresses?: Address[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Address:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
     hackerrank-work:
         syncs:
             interviews:
@@ -6656,7 +6942,18 @@ integrations:
                     method: GET
                     path: /employees
                     group: Employees
-                version: 1.0.0
+            unified-employees:
+                runs: every hour
+                description: >
+                    Fetches a list of all employees and maps them to the standardized HRIS
+                    model
+                output: StandardEmployee
+                sync_type: full
+                track_deletes: true
+                endpoint:
+                    method: GET
+                    path: /employees/unified
+                    group: Unified HRIS API
         models:
             HibobEmployee:
                 id: string
@@ -6664,23 +6961,100 @@ integrations:
                 surname: string
                 email: string
                 displayName: string
-                personal:
-                    honorific: string
-                    shortBirthDate: string
-                    gender: string
-                about:
-                    avatar: string
-                    hobbies: string[]
-                work:
-                    reportsTo:
-                        id: string
-                        firstName: string
-                        surname: string
-                        email: string
-                    title: string
-                    department: string
-                    site: string
-                    startDate: date
+                work?: HibobWork | undefined
+                personal?: HibobPersonal | undefined
+                about?: HibobAbout | undefined
+            HibobAbout:
+                createdAt?: string
+                updatedAt?: string
+                __string: any
+            HibobPersonal:
+                addresses?: HibobAddress[]
+                workPhone?: string
+                homePhone?: string
+                mobilePhone?: string
+                email?: string
+            HibobWork:
+                title?: string
+                department?:
+                    id: string
+                    name: string
+                employmentType?: string
+                status?: string
+                startDate?: string
+                terminationDate?: string
+                reportsTo?:
+                    id: string
+                    firstName: string
+                    surname: string
+                    email: string
+                site?: string
+                siteType?: string
+                address?:
+                    street: string
+                    city: string
+                    state: string
+                    country: string
+                    postalCode: string
+                customFields?:
+                    __string: any
+            StandardEmployee:
+                id: string
+                firstName: string
+                lastName: string
+                email: string
+                displayName: string
+                employeeNumber?: string
+                title?: string
+                department:
+                    id: string
+                    name: string
+                employmentType: FULL_TIME | PART_TIME | CONTRACTOR | INTERN | TEMPORARY | OTHER
+                employmentStatus: ACTIVE | TERMINATED | ON_LEAVE | SUSPENDED | PENDING
+                startDate: string
+                terminationDate?: string
+                manager?:
+                    id: string
+                    firstName: string
+                    lastName: string
+                    email: string
+                workLocation:
+                    name: string
+                    type: OFFICE | REMOTE | HYBRID
+                    primaryAddress?:
+                        street?: string
+                        city?: string
+                        state?: string
+                        country?: string
+                        postalCode?: string
+                        type: WORK | HOME
+                addresses?: Address[]
+                phones?: Phone[]
+                emails?: Email[]
+                providerSpecific:
+                    __string: any
+                createdAt: string
+                updatedAt: string
+            Address:
+                street?: string
+                city?: string
+                state?: string
+                country?: string
+                postalCode?: string
+                type: WORK | HOME
+            Phone:
+                type: WORK | HOME | MOBILE
+                number: string
+            Email:
+                type: WORK | PERSONAL
+                address: string
+            HibobAddress:
+                street: string
+                city: string
+                state: string
+                country: string
+                postalCode: string
+                type: string
     hubspot:
         syncs:
             service-tickets:
