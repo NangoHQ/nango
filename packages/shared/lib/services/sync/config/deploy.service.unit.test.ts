@@ -48,6 +48,7 @@ describe('Sync config create', () => {
         const emptyConfig = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -88,6 +89,7 @@ describe('Sync config create', () => {
         const { error } = await DeployConfigService.deploy({
             account,
             environment,
+            plan: null,
             flows: syncs,
             nangoYamlBody: '',
             logContextGetter,
@@ -242,6 +244,7 @@ describe('Sync config create', () => {
             DeployConfigService.deploy({
                 environment,
                 account,
+                plan: null,
                 flows: syncs,
                 nangoYamlBody: '',
                 logContextGetter,
