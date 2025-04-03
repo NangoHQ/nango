@@ -43,6 +43,12 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
 
     const data: Partial<DBEnvironment> = {};
     if (typeof body.name !== 'undefined') {
+        const existingEnvironment = await environmentService.getByEnvironmentName(account.id, body.name);
+        if (existingEnvironment && existingEnvironment.id !== environment.id) {
+            res.status(400).send({ error: { code: 'environment_already_exists', message: 'An environment with this name already exists' } });
+            return;
+        }
+
         data.name = body.name;
     }
     if (typeof body.callback_url !== 'undefined') {

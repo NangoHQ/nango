@@ -1,4 +1,4 @@
-import type { ApiTimestamps, Endpoint } from '../../api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../../api';
 import type { DBEnvironment, DBExternalWebhook } from '../db';
 import type { ApiEnvironmentVariable } from '../variable/api';
 import type { Merge } from 'type-fest';
@@ -49,4 +49,12 @@ export type PatchEnvironment = Endpoint<{
     Success: {
         data: ApiEnvironment;
     };
+    Error: ApiError<'environment_already_exists'>;
+}>;
+
+export type DeleteEnvironment = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/environments';
+    Success: never;
+    Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
