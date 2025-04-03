@@ -470,6 +470,8 @@ describe('generate function tests', () => {
 
         const outputPath = join(dir, 'dist/issues-github.js');
 
+        await fs.promises.stat(outputPath);
+
         const modulePath = path.normalize(outputPath).replace(/\\/g, '/');
         const module = await import(modulePath);
 
