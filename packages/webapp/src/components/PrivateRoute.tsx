@@ -20,7 +20,7 @@ export const PrivateRoute: React.FC = () => {
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
-    const { environmentAndAccount } = useEnvironment(env, ready);
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
         if (!meta || error) {

@@ -54,7 +54,11 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         setLoading(false);
 
         if ('error' in res.json) {
-            toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            if (res.json.error.code === 'forbidden') {
+                toast({ title: res.json.error.message, variant: 'error' });
+            } else {
+                toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            }
             if (res.json.error.code === 'invalid_body' && res.json.error.errors && res.json.error.errors[0]) {
                 setError(res.json.error.errors[0].message);
             }

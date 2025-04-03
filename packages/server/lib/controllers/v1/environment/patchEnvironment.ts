@@ -38,7 +38,7 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
     }
 
     const body: PatchEnvironment['Body'] = valBody.data;
-    const { environment, plan } = res.locals;
+    const { account, environment, plan } = res.locals;
 
     const data: Partial<DBEnvironment> = {};
     if (typeof body.name !== 'undefined') {
