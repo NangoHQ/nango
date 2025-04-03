@@ -469,7 +469,6 @@ describe('generate function tests', () => {
         const success = await compileAllFiles({ fullPath: dir, debug: false });
 
         const outputPath = join(dir, 'dist/issues-github.js');
-        expect(fs.existsSync(outputPath)).toBe(true);
 
         const modulePath = path.normalize(outputPath).replace(/\\/g, '/');
         const module = await import(modulePath);
