@@ -14,30 +14,128 @@ import PreBuiltUseCases from "/snippets/generated/freshbooks/PreBuiltUseCases.md
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free FreshBooks account is sufficient for development. |
+| Paid test account | ✅ Not required | Free FreshBooks account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a FreshBooks account">
+    1. If you don't already have a FreshBooks account, go to [FreshBooks' signup page](https://www.freshbooks.com/signup) and create one.
+    2. Sign in to your FreshBooks account.
+  </Step>
+  
+  <Step title="Access the developer portal">
+    1. Go to the [FreshBooks developer page](https://www.freshbooks.com/api/start).
+    2. Click on the "sign up" link to access your FreshBooks account.
+    3. Navigate to the developer portal by clicking on "the developer page" link.
+  </Step>
+  
+  <Step title="Create a new OAuth application">
+    1. In the developer portal, click on **Create Application**.
+    2. Fill in the required information for your application:
+       - **Application Name**: Enter a name for your application.
+       - **Application Description**: Provide a brief description of what your application does.
+       - **Company Name**: Enter your company name.
+       - **Application Website**: Enter the URL of your application's website.
+  </Step>
+  
+  <Step title="Configure OAuth settings">
+    1. In the OAuth settings section, add the following redirect URI:
+       - `https://api.nango.dev/oauth/callback`
+    
+    2. Select the appropriate scopes for your application based on your needs. Common scopes include:
+       - `user:profile:read` - Read user profile information
+       - `user:clients:read` - Read client information
+       - `user:invoices:read` - Read invoice information
+       - `user:invoices:write` - Create and update invoices
+       - `user:estimates:read` - Read estimate information
+       - `user:estimates:write` - Create and update estimates
+       - `user:expenses:read` - Read expense information
+       - `user:expenses:write` - Create and update expenses
+    
+    3. Save your application settings.
+  </Step>
+  
+  <Step title="Obtain your OAuth credentials">
+    After creating your application, you'll receive:
+    
+    - **Client ID**: A unique identifier for your application
+    - **Client Secret**: A secret key for your application
+    
+    Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango.
+  </Step>
+  
+  <Step title="Configure your integration in Nango">
+    When setting up your FreshBooks integration in Nango:
+    
+    - Use your **Client ID** and **Client Secret** from the previous step
+    - For the authorization URL, use: `https://auth.freshbooks.com/oauth/authorize`
+    - For the token URL, use: `https://api.freshbooks.com/auth/oauth/token`
+  </Step>
+  
+  <Step title="Understand the OAuth flow">
+    The FreshBooks OAuth flow follows these steps:
+    
+    1. Users are redirected to FreshBooks' authorization page
+    2. Users log in to FreshBooks and approve access for your application
+    3. After authorization, users are redirected back to your redirect URL with an authorization code
+    4. Your application exchanges this code for an access token using the token endpoint
+    5. The access token is used in the `Authorization: Bearer {access_token}` header for all API requests
+    6. FreshBooks also provides a refresh token that can be used to obtain a new access token when the current one expires
+  </Step>
+  
+  <Step title="Test the OAuth flow">
+    1. After configuring your integration in Nango, test the OAuth flow to ensure it works correctly.
+    2. The authorization flow will redirect users to FreshBooks where they can approve access to their account.
+    3. After approval, users will be redirected back to your application with an authorization code.
+    4. This code will be exchanged for an access token that can be used to make API requests.
+  </Step>
+  
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshbooks.mdx)</Note>
 
 
 ## Useful links
 
--   [How to register an Application](https://cdn.cdata.com/help/DFF/xls/pg_oauthcustomappcreate.htm#register-your-application)
--   [OAuth-related docs](https://cdn.cdata.com/help/DFF/xls/pg_oauthcustomappcreate.htm#using-oauth-to-connect-to-freshbooks)
--   [Web API docs (their REST API)](https://www.freshbooks.com/api/start)
+-   [FreshBooks API Documentation](https://www.freshbooks.com/api/start)
+-   [FreshBooks API Reference](https://www.freshbooks.com/api/start)
+-   [Authentication Documentation](https://www.freshbooks.com/api/authentication)
+-   [OAuth 2.0 Protocol](https://www.freshbooks.com/api/authentication#oauth-2.0-protocol)
+-   [Basic Flow](https://www.freshbooks.com/api/authentication#basic-flow)
+-   [API Endpoints](https://www.freshbooks.com/api/start)
+-   [API Rate Limits](https://www.freshbooks.com/api/start)
 
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshbooks.mdx)</Note>
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| `user:profile:read` | Read user profile information |
+| `user:clients:read` | Read client information |
+| `user:clients:write` | Create and update clients |
+| `user:invoices:read` | Read invoice information |
+| `user:invoices:write` | Create and update invoices |
+| `user:estimates:read` | Read estimate information |
+| `user:estimates:write` | Create and update estimates |
+| `user:expenses:read` | Read expense information |
+| `user:expenses:write` | Create and update expenses |
+| `user:payments:read` | Read payment information |
+| `user:payments:write` | Create and update payments |
+| `user:projects:read` | Read project information |
+| `user:projects:write` | Create and update projects |
+| `user:time_entries:read` | Read time entry information |
+| `user:time_entries:write` | Create and update time entries |
 
 ## API gotchas
+
+- FreshBooks API endpoints are account-specific. The account ID is required for most API calls and is included in the URL path.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshbooks.mdx)</Note>
