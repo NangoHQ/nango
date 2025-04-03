@@ -45,4 +45,5 @@ docker buildx build \
   -t "nangohq/nango-server:hosted-$GIT_HASH" \
   -t "nangohq/nango-server:hosted-$VERSION" \
   --file ../Dockerfile.self_hosted \
+  $tags \
   ../
