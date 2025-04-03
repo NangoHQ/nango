@@ -1,4 +1,5 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api';
+import type { ApiPlan } from '../../plans/http.api';
 import type { DBEnvironment, DBExternalWebhook } from '../db';
 import type { ApiEnvironmentVariable } from '../variable/api';
 import type { Merge } from 'type-fest';
@@ -22,6 +23,7 @@ export type GetEnvironment = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/environments/current';
     Success: {
+        plan: ApiPlan | null;
         environmentAndAccount: {
             environment: ApiEnvironment;
             env_variables: ApiEnvironmentVariable[];

@@ -231,7 +231,11 @@ const config: ProxyConfiguration = {
         offset_name_in_request: 'startAt',
         response_path: 'values',
         limit_name_in_request: 'maxResults',
-        limit: 50
+        limit: 50,
+        on_page: async ({ nextPageParam, response }) => {
+            await nango.log(`Next offset value = ${nextPageParam}`);
+            await nango.log(`Fetched ${response.data.total} records`);
+        },
     },
     headers: {
         'X-Atlassian-Token': 'no-check'
@@ -316,6 +320,11 @@ The pagination helper supports 3 types of pagination: `cursor`, `link` or `offse
                         _For offset pagination only (optional)._
 
                         The offset calculation method. `by-response-size` (default) means the offset is incremented by the number of results. `per-page` means the offset is incremented by one for each page.
+                    </ResponseField>
+                    <ResponseField name="on_page" type="(paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>">
+                        _For all pagination types (optional)._
+
+                        A callback function that is called after each page is fetched. Useful for logging or tracking pagination progress. The callback receives the next page parameter and the full Axios response object, which includes the response data, status, headers, and request configuration.
                     </ResponseField>
                 </Expandable>
             </ResponseField>
