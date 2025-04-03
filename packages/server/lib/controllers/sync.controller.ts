@@ -24,7 +24,7 @@ import {
     getSyncConfigRaw,
     getSyncsByConnectionId
 } from '@nangohq/shared';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContextOrigin } from '@nangohq/logs';
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import type { Result } from '@nangohq/utils';
 import { getHeaders, isHosted, truncateJson, Ok, Err, redactHeaders } from '@nangohq/utils';
@@ -101,55 +101,6 @@ class SyncController {
         }
     }
 
-    public async trigger(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { syncs, full_resync } = req.body;
-
-            const provider_config_key: string | undefined = req.body.provider_config_key || req.get('Provider-Config-Key');
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-
-                return;
-            }
-
-            const connection_id: string | undefined = req.body.connection_id || req.get('Connection-Id');
-
-            const syncIdentifiers = normalizedSyncParams(syncs);
-            if (syncIdentifiers.isErr()) {
-                res.status(400).send({ message: syncIdentifiers.error.message });
-                return;
-            }
-
-            if (full_resync && typeof full_resync !== 'boolean') {
-                res.status(400).send({ message: 'full_resync must be a boolean' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const { success, error } = await syncManager.runSyncCommand({
-                recordsService,
-                orchestrator,
-                environment,
-                providerConfigKey: provider_config_key,
-                syncIdentifiers: syncIdentifiers.value,
-                command: full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN,
-                logContextGetter,
-                connectionId: connection_id!,
-                initiator: 'API call'
-            });
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-                return;
-            }
-
-            res.status(200).send({ success: true });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     public async actionOrModel(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
             const environmentId = res.locals['environment'].id;
@@ -203,7 +154,7 @@ class SyncController {
         const environmentId = environment.id;
         const connectionId = req.get('Connection-Id');
         const providerConfigKey = req.get('Provider-Config-Key');
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
         try {
             if (!action_name || typeof action_name !== 'string') {
                 res.status(400).send({ error: 'Missing action name' });
@@ -265,6 +216,7 @@ class SyncController {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
             const actionResponse = await getOrchestrator().triggerAction({
+                accountId: account.id,
                 connection,
                 actionName: action_name,
                 input,
@@ -473,7 +425,7 @@ class SyncController {
     }
 
     public async syncCommand(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
 
         try {
             const { account, environment } = res.locals;

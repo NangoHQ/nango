@@ -15,7 +15,6 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "8.17.0",
-        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.0",
         "@opentelemetry/core": "1.27.0",
@@ -24,12 +23,12 @@
         "@opentelemetry/sdk-trace-base": "1.27.0",
         "@opentelemetry/sdk-trace-node": "1.27.0",
         "@opentelemetry/semantic-conventions": "1.27.0",
-        "zod": "3.24.1"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "type-fest": "4.32.0",
-        "vitest": "2.1.9"
+        "vitest": "3.1.1"
     },
     "files": [
         "dist/**/*"

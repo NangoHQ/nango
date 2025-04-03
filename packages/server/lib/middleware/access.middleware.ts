@@ -1,15 +1,20 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { Result } from '@nangohq/utils';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok, stringTimingSafeEqual, tagTraceUser } from '@nangohq/utils';
-import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
-import db from '@nangohq/database';
-import * as connectSessionService from '../services/connectSession.service.js';
-import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
+import path from 'node:path';
+
 import tracer from 'dd-trace';
-import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBTeam, EndUser } from '@nangohq/types';
-import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
+
+import db from '@nangohq/database';
+import { ErrorSourceEnum, LogActionEnum, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
+
+import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
 import { envs } from '../env.js';
+import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import * as connectSessionService from '../services/connectSession.service.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, EndUser } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
 
@@ -21,6 +26,7 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            plan: DBPlan | null;
         }>
     > {
         if (!keyRegex.test(secret)) {
@@ -30,7 +36,17 @@ export class AccessMiddleware {
         if (!result) {
             return Err('unknown_user_account');
         }
-        return Ok(result);
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
+        return Ok({ ...result, plan });
     }
 
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -54,6 +70,7 @@ export class AccessMiddleware {
                 errorManager.errRes(res, 'malformed_auth_header');
                 return;
             }
+
             const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
@@ -63,6 +80,7 @@ export class AccessMiddleware {
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
+            res.locals['plan'] = result.value.plan;
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -92,16 +110,28 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            plan: DBPlan | null;
         }>
     > {
         if (!keyRegex.test(publicKey)) {
             return Err('invalid_secret_key_format');
         }
+
         const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
         if (!result) {
             return Err('unknown_user_account');
         }
-        return Ok(result);
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
+        return Ok({ ...result, plan });
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -171,6 +201,7 @@ export class AccessMiddleware {
             environment: DBEnvironment;
             connectSession: ConnectSession;
             endUser: EndUser;
+            plan: DBPlan | null;
         }>
     > {
         const parsedToken = connectSessionTokenSchema.safeParse(token);
@@ -190,11 +221,21 @@ export class AccessMiddleware {
             return Err('unknown_account');
         }
 
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
         return Ok({
             account: result.account,
             environment: result.environment,
             connectSession: getConnectSession.value.connectSession,
-            endUser: getConnectSession.value.endUser
+            endUser: getConnectSession.value.endUser,
+            plan
         });
     }
 
@@ -229,6 +270,7 @@ export class AccessMiddleware {
             res.locals['environment'] = result.value.environment;
             res.locals['connectSession'] = result.value.connectSession;
             res.locals['endUser'] = result.value.endUser;
+            res.locals['plan'] = result.value.plan;
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -270,6 +312,7 @@ export class AccessMiddleware {
             res.locals['environment'] = result.value.environment;
             res.locals['connectSession'] = result.value.connectSession;
             res.locals['endUser'] = result.value.endUser;
+            res.locals['plan'] = result.value.plan;
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -322,6 +365,7 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
+                res.locals['plan'] = secretKeyResult.value.plan;
 
                 tagTraceUser(secretKeyResult.value);
             } else {
@@ -330,6 +374,7 @@ export class AccessMiddleware {
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }
             next();
@@ -358,11 +403,13 @@ export class AccessMiddleware {
                     errorManager.errRes(res, connectSessionResult.error.message);
                     return;
                 }
+
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             } else {
                 const publicKey = req.query['public_key'] as string;
@@ -380,9 +427,11 @@ export class AccessMiddleware {
                     errorManager.errRes(res, result.error.message);
                     return;
                 }
+
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
+                res.locals['plan'] = result.value.plan;
                 tagTraceUser(result.value);
             }
             next();
@@ -456,7 +505,8 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         res.locals['user'] = user;
 
-        if (ignoreEnvPaths.includes(req.route.path)) {
+        const fullPath = path.join(req.baseUrl, req.route.path);
+        if (ignoreEnvPaths.includes(fullPath)) {
             next();
             return;
         }
@@ -473,8 +523,19 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                res.status(401).send({ error: { code: 'plan_not_found' } });
+                return;
+            }
+            plan = planRes.value;
+        }
+
         res.locals['account'] = result.account;
         res.locals['environment'] = result.environment;
+        res.locals['plan'] = plan;
         tagTraceUser(result);
         next();
     } catch (err) {

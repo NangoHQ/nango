@@ -66,19 +66,13 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
 
-            const startTime = Date.now();
-            const responsePayload = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
-            const endTime = Date.now();
-            const totalRunTime = (endTime - startTime) / 1000;
+            const response = await routeWebhook({ environment, account, integration, headers, body: req.body, rawBody: req.rawBody!, logContextGetter });
 
-            metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, totalRunTime);
-
-            if (!responsePayload) {
+            if (!response) {
                 res.status(200).send();
                 return;
             }
-
-            res.status(200).send(responsePayload);
+            res.status(200).send(response);
         } catch (err) {
             span.setTag('nango.error', err);
 

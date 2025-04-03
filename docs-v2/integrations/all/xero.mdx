@@ -14,77 +14,32 @@ import PreBuiltUseCases from "/snippets/generated/xero/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ✅ Not required | Free, self-signup for a [Xero Developer account](https://developer.xero.com/signup). |
-| Paid test account | ✅ Not required | Developer account includes a demo company for testing. |
-| Partnership | ✅ Not required | |
-| App review | ✅ Not required | Only required for apps published to the Xero App Store. |
-| Security audit | ✅ Not required | |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
 
 ## Setup guide
 
-<Steps>
-  <Step title="Create a Xero Developer account">
-    Go to [Xero Developer signup page](https://developer.xero.com/signup) and create a free account.
-  </Step>
-  <Step title="Create a new app">
-    1. Log in to your [Xero Developer Dashboard](https://developer.xero.com/app/manage).
-    2. Click **New app** button.
-    3. Enter a name for your app and click **Create app**.
-  </Step>
-  <Step title="Configure OAuth settings">
-    In the app you just created:
-    1. Under **App settings**, configure the following:
-       - **App Name**: Your app's name
-       - **Company or Trade Name**: Your company name
-       - **Company Website URL**: Your company website
-       - **Privacy Policy URL**: URL to your privacy policy
-       - **Terms and Conditions URL**: URL to your terms and conditions
-    2. Under **OAuth 2.0 redirect URIs**, add the following URL: `https://api.nango.dev/oauth/callback`.
-    3. Under **Select the scopes your app requires**, select the permissions your app needs. At minimum, add:
-       - `offline_access` (to get refresh tokens)
-       - `openid` (required for all Xero apps)
-       - Any additional scopes needed for your specific use case
-    4. Click **Save**.
-  </Step>
-  <Step title="Obtain API credentials">
-    1. After saving, you'll be on your app's details page.
-    2. Copy the **Client ID** and **Client Secret**.
-    3. You will need these credentials when configuring your integration in Nango.
-  </Step>
-  <Step title="Next">
-    Follow the [_Quickstart_](/getting-started/quickstart).
-  </Step>
-</Steps>
+_No setup guide yet._
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
 
 
 ## Useful links
 
-| Topic | Links | 
-| - | - | 
-| General | [Website](https://www.xero.com/) |
-| | [Create a Developer account](https://developer.xero.com/signup) |
-| | [Developer Dashboard](https://developer.xero.com/app/manage) |
-| Developer | [API documentation](https://developer.xero.com/documentation/api/overview) |
-| | [Authentication documentation](https://developer.xero.com/documentation/guides/oauth2/overview) |
-| | [OAuth 2.0 authorization flow](https://developer.xero.com/documentation/guides/oauth2/auth-flow) |
-| | [How to register an application](https://developer.xero.com/documentation/guides/oauth2/pkce-flow#1-create-an-app-in-xero) |
-| | [List of OAuth scopes](https://developer.xero.com/documentation/guides/oauth2/scopes) |
-| | [API rate limits](https://developer.xero.com/documentation/guides/oauth2/limits) |
+-   [Register an Application](https://developer.xero.com/app/manage)
+-   [OAuth-related docs](https://developer.xero.com/documentation/guides/oauth2/auth-flow)
+-   [List of OAuth scopes](https://developer.xero.com/documentation/guides/oauth2/scopes)
+-   [API rate limting](https://developer.xero.com/documentation/best-practices/integration-health/rate-limits/)
+-   [API](https://developer.xero.com/documentation/sdks-and-tools/tools/postman/#steps-to-get-up-and-running)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
 
-
-
 ## API gotchas
-
-- Xero access tokens expire after 30 minutes, but Nango automatically handles token refresh for you.
-- Xero requires the `offline_access` scope to get refresh tokens.
-- Xero requires the `openid` scope for all OAuth 2.0 applications.
-- When a user authorizes your app, they select which Xero organization(s) to connect. Your app can only access data for the selected organization(s).
-- Xero has [rate limits](https://developer.xero.com/documentation/guides/oauth2/limits) that vary by API endpoint and subscription plan.
-- If you need to work with multiple Xero organizations, you'll need to handle the tenant context in your API calls.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>

@@ -1,12 +1,15 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { NangoModel, PostPreBuiltDeploy } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, deployPreBuilt, flowService, syncManager } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
-import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+
+import type { NangoModel, PostPreBuiltDeploy } from '@nangohq/types';
 
 const validation = z
     .object({
@@ -36,7 +39,7 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
 
     const body: PostPreBuiltDeploy['Body'] = val.data;
 
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
     const environmentId = environment.id;
 
     const config = await configService.getIdByProviderConfigKey(environmentId, body.providerConfigKey);
@@ -45,8 +48,13 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
         return;
     }
 
-    if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId, type: 'deploy' });
+    if (plan && plan.connection_with_scripts_max) {
+        const isCapped = await connectionService.shouldCapUsage({
+            providerConfigKey: body.providerConfigKey,
+            environmentId,
+            type: 'deploy',
+            limit: plan.connection_with_scripts_max
+        });
         if (isCapped) {
             res.status(400).send({ error: { code: 'resource_capped' } });
             return;

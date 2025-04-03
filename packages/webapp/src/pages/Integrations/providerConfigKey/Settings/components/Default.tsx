@@ -1,11 +1,9 @@
-import type { GetIntegration } from '@nangohq/types';
-import type { EnvironmentAndAccount } from '@nangohq/server';
 import { DeleteIntegrationButton } from './Delete';
 import { useStore } from '../../../../../store';
 
-export const SettingsDefault: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration }
-}) => {
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
+
+export const SettingsDefault: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data: { integration } }) => {
     const env = useStore((state) => state.env);
 
     return (

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { isCloud } from '@nangohq/utils';
 import { accountService, userService } from '@nangohq/shared';
-import type { LogContext } from '@nangohq/logs';
+import type { LogContextOrigin } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
 import type { RequestLocals } from '../utils/express.js';
 
@@ -49,7 +49,7 @@ class AccountController {
             return;
         }
 
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
         try {
             const { account, environment, user: adminUser } = res.locals;
 
