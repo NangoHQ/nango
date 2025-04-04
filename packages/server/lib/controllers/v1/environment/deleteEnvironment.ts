@@ -25,5 +25,5 @@ export const deleteEnvironment = asyncWrapper<DeleteEnvironment>(async (req, res
         return;
     }
 
-    res.status(200).send();
+    res.status(204).send();
 });

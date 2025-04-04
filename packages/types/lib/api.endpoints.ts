@@ -41,7 +41,7 @@ import type {
 } from './connection/api/get';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api';
-import type { PatchEnvironment, PostEnvironment } from './environment/api';
+import type { DeleteEnvironment, PatchEnvironment, PostEnvironment } from './environment/api';
 import type { PatchWebhook } from './environment/api/webhook';
 import type { PostEnvironmentVariables } from './environment/variable/api';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api';
@@ -145,6 +145,7 @@ export type PrivateApiEndpoints =
     | PostPreBuiltDeploy
     | PostEnvironment
     | PatchEnvironment
+    | DeleteEnvironment
     | PatchWebhook
     | PostEnvironmentVariables;
 

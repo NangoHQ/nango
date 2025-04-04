@@ -51,7 +51,7 @@ export type PatchEnvironment = Endpoint<{
     Success: {
         data: ApiEnvironment;
     };
-    Error: ApiError<'environment_already_exists'>;
+    Error: ApiError<'conflict'>;
 }>;
 
 export type DeleteEnvironment = Endpoint<{
