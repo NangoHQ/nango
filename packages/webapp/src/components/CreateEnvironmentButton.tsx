@@ -52,7 +52,7 @@ export const CreateEnvironmentButton: React.FC = () => {
             <span>
                 Max number of environments reached.{' '}
                 {meta?.plan?.name === 'scale' ? (
-                    <>Contact us to add more</>
+                    <>Contact Nango to add more</>
                 ) : (
                     <>
                         <Link to="https://app.withsurface.com/s/cm1zve3340001l503sm0xtvo1" className="underline">

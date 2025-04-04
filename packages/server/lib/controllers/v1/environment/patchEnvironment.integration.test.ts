@@ -34,7 +34,7 @@ describe(`PATCH ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             // @ts-expect-error query params are required
-            query: { env: 'test' },
+            query: { env: env.name },
             body: { name: newName },
             token: env.secret_key
         });
@@ -56,11 +56,10 @@ describe(`PATCH ${endpoint}`, () => {
         const { env, account } = await seeders.seedAccountEnvAndUser();
         await environmentService.createEnvironment(account.id, 'existing');
 
-        // Try to rename to 'test' which already exists from the seeder
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             // @ts-expect-error query params are required
-            query: { env: 'test' },
+            query: { env: env.name },
             body: { name: 'existing' },
             token: env.secret_key
         });

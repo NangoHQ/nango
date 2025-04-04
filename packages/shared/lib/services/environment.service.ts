@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { isCloud } from '@nangohq/utils';
+import { Err, Ok, isCloud } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -10,12 +10,24 @@ import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const TABLE = '_nango_environments';
 
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 const hashLocalCache = new Map<string, string>();
+
+export type EnvironmentErrorCode = 'deletion_failed';
+export class EnvironmentError extends Error {
+    public code: EnvironmentErrorCode;
+    public payload?: Record<string, unknown>;
+    constructor({ code, message, payload }: { code: EnvironmentErrorCode; message: string; payload?: Record<string, unknown> }) {
+        super(message);
+        this.code = code;
+        this.payload = payload || {};
+    }
+}
 
 class EnvironmentService {
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'name'>[]> {
@@ -484,9 +496,17 @@ class EnvironmentService {
         return globalCallbackUrl;
     }
 
-    async deleteEnvironment(id: number): Promise<boolean> {
-        const result = await db.knex.from<DBEnvironment>(TABLE).where({ id }).del();
-        return result !== 0;
+    async deleteEnvironment(id: number): Promise<Result<void, EnvironmentError>> {
+        try {
+            const result = await db.knex.from<DBEnvironment>(TABLE).where({ id }).del();
+            if (result !== 0) {
+                return Ok(undefined);
+            }
+        } catch {
+            // Empty catch block
+        }
+        // Error if no environment was found OR exception was thrown
+        return Err(new EnvironmentError({ code: 'deletion_failed', message: 'Failed to delete environment' }));
     }
 }
 

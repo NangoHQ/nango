@@ -22,7 +22,7 @@ export const DeleteAlert: React.FC<DeleteAlertProps> = ({ environmentName, onDel
         <DestructiveActionModal
             title="Proceed carefully!"
             description="This action is destructive & irreversible. It will delete all API credentials, connection metadata, synced records & various configurations linked to this environment."
-            inputLabel="To confirm, type your current environment's name below:"
+            inputLabel={`To confirm, type your current environment's (${environmentName}) name below:`}
             confirmationKeyword={environmentName}
             confirmButtonText="Delete Environment"
             trigger={trigger}
