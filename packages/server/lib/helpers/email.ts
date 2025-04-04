@@ -75,11 +75,9 @@ export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DB
         `Your Nango trial ends in ${inDays} days`,
         `<p>Your trial ends in ${inDays} days, ${user.name}</p>
 
-<p>We hope you were able to spend the last two weeks exploring how Nango can help you save time and increase your productivity!</p>
+<p>Your free trial will end in ${inDays} days. When your trial expires, we'll pause your connection with scripts if you have any. Authentication will still work forever.</p>
 
-<p>Your free trial will end in 3 days. When your trial expires, we'll pause your connection with scripts if you have any. Authentication will still work forever.</p>
-
-<p>Still building? Extend your trial by going to and click extend.</p>
+<p>Still building? Extend your trial by going to the Nango's Dashboard > Integrations page and click extend.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 

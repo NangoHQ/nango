@@ -25,7 +25,7 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
         return;
     }
 
-    if (!plan || !plan.trial_start_at || !plan.trial_end_at || (plan.name !== 'free' && plan.name !== 'test')) {
+    if (!plan || !plan.trial_start_at || !plan.trial_end_at || plan.name !== 'free') {
         res.status(400).send({ error: { code: 'conflict', message: 'No active trial' } });
         return;
     }

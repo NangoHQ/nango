@@ -6,7 +6,7 @@ export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
 export type PostPlanExtendTrial = Endpoint<{
     Method: 'POST';
-    Path: '/api/v1/plan/extend_trial';
+    Path: '/api/v1/plan/trial/extension';
     Querystring: { env: string };
     Success: {
         data: { success: boolean };

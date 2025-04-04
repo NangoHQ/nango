@@ -5,7 +5,7 @@ import { getPlan, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
-const route = '/api/v1/plan/extend_trial';
+const route = '/api/v1/plan/trial/extension';
 let api: Awaited<ReturnType<typeof runServer>>;
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
