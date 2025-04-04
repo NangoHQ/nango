@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import storage, { LocalStorageKeys } from './utils/local-storage';
 
 interface Env {
     name: string;
@@ -18,7 +19,7 @@ interface State {
 }
 
 export const useStore = create<State>((set, get) => ({
-    env: 'dev',
+    env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
     envs: [{ name: 'dev' }, { name: 'prod' }],
     baseUrl: 'https://api.nango.dev',
     showGettingStarted: true,

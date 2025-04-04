@@ -21,6 +21,11 @@ export const Root: React.FC = () => {
             return;
         }
 
+        if (location.pathname === '/' && env) {
+            navigate(`/${env}`, { replace: true });
+            return;
+        }
+
         navigate(`/${env}/`);
     }, [meta, location, env, navigate, showGettingStarted]);
 
