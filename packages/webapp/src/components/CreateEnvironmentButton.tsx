@@ -27,11 +27,9 @@ export const CreateEnvironmentButton: React.FC = () => {
         const res = await apiPostEnvironment({ name });
         if ('error' in res.json) {
             const err = res.json.error;
-            if (err.code === 'conflict') {
-                toast({ title: 'Environment name already exists', variant: 'error' });
-            } else if (err.code === 'invalid_body') {
+            if (err.code === 'invalid_body') {
                 setError(true);
-            } else if (err.code === 'feature_disabled' || err.code === 'resource_capped') {
+            } else if (['conflict', 'feature_disabled', 'resource_capped'].includes(err.code)) {
                 toast({ title: err.message, variant: 'error' });
             } else {
                 toast({ title: 'Failed to create environment', variant: 'error' });
@@ -53,14 +51,18 @@ export const CreateEnvironmentButton: React.FC = () => {
         tooltipContent = (
             <span>
                 Max number of environments reached.{' '}
-                <Link to="https://app.withsurface.com/s/cm1zve3340001l503sm0xtvo1" className="underline">
-                    Upgrade
-                </Link>{' '}
-                to add more
+                {meta?.plan?.name === 'scale' ? (
+                    <>Contact us to add more</>
+                ) : (
+                    <>
+                        <Link to="https://app.withsurface.com/s/cm1zve3340001l503sm0xtvo1" className="underline">
+                            Upgrade
+                        </Link>{' '}
+                        to add more
+                    </>
+                )}
             </span>
         );
-    } else if (meta?.plan?.environments_max === undefined) {
-        tooltipContent = <span>Max number of environments reached. Contact us to add more</span>;
     }
 
     return (
