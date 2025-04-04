@@ -44,3 +44,8 @@ jobs:
               if: env.CAN_PUSH == 'true'
               run: |
                   docker push nangohq/nango:${{ env.SHA }}
+
+            - name: (self-hosted) Build and push
+              if: github.ref == 'refs/heads/master'
+              run: |
+                  ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}
