@@ -801,6 +801,306 @@ const scriptsConfig = await nango.getScriptsConfig();
 ```
 </Expandable>
 
+You can also pass in an optional argument with the value of `nango` or `openai`. The default is `nango`
+
+```ts
+const scriptsConfig = await nango.getScriptsConfig('openai');
+```
+<Expandable>
+```json
+{
+  "data": [
+    {
+      "name": "calendars",
+      "description": "Sync the user's calendar list.\nIncludes all calendars the user has access to.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "events",
+      "description": "Sync calendar events from the primary calendar.\nIncludes events from the past month.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "cancel-event",
+      "description": "Cancel/delete an event by searching for it.\n\nInput parameters:\n- title: The title of the event to cancel\n- date: The date of the event in ISO format\n- time: The time of the event in 24-hour format (HH:mm)\n- calendar: Calendar ID where to search for the event\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to cancel"
+          },
+          "date": {
+            "type": "string",
+            "description": "The date of the event in ISO format"
+          },
+          "time": {
+            "type": "string",
+            "description": "The time of the event in 24-hour format (HH:mm)"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID where to search for the event"
+          }
+        },
+        "required": [
+          "id",
+          "summary"
+        ]
+      }
+    },
+    {
+      "name": "create-event",
+      "description": "Create a new calendar event.\n\nInput parameters:\n- summary: The title/summary of the event\n- description: A detailed description of the event\n- location: The location of the event\n- start: The start time of the event in ISO format\n- end: The end time of the event in ISO format\n- attendees: List of email addresses to invite\n- recurrence: List of recurrence rules in RRULE format\n- calendar: Calendar ID to create the event in\n- id: Calendar identifier\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "The title/summary of the event"
+          },
+          "description": {
+            "type": "string",
+            "description": "A detailed description of the event"
+          },
+          "location": {
+            "type": "string",
+            "description": "The location of the event"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "start": {
+            "type": "string",
+            "description": "The start time of the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The end time of the event in ISO format"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of email addresses to invite"
+          },
+          "recurrence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of recurrence rules in RRULE format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to create the event in"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "move-event",
+      "description": "Move an event to a different time or calendar.\n\nInput parameters:\n- eventId: The ID of the event to move\n- title: The title of the event to move\n- sourceStart: The current start time of the event\n- start: The new start time for the event in ISO format\n- end: The new end time for the event in ISO format\n- calendar: Calendar ID to move the event to\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "eventId": {
+            "type": "string",
+            "description": "The ID of the event to move"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to move"
+          },
+          "sourceStart": {
+            "type": "string",
+            "description": "The current start time of the event"
+          },
+          "start": {
+            "type": "string",
+            "description": "The new start time for the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The new end time for the event in ISO format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to move the event to"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "whoami",
+      "description": "Get information about the authenticated user.\n\nNo input parameters.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "invite-user-to-repository",
+      "description": "Invite a user to a GitHub repository.\n\nInput parameters:\n- owner: The owner (user or organization) of the repository\n- repo: The name of the repository to invite the user to\n- username: The GitHub username of the user to invite\n- permission: The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The owner (user or organization) of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository to invite the user to"
+          },
+          "username": {
+            "type": "string",
+            "description": "The GitHub username of the user to invite"
+          },
+          "permission": {
+            "type": "string",
+            "description": "The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "username"
+        ]
+      }
+    }
+  ]
+}
+```
+</Expandable>
+
 # Syncs
 
 ### Get records
