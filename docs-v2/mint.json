@@ -240,7 +240,13 @@
                     "group": "Self-hosting",
                     "pages": [
                         "guides/self-hosting/infrastructure",
-                        "guides/self-hosting/enterprise-self-hosting",
+                        {
+                            "group": "Enterprise self-hosting",
+                            "pages": [
+                                "guides/self-hosting/enterprise-self-hosting/overview",
+                                "guides/self-hosting/enterprise-self-hosting/ecs"
+                            ]
+                        },
                         {
                             "group": "Free self-hosting",
                             "pages": [
