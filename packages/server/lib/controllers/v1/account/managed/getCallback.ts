@@ -1,11 +1,14 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { basePublicUrl, getLogger, isCloud, nanoid } from '@nangohq/utils';
-import type { DBInvitation, GetManagedCallback } from '@nangohq/types';
-import { getWorkOSClient } from '../../../../clients/workos.client.js';
-import { AnalyticsTypes, acceptInvitation, accountService, analytics, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import type { InviteAccountState } from './postSignup.js';
+
 import db from '@nangohq/database';
+import { AnalyticsTypes, acceptInvitation, accountService, analytics, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
+import { basePublicUrl, getLogger, isCloud, nanoid } from '@nangohq/utils';
+
+import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { InviteAccountState } from './postSignup.js';
+import type { DBInvitation, GetManagedCallback } from '@nangohq/types';
 
 const logger = getLogger('Server.AuthManaged');
 
@@ -80,6 +83,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
             }
+
             accountId = account.id;
 
             if (!invitation) {

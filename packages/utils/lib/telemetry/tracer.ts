@@ -1,12 +1,12 @@
 import tracer from 'dd-trace';
 
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
-export function tagTraceUser({ account, environment }: { account: DBTeam; environment: DBEnvironment }) {
+export function tagTraceUser({ account, environment, plan }: { account: DBTeam; environment: DBEnvironment; plan?: DBPlan | null }) {
     tracer.setUser({
         id: String(account.id),
         environmentId: String(environment.id),
-        // TODO: use plan
-        paying: account.is_capped ? 'free' : 'paying'
+        paying: plan?.name !== 'free' ? 'paying' : 'free',
+        plan: plan?.name
     });
 }

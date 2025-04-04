@@ -1,14 +1,17 @@
-import type { Request, Response, NextFunction } from 'express';
-import { environmentService } from '@nangohq/shared';
-import { stringifyError, tagTraceUser } from '@nangohq/utils';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import db from '@nangohq/database';
+import { environmentService, getPlan } from '@nangohq/shared';
+import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
+
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 export interface AuthLocals {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
 }
 
-export const authMiddleware = (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
+export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
     const authorizationHeader = req.get('authorization');
 
     if (!authorizationHeader) {
@@ -28,18 +31,28 @@ export const authMiddleware = (req: Request, res: Response<any, AuthLocals>, nex
         return;
     }
 
-    environmentService
-        .getAccountAndEnvironmentBySecretKey(secret)
-        .then((result) => {
-            if (!result || result.environment.id !== environmentId) {
-                throw new Error('Cannot find matching environment');
+    try {
+        const accountAndEnv = await environmentService.getAccountAndEnvironmentBySecretKey(secret);
+        if (!accountAndEnv || accountAndEnv.environment.id !== environmentId) {
+            throw new Error('Cannot find matching environment');
+        }
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const resPlan = await getPlan(db.knex, { accountId: accountAndEnv.account.id });
+            if (resPlan.isErr()) {
+                res.status(401).json({ error: `Unauthorized: ${stringifyError(resPlan.error)}` });
+                return;
             }
-            res.locals['account'] = result.account;
-            res.locals['environment'] = result.environment;
-            tagTraceUser(result);
-            next();
-        })
-        .catch((err: unknown) => {
-            res.status(401).json({ error: `Unauthorized: ${stringifyError(err)}` });
-        });
+            plan = resPlan.value;
+        }
+
+        res.locals['account'] = accountAndEnv.account;
+        res.locals['environment'] = accountAndEnv.environment;
+        res.locals['plan'] = plan;
+        tagTraceUser({ ...accountAndEnv, plan });
+        next();
+    } catch (err) {
+        res.status(401).json({ error: `Unauthorized: ${stringifyError(err)}` });
+    }
 };
