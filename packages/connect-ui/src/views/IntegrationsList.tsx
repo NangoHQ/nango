@@ -2,7 +2,7 @@
 import { IconArrowRight, IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { QueryErrorResetBoundary, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffectOnce } from 'react-use';
 
@@ -58,19 +58,22 @@ const Integrations: React.FC = () => {
         telemetry('view:list');
     });
 
-    const integrationCounts = data.data.reduce<Record<string, number>>((acc, { display_name }) => {
-        acc[display_name] = (acc[display_name] || 0) + 1;
-        return acc;
-    }, {});
+    const integrations = useMemo<ApiPublicIntegration[]>(() => {
+        const uniquesNames: Record<string, number> = {};
+        for (const integration of data.data) {
+            uniquesNames[integration.display_name] = (uniquesNames[integration.display_name] || 0) + 1;
+        }
 
-    const visibleIntegrations = data.data.map((integration) => {
-        const isDuplicate = integrationCounts[integration.display_name] > 1;
-        const displayName = isDuplicate ? `${integration.display_name} - (${integration.unique_key})` : integration.display_name;
-        return {
-            ...integration,
-            display_name: displayName
-        };
-    });
+        const list: ApiPublicIntegration[] = [];
+        for (const integration of data.data) {
+            list.push({
+                ...integration,
+                display_name:
+                    uniquesNames[integration.display_name] > 1 ? `${integration.display_name} - (${integration.unique_key})` : integration.display_name
+            });
+        }
+        return list;
+    }, [data]);
 
     if (data.data.length <= 0) {
         return (
@@ -109,7 +112,7 @@ const Integrations: React.FC = () => {
             </header>
             <main className="h-full overflow-auto m-9 mt-1 p-1 ">
                 <div className="flex flex-col">
-                    {visibleIntegrations.map((integration) => {
+                    {integrations.map((integration) => {
                         return <Integration key={integration.unique_key} integration={integration} />;
                     })}
                 </div>
