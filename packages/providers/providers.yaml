@@ -869,7 +869,6 @@ avalara:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
@@ -907,7 +906,6 @@ avalara-sandbox:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
