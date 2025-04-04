@@ -989,6 +989,39 @@ aws-iam:
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
 
+azure-devops:
+    display_name: Azure DevOps
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.organizationUrl}
+    docs: https://docs.nango.dev/integrations/all/azure-devops
+    docs_connect: https://docs.nango.dev/integrations/all/azure-devops/connect
+    # Azure DevOps returns a 202 when the credentials are invalid,
+    # so we need to explicitly check for this and return respective error message
+    credentials_verification_script: azureDevopsCredentialsVerification
+    connection_config:
+        organizationUrl:
+            type: string
+            title: Organization URL
+            description: The URL of your Azure DevOps organization
+            example: dev.azure.com/myorg or myorg.visualstudio.com
+            doc_section: '#step-1-finding-your-organization-url'
+            prefix: https://
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token of your Azure DevOps account
+            doc_section: '#step-2-creating-a-personal-access-token'
+
 bamboohr:
     display_name: BambooHR (OAuth)
     categories:
