@@ -12,18 +12,39 @@ import PreBuiltUseCases from "/snippets/generated/xero/PreBuiltUseCases.mdx"
 <PreBuiltUseCases />
 
 ## Access requirements
-| Pre-Requisites | Status | Comment|
+ Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for a [Xero Developer account](https://www.xero.com/signup/developers/). |
+| Paid test account | ✅ Not required | Developer account includes a demo company for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for apps published to the Xero App Store. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create a Xero Developer account">
+    Go to [Xero Developer signup page](https://www.xero.com/signup/developers/) and create a free account.
+  </Step>
+  <Step title="Create a new app">
+    1. Log in to your [Xero My Apps](https://developer.xero.com/app/manage) developer console.
+    2. Click **New app** in the top right corner.
+    3. A new app form will appear. Enter a unique **App name**.
+    4. Select **Mobile or desktop app** as the integration type.
+    5. Fill in the **Company or application URL** and **Redirect URI** fields. For the Redirect URI, use: `https://api.nango.dev/oauth/callback`.
+    6. Check the developer's terms checkbox and click **Create App**.
+    7. Your app will be generated, and you will be redirected to your **App details** page.
+  </Step>
+  <Step title="Obtain API credentials">
+    1. Navigate to the **Configuration** tab to retrieve your **Client ID** and **Client Secret**.
+    2. Click **Generate a Secret** to create a new **Client Secret**.
+    3. You will need these credentials when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -32,14 +53,24 @@ _No setup guide yet._
 
 ## Useful links
 
--   [Register an Application](https://developer.xero.com/app/manage)
--   [OAuth-related docs](https://developer.xero.com/documentation/guides/oauth2/auth-flow)
--   [List of OAuth scopes](https://developer.xero.com/documentation/guides/oauth2/scopes)
--   [API rate limting](https://developer.xero.com/documentation/best-practices/integration-health/rate-limits/)
--   [API](https://developer.xero.com/documentation/sdks-and-tools/tools/postman/#steps-to-get-up-and-running)
+
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.xero.com/) |
+| | [Create a Developer account](https://www.xero.com/signup/developers/) |
+| | [Developer Dashboard](https://developer.xero.com/app/manage) |
+| Developer | [API documentation](https://developer.xero.com/documentation/getting-started-guide) |
+| | [Authentication documentation](https://developer.xero.com/documentation/guides/oauth2/overview) |
+| | [OAuth 2.0 authorization flow](https://developer.xero.com/documentation/guides/oauth2/auth-flow) |
+| | [Register an application](https://developer.xero.com/app/manage) |
+| | [List of OAuth scopes](https://developer.xero.com/documentation/guides/oauth2/scopes) |
+| | [API rate limits](https://developer.xero.com/documentation/best-practices/integration-health/rate-limits/) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
 
 ## API gotchas
+
+- When a user authorizes your app, they select which Xero organization to connect. Your app can only access data for the selected organization.
+- If you need to work with multiple Xero organizations, you'll need to handle the tenant context in your API calls. After a connection is created, Nango will automatically fetch and store the `tenant_id` in the connection config, which you can then use in your API calls.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
