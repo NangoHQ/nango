@@ -100,7 +100,7 @@ function validateProvider(providerKey: string, provider: Provider) {
     const providerExistsInDocs = fs.existsSync(providerFolder);
 
     // Only validate docs and docs_connect if provider exists in docs folder
-    if (providerExistsInDocs) {
+    if (providerExistsInDocs && !['OAUTH1', 'OAUTH2', 'OAUTH2CC'].includes(provider.auth_mode)) {
         if (!provider.docs_connect) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
             error = true;

@@ -2793,7 +2793,6 @@ docusign:
         base_url: https://www.docusign.net
     post_connection_script: docusignPostConnection
     docs: https://docs.nango.dev/integrations/all/docusign
-    docs_connect: https://docs.nango.dev/integrations/all/docusign/connect
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
