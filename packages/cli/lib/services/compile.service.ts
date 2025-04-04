@@ -1,15 +1,18 @@
 import fs from 'fs';
+import path from 'path';
+
+import chalk from 'chalk';
 import { glob } from 'glob';
 import * as tsNode from 'ts-node';
-import chalk from 'chalk';
-import path from 'path';
 import { build } from 'tsup';
+
+import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 import { getNangoRootPath, printDebug, slash } from '../utils.js';
 import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
+
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
-import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
 let lastYamlModifiedTime = 0;
