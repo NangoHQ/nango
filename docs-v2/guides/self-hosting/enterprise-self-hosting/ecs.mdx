@@ -4,13 +4,15 @@ sidebarTitle: 'AWS ECS'
 description: 'Step-by-step guide to deploy Nango on AWS ECS (Fargate)'
 ---
 
-Nango can be deployed on an AWS ECS (Elastic Container Service) cluster using AWS Fargate. Below are the detailed steps, based on common configuration practices, to get a Nango stack up and running. Before proceeding, it's helpful to understand the core components of a Nango self-hosted deployment, which are detailed in the [Nango Infrastructure Components documentation](https://docs.nango.dev/guides/self-hosting/infrastructure).
+Nango can be deployed on an AWS ECS cluster using AWS Fargate. Below are the detailed steps, based on common configuration practices, to get a Nango stack up and running. Before proceeding, it's helpful to understand the core components of a Nango self-hosted deployment, which are detailed in the [Nango Infrastructure Components documentation](https://docs.nango.dev/guides/self-hosting/infrastructure).
 
-<Note>This guide assumes the use of AWS Fargate for running containers.</Note>
+
+
+<Note> This guide assumes an existing Elasticsearch cluster. Elasticsearch is used to store and retrieve Nango logs.</Note>
 
 ## Overview
 
-We will first set up the necessary AWS infrastructure, including a VPC, security groups, an RDS PostgreSQL database, and an S3 bucket.
+We will first set up the necessary AWS infrastructure, including a VPC, security groups, RDS PostgreSQL database, Elasticache and S3 bucket.
 
 Then, we will configure an ECS cluster using AWS Fargate, define the necessary task definitions for Nango's microservices, and create the corresponding ECS services.
 
@@ -27,25 +29,39 @@ A Virtual Private Cloud (VPC) is recommended to host the resources.
 1.  **Create VPC:**
     * Define a VPC with a specified CIDR block (e.g., `10.0.0.0/16`).
     * Ensure it spans multiple Availability Zones (AZs) for high availability.
-    * Create both public and private subnets across the AZs. Public subnets will need an Internet Gateway and appropriate route tables for internet access. Private subnets will requires NAT Gateway(s) and appropriate route tables for internet access
+    * Create both public and private subnets across the AZs. Public subnets will need an Internet Gateway and appropriate route tables for internet access. Private subnets will requires NAT Gateway(s) and appropriate route tables for internet access.
 2.  **Create Security Groups:**
     * **RDS Security Group:** Create a security group for the RDS database, allowing inbound traffic on the PostgreSQL port (5432) only from within the VPC
-    * **ALB Security Group:** Create a security group for the Application Load Balancer (ALB), allowing inbound HTTP traffic (port 80) from the internet (`0.0.0.0/0`). Egress should allow traffic to the ECS service security group.
+    * **ALB Security Group:** Create a security group for the Application Load Balancer (ALB), allowing inbound HTTP traffic (port 80 and 3009) from the internet (`0.0.0.0/0`). Egress should allow traffic to the ECS service security group.
     * **ECS Service Security Groups:** Create security groups for each Nango service.
-        * *Nango Server:* Allow inbound traffic on its port (e.g., 8080) from the ALB security group.
+        * *Nango Server:* Allow inbound traffic on its ports (80 and 3009) from the ALB security group.
         * *Other Services (Jobs, Persist, Orchestrator, Runner):* Allow inbound traffic on their respective ports (e.g., 3005, 3007, 3008, 3006) from within the VPC.
     * Ensure all security groups allow necessary outbound traffic
 
-## 2. RDS PostgreSQL Database
+## 2. Secrets Manager Secret
+
+Store the Nango secrets securely.
+
+1.  **Go to AWS Secrets Manager.**
+2.  **Store Nango Encryption Key:**
+    * Choose "Other type of secret".
+    * Store a secure, randomly generated 256-bit key, base64 encoded, as a plain text value. A secure random generator should be used for this key.
+    * **Secret Name:** Give it a descriptive name (e.g., `nango/nango-encryption-key`).
+3.  **Store Elasticache auth token:**
+    * Choose "Other type of secret".
+    * Store a secure password as a plain text value. A secure random generator should be used for this key.
+    * **Secret Name:** Give it a descriptive name (e.g., `nango/elasticache-auth-token`).
+
+
+## 3. RDS PostgreSQL Database
 
 Nango requires a PostgreSQL database.
 
 <Note>
 If you already have a PostgreSQL database (version 16.1 or higher recommended) that you want to use, you can skip the creation steps below.
 
-* **Ensure Network Accessibility:** Make sure your existing database is network-accessible from the private subnets within your VPC where the Nango ECS tasks will run. This might involve configuring security groups, network ACLs, VPC peering, Transit Gateway connections, or ensuring the database resides within the same VPC.
+* **Ensure Network Accessibility:** Make sure your existing database is network-accessible from the private subnets within your VPC where the Nango ECS tasks will run.
 * **Obtain Connection URL:** You will need the full database connection URL in the format: `postgresql://<user>:<password>@<host>:<port>/<database_name>`.
-* **Configure Services:** This connection URL must be provided as the value for the `NANGO_DATABASE_URL` environment variable in the task definitions of Nango services (see details below).
 </Note>
 
 1.  **Go to AWS RDS.**
@@ -56,7 +72,7 @@ If you already have a PostgreSQL database (version 16.1 or higher recommended) t
     * **Database Name:** `nango`.
     * **Master Username:** `postgres` (or choose another).
     * **Password Management:** Use AWS Secrets Manager to manage the master password
-6.  **Instance Configuration:** Choose an appropriate instance class (a `large` instance type is recommended).
+6.  **Instance Configuration:** Choose an appropriate instance class (`large` instance type is recommended).
 7.  **Storage:** Configure storage settings. Aurora storage scales automatically. Enable storage encryption.
 9.  **Connectivity:**
     * Attach it to the VPC created earlier.
@@ -69,7 +85,44 @@ If you already have a PostgreSQL database (version 16.1 or higher recommended) t
     * Configure monitoring (e.g., Enhanced Monitoring).
     * Enable Deletion Protection for production environments.
 
-## 3. S3 Bucket for Integrations
+## 4. Elasticache Cluster
+
+Nango requires a Redis-compatible cache like Elasticache.
+
+1.  **Go to AWS Elasticache.**
+2.  **Create Subnet Group:**
+    * Navigate to "Subnet Groups" in the left menu.
+    * Click "Create subnet group".
+    * **Name:** e.g., `nango-cache-private-sng`.
+    * **VPC ID:** Select the VPC created earlier.
+    * **Availability Zone(s) and Subnets:** Select the **private** subnets created in Step 1, ensuring they span multiple AZs for high availability.
+    * Click "Create".
+3.  **Create Valkey Cluster:**
+    * Navigate to "Valkey clusters" in the left menu.
+    * Click "Create Valkey cluster".
+    * **Cluster mode:** Keep "Cluster mode disabled" unless you specifically need sharding across multiple node groups (requires more complex client configuration).
+    * **Cluster info:**
+        * **Replication group ID (Name):** e.g., `nango-valkey`.
+    * **Engine version compatibility:** Choose a recent Valkey version (e.g., `8.0`).
+    * **Port:** `6379` (default).
+    * **Compute and memory capacity:**
+        * **Node type:** Select an appropriate instance type (e.g., minimum recommended `cache.t3.small`).
+    * **Connectivity:**
+        * **Subnet group:** Select the `nango-cache-private-sng` created above.
+        * **Availability zone(s):** Choose placement (e.g., "No preference" or specific AZs, enable Multi-AZ if using replicas).
+    * **Security:**
+        * **Security groups:** Select the **Elasticache Security Group** created in Step 1. Remove the default SG if not needed.
+        * **Encryption in-transit:** Check **Enabled**.
+        * **Encryption at-rest:** Check **Enabled**.
+    * **Access Control:**
+        * Select **Valkey AUTH**.
+        * Authentication mode: Choose **AUTH Token (Password)**.
+        * **AUTH Token:** Enter the strong password you generated and stored in **Secrets Manager**.
+    * Configure backups, maintenance windows, and logging as needed.
+    * Review and click **Create**.
+4.  **Note:** Once the cluster status is "available", select the cluster and note the **Primary Endpoint** address. This will be needed for the `NANGO_REDIS_URL` env var.
+
+## 5. S3 Bucket for Integrations
 
 Nango may require an S3 bucket for storing integration-related data.
 
@@ -85,18 +138,7 @@ Nango may require an S3 bucket for storing integration-related data.
     * Create an access key for this user. Store the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` securely.
     * Attach an IAM policy to the user granting necessary S3 permissions (`GetObject`, `PutObject`, `DeleteObject`, `ListBucket`) limited to this specific bucket. These keys will be needed as environment variables for Nango services.
 
-## 4. Secrets Manager Secret
-
-Store the Nango encryption key securely.
-
-1.  **Go to AWS Secrets Manager.**
-2.  **Store a new secret:**
-    * Choose "Other type of secret".
-    * Store a secure, randomly generated 256-bit key, base64 encoded, as a plain text value. A secure random generator should be used for this key.
-    * **Secret Name:** Give it a descriptive name (e.g., `nango/nango-encryption-key`).
-    * Note the ARN or name of the secret; it will be referenced in the task definitions.
-
-## 5. ECS Cluster
+## 6. ECS Cluster
 
 1.  **Go to AWS ECS.**
 2.  **Create Cluster:**
@@ -105,17 +147,24 @@ Store the Nango encryption key securely.
     * **Monitoring:** Enable Container Insights.
     * **Networking:** Associate the cluster with the VPC created earlier.
 
-## 6. Load Balancer and Target Group
+## 7. Load Balancer and Target Group
 
 An Application Load Balancer (ALB) is used to expose the Nango server service.
 
-1.  **Create Target Group:**
+1.  **Create first Target Group:**
     * **Go to EC2 > Target Groups.**
     * **Target type:** IP addresses.
-    * **Target group name:** e.g., `nango-server-tg`.
-    * **Protocol/Port:** HTTP / 8080
+    * **Target group name:** e.g., `nango-server-tg-80`.
+    * **Protocol/Port:** HTTP / 80
     * **VPC:** Select the VPC created earlier.
     * **Health Check:** protocol HTTP, `/health`
+1.  **Create second Target Group:**
+    * **Go to EC2 > Target Groups.**
+    * **Target type:** IP addresses.
+    * **Target group name:** e.g., `nango-server-tg-3009`.
+    * **Protocol/Port:** HTTP / 3009
+    * **VPC:** Select the VPC created earlier.
+    * **Health Check:** protocol HTTP, `/`
 2.  **Create Application Load Balancer:**
     * **Go to EC2 > Load Balancers.**
     * **Type:** Application Load Balancer.
@@ -123,10 +172,10 @@ An Application Load Balancer (ALB) is used to expose the Nango server service.
     * **Scheme:** Internet-facing.
     * **Network Mapping:** Select the VPC and map it to the **public** subnets.
     * **Security Group:** Select the **ALB Security Group** created earlier.
-    * **Listeners:** Add a listener for HTTP on port 80. Set the default action to forward traffic to the `nango-server-tg` target group created above.
+    * **Listeners:** Add listeners for HTTP on port 80 and 3009. Set the default action to forward traffic to the target groups created above.
     * **(Optional) HTTPS:** For HTTPS, create a listener on port 443, select an SSL certificate (from ACM or uploaded), and forward to the target group.
 
-## 7. Task Definitions
+## 8. Task Definitions
 
 Define the container configurations for each Nango service using Fargate.
 
@@ -146,70 +195,524 @@ Define the container configurations for each Nango service using Fargate.
         * **Environment Variables (Shared):**
             * `NANGO_ENTERPRISE`: `true`
             * `NODE_ENV`: `production`
+            * `NODE_OPTIONS`: `--max-old-space-size=N`, replace with value equals to 3/4 of task memory
             * `NANGO_DATABASE_URL`: The database connection URL from RDS (use dynamic reference or Secrets Manager). Format: `postgresql://<user>:<password>@<host>:<port>/<db_name>`.
             * `NANGO_ENCRYPTION_KEY`: Reference the value from the AWS Secrets Manager secret created earlier.
-            * `NANGO_LOGS_ENABLED`: `'true'` (Set to `'false'` to disable Nango logs).
-            * `NANGO_LOGS_ES_URL`: `'https://my.elastic.cluster:9500'` (Replace with your actual Elasticsearch endpoint URL if `NANGO_LOGS_ENABLED` is true).
+            * `NANGO_REDIS_URL`: Reference the Elasticache primary endpoint created earlier.
+            * `NANGO_LOGS_ENABLED`: `true` (Set to `'false'` to disable Nango logs).
+            * `NANGO_LOGS_ES_URL`: Elasticsearch endpoint URL, required if `NANGO_LOGS_ENABLED=true`. ex:`https://my.elastic.cluster:9500`.
             * `NANGO_LOGS_ES_USER`: Your Elasticsearch username.
             * `NANGO_LOGS_ES_PWD`: Your Elasticsearch password.
         * **Log Configuration:** Configure `awslogs` driver pointing to a CloudWatch log group (e.g., `ecs/nango`).
 
     * **Nango Server Container:**
         * **Name:** `server`.
-        * **Port Mapping:** Container port 8080.
+        * **Port Mapping:** Container port 80 and 3009.
         * **Command:** `["packages/server/entrypoint.sh"]`.
-        * **Environment Variables (Specific):**
+        * **Environment Variables (in additions to the shared ones):**
+            * `SERVER_PORT`: `80`
             * `FLAG_SERVE_CONNECT_UI`: `true`
-            * `NANGO_SERVER_URL`: The public URL of the ALB (e.g., `http://<ALB_DNS_NAME>`).
+            * `NANGO_SERVER_URL`: The public URL of the ALB (e.g., `http://ALB.DNS`).
             * `NANGO_PUBLIC_SERVER_URL`: Same as `NANGO_SERVER_URL`.
-            * `NANGO_PUBLIC_CONNECT_URL`: URL for the connect UI (this requires specific configuration based on your setup).
+            * `NANGO_PUBLIC_CONNECT_URL`: The public URL of the ALB with port 3009 (e.g., `http://ALB.DNS:3009`).
             * `MAILGUN_API_KEY`: Your Mailgun key (Used for signup verification email. Mailgun is the only email provider currently supported).
             * `AWS_BUCKET_NAME`: Name of the S3 bucket.
             * `AWS_ACCESS_KEY_ID`: Access key for S3 bucket user.
             * `AWS_SECRET_ACCESS_KEY`: Secret key for S3 bucket user.
             * `AWS_REGION`: AWS region for the S3 bucket.
-            * `ORCHESTRATOR_SERVICE_URL`: Internal URL for the orchestrator service (e.g., `http://orchestrator.nango.internal:3008` using service discovery).
-    <Accordion title="Task Definition JSON">
-        ```json
-            { TBD }
-        ```
-    </Accordion>
+            * `ORCHESTRATOR_SERVICE_URL`: `http://orchestrator.nango.internal:3008`.
+        <Accordion title="Task Definition JSON">
+            The PLACEHOLDER values needs to be set manually.
+            ```
+            {
+            "containerDefinitions": [
+                {
+                    "name": "nango-server",
+                    "image": "nangohq/nango:LATEST_RELEASE",
+                    "portMappings": [
+                        {
+                            "containerPort": 80,
+                            "hostPort": 80,
+                            "protocol": "tcp"
+                        },
+                        {
+                            "containerPort": 3009,
+                            "hostPort": 3009,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "essential": true,
+                    "command": [
+                        "packages/server/entrypoint.sh"
+                    ],
+                    "environment": [
+                        {
+                            "name": "NANGO_ENCRYPTION_KEY",
+                            "value": "YOUR_ENCRYPTION_KEY"
+                        },
+                        {
+                            "name": "SERVER_PORT",
+                            "value": "80"
+                        },
+                        {
+                            "name": "FLAG_SERVE_CONNECT_UI",
+                            "value": "true"
+                        },
+                        {
+                            "name": "NANGO_SERVER_URL",
+                            "value": "http://YOUR.ALB.DNS"
+                        },
+                        {
+                            "name": "NANGO_PUBLIC_CONNECT_URL",
+                            "value": "http://YOUR.ALB.DNS:3009"
+                        },
+                        {
+                            "name": "AWS_BUCKET_NAME",
+                            "value": "YOUR_AWS_BUCKET_NAME"
+                        },
+                        {
+                            "name": "AWS_SECRET_ACCESS_KEY",
+                            "value": "YOUR_AWS_SECRET_KEY"
+                        },
+                        {
+                            "name": "AWS_ACCESS_KEY_ID",
+                            "value": "YOUR_AWS_SECRET_KEY"
+                        },
+                        {
+                            "name": "AWS_REGION",
+                            "value": "YOUR_AWS_REGION"
+                        },
+                        {
+                            "name": "NODE_OPTIONS",
+                            "value": "--max-old-space-size=YOUR_VALUE"
+                        },
+                        {
+                            "name": "MAILGUN_API_KEY",
+                            "value": "YOUR_MAILGUN_API_KEY"
+                        },
+                        {
+                            "name": "ORCHESTRATOR_SERVICE_URL",
+                            "value": "http://orchestrator.enterprise-0.internal:3008"
+                        },
+                        {
+                            "name": "NANGO_ENTERPRISE",
+                            "value": "true"
+                        },
+                        {
+                            "name": "NANGO_DATABASE_URL",
+                            "value": "postgresql://USER:PWD@HOST:PORT/DB_NAME"
+                        },
+                        {
+                            "name": "NANGO_LOGS_ENABLED",
+                            "value": "false"
+                        },
+                        {
+                            "name": "NANGO_PUBLIC_SERVER_URL",
+                            "value": "http://YOUR.ALB.DNS"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "ecs/nango",
+                            "awslogs-region": "YOUR_AWS_REGION",
+                            "awslogs-stream-prefix": "service"
+                        }
+                    },
+                    "systemControls": []
+                }
+            ],
+            "family": "nango-server",
+            "executionRoleArn": "YOUR_EXECUTON_ROLE_ARN",
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "compatibilities": [
+                "EC2",
+                "FARGATE"
+            ],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "YOUR_VALUE",
+            "memory": "YOUR_VALUE"
+            }
+            ```
+        </Accordion>
 
     * **Nango Jobs Container:**
         * **Name:** `jobs`.
         * **Port Mapping:** Container port 3005.
         * **Command:** `["node", "packages/jobs/dist/app.js"]`.
-        * **Environment Variables (Specific):**
-            * `ORCHESTRATOR_SERVICE_URL`: Internal URL (e.g., `http://orchestrator.nango.internal:3008`).
-            * `PERSIST_SERVICE_URL`: Internal URL (e.g., `http://persist.nango.internal:3007`).
+        * **Environment Variables (in addition to the shared ones):**
+            * `ORCHESTRATOR_SERVICE_URL`: `http://orchestrator.nango.internal:3008`.
+            * `PERSIST_SERVICE_URL`: `http://persist.nango.internal:3007`.
             * `RUNNER_TYPE`: `REMOTE`
-            * `RUNNER_SERVICE_URL`: Internal URL (e.g., `http://runner.nango.internal:3006`).
+            * `RUNNER_SERVICE_URL`: `http://runner.nango.internal:3006`.
             * S3 Bucket/AWS credentials (similar to Server).
+        <Accordion title="Task Definition JSON">
+            The PLACEHOLDER values needs to be set manually.
+            ```
+            {
+            "containerDefinitions": [
+                {
+                    "name": "nango-jobs",
+                    "image": "nangohq/nango:LATEST_RELEASE",
+                    "portMappings": [
+                        {
+                            "containerPort": 3005,
+                            "hostPort": 3005,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "essential": true,
+                    "command": [
+                        "node",
+                        "packages/jobs/dist/app.js"
+                    ],
+                    "environment": [
+                        {
+                            "name": "NANGO_ENCRYPTION_KEY",
+                            "value": "YOUR_ENCRYPTION_KEY"
+                        },
+                        {
+                            "name": "AWS_REGION",
+                            "value": "YOUR_AWS_REGION"
+                        },
+                        {
+                            "name": "PERSIST_SERVICE_URL",
+                            "value": "http://persist.enterprise-0.internal:3008"
+                        },
+                        {
+                            "name": "AWS_BUCKET_NAME",
+                            "value": "YOUR_AWS_BUCKET_NAME"
+                        },
+                        {
+                            "name": "AWS_SECRET_ACCESS_KEY",
+                            "value": "YOUR_AWS_SECRET_KEY"
+                        },
+                        {
+                            "name": "NODE_OPTIONS",
+                            "value": "--max-old-space-size=YOUR_VALUE"
+                        },
+                        {
+                            "name": "ORCHESTRATOR_SERVICE_URL",
+                            "value": "http://orchestrator.enterprise-0.internal:3008"
+                        },
+                        {
+                            "name": "NANGO_ENTERPRISE",
+                            "value": "true"
+                        },
+                        {
+                            "name": "NANGO_DATABASE_URL",
+                            "value": "postgresql://USER:PWD@HOST:PORT/DB_NAME"
+                        },
+                        {
+                            "name": "AWS_ACCESS_KEY_ID",
+                            "value": "YOUR_AWS_ACCESS_KEY_ID"
+                        },
+                        {
+                            "name": "NANGO_LOGS_ENABLED",
+                            "value": "false"
+                        },
+                        {
+                            "name": "RUNNER_SERVICE_URL",
+                            "value": "http://runner.enterprise-0.internal:3006"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                        },
+                        {
+                            "name": "RUNNER_TYPE",
+                            "value": "REMOTE"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "ecs/nango",
+                            "awslogs-region": "YOUR_AWS_REGION",
+                            "awslogs-stream-prefix": "service"
+                        }
+                    },
+                    "systemControls": []
+                }
+            ],
+            "family": "nango-jobs",
+            "executionRoleArn": "YOUR_EXECUTION_ROLE_ARN",
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "compatibilities": [
+                "EC2",
+                "FARGATE"
+            ],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "YOUR_VALUE",
+            "memory": "YOUR_VALUE"
+            }
+            ```
+        </Accordion>
 
     * **Nango Persist Container:**
         * **Name:** `persist`.
         * **Port Mapping:** Container port 3007.
         * **Command:** `["node", "packages/persist/dist/app.js"]`.
-        * **Environment Variables (Specific):** Only shared variables are typically required.
+        * **Environment Variables:** Only shared variables are required.
+        <Accordion title="Task Definition JSON">
+            The PLACEHOLDER values needs to be set manually.
+            ```
+            {
+            "containerDefinitions": [
+                {
+                    "name": "nango-persist",
+                    "image": "nangohq/nango:LATEST_RELEASE",
+                    "portMappings": [
+                        {
+                            "containerPort": 3007,
+                            "hostPort": 3007,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "essential": true,
+                    "command": [
+                        "node",
+                        "packages/persist/dist/app.js"
+                    ],
+                    "environment": [
+                        {
+                            "name": "NANGO_ENCRYPTION_KEY",
+                            "value": "YOUR_ENCRYPTION_KEY"
+                        },
+                        {
+                            "name": "NODE_OPTIONS",
+                            "value": "--max-old-space-size=YOUR_VALUE"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                        },
+                        {
+                            "name": "NANGO_ENTERPRISE",
+                            "value": "true"
+                        },
+                        {
+                            "name": "NANGO_DATABASE_URL",
+                            "value": "postgresql://USER:PWD@HOST:PORT/DB_NAME"
+                        },
+                        {
+                            "name": "NANGO_LOGS_ENABLED",
+                            "value": "false"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "ecs/nango",
+                            "awslogs-region": "YOUR_AWS_REGION",
+                            "awslogs-stream-prefix": "service"
+                        }
+                    },
+                    "systemControls": []
+                }
+            ],
+            "family": "nango-persist",
+            "executionRoleArn": "YOUR_EXECUTION_ROLE_ARN",
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "compatibilities": [
+                "EC2",
+                "FARGATE"
+            ],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "YOUR_VALUE",
+            "memory": "YOUR_VALUE"
+            }
+            ```
+        </Accordion>
 
     * **Nango Orchestrator Container:**
         * **Name:** `orchestrator`.
         * **Port Mapping:** Container port 3008.
         * **Command:** `["node", "packages/orchestrator/dist/app.js"]`.
-        * **Environment Variables (Specific):** Only shared variables are typically required.
+        * **Environment Variables:** Only shared variables are typically required.
+        <Accordion title="Task Definition JSON">
+            The PLACEHOLDER values needs to be set manually.
+            ```
+            {
+            "containerDefinitions": [
+                {
+                    "name": "nango-orchestrator",
+                    "image": "nangohq/nango:LATEST_RELEASE",
+                    "portMappings": [
+                        {
+                            "containerPort": 3008,
+                            "hostPort": 3008,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "essential": true,
+                    "command": [
+                        "node",
+                        "packages/orchestrator/dist/app.js"
+                    ],
+                    "environment": [
+                        {
+                            "name": "NANGO_ENCRYPTION_KEY",
+                            "value": "YOUR_ENCRYPTION_KEY"
+                        },
+                        {
+                            "name": "NODE_OPTIONS",
+                            "value": "--max-old-space-size=YOUR_VALUE"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                        },
+                        {
+                            "name": "NANGO_ENTERPRISE",
+                            "value": "true"
+                        },
+                        {
+                            "name": "NANGO_DATABASE_URL",
+                            "value": "postgresql://USER:PWD@HOST:PORT/DB_NAME"
+                        },
+                        {
+                            "name": "NANGO_LOGS_ENABLED",
+                            "value": "false"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "ecs/nango",
+                            "awslogs-region": "YOUR_AWS_REGION",
+                            "awslogs-stream-prefix": "service"
+                        }
+                    },
+                    "systemControls": []
+                }
+            ],
+            "family": "nango-orchestrator",
+            "executionRoleArn": "YOUR_EXECUTION_ROLE_ARN",
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "compatibilities": [
+                "EC2",
+                "FARGATE"
+            ],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "YOUR_VALUE",
+            "memory": "YOUR_VALUE"
+            }
+            ```
+        </Accordion>
 
     * **Nango Runner Container:**
         * **Name:** `runner`.
         * **Port Mapping:** Container port 3006.
         * **Command:** `["node", "packages/runner/dist/app.js"]`.
-        * **Environment Variables (Specific):**
-            * `RUNNER_NODE_ID`: (e.g., `1`)
-            * `PERSIST_SERVICE_URL`: Internal URL (e.g., `http://persist.nango.internal:3007`).
-            * `JOBS_SERVICE_URL`: Internal URL (e.g., `http://jobs.nango.internal:3005`).
+        * **Environment Variables:**
+            * `RUNNER_NODE_ID`: `1`
+            * `PERSIST_SERVICE_URL`: `http://persist.nango.internal:3007`.
+            * `JOBS_SERVICE_URL`: `http://jobs.nango.internal:3005`.
+        <Accordion title="Task Definition JSON">
+            The PLACEHOLDER values needs to be set manually.
+            ```
+            {
+            "containerDefinitions": [
+                {
+                    "name": "nango-runner",
+                    "image": "nangohq/nango:LATEST_RELEASE",
+                    "portMappings": [
+                        {
+                            "containerPort": 3006,
+                            "hostPort": 3006,
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "essential": true,
+                    "command": [
+                        "node",
+                        "packages/runner/dist/app.js"
+                    ],
+                    "environment": [
+                        {
+                            "name": "NODE_OPTIONS",
+                            "value": "--max-old-space-size=YOUR_VALUE"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                        },
+                        {
+                            "name": "RUNNER_NODE_ID",
+                            "value": "1"
+                        },
+                        {
+                            "name": "PERSIST_SERVICE_URL",
+                            "value": "[http://persist.enterprise-0.internal:3007](http://persist.enterprise-0.internal:3007)"
+                        },
+                        {
+                            "name": "JOBS_SERVICE_URL",
+                            "value": "[http://jobs.enterprise-0.internal:3005](http://jobs.enterprise-0.internal:3005)"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "ecs/nango",
+                            "awslogs-region": "YOUR_AWS_REGION",
+                            "awslogs-stream-prefix": "service"
+                        }
+                    },
+                    "systemControls": []
+                }
+            ],
+            "family": "nango-runner",
+            "executionRoleArn": "YOUR_EXECUTION_ROLE_ARN",
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "compatibilities": [
+                "EC2",
+                "FARGATE"
+            ],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "YOUR_VALUE",
+            "memory": "YOUR_VALUE"
+            }
+            ```
+        </Accordion>
 
 4.  **Create each Task Definition.**
 
-## 8. Services and Service Discovery
+## 9. Services and Service Discovery
 
 Create an ECS service for each task definition to run and maintain the desired number of instances.
 
@@ -230,24 +733,22 @@ Create an ECS service for each task definition to run and maintain the desired n
         * Select appropriate private **subnets**
         * Select the corresponding **Security Group** for the service.
     * **Load Balancing (ONLY for Nango Server service):**
-        * Select "Application Load Balancer".
-        * Choose the ALB created earlier.
+        * Check "Use load balancing".
         * Choose the `nango-server` container to load balance.
-        * Click "Add to load balancer".
-        * Select the **Target Group** (`nango-server-tg`) created for the server.
+        * Select the **ALB**, **Listeners** and **Target groups** created earlier
     * **Service Discovery:**
-        * Check "Enable service discovery integration".
+        * Check "Use an existing load balancer".
         * Select the `nango.internal` namespace created earlier.
         * **Service discovery name:** Enter the service name (e.g., `server`, `jobs`, `persist`, `orchestrator`, `runner`). This allows services to find each other at `<service-name>.nango.internal`.
         * Configure DNS record type (e.g., A) and TTL.
     * **(Optional) Auto Scaling:** Configure service auto-scaling based on metrics like CPU/Memory utilization.
     * **Create the Service.** Repeat for all Nango components.
 
-## 9. Access Nango
+## 10. Access Nango
 
 Once the Nango Server service and ALB are running:
 
 1.  **Go to EC2 > Load Balancers.**
 2.  Select the `nango-alb`.
 3.  Copy the **DNS name**.
-4.  Open this DNS name in your web browser (e.g., `http://<ALB_DNS_NAME>`). You should see the Nango interface.
+4.  Open this DNS name in your web browser (e.g., `http://ALB.DNS`). You should see the Nango interface.
