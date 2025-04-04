@@ -5097,7 +5097,7 @@ keeper-scim:
             endpoints:
                 - /Users
     docs: https://docs.nango.dev/integrations/all/keeper-scim
-    docs_connect: https://docs.nango.dev/integrations/all/keeper/connect
+    docs_connect: https://docs.nango.dev/integrations/all/keeper-scim/connect
     credentials:
         apiKey:
             type: string
