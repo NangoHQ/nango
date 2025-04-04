@@ -1,32 +1,29 @@
 ---
 title: 'Limits'
 sidebarTitle: 'Limits'
-description: 'Overview of resource limits on Nango.'
+description: 'Overview of resource limits on Nango Cloud.'
 ---
 
-This reference covers a list of all the limits that apply on Nango.
+# Free plan limits
 
-# Free plan
+1. **Connections:** Limited to 1,000 per account.
+2. **Integration endpoints:** Deactivated after 14 days of inactivity. You can manually reactivate them in the Nango UI.
 
-### Connections
+<Note>
+**Why these limits exist**
 
-- **Limit of 3 connections per integration:** On the free plan, users can establish up to three connections per integration if the integration includes scripts.
-- **Unlimited connections for authentication-only integrations:** If an integration is used solely for authentication purposes and doesn't include scripts, then it can have an unlimited number of connections.
+Each connection stores API credentials that are periodically refreshed, verified and logged. These credentials are accessible via Nango’s API and may be queried frequently.
 
-### Computing resource idling
+Each integration endpoint runs on a customer-specific VM. Keeping these VMs active indefinitely is not feasible for free-tier accounts due to infrastructure costs.
+</Note>
 
-- **24-hour idling:** Computing resources on the free plan are set to idle after 24 hours of inactivity. Once idled, reactivating these resources can cause a one-time delay of a few seconds when the API is called next.
-
-# Development environment
-
-- **Not for production use:** The development environment is specifically for testing integrations and is not suitable for production purposes.
-- **Connection re-authorization requirement:** To manage resource usage fairly, connections in the development environment need to be re-authorized every 7 days. This re-authorization can be done through the OAuth flow or by re-entering API credentials.
-
-# Global limitations
+# Global limits
 
 ### API rate-limit
 
-The API rate limit is 2,400 requests per minute. This includes all requests made from both your applications and scripts combined. If the rate limit is exceeded, check the standard rate-limit headers to know when to resume API requests. This rate limit can be increased for paying customers.
+- 2,400 requests per minute across all usage (app and integration scripts).
+- If the limit is exceeded, use the standard rate-limit headers to determine when to resume requests.
+- Higher limits are available for Scale customers.
 
 ### Integration scripts
 
@@ -36,7 +33,7 @@ Integrations have the following limits:
 | - | - | - |
 | [Syncs](/guides/syncs/overview) | 24h | 1h |
 | [Actions](/guides/actions/overview) | 15min | 1h |
-| [External webhooks](/guides/webhooks/webhooks-from-apis#handle-external-webhooks-in-syncs) | 15min | 1min |
+| [External webhooks](/guides/webhooks/webhooks-from-apis#handle-external-webhooks-in-syncs) | 1h | 1min |
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
