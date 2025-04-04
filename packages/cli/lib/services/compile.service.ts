@@ -15,18 +15,22 @@ import parserService from './parser.service.js';
 import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
 
 const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
-let lastYamlModifiedTime = 0;
-let cachedParsed: NangoYamlParsed | null = null;
 
-function getOrLoadParsed({ fullPath, debug }: { fullPath: string; debug: boolean }): NangoYamlParsed | null {
+function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean }): () => NangoYamlParsed | null {
+    let lastYamlModifiedTime = 0;
+    let cachedParsed: NangoYamlParsed | null = null;
     const yamlPath = path.join(fullPath, 'nango.yaml');
-    const stats = fs.statSync(yamlPath);
 
-    if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
-        cachedParsed = loadYamlAndGenerate({ fullPath, debug });
-        lastYamlModifiedTime = stats.mtimeMs;
-    }
-    return cachedParsed;
+    return () => {
+        const stats = fs.statSync(yamlPath);
+
+        if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
+            cachedParsed = loadYamlAndGenerate({ fullPath, debug });
+            lastYamlModifiedTime = stats.mtimeMs;
+        }
+
+        return cachedParsed;
+    };
 }
 
 export async function compileAllFiles({
@@ -52,7 +56,8 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const parsed = getOrLoadParsed({ fullPath, debug });
+    const cachedParser = getCachedParser({ fullPath, debug });
+    const parsed = cachedParser();
     if (!parsed) {
         return false;
     }
@@ -79,7 +84,7 @@ export async function compileAllFiles({
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, compiler, debug });
+            const completed = await compile({ fullPath, file, compiler, debug, cachedParser });
             if (completed === false) {
                 allSuccess = false;
                 compilationErrors.push(`Failed to compile ${file.inputPath}`);
@@ -119,6 +124,8 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
+    const cachedParser = getCachedParser({ fullPath, debug });
+
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -129,6 +136,7 @@ export async function compileSingleFile({
             fullPath,
             file,
             compiler,
+            cachedParser,
             debug
         });
 
@@ -208,14 +216,16 @@ async function compile({
     fullPath,
     file,
     compiler,
+    cachedParser,
     debug = false
 }: {
     fullPath: string;
+    cachedParser: () => NangoYamlParsed | null;
     file: ListedFile;
     compiler: tsNode.Service;
     debug: boolean;
 }): Promise<boolean | null> {
-    const parsed = getOrLoadParsed({ fullPath, debug });
+    const parsed = cachedParser();
     if (!parsed) {
         return false;
     }
