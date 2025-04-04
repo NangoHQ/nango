@@ -14,7 +14,9 @@ export const SimpleTooltip: React.FC<
         <TooltipProvider delayDuration={delay}>
             <Tooltip>
                 <TooltipContent {...rest}>{tooltipContent}</TooltipContent>
-                <TooltipTrigger className={triggerClassName}>{children}</TooltipTrigger>
+                <TooltipTrigger className={triggerClassName} asChild>
+                    {children}
+                </TooltipTrigger>
             </Tooltip>
         </TooltipProvider>
     );
