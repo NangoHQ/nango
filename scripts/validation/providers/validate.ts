@@ -95,14 +95,20 @@ function validateProvider(providerKey: string, provider: Provider) {
     let hasValidConnect = false;
     const headers = new Set<string>();
 
-    // Check for missing docs_connect and docs properties
-    if (!provider.docs_connect) {
-        console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
-        error = true;
-    }
-    if (!provider.docs) {
-        console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs" property defined`);
-        error = true;
+    // Check if provider exists in docs-v2/integrations/all folder
+    const providerFolder = path.join(docsPath, providerKey);
+    const providerExistsInDocs = fs.existsSync(providerFolder);
+
+    // Only validate docs and docs_connect if provider exists in docs folder
+    if (providerExistsInDocs) {
+        if (!provider.docs_connect) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
+            error = true;
+        }
+        if (!provider.docs) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs" property defined`);
+            error = true;
+        }
     }
 
     if (!fs.existsSync(mdx)) {
