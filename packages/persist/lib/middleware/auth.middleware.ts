@@ -8,6 +8,7 @@ import type { NextFunction, Request, Response } from 'express';
 export interface AuthLocals {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
 }
 
 export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
@@ -48,6 +49,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
         res.locals['account'] = accountAndEnv.account;
         res.locals['environment'] = accountAndEnv.environment;
+        res.locals['plan'] = plan;
         tagTraceUser({ ...accountAndEnv, plan });
         next();
     } catch (err) {
