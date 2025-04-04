@@ -5,7 +5,7 @@ import { apiFetch } from '../utils/api';
 import type { ApiPlan, PostPlanExtendTrial } from '@nangohq/types';
 
 export async function apiPostPlanExtendTrial(env: string) {
-    const res = await apiFetch(`/api/v1/plan/extend_trial?env=${env}`, {
+    const res = await apiFetch(`/api/v1/plan/trial/extension?env=${env}`, {
         method: 'POST'
     });
 
