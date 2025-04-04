@@ -20,6 +20,7 @@ import { deleteOldData } from './crons/deleteOldData.js';
 import { exportUsageMetricsCron } from './crons/exportMetrics.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
+import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { runnersFleet } from './fleet.js';
 import { router } from './routes.js';
@@ -89,6 +90,7 @@ refreshConnectionsCron();
 exportUsageMetricsCron();
 timeoutLogsOperations();
 deleteOldData();
+trialCron();
 void otlp.register(getOtlpRoutes);
 
 const port = getServerPort();

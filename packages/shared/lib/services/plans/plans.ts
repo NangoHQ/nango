@@ -27,6 +27,7 @@ export async function createPlan(
             .insert({
                 trial_start_at: new Date(),
                 trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+                connection_with_scripts_max: 50,
                 ...rest,
                 created_at: new Date(),
                 updated_at: new Date(),
@@ -68,4 +69,22 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
     }
+}
+
+export async function getAccountWithFinishedTrialAndSyncs(db: Knex): Promise<{ account_id: number; environment_id: number; sync_config_id: number }[]> {
+    return await db
+        .from('_nango_accounts as na')
+        .select<{ account_id: number; sync_config_id: number; environment_id: number }[]>(
+            'na.id as account_id',
+            'nsc.environment_id',
+            'nsc.id as sync_config_id'
+        )
+        .join('plans', 'plans.account_id', 'na.id')
+        .join('_nango_environments as ne', 'ne.account_id', 'na.id')
+        .join('_nango_sync_configs as nsc', 'nsc.environment_id', 'ne.id')
+        .where('plans.name', 'free')
+        .whereBetween('plans.trial_end_at', [db.raw("NOW() - INTERVAL '24 hours'"), db.raw('NOW()')])
+        .where('nsc.active', true)
+        .where('nsc.deleted', false)
+        .where('nsc.enabled', true);
 }

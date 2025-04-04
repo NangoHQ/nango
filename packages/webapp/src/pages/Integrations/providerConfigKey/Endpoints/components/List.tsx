@@ -1,15 +1,21 @@
-import type { GetIntegration, NangoSyncConfig, NangoSyncEndpointV2 } from '@nangohq/types';
-import * as Table from '../../../../../components/ui/Table';
-import { HttpLabel } from '../../../../../components/HttpLabel';
+import { Prism } from '@mantine/prism';
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';
+
 import { EmptyState } from '../../../../../components/EmptyState';
+import { ErrorCircle } from '../../../../../components/ErrorCircle';
+import { HttpLabel } from '../../../../../components/HttpLabel';
+import { Info } from '../../../../../components/Info';
+import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
+import * as Table from '../../../../../components/ui/Table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../../../components/ui/Tooltip';
+import { useEnvironment } from '../../../../../hooks/useEnvironment';
+import { useTrial } from '../../../../../hooks/usePlan';
+import { useStore } from '../../../../../store';
 import { HelpFooter } from '../../../components/HelpFooter';
 import { ScriptToggle } from '../../../components/ScriptToggle';
-import { useStore } from '../../../../../store';
-import { Info } from '../../../../../components/Info';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../../../components/ui/Tooltip';
-import { Prism } from '@mantine/prism';
+
+import type { GetIntegration, NangoSyncConfig, NangoSyncEndpointV2 } from '@nangohq/types';
 
 export type NangoSyncConfigWithEndpoint = NangoSyncConfig & { endpoint: NangoSyncEndpointV2 };
 export interface FlowGroup {
@@ -23,6 +29,9 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
     v1Flow
 }) => {
     const env = useStore((state) => state.env);
+
+    const { plan } = useEnvironment(env);
+    const { isTrial } = useTrial(plan);
 
     if (byGroup.length <= 0 && v1Flow.length <= 0) {
         return (
@@ -93,7 +102,14 @@ export const EndpointsList: React.FC<{ integration: GetIntegration['Success']['d
                                                         </div>
                                                     </Table.Cell>
                                                     <Table.Cell bordered className="text-white">
-                                                        <ScriptToggle flow={flow} integration={integration} />
+                                                        <div className="flex gap-2 items-start">
+                                                            {isTrial && flow.enabled && (
+                                                                <SimpleTooltip tooltipContent="Deactivates at the end of your trial.">
+                                                                    <ErrorCircle icon="clock" variant="warning" />
+                                                                </SimpleTooltip>
+                                                            )}
+                                                            <ScriptToggle flow={flow} integration={integration} />
+                                                        </div>
                                                     </Table.Cell>
                                                 </Table.Row>
                                             </Link>

@@ -67,3 +67,22 @@ Team Nango</p>
             `
     );
 }
+
+export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DBUser, 'name' | 'email'>; inDays: number }) {
+    const emailClient = EmailClient.getInstance();
+    await emailClient.send(
+        user.email,
+        `Your Nango trial ends in ${inDays} days`,
+        `<p>Your trial ends in ${inDays} days, ${user.name}</p>
+
+<p>Your free trial will end in ${inDays} days. When your trial expires, we'll pause your connection with scripts if you have any. Authentication will still work forever.</p>
+
+<p>Still building? Extend your trial by going to the Nango's Dashboard > Integrations page and click extend.</p>
+
+<p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}

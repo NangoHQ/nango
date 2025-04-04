@@ -60,6 +60,7 @@ import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api';
 import type { GetMeta } from './meta/api';
 import type { PatchOnboarding } from './onboarding/api';
+import type { PostPlanExtendTrial } from './plans/http.api';
 import type { GetPublicProvider, GetPublicProviders } from './providers/api';
 import type { GetPublicRecords } from './record/api';
 import type { GetPublicScriptsConfig } from './scripts/http.api';
@@ -109,6 +110,7 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
+    | PostPlanExtendTrial
     | GetUser
     | PatchUser
     | PostInvite
