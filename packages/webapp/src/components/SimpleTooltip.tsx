@@ -1,10 +1,11 @@
-import type React from 'react';
-import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/Tooltip';
+
 import type { Content } from '@radix-ui/react-tooltip';
+import type React from 'react';
 
 export const SimpleTooltip: React.FC<
-    React.PropsWithChildren<{ tooltipContent: React.ReactNode; delay?: number } & React.ComponentPropsWithoutRef<typeof Content>>
-> = ({ tooltipContent, delay, children, ...rest }) => {
+    React.PropsWithChildren<{ tooltipContent: React.ReactNode; delay?: number; triggerClassName?: string } & React.ComponentPropsWithoutRef<typeof Content>>
+> = ({ tooltipContent, delay, children, triggerClassName, ...rest }) => {
     if (!tooltipContent) {
         return <>{children}</>;
     }
@@ -13,7 +14,9 @@ export const SimpleTooltip: React.FC<
         <TooltipProvider delayDuration={delay}>
             <Tooltip>
                 <TooltipContent {...rest}>{tooltipContent}</TooltipContent>
-                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipTrigger className={triggerClassName} asChild>
+                    {children}
+                </TooltipTrigger>
             </Tooltip>
         </TooltipProvider>
     );

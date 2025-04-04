@@ -1,6 +1,9 @@
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { environmentService, getOnboarding } from '@nangohq/shared';
+import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { planToApi } from '../../../formatters/plan.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { GetMeta } from '@nangohq/types';
 
 export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
@@ -10,12 +13,13 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = res.locals['user'];
+    const { user: sessionUser, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     const onboarding = await getOnboarding(sessionUser.id);
     res.status(200).send({
         data: {
+            plan: plan ? planToApi(plan) : null,
             environments,
             version: NANGO_VERSION,
             baseUrl,
