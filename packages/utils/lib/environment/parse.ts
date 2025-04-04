@@ -128,6 +128,9 @@ export const ENVS = z.object({
         .default(2 * 60 * 1000), // 2 minutes
     FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
+    // Billing
+    FLAG_PLAN_ENABLED: bool,
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),
@@ -150,6 +153,13 @@ export const ENVS = z.object({
     NANGO_LOGS_ENABLED: bool,
     NANGO_LOGS_ES_INDEX: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
+
+    // Koala
+    PUBLIC_KOALA_API_URL: z.string().url().optional(),
+    PUBLIC_KOALA_CDN_URL: z.string().url().optional(),
+
+    // Logodev
+    PUBLIC_LOGODEV_KEY: z.string().optional(),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),

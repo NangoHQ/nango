@@ -228,7 +228,7 @@ export class OrchestratorClient {
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
                 startedToCompleted: 15 * 60,
-                heartbeat: 999999 // actions don't need to heartbeat
+                heartbeat: 5 * 60
             },
             args: {
                 ...args,
@@ -245,8 +245,8 @@ export class OrchestratorClient {
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
                 createdToStarted: 30,
-                startedToCompleted: 15 * 60,
-                heartbeat: 999999 // webhooks don't need to heartbeat
+                startedToCompleted: 60 * 60,
+                heartbeat: 5 * 60
             },
             args: {
                 ...args,

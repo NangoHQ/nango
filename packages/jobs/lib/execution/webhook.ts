@@ -259,7 +259,7 @@ export async function handleWebhookSuccess({ taskId, nangoProps }: { taskId: str
     }
 
     metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime(), team ? { accountId: team.id } : {});
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
 }
 
 export async function handleWebhookError({ taskId, nangoProps, error }: { taskId: string; nangoProps: NangoProps; error: NangoError }): Promise<void> {
@@ -412,5 +412,5 @@ async function onFailure({
     }
 
     metrics.increment(metrics.Types.WEBHOOK_FAILURE);
-    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime(), team ? { accountId: team.id } : {});
+    metrics.duration(metrics.Types.WEBHOOK_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }
