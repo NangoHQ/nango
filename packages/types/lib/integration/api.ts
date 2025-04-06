@@ -5,7 +5,10 @@ import type { NangoSyncConfig } from '../flow';
 import type { Provider } from '../providers/provider';
 import type { Merge } from 'type-fest';
 
-export type ApiPublicIntegration = Merge<Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider'>, ApiTimestamps> & {
+export type ApiPublicIntegration = Merge<
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'custom_display_name'>,
+    ApiTimestamps
+> & {
     logo: string;
     display_name: string;
 } & ApiPublicIntegrationInclude;
@@ -59,6 +62,7 @@ export type ApiIntegrationList = ApiIntegration & {
         missingFieldsCount: number;
         connectionConfigParams?: string[];
         credentialParams?: string[];
+        displayName: string;
     };
 };
 
@@ -104,7 +108,7 @@ export type PatchIntegration = Endpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Body:
-        | { integrationId?: string | undefined; webhookSecret?: string | undefined }
+        | { integrationId?: string | undefined; webhookSecret?: string | undefined; customDisplayName?: string | undefined }
         | {
               authType: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
               clientId: string;

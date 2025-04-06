@@ -15,6 +15,7 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     app_link?: string | null | undefined;
     custom?: Record<string, string> | undefined | null;
     missing_fields: string[];
+    custom_display_name: string | null;
 }
 
 export type DBCreateIntegration = SetOptional<NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>, 'missing_fields'>;

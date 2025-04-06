@@ -1,12 +1,12 @@
 import { useParams, Routes, Route, useLocation } from 'react-router-dom';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { ButtonLink } from '../../../components/ui/button/Button';
+import { ButtonLink, Button } from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../../components/ui/IntegrationLogo';
 import { useStore } from '../../../store';
-import { PlusIcon } from '@radix-ui/react-icons';
-import { useGetIntegration } from '../../../hooks/useIntegration';
+import { Pencil1Icon, PlusIcon } from '@radix-ui/react-icons';
+import { apiPatchIntegration, useGetIntegration } from '../../../hooks/useIntegration';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import PageNotFound from '../../PageNotFound';
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +14,9 @@ import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
 import { Helmet } from 'react-helmet';
 import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { Input } from '../../../components/ui/input/Input';
+import { useToast } from '../../../hooks/useToast';
+import { mutate } from 'swr';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -21,9 +24,13 @@ export const ShowIntegration: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
+    const { data, loading: loadingIntegration, error } = useGetIntegration(env, providerConfigKey!);
+    const { toast } = useToast();
 
-    const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
+    const [showEditCustomDisplayName, setShowEditCustomDisplayName] = useState(false);
+    const [customDisplayName, setCustomDisplayName] = useState('');
+    const [loadingSave, setLoadingSave] = useState(false);
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -41,7 +48,31 @@ export const ShowIntegration: React.FC = () => {
         }
     }, [location]);
 
-    if (loading) {
+    useEffect(() => {
+        if (data?.integration?.custom_display_name) {
+            setCustomDisplayName(data.integration.custom_display_name);
+        } else if (data?.template?.display_name) {
+            setCustomDisplayName(data.template.display_name);
+        }
+    }, [data]);
+
+    const onSaveCustomDisplayName = async () => {
+        if (!data) {
+            return;
+        }
+        setLoadingSave(true);
+        const updated = await apiPatchIntegration(env, data.integration.unique_key, { customDisplayName });
+        setLoadingSave(false);
+        if ('error' in updated.json) {
+            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        } else {
+            toast({ title: "Successfully updated integration's name", variant: 'success' });
+            setShowEditCustomDisplayName(false);
+            void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+        }
+    };
+
+    if (loadingIntegration) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
                 <Helmet>
@@ -90,14 +121,55 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <div className="my-2">
                         <div className="text-left text-lg font-semibold text-gray-400">Integration</div>
-                        <div className="flex gap-4 items-center">
-                            <h2 className="text-left text-3xl font-semibold text-white break-all">{data.integration.unique_key}</h2>
-                            {data.template.docs && (
-                                <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
-                                    <BookOpenIcon className="h-5 w-5" />
-                                </ButtonLink>
-                            )}
-                        </div>
+                        {showEditCustomDisplayName ? (
+                            <div className="flex gap-2 grow">
+                                <Input
+                                    value={customDisplayName}
+                                    variant={'flat'}
+                                    inputSize="lg"
+                                    onChange={(e) => {
+                                        setCustomDisplayName(e.target.value);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            void onSaveCustomDisplayName();
+                                        }
+                                    }}
+                                />
+                                <div className="flex justify-end gap-2 items-center">
+                                    <Button
+                                        size={'sm'}
+                                        variant={'emptyFaded'}
+                                        onClick={() => {
+                                            setCustomDisplayName(data.integration.custom_display_name || data.template.display_name);
+                                            setShowEditCustomDisplayName(false);
+                                            setLoadingSave(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button size={'sm'} variant={'primary'} onClick={() => onSaveCustomDisplayName()} isLoading={loadingSave}>
+                                        Save
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-4 items-center">
+                                <h2 className="text-left text-3xl font-semibold text-white break-all">
+                                    {data.integration.custom_display_name ?? data.template.display_name}
+                                </h2>
+                                <div className="flex items-center">
+                                    <Button variant={'icon'} onClick={() => setShowEditCustomDisplayName(true)} size={'xs'}>
+                                        <Pencil1Icon />
+                                    </Button>
+                                    {data.template.docs && (
+                                        <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
+                                            <BookOpenIcon className="h-5 w-5" />
+                                        </ButtonLink>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="shrink-0">

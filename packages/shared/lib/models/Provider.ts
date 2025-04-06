@@ -15,6 +15,7 @@ export interface Config extends TimestampsAndDeleted {
     app_link?: string | null | undefined;
     custom?: Record<string, string> | undefined;
     missing_fields: string[];
+    custom_display_name: string | null;
 }
 
 export interface IntegrationWithCreds extends Integration {

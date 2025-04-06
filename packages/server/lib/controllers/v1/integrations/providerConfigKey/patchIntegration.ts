@@ -13,7 +13,8 @@ const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsW
 const validationBody = z
     .object({
         integrationId: providerConfigKeySchema.optional(),
-        webhookSecret: z.string().min(0).max(255).optional()
+        webhookSecret: z.string().min(0).max(255).optional(),
+        customDisplayName: z.string().min(1).max(255).optional()
     })
     .strict()
     .or(
@@ -85,7 +86,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
-    // Rename
+    // Integration ID
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
         if (exists && exists !== integration.id) {
@@ -100,6 +101,11 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         integration.unique_key = body.integrationId;
+    }
+
+    // Custom display name
+    if ('customDisplayName' in body && body.customDisplayName) {
+        integration.custom_display_name = body.customDisplayName;
     }
 
     // Credentials

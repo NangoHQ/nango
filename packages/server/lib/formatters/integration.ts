@@ -14,7 +14,8 @@ export function integrationToApi(data: IntegrationConfig): ApiIntegration {
         custom: data.custom,
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
-        missing_fields: data.missing_fields
+        missing_fields: data.missing_fields,
+        custom_display_name: data.custom_display_name
     };
 }
 
@@ -31,6 +32,7 @@ export function integrationToPublicApi({
         unique_key: integration.unique_key,
         provider: integration.provider,
         display_name: provider.display_name,
+        custom_display_name: integration.custom_display_name,
         logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
         ...include,
         created_at: integration.created_at.toISOString(),

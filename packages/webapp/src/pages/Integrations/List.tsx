@@ -56,8 +56,9 @@ export default function IntegrationList() {
                     <div className="h-fit rounded-md text-white text-sm">
                         <div className="w-full">
                             <div className="flex gap-4 items-center text-[12px] px-2 py-1 bg-active-gray border border-neutral-800 rounded-md justify-between">
-                                <div className="w-2/3">Name</div>
-                                <div className="w-1/3">Connections</div>
+                                <div className="w-2/6">ID</div>
+                                <div className="w-2/6">Name</div>
+                                <div className="w-1/6">Connections</div>
                                 <div className="w-24">Active Scripts</div>
                             </div>
                             {list.map((integration) => (
@@ -70,7 +71,7 @@ export default function IntegrationList() {
                                         navigate(`/${env}/integrations/${integration.unique_key}`);
                                     }}
                                 >
-                                    <div className="flex items-center w-2/3 gap-2 py-2 truncate">
+                                    <div className="flex items-center w-2/6 gap-2 py-2 truncate">
                                         <div className="w-10 shrink-0">
                                             <IntegrationLogo provider={integration.provider} height={7} width={7} />
                                         </div>
@@ -81,7 +82,10 @@ export default function IntegrationList() {
                                             </SimpleTooltip>
                                         )}
                                     </div>
-                                    <div className="flex items-center w-1/3">
+                                    <div className="flex items-center w-2/6">
+                                        <p className="truncate">{integration.custom_display_name || integration.meta.displayName}</p>
+                                    </div>
+                                    <div className="flex items-center w-1/6">
                                         <p className="">{integration.meta.connectionCount}</p>
                                     </div>
                                     <div className="flex items-center w-24">
