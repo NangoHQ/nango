@@ -13,7 +13,8 @@ const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsW
 const validationBody = z
     .object({
         integrationId: providerConfigKeySchema.optional(),
-        webhookSecret: z.string().min(0).max(255).optional()
+        webhookSecret: z.string().min(0).max(255).optional(),
+        scopes: z.string().optional()
     })
     .strict()
     .or(
@@ -102,12 +103,16 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         integration.unique_key = body.integrationId;
     }
 
+    // Scopes
+    if ('scopes' in body) {
+        integration.oauth_scopes = body.scopes;
+    }
+
     // Credentials
     if ('authType' in body) {
         if (body.authType === 'OAUTH1' || body.authType === 'OAUTH2' || body.authType === 'TBA') {
             integration.oauth_client_id = body.clientId;
             integration.oauth_client_secret = body.clientSecret;
-            integration.oauth_scopes = body.scopes || '';
         } else if (body.authType === 'APP') {
             integration.oauth_client_id = body.appId;
             // This is a legacy thing
