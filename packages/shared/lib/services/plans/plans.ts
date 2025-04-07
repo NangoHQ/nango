@@ -2,6 +2,8 @@ import ms from 'ms';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import analytics, { AnalyticsTypes } from '../../utils/analytics.js';
+
 import type { DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -52,6 +54,23 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
     }
 }
 
+export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
+    if (plan.trial_start_at) {
+        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXTENDED, plan.account_id);
+    } else {
+        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_STARTED, plan.account_id);
+    }
+
+    return await updatePlan(db, {
+        id: plan.id,
+        trial_start_at: plan.trial_start_at || new Date(),
+        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+        trial_end_notified_at: null,
+        trial_extension_count: plan.trial_extension_count + 1,
+        trial_expired: false
+    });
+}
+
 export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { daysLeft: number }): Promise<Result<DBPlan[]>> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() + daysLeft);
@@ -68,20 +87,10 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
     }
 }
 
-export async function getAccountWithFinishedTrialAndSyncs(db: Knex): Promise<{ account_id: number; environment_id: number; sync_config_id: number }[]> {
+export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
     return await db
-        .from('_nango_accounts as na')
-        .select<{ account_id: number; sync_config_id: number; environment_id: number }[]>(
-            'na.id as account_id',
-            'nsc.environment_id',
-            'nsc.id as sync_config_id'
-        )
-        .join('plans', 'plans.account_id', 'na.id')
-        .join('_nango_environments as ne', 'ne.account_id', 'na.id')
-        .join('_nango_sync_configs as nsc', 'nsc.environment_id', 'ne.id')
-        .where('plans.name', 'free')
-        .whereBetween('plans.trial_end_at', [db.raw("NOW() - INTERVAL '24 hours'"), db.raw('NOW()')])
-        .where('nsc.active', true)
-        .where('nsc.deleted', false)
-        .where('nsc.enabled', true);
+        .from('plans')
+        .select<DBPlan[]>('*')
+        .where('plans.trial_end_at', '<=', db.raw('NOW()'))
+        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
 }

@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { AnalyticsTypes, TRIAL_DURATION, analytics, updatePlan } from '@nangohq/shared';
+import { startTrial } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -30,14 +30,7 @@ export const postPlanExtendTrial = asyncWrapper<PostPlanExtendTrial>(async (req,
         return;
     }
 
-    await updatePlan(db.knex, {
-        id: plan.id,
-        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
-        trial_end_notified_at: null,
-        trial_extension_count: plan.trial_extension_count + 1
-    });
-
-    void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXTEND, plan.account_id);
+    await startTrial(db.knex, plan);
 
     res.status(200).send({
         data: { success: true }

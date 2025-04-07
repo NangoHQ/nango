@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { TRIAL_DURATION, configService, connectionService, enableScriptConfig, getSyncConfigById, syncManager, updatePlan } from '@nangohq/shared';
+import { configService, connectionService, enableScriptConfig, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationBody, validationParams } from './patchDisable.js';
@@ -53,8 +53,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
     if (plan && !plan.trial_end_at && plan.name === 'free') {
-        // start trial
-        await updatePlan(db.knex, { id: plan.id, trial_start_at: new Date(), trial_end_at: new Date(Date.now() + TRIAL_DURATION) });
+        await startTrial(db.knex, plan);
     }
 
     const isCapped = await connectionService.shouldCapUsage({

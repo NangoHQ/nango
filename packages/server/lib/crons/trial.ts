@@ -7,8 +7,10 @@ import {
     AnalyticsTypes,
     analytics,
     disableScriptConfig,
+    environmentService,
     errorNotificationService,
-    getAccountWithFinishedTrialAndSyncs,
+    getExpiredTrials,
+    getSyncsByEnvironmentId,
     getTrialsApproachingExpiration,
     syncManager,
     updatePlan,
@@ -16,7 +18,7 @@ import {
 } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics, report } from '@nangohq/utils';
 
-import { sendTrialAlmostOverEmail } from '../helpers/email.js';
+import { sendTrialAlmostOverEmail, sendTrialHasExpired } from '../helpers/email.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { Lock } from '@nangohq/kvstore';
@@ -43,9 +45,13 @@ export function trialCron(): void {
 
                 logger.info('✅ done');
             } catch (err) {
+                console.log(err);
                 report(new Error('cron_failed_to_check_trial', { cause: err }));
             }
             metrics.duration(metrics.Types.CRON_TRIAL, Date.now() - start);
+        },
+        {
+            runOnInit: true
         }
     );
 }
@@ -92,16 +98,41 @@ export async function exec(): Promise<void> {
 
         // Disable all scripts
         const orchestrator = getOrchestrator();
-        const accountsToPause = await getAccountWithFinishedTrialAndSyncs(db.knex);
-        for (const account of accountsToPause) {
-            logger.info('Trial over for account', account);
+        const plansToPause = await getExpiredTrials(db.knex);
+        for (const plan of plansToPause) {
+            logger.info('Trial over for account', plan.account_id);
 
-            const updated = await disableScriptConfig({ id: account.sync_config_id, environmentId: account.environment_id });
-            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: account.sync_config_id });
+            const envs = await environmentService.getEnvironmentsByAccountId(plan.account_id);
 
-            if (updated > 0) {
-                await syncManager.pauseSchedules({ syncConfigId: account.sync_config_id, environmentId: account.environment_id, orchestrator });
+            for (const env of envs) {
+                const syncs = await getSyncsByEnvironmentId(env.id);
+                logger.info('  pausing', syncs.length, 'syncs in env', env.name);
+
+                for (const sync of syncs) {
+                    const updated = await disableScriptConfig({ id: sync.id, environmentId: sync.environment_id });
+                    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: sync.id });
+                    if (updated > 0) {
+                        await syncManager.pauseSchedules({ syncConfigId: sync.id, environmentId: sync.environment_id, orchestrator });
+                    }
+                }
             }
+
+            await updatePlan(db.knex, { id: plan.id, trial_expired: true });
+
+            void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXPIRED, plan.account_id);
+            const users = await userService.getUsersByAccountId(plan.account_id);
+
+            // Send in parallel
+            await Promise.all(
+                users.map(async (user) => {
+                    if (!user.email_verified) {
+                        return;
+                    }
+
+                    logger.info('  Sending mail to', user.id);
+                    await sendTrialHasExpired({ user });
+                })
+            );
         }
     } finally {
         if (lock) {

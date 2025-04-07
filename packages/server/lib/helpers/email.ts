@@ -73,13 +73,36 @@ export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DB
     await emailClient.send(
         user.email,
         `Your Nango trial ends in ${inDays} days`,
-        `<p>Your trial ends in ${inDays} days, ${user.name}</p>
+        `<p>Hi ${user.name},</p>
 
-<p>Your free trial will end in ${inDays} days. When your trial expires, we'll pause your connection with scripts if you have any. Authentication will still work forever.</p>
+<p>Your free Nango trial expires in ${inDays} days. After that, integration endpoints and scripts will be paused. All authorization features will continue to work.</p>
 
-<p>Still building? Extend your trial by going to the Nango's Dashboard > Integrations page and click extend.</p>
+<p>You can extend your trial for 14 days at a time directly from the Nango UI. Just click on any integration using scripts and select Extend.</p>
 
-<p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
+<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+
+<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}
+
+export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' | 'email'> }) {
+    const emailClient = EmailClient.getInstance();
+    await emailClient.send(
+        user.email,
+        `Your Nango trial has expired`,
+        `<p>Hi ${user.name},</p>
+
+<p>Your Nango trial has expired. Integration endpoints and scripts have been paused, but authorization features are still active.</p>
+
+<p>You can extend your trial for 14 more days directly in the Nango UI. Just click on any integration using scripts and select Extend.</p>
+
+<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+
+<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
 <p>Best,<br>
 Team Nango</p>
