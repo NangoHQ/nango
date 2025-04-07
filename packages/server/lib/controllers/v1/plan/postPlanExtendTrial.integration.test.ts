@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { getPlan, seeders } from '@nangohq/shared';
+import { TRIAL_DURATION, getPlan, seeders, updatePlan } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
@@ -55,6 +55,10 @@ describe(`POST ${route}`, () => {
     it('should extend trial', async () => {
         const { env, plan } = await seeders.seedAccountEnvAndUser();
 
+        // start trial
+        const endDate = new Date(Date.now() + TRIAL_DURATION);
+        await updatePlan(db.knex, { id: plan.id, trial_start_at: new Date(), trial_end_at: endDate });
+
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
@@ -68,6 +72,6 @@ describe(`POST ${route}`, () => {
         });
 
         const newPlan = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
-        expect(newPlan.trial_end_at?.getTime()).toBeGreaterThan(plan.trial_end_at!.getTime());
+        expect(newPlan.trial_end_at?.getTime()).toBeGreaterThan(endDate.getTime());
     });
 });
