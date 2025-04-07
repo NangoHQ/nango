@@ -125,6 +125,7 @@ export async function persistRecords({
 
         void logCtx.info(`Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`, {
             persistType,
+            // Please note this object is indexed in Elasticsearch, be careful when changing the shape
             updatedResults: {
                 model: baseModel,
                 added: summary.addedKeys.length,
