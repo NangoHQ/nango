@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/types",
-    "version": "0.58.1",
+    "version": "0.58.3",
     "description": "Types used in Nango applications",
     "type": "module",
     "typings": "dist/index.d.ts",
@@ -12,7 +12,7 @@
         "directory": "packages/utils"
     },
     "dependencies": {
-        "axios": "^1.8.2",
+        "axios": "^1.8.4",
         "json-schema": "0.4.0",
         "type-fest": "4.32.0"
     },

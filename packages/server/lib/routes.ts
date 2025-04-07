@@ -36,7 +36,7 @@ router.use('/', publicAPI);
 
 // -------
 // Webapp assets, static files and build.
-const webappBuildPath = '../../../webapp/build';
+const webappBuildPath = '../../../webapp/dist';
 const staticSite = express.Router();
 staticSite.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
 staticSite.use(express.static(path.join(dirname(), webappBuildPath), { cacheControl: true, maxAge: '1h' }));

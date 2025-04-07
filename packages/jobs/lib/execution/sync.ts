@@ -439,7 +439,7 @@ export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string
             endUser: nangoProps.endUser
         });
 
-        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime(), { accountId: nangoProps.team?.id });
+        metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - nangoProps.startedAt.getTime());
         metrics.increment(metrics.Types.SYNC_SUCCESS);
 
         await logCtx.success();
@@ -803,5 +803,5 @@ async function onFailure({
     }
 
     metrics.increment(metrics.Types.SYNC_FAILURE);
-    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime(), team ? { accountId: team.id } : {});
+    metrics.duration(metrics.Types.SYNC_TRACK_RUNTIME, Date.now() - startedAt.getTime());
 }

@@ -43,6 +43,7 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
+import { getIntegrations } from './controllers/v1/integrations/getIintegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
@@ -150,7 +151,7 @@ web.route('/environment/admin-auth').get(webAuth, environmentController.getAdmin
 
 web.route('/connect/sessions').post(webAuth, postInternalConnectSessions);
 
-web.route('/integrations').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+web.route('/integrations').get(webAuth, getIntegrations);
 web.route('/integrations').post(webAuth, postIntegration);
 web.route('/integrations/:providerConfigKey').get(webAuth, getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, patchIntegration);

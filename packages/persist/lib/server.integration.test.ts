@@ -1,24 +1,28 @@
-import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
-import { server } from './server.js';
 import fetch from 'node-fetch';
-import type { AuthCredentials, Sync, Job as SyncJob } from '@nangohq/shared';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import db, { multipleMigrations } from '@nangohq/database';
+import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
+import { migrate as migrateRecords, records } from '@nangohq/records';
+import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
-    environmentService,
-    connectionService,
-    createSync,
-    createSyncJob,
     SyncJobsType,
     SyncStatus,
     accountService,
     configService,
+    connectionService,
+    createPlan,
+    createSync,
+    createSyncJob,
+    environmentService,
     getProvider
 } from '@nangohq/shared';
-import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
+
+import { server } from './server.js';
+
 import type { UnencryptedRecordData } from '@nangohq/records';
-import { migrate as migrateRecords, records } from '@nangohq/records';
+import type { AuthCredentials, Job as SyncJob, Sync } from '@nangohq/shared';
 import type { DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
-import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 
 const mockSecretKey = 'secret-key';
 
@@ -404,6 +408,8 @@ const initDb = async () => {
     const now = new Date();
     const env = await environmentService.createEnvironment(0, 'testEnv');
     if (!env) throw new Error('Environment not created');
+
+    await createPlan(db.knex, { account_id: 0, name: 'free' });
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },

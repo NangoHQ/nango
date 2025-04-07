@@ -869,7 +869,6 @@ avalara:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
@@ -907,7 +906,6 @@ avalara-sandbox:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
@@ -988,6 +986,39 @@ aws-iam:
             example: us-east-1
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
+
+azure-devops:
+    display_name: Azure DevOps
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.organizationUrl}
+    docs: https://docs.nango.dev/integrations/all/azure-devops
+    docs_connect: https://docs.nango.dev/integrations/all/azure-devops/connect
+    # Azure DevOps returns a 202 when the credentials are invalid,
+    # so we need to explicitly check for this and return respective error message
+    credentials_verification_script: azureDevopsCredentialsVerification
+    connection_config:
+        organizationUrl:
+            type: string
+            title: Organization URL
+            description: The URL of your Azure DevOps organization
+            example: dev.azure.com/myorg or myorg.visualstudio.com
+            doc_section: '#step-1-finding-your-organization-url'
+            prefix: https://
+    credentials:
+        username:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+        password:
+            type: string
+            title: Personal Access Token
+            description: The Personal Access Token of your Azure DevOps account
+            doc_section: '#step-2-creating-a-personal-access-token'
 
 bamboohr:
     display_name: BambooHR (OAuth)
@@ -1808,6 +1839,7 @@ canva-scim:
             endpoints:
                 - /v2/Users
     docs: https://docs.nango.dev/integrations/all/canva-scim
+    docs_connect: https://docs.nango.dev/integrations/all/canva-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2925,6 +2957,7 @@ emarsys-oauth:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.nango.dev/integrations/all/emarsys-oauth
+    docs_connect: https://docs.nango.dev/integrations/all/emarsys-oauth/connect
 
 employment-hero:
     display_name: Employment Hero
@@ -5165,6 +5198,7 @@ klaviyo:
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/klaviyo
+    docs_connect: https://docs.nango.dev/integrations/all/klaviyo/connect
     credentials:
         apiKey:
             type: string
@@ -5697,6 +5731,7 @@ marketo:
     token_params:
         grant_type: client_credentials
     docs: https://docs.nango.dev/integrations/all/marketo
+    docs_connect: https://docs.nango.dev/integrations/all/marketo/connect
     connection_config:
         endpointURL:
             type: string
@@ -5707,6 +5742,7 @@ marketo:
             prefix: https://
             suffix: /
             order: 1
+            doc_section: '#step-3-find-your-domain-and-identity-url'
         identityURL:
             type: string
             title: Identity URL
@@ -5716,6 +5752,7 @@ marketo:
             example: xxx.mktorest.com
             suffix: /identity/oauth/token
             order: 2
+            doc_section: '#step-3-find-your-domain-and-identity-url'
 
 malwarebytes:
     display_name: Malwarebytes
@@ -7606,6 +7643,32 @@ rippling-shop-app:
             description: ''
             automated: true
 
+rock-gym-pro:
+    display_name: Rock Gym Pro
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.rockgympro.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/ping
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/rock-gym-pro
+    credentials:
+        username:
+            type: string
+            title: API Username
+            description: Your Rock Gym Pro API username
+        password:
+            type: string
+            title: API Password
+            description: Your Rock Gym Pro API password
+
 segment:
     display_name: Segment
     categories:
@@ -8982,6 +9045,7 @@ trello-scim:
             endpoints:
                 - /v2/users?sortBy=displayName&count=10
     docs: https://docs.nango.dev/integrations/all/trello-scim
+    docs_connect: https://docs.nango.dev/integrations/all/trello-scim/connect
     credentials:
         apiKey:
             type: string
