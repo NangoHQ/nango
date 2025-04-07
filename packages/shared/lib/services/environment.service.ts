@@ -18,17 +18,6 @@ export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 const hashLocalCache = new Map<string, string>();
 
-export type EnvironmentErrorCode = 'deletion_failed';
-export class EnvironmentError extends Error {
-    public code: EnvironmentErrorCode;
-    public payload?: Record<string, unknown>;
-    constructor({ code, message, payload }: { code: EnvironmentErrorCode; message: string; payload?: Record<string, unknown> }) {
-        super(message);
-        this.code = code;
-        this.payload = payload || {};
-    }
-}
-
 class EnvironmentService {
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'name'>[]> {
         try {
@@ -496,17 +485,16 @@ class EnvironmentService {
         return globalCallbackUrl;
     }
 
-    async deleteEnvironment(id: number): Promise<Result<void, EnvironmentError>> {
+    async deleteEnvironment(id: number): Promise<Result<void>> {
         try {
             const result = await db.knex.from<DBEnvironment>(TABLE).where({ id }).del();
             if (result !== 0) {
                 return Ok(undefined);
             }
-        } catch {
-            // Empty catch block
+            return Err(new Error('Failed to delete environment'));
+        } catch (err) {
+            return Err(new Error('Failed to delete environment', { cause: err }));
         }
-        // Error if no environment was found OR exception was thrown
-        return Err(new EnvironmentError({ code: 'deletion_failed', message: 'Failed to delete environment' }));
     }
 }
 

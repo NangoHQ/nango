@@ -44,7 +44,7 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
     if (body.name) {
         const existingEnvironment = await environmentService.getByEnvironmentName(account.id, body.name);
         if (existingEnvironment && existingEnvironment.id !== environment.id) {
-            res.status(400).send({ error: { code: 'conflict', message: 'An environment with this name already exists' } });
+            res.status(409).send({ error: { code: 'conflict', message: 'An environment with this name already exists' } });
             return;
         }
 

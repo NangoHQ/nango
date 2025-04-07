@@ -19,9 +19,9 @@ export const deleteEnvironment = asyncWrapper<DeleteEnvironment>(async (req, res
         return;
     }
 
-    const deleted = await environmentService.deleteEnvironment(environment.id);
-    if (!deleted) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete environment' } });
+    const result = await environmentService.deleteEnvironment(environment.id);
+    if (result.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }
 
