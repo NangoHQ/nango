@@ -37,7 +37,7 @@ export interface DBPlan extends Timestamps {
      * Enable or disabled sync variant
      * @default false
      */
-    has_sync_variant: boolean;
+    has_sync_variants: boolean;
 
     /**
      * Enable or disabled open telemetry export
