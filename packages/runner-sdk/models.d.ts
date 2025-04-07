@@ -19,12 +19,7 @@ interface Pagination {
     response_path?: string;
     limit_name_in_request: string;
     in_body?: boolean;
-    on_page?: (
-        paginationState: {
-            nextPageParam?: string | number | undefined;
-            response: AxiosResponse;
-        }
-    ) => Promise<void>;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }
 interface CursorPagination extends Pagination {
     cursor_path_in_response: string;
@@ -145,10 +140,12 @@ interface JwtCredentials {
     type: AuthModes['Jwt'];
     privateKeyId?: string;
     issuerId?: string;
-    privateKey: {
-        id: string;
-        secret: string;
-    } | string;
+    privateKey:
+        | {
+              id: string;
+              secret: string;
+          }
+        | string;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -179,7 +176,22 @@ interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials | CustomCredentials;
+type AuthCredentials =
+    | OAuth2Credentials
+    | OAuth2ClientCredentials
+    | OAuth1Credentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials
+    | TbaCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | BillCredentials
+    | TwoStepCredentials
+    | SignatureCredentials
+    | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -227,15 +239,15 @@ export interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
     logMessages?:
-    | {
-        counts: {
-            updated: number;
-            added: number;
-            deleted: number;
-        };
-        messages: unknown[];
-    }
-    | undefined;
+        | {
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
+        | undefined;
     rawSaveOutput?: Map<string, unknown[]> | undefined;
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
@@ -299,7 +311,23 @@ export declare class NangoAction {
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | SignatureCredentials>;
+    getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | BillCredentials
+        | TwoStepCredentials
+        | SignatureCredentials
+    >;
     /**
      * Get current integration
      */
@@ -330,12 +358,12 @@ export declare class NangoAction {
         message: any,
         options?:
             | {
-                level?: LogLevel;
-            }
+                  level?: LogLevel;
+              }
             | {
-                [key: string]: any;
-                level?: never;
-            }
+                  [key: string]: any;
+                  level?: never;
+              }
     ): Promise<void>;
     log(
         message: string,
@@ -367,13 +395,13 @@ export declare class NangoSync extends NangoAction {
     track_deletes: boolean;
     logMessages?:
         | {
-            counts: {
-                updated: number;
-                added: number;
-                deleted: number;
-            };
-            messages: unknown[];
-        }
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
         | undefined;
     rawSaveOutput?: Map<string, unknown[]>;
     rawDeleteOutput?: Map<string, unknown[]>;
@@ -398,4 +426,4 @@ export declare class NangoSync extends NangoAction {
  * It has been split from the actual code to avoid making the code too dirty and to easily enable/disable tracing if there is an issue with it
  */
 export declare function instrumentSDK(rawNango: NangoAction | NangoSync): NangoAction | NangoSync;
-export { };
+export {};

@@ -31,20 +31,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
-const bodyValidation = z
-    .object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
-    })
-    .strict();
-
+const bodyValidation = z.object({}).catchall(z.any()).strict();
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
@@ -85,7 +72,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
+    const bodyData = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -162,7 +149,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const create = jwtClient.createCredentials({ provider: provider as ProviderJwt, privateKey, privateKeyId, issuerId });
+        const create = jwtClient.createCredentials({ provider: provider as ProviderJwt, dynamicCredentials: bodyData });
         if (create.isErr()) {
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();

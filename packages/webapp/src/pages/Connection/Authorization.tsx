@@ -198,22 +198,33 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                     />
                 </div>
             )}
-            {connection.credentials?.type === 'TWO_STEP' && (
+            {(connection.credentials?.type === 'TWO_STEP' || connection.credentials?.type === 'JWT') && (
                 <div>
-                    {Object.keys(connection.credentials)
-                        .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
-                        .map((key) => {
-                            const value = (connection.credentials as Record<string, string>)[key];
-
+                    {(() => {
+                        // Handle privateKey if it's an object (id and secret), backwards compatibility with ghost-admin
+                        const privateKey = (connection.credentials as Record<string, any>)['privateKey'];
+                        if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
                             return (
-                                <div className="flex flex-col" key={key}>
-                                    <span className="text-gray-400 text-xs uppercase mb-1">
-                                        {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
-                                    </span>
-                                    <SecretInput disabled defaultValue={value} copy={true} />
+                                <div className="flex flex-col">
+                                    <span className="text-gray-400 text-xs uppercase mb-1">PRIVATE KEY</span>
+                                    <SecretInput disabled defaultValue={`${privateKey.id}:${privateKey.secret}`} copy={true} />
                                 </div>
                             );
-                        })}
+                        }
+                        return Object.keys(connection.credentials)
+                            .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
+                            .map((key) => {
+                                const value = (connection.credentials as Record<string, string>)[key];
+                                return (
+                                    <div className="flex flex-col" key={key}>
+                                        <span className="text-gray-400 text-xs uppercase mb-1">
+                                            {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+                                        </span>
+                                        <SecretInput disabled defaultValue={value} copy={true} />
+                                    </div>
+                                );
+                            });
+                    })()}
                 </div>
             )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
@@ -280,36 +291,6 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Refresh Token</span>
                     <SecretInput disabled value={connection.credentials.refresh_token} copy={true} />
-                </div>
-            )}
-            {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Issuer ID</span>
-                    <SecretInput disabled defaultValue={connection.credentials.issuerId} copy={true} />
-                </div>
-            )}
-
-            {connection.credentials.type === 'JWT' && connection.credentials.privateKeyId && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Private Key ID</span>
-                    <SecretInput disabled defaultValue={connection.credentials.privateKeyId} copy={true} />
-                </div>
-            )}
-
-            {connection.credentials.type === 'JWT' && connection.credentials.privateKey && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">
-                        {typeof connection.credentials.privateKey === 'string' ? 'Private Key' : 'API Key'}
-                    </span>
-                    <SecretInput
-                        disabled
-                        defaultValue={
-                            typeof connection.credentials.privateKey === 'string'
-                                ? connection.credentials.privateKey
-                                : `${(connection.credentials.privateKey as { id: string; secret: string }).id}:${(connection.credentials.privateKey as { id: string; secret: string }).secret}`
-                        }
-                        copy={true}
-                    />
                 </div>
             )}
             {connection.credentials.type === 'BILL' && connection.credentials.organization_id && (

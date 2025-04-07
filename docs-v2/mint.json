@@ -621,6 +621,7 @@
                 "integrations/all/smartsheet",
                 "integrations/all/smugmug",
                 "integrations/all/snowflake",
+                "integrations/all/snowflake-jwt",
                 "integrations/all/splitwise",
                 "integrations/all/spotify",
                 "integrations/all/spotify-oauth2-cc",

@@ -167,11 +167,24 @@ export function interpolateString(str: string, replacers: Record<string, any>) {
         if (b === 'now') {
             return new Date().toISOString();
         }
-        const r = replacers[b];
+        const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
 }
+function resolveKey(key: string, replacers: Record<string, any>): any {
+    const keys = key.split('.');
+    let value = replacers;
 
+    for (const part of keys) {
+        if (value && part in value) {
+            value = value[part];
+        } else {
+            return undefined;
+        }
+    }
+
+    return value;
+}
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);

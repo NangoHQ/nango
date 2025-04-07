@@ -44,15 +44,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         content_url: z.string().min(1)
     }),
     JWT: z.object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
+        // JWT is custom every time
     }),
     TWO_STEP: z.object({
         // TWO_STEP is custom every time
@@ -236,9 +228,18 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
+                    let credentials = values['credentials'];
+                    // Handle Ghost Admin API key transformation
+                    if (integration?.provider.includes('ghost-admin') && credentials?.privateKey) {
+                        const [id, secret] = credentials.privateKey.split(':');
+                        credentials = {
+                            ...credentials,
+                            privateKey: { id, secret }
+                        };
+                    }
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
-                        credentials: { ...values['credentials'], type: provider.auth_mode },
+                        credentials: { ...credentials, type: provider.auth_mode },
                         detectClosedAuthWindow
                     });
                 }

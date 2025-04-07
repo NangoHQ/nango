@@ -290,7 +290,7 @@ export async function credentialsTest({
         }
     });
 
-    const { method, base_url_override: baseUrlOverride, headers, endpoints } = providerVerification;
+    const { method, base_url_override: baseUrlOverride, headers, endpoints, data } = providerVerification;
 
     const connection: DBConnectionDecrypted = {
         id: -1,
@@ -341,6 +341,10 @@ export async function credentialsTest({
 
         if (baseUrlOverride) {
             configBody.baseUrlOverride = baseUrlOverride;
+        }
+
+        if (data) {
+            configBody.data = data;
         }
 
         try {

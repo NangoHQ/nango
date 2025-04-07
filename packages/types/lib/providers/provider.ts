@@ -57,6 +57,7 @@ export interface BaseProvider {
             endpoints: string[];
             base_url_override?: string;
             headers?: Record<string, string>;
+            data?: unknown;
         };
     };
     authorization_url?: string;
@@ -121,13 +122,20 @@ export interface ProviderOAuth1 extends BaseProvider {
 
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
+    signature: {
+        protocol: 'RSA' | 'HMAC';
+    };
     token: {
+        signing_key: string;
         expires_in_ms: number;
         headers: {
             alg: string;
+            typ?: string;
         };
         payload: {
-            aud: string;
+            aud?: string;
+            iss?: string;
+            sub?: string;
         };
     };
 }

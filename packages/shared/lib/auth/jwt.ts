@@ -7,66 +7,70 @@ import { AuthCredentialsError } from '../utils/error.js';
 
 import type { JwtCredentials, ProviderJwt } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import { interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
 /**
  * Create JWT credentials
  */
 export function createCredentials({
-    privateKey,
     provider,
-    privateKeyId,
-    issuerId
+    dynamicCredentials
 }: {
     provider: ProviderJwt;
-    privateKey: { id: string; secret: string } | string;
-    privateKeyId?: string | undefined;
-    issuerId?: string | undefined;
+    dynamicCredentials: Record<string, any>;
 }): Result<JwtCredentials, AuthCredentialsError> {
-    const originalPrivateKey = privateKey;
-    const originalPrivateKeyId = privateKeyId;
-
-    if (typeof privateKey === 'object') {
-        privateKeyId = privateKey.id;
-        privateKey = privateKey.secret;
-    }
-
-    if (!privateKey) {
-        return Err(new AuthCredentialsError('invalid_jwt_private_key'));
-    }
-    if (!privateKeyId) {
-        return Err(new AuthCredentialsError('invalid_jwt_private_key_id'));
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-    const payload = {
-        ...provider.token.payload,
-        iat: now,
-        exp: now + provider.token.expires_in_ms / 1000
-    };
-    const header = {
-        ...provider.token.headers,
-        alg: provider.token.headers.alg,
-        kid: privateKeyId
-    };
-
     try {
-        const token = signJWT({
-            payload,
-            secretOrPrivateKey: Buffer.from(privateKey, 'hex'),
-            options: { algorithm: provider.token.headers.alg, header }
-        });
-        const expiresAt = new Date(Date.now() + provider.token.expires_in_ms);
+        const now = Math.floor(Date.now() / 1000);
+        const payload = Object.entries(provider.token.payload).reduce<Record<string, any>>((acc, [key, value]) => {
+            const strippedValue = stripCredential(value);
 
-        const credentials: JwtCredentials = {
+            if (typeof strippedValue === 'object' && strippedValue !== null) {
+                acc[key] = interpolateObject(strippedValue, dynamicCredentials);
+            } else if (typeof strippedValue === 'string') {
+                acc[key] = interpolateString(strippedValue, dynamicCredentials);
+            } else {
+                acc[key] = strippedValue;
+            }
+            return acc;
+        }, {});
+
+        payload['iat'] = now;
+        payload['exp'] = now + provider.token.expires_in_ms / 1000;
+
+        const header = Object.entries(provider.token.headers).reduce<Record<string, any>>((acc, [key, value]) => {
+            const strippedValue = stripCredential(value);
+
+            if (typeof strippedValue === 'object' && strippedValue !== null) {
+                acc[key] = interpolateObject(strippedValue, dynamicCredentials);
+            } else if (typeof strippedValue === 'string') {
+                acc[key] = interpolateString(strippedValue, dynamicCredentials);
+            } else {
+                acc[key] = strippedValue;
+            }
+            return acc;
+        }, {});
+
+        const signingKey = stripCredential(provider.token.signing_key);
+        const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, dynamicCredentials) : signingKey;
+
+        const token =
+            provider.signature.protocol === 'RSA'
+                ? signJWT({
+                      payload,
+                      secretOrPrivateKey: formatPrivateKey(interpolatedSigningKey),
+                      options: { algorithm: provider.token.headers.alg, header }
+                  })
+                : signJWT({
+                      payload,
+                      secretOrPrivateKey: Buffer.from(interpolatedSigningKey, 'hex'),
+                      options: { algorithm: provider.token.headers.alg, header }
+                  });
+        return Ok({
             type: 'JWT',
-            privateKeyId: originalPrivateKeyId || '',
-            issuerId: issuerId || '',
-            privateKey: originalPrivateKey,
+            ...dynamicCredentials,
             token,
-            expires_at: expiresAt
-        };
-
-        return Ok(credentials);
+            expires_at: new Date(Date.now() + provider.token.expires_in_ms)
+        });
     } catch (err) {
         return Err(err instanceof AuthCredentialsError ? err : new AuthCredentialsError('failed_to_generate', { cause: err }));
     }
@@ -135,4 +139,8 @@ function signJWT({
     } catch (err) {
         throw new AuthCredentialsError('failed_to_sign', { cause: err });
     }
+}
+
+function formatPrivateKey(key: string): string {
+    return key.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
 }

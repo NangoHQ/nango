@@ -143,8 +143,8 @@ class ConfigController {
                             integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
                         }
 
-                        // Check if provider is of type ProviderTwoStep
-                        if (provider.auth_mode === 'TWO_STEP') {
+                        // Check if provider is of type ProviderTwoStep || JWT
+                        if (provider.auth_mode === 'TWO_STEP' || provider.auth_mode === 'JWT') {
                             integration['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
                         }
                     }
