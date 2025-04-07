@@ -66,7 +66,7 @@ export const ConnectionCreate: React.FC = () => {
                 void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
-                    navigate(`/${env}/connections/${integration?.unique_key}/${hasConnected.current.connectionId}`);
+                    navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
                 void listIntegrationMutate();
