@@ -505,6 +505,17 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         res.locals['user'] = user;
 
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: user.account_id });
+            if (planRes.isErr()) {
+                res.status(401).send({ error: { code: 'plan_not_found' } });
+                return;
+            }
+            plan = planRes.value;
+        }
+        res.locals['plan'] = plan;
+
         const fullPath = path.join(req.baseUrl, req.route.path);
         if (ignoreEnvPaths.includes(fullPath)) {
             next();
@@ -521,16 +532,6 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         if (!result) {
             res.status(401).send({ error: { code: 'unknown_account_or_env' } });
             return;
-        }
-
-        let plan: DBPlan | null = null;
-        if (flagHasPlan) {
-            const planRes = await getPlan(db.knex, { accountId: result.account.id });
-            if (planRes.isErr()) {
-                res.status(401).send({ error: { code: 'plan_not_found' } });
-                return;
-            }
-            plan = planRes.value;
         }
 
         res.locals['account'] = result.account;

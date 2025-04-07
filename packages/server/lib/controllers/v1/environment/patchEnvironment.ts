@@ -4,12 +4,14 @@ import { environmentService } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { environmentToApi } from '../../../formatters/environment.js';
+import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { DBEnvironment, PatchEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
+        name: envSchema.optional(),
         callback_url: z.string().url().optional(),
         hmac_key: z.string().min(0).max(1000).optional(),
         hmac_enabled: z.boolean().optional(),
@@ -36,9 +38,18 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
     }
 
     const body: PatchEnvironment['Body'] = valBody.data;
-    const { environment, plan } = res.locals;
+    const { account, environment, plan } = res.locals;
 
     const data: Partial<DBEnvironment> = {};
+    if (body.name) {
+        const existingEnvironment = await environmentService.getByEnvironmentName(account.id, body.name);
+        if (existingEnvironment && existingEnvironment.id !== environment.id) {
+            res.status(409).send({ error: { code: 'conflict', message: 'An environment with this name already exists' } });
+            return;
+        }
+
+        data.name = body.name;
+    }
     if (typeof body.callback_url !== 'undefined') {
         data.callback_url = body.callback_url;
     }
