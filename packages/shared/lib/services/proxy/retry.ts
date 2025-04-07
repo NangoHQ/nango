@@ -1,7 +1,9 @@
-import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
-import { networkError } from '@nangohq/utils';
-import type { AxiosError } from 'axios';
 import { isAxiosError } from 'axios';
+
+import { networkError } from '@nangohq/utils';
+
+import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
+import type { AxiosError } from 'axios';
 
 /**
  * Determine if we can retry or not based on the error we are receiving
@@ -116,7 +118,7 @@ export function getRetryFromHeader({
             return { found: false, reason: 'after:no_header' };
         }
 
-        // TODO: handle non-seconds header
+        // TODO: handle non-seconds header (e.g: linear)
         const retryAfter = Number(retryHeaderVal);
 
         return { found: true, reason: 'after', wait: retryAfter * 1000 };
