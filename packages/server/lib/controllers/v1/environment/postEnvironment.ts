@@ -30,7 +30,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const body: PostEnvironment['Body'] = valBody.data;
 
-    const accountId = res.locals.account.id;
+    const accountId = res.locals.user.account_id;
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
 
     if (flagHasPlan) {

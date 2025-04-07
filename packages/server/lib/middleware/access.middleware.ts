@@ -536,7 +536,6 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
 
         res.locals['account'] = result.account;
         res.locals['environment'] = result.environment;
-        res.locals['plan'] = plan;
         tagTraceUser({ ...result, plan });
         next();
     } catch (err) {

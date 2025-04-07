@@ -1,15 +1,19 @@
 import * as uuid from 'uuid';
+
 import db from '@nangohq/database';
-import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
-import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/types';
-import { LogActionEnum } from '../models/Telemetry.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
+
+import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
+import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+
+import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
-export const defaultEnvironments = ['prod', 'dev'];
+export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 const hashLocalCache = new Map<string, string>();
 
