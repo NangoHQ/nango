@@ -64,7 +64,7 @@ describe(`PATCH ${endpoint}`, () => {
             token: env.secret_key
         });
 
-        expect(res.res.status).toBe(400);
+        expect(res.res.status).toBe(409);
         isError(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
