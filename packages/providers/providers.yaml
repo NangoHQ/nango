@@ -4032,7 +4032,6 @@ ghost-admin:
             description: The domain of your Ghost Admin which can be different from your main domain
             example: 'mock.ghost.io'
             pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
-            doc_section: '#step-1-finding-your-ghost-admin-domain'
             order: 1
         version:
             type: string
