@@ -1,15 +1,19 @@
-import type { Node, NodeProvider } from '@nangohq/fleet';
-import type { Result } from '@nangohq/utils';
+import { setTimeout } from 'node:timers/promises';
+
+import { isAxiosError } from 'axios';
+import { RateLimiterMemory, RateLimiterRedis } from 'rate-limiter-flexible';
+import { createClient } from 'redis';
+
+import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
+
 import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
-import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
+
+import type { Node, NodeProvider } from '@nangohq/fleet';
+import type { Result } from '@nangohq/utils';
 import type { AxiosResponse } from 'axios';
-import { isAxiosError } from 'axios';
 import type { IRateLimiterRedisOptions, RateLimiterAbstract } from 'rate-limiter-flexible';
-import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
-import { createClient } from 'redis';
-import { setTimeout } from 'node:timers/promises';
 
 const logger = getLogger('Render');
 
@@ -147,8 +151,17 @@ async function withRateLimitHandling<T>(rateLimitGroup: 'create' | 'delete' | 'r
     }
 }
 
-function getPlan(node: Node): 'starter' | 'standard' | 'pro' {
-    if (node.cpuMilli > 2000 || node.memoryMb > 2048) {
+function getPlan(node: Node): 'starter' | 'standard' | 'pro' | 'pro_plus' | 'pro_max' | 'pro_ultra' {
+    if (node.cpuMilli >= 8000 && node.memoryMb >= 32000) {
+        return 'pro_ultra';
+    }
+    if (node.cpuMilli >= 4000 && node.memoryMb >= 16000) {
+        return 'pro_max';
+    }
+    if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
+        return 'pro_plus';
+    }
+    if (node.cpuMilli > 2000 || node.memoryMb > 4000) {
         return 'pro';
     }
     if (node.cpuMilli > 1000 || node.memoryMb > 1024) {
