@@ -161,10 +161,10 @@ function getPlan(node: Node): 'starter' | 'standard' | 'pro' | 'pro_plus' | 'pro
     if (node.cpuMilli >= 4000 && node.memoryMb >= 8000) {
         return 'pro_plus';
     }
-    if (node.cpuMilli > 2000 || node.memoryMb > 4000) {
+    if (node.cpuMilli > 2000 || node.memoryMb >= 4000) {
         return 'pro';
     }
-    if (node.cpuMilli > 1000 || node.memoryMb > 1024) {
+    if (node.cpuMilli > 1000 || node.memoryMb >= 2000) {
         return 'standard';
     }
     return 'starter';
