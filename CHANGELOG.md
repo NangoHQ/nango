@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.3] - 2025-04-04
+
+### Added
+
+- *(plan)* Replace is_capped (#3825) by @bodinsamuel
+- *(azure-devops)* Implement support for Azure Devops (#3785) by @lordsarcastic
+
+### Changed
+
+- *(deps-dev)* Bump vite from 6.0.11 to 6.0.13 (#3818) by @dependabot[bot]
+- Update .env.example (#3826) by @SteliosMav
+- *(deps)* Bump tar-fs and testcontainers (#3812) by @dependabot[bot]
+- Webhook can execute for 1 hour (15mins previously) (#3815) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fa13e02ca460a0d35b94ba868ecaad94df542b88 by Khaliq. Commit message: feat(unification): HRIS employees unification (#301) by @github-actions[bot]
+- Xero oauth step guide (#3844) by @hassan254-prog
+- Edit limits (#3845) by @bastienbeurier
+- Nango on AWS ECS guide (#3830) by @TBonnin
+- When there is a connect ui document, link to that for the setup guide (#3751) by @lordsarcastic
+- *(deps-dev)* Bump vite from 6.2.4 to 6.2.5 in /packages/webapp (#3851) by @dependabot[bot]
+
+### Fixed
+
+- Update nango-runner package to utilize soap package 1.1.10 (#3840) by @colinbjohnson
+- *(docs)* Docs update openai format (#3842) by @khaliqgant
+- *(deps)* Upgrade vitest, axios, zod (#3841) by @bodinsamuel
+- *(docker)* Cleanup (#3838) by @bodinsamuel
+- Display git hash in api and UI (#3843) by @bodinsamuel
+- *(connect-ui)* Show unique_key suffix when integration names are du… (#3846) by @SteliosMav
+- *(integrations)* Remove the pattern in Avalara for the client. (#3852) by @hassan254-prog
+- *(docs)* Doc improvements (#3855) by @khaliqgant
+- *(cli)* Remove global store to allow tests to reuse code (#3850) by @bodinsamuel
+
+## [v0.58.2] - 2025-04-03
+
+### Added
+
+- *(integrations)* Add support for employment hero (#3817) by @hassan254-prog
+- *(plans)* Table migration (#3807) by @bodinsamuel
+- *(docs)* Update trigger sync docs (#3816) by @kaposke
+- Add billed records metrics (#3819) by @TBonnin
+- *(plan)* Create free plan for new account (#3822) by @bodinsamuel
+- *(ui)* Webpack -> vite (#3780) by @bodinsamuel
+
+### Changed
+
+- March changelog + improvements (#3824) by @bastienbeurier
+- *(test)* Provide more seeder for unit test (#3823) by @bodinsamuel
+- Reference pagination callback within  docs (#3827) by @hassan254-prog
+- Remove some metrics dimensions (#3829) by @TBonnin
+- *(deploy)* Use docker image for prod server (#3836) by @bodinsamuel
+
+### Fixed
+
+- Webhook response (#3832) by @TBonnin
+- *(cli)* Compile only scripts in the nango yaml config (#3811) by @hassan254-prog
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/4cbeb70d391664de869f961664f7fc49fb95f510 by Hassan_Wari. Commit message: fix(outloook): properly fetch email attachments (#302) by @github-actions[bot]
+- *(api)* GET /api/v1/integrations new format (#3833) by @bodinsamuel
+- *(test)* Fix failing tests for windows (#3834) by @hassan254-prog
+- *(scriptConfig)* Don't use disallowed character for the function name (#3837) by @khaliqgant
+
 ## [v0.58.1] - 2025-04-01
 
 ### Added
@@ -3554,6 +3614,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.3]: https://github.com/NangoHQ/nango/compare/v0.58.2..v0.58.3
+[v0.58.2]: https://github.com/NangoHQ/nango/compare/v0.58.1..v0.58.2
 [v0.58.1]: https://github.com/NangoHQ/nango/compare/v0.57.6..v0.58.1
 [v0.57.6]: https://github.com/NangoHQ/nango/compare/v0.57.5..v0.57.6
 [v0.57.5]: https://github.com/NangoHQ/nango/compare/v0.57.4..v0.57.5

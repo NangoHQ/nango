@@ -25,12 +25,12 @@
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.21.0",
         "express": "^4.20.0",
-        "zod": "3.24.1"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "node-fetch": "^3.3.2",
         "typescript": "5.7.3",
-        "vitest": "2.1.9"
+        "vitest": "3.1.1"
     }
 }

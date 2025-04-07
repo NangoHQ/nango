@@ -1,14 +1,16 @@
-import type { ReactNode } from 'react';
-import { useState } from 'react';
-import type { InputProps } from '../../../components/ui/input/Input';
-import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
-import { Button } from '../../../components/ui/button/Button';
 import { IconEdit, IconExternalLink } from '@tabler/icons-react';
-import { useToast } from '../../../hooks/useToast';
-import type { ApiError } from '@nangohq/types';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { Button } from '../../../components/ui/button/Button';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
+import { Input } from '../../../components/ui/input/Input';
+import { useToast } from '../../../hooks/useToast';
+import { cn } from '../../../utils/utils';
+
+import type { InputProps } from '../../../components/ui/input/Input';
+import type { ApiError } from '@nangohq/types';
+import type { ReactNode } from 'react';
 
 export const EditableInput: React.FC<
     {
@@ -36,7 +38,11 @@ export const EditableInput: React.FC<
         setLoading(false);
 
         if ('error' in res.json) {
-            toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            if (res.json.error.code === 'forbidden') {
+                toast({ title: res.json.error.message, variant: 'error' });
+            } else {
+                toast({ title: `There was an issue updating the ${title}`, variant: 'error' });
+            }
             if (res.json.error.code === 'invalid_body' && res.json.error.errors && res.json.error.errors[0]) {
                 setError(res.json.error.errors[0].message);
             }

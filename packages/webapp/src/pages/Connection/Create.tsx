@@ -29,7 +29,7 @@ import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
-import type { Integration } from '@nangohq/server';
+import type { ApiIntegrationList } from '@nangohq/types';
 
 export const ConnectionCreate: React.FC = () => {
     const toast = useToast();
@@ -47,7 +47,7 @@ export const ConnectionCreate: React.FC = () => {
     const { list: listIntegration, mutate: listIntegrationMutate, loading } = useListIntegration(env);
 
     const [open, setOpen] = useState(false);
-    const [integration, setIntegration] = useState<Integration>();
+    const [integration, setIntegration] = useState<ApiIntegrationList>();
     const [testUserEmail, setTestUserEmail] = useState(user!.email);
     const [testUserId, setTestUserId] = useState(`test_${user!.name.toLocaleLowerCase().replaceAll(' ', '_')}`);
     const [testUserName, setTestUserName] = useState(user!.name);
@@ -66,7 +66,7 @@ export const ConnectionCreate: React.FC = () => {
                 void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
-                    navigate(`/${env}/connections/${integration?.uniqueKey}/${hasConnected.current.connectionId}`);
+                    navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
                 void listIntegrationMutate();
@@ -98,7 +98,7 @@ export const ConnectionCreate: React.FC = () => {
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
             const res = await apiConnectSessions(env, {
-                allowed_integrations: integration ? [integration.uniqueKey] : undefined,
+                allowed_integrations: integration ? [integration.unique_key] : undefined,
                 end_user: { id: testUserId, email: testUserEmail, display_name: testUserName },
                 organization: testOrgId ? { id: testOrgId, display_name: testOrgName } : undefined
             });
@@ -110,8 +110,8 @@ export const ConnectionCreate: React.FC = () => {
     };
 
     useEffect(() => {
-        if (paramIntegrationId && listIntegration?.integrations) {
-            const exists = listIntegration.integrations.find((v) => v.uniqueKey === paramIntegrationId);
+        if (paramIntegrationId && listIntegration) {
+            const exists = listIntegration.find((v) => v.unique_key === paramIntegrationId);
             if (exists) {
                 setIntegration(exists);
             }
@@ -161,7 +161,7 @@ export const ConnectionCreate: React.FC = () => {
                                         >
                                             {integration ? (
                                                 <div className="flex gap-3">
-                                                    <IntegrationLogo provider={integration.provider} /> {integration.uniqueKey}
+                                                    <IntegrationLogo provider={integration.provider} /> {integration.unique_key}
                                                 </div>
                                             ) : (
                                                 'Choose from the list'
@@ -183,17 +183,17 @@ export const ConnectionCreate: React.FC = () => {
                                             <CommandList className="max-h-[400px]">
                                                 <CommandEmpty>No integrations found.</CommandEmpty>
                                                 <CommandGroup className="px-0">
-                                                    {listIntegration?.integrations.map((item) => {
-                                                        const checked = integration && item.uniqueKey === integration.uniqueKey;
+                                                    {listIntegration?.map((item) => {
+                                                        const checked = integration && item.unique_key === integration.unique_key;
                                                         return (
                                                             <CommandItem
-                                                                key={item.uniqueKey}
-                                                                value={item.uniqueKey}
+                                                                key={item.unique_key}
+                                                                value={item.unique_key}
                                                                 onSelect={(curr) => {
                                                                     setIntegration(
-                                                                        integration && curr === integration.uniqueKey
+                                                                        integration && curr === integration.unique_key
                                                                             ? undefined
-                                                                            : listIntegration.integrations.find((v) => v.uniqueKey === curr)!
+                                                                            : listIntegration.find((v) => v.unique_key === curr)!
                                                                     );
                                                                     setOpen(false);
                                                                 }}
@@ -203,7 +203,7 @@ export const ConnectionCreate: React.FC = () => {
                                                                 )}
                                                             >
                                                                 <div className="flex gap-3">
-                                                                    <IntegrationLogo provider={item.provider} /> {item.uniqueKey}
+                                                                    <IntegrationLogo provider={item.provider} /> {item.unique_key}
                                                                 </div>
                                                                 <IconCheck className={cn('mr-2 h-4 w-4', checked ? 'opacity-100' : 'opacity-0')} />
                                                             </CommandItem>
@@ -409,7 +409,7 @@ export const ConnectionCreate: React.FC = () => {
                         )}
                         <div className="flex gap-4">
                             <ButtonLink
-                                to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.uniqueKey}` : ''}`}
+                                to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
                                 onClick={onClickConnectUI}
                                 size="md"
                                 variant={'link'}

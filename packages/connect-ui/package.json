@@ -23,7 +23,7 @@
         "@tanstack/react-router": "1.98.3",
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
-        "@vitejs/plugin-react-swc": "3.7.2",
+        "@vitejs/plugin-react-swc": "3.8.1",
         "autoprefixer": "10.4.20",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
@@ -38,9 +38,9 @@
         "tailwindcss": "3.4.14",
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.7.3",
-        "vite": "5.4.12",
+        "vite": "6.2.5",
         "vite-plugin-svgr": "4.3.0",
-        "zod": "3.24.1",
+        "zod": "3.24.2",
         "zustand": "5.0.3"
     }
 }
