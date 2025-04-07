@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.58.2",
+    "version": "0.58.3",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -79,7 +79,7 @@
         "tsx": "4.19.2",
         "typescript": "5.7.3",
         "typescript-eslint": "8.19.1",
-        "vitest": "2.1.9"
+        "vitest": "3.1.1"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,cjs}": [

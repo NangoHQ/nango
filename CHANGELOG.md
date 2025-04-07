@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.3] - 2025-04-04
+
+### Added
+
+- *(plan)* Replace is_capped (#3825) by @bodinsamuel
+- *(azure-devops)* Implement support for Azure Devops (#3785) by @lordsarcastic
+
+### Changed
+
+- *(deps-dev)* Bump vite from 6.0.11 to 6.0.13 (#3818) by @dependabot[bot]
+- Update .env.example (#3826) by @SteliosMav
+- *(deps)* Bump tar-fs and testcontainers (#3812) by @dependabot[bot]
+- Webhook can execute for 1 hour (15mins previously) (#3815) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fa13e02ca460a0d35b94ba868ecaad94df542b88 by Khaliq. Commit message: feat(unification): HRIS employees unification (#301) by @github-actions[bot]
+- Xero oauth step guide (#3844) by @hassan254-prog
+- Edit limits (#3845) by @bastienbeurier
+- Nango on AWS ECS guide (#3830) by @TBonnin
+- When there is a connect ui document, link to that for the setup guide (#3751) by @lordsarcastic
+- *(deps-dev)* Bump vite from 6.2.4 to 6.2.5 in /packages/webapp (#3851) by @dependabot[bot]
+
+### Fixed
+
+- Update nango-runner package to utilize soap package 1.1.10 (#3840) by @colinbjohnson
+- *(docs)* Docs update openai format (#3842) by @khaliqgant
+- *(deps)* Upgrade vitest, axios, zod (#3841) by @bodinsamuel
+- *(docker)* Cleanup (#3838) by @bodinsamuel
+- Display git hash in api and UI (#3843) by @bodinsamuel
+- *(connect-ui)* Show unique_key suffix when integration names are du… (#3846) by @SteliosMav
+- *(integrations)* Remove the pattern in Avalara for the client. (#3852) by @hassan254-prog
+- *(docs)* Doc improvements (#3855) by @khaliqgant
+- *(cli)* Remove global store to allow tests to reuse code (#3850) by @bodinsamuel
+
 ## [v0.58.2] - 2025-04-03
 
 ### Added
@@ -3582,6 +3614,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.3]: https://github.com/NangoHQ/nango/compare/v0.58.2..v0.58.3
 [v0.58.2]: https://github.com/NangoHQ/nango/compare/v0.58.1..v0.58.2
 [v0.58.1]: https://github.com/NangoHQ/nango/compare/v0.57.6..v0.58.1
 [v0.57.6]: https://github.com/NangoHQ/nango/compare/v0.57.5..v0.57.6

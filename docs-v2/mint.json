@@ -240,7 +240,13 @@
                     "group": "Self-hosting",
                     "pages": [
                         "guides/self-hosting/infrastructure",
-                        "guides/self-hosting/enterprise-self-hosting",
+                        {
+                            "group": "Enterprise self-hosting",
+                            "pages": [
+                                "guides/self-hosting/enterprise-self-hosting/overview",
+                                "guides/self-hosting/enterprise-self-hosting/ecs"
+                            ]
+                        },
                         {
                             "group": "Free self-hosting",
                             "pages": [
@@ -589,6 +595,7 @@
                 "integrations/all/ring-central-sandbox",
                 "integrations/all/rippling",
                 "integrations/all/rippling-shop-app",
+                "integrations/all/rock-gym-pro",
                 "integrations/all/sage",
                 "integrations/all/sage-intacct",
                 "integrations/all/sage-intacct-oauth",

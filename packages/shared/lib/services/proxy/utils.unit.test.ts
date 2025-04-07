@@ -619,7 +619,7 @@ describe('buildProxyURL', () => {
                 }),
                 connection: getTestConnection()
             });
-        }).toThrow(new Error('Can not set query params in endpoint and in params'));
+        }).toThrow(new ProxyError('invalid_query_params', 'Can not set query params in endpoint and in params'));
     });
 
     it('should handle array', () => {

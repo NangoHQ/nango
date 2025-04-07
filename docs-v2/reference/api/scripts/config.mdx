@@ -44,30 +44,34 @@ The endpoint will generate a function definition like this:
 
 ```json
 {
-    "name": "move-event",
-    "description": "Move an event to a different time or calendar with the following parameters:\n- eventId: The ID of the event to move\n- start: New start time in ISO format (e.g., \"2024-03-28T14:00:00\")\n- end: New end time in ISO format (e.g., \"2024-03-28T15:00:00\")\n- calendar: Optional new calendar ID to move the event to",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "eventId": {
-                "type": "string",
-                "description": "The ID of the event to move"
-            },
-            "start": {
-                "type": "string",
-                "description": "New start time in ISO format (e.g., \"2024-03-28T14:00:00\")"
-            },
-            "end": {
-                "type": "string",
-                "description": "New end time in ISO format (e.g., \"2024-03-28T15:00:00\")"
-            },
-            "calendar": {
-                "type": "string",
-                "description": "Optional new calendar ID to move the event to"
+    "data": [
+        {
+            "name": "move-event",
+            "description": "Move an event to a different time or calendar with the following parameters:\n- eventId: The ID of the event to move\n- start: New start time in ISO format (e.g., \"2024-03-28T14:00:00\")\n- end: New end time in ISO format (e.g., \"2024-03-28T15:00:00\")\n- calendar: Optional new calendar ID to move the event to",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "eventId": {
+                        "type": "string",
+                        "description": "The ID of the event to move"
+                    },
+                    "start": {
+                        "type": "string",
+                        "description": "New start time in ISO format (e.g., \"2024-03-28T14:00:00\")"
+                    },
+                    "end": {
+                        "type": "string",
+                        "description": "New end time in ISO format (e.g., \"2024-03-28T15:00:00\")"
+                    },
+                    "calendar": {
+                        "type": "string",
+                        "description": "Optional new calendar ID to move the event to"
+                    }
+                },
+                "required": ["eventId", "start", "end"]
             }
-        },
-        "required": ["eventId", "start", "end"]
-    }
+        }
+    ]
 }
 ```
 
@@ -97,24 +101,28 @@ It will be transformed into:
 
 ```json
 {
-    "name": "create-event",
-    "description": "Create a new calendar event with the following parameters:\n- summary: The title of the event\n- attendees: List of email addresses of event attendees",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "summary": {
-                "type": "string",
-                "description": "The title of the event"
-            },
-            "attendees": {
-                "type": "array",
-                "description": "List of email addresses of event attendees",
-                "items": {
-                    "type": "string"
-                }
+    "data": [
+        {
+            "name": "create-event",
+            "description": "Create a new calendar event with the following parameters:\n- summary: The title of the event\n- attendees: List of email addresses of event attendees",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "string",
+                        "description": "The title of the event"
+                    },
+                    "attendees": {
+                        "type": "array",
+                        "description": "List of email addresses of event attendees",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["summary"]
             }
-        },
-        "required": ["summary"]
-    }
+        }
+    ]
 }
 ```
