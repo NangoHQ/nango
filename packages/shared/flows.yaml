@@ -12575,6 +12575,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /fetch-file
+                    group: Files
                 scopes:
                     - Files.Read
                     - offline_access
@@ -12587,6 +12588,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /list-drives
+                    group: Drives
                 scopes:
                     - Files.Read
                     - offline_access
@@ -12599,6 +12601,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /user-files
+                    group: Files
                 output: OneDriveFile
                 runs: every hour
                 sync_type: full
@@ -12614,6 +12617,7 @@ integrations:
                 endpoint:
                     method: GET
                     path: /user-files/selected
+                    group: Files
                 input: OneDriveMetadata
                 output: OneDriveFileSelection
                 runs: every hour
