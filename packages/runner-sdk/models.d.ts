@@ -138,14 +138,7 @@ interface TableauCredentials extends CredentialsCommon {
 }
 interface JwtCredentials {
     type: AuthModes['Jwt'];
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string;
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
