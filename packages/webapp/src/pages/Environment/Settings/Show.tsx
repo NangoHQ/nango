@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
 import { AuthorizationSettings } from './Authorization';
 import { BackendSettings } from './Backend';
-import { DeleteAlert } from './DeleteAlert';
+import { DeleteButton } from './DeleteButton';
 import { ExportSettings } from './Export';
 import { MainSettings } from './Main';
 import { NotificationSettings } from './Notification';
@@ -19,6 +20,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
 
 export const EnvironmentSettings: React.FC = () => {
+    const navigate = useNavigate();
     const { toast } = useToast();
 
     const { mutate: mutateMeta } = useMeta();
@@ -52,8 +54,8 @@ export const EnvironmentSettings: React.FC = () => {
         const { res } = await apiDeleteEnvironment(env);
         if (res.status >= 200 && res.status < 300) {
             setShowDeleteAlert(false);
-            // We have to start by changing the url, otherwise PrivateRoute will the env revert it based on it.
-            window.history.replaceState({}, '', `/${PROD_ENVIRONMENT_NAME}/environment-settings`);
+            // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
+            navigate(`/${PROD_ENVIRONMENT_NAME}/environment-settings`);
             await mutateMeta();
             setEnv(PROD_ENVIRONMENT_NAME);
             toast({
@@ -95,7 +97,7 @@ export const EnvironmentSettings: React.FC = () => {
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Environment Settings</h2>
                 {env !== PROD_ENVIRONMENT_NAME && (
-                    <DeleteAlert environmentName={env} onDelete={handleDelete} open={showDeleteAlert} onOpenChange={setShowDeleteAlert} />
+                    <DeleteButton environmentName={env} onDelete={handleDelete} open={showDeleteAlert} onOpenChange={setShowDeleteAlert} />
                 )}
             </div>
 

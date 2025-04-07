@@ -1,5 +1,5 @@
 import { IconSettings } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { EditableInput } from './EditableInput';
 import { PROD_ENVIRONMENT_NAME } from '../../../constants';
@@ -8,6 +8,8 @@ import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 
 export const MainSettings: React.FC = () => {
+    const navigate = useNavigate();
+
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const { mutate: mutateMeta } = useMeta();
@@ -27,8 +29,8 @@ export const MainSettings: React.FC = () => {
                     originalValue={env}
                     apiCall={(name) => apiPatchEnvironment(env, { name })}
                     onSuccess={async (newName) => {
-                        // We have to start by changing the url, otherwise PrivateRoute will the env revert it based on it.
-                        window.history.replaceState({}, '', `/${newName}/environment-settings`);
+                        // We have to start by changing the url, otherwise PrivateRoute will revert the env based on it.
+                        navigate(`/${newName}/environment-settings`);
                         await mutateMeta();
                         setEnv(newName);
                     }}

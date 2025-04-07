@@ -3,14 +3,14 @@ import { IconTrash } from '@tabler/icons-react';
 import { DestructiveActionModal } from '../../../components/DestructiveActionModal';
 import { Button } from '../../../components/ui/button/Button';
 
-interface DeleteAlertProps {
+interface DeleteButtonProps {
     environmentName: string;
     onDelete: () => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export const DeleteAlert: React.FC<DeleteAlertProps> = ({ environmentName, onDelete, open, onOpenChange }) => {
+export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange }) => {
     const trigger = (
         <Button variant="select" className="text-alert-400 flex gap-2 items-center text-sm">
             <IconTrash stroke={1} size={18} />
