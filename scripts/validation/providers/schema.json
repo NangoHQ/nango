@@ -281,6 +281,9 @@
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "data": {
+                                    "type": "object"
                                 }
                             }
                         }
@@ -393,7 +396,7 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE"]
+                            "enum": ["WSSE", "RSA", "HMAC"]
                         }
                     },
                     "required": ["protocol"]

@@ -4041,7 +4041,6 @@ ghost-admin:
             example: 'v3.0'
             pattern: '^v\d+\.\d+$'
             order: 2
-
     credentials:
         privateKey:
             type: string
