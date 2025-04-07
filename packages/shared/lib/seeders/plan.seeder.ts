@@ -12,7 +12,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         environments_max: 2,
         sync_frequency_secs_min: 60,
         connection_with_scripts_max: 3,
-        has_sync_variant: false,
+        has_sync_variants: false,
         has_otel: false,
         created_at: new Date(),
         updated_at: new Date(),
