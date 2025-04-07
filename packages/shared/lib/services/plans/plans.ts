@@ -25,8 +25,6 @@ export async function createPlan(
         const res = await db
             .from<DBPlan>('plans')
             .insert({
-                trial_start_at: new Date(),
-                trial_end_at: new Date(Date.now() + TRIAL_DURATION),
                 connection_with_scripts_max: 50,
                 ...rest,
                 created_at: new Date(),
@@ -64,7 +62,6 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
             .whereNull('trial_end_notified_at');
-
         return Ok(res);
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));

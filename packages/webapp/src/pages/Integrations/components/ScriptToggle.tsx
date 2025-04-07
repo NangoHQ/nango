@@ -5,6 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import Spinner from '../../../components/ui/Spinner';
 import { Switch } from '../../../components/ui/Switch';
 import { Button } from '../../../components/ui/button/Button';
+import { useEnvironment } from '../../../hooks/useEnvironment';
 import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -18,6 +19,7 @@ export const ScriptToggle: React.FC<{
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
+    const { plan, mutate: mutateEnv } = useEnvironment(env);
 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -69,6 +71,10 @@ export const ScriptToggle: React.FC<{
             toast({ title: `Enabled successfully`, variant: 'success' });
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
             setOpen(false);
+
+            if (plan?.name === 'free' && !plan.trial_end_at) {
+                await mutateEnv();
+            }
         }
 
         setLoading(false);

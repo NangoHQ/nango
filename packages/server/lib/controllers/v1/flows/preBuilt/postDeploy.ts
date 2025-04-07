@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, deployPreBuilt, flowService, syncManager } from '@nangohq/shared';
+import { TRIAL_DURATION, configService, connectionService, deployPreBuilt, flowService, syncManager, updatePlan } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -51,6 +52,10 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
     if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
         res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
         return;
+    }
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        // start trial
+        await updatePlan(db.knex, { id: plan.id, trial_start_at: new Date(), trial_end_at: new Date(Date.now() + TRIAL_DURATION) });
     }
 
     const isCapped = await connectionService.shouldCapUsage({
