@@ -8,6 +8,7 @@ import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy }
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 import { PersistClient } from './persist.js';
 import { logger } from '../logger.js';
+import type { Locks } from './locks.js';
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -27,10 +28,12 @@ const RECORDS_VALIDATION_SAMPLE = 1;
 export class NangoActionRunner extends NangoActionBase {
     nango: Nango;
     protected persistClient: PersistClient;
+    protected locking: Locking;
 
-    constructor(props: NangoProps, runnerProps?: { persistClient: PersistClient }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
 
         this.nango = new Nango(
             { isSync: false, dryRun: isTest, ...props },
@@ -200,6 +203,18 @@ export class NangoActionRunner extends NangoActionBase {
         });
         return res;
     }
+
+    public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        return this.locking.tryAcquireLock(props);
+    }
+
+    public override async releaseLock(props: { key: string }): Promise<boolean> {
+        return this.locking.releaseLock(props);
+    }
+
+    public override async releaseAllLocks(): Promise<void> {
+        return this.locking.releaseAllLocks();
+    }
 }
 
 /**
@@ -209,14 +224,17 @@ export class NangoSyncRunner extends NangoSyncBase {
     nango: Nango;
 
     protected persistClient: PersistClient;
+    protected locking: Locking;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
 
-    constructor(props: NangoProps, runnerProps?: { persistClient?: PersistClient }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
         super(props);
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
+
         this.nango = new Nango(
             { isSync: true, dryRun: isTest, ...props },
             {
@@ -347,7 +365,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -378,7 +396,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -410,7 +428,7 @@ export class NangoSyncRunner extends NangoSyncBase {
                 nangoConnectionId: this.nangoConnectionId!,
                 syncId: this.syncId!,
                 syncJobId: this.syncJobId!,
-                activityLogId: this.activityLogId!,
+                activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
             if (res.isErr()) {
@@ -459,6 +477,54 @@ export class NangoSyncRunner extends NangoSyncBase {
         }
 
         return objects;
+    }
+
+    public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        return this.locking.tryAcquireLock(props);
+    }
+
+    public override async releaseLock(props: { key: string }): Promise<boolean> {
+        return this.locking.releaseLock(props);
+    }
+
+    public override async releaseAllLocks(): Promise<void> {
+        return this.locking.releaseAllLocks();
+    }
+}
+
+class Locking {
+    private locks: Locks;
+    private owner: string;
+
+    constructor({ locks, owner }: { locks: Locks; owner: string }) {
+        this.locks = locks;
+        this.owner = owner;
+    }
+
+    public async tryAcquireLock({ key, ttlMs }: { key: string; ttlMs: number }): Promise<boolean> {
+        const lock = await this.locks.tryAcquireLock({
+            owner: this.owner,
+            key,
+            ttlMs
+        });
+        if (lock.isErr()) {
+            throw lock.error;
+        }
+        return lock.value;
+    }
+    public async releaseLock({ key }: { key: string }): Promise<boolean> {
+        const lock = await this.locks.releaseLock({
+            owner: this.owner,
+            key
+        });
+        if (lock.isErr()) {
+            throw lock.error;
+        }
+        return lock.value;
+    }
+
+    public async releaseAllLocks(): Promise<void> {
+        await this.locks.releaseAllLocks({ owner: this.owner });
     }
 }
 

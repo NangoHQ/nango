@@ -96,6 +96,23 @@ export class NangoActionCLI extends NangoActionBase {
         this.log(`This has no effect but on a remote Nango instance would start a schedule`);
         return Promise.resolve();
     }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseLock(_props: { key: string }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
+    }
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -287,6 +304,23 @@ export class NangoSyncCLI extends NangoSyncBase {
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
         // Not applicable to CLI
         return Promise.resolve();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseLock(_props: { key: string }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
     }
 }
 

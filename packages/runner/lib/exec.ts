@@ -14,26 +14,34 @@ import type { NangoProps, RunnerOutput } from '@nangohq/types';
 import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
+import { Locks } from './sdk/locks.js';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
     default: (nango: NangoActionBase, payload?: object) => Promise<unknown>;
 }
 
-export async function exec(
-    nangoProps: NangoProps,
-    code: string,
-    codeParams?: object,
-    abortController: AbortController = new AbortController()
-): Promise<RunnerOutput> {
+export async function exec({
+    nangoProps,
+    code,
+    codeParams,
+    abortController = new AbortController(),
+    locks = new Locks()
+}: {
+    nangoProps: NangoProps;
+    code: string;
+    codeParams?: object | undefined;
+    abortController?: AbortController;
+    locks?: Locks;
+}): Promise<RunnerOutput> {
     const rawNango = (() => {
         switch (nangoProps.scriptType) {
             case 'sync':
             case 'webhook':
-                return new NangoSyncRunner(nangoProps);
+                return new NangoSyncRunner(nangoProps, { locks });
             case 'action':
             case 'on-event':
-                return new NangoActionRunner(nangoProps);
+                return new NangoActionRunner(nangoProps, { locks });
         }
     })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
@@ -277,6 +285,7 @@ export async function exec(
                 };
             }
         } finally {
+            await nango.releaseAllLocks().catch((err: unknown) => logger.warning('Failed to release all locks', { reason: err }));
             span.finish();
         }
     });
