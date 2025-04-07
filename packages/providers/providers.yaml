@@ -7628,6 +7628,32 @@ rippling-shop-app:
             description: ''
             automated: true
 
+rock-gym-pro:
+    display_name: Rock Gym Pro
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.rockgympro.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/ping
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/rock-gym-pro
+    credentials:
+        username:
+            type: string
+            title: API Username
+            description: Your Rock Gym Pro API username
+        password:
+            type: string
+            title: API Password
+            description: Your Rock Gym Pro API password
+
 segment:
     display_name: Segment
     categories:
