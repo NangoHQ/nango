@@ -4,9 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { SimpleTooltip } from './SimpleTooltip';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from './ui/Dialog';
-import { apiPostEnvironment } from '../hooks/useEnvironment';
+import { apiPostEnvironment, useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
 import { useToast } from '../hooks/useToast';
+import { useStore } from '../store';
 import { cn } from '../utils/utils';
 import { Button } from './ui/button/Button';
 import { Input } from './ui/input/Input';
@@ -14,7 +15,10 @@ import { Input } from './ui/input/Input';
 export const CreateEnvironmentButton: React.FC = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
-    const { meta, mutate } = useMeta();
+    const { mutate: mutateMeta } = useMeta();
+    const env = useStore((state) => state.env);
+    const envs = useStore((state) => state.envs);
+    const environment = useEnvironment(env);
 
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -39,19 +43,19 @@ export const CreateEnvironmentButton: React.FC = () => {
             setOpenDialog(false);
             setError(false);
             setName('');
-            void mutate();
+            void mutateMeta();
         }
 
         setLoading(false);
     };
 
-    const isMaxEnvironmentsReached = meta?.environments && meta?.plan && meta?.environments.length >= meta?.plan?.environments_max;
+    const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
     let tooltipContent: React.ReactNode = null;
     if (isMaxEnvironmentsReached) {
         tooltipContent = (
             <span>
                 Max number of environments reached.{' '}
-                {meta?.plan?.name === 'scale' ? (
+                {environment?.plan?.name === 'scale' ? (
                     <>Contact Nango to add more</>
                 ) : (
                     <>

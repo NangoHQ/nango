@@ -1,6 +1,5 @@
 import type { ApiError, Endpoint } from '../api';
 import type { DBEnvironment } from '../environment/db';
-import type { ApiPlan } from '../plans/http.api';
 
 export type GetMeta = Endpoint<{
     Method: 'GET';
@@ -9,7 +8,6 @@ export type GetMeta = Endpoint<{
     Error: ApiError<'user_not_found'>;
     Success: {
         data: {
-            plan: ApiPlan | null;
             environments: Pick<DBEnvironment, 'name'>[];
             version: string;
             baseUrl: string;
