@@ -8280,6 +8280,33 @@ shopify-api-key:
             pattern: '^(shpat|shpca|shppa)_[a-f0-9]{32}$'
             doc_section: '#step-2-generating-your-api-access-token'
 
+shopify-partner:
+    display_name: Shopify Partner
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://partners.shopify.com/${connectionConfig.partnerId}/api/
+        headers:
+            x-shopify-access-token: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            endpoints:
+                - 2025-04/graphql.json
+    docs: https://docs.nango.dev/integrations/all/shopify-partner
+    docs_connect: https://docs.nango.dev/integrations/all/shopify-partner/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Partner Access Token
+            description: The access token for your Shopify Partner account
+    connection_config:
+        partnerId:
+            type: string
+            title: Partner ID
+            description: Your Shopify Partner ID
+
 shopify-scim:
     display_name: Shopify (SCIM API)
     categories:

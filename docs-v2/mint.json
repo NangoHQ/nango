@@ -618,6 +618,7 @@
                 "integrations/all/shipstation",
                 "integrations/all/shopify",
                 "integrations/all/shopify-api-key",
+                "integrations/all/shopify-partner",
                 "integrations/all/shopify-scim",
                 "integrations/all/shortcut",
                 "integrations/all/signnow",
