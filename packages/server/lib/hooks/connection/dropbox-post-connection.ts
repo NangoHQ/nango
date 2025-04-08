@@ -8,7 +8,11 @@ export default async function execute(nango: Nango) {
     const response = await nango.proxy<FullAccount>({
         method: 'POST',
         endpoint: '/2/users/get_current_account',
-        providerConfigKey: connection.provider_config_key
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        providerConfigKey: connection.provider_config_key,
+        data: null
     });
 
     if (isAxiosError(response)) {
