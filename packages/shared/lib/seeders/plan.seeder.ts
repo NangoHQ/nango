@@ -15,6 +15,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         connection_with_scripts_max: 3,
         has_sync_variants: false,
         has_otel: false,
+        api_rate_limit_size: 'm',
         created_at: new Date(),
         updated_at: new Date(),
         ...override
