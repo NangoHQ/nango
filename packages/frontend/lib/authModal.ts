@@ -146,7 +146,9 @@ export class AuthorizationModal {
             return;
         }
 
-        console.log('opening', this.baseURL.href);
+        if (this.debug) {
+            console.log(debugLogPrefix, 'opening', this.baseURL.href);
+        }
         this.modal.location = this.baseURL.href;
 
         if (!this.modal || this.modal.closed || typeof this.modal.closed == 'undefined') {
@@ -159,7 +161,6 @@ export class AuthorizationModal {
      * Close modal, if opened
      */
     close() {
-        console.log('closing');
         if (this.modal && !this.modal.closed) {
             this.modal.close();
             delete this.modal;
