@@ -12,7 +12,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = res.locals['user'];
+    const sessionUser = res.locals.user;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     const onboarding = await getOnboarding(sessionUser.id);

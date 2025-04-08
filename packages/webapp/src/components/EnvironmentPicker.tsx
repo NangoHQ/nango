@@ -1,32 +1,22 @@
-import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/Popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/Command';
-import { useMeta } from '../hooks/useMeta';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { IconCheck, IconChevronDown } from '@tabler/icons-react';
-import { Button } from './ui/button/Button';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/Popover';
+import { useMeta } from '../hooks/useMeta';
 import { useStore } from '../store';
+import { CreateEnvironmentButton } from './CreateEnvironmentButton';
 import { cn } from '../utils/utils';
-import { apiPostEnvironment } from '../hooks/useEnvironment';
-import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from '../components/ui/Dialog';
-import { Input } from './ui/input/Input';
-import { Info } from './Info';
-import { useToast } from '../hooks/useToast';
+import { Button } from './ui/button/Button';
 
 export const EnvironmentPicker: React.FC = () => {
     const navigate = useNavigate();
-    const { toast } = useToast();
-
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
 
-    const { meta, mutate } = useMeta();
+    const { meta } = useMeta();
     const [open, setOpen] = useState(false);
-
-    const [openDialog, setOpenDialog] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [name, setName] = useState('');
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -49,33 +39,6 @@ export const EnvironmentPicker: React.FC = () => {
         }
 
         navigate(newPath);
-    };
-
-    const onCreate = async () => {
-        setLoading(true);
-
-        const res = await apiPostEnvironment({ name });
-        if ('error' in res.json) {
-            const err = res.json.error;
-            if (err.code === 'conflict') {
-                toast({ title: 'Environment name already exists', variant: 'error' });
-            } else if (err.code === 'invalid_body') {
-                setError(true);
-            } else if (err.code === 'feature_disabled' || err.code === 'resource_capped') {
-                toast({ title: err.message, variant: 'error' });
-            } else {
-                toast({ title: 'Failed to create environment', variant: 'error' });
-            }
-        } else {
-            navigate(`/${res.json.data.name}`);
-            setOpen(false);
-            setOpenDialog(false);
-            setError(false);
-            setName('');
-            void mutate();
-        }
-
-        setLoading(false);
     };
 
     if (!meta) {
@@ -122,40 +85,7 @@ export const EnvironmentPicker: React.FC = () => {
                         </CommandGroup>
 
                         <div className="px-2.5 py-2.5">
-                            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                                <DialogTrigger asChild>
-                                    <Button variant={'tertiary'} className="w-full justify-center">
-                                        Create environment
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="w-[550px]">
-                                    <DialogTitle>Environment Name</DialogTitle>
-                                    <div>
-                                        <Input
-                                            placeholder="my-environment-name"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            variant={'black'}
-                                            onKeyUp={(e) => e.code === 'Enter' && onCreate()}
-                                        />
-                                        <div className={cn('text-xs text-grayscale-500', error && 'text-alert-400')}>
-                                            *Must be lowercase letters, numbers, underscores and dashes.
-                                        </div>
-                                    </div>
-                                    <Info>
-                                        Only the Prod environment is billed. Other environments are free, with restrictions making them unsuitable for
-                                        production.
-                                    </Info>
-                                    <DialogFooter className="mt-4">
-                                        <DialogClose asChild>
-                                            <Button variant={'zinc'}>Cancel</Button>
-                                        </DialogClose>
-                                        <Button variant={'primary'} onClick={onCreate} isLoading={loading} type="submit">
-                                            Create environment
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <CreateEnvironmentButton />
                         </div>
                     </CommandList>
                 </Command>
