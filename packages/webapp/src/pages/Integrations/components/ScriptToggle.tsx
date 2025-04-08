@@ -9,6 +9,7 @@ import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
 import Spinner from '../../../components/ui/Spinner';
 import { Switch } from '../../../components/ui/Switch';
+import { apiPatchIntegration } from '../../../hooks/useIntegration';
 
 export const ScriptToggle: React.FC<{
     flow: NangoSyncConfigWithEndpoint;
@@ -67,6 +68,19 @@ export const ScriptToggle: React.FC<{
                 toast({ title: 'An unexpected error occurred', variant: 'error' });
             }
         } else {
+            if (integration.integration.oauth_scopes) {
+                const integrationScopes = integration.integration.oauth_scopes.split(',');
+                const missingScopes = (flow.scopes ?? []).filter((scope) => !integrationScopes.includes(scope));
+                if (missingScopes.length > 0) {
+                    const newScopes = [...integrationScopes, ...missingScopes];
+                    const updated = await apiPatchIntegration(env, integration.integration.unique_key, { scopes: newScopes.join(',') });
+
+                    if ('error' in updated.json) {
+                        toast({ title: updated.json.error.message || 'Failed to add scopes automatically', variant: 'error' });
+                    }
+                }
+            }
+
             toast({ title: `Enabled successfully`, variant: 'success' });
             await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
             setOpen(false);
