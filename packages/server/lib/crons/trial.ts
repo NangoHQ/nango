@@ -49,9 +49,6 @@ export function trialCron(): void {
                 report(new Error('cron_failed_to_check_trial', { cause: err }));
             }
             metrics.duration(metrics.Types.CRON_TRIAL, Date.now() - start);
-        },
-        {
-            runOnInit: true
         }
     );
 }

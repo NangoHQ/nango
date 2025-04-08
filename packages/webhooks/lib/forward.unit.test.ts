@@ -13,7 +13,6 @@ const account: DBTeam = {
     id: 1,
     name: 'test',
     uuid: 'whatever',
-    is_capped: true,
     created_at: new Date(),
     updated_at: new Date()
 };

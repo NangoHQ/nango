@@ -20,7 +20,7 @@ export default function IntegrationList() {
     const env = useStore((state) => state.env);
 
     const { plan } = useEnvironment(env);
-    const { isTrial } = useTrial(plan);
+    const { isTrial, isTrialOver } = useTrial(plan);
     const { list, error } = useListIntegration(env);
 
     if (error) {
@@ -84,7 +84,7 @@ export default function IntegrationList() {
                                                 <ErrorCircle icon="!" variant="warning" />
                                             </SimpleTooltip>
                                         )}
-                                        {isTrial && integration.meta.scriptsCount > 0 && (
+                                        {isTrial && !isTrialOver && integration.meta.scriptsCount > 0 && (
                                             <SimpleTooltip tooltipContent="Some integration endpoints will deactivate at the end of your trial.">
                                                 <ErrorCircle icon="clock" variant="warning" />
                                             </SimpleTooltip>
