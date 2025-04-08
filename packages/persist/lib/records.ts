@@ -129,11 +129,11 @@ export async function persistRecords({
             updatedResults: {
                 model: baseModel,
                 added: summary.addedKeys.length,
-                addedKeys: summary.addedKeys,
+                //addedKeys: summary.addedKeys,
                 updated: summary.updatedKeys.length,
-                updatedKeys: summary.updatedKeys,
-                deleted: summary.deletedKeys?.length || 0,
-                deleteKeys: summary.deletedKeys || []
+                //updatedKeys: summary.updatedKeys,
+                deleted: summary.deletedKeys?.length || 0
+                //deleteKeys: summary.deletedKeys || []
             }
         });
 
