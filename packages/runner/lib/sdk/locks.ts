@@ -69,7 +69,7 @@ export class Locks {
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
         for (const [key, lock] of this.store.entries()) {
             if (lock.owner === owner) {
-                this.releaseLock({ owner, key });
+                void this.releaseLock({ owner, key });
             }
         }
         return Ok(undefined);

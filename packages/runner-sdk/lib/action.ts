@@ -386,7 +386,7 @@ export abstract class NangoActionBase {
     /**
      * Try to acquire a lock for a given key.
      * The lock is acquired if the key does not exist or if it exists but is expired.
-     * The lock is valid for the entire execution of the script and will be released automatically when the script ends.
+     * The lock is valid for the entire execution of the script and will be released automatically when the script ends (or when releaseLock is called).
      */
     public abstract tryAcquireLock({ key, ttlMs }: { key: string; ttlMs: number }): Promise<boolean>;
     /**

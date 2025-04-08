@@ -285,7 +285,11 @@ export async function exec({
                 };
             }
         } finally {
-            await nango.releaseAllLocks().catch((err: unknown) => logger.warning('Failed to release all locks', { reason: err }));
+            try {
+                await nango.releaseAllLocks();
+            } catch (err) {
+                logger.warning('Failed to release all locks', { reason: err });
+            }
             span.finish();
         }
     });
