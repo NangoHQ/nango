@@ -20,7 +20,9 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
     res.status(200).send({
         data: {
             plan: plan ? planToApi(plan) : null,
-            environments,
+            environments: environments.map((env) => {
+                return { name: env.name };
+            }),
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,

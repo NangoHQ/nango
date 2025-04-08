@@ -18,9 +18,9 @@ export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 const hashLocalCache = new Map<string, string>();
 
 class EnvironmentService {
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'name'>[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
         try {
-            const result = await db.knex.select<Pick<DBEnvironment, 'name'>[]>('name').from<DBEnvironment>(TABLE).where({ account_id });
+            const result = await db.knex.select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name').from<DBEnvironment>(TABLE).where({ account_id });
 
             if (result == null || result.length == 0) {
                 return [];
