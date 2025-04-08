@@ -11,6 +11,7 @@ import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import { Locks } from './locks.js';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -36,6 +37,8 @@ const nangoProps: NangoProps = {
     endUser: null
 };
 
+const locks = new Locks();
+
 describe('cache', () => {
     let nangoAction: NangoActionRunner;
     let nango: Nango;
@@ -47,7 +50,7 @@ describe('cache', () => {
             {
                 ...nangoProps
             },
-            { persistClient }
+            { persistClient, locks }
         );
         nango = new Nango({ secretKey: '***' });
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -139,7 +142,7 @@ describe('Pagination', () => {
             providerConfigKey,
             connectionId
         };
-        nangoAction = new NangoActionRunner(config, { persistClient });
+        nangoAction = new NangoActionRunner(config, { persistClient, locks });
 
         const nodeClient = (await import('@nangohq/node')).Nango;
         nodeClient.prototype.getConnection = vi.fn().mockReturnValue({ credentials: { type: 'OAUTH2', access_token: 'token' } });
@@ -380,15 +383,18 @@ describe('Pagination', () => {
 
 describe('batchSave', () => {
     it('should validate records with json schema', async () => {
-        const nango = new NangoSyncRunner({
-            ...nangoProps,
-            runnerFlags: { validateSyncRecords: true } as any,
-            syncConfig: {
-                models_json_schema: {
-                    definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
-                }
-            } as any
-        });
+        const nango = new NangoSyncRunner(
+            {
+                ...nangoProps,
+                runnerFlags: { validateSyncRecords: true } as any,
+                syncConfig: {
+                    models_json_schema: {
+                        definitions: { Test: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'], additionalProperties: false } }
+                    }
+                } as any
+            },
+            { locks }
+        );
 
         await expect(async () => await nango.batchSave([{ foo: 'bar' }], 'Test')).rejects.toThrow(
             new InvalidRecordSDKError({
@@ -428,7 +434,7 @@ describe('Log', () => {
         return client;
     })();
 
-    const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
+    const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient, locks });
 
     afterEach(() => {
         vi.clearAllMocks();
@@ -436,7 +442,7 @@ describe('Log', () => {
 
     it('should enforce activityLogId', () => {
         expect(() => {
-            new NangoActionRunner({ ...nangoProps, activityLogId: undefined as unknown as string });
+            new NangoActionRunner({ ...nangoProps, activityLogId: undefined as unknown as string }, { locks });
         }).toThrowError(new Error('Parameter activityLogId is required'));
     });
 
@@ -450,7 +456,7 @@ describe('Log', () => {
     });
 
     it('should allow level', async () => {
-        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient });
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient, locks });
 
         await nangoAction.log('hello', { level: 'error' });
 
@@ -476,7 +482,7 @@ describe('Log', () => {
 describe('Aborted script', () => {
     it('show throw', async () => {
         const ac = new AbortController();
-        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
         await expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
     });
@@ -485,7 +491,7 @@ describe('Aborted script', () => {
 describe('getRecordsById', () => {
     it('show throw if aborted', async () => {
         const ac = new AbortController();
-        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal });
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
         await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
     });
@@ -494,7 +500,7 @@ describe('getRecordsById', () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi.fn();
 
-        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds([], 'Wello');
         expect(result).toEqual(new Map());
         expect(mockPersistClient.getRecords).not.toHaveBeenCalled();
@@ -509,7 +515,7 @@ describe('getRecordsById', () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
 
-        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
@@ -529,7 +535,7 @@ describe('getRecordsById', () => {
             .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: 'next' }))
             .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
 
-        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient });
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);

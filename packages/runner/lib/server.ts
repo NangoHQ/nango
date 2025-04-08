@@ -12,6 +12,7 @@ import { envs, heartbeatIntervalMs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
 import { jobsClient } from './clients/jobs.js';
 import { logger } from './logger.js';
+import { Locks } from './sdk/locks.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -43,6 +44,7 @@ function healthProcedure() {
 }
 
 const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
+const locks = new Locks();
 
 function startProcedure() {
     return publicProcedure
@@ -69,7 +71,7 @@ function startProcedure() {
                     const abortController = new AbortController();
                     abortControllers.set(taskId, abortController);
 
-                    const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
+                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
 
                     await jobsClient.putTask({
                         taskId,

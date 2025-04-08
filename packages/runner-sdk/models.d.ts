@@ -358,6 +358,8 @@ export declare class NangoAction {
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.
      */
     uncontrolledFetch(options: { url: URL; method?: HTTP_METHOD; headers?: Record<string, string> | undefined; body?: string | null }): Promise<Response>;
+    tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean>;
+    releaseLock(props: { key: string }): Promise<boolean>;
     private sendLogToPersist;
     private logAPICall;
 }
