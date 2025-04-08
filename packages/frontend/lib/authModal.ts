@@ -1,6 +1,6 @@
 import { WSMessageType } from './types.js';
 
-import type { ErrorHandler } from './types';
+import type { ErrorHandler } from './types.js';
 
 const debugLogPrefix = '[nango]';
 
@@ -62,27 +62,24 @@ export class AuthorizationModal {
     private debug: boolean;
     private swClient: WebSocket;
     private errorHandler: ErrorHandler;
-    public modal: Window;
+    public modal?: Window;
     public isProcessingMessage = false;
 
     constructor({
         baseUrl,
         debug,
-        modal,
         webSocketUrl,
         successHandler,
         errorHandler
     }: {
         baseUrl: URL;
         debug: boolean;
-        modal: Window;
         webSocketUrl: string;
         successHandler: (providerConfigKey: string, connectionId: string) => any;
         errorHandler: ErrorHandler;
     }) {
         this.baseURL = baseUrl;
         this.debug = debug;
-        this.modal = modal;
 
         // Window modal features
         this.swClient = new WebSocket(webSocketUrl);
@@ -93,6 +90,10 @@ export class AuthorizationModal {
             this.handleMessage(message, successHandler);
             this.isProcessingMessage = false;
         };
+    }
+
+    setModal(modal: Window) {
+        this.modal = modal;
     }
 
     /**
@@ -141,9 +142,12 @@ export class AuthorizationModal {
      * Opens a modal window with the specified WebSocket client ID
      */
     open() {
+        if (!this.modal) {
+            return;
+        }
+
         console.log('opening', this.baseURL.href);
         this.modal.location = this.baseURL.href;
-        // const popup = window.open(this.url + '&ws_client_id=' + this.wsClientId, '_blank', this.featuresToString());
 
         if (!this.modal || this.modal.closed || typeof this.modal.closed == 'undefined') {
             this.errorHandler('blocked_by_browser', 'Modal blocked by browser');
@@ -155,9 +159,9 @@ export class AuthorizationModal {
      * Close modal, if opened
      */
     close() {
+        console.log('closing');
         if (this.modal && !this.modal.closed) {
             this.modal.close();
-            // @ts-expect-error on purpose to free ref
             delete this.modal;
         }
         this.swClient.close();

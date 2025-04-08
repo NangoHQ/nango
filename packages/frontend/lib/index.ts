@@ -1,9 +1,8 @@
 /*
  * Copyright (c) 2024 Nango, all rights reserved.
  */
+import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
-import { AuthorizationModal, computeLayout, windowFeaturesToString } from './popup.js';
-import { AuthorizationStatus } from './types.js';
 
 import type { ConnectUIProps } from './connectUI';
 import type {
@@ -61,7 +60,6 @@ export class AuthError extends Error {
 export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
-    private status: AuthorizationStatus;
     private publicKey: string | undefined;
     private connectSessionToken: string | undefined;
     private debug = false;
@@ -69,6 +67,7 @@ export default class Nango {
     private height: number = 600;
     private tm: null | NodeJS.Timer = null;
 
+    // Do not rename, part of the public api
     public win: AuthorizationModal | null = null;
 
     constructor(config: NangoOptions = {}) {
@@ -90,7 +89,6 @@ export default class Nango {
         }
 
         this.hostBaseUrl = config.host.replace(/\/+$/, ''); // Remove trailing slash.
-        this.status = AuthorizationStatus.IDLE;
 
         this.publicKey = config.publicKey;
         this.connectSessionToken = config.connectSessionToken;
@@ -182,109 +180,70 @@ export default class Nango {
         // Auth with popup (e.g: OAuth)
         // -----------
 
-        let url: URL;
-        try {
-            url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
-        } catch {
-            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
-        }
-
-        let resolve: (value: AuthResult) => void;
-        let reject!: (reason?: any) => void;
-        const promise = new Promise<AuthResult>((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
-
-        const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
-            if (this.status !== AuthorizationStatus.BUSY) {
-                return;
-            }
-
-            this.status = AuthorizationStatus.DONE;
-
-            resolve({ providerConfigKey: providerConfigKey, connectionId: connectionId, isPending });
-            return;
-        };
-
-        const errorHandler: ErrorHandler = (errorType, errorDesc) => {
-            if (this.status !== AuthorizationStatus.BUSY) {
-                return;
-            }
-
-            this.status = AuthorizationStatus.DONE;
-
-            const error = new AuthError(errorDesc, errorType);
-            reject(error);
-            return;
-        };
-
-        // Clear state if the modal is closed
-        if (this.win?.modal?.closed) {
-            this.clear();
-        }
-
-        if (this.status === AuthorizationStatus.BUSY) {
-            errorHandler('windowIsOpened', 'The authorization window is already opened');
-            return promise;
-        }
-
-        // Save authorization status (for handler)
-        this.status = AuthorizationStatus.BUSY;
-
         // /!\ /!\ /!\ /!\
         //
         // Some popup blocker are more sensitive than others
         // e.g: safari is blocking any popup opened in a different function or in async mode so it has to be opened here before everything else
         //
-        const popup = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
-        if (!popup || popup.closed || typeof popup.closed == 'undefined') {
-            errorHandler('blocked_by_browser', 'Modal blocked by browser');
-            return promise;
-        }
+        const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
-        this.tm = setInterval(() => {
-            if (!this.win || !this.win.modal) {
+        return new Promise<AuthResult>((resolve, reject) => {
+            const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
+                resolve({ providerConfigKey: providerConfigKey, connectionId: connectionId, isPending });
+                return;
+            };
+
+            const errorHandler: ErrorHandler = (errorType, errorDesc) => {
+                reject(new AuthError(errorDesc, errorType));
+                return;
+            };
+
+            // Clear state if the modal is already opened
+            if (this.win) {
+                this.clear();
+            }
+
+            if (!modal || modal.closed || typeof modal.closed == 'undefined') {
+                errorHandler('blocked_by_browser', 'Modal blocked by browser');
                 return;
             }
 
-            if (this.win.modal.window && !this.win.modal.window.closed) {
+            let url: URL;
+            try {
+                url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
+            } catch {
+                errorHandler('invalidHostUrl', 'Invalid URL provided for the Nango host.');
                 return;
             }
 
-            if (this.win.isProcessingMessage) {
-                // Modal is still processing a web socket message from the server
-                // We ignore the window being closed for now
-                return;
-            }
+            this.win = new AuthorizationModal({ baseUrl: url, debug: this.debug, webSocketUrl: this.websocketsBaseUrl, successHandler, errorHandler });
+            this.win.setModal(modal);
 
-            clearInterval(this.tm as unknown as number);
+            this.tm = setInterval(() => {
+                if (!this.win || !this.win.modal) {
+                    return;
+                }
 
-            if (options?.detectClosedAuthWindow) {
-                this.win = null;
-                this.status = AuthorizationStatus.CANCELED;
-                const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                reject(error);
-            } else {
-                // Manually clean state but never resolve on purpose
+                if (this.win.modal.window && !this.win.modal.window.closed) {
+                    return;
+                }
+
+                if (this.win.isProcessingMessage) {
+                    // Modal is still processing a web socket message from the server
+                    // We ignore the window being closed for now
+                    return;
+                }
+
+                clearInterval(this.tm as unknown as number);
                 this.win.close();
-            }
-        }, 500);
 
-        this.win = new AuthorizationModal({
-            baseUrl: url,
-            debug: this.debug,
-            modal: popup,
-            webSocketUrl: this.websocketsBaseUrl,
-            errorHandler,
-            successHandler
-        });
-
-        return promise.finally(() => {
-            if (this.tm) {
-                clearInterval(this.tm as any);
-            }
-            this.win?.close();
+                if (options?.detectClosedAuthWindow) {
+                    this.win = null;
+                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
+                }
+            }, 500);
+        }).finally(() => {
+            this.clear();
         });
     }
 
@@ -307,13 +266,12 @@ export default class Nango {
         if (this.win) {
             try {
                 this.win.close();
-            } catch {
+            } catch (err) {
+                console.log('err', err);
                 // do nothing
             }
             this.win = null;
         }
-
-        this.status = AuthorizationStatus.IDLE;
     }
 
     /**
