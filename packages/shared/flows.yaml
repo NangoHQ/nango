@@ -5014,12 +5014,122 @@ integrations:
                 output: User
                 scopes:
                     - api:users:read
+            calls:
+                runs: every 1h
+                description: |
+                    Fetches a list of calls from Gong
+                version: 1.0.0
+                output: GongCallOutput
+                input: GongConnectionMetadata
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /calls
+                    group: Calls
+                scopes:
+                    - api:calls:read:basic
+                    - api:calls:read:media-url
+                    - api:calls:read:extensive
+        actions:
+            fetch-call-transcripts:
+                description: |
+                    Fetches a list of call transcripts from Gong
+                version: 1.0.0
+                input: GongCallTranscriptInput
+                output: GongCallTranscriptOutput
+                endpoint:
+                    method: GET
+                    path: /fetch-call-transcripts
+                    group: Calls
+                scopes:
+                    - api:calls:read:transcript
         models:
             User:
                 id: string
                 firstName: string
                 lastName: string
                 email: string
+            GongCallTranscriptInput:
+                from?: string | undefined
+                to?: string | undefined
+                workspace_id?: string | undefined
+                call_id: string[]
+                cursor?: string | undefined
+            GongCallTranscript:
+                call_id: string
+                transcript:
+                    - speaker_id: string
+                      topic: string
+                      sentences:
+                          - start: number
+                            end: number
+                            text: string
+            GongCallTranscriptOutput:
+                next_cursor?: string | undefined
+                transcript: GongCallTranscript[]
+            GongCallOutput:
+                id: string
+                url: string
+                title: string
+                scheduled: string
+                started: string
+                duration: number
+                direction: Inbound | Outbound | Conference | Unknown
+                scope: Internal | External | Unknown
+                media: string
+                language: string
+                workspace_id: string
+                purpose: string
+                meeting_url: string
+                is_private: boolean
+                calendar_event_id: string
+                context:
+                    system: Salesforce | HubSpot | MicrosoftDynamic | Generic
+                    objects:
+                        object_type: string
+                        object_id: string
+                        fields:
+                            - name: string
+                              value: string
+                parties:
+                    - id: string
+                      email_address: string
+                      name: string
+                      title: string
+                      user_id: string
+                      speaker_id: string
+                      affiliation: Internal | External | Unknown
+                      methods: Invitee | Attendee
+                interaction:
+                    speakers:
+                        - id: string
+                          user_id: string
+                          talkTime: number
+                    interaction_stats:
+                        - name: string
+                          value: number
+                    video:
+                        - name: string
+                          duration: number
+                    questions:
+                        company_count: number
+                        non_company_count: number
+                collaboration:
+                    public_comments:
+                        - id: string
+                          audio_start_time: number
+                          audio_end_time: number
+                          commenter_user_id: string
+                          comment: string
+                          posted: string
+                          during_call: boolean
+                media_urls:
+                    audio_url: string
+                    video_url: string
+            GongConnectionMetadata:
+                backfillPeriodMs: number
+            ActionResponseError:
+                message: string
     gong-oauth:
         syncs:
             users:
@@ -5035,12 +5145,122 @@ integrations:
                 output: User
                 scopes:
                     - api:users:read
+            calls:
+                runs: every 1h
+                description: |
+                    Fetches a list of calls from Gong
+                version: 1.0.0
+                output: GongCallOutput
+                input: GongConnectionMetadata
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /calls
+                    group: Calls
+                scopes:
+                    - api:calls:read:basic
+                    - api:calls:read:media-url
+                    - api:calls:read:extensive
+        actions:
+            fetch-call-transcripts:
+                description: |
+                    Fetches a list of call transcripts from Gong
+                version: 1.0.0
+                input: GongCallTranscriptInput
+                output: GongCallTranscriptOutput
+                endpoint:
+                    method: GET
+                    path: /fetch-call-transcripts
+                    group: Calls
+                scopes:
+                    - api:calls:read:transcript
         models:
             User:
                 id: string
                 firstName: string
                 lastName: string
                 email: string
+            GongCallTranscriptInput:
+                from?: string | undefined
+                to?: string | undefined
+                workspace_id?: string | undefined
+                call_id: string[]
+                cursor?: string | undefined
+            GongCallTranscript:
+                call_id: string
+                transcript:
+                    - speaker_id: string
+                      topic: string
+                      sentences:
+                          - start: number
+                            end: number
+                            text: string
+            GongCallTranscriptOutput:
+                next_cursor?: string | undefined
+                transcript: GongCallTranscript[]
+            GongCallOutput:
+                id: string
+                url: string
+                title: string
+                scheduled: string
+                started: string
+                duration: number
+                direction: Inbound | Outbound | Conference | Unknown
+                scope: Internal | External | Unknown
+                media: string
+                language: string
+                workspace_id: string
+                purpose: string
+                meeting_url: string
+                is_private: boolean
+                calendar_event_id: string
+                context:
+                    system: Salesforce | HubSpot | MicrosoftDynamic | Generic
+                    objects:
+                        object_type: string
+                        object_id: string
+                        fields:
+                            - name: string
+                              value: string
+                parties:
+                    - id: string
+                      email_address: string
+                      name: string
+                      title: string
+                      user_id: string
+                      speaker_id: string
+                      affiliation: Internal | External | Unknown
+                      methods: Invitee | Attendee
+                interaction:
+                    speakers:
+                        - id: string
+                          user_id: string
+                          talkTime: number
+                    interaction_stats:
+                        - name: string
+                          value: number
+                    video:
+                        - name: string
+                          duration: number
+                    questions:
+                        company_count: number
+                        non_company_count: number
+                collaboration:
+                    public_comments:
+                        - id: string
+                          audio_start_time: number
+                          audio_end_time: number
+                          commenter_user_id: string
+                          comment: string
+                          posted: string
+                          during_call: boolean
+                media_urls:
+                    audio_url: string
+                    video_url: string
+            GongConnectionMetadata:
+                backfillPeriodMs: number
+            ActionResponseError:
+                message: string
     google:
         syncs:
             workspace-org-units:
