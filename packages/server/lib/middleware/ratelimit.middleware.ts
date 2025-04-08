@@ -22,14 +22,14 @@ const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
     '2xl': defaultLimit * 50,
     '3xl': defaultLimit * 100
 };
-const limiter = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
+const limiters = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
 
 /**
  * Dynamically get a rate limiter based on the plan size
  */
 async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
-    if (limiter.has(size)) {
-        return limiter.get(size)!;
+    if (limiters.has(size)) {
+        return limiters.get(size)!;
     }
 
     const opts = {
@@ -112,7 +112,7 @@ function getPointsToConsume(req: Request, res: Response<any, RequestLocals>, max
 
     if (specialPaths.some((p) => fullPath.startsWith(p))) {
         // limiting to 6 requests per period to avoid brute force attacks
-        return Math.floor(maxPoints / 10);
+        return Math.floor(maxPoints / 6);
     } else if (!res.locals.account || (flagHasPlan && !res.locals.plan)) {
         // Throttle api calls without valid credentials
         return 10;
