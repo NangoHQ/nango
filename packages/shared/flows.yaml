@@ -3948,7 +3948,7 @@ integrations:
                     Fetches the top-level content (files and folders) of a Dropbox folder
                     given its path. If no path is provided, it fetches content from the
                     root folder.
-                version: 1.0.0
+                version: 2.0.0
                 endpoint:
                     method: POST
                     path: /folder-content
@@ -4016,7 +4016,7 @@ integrations:
             FolderContent:
                 files: Document[]
                 folders: Document[]
-                cursor?: string
+                next_cursor?: string
     evaluagent:
         syncs:
             users:
@@ -5470,6 +5470,7 @@ integrations:
 
                     If no folder ID is provided, it fetches content from the root folder.
                 output: FolderContent
+                version: 1.0.0
                 endpoint:
                     method: GET
                     path: /folder-content
@@ -5503,6 +5504,7 @@ integrations:
                     path: /drives
                     group: Drives
                 output: DriveListResponse
+                version: 1.0.0
                 scopes:
                     - https://www.googleapis.com/auth/drive.readonly
         models:
@@ -5573,7 +5575,7 @@ integrations:
             FolderContent:
                 files: GoogleDocument[]
                 folders: GoogleDocument[]
-                cursor?: string
+                next_cursor?: string
             Drive:
                 id: string
                 name: string
@@ -5614,7 +5616,7 @@ integrations:
                 cursor: string | undefined
             DriveListResponse:
                 drives: Drive[]
-                cursor: string | undefined
+                next_cursor: string | undefined
                 kind: string
     google-mail:
         syncs:
