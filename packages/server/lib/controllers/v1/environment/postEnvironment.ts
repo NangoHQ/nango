@@ -30,7 +30,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const body: PostEnvironment['Body'] = valBody.data;
 
-    const accountId = res.locals.user.account_id;
+    const accountId = res.locals.account.id;
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
 
     if (flagHasPlan) {
@@ -45,7 +45,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
             res.status(400).send({
                 error: {
                     code: 'resource_capped',
-                    message: plan.name === 'free' ? 'Creating environment is only available for paying customer' : "Can't create more environments. "
+                    message: 'Maximum number of environments reached'
                 }
             });
             return;
