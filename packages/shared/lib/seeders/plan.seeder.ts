@@ -9,6 +9,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         trial_end_at: new Date(),
         trial_extension_count: 0,
         trial_end_notified_at: null,
+        trial_expired: null,
         environments_max: 2,
         sync_frequency_secs_min: 60,
         connection_with_scripts_max: 3,

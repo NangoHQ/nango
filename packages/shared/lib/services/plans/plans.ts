@@ -2,6 +2,8 @@ import ms from 'ms';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import analytics, { AnalyticsTypes } from '../../utils/analytics.js';
+
 import type { DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -25,8 +27,7 @@ export async function createPlan(
         const res = await db
             .from<DBPlan>('plans')
             .insert({
-                trial_start_at: new Date(),
-                trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+                connection_with_scripts_max: 50,
                 ...rest,
                 created_at: new Date(),
                 updated_at: new Date(),
@@ -53,6 +54,23 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
     }
 }
 
+export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
+    if (plan.trial_start_at) {
+        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_EXTENDED, plan.account_id);
+    } else {
+        void analytics.track(AnalyticsTypes.ACCOUNT_TRIAL_STARTED, plan.account_id);
+    }
+
+    return await updatePlan(db, {
+        id: plan.id,
+        trial_start_at: plan.trial_start_at || new Date(),
+        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+        trial_end_notified_at: null,
+        trial_extension_count: plan.trial_extension_count + 1,
+        trial_expired: false
+    });
+}
+
 export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { daysLeft: number }): Promise<Result<DBPlan[]>> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() + daysLeft);
@@ -63,9 +81,16 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
             .whereNull('trial_end_notified_at');
-
         return Ok(res);
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
     }
+}
+
+export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
+    return await db
+        .from('plans')
+        .select<DBPlan[]>('*')
+        .where('plans.trial_end_at', '<=', db.raw('NOW()'))
+        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
 }

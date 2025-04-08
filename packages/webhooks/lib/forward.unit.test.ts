@@ -1,8 +1,11 @@
-import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { forwardWebhook } from './forward.js';
-import { axiosInstance } from '@nangohq/utils';
-import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { logContextGetter } from '@nangohq/logs';
+import { axiosInstance } from '@nangohq/utils';
+
+import { forwardWebhook } from './forward.js';
+
+import type { DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 

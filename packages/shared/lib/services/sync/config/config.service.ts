@@ -411,6 +411,12 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
     }
 }
 
+export async function getSyncsByEnvironmentId(environment_id: number): Promise<DBSyncConfig[]> {
+    const result = await db.knex.select('*').from<DBSyncConfig>(TABLE).where({ active: true, environment_id, enabled: true, deleted: false });
+
+    return result;
+}
+
 export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(

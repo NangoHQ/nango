@@ -1,11 +1,14 @@
 import * as uuid from 'uuid';
+
 import db from '@nangohq/database';
-import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
-import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/types';
-import { LogActionEnum } from '../models/Telemetry.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
+
 import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
+import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+
+import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
@@ -14,9 +17,9 @@ export const defaultEnvironments = ['prod', 'dev'];
 const hashLocalCache = new Map<string, string>();
 
 class EnvironmentService {
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'name'>[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
         try {
-            const result = await db.knex.select<Pick<DBEnvironment, 'name'>[]>('name').from<DBEnvironment>(TABLE).where({ account_id });
+            const result = await db.knex.select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name').from<DBEnvironment>(TABLE).where({ account_id });
 
             if (result == null || result.length == 0) {
                 return [];
