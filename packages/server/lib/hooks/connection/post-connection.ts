@@ -1,8 +1,5 @@
-import type { AxiosError, AxiosResponse } from 'axios';
-import { connectionService, getProvider, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
-import * as postConnectionHandlers from './index.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { metrics } from '@nangohq/utils';
+import { connectionService, getProvider, getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
@@ -10,6 +7,9 @@ import type {
     RecentlyCreatedConnection,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
+import { metrics } from '@nangohq/utils';
+import type { AxiosError, AxiosResponse } from 'axios';
+import * as postConnectionHandlers from './index.js';
 
 type PostConnectionHandler = (internalNango: InternalNango) => Promise<void>;
 
@@ -62,7 +62,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
                     finalExternalConfig.baseUrlOverride = baseUrlOverride;
                 }
 
-                if (data) {
+                if (data !== undefined) {
                     finalExternalConfig.data = data;
                 }
 

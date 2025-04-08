@@ -1,11 +1,9 @@
-import OAuth from 'oauth-1.0a';
-import * as crypto from 'node:crypto';
 import type { Result } from '@nangohq/utils';
-import { SIGNATURE_METHOD, Err, Ok } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 import FormData from 'form-data';
+import * as crypto from 'node:crypto';
+import OAuth from 'oauth-1.0a';
 
-import { interpolateIfNeeded, connectionCopyWithParsedConnectionConfig, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
-import { getProvider } from '../providers.js';
 import type {
     ApplicationConstructedProxyConfiguration,
     ConnectionForProxy,
@@ -14,6 +12,8 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosRequestConfig } from 'axios';
+import { connectionCopyWithParsedConnectionConfig, interpolateIfNeeded, mapProxyBaseUrlInterpolationFormat } from '../../utils/utils.js';
+import { getProvider } from '../providers.js';
 
 type ProxyErrorCode =
     | 'missing_api_url'
@@ -53,8 +53,10 @@ export function getAxiosConfiguration({
         axiosConfig.responseType = proxyConfig.responseType;
     }
 
-    if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
-        axiosConfig.data = proxyConfig.data;
+    if (proxyConfig.data !== undefined && methodDataAllowed.includes(proxyConfig.method)) {
+        if (!(typeof proxyConfig.data === 'object' && proxyConfig.data !== null && Object.keys(proxyConfig.data).length === 0)) {
+            axiosConfig.data = proxyConfig.data;
+        }
     }
 
     if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
@@ -73,7 +75,7 @@ export function getProxyConfiguration({
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
     const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
     const { providerName } = internalConfig;
-    let data = externalConfig.data;
+    let data = 'data' in externalConfig ? externalConfig.data : undefined;
 
     if (!passedEndpoint && !baseUrlOverride) {
         return Err(new ProxyError('missing_api_url'));
