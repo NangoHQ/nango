@@ -76,10 +76,7 @@ export interface TableauCredentials {
 
 export interface JwtCredentials {
     type?: 'JWT';
-    privateKey?: {
-        id: string;
-        secret: string;
-    };
+    [key: string]: any;
 }
 
 export interface OAuth2ClientCredentials {

@@ -1605,7 +1605,11 @@ class ConnectionService {
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
-            const create = jwtClient.createCredentials({ provider: provider as ProviderJwt, dynamicCredentials: cleanDynamicCredentials });
+            const create = jwtClient.createCredentials({
+                config: providerConfig.unique_key,
+                provider: provider as ProviderJwt,
+                dynamicCredentials: cleanDynamicCredentials
+            });
 
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };

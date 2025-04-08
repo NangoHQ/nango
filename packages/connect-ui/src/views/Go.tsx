@@ -228,18 +228,9 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
-                    let credentials = values['credentials'];
-                    // Handle Ghost Admin API key transformation
-                    if (integration?.provider.includes('ghost-admin') && credentials?.privateKey) {
-                        const [id, secret] = credentials.privateKey.split(':');
-                        credentials = {
-                            ...credentials,
-                            privateKey: { id, secret }
-                        };
-                    }
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
-                        credentials: { ...credentials, type: provider.auth_mode },
+                        credentials: { ...values['credentials'], type: provider.auth_mode },
                         detectClosedAuthWindow
                     });
                 }

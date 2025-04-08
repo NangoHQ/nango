@@ -4009,7 +4009,7 @@ ghost-admin:
     token:
         signing_key: ${credentials.privateKey.secret}
         expires_in_ms: 300000
-        headers:
+        header:
             alg: HS256
             kid: ${credentials.privateKey.id}
         payload:
@@ -8467,7 +8467,7 @@ snowflake-jwt:
     token:
         signing_key: ${credentials.privateKey}
         expires_in_ms: 3600000
-        headers:
+        header:
             alg: RS256
             typ: JWT
         payload:

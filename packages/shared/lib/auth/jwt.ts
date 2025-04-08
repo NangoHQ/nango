@@ -13,13 +13,21 @@ import { interpolateObject, interpolateString, stripCredential } from '../utils/
  * Create JWT credentials
  */
 export function createCredentials({
+    config,
     provider,
     dynamicCredentials
 }: {
+    config: string;
     provider: ProviderJwt;
     dynamicCredentials: Record<string, any>;
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
+        //Check if the provider is 'ghost-admin' and if privateKey is a string
+        if (config.includes('ghost-admin') && typeof dynamicCredentials['privateKey'] === 'string') {
+            const privateKeyString = dynamicCredentials['privateKey'];
+            const [id, secret] = privateKeyString.split(':');
+            dynamicCredentials['privateKey'] = { id, secret };
+        }
         const now = Math.floor(Date.now() / 1000);
         const payload = Object.entries(provider.token.payload).reduce<Record<string, any>>((acc, [key, value]) => {
             const strippedValue = stripCredential(value);
@@ -37,7 +45,7 @@ export function createCredentials({
         payload['iat'] = now;
         payload['exp'] = now + provider.token.expires_in_ms / 1000;
 
-        const header = Object.entries(provider.token.headers).reduce<Record<string, any>>((acc, [key, value]) => {
+        const header = Object.entries(provider.token.header).reduce<Record<string, any>>((acc, [key, value]) => {
             const strippedValue = stripCredential(value);
 
             if (typeof strippedValue === 'object' && strippedValue !== null) {
@@ -58,12 +66,12 @@ export function createCredentials({
                 ? signJWT({
                       payload,
                       secretOrPrivateKey: formatPrivateKey(interpolatedSigningKey),
-                      options: { algorithm: provider.token.headers.alg, header }
+                      options: { algorithm: provider.token.header.alg, header }
                   })
                 : signJWT({
                       payload,
                       secretOrPrivateKey: Buffer.from(interpolatedSigningKey, 'hex'),
-                      options: { algorithm: provider.token.headers.alg, header }
+                      options: { algorithm: provider.token.header.alg, header }
                   });
         return Ok({
             type: 'JWT',

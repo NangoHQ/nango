@@ -295,7 +295,7 @@
                         "expires_in_ms": {
                             "type": "number"
                         },
-                        "headers": {
+                        "header": {
                             "type": "object",
                             "properties": {
                                 "alg": {

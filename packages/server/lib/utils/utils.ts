@@ -192,10 +192,14 @@ export function parseCredentialsParamsFromTemplate(provider: ProviderTwoStep | P
 
     const matches: string[] = [];
 
-    if ('token_params' in provider || 'token_headers' in provider) {
-        const tokenParamsMatches = 'token_params' in provider && provider.token_params ? extractCredentialParams(provider.token_params) : [];
-        const tokenHeadersMatches = 'token_headers' in provider && provider.token_headers ? extractCredentialParams(provider.token_headers) : [];
-        matches.push(...tokenParamsMatches, ...tokenHeadersMatches);
+    if ('token_params' in provider && provider.token_params) {
+        const tokenParamsMatches = extractCredentialParams(provider.token_params);
+        matches.push(...tokenParamsMatches);
+    }
+
+    if ('token_headers' in provider && provider.token_headers) {
+        const tokenHeadersMatches = extractCredentialParams(provider.token_headers);
+        matches.push(...tokenHeadersMatches);
     }
 
     if ('token' in provider && provider.token) {

@@ -128,7 +128,7 @@ export interface ProviderJwt extends BaseProvider {
     token: {
         signing_key: string;
         expires_in_ms: number;
-        headers: {
+        header: {
             alg: string;
             typ?: string;
         };

@@ -338,10 +338,7 @@ export default class Nango {
 
         if (
             // for backwards compatibility with the old JWT credentials (ghost-admin)
-            ('privateKey' in credentials &&
-                typeof credentials.privateKey === 'object' &&
-                'id' in credentials.privateKey &&
-                'secret' in credentials.privateKey) ||
+            'privateKey' in credentials ||
             ('type' in credentials && credentials.type === 'JWT')
         ) {
             const { privateKey, ...rest } = credentials;
@@ -357,14 +354,14 @@ export default class Nango {
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId,
-                    issuerId: credentials.issuerId,
-                    privateKey: credentials.privateKey
+                    privateKeyId: credentials['privateKeyId'],
+                    issuerId: credentials['issuerId'],
+                    privateKey: credentials['privateKey']
                 }
             };
 
-            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
-                appStoreCredentials.params['scope'] = credentials.scope;
+            if ('scope' in credentials && (typeof credentials['scope'] === 'string' || Array.isArray(credentials['scope']))) {
+                appStoreCredentials.params['scope'] = credentials['scope'];
             }
             return appStoreCredentials as unknown as ConnectionConfig;
         }

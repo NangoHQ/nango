@@ -149,7 +149,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const create = jwtClient.createCredentials({ provider: provider as ProviderJwt, dynamicCredentials: bodyData });
+        const create = jwtClient.createCredentials({ config: config.unique_key, provider: provider as ProviderJwt, dynamicCredentials: bodyData });
         if (create.isErr()) {
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
