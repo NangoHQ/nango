@@ -1,6 +1,7 @@
+import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { AnalyticsTypes, NangoError, analytics, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
+import { AnalyticsTypes, NangoError, analytics, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, startTrial } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationWithNangoYaml as validation } from './validation.js';
@@ -64,6 +65,10 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         logContextGetter,
         orchestrator
     });
+
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        await startTrial(db.knex, plan);
+    }
 
     if (!success || !syncConfigDeployResult) {
         if (lock) {

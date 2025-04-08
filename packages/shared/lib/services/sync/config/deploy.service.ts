@@ -723,18 +723,14 @@ async function compileDeployInfo({
         }
     }
 
-    let shouldCap = false;
-
-    if (plan && plan.connection_with_scripts_max) {
-        // if there are too many connections for this sync then we need to also
-        // mark it as disabled
-        shouldCap = await connectionService.shouldCapUsage({
-            providerConfigKey,
-            environmentId: environment_id,
-            type: 'deploy',
-            limit: plan.connection_with_scripts_max
-        });
-    }
+    // if there are too many connections for this sync then we need to also
+    // mark it as disabled
+    const shouldCap = await connectionService.shouldCapUsage({
+        providerConfigKey,
+        environmentId: environment_id,
+        type: 'deploy',
+        plan
+    });
 
     // Only store relevant JSON schema
     const flowJsonSchema: JSONSchema7 = {

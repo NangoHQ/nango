@@ -1,7 +1,10 @@
-import { vi, expect, describe, it, beforeEach } from 'vitest';
-import { sendAuth } from './auth.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { axiosInstance } from '@nangohq/utils';
-import type { NangoAuthWebhookBodySuccess, DBExternalWebhook, DBEnvironment, DBConnection, IntegrationConfig, DBTeam } from '@nangohq/types';
+
+import { sendAuth } from './auth.js';
+
+import type { DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoAuthWebhookBodySuccess } from '@nangohq/types';
 
 const spy = vi.spyOn(axiosInstance, 'post');
 
