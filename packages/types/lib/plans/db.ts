@@ -44,4 +44,10 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     has_otel: boolean;
+
+    /**
+     * Change the applied rate limit for the public API
+     * @default "m"
+     */
+    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl';
 }
