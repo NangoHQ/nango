@@ -38,6 +38,8 @@ export * as oauth2Client from './clients/oauth2.client.js';
 
 export * from './models/index.js';
 
+export * from './constants.js';
+
 export * from './utils/utils.js';
 export * from './utils/error.js';
 

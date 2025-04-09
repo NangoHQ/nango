@@ -8381,6 +8381,8 @@ slack:
         - team.id
     proxy:
         base_url: https://slack.com/api
+        retry:
+            after: 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: response_metadata.next_cursor

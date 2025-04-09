@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.4] - 2025-04-08
+
+### Added
+
+- *(webapp)* Remember last environment (#3814) by @hassan254-prog
+- *(integrations)* Add Support for Rock Gym Pro (#3857) by @matoviale
+- *(fleet)* Add more Render server definition (#3860) by @bodinsamuel
+- *(plan)* Trial  (#3803) by @bodinsamuel
+- Rename environments (#3864) by @kaposke
+- *(es)* Meta search (#3835) by @bodinsamuel
+- Nango locks in scripts (#3863) by @TBonnin
+
+### Changed
+
+- Details about free trial (#3861) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f4eaea1a0d7f791c11a1bb14be60c441e04d1ea2 by Khaliq. Commit message: feat(pagination-tests): Pagination & Fix groups (#305) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e3fdb00a5adcdcff55a4aa13c72d81f5649c610e by Hassan_Wari. Commit message: feat(gong): calls sync and fetch transcript action (#306) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0d8f99ec7a4a837e6bc447d7ad9d5af1cf0407c4 by Khaliq. Commit message: feat(xero): Add source for xero (#308) by @github-actions[bot]
+
+### Fixed
+
+- *(ui)* Create connection missing integration (#3859) by @bodinsamuel
+- *(plan)* Typo in flag (#3856) by @bodinsamuel
+- *(plan)* Use plan for tracer (#3848) by @bodinsamuel
+- *(integrations)* Missing retry header for Slack (#3865) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e80f61bb4fd37591e2c4c4a10932df038a50fd2d by Khaliq. Commit message: fix(cursor): Fix cursor and document (#307) by @github-actions[bot]
+- *(plans)* Follow-up (#3866) by @bodinsamuel
+
 ## [v0.58.3] - 2025-04-04
 
 ### Added
@@ -3614,6 +3642,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.4]: https://github.com/NangoHQ/nango/compare/v0.58.3..v0.58.4
 [v0.58.3]: https://github.com/NangoHQ/nango/compare/v0.58.2..v0.58.3
 [v0.58.2]: https://github.com/NangoHQ/nango/compare/v0.58.1..v0.58.2
 [v0.58.1]: https://github.com/NangoHQ/nango/compare/v0.57.6..v0.58.1

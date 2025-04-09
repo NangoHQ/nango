@@ -61,6 +61,7 @@ import type {
     DBConnectionDecrypted,
     DBEndUser,
     DBEnvironment,
+    DBPlan,
     DBTeam,
     JwtCredentials,
     MaybePromise,
@@ -1524,16 +1525,20 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         type,
-        limit
+        plan
     }: {
         providerConfigKey: string;
         environmentId: number;
         type: 'activate' | 'deploy';
-        limit: number;
+        plan: DBPlan | null;
     }): Promise<boolean> {
+        if (!plan || !plan.connection_with_scripts_max) {
+            return false;
+        }
+
         const count = await this.countConnections({ environmentId, providerConfigKey });
 
-        if (count > limit) {
+        if (count > plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
                 void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
