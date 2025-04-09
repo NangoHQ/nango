@@ -74,22 +74,17 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     message: { type: 'text', analyzer: 'standard', search_analyzer: 'standard', copy_to: 'meta_search' },
     // @ts-expect-error it's a dynamic field not stored
     meta_search: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' },
-    meta: {
+    meta: { type: 'object', enabled: false },
+    batchSave: {
         type: 'object',
-        dynamic: 'runtime',
         properties: {
-            updatedResults: {
-                type: 'object',
-                properties: {
-                    model: { type: 'keyword' },
-                    added: { type: 'integer' },
-                    addedKeys: { type: 'keyword', copy_to: 'meta_search' },
-                    updated: { type: 'integer' },
-                    updatedKeys: { type: 'keyword', copy_to: 'meta_search' },
-                    deleted: { type: 'integer' },
-                    deleteKeys: { type: 'keyword', copy_to: 'meta_search' }
-                }
-            }
+            model: { type: 'keyword' },
+            added: { type: 'integer' },
+            addedKeys: { type: 'keyword', copy_to: 'meta_search' },
+            updated: { type: 'integer' },
+            updatedKeys: { type: 'keyword', copy_to: 'meta_search' },
+            deleted: { type: 'integer' },
+            deleteKeys: { type: 'keyword', copy_to: 'meta_search' }
         }
     },
     error: {
