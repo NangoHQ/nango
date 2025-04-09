@@ -9,8 +9,10 @@ export type ErrorCircleVariant = 'error' | 'warning';
 export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon; variant?: ErrorCircleVariant }> = ({ icon = '!', variant = 'error' }) => {
     if (icon === 'clock') {
         return (
-            <div className="bg-warning-400 bg-opacity-40 rounded-full p-0.5 h-4 w-4">
-                <div className="bg-transparent text-warning-500 rounded-full">{icon === 'clock' && <IconClockHour4Filled stroke={1} size={12} />}</div>
+            <div className="cursor-auto bg-warning-400 bg-opacity-40 p-[1px] rounded-full h-6 w-6">
+                <div className="w-full h-full flex items-center justify-center bg-transparent text-warning-500">
+                    <IconClockHour4Filled stroke={1} />
+                </div>
             </div>
         );
     }
@@ -23,7 +25,7 @@ export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon; variant?: ErrorCirc
                     variant === 'warning' ? 'bg-warning-500' : 'bg-red-base'
                 )}
             >
-                {icon === '!' && <IconExclamationMark stroke={3} size={12} />}
+                {icon === '!' && <IconExclamationMark stroke={2} size={14} />}
                 {icon === 'sync' && <IconRefresh stroke={2} size={16} />}
                 {icon === 'auth' && <IconLock stroke={2} size={16} />}
             </div>

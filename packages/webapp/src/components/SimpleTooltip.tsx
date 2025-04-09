@@ -11,7 +11,7 @@ export const SimpleTooltip: React.FC<
     }
 
     return (
-        <TooltipProvider delayDuration={delay}>
+        <TooltipProvider delayDuration={delay ?? 0}>
             <Tooltip>
                 <TooltipContent {...rest}>{tooltipContent}</TooltipContent>
                 <TooltipTrigger>{children}</TooltipTrigger>
