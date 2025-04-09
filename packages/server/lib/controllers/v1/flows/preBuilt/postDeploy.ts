@@ -95,7 +95,8 @@ export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, r
                 models: flow.returns,
                 track_deletes: flow.track_deletes === true,
                 metadata: { description: flow.description, scopes: flow.scopes },
-                input: flow.input
+                input: flow.input,
+                version: flow.version ?? null
             }
         ],
         logContextGetter,

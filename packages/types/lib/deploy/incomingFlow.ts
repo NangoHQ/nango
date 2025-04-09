@@ -51,6 +51,7 @@ export interface PreBuiltFlowConfig {
     fileBody?: IncomingScriptFiles;
     endpoints: NangoSyncEndpointV2[];
     input?: NangoModel | LegacySyncModelSchema | undefined;
+    version?: string | null;
 }
 
 // TODO: split into action | sync type
