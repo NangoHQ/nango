@@ -16,16 +16,16 @@ export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon; variant?: ErrorCirc
     }
 
     return (
-        <div className={cn('cursor-auto flex h-4 w-4 rounded-full bg-opacity-40 p-[3px]', variant === 'warning' ? 'bg-warning-400' : 'bg-alert-400')}>
+        <div className={cn('cursor-auto flex h-6 w-6 rounded-full bg-opacity-40 p-[3px]', variant === 'warning' ? 'bg-warning-400' : 'bg-alert-400')}>
             <div
                 className={cn(
                     'rounded-full w-full h-full flex items-center justify-center text-[#6d5a2c]',
                     variant === 'warning' ? 'bg-warning-500' : 'bg-red-base'
                 )}
             >
-                {icon === '!' && <IconExclamationMark stroke={2} size={9} />}
-                {icon === 'sync' && <IconRefresh stroke={2} size={9} />}
-                {icon === 'auth' && <IconLock stroke={2} size={9} />}
+                {icon === '!' && <IconExclamationMark stroke={3} size={12} />}
+                {icon === 'sync' && <IconRefresh stroke={2} size={16} />}
+                {icon === 'auth' && <IconLock stroke={2} size={16} />}
             </div>
         </div>
     );

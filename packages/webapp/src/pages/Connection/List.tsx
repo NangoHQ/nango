@@ -69,13 +69,13 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
                     {errorCounts.auth > 0 && (
-                        <SimpleTooltip tooltipContent="Expired credentials">
+                        <SimpleTooltip tooltipContent="Expired credentials" delay={0}>
                             <ErrorCircle icon="auth" />
                         </SimpleTooltip>
                     )}
 
                     {errorCounts.sync > 0 && (
-                        <SimpleTooltip tooltipContent="Failed syncs">
+                        <SimpleTooltip tooltipContent="Failed syncs" delay={0}>
                             <ErrorCircle icon="sync" />
                         </SimpleTooltip>
                     )}
