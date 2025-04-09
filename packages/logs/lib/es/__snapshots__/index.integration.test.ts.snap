@@ -11,6 +11,40 @@ exports[`mapping > should create one index automatically on log 1`] = `
       "accountName": {
         "type": "keyword",
       },
+      "batchSave": {
+        "properties": {
+          "added": {
+            "type": "integer",
+          },
+          "addedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleteKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleted": {
+            "type": "integer",
+          },
+          "model": {
+            "type": "keyword",
+          },
+          "updated": {
+            "type": "integer",
+          },
+          "updatedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+        },
+      },
       "connectionId": {
         "type": "keyword",
       },
@@ -105,43 +139,8 @@ exports[`mapping > should create one index automatically on log 1`] = `
         "type": "text",
       },
       "meta": {
-        "dynamic": "runtime",
-        "properties": {
-          "updatedResults": {
-            "properties": {
-              "added": {
-                "type": "integer",
-              },
-              "addedKeys": {
-                "copy_to": [
-                  "meta_search",
-                ],
-                "type": "keyword",
-              },
-              "deleteKeys": {
-                "copy_to": [
-                  "meta_search",
-                ],
-                "type": "keyword",
-              },
-              "deleted": {
-                "type": "integer",
-              },
-              "model": {
-                "type": "keyword",
-              },
-              "updated": {
-                "type": "integer",
-              },
-              "updatedKeys": {
-                "copy_to": [
-                  "meta_search",
-                ],
-                "type": "keyword",
-              },
-            },
-          },
-        },
+        "enabled": false,
+        "type": "object",
       },
       "meta_search": {
         "analyzer": "standard",
