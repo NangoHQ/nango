@@ -29,10 +29,13 @@ import PreBuiltUseCases from "/snippets/generated/google/PreBuiltUseCases.mdx"
   </Step>
   <Step title="Create a new project">
     1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-    2. Click on the project dropdown at the top of the page.
+    2. Click on the project dropdown at the top left of the page.
     3. Click **New Project**.
-    4. Enter a name for your project and click **Create**.
-    5. Wait for the project to be created and then select it from the project dropdown.
+    4. Enter a **Project Name** for your project 
+    5. Under **Location**, select the appropriate organization or folder where this project should belong.
+    <Note>If you're not part of an organization, it will default to No organization</Note>
+    6. Click **Create** and wait for the project to be created.
+    5. Select it from the project dropdown.
   </Step>
   <Step title="Enable the APIs you need">
     1. Go to the [API Library](https://console.cloud.google.com/apis/library) in the Google Cloud Console.
@@ -42,20 +45,17 @@ import PreBuiltUseCases from "/snippets/generated/google/PreBuiltUseCases.mdx"
   </Step>
   <Step title="Configure the OAuth consent screen">
     1. Go to **APIs & Services** > **OAuth consent screen** in the Google Cloud Console.
-    2. Select the appropriate user type:
+    2. Click **Get started**.
+    3. Fill in the **App Information** form.
+      - **App Name**: The name of the app asking for consent.
+      - **User support email**: For users to contact you with questions about their consent
+    4. Click **Next**. Select the appropriate Audience:
        - **External**: For applications available to any Google user
        - **Internal**: For applications restricted to users within your Google Workspace organization
-    3. Click **Create**.
-    4. Fill in the required information:
-       - **App name**: Your application's name
-       - **User support email**: Your email address
-       - **Developer contact information**: Your email address
-    5. Click **Save and Continue**.
-    6. Add the scopes your application needs. Click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
-    7. Click **Save and Continue**.
-    8. Add test users if you selected External user type (required for testing before verification).
-    9. Click **Save and Continue**.
-    10. Review your settings and click **Back to Dashboard**.
+    5. Click **Next**. Fill in the **Contact Information**, these are the email addresses that Google will use to notify you about any changes to your project.
+    6. Click **Next**, then check the **I agree to the Google API Services: User Data Policy** checkbox, and click **Continue**.
+    7. Add the scopes your application needs. Under **Data Access**, click **Add or Remove Scopes** and select the scopes that correspond to the APIs you enabled.
+    8  Under **Audience**, click **Add users** if you selected **External** user type (required for testing before verification).
   </Step>
   <Step title="Create OAuth 2.0 credentials">
     1. Go to **APIs & Services** > **Credentials** in the Google Cloud Console.
@@ -66,18 +66,15 @@ import PreBuiltUseCases from "/snippets/generated/google/PreBuiltUseCases.mdx"
     6. Click **Create**.
     7. A dialog will appear with your client ID and client secret. Save these credentials securely as you'll need them when configuring your integration in Nango.
   </Step>
-  <Step title="Configure additional settings (optional)">
-    1. If your application requires offline access (to refresh tokens when the user is not present), ensure you set the `access_type` parameter to `offline` in your authorization request.
-    2. If your application needs incremental authorization (requesting additional scopes over time), set the `include_granted_scopes` parameter to `true`.
-    3. For enhanced security, implement state parameter validation to prevent CSRF attacks.
-  </Step>
   <Step title="Verify your app (if required)">
     If your application uses sensitive or restricted scopes, you'll need to verify your app with Google:
-    1. Go to **APIs & Services** > **OAuth consent screen**.
-    2. Click **Edit App**.
-    3. Complete all required information, including privacy policy URL.
-    4. Submit your app for verification by clicking **Submit for verification**.
-    5. Follow Google's instructions to complete the verification process.
+    1. Go to **APIs & Services** > **OAuth consent screen** > **Audience**.
+    2. Click **Publish App** to move from testing to production.
+    3. Once your app is published to production, click **Prepare for Verification** to proceed to submit your app for verification.
+    4. Review and confirm all app details, then click **Save and Continue**.
+    5. Justify your use of any sensitive or restricted scopes.
+    6. Upload a demo video showing your app's OAuth flow and scope usage.
+    7. Click **Submit for Verification** to begin the review process.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
@@ -126,9 +123,7 @@ import PreBuiltUseCases from "/snippets/generated/google/PreBuiltUseCases.mdx"
 -   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`https://app.nango.dev` if you're testing from the Nango UI).
 -   For applications using sensitive or restricted scopes, Google requires verification and a security assessment. This process can take several weeks to complete.
 -   Google's OAuth consent screen has different configurations for "External" and "Internal" user types. Internal is only available for Google Workspace users and limits access to users within your organization.
--   When requesting offline access, make sure to set `access_type=offline` and `prompt=consent` to ensure you receive a refresh token.
 -   Google implements incremental authorization, allowing you to request additional scopes over time without requiring users to re-authorize all previously granted scopes.
--   Google has [rate limits](https://developers.google.com/identity/protocols/oauth2/limits) for OAuth requests that vary by API.
--   For enhanced security, always implement state parameter validation to prevent CSRF attacks.
+-   Google enforces [rate limits](https://developers.google.com/workspace/admin/reports/v1/limits) on API requests, which vary depending on the specific API being used.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/google.mdx)</Note>
