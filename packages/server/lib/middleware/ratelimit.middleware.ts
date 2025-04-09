@@ -40,15 +40,19 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
     };
 
     const url = getRedisUrl();
+    let limiter: RateLimiterAbstract;
     if (url) {
         const redisClient = await createClient({ url: url, disableOfflineQueue: true }).connect();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });
-        return new RateLimiterRedis({ storeClient: redisClient, ...opts });
+        limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
+    } else {
+        limiter = new RateLimiterMemory(opts);
     }
 
-    return new RateLimiterMemory(opts);
+    limiters.set(size, limiter);
+    return limiter;
 }
 
 /**
