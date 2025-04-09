@@ -96,6 +96,23 @@ export class NangoActionCLI extends NangoActionBase {
         this.log(`This has no effect but on a remote Nango instance would start a schedule`);
         return Promise.resolve();
     }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async tryAcquireLock(_props: { key: string; ttlMs: number }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseLock(_props: { key: string }): Promise<boolean> {
+        // Not applicable to CLI
+        return true;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public override async releaseAllLocks(): Promise<void> {
+        // Not applicable to CLI
+    }
 }
 
 export class NangoSyncCLI extends NangoSyncBase {
@@ -129,6 +146,9 @@ export class NangoSyncCLI extends NangoSyncBase {
     log = NangoActionCLI['prototype']['log'];
     triggerSync = NangoActionCLI['prototype']['triggerSync'];
     startSync = NangoActionCLI['prototype']['startSync'];
+    tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
+    releaseLock = NangoActionCLI['prototype']['releaseLock'];
+    releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
 
     public batchSave<T extends object>(results: T[], model: string) {
         if (!results || results.length === 0) {

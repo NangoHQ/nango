@@ -159,7 +159,7 @@ export const ShowIntegration: React.FC = () => {
                             <IconRefresh stroke={1} size={18} />
                             {isTrialOver ? 'Restart trial' : 'Extend trial'}
                         </Button>
-                        <Link to={`mailto:support@nango.dev?subject=Upgrade%20my%20plan%20`}>
+                        <Link to={`mailto:upgrade@nango.dev?subject=Upgrade%20my%20plan%20`}>
                             <Button size={'sm'} variant={'secondary'}>
                                 <IconBolt stroke={1} size={18} />
                                 Upgrade plan

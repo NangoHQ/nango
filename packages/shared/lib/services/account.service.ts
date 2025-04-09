@@ -106,10 +106,6 @@ class AccountService {
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
         return result[0] || null;
     }
-
-    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
-        await db.knex.update({ is_capped }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
-    }
 }
 
 export default new AccountService();

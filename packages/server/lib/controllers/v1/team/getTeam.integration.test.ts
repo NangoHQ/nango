@@ -48,7 +48,6 @@ describe(`GET ${route}`, () => {
                 isAdminTeam: false,
                 account: {
                     id: account.id,
-                    is_capped: true,
                     name: account.name,
                     created_at: expect.toBeIsoDate(),
                     updated_at: expect.toBeIsoDate(),
