@@ -29,50 +29,50 @@ export function createCredentials({
             dynamicCredentials['privateKey'] = { id, secret };
         }
         const now = Math.floor(Date.now() / 1000);
-        const payload = Object.entries(provider.token.payload).reduce<Record<string, any>>((acc, [key, value]) => {
+        const payload: Record<string, any> = {};
+
+        for (const [key, value] of Object.entries(provider.token.payload)) {
             const strippedValue = stripCredential(value);
 
-            if (typeof strippedValue === 'object' && strippedValue !== null) {
-                acc[key] = interpolateObject(strippedValue, dynamicCredentials);
+            if (strippedValue === null) {
+                payload[key] = null;
+            } else if (typeof strippedValue === 'object') {
+                payload[key] = interpolateObject(strippedValue, dynamicCredentials);
             } else if (typeof strippedValue === 'string') {
-                acc[key] = interpolateString(strippedValue, dynamicCredentials);
+                payload[key] = interpolateString(strippedValue, dynamicCredentials);
             } else {
-                acc[key] = strippedValue;
+                payload[key] = strippedValue;
             }
-            return acc;
-        }, {});
+        }
 
         payload['iat'] = now;
         payload['exp'] = now + provider.token.expires_in_ms / 1000;
 
-        const header = Object.entries(provider.token.header).reduce<Record<string, any>>((acc, [key, value]) => {
+        const header: Record<string, any> = {};
+
+        for (const [key, value] of Object.entries(provider.token.header)) {
             const strippedValue = stripCredential(value);
 
-            if (typeof strippedValue === 'object' && strippedValue !== null) {
-                acc[key] = interpolateObject(strippedValue, dynamicCredentials);
+            if (strippedValue === null) {
+                header[key] = null;
+            } else if (typeof strippedValue === 'object') {
+                header[key] = interpolateObject(strippedValue, dynamicCredentials);
             } else if (typeof strippedValue === 'string') {
-                acc[key] = interpolateString(strippedValue, dynamicCredentials);
+                header[key] = interpolateString(strippedValue, dynamicCredentials);
             } else {
-                acc[key] = strippedValue;
+                header[key] = strippedValue;
             }
-            return acc;
-        }, {});
+        }
 
         const signingKey = stripCredential(provider.token.signing_key);
         const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, dynamicCredentials) : signingKey;
 
-        const token =
-            provider.signature.protocol === 'RSA'
-                ? signJWT({
-                      payload,
-                      secretOrPrivateKey: formatPrivateKey(interpolatedSigningKey),
-                      options: { algorithm: provider.token.header.alg, header }
-                  })
-                : signJWT({
-                      payload,
-                      secretOrPrivateKey: Buffer.from(interpolatedSigningKey, 'hex'),
-                      options: { algorithm: provider.token.header.alg, header }
-                  });
+        const pKey = provider.signature.protocol === 'RSA' ? formatPrivateKey(interpolatedSigningKey) : Buffer.from(interpolatedSigningKey, 'hex');
+        const token = signJWT({
+            payload,
+            secretOrPrivateKey: pKey,
+            options: { algorithm: provider.token.header.alg, header }
+        });
         return Ok({
             type: 'JWT',
             ...dynamicCredentials,

@@ -200,31 +200,26 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
             )}
             {(connection.credentials?.type === 'TWO_STEP' || connection.credentials?.type === 'JWT') && (
                 <div>
-                    {(() => {
-                        // Handle privateKey if it's an object (id and secret), backwards compatibility with ghost-admin
+                    {Object.keys(connection.credentials).flatMap((key) => {
                         const privateKey = (connection.credentials as Record<string, any>)['privateKey'];
-                        if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
-                            return (
-                                <div className="flex flex-col">
-                                    <span className="text-gray-400 text-xs uppercase mb-1">PRIVATE KEY</span>
-                                    <SecretInput disabled defaultValue={`${privateKey.id}:${privateKey.secret}`} copy={true} />
-                                </div>
-                            );
+                        let value: string;
+                        let label: string;
+                        if (key === 'privateKey' && privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
+                            value = `${privateKey.id}:${privateKey.secret}`;
+                            label = 'PRIVATE KEY';
+                        } else if (!['type', 'token', 'expires_at', 'raw'].includes(key)) {
+                            value = (connection.credentials as Record<string, string>)[key];
+                            label = key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+                        } else {
+                            return [];
                         }
-                        return Object.keys(connection.credentials)
-                            .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
-                            .map((key) => {
-                                const value = (connection.credentials as Record<string, string>)[key];
-                                return (
-                                    <div className="flex flex-col" key={key}>
-                                        <span className="text-gray-400 text-xs uppercase mb-1">
-                                            {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
-                                        </span>
-                                        <SecretInput disabled defaultValue={value} copy={true} />
-                                    </div>
-                                );
-                            });
-                    })()}
+                        return [
+                            <div className="flex flex-col" key={key}>
+                                <span className="text-gray-400 text-xs uppercase mb-1">{label}</span>
+                                <SecretInput disabled defaultValue={value} copy={true} />
+                            </div>
+                        ];
+                    })}
                 </div>
             )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
