@@ -117,6 +117,15 @@ export interface MessageRow {
     request?: MessageHTTPRequest | undefined;
     response?: MessageHTTPResponse | undefined;
     meta?: MessageMeta | null | undefined;
+    batchSave?: {
+        model: string;
+        added: number;
+        addedKeys: string[];
+        updated: number;
+        updatedKeys: string[];
+        deleted: number;
+        deleteKeys: string[];
+    };
     retry?: MessageHTTPRetry | undefined;
 
     // Dates
