@@ -2,11 +2,11 @@
     "name": "@nangohq/webapp",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
-        "start": "DISABLE_ESLINT_PLUGIN=true react-scripts start",
-        "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
-        "test": "DISABLE_ESLINT_PLUGIN=true react-scripts test",
-        "eject": "DISABLE_ESLINT_PLUGIN=true react-scripts eject"
+        "dev": "vite --port 3000",
+        "build": "vite build",
+        "preview": "vite preview"
     },
     "browserslist": {
         "production": [
@@ -26,8 +26,7 @@
         "@heroicons/react": "2.2.0",
         "@mantine/core": "7.12.1",
         "@mantine/prism": "5.10.5",
-        "@nangohq/frontend": "0.57.0",
-        "@nangohq/server": "file:../server",
+        "@nangohq/frontend": "0.58.4",
         "@nangohq/types": "file:../types",
         "@radix-ui/react-accordion": "1.2.2",
         "@radix-ui/react-avatar": "1.1.2",
@@ -54,6 +53,8 @@
         "@types/react-helmet": "6.1.11",
         "@types/stringify-object": "4.0.5",
         "@uidotdev/usehooks": "2.4.1",
+        "@vitejs/plugin-react-swc": "3.8.1",
+        "autoprefixer": "10.4.21",
         "class-variance-authority": "0.7.1",
         "classnames": "2.5.1",
         "clsx": "2.1.1",
@@ -70,7 +71,6 @@
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",
         "react-router-dom": "6.26.1",
-        "react-scripts": "5.0.1",
         "react-toastify": "9.1.1",
         "react-use": "17.6.0",
         "recharts": "2.15.1",
@@ -80,8 +80,10 @@
         "tailwindcss": "3.4.14",
         "typescript": "5.7.3",
         "vaul": "1.1.2",
+        "vite": "6.2.5",
+        "vite-plugin-checker": "0.9.1",
+        "vite-plugin-svgr": "4.3.0",
         "web-vitals": "2.1.4",
-        "webpack": "5.97.1",
         "zustand": "5.0.3"
     },
     "proxy": "http://localhost:3003"

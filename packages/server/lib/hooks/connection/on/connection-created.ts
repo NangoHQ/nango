@@ -43,10 +43,12 @@ export async function postConnectionCreation(
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
         const res = await getOrchestrator().triggerOnEventScript({
+            accountId: account.id,
             connection: createdConnection.connection,
             version,
             name,
             fileLocation,
+            async: true,
             logCtx
         });
         if (res.isErr()) {

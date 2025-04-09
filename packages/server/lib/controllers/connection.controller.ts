@@ -1,18 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { OAuth2Credentials, AuthCredentials, ConnectionUpsertResponse } from '@nangohq/shared';
 import db from '@nangohq/database';
-import type { TbaCredentials, ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials } from '@nangohq/types';
-import { configService, connectionService, errorManager, NangoError, accountService, SlackService, getProvider } from '@nangohq/shared';
-import { NANGO_ADMIN_UUID } from './account.controller.js';
 import { logContextGetter } from '@nangohq/logs';
-import type { RequestLocals } from '../utils/express.js';
+import { NangoError, accountService, configService, connectionService, errorManager, getProvider } from '@nangohq/shared';
+
+import { NANGO_ADMIN_UUID } from './account.controller.js';
+import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
+import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
-import { preConnectionDeletion } from '../hooks/connection/on/connection-deleted.js';
+
+import type { RequestLocals } from '../utils/express.js';
+import type { AuthCredentials, ConnectionUpsertResponse, OAuth2Credentials } from '@nangohq/shared';
+import type { ApiKeyCredentials, BasicApiCredentials, ConnectionConfig, OAuth1Credentials, OAuth2ClientCredentials, TbaCredentials } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
@@ -63,13 +66,12 @@ class ConnectionController {
                 providerConfigKey: integration_key,
                 environmentId: info!.environmentId,
                 orchestrator,
-                logContextGetter,
+                slackService,
                 preDeletionHook
             });
 
             // Kill all notifications associated with this env
-            const slackNotificationService = new SlackService({ orchestrator: getOrchestrator(), logContextGetter });
-            await slackNotificationService.closeAllOpenNotificationsForEnv(environment.id);
+            await slackService.closeAllOpenNotificationsForEnv(environment.id);
 
             res.status(204).send();
         } catch (err) {
@@ -139,7 +141,7 @@ class ConnectionController {
 
     async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
         try {
-            const { environment, account } = res.locals;
+            const { environment, account, plan } = res.locals;
             const { provider_config_key, metadata, connection_config } = req.body;
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
@@ -158,11 +160,12 @@ class ConnectionController {
 
             const providerName = integration.provider;
 
-            if (account.is_capped && provider_config_key) {
+            if (plan && provider_config_key) {
                 const isCapped = await connectionCreationStartCapCheckHook({
                     providerConfigKey: provider_config_key,
                     environmentId: environment.id,
-                    creationType: 'import'
+                    creationType: 'import',
+                    plan
                 });
                 if (isCapped) {
                     errorManager.errRes(res, 'resource_capped');

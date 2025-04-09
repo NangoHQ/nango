@@ -14,33 +14,92 @@ import PreBuiltUseCases from "/snippets/generated/jira/PreBuiltUseCases.mdx"
 ## Access requirements
 | Pre-Requisites | Status | Comment|
 | - | - | - |
-| Paid dev account | ❓ |  |
-| Paid test account | ❓ |  |
-| Partnership | ❓ | |
-| App review | ❓ |  |
-| Security audit | ❓ | |
+| Paid dev account | ✅ Not required | Free, self-signup for an [Atlassian developer account](https://developer.atlassian.com/). |
+| Paid test account | ✅ Not required | Free Jira Cloud instance can be used for testing. |
+| Partnership | ✅ Not required | |
+| App review | ⚠️ Conditional | Required only if you want to list your app on the Atlassian Marketplace. |
+| Security audit | ✅ Not required | |
 
 
 ## Setup guide
 
-_No setup guide yet._
+<Steps>
+  <Step title="Create an Atlassian developer account">
+    If you don't already have one, sign up for an [Atlassian developer account](https://id.atlassian.com/signup/).
+  </Step>
+  <Step title="Create a new OAuth 2.0 (3LO) app">
+    1. Go to the [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/).
+    2. Click **Create** and select **OAuth 2.0 integration**.
+    3. Enter a name, agree to Atlassian's developer terms by checking the agreement checkbox for your app and click **Create**.
+    4. Your app will be created and you'll be taken to the app management page.
+  </Step>
+  <Step title="Configure OAuth 2.0 (3LO)">
+    1. In the left sidebar, select **Authorization**.
+    2. Next to OAuth 2.0 (3LO), click **Add**.
+    3. Enter `https://api.nango.dev/oauth/callback` as the Callback URL.
+    4. Click **Save** to save your changes.
+  </Step>
+  <Step title="Add API permissions">
+    1. In the left sidebar, select **Permissions**.
+    2. Find the Jira API and click **Add**, and then click **Configure**.
+    3. Click **Edit Scopes** then select the scopes your application requires. Common scopes include:
+       - `read:jira-user` - Read user information
+       - `read:jira-work` - Read issues, projects, and workflows
+       - `write:jira-work` - Create and update issues
+       - `delete:jira-work` - Delete issues
+       - `manage:jira-project` - Manage project settings
+       - `manage:jira-configuration` - Manage Jira instance settings
+       - `offline_access` - Get refresh tokens (required for long-term access)
+    4. Click **Save** to save your changes.
+  </Step>
+  <Step title="Obtain your client credentials">
+    1. In the left sidebar, select **Settings**.
+    2. Note your **Client ID**.
+    3. Copy both the Client ID and Secret by clicking the copy buttons next to them, as you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Make your app available to users (optional)">
+    If you want to distribute your app to other users:
+    
+    1. In the left sidebar, select **Distribution**.
+    2. In **Distribution controls**, click the **Edit** button, then select the **Sharing** radio button.
+    3. Return to the Authorization page and copy the Authorization URL to share with your users.
+    
+    Note: By default, your app is private and can only be used by you. Making it public allows other users to authorize your app.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>
 
 
 ## Useful links
 
--   [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
--   [OAuth-related docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
--   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
--   [API v3 docs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#about)
--   [OAuth app list (developer console)](https://developer.atlassian.com/console/myapps/)
--   [API rate limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/)
--   [Basic Auth-related docs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
+| Topic | Links | 
+| - | - | 
+| General | [Atlassian Developer Portal](https://developer.atlassian.com/) |
+| | [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/) |
+| | [Jira Cloud Platform Documentation](https://developer.atlassian.com/cloud/jira/platform/) |
+| Developer | [OAuth 2.0 (3LO) Apps Documentation](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) |
+| | [OAuth Scopes Reference](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/) |
+| | [Jira REST API v3 Documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/) |
+| | [API Rate Limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/) |
+| | [Basic Auth Documentation](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/) |
+| | [Distributing OAuth 2.0 Apps](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps) |
+| | [Atlassian Marketplace](https://marketplace.atlassian.com/) |
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>
+
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| read:jira-user | Read user information |
+| read:jira-work | Read Jira work items (issues, projects, etc.) |
+| write:jira-work | Create and update Jira work items |
+| offline_access | Access to refresh tokens for offline access |
+
 
 ## API gotchas
 
@@ -61,6 +120,10 @@ You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/$
 -   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
 -   Nango also supports `BASIC` auth for REST APIs in Jira. To use this feature, provide your `email` as the username and your `api_token` as the password. To generate an `api_token`, please refer to the [Manage Atlassian API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) section
 -   You will also need to supply your `subdomain`. When logged into your Atlassian account or Jira instance, look at the URL in your web browser. The `subdomain` part before `.atlassian.net` is your Jira subdomain.
+-   The `state` parameter is required for security in the OAuth flow to prevent CSRF attacks. Nango handles this automatically.
+-   Jira's OAuth implementation uses rotating refresh tokens. Each time you refresh an access token, you'll receive a new refresh token that invalidates the previous one.
+-   When making API calls, remember that the permissions of the user who authorized your app will limit what your app can do, regardless of the scopes you've requested.
+-   The Jira REST API has different versions (v2 and v3). Make sure you're using the correct version for your needs.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>
 

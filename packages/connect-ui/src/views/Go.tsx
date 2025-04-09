@@ -1,14 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthError } from '@nangohq/frontend';
 import { IconArrowLeft, IconCircleCheckFilled, IconExclamationCircle, IconExclamationCircleFilled, IconInfoCircle, IconX } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
 import { z } from 'zod';
 
-import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
 import { Button } from '@/components/ui/button';
@@ -19,6 +17,8 @@ import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
 import { cn, jsonSchemaToZod } from '@/lib/utils';
 
+import type { AuthResult } from '@nangohq/frontend';
+import type { AuthModeType } from '@nangohq/types';
 import type { Resolver } from 'react-hook-form';
 
 const formSchema: Record<AuthModeType, z.AnyZodObject> = {
@@ -44,15 +44,7 @@ const formSchema: Record<AuthModeType, z.AnyZodObject> = {
         content_url: z.string().min(1)
     }),
     JWT: z.object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
+        // JWT is custom every time
     }),
     TWO_STEP: z.object({
         // TWO_STEP is custom every time
@@ -94,7 +86,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
 };
 
 export const Go: React.FC = () => {
-    const { provider, integration, session, isSingleIntegration, setIsDirty } = useGlobal();
+    const { provider, integration, session, isSingleIntegration, detectClosedAuthWindow, setIsDirty } = useGlobal();
     const nango = useNango();
 
     const [loading, setLoading] = useState(false);
@@ -233,13 +225,13 @@ export const Go: React.FC = () => {
                 } else if (provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'CUSTOM') {
                     res = await nango.auth(integration.unique_key, {
                         ...values,
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 } else {
                     res = await nango.auth(integration.unique_key, {
                         params: values['params'] || {},
                         credentials: { ...values['credentials'], type: provider.auth_mode },
-                        detectClosedAuthWindow: true
+                        detectClosedAuthWindow
                     });
                 }
                 setResult(res);

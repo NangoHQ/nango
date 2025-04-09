@@ -18,10 +18,14 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
+    CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+    BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
+    PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES = 'nango.persist.records.modified.sizeInBytes',
 
     ON_EVENT_SCRIPT_EXECUTION = 'nango.jobs.onEventScriptExecution',
     ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',
@@ -81,7 +85,9 @@ export enum Types {
     CONNECTIONS_COUNT = 'nango.connections.count',
     CONNECTIONS_WITH_ACTIONS_COUNT = 'nango.connections.withActions.count',
     CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
-    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count'
+    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
+
+    RECORDS_TOTAL_COUNT = 'nango.records.total.count'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

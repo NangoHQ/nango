@@ -90,7 +90,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             installation_id: installationId
         };
 
-        const logCtx = await logContextGetter.get({ id: activityLogId });
+        const logCtx = await logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(

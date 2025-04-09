@@ -26,14 +26,13 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/fleet": "file:../fleet",
-        "axios": "^1.8.2",
+        "axios": "^1.8.4",
         "dd-trace": "5.21.0",
         "get-port": "7.1.0",
         "express": "4.20.0",
-        "node-cron": "3.0.3",
         "rate-limiter-flexible": "5.0.3",
         "redis": "4.6.13",
-        "zod": "3.24.1"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
@@ -41,6 +40,6 @@
         "nodemon": "3.1.9",
         "typescript": "5.7.3",
         "type-fest": "4.32.0",
-        "vitest": "2.1.9"
+        "vitest": "3.1.1"
     }
 }

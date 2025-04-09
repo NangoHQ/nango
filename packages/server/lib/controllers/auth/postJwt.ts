@@ -1,46 +1,37 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    analytics,
-    configService,
     AnalyticsTypes,
-    getConnectionConfig,
-    connectionService,
-    errorManager,
     ErrorSourceEnum,
     LogActionEnum,
+    analytics,
+    configService,
+    connectionService,
+    errorManager,
+    getConnectionConfig,
     getProvider,
+    jwtClient,
     linkConnection
 } from '@nangohq/shared';
-import type { MessageRowInsert, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
-    connectionTest as connectionTestHook
+    testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import db from '@nangohq/database';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
 
-const bodyValidation = z
-    .object({
-        privateKeyId: z.string().optional(),
-        issuerId: z.string().optional(),
-        privateKey: z.union([
-            z.object({
-                id: z.string(),
-                secret: z.string()
-            }),
-            z.string()
-        ])
-    })
-    .strict();
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
+const bodyValidation = z.object({}).catchall(z.any()).strict();
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
@@ -81,7 +72,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { privateKeyId = '', issuerId = '', privateKey } = val.data as PostPublicJwtAuthorization['Body'];
+    const bodyData = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
@@ -99,7 +90,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -158,10 +149,9 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const { success, error, response: credentials } = connectionService.getJwtCredentials(provider as ProviderJwt, privateKey, privateKeyId, issuerId);
-
-        if (!success || !credentials) {
-            void logCtx.error('Error during JWT creation', { error, provider: config.provider });
+        const create = jwtClient.createCredentials({ config: config.unique_key, provider: provider as ProviderJwt, dynamicCredentials: bodyData });
+        if (create.isErr()) {
+            void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
 
             errorManager.errRes(res, 'jwt_error');
@@ -169,20 +159,16 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             return;
         }
 
-        const connectionResponse = await connectionTestHook({ config, connectionConfig, connectionId, credentials, provider });
+        const credentials = create.value;
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider, logCtx });
         if (connectionResponse.isErr()) {
-            if ('logs' in connectionResponse.error.payload) {
-                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
-            }
-            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid');
             await logCtx.failed();
 
             errorManager.errResFromNangoErr(res, connectionResponse.error);
 
             return;
         }
-
-        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,

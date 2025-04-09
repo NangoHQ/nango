@@ -88,7 +88,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },

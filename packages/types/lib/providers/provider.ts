@@ -54,9 +54,10 @@ export interface BaseProvider {
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
-            endpoint: string;
+            endpoints: string[];
             base_url_override?: string;
             headers?: Record<string, string>;
+            data?: unknown;
         };
     };
     authorization_url?: string;
@@ -78,6 +79,7 @@ export interface BaseProvider {
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
     post_connection_script?: string;
+    credentials_verification_script?: string;
     categories?: string[];
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
@@ -119,17 +121,26 @@ export interface ProviderOAuth1 extends BaseProvider {
 }
 
 export interface ProviderJwt extends BaseProvider {
+    auth_mode: 'JWT';
+    signature: {
+        protocol: 'RSA' | 'HMAC';
+    };
     token: {
+        signing_key: string;
         expires_in_ms: number;
-        headers: {
+        header: {
             alg: string;
+            typ?: string;
         };
         payload: {
-            aud: string;
+            aud?: string;
+            iss?: string;
+            sub?: string;
         };
     };
 }
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
+    auth_mode: 'TWO_STEP';
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
@@ -147,6 +158,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     body_format?: 'xml' | 'json' | 'form';
 }
 export interface ProviderSignature extends BaseProvider {
+    auth_mode: 'SIGNATURE';
     signature: {
         protocol: 'WSSE';
     };
@@ -154,4 +166,11 @@ export interface ProviderSignature extends BaseProvider {
         expires_in_ms: number;
     };
 }
-export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature;
+export interface ProviderApiKey extends BaseProvider {
+    auth_mode: 'API_KEY';
+}
+
+export type Provider = BaseProvider | ProviderOAuth1 | ProviderOAuth2 | ProviderJwt | ProviderTwoStep | ProviderSignature | ProviderApiKey;
+
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2; // TODO: fix this type
+export type TestableProvider = ProviderApiKey; // TODO: fix this type

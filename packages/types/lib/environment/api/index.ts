@@ -1,6 +1,8 @@
-import type { Merge } from 'type-fest';
-import type { ApiTimestamps, Endpoint } from '../../api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../../api';
+import type { ApiPlan } from '../../plans/http.api';
 import type { DBEnvironment, DBExternalWebhook } from '../db';
+import type { ApiEnvironmentVariable } from '../variable/api';
+import type { Merge } from 'type-fest';
 
 export type ApiEnvironment = Omit<
     Merge<DBEnvironment, { callback_url: string } & ApiTimestamps>,
@@ -17,10 +19,28 @@ export type PostEnvironment = Endpoint<{
     };
 }>;
 
+export type GetEnvironment = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/environments/current';
+    Success: {
+        plan: ApiPlan | null;
+        environmentAndAccount: {
+            environment: ApiEnvironment;
+            env_variables: ApiEnvironmentVariable[];
+            webhook_settings: ApiWebhooks;
+            uuid: string;
+            name: string;
+            email: string;
+            slack_notifications_channel: string | null;
+        };
+    };
+}>;
+
 export type PatchEnvironment = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
+        name?: string | undefined;
         callback_url?: string | undefined;
         hmac_key?: string | undefined;
         hmac_enabled?: boolean | undefined;
@@ -31,4 +51,5 @@ export type PatchEnvironment = Endpoint<{
     Success: {
         data: ApiEnvironment;
     };
+    Error: ApiError<'conflict'>;
 }>;

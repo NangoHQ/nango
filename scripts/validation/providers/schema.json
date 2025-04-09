@@ -258,14 +258,17 @@
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["endpoint"],
+                            "required": ["endpoints"],
                             "properties": {
                                 "method": {
                                     "type": "string",
                                     "enum": ["GET", "POST"]
                                 },
-                                "endpoint": {
-                                    "type": "string"
+                                "endpoints": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "base_url_override": {
                                     "type": "string"
@@ -278,6 +281,9 @@
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "data": {
+                                    "type": "object"
                                 }
                             }
                         }
@@ -289,7 +295,7 @@
                         "expires_in_ms": {
                             "type": "number"
                         },
-                        "headers": {
+                        "header": {
                             "type": "object",
                             "properties": {
                                 "alg": {
@@ -390,7 +396,7 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE"]
+                            "enum": ["WSSE", "RSA", "HMAC"]
                         }
                     },
                     "required": ["protocol"]
@@ -458,6 +464,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "credentials_verification_script": {
+                    "type": "string"
                 },
                 "token_url": {
                     "oneOf": [

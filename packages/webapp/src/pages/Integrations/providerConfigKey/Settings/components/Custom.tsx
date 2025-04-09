@@ -1,23 +1,21 @@
-import type { GetIntegration } from '@nangohq/types';
-import { CopyButton } from '../../../../../components/ui/button/CopyButton';
-import { defaultCallback } from '../../../../../utils/utils';
-import type { EnvironmentAndAccount } from '@nangohq/server';
-import SecretInput from '../../../../../components/ui/input/SecretInput';
-import { Button } from '../../../../../components/ui/button/Button';
-import { InfoBloc } from '../../../../../components/InfoBloc';
-import { Input } from '../../../../../components/ui/input/Input';
 import { useState } from 'react';
+import { mutate } from 'swr';
+
 import { DeleteIntegrationButton } from './Delete';
-import { useStore } from '../../../../../store';
+import { InfoBloc } from '../../../../../components/InfoBloc';
+import { Button } from '../../../../../components/ui/button/Button';
+import { CopyButton } from '../../../../../components/ui/button/CopyButton';
+import { Input } from '../../../../../components/ui/input/Input';
+import SecretInput from '../../../../../components/ui/input/SecretInput';
 import SecretTextarea from '../../../../../components/ui/input/SecretTextArea';
 import { apiPatchIntegration } from '../../../../../hooks/useIntegration';
 import { useToast } from '../../../../../hooks/useToast';
-import { mutate } from 'swr';
+import { useStore } from '../../../../../store';
+import { defaultCallback } from '../../../../../utils/utils';
 
-export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data: { integration },
-    environment
-}) => {
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
+
+export const SettingsCustom: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data: { integration }, environment }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const [loading, setLoading] = useState(false);

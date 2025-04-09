@@ -167,11 +167,24 @@ export function interpolateString(str: string, replacers: Record<string, any>) {
         if (b === 'now') {
             return new Date().toISOString();
         }
-        const r = replacers[b];
+        const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
 }
+function resolveKey(key: string, replacers: Record<string, any>): any {
+    const keys = key.split('.');
+    let value = replacers;
 
+    for (const part of keys) {
+        if (value && part in value) {
+            value = value[part];
+        } else {
+            return undefined;
+        }
+    }
+
+    return value;
+}
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
@@ -289,10 +302,14 @@ export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined):
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
     if (str.includes('${')) {
         if (str.includes('||')) {
-            const parts = str.split('||');
-            const firstPart = parts[0] ? interpolateStringFromObject(parts[0].trim(), replacers) : undefined;
-            const secondPart = parts[1] ? interpolateStringFromObject(parts[1].trim(), replacers) : undefined;
-            return (firstPart || secondPart) as string;
+            const parts = str.split('||').map((part) => part.trim());
+            const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+
+            if (left && left !== parts[0]) {
+                return left;
+            }
+
+            return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
         }
 
         return interpolateStringFromObject(str, replacers);

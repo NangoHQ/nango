@@ -1,10 +1,13 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import type { PatchFlowEnable } from '@nangohq/types';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { configService, connectionService, enableScriptConfig, getSyncConfigById, syncManager } from '@nangohq/shared';
-import { validationBody, validationParams } from './patchDisable.js';
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, enableScriptConfig, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { validationBody, validationParams } from './patchDisable.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+
+import type { PatchFlowEnable } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) => {
@@ -31,7 +34,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, account } = res.locals;
+    const { environment, plan } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -45,12 +48,25 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    if (account.is_capped) {
-        const isCapped = await connectionService.shouldCapUsage({ providerConfigKey: body.providerConfigKey, environmentId: environment.id, type: 'activate' });
-        if (isCapped) {
-            res.status(400).send({ error: { code: 'resource_capped' } });
-            return;
-        }
+    if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
+        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
+        return;
+    }
+    if (plan && !plan.trial_end_at && plan.name === 'free') {
+        await startTrial(db.knex, plan);
+    }
+
+    const isCapped = await connectionService.shouldCapUsage({
+        providerConfigKey: body.providerConfigKey,
+        environmentId: environment.id,
+        type: 'activate',
+        plan
+    });
+    if (isCapped) {
+        res.status(400).send({
+            error: { code: 'resource_capped', message: `Your plan only allows ${plan?.connection_with_scripts_max} connections with scripts` }
+        });
+        return;
     }
 
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });

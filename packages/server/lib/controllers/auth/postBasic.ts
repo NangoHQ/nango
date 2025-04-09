@@ -14,11 +14,15 @@ import {
     getProvider,
     linkConnection
 } from '@nangohq/shared';
-import type { BasicApiCredentials, MessageRowInsert, PostPublicBasicAuthorization } from '@nangohq/types';
+import type { BasicApiCredentials, PostPublicBasicAuthorization } from '@nangohq/types';
 import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, flushLogsBuffer, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook, connectionTest } from '../../hooks/hooks.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    testConnectionCredentials
+} from '../../hooks/hooks.js';
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import db from '@nangohq/database';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
@@ -86,7 +90,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId })
+                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },
@@ -152,18 +156,13 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             password
         };
 
-        const connectionResponse = await connectionTest({ config, connectionConfig, connectionId, credentials, provider });
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials, provider, logCtx });
         if (connectionResponse.isErr()) {
-            if ('logs' in connectionResponse.error.payload) {
-                await flushLogsBuffer(connectionResponse.error.payload['logs'] as MessageRowInsert[], logCtx);
-            }
-            void logCtx.error('Provided credentials are invalid', { provider: config.provider });
+            void logCtx.error('Provided credentials are invalid');
             await logCtx.failed();
             res.status(400).send({ error: { code: 'connection_test_failed', message: connectionResponse.error.message } });
             return;
         }
-
-        await flushLogsBuffer(connectionResponse.value.logs, logCtx);
 
         const [updatedConnection] = await connectionService.upsertAuthConnection({
             connectionId,

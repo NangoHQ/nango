@@ -1,65 +1,102 @@
-import type { Request, Response, NextFunction } from 'express';
+import path from 'node:path';
+
+import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
-import { RateLimiterRes, RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
+
 import { getRedisUrl } from '@nangohq/shared';
-import { flagHasAPIRateLimit, getLogger } from '@nangohq/utils';
+import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express';
+import type { DBPlan } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
+import type { RateLimiterAbstract } from 'rate-limiter-flexible';
 
 const logger = getLogger('RateLimiter');
 
-const rateLimiter = await (async () => {
+const defaultLimit = parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 3500;
+const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
+    s: defaultLimit / 2,
+    m: defaultLimit,
+    l: defaultLimit * 5,
+    xl: defaultLimit * 10,
+    '2xl': defaultLimit * 50,
+    '3xl': defaultLimit * 100
+};
+const limiters = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
+
+/**
+ * Dynamically get a rate limiter based on the plan size
+ */
+async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
+    if (limiters.has(size)) {
+        return limiters.get(size)!;
+    }
+
     const opts = {
         keyPrefix: 'middleware',
-        points: parseInt(process.env['DEFAULT_RATE_LIMIT_PER_MIN'] || '0') || 3500,
+        points: rateLimiterSize[size],
         duration: 60,
         blockDuration: 0
     };
+
     const url = getRedisUrl();
+    let limiter: RateLimiterAbstract;
     if (url) {
         const redisClient = await createClient({ url: url, disableOfflineQueue: true }).connect();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });
-        return new RateLimiterRedis({
-            storeClient: redisClient,
-            ...opts
-        });
+        limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
+    } else {
+        limiter = new RateLimiterMemory(opts);
     }
-    return new RateLimiterMemory(opts);
-})();
 
-export const rateLimiterMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    limiters.set(size, limiter);
+    return limiter;
+}
+
+/**
+ * Rate limit api calls
+ */
+export const rateLimiterMiddleware = async (req: Request, res: Response<any, RequestLocals>, next: NextFunction) => {
     if (!flagHasAPIRateLimit) {
         next();
         return;
     }
 
-    const setXRateLimitHeaders = (rateLimiterRes: RateLimiterRes) => {
+    function setXRateLimitHeaders(maxPoints: number, rateLimiterRes: RateLimiterRes) {
         const resetEpoch = Math.floor(new Date(Date.now() + rateLimiterRes.msBeforeNext).getTime() / 1000);
-        res.setHeader('X-RateLimit-Limit', rateLimiter.points);
+
+        res.setHeader('X-RateLimit-Limit', maxPoints);
         res.setHeader('X-RateLimit-Remaining', rateLimiterRes.remainingPoints);
         res.setHeader('X-RateLimit-Reset', resetEpoch);
-    };
-    const key = getKey(req, res);
-    const pointsToConsume = getPointsToConsume(req, res);
-    rateLimiter
-        .consume(key, pointsToConsume)
-        .then((rateLimiterRes) => {
-            setXRateLimitHeaders(rateLimiterRes);
-            next();
-        })
-        .catch((err: unknown) => {
-            if (err instanceof RateLimiterRes) {
-                res.setHeader('Retry-After', Math.floor(err.msBeforeNext / 1000));
-                setXRateLimitHeaders(err);
-                logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
-                res.status(429).send({ error: { code: 'too_many_request' } });
-                return;
-            }
+    }
 
-            logger.error('Failed to compute rate limit', { error: err });
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to compute rate limit' } });
-        });
+    const size = res.locals.plan?.api_rate_limit_size || 'm';
+    const maxPoints = rateLimiterSize[size];
+    const key = getKey(req, res);
+    const pointsToConsume = getPointsToConsume(req, res, maxPoints);
+
+    try {
+        const rateLimiter = await getRateLimiter(size);
+        const resConsume = await rateLimiter.consume(key, pointsToConsume);
+
+        setXRateLimitHeaders(rateLimiter.points, resConsume);
+        next();
+    } catch (err) {
+        if (err instanceof RateLimiterRes) {
+            logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
+
+            setXRateLimitHeaders(maxPoints, err);
+            res.setHeader('Retry-After', Math.floor(err.msBeforeNext / 1000));
+            res.status(429).send({ error: { code: 'too_many_request' } });
+            return;
+        }
+
+        logger.error('Failed to compute rate limit', { error: err });
+        // If we can't get the rate limit (ex: redis is unreachable), we should not block the request
+        next();
+    }
 };
 
 function getKey(req: Request, res: Response<any, RequestLocals>): string {
@@ -74,13 +111,16 @@ function getKey(req: Request, res: Response<any, RequestLocals>): string {
 }
 
 const specialPaths = ['/api/v1/account'];
-function getPointsToConsume(req: Request, res: Response<any, RequestLocals>): number {
-    if (specialPaths.some((path) => req.path.startsWith(path))) {
+function getPointsToConsume(req: Request, res: Response<any, RequestLocals>, maxPoints: number): number {
+    const fullPath = path.join(req.baseUrl, req.route.path);
+
+    if (specialPaths.some((p) => fullPath.startsWith(p))) {
         // limiting to 6 requests per period to avoid brute force attacks
-        return Math.floor(rateLimiter.points / 6);
-    } else if (!res.locals.account || res.locals.account.is_capped) {
-        // Free account get way less requests
+        return Math.floor(maxPoints / 6);
+    } else if (!res.locals.account || (flagHasPlan && !res.locals.plan)) {
+        // Throttle api calls without valid credentials
         return 10;
     }
+
     return 1;
 }

@@ -160,14 +160,7 @@ export interface TableauCredentials extends CredentialsCommon {
 
 export interface JwtCredentials {
     type: AuthModes['Jwt'];
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -194,6 +187,18 @@ export type RefreshTokenResponse = AuthorizationTokenResponse;
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
+
+export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+export type RefreshableCredentials =
+    | OAuth2Credentials
+    | AppCredentials
+    | AppStoreCredentials
+    | OAuth2ClientCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | TwoStepCredentials
+    | BillCredentials
+    | SignatureCredentials;
 
 export type AllAuthCredentials =
     | OAuth1Credentials

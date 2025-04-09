@@ -1,12 +1,15 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '@nangohq/database';
+
+import db, { dbNamespace, schema } from '@nangohq/database';
+
+import { LogActionEnum } from '../../../models/Telemetry.js';
+import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
-import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { Config as ProviderConfig } from '../../../models/Provider.js';
+
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
-import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
+import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
 import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -160,19 +163,16 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<DBSyncConfig[]> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
-    const result = await db.knex.from<DBSyncConfig>(TABLE).select<DBSyncConfig[]>('*').where({
-        environment_id,
-        nango_config_id: config.id!,
-        active: true,
-        deleted: false
-    });
+export async function countSyncConfigByConfigId(environmentId: number): Promise<{ nango_config_id: number; count: string }[]> {
+    const result = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .select<{ nango_config_id: number; count: string }[]>('nango_config_id', db.knex.raw('COUNT(1) as count'))
+        .where({
+            environment_id: environmentId,
+            active: true,
+            deleted: false
+        })
+        .groupBy('nango_config_id');
 
     return result;
 }
@@ -409,6 +409,12 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
             }
         });
     }
+}
+
+export async function getSyncsByEnvironmentId(environment_id: number): Promise<DBSyncConfig[]> {
+    const result = await db.knex.select('*').from<DBSyncConfig>(TABLE).where({ active: true, environment_id, enabled: true, deleted: false });
+
+    return result;
 }
 
 export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
@@ -744,4 +750,20 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
     const res = await query;
 
     return res || null;
+}
+
+export async function getSoftDeletedSyncConfig({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBSyncConfig[]> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db.knex
+        .select('*')
+        .from<DBSyncConfig>(`_nango_sync_configs`)
+        .where('deleted', true)
+        .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+        .limit(limit);
+}
+
+export async function hardDeleteSyncConfig(id: number) {
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id }).delete();
 }

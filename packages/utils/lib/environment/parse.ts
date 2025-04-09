@@ -37,11 +37,19 @@ export const ENVS = z.object({
 
     // Crons
     CRON_EXPORT_USAGE_METRICS_MINUTES: z.coerce.number().optional().default(5),
+    CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
-    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(30),
-    CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(30),
-    CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(30),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
+    CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
 
     // Persist
     PERSIST_SERVICE_URL: z.string().url().optional(),
@@ -120,6 +128,9 @@ export const ENVS = z.object({
         .default(2 * 60 * 1000), // 2 minutes
     FLEET_DB_POOL_MAX: z.coerce.number().optional().default(5),
 
+    // Billing
+    FLAG_PLAN_ENABLED: bool,
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),
@@ -142,6 +153,13 @@ export const ENVS = z.object({
     NANGO_LOGS_ENABLED: bool,
     NANGO_LOGS_ES_INDEX: z.string().optional(),
     NANGO_LOGS_ES_SHARD_PER_DAY: z.coerce.number().optional().default(1),
+
+    // Koala
+    PUBLIC_KOALA_API_URL: z.string().url().optional(),
+    PUBLIC_KOALA_CDN_URL: z.string().url().optional(),
+
+    // Logodev
+    PUBLIC_LOGODEV_KEY: z.string().optional(),
 
     // Mailgun
     MAILGUN_API_KEY: z.string().optional(),

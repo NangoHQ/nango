@@ -841,6 +841,14 @@ paths:
     /scripts/config:
         get:
             description: Return the configuration for all integration scripts.
+            parameters:
+                - name: format
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [nango, openai]
+                  description: The output type of the script configuration
             responses:
                 '200':
                     description: Successfully returned integration scripts config
@@ -1140,7 +1148,16 @@ paths:
                                                       type: string
                                                       description: The variant name
                                               example: { 'name': 'github-issues', 'variant': 'custom-variant' }
+                                sync_mode:
+                                    type: string
+                                    enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
+                                    description: |
+                                        The mode in which to trigger the syncs.
+                                        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+                                        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
                                 full_resync:
+                                    deprecated: true
                                     type: boolean
                                     description: Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
 
@@ -2501,6 +2518,10 @@ components:
                             user_scopes:
                                 type: string
                                 description: User scopes (for Slack only)
+                            authorization_params:
+                                type: object
+                                description: Query params passed to the OAuth flow (for OAuth2 only)
+                                additionalProperties: true
                             connection_config:
                                 type: object
                                 additionalProperties: true

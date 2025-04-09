@@ -1,10 +1,12 @@
 import { basePublicUrl } from '@nangohq/utils';
+
 import { EmailClient } from '../clients/email.client.js';
+
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 
-export function sendVerificationEmail(email: string, name: string, token: string) {
+export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
-    emailClient.send(
+    await emailClient.send(
         email,
         `Verify your email address`,
         `
@@ -59,6 +61,48 @@ export async function sendInviteEmail({
 <p>Join this team by clicking <a href="${basePublicUrl}/signup/${invitation.token}">here</a> and completing your signup.</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}
+
+export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DBUser, 'name' | 'email'>; inDays: number }) {
+    const emailClient = EmailClient.getInstance();
+    await emailClient.send(
+        user.email,
+        `Your Nango trial ends in ${inDays} days`,
+        `<p>Hi ${user.name},</p>
+
+<p>Your free Nango trial expires in ${inDays} days. After that, integration endpoints and scripts will be paused. All authorization features will continue to work.</p>
+
+<p>You can extend your trial for 14 days at a time directly from the Nango UI. Just click on any integration using scripts and select Extend.</p>
+
+<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+
+<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}
+
+export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' | 'email'> }) {
+    const emailClient = EmailClient.getInstance();
+    await emailClient.send(
+        user.email,
+        `Your Nango trial has expired`,
+        `<p>Hi ${user.name},</p>
+
+<p>Your Nango trial has expired. Integration endpoints and scripts have been paused, but authorization features are still active.</p>
+
+<p>You can extend your trial for 14 more days directly in the Nango UI. Just click on any integration using scripts and select Extend.</p>
+
+<p>More details on free plan limitations are in the <a href="https://docs.nango.dev/guides/resource-limits#free-plan-limits.">documentation</a>.</p>
+
+<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
 <p>Best,<br>
 Team Nango</p>
