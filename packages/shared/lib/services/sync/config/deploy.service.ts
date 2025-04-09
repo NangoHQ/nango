@@ -37,6 +37,7 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
 import type { Merge } from 'type-fest';
+import flowService from '../../flow.service.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 const SYNC_TABLE = dbNamespace + 'syncs';
@@ -442,7 +443,14 @@ export async function deployPreBuilt({
             }
         }
 
-        const version = bumpedVersion || '0.0.1';
+        // Get the latest version from the flows
+        const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+        const [template] = availablePublicFlows.filter((flow: { providerConfigKey: string }) => flow.providerConfigKey === config.provider);
+        const templateFlows: NangoSyncConfig[] = [...(template?.actions || []), ...(template?.syncs || [])];
+        const flow = templateFlows.find((f) => f.name === sync_name);
+        const latestVersion = flow?.version;
+
+        const version = latestVersion || bumpedVersion || '1.0.0';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
         let file_location: string | null = null;
