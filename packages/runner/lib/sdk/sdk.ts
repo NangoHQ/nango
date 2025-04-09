@@ -4,7 +4,7 @@ import { Nango } from '@nangohq/node';
 import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
-import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy } from '@nangohq/types';
+import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy, PostPublicTrigger } from '@nangohq/types';
 import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
 import { PersistClient } from './persist.js';
 import { logger } from '../logger.js';
@@ -121,10 +121,10 @@ export class NangoActionRunner extends NangoActionBase {
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void | string> {
         this.throwIfAborted();
-        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, fullResync);
+        return this.nango.triggerSync(providerConfigKey, [sync], connectionId, syncMode);
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {

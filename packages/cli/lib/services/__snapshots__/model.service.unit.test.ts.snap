@@ -43,7 +43,7 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 import type { Nango } from '@nangohq/node';
 import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags } from '@nangohq/types';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
 
 export declare const oldLevelToNewLevel: {
@@ -415,7 +415,12 @@ export declare class NangoAction {
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
     zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>>;
-    triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+    triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+    ): Promise<void | string>;
     startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
