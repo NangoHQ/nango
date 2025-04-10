@@ -77,11 +77,15 @@ class SyncController {
 
     private async addRecordCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
         const byModel = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
-
         if (byModel.isOk()) {
             return syncs.map((sync) => ({
                 ...sync,
-                record_count: Object.fromEntries(sync.models.map((model) => [model, byModel.value[model]?.count ?? 0]))
+                record_count: Object.fromEntries(
+                    sync.models.map((model) => {
+                        const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
+                        return [model, byModel.value[modelFullName]?.count ?? 0];
+                    })
+                )
             }));
         } else {
             return syncs.map((sync) => ({ ...sync, record_count: null }));
