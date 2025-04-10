@@ -71,7 +71,7 @@ export const CreateEnvironmentButton: React.FC = () => {
 
     return (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-            <SimpleTooltip tooltipContent={tooltipContent} delay={0} triggerClassName="w-full" className="text-gray-400" side="bottom">
+            <SimpleTooltip tooltipContent={tooltipContent} delay={0} className="text-gray-400" side="bottom">
                 <DialogTrigger className="w-full" asChild>
                     <Button disabled={!!isMaxEnvironmentsReached} variant={'secondary'} className="w-full justify-center">
                         {isMaxEnvironmentsReached && <IconLock size={18} stroke={1} />}
