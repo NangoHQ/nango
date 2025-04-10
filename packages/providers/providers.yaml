@@ -8418,6 +8418,33 @@ slack:
     webhook_routing_script: slackWebhookRouting
     docs: https://docs.nango.dev/integrations/all/slack
 
+smartlead-ai:
+    display_name: Smartlead.ai
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://server.smartlead.ai/api
+        retry:
+            after: x-ratelimit-reset
+        query:
+            api_key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/client
+    docs: https://docs.nango.dev/integrations/all/smartlead-ai
+    docs_connect: https://docs.nango.dev/integrations/all/smartlead-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Smartlead.ai account
+            pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}_[a-zA-Z0-9]+$'
+            example: 12345678-1234-1234-1234-123456789012_abcdefg
+            doc_section: '#step-1-generating-your-api-key'
+
 smartrecruiters-api-key:
     display_name: Smartrecruiters
     auth_mode: API_KEY

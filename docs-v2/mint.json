@@ -626,6 +626,7 @@
                 "integrations/all/signnow-sandbox",
                 "integrations/all/slack",
                 "integrations/all/smartrecruiters-api-key",
+                "integrations/all/smartlead-ai",
                 "integrations/all/smartsheet",
                 "integrations/all/smugmug",
                 "integrations/all/snowflake",
