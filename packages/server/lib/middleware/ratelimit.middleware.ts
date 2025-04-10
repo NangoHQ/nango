@@ -119,6 +119,7 @@ function getPointsToConsume(req: Request, res: Response<any, RequestLocals>, max
         // limiting to 6 requests per period to avoid brute force attacks
         return Math.floor(maxPoints / 6);
     } else if (fullPath === '/providers.json') {
+        // Special case because it's hit by all runners with the same ip
         return 1;
     } else if (!res.locals.account || (flagHasPlan && !res.locals.plan)) {
         // Throttle api calls without valid credentials
