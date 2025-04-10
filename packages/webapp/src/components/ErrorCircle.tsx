@@ -1,33 +1,38 @@
-import { IconClockHour4Filled, IconExclamationMark, IconLock, IconRefresh } from '@tabler/icons-react';
+import { IconCircleCheckFilled, IconCircleXFilled, IconClockHour4Filled, IconExclamationCircleFilled, IconInfoCircleFilled } from '@tabler/icons-react';
 
 import { cn } from '../utils/utils';
+import { IconAuth } from './icons/auth';
+import { IconSync } from './icons/sync';
 
 import type React from 'react';
 
-export type ErrorCircleIcon = '!' | 'sync' | 'auth' | 'clock';
-export type ErrorCircleVariant = 'error' | 'warning';
+const colorMap = {
+    success: 'success-400',
+    error: 'alert-400',
+    warning: 'warning-400',
+    info: 'info-400'
+};
+
+export type ErrorCircleIcon = '!' | 'sync' | 'auth' | 'clock' | 'x' | 'info' | 'check';
+export type ErrorCircleVariant = 'success' | 'error' | 'warning' | 'info';
 export const ErrorCircle: React.FC<{ icon?: ErrorCircleIcon; variant?: ErrorCircleVariant }> = ({ icon = '!', variant = 'error' }) => {
-    if (icon === 'clock') {
-        return (
-            <div className="cursor-auto bg-warning-400 bg-opacity-40 p-[1px] rounded-full h-6 w-6">
-                <div className="w-full h-full flex items-center justify-center bg-transparent text-warning-500">
-                    <IconClockHour4Filled stroke={1} />
-                </div>
-            </div>
-        );
-    }
+    const color = colorMap[variant];
+    const bgColor = `bg-${color}`;
+    const iconColor = `text-${color}`;
+
+    // Tabler icons seem to have a small padding by default, so we add a smaller padding for them to make them consistent
+    const padding = icon === 'sync' || icon === 'auth' ? 'p-[3px]' : 'p-[2px]';
 
     return (
-        <div className={cn('cursor-auto flex h-6 w-6 rounded-full bg-opacity-40 p-[3px]', variant === 'warning' ? 'bg-warning-400' : 'bg-alert-400')}>
-            <div
-                className={cn(
-                    'rounded-full w-full h-full flex items-center justify-center text-[#6d5a2c]',
-                    variant === 'warning' ? 'bg-warning-500' : 'bg-red-base'
-                )}
-            >
-                {icon === '!' && <IconExclamationMark stroke={2} size={14} />}
-                {icon === 'sync' && <IconRefresh stroke={2} size={16} />}
-                {icon === 'auth' && <IconLock stroke={2} size={16} />}
+        <div className={cn('cursor-auto w-[20px] h-[20px] rounded-full bg-opacity-30', bgColor, padding)}>
+            <div className={cn('w-full h-full flex items-center justify-center', iconColor)}>
+                {icon === '!' && <IconExclamationCircleFilled />}
+                {icon === 'sync' && <IconSync />}
+                {icon === 'auth' && <IconAuth />}
+                {icon === 'clock' && <IconClockHour4Filled />}
+                {icon === 'x' && <IconCircleXFilled />}
+                {icon === 'info' && <IconInfoCircleFilled />}
+                {icon === 'check' && <IconCircleCheckFilled />}
             </div>
         </div>
     );
