@@ -101,13 +101,6 @@ export interface SignatureCredentials {
     password: string;
 }
 
-export enum AuthorizationStatus {
-    IDLE,
-    BUSY,
-    CANCELED,
-    DONE
-}
-
 export const enum WSMessageType {
     ConnectionAck = 'connection_ack',
     Error = 'error',
