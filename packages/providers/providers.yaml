@@ -8543,6 +8543,7 @@ snowflake-jwt:
             title: Private Key
             description: The private key associated with your Snowflake account for JWT authentication
             example: -----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----
+            pattern: '^-----BEGIN PRIVATE KEY-----\s*([A-Za-z0-9+/=\s]+)\s*-----END PRIVATE KEY-----$'
             secret: true
             doc_section: '#step-4-generating-your-private-key'
         fingerprint:
