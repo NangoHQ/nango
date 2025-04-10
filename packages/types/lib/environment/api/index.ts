@@ -53,3 +53,10 @@ export type PatchEnvironment = Endpoint<{
     };
     Error: ApiError<'conflict'>;
 }>;
+
+export type DeleteEnvironment = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/environments';
+    Success: never;
+    Error: ApiError<'cannot_delete_prod_environment'>;
+}>;
