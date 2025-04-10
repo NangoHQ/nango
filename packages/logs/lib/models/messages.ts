@@ -1,4 +1,12 @@
+import { errors } from '@elastic/elasticsearch';
+
+import { isTest } from '@nangohq/utils';
+
+import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
 import { client } from '../es/client.js';
+import { indexMessages } from '../es/schema.js';
+
+import type { estypes } from '@elastic/elasticsearch';
 import type {
     MessageRow,
     OperationRow,
@@ -9,12 +17,7 @@ import type {
     SearchOperationsSync,
     SearchOperationsType
 } from '@nangohq/types';
-import { indexMessages } from '../es/schema.js';
-import type { estypes } from '@elastic/elasticsearch';
-import { errors } from '@elastic/elasticsearch';
 import type { SetRequired } from 'type-fest';
-import { getFullIndexName, createCursor, parseCursor } from './helpers.js';
-import { isTest } from '@nangohq/utils';
 
 export interface ListOperations {
     count: number;
@@ -286,7 +289,7 @@ export async function listMessages(opts: {
     }
     if (opts.search) {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
-            match_phrase_prefix: { message: { query: opts.search } }
+            match_phrase_prefix: { meta_search: { query: opts.search } }
         });
     }
 
