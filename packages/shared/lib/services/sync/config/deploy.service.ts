@@ -442,7 +442,7 @@ export async function deployPreBuilt({
             }
         }
 
-        const version = bumpedVersion || '0.0.1';
+        const version = config.version || bumpedVersion || '0.0.1';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
         let file_location: string | null = null;
