@@ -123,19 +123,22 @@ export async function persistRecords({
 
         const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
 
-        void logCtx.info(`Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`, {
-            persistType,
-            // Please note this object is indexed in Elasticsearch, be careful when changing the shape
-            updatedResults: {
-                model: baseModel,
-                added: summary.addedKeys.length,
-                //addedKeys: summary.addedKeys,
-                updated: summary.updatedKeys.length,
-                //updatedKeys: summary.updatedKeys,
-                deleted: summary.deletedKeys?.length || 0
-                //deleteKeys: summary.deletedKeys || []
+        void logCtx.info(
+            `Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`,
+            { persistType },
+            {
+                persistResults: {
+                    model: baseModel,
+                    added: summary.addedKeys.length,
+                    updated: summary.updatedKeys.length,
+                    deleted: summary.deletedKeys?.length || 0,
+
+                    addedKeys: summary.addedKeys,
+                    updatedKeys: summary.updatedKeys,
+                    deleteKeys: summary.deletedKeys || []
+                }
             }
-        });
+        );
 
         const recordsSizeInBytes = Buffer.byteLength(JSON.stringify(records), 'utf8');
         const modifiedRecordsSizeInBytes = recordsData.reduce((acc, record) => {

@@ -1,10 +1,12 @@
-import type { MessageRow } from '@nangohq/types';
-import { useMemo } from 'react';
-import { formatDateToLogFormat } from '../../utils/utils';
 import { Prism } from '@mantine/prism';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { useMemo } from 'react';
+
 import { LevelTag } from './components/LevelTag';
 import { Tag } from '../../components/ui/label/Tag';
-import { CalendarIcon } from '@radix-ui/react-icons';
+import { formatDateToLogFormat } from '../../utils/utils';
+
+import type { MessageRow } from '@nangohq/types';
 
 export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
     const createdAt = useMemo(() => {
@@ -25,6 +27,9 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         }
         if (message.retry) {
             pl.retry = message.retry;
+        }
+        if (message.persistResults) {
+            pl.persistResults = message.persistResults;
         }
         if (message.error) {
             pl.error = { message: message.error.message };
