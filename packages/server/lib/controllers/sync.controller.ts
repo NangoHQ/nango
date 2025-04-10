@@ -430,7 +430,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, delete_records } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, sync_variant, provider, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -471,6 +471,7 @@ class SyncController {
             const result = await orchestrator.runSyncCommand({
                 connectionId: connection.id,
                 syncId: sync_id,
+                syncVariant: sync_variant,
                 command,
                 environmentId: environment.id,
                 logCtx,

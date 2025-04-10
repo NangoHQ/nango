@@ -295,6 +295,7 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
@@ -321,6 +322,7 @@ export class SyncManagerService {
                 await orchestrator.runSyncCommand({
                     connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
