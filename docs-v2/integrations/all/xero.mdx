@@ -72,6 +72,6 @@ import PreBuiltUseCases from "/snippets/generated/xero/PreBuiltUseCases.mdx"
 
 - When a user authorizes your app, they select which Xero organization to connect. Your app can only access data for the selected organization.
 - If you need to work with multiple Xero organizations, you'll need to handle the tenant context in your API calls. After a connection is created, Nango will automatically fetch and store the `tenant_id` in the connection config, which you can then use in your API calls.
-- Ensure you add the `offline_access` scope to ensure the token refreshes as expected
+- Make sure you add the `offline_access` scope to ensure the token refreshes as expected
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/xero.mdx)</Note>
