@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { Locks } from './locks.js';
 
 describe('Locks', () => {
@@ -140,7 +141,7 @@ describe('Locks', () => {
 
         it('should return false if the locks is expired', async () => {
             await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 2)); // Wait for the lock to expire
+            await new Promise((resolve) => setTimeout(resolve, 10)); // Wait for the lock to expire
 
             const res = await locks.hasLock({ owner: 'owner1', key: 'resource1' });
             expect(res.unwrap()).toBe(false);

@@ -46,9 +46,9 @@ export class LogContextStateless {
         );
     }
 
-    async info(message: string, meta?: MessageMeta): Promise<boolean> {
+    async info(message: string, meta?: MessageMeta, rest?: Partial<MessageRowInsert>): Promise<boolean> {
         return await this.transport.log(
-            { type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString(), ...rest },
             { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
         );
     }
