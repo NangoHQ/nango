@@ -21,7 +21,7 @@ export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver
             return { isTrial: false, isTrialOver: false, daysRemaining: 0 };
         }
         const days = Math.floor((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
-        return { isTrial: true, isTrialOver: days < 0, daysRemaining: days };
+        return { isTrial: true, isTrialOver: plan.trial_expired || false, daysRemaining: days };
     }, [plan]);
 
     return res;

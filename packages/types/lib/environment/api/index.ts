@@ -1,4 +1,4 @@
-import type { ApiTimestamps, Endpoint } from '../../api';
+import type { ApiError, ApiTimestamps, Endpoint } from '../../api';
 import type { ApiPlan } from '../../plans/http.api';
 import type { DBEnvironment, DBExternalWebhook } from '../db';
 import type { ApiEnvironmentVariable } from '../variable/api';
@@ -40,6 +40,7 @@ export type PatchEnvironment = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
+        name?: string | undefined;
         callback_url?: string | undefined;
         hmac_key?: string | undefined;
         hmac_enabled?: boolean | undefined;
@@ -50,4 +51,5 @@ export type PatchEnvironment = Endpoint<{
     Success: {
         data: ApiEnvironment;
     };
+    Error: ApiError<'conflict'>;
 }>;

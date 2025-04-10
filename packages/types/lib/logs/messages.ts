@@ -117,6 +117,15 @@ export interface MessageRow {
     request?: MessageHTTPRequest | undefined;
     response?: MessageHTTPResponse | undefined;
     meta?: MessageMeta | null | undefined;
+    batchSave?: {
+        model: string;
+        added: number;
+        addedKeys: string[];
+        updated: number;
+        updatedKeys: string[];
+        deleted: number;
+        deleteKeys: string[];
+    };
     retry?: MessageHTTPRetry | undefined;
 
     // Dates
@@ -191,6 +200,7 @@ export type OperationRowInsert = Merge<Partial<OperationRow>, Pick<OperationRow,
 /**
  * What is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt' | 'level'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt' | 'level'> &
+    Partial<Omit<MessageRow, 'type' | 'message' | 'meta_search'>> & { id?: never };
 
 export type MessageOrOperationRow = MessageRow | OperationRow;

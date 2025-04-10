@@ -2,6 +2,7 @@ import { IconEdit, IconExternalLink } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { SimpleTooltip } from '../../../components/SimpleTooltip';
 import { Button } from '../../../components/ui/button/Button';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
 import { Input } from '../../../components/ui/input/Input';
@@ -12,19 +13,34 @@ import type { InputProps } from '../../../components/ui/input/Input';
 import type { ApiError } from '@nangohq/types';
 import type { ReactNode } from 'react';
 
-export const EditableInput: React.FC<
-    {
-        title: string;
-        subTitle?: boolean;
-        secret?: boolean;
-        name: string;
-        originalValue: string;
-        docs?: string;
-        editInfo?: ReactNode;
-        apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
-        onSuccess: () => void;
-    } & InputProps
-> = ({ title, subTitle, secret, name, originalValue, docs, editInfo, apiCall, onSuccess, ...rest }) => {
+interface EditableInputProps extends InputProps {
+    title: string;
+    subTitle?: boolean;
+    secret?: boolean;
+    name: string;
+    originalValue: string;
+    docs?: string;
+    editInfo?: ReactNode;
+    blocked?: boolean;
+    blockedTooltip?: string;
+    apiCall: (val: string) => Promise<{ json: ApiError<'invalid_body'> | Record<string, any> }>;
+    onSuccess: (name: string) => void;
+}
+
+export const EditableInput: React.FC<EditableInputProps> = ({
+    title,
+    subTitle,
+    secret,
+    name,
+    originalValue,
+    docs,
+    editInfo,
+    apiCall,
+    onSuccess,
+    blocked,
+    blockedTooltip,
+    ...rest
+}) => {
     const { toast } = useToast();
 
     const [value, setValue] = useState<string>(() => originalValue);
@@ -50,7 +66,7 @@ export const EditableInput: React.FC<
         }
 
         toast({ title: `${title} updated successfully!`, variant: 'success' });
-        onSuccess();
+        onSuccess(value);
 
         setEdit(false);
         setError(null);
@@ -82,9 +98,17 @@ export const EditableInput: React.FC<
                     !edit && (
                         <div className="flex">
                             {secret && <CopyButton text={value} />}
-                            <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
-                                <IconEdit stroke={1} size={18} />
-                            </Button>
+                            {blocked ? (
+                                <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
+                                    <Button variant={'icon'} size={'xs'} disabled>
+                                        <IconEdit stroke={1} size={18} />
+                                    </Button>
+                                </SimpleTooltip>
+                            ) : (
+                                <Button variant={'icon'} size={'xs'} onClick={() => setEdit(true)}>
+                                    <IconEdit stroke={1} size={18} />
+                                </Button>
+                            )}
                         </div>
                     )
                 }

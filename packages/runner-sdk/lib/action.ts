@@ -48,7 +48,7 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
 export abstract class NangoActionBase {
     abstract nango: Nango;
     private attributes = {};
-    activityLogId?: string | undefined;
+    activityLogId: string;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId: number;
@@ -72,10 +72,7 @@ export abstract class NangoActionBase {
         this.environmentId = config.environmentId;
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
-
-        if (config.activityLogId) {
-            this.activityLogId = config.activityLogId;
-        }
+        this.activityLogId = config.activityLogId;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -385,4 +382,19 @@ export abstract class NangoActionBase {
 
         return await fetch(options.url, props);
     }
+
+    /**
+     * Try to acquire a lock for a given key.
+     * The lock is acquired if the key does not exist or if it exists but is expired.
+     * The lock is valid for the entire execution of the script and will be released automatically when the script ends (or when releaseLock is called).
+     */
+    public abstract tryAcquireLock({ key, ttlMs }: { key: string; ttlMs: number }): Promise<boolean>;
+    /**
+     * Release the lock for a given key.
+     */
+    public abstract releaseLock({ key }: { key: string }): Promise<boolean>;
+    /**
+     * Release all locks acquired during the execution of a script.
+     */
+    public abstract releaseAllLocks(): Promise<void>;
 }

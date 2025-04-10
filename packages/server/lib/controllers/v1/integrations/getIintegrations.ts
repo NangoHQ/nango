@@ -44,8 +44,8 @@ export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) =>
                 formatted.meta['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
             }
 
-            // Check if provider is of type ProviderTwoStep
-            if (provider.auth_mode === 'TWO_STEP') {
+            // Check if provider is of type ProviderTwoStep or JWT
+            if (provider.auth_mode === 'TWO_STEP' || provider.auth_mode === 'JWT') {
                 formatted.meta['credentialParams'] = parseCredentialsParamsFromTemplate(provider as ProviderTwoStep);
             }
         }

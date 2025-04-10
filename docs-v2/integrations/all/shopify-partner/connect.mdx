@@ -1,0 +1,47 @@
+---
+title: Shopify Partner - How do I link my account?
+sidebarTitle: Shopify Partner
+---
+
+# Overview
+
+To authenticate with Shopify Partner API, you will need:
+1. **Partner ID** - Your unique Shopify Partner organization ID
+2. **Partner API Client Access Token** - The API access token generated from your Partner API client
+
+This guide will walk you through finding your **Partner ID** and generating your **Partner API Client Access Token**.
+
+### Prerequisites:
+- You must have a [Shopify Partner account](https://partners.shopify.com)
+
+### Instructions:
+
+#### Step 1: Finding your Partner ID
+1. Sign in to your [Shopify Partner account](https://partners.shopify.com)
+2. Your **Partner ID** is the number in the URL when you're on your partner home page
+3. For example, if your URL is `https://partners.shopify.com/1234567`, your Partner ID is `1234567`
+
+#### Step 2: Creating a Partner API Client
+1. Go to your Partner API Clients page: `https://partners.shopify.com/{your-partner-id}/settings/partner_api_clients`
+2. Click **Create API client**
+3. Give your API client a name (e.g., "Nango Integration")
+4. Select the necessary permissions for your integration:
+   - View financials
+   - Manage apps
+   - Manage themes
+5. Click **Create API client**
+
+<img src="/integrations/all/shopify-partner/create-api-client.png" />
+
+6. Once created, you'll see your **Partner API Client Access Token** - copy this as you'll need it for the next step
+
+<img src="/integrations/all/shopify-partner/copy-access-token.png" />
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Partner ID** and **Partner API Client Access Token**:
+1. Open the form where you need to authenticate with Shopify Partner
+2. Enter the **Partner ID** and **Partner API Client Access Token** in their respective fields
+3. Submit the form, and you should be successfully authenticated
+
+You are now connected to Shopify Partner API.
