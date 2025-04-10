@@ -81,7 +81,7 @@ export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'pare
         response: data.response,
         retry: data.retry,
         meta: data.meta,
-        batchSave: data.batchSave,
+        persistResults: data.persistResults,
 
         createdAt: data.createdAt || now.toISOString(),
         endedAt: data.endedAt,

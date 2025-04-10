@@ -117,7 +117,7 @@ export interface MessageRow {
     request?: MessageHTTPRequest | undefined;
     response?: MessageHTTPResponse | undefined;
     meta?: MessageMeta | null | undefined;
-    batchSave?:
+    persistResults?:
         | {
               model: string;
               added: number;

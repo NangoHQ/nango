@@ -127,7 +127,7 @@ export async function persistRecords({
             `Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`,
             { persistType },
             {
-                batchSave: {
+                persistResults: {
                     model: baseModel,
                     added: summary.addedKeys.length,
                     updated: summary.updatedKeys.length,

@@ -28,8 +28,8 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         if (message.retry) {
             pl.retry = message.retry;
         }
-        if (message.batchSave) {
-            pl.batchSave = message.batchSave;
+        if (message.persistResults) {
+            pl.persistResults = message.persistResults;
         }
         if (message.error) {
             pl.error = { message: message.error.message };
