@@ -5,7 +5,6 @@ import multer from 'multer';
 
 import { connectUrl } from '@nangohq/utils';
 
-import accountController from './controllers/account.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
@@ -147,7 +146,6 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook
 // API Admin routes
 publicAPI.use('/admin', jsonContentTypeMiddleware);
 publicAPI.route('/admin/flow/deploy/pre-built').post(adminAuth, flowController.adminDeployPrivateFlow.bind(flowController));
-publicAPI.route('/admin/customer').patch(adminAuth, accountController.editCustomer.bind(accountController));
 
 // API routes (Secret key auth).
 publicAPI.use('/provider', jsonContentTypeMiddleware);

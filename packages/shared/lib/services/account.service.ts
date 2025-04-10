@@ -65,19 +65,11 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string): Promise<DBTeam> {
-        const account: DBTeam[] = await db.knex.select('id').from<DBTeam>(`_nango_accounts`).where({ name });
+    async getOrCreateAccount(name: string): Promise<DBTeam | null> {
+        const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            const newAccount: DBTeam[] = await db.knex.insert({ name, created_at: new Date() }).into<DBTeam>(`_nango_accounts`).returning('*');
-
-            if (!newAccount || newAccount.length == 0 || !newAccount[0]) {
-                throw new Error('Failed to create account');
-            }
-
-            await environmentService.createDefaultEnvironments(newAccount[0]['id']);
-
-            return newAccount[0];
+            return await this.createAccount(name);
         }
 
         return account[0];
@@ -113,10 +105,6 @@ class AccountService {
     async createAccountWithoutEnvironments(name: string): Promise<DBTeam | null> {
         const result = await db.knex.from<DBTeam>(`_nango_accounts`).insert({ name }).returning('*');
         return result[0] || null;
-    }
-
-    async editCustomer(is_capped: boolean, accountId: number): Promise<void> {
-        await db.knex.update({ is_capped }).from<DBTeam>(`_nango_accounts`).where({ id: accountId });
     }
 }
 

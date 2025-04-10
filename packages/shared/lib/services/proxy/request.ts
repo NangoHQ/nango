@@ -1,11 +1,13 @@
 import { isAxiosError } from 'axios';
-import type { AxiosResponse, AxiosRequestConfig } from 'axios';
-import type { Result, RetryAttemptArgument } from '@nangohq/utils';
-import { axiosInstance as axios, Err, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
+
+import { Err, Ok, axiosInstance as axios, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
+
+import { getProxyRetryFromErr } from './retry.js';
+import { ProxyError, getAxiosConfiguration } from './utils.js';
 
 import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
-import { getAxiosConfiguration, ProxyError } from './utils.js';
-import { getProxyRetryFromErr } from './retry.js';
+import type { Result, RetryAttemptArgument } from '@nangohq/utils';
+import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;

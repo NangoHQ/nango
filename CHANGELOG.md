@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.4] - 2025-04-08
+
+### Added
+
+- *(webapp)* Remember last environment (#3814) by @hassan254-prog
+- *(integrations)* Add Support for Rock Gym Pro (#3857) by @matoviale
+- *(fleet)* Add more Render server definition (#3860) by @bodinsamuel
+- *(plan)* Trial  (#3803) by @bodinsamuel
+- Rename environments (#3864) by @kaposke
+- *(es)* Meta search (#3835) by @bodinsamuel
+- Nango locks in scripts (#3863) by @TBonnin
+
+### Changed
+
+- Details about free trial (#3861) by @bastienbeurier
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/f4eaea1a0d7f791c11a1bb14be60c441e04d1ea2 by Khaliq. Commit message: feat(pagination-tests): Pagination & Fix groups (#305) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e3fdb00a5adcdcff55a4aa13c72d81f5649c610e by Hassan_Wari. Commit message: feat(gong): calls sync and fetch transcript action (#306) by @github-actions[bot]
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/0d8f99ec7a4a837e6bc447d7ad9d5af1cf0407c4 by Khaliq. Commit message: feat(xero): Add source for xero (#308) by @github-actions[bot]
+
+### Fixed
+
+- *(ui)* Create connection missing integration (#3859) by @bodinsamuel
+- *(plan)* Typo in flag (#3856) by @bodinsamuel
+- *(plan)* Use plan for tracer (#3848) by @bodinsamuel
+- *(integrations)* Missing retry header for Slack (#3865) by @bodinsamuel
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/e80f61bb4fd37591e2c4c4a10932df038a50fd2d by Khaliq. Commit message: fix(cursor): Fix cursor and document (#307) by @github-actions[bot]
+- *(plans)* Follow-up (#3866) by @bodinsamuel
+
+## [v0.58.3] - 2025-04-04
+
+### Added
+
+- *(plan)* Replace is_capped (#3825) by @bodinsamuel
+- *(azure-devops)* Implement support for Azure Devops (#3785) by @lordsarcastic
+
+### Changed
+
+- *(deps-dev)* Bump vite from 6.0.11 to 6.0.13 (#3818) by @dependabot[bot]
+- Update .env.example (#3826) by @SteliosMav
+- *(deps)* Bump tar-fs and testcontainers (#3812) by @dependabot[bot]
+- Webhook can execute for 1 hour (15mins previously) (#3815) by @TBonnin
+- *(integration-templates)* Automated commit updating flows.yaml based on changes in https://github.com/NangoHQ/integration-templates/commit/fa13e02ca460a0d35b94ba868ecaad94df542b88 by Khaliq. Commit message: feat(unification): HRIS employees unification (#301) by @github-actions[bot]
+- Xero oauth step guide (#3844) by @hassan254-prog
+- Edit limits (#3845) by @bastienbeurier
+- Nango on AWS ECS guide (#3830) by @TBonnin
+- When there is a connect ui document, link to that for the setup guide (#3751) by @lordsarcastic
+- *(deps-dev)* Bump vite from 6.2.4 to 6.2.5 in /packages/webapp (#3851) by @dependabot[bot]
+
+### Fixed
+
+- Update nango-runner package to utilize soap package 1.1.10 (#3840) by @colinbjohnson
+- *(docs)* Docs update openai format (#3842) by @khaliqgant
+- *(deps)* Upgrade vitest, axios, zod (#3841) by @bodinsamuel
+- *(docker)* Cleanup (#3838) by @bodinsamuel
+- Display git hash in api and UI (#3843) by @bodinsamuel
+- *(connect-ui)* Show unique_key suffix when integration names are du… (#3846) by @SteliosMav
+- *(integrations)* Remove the pattern in Avalara for the client. (#3852) by @hassan254-prog
+- *(docs)* Doc improvements (#3855) by @khaliqgant
+- *(cli)* Remove global store to allow tests to reuse code (#3850) by @bodinsamuel
+
 ## [v0.58.2] - 2025-04-03
 
 ### Added
@@ -3582,6 +3642,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.4]: https://github.com/NangoHQ/nango/compare/v0.58.3..v0.58.4
+[v0.58.3]: https://github.com/NangoHQ/nango/compare/v0.58.2..v0.58.3
 [v0.58.2]: https://github.com/NangoHQ/nango/compare/v0.58.1..v0.58.2
 [v0.58.1]: https://github.com/NangoHQ/nango/compare/v0.57.6..v0.58.1
 [v0.57.6]: https://github.com/NangoHQ/nango/compare/v0.57.5..v0.57.6

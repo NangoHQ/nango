@@ -75,14 +75,8 @@ export interface TableauCredentials {
 }
 
 export interface JwtCredentials {
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    type?: 'JWT';
+    [key: string]: any;
 }
 
 export interface OAuth2ClientCredentials {

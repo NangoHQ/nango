@@ -336,35 +336,32 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
-            const jwtParams: Record<string, string | { id: string; secret: string }> = {};
-            if (credentials.privateKeyId) {
-                jwtParams['privateKeyId'] = credentials.privateKeyId;
+        if (
+            // for backwards compatibility with the old JWT credentials (ghost-admin)
+            'privateKey' in credentials ||
+            ('type' in credentials && credentials.type === 'JWT')
+        ) {
+            const { privateKey, ...rest } = credentials;
+            const params: Record<string, any> = { ...rest };
+
+            if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
+                params['privateKey'] = privateKey;
             }
-            if (credentials.issuerId) {
-                jwtParams['issuerId'] = credentials.issuerId;
-            }
-            if (credentials.privateKey) {
-                if (typeof credentials.privateKey === 'string') {
-                    jwtParams['privateKey'] = credentials.privateKey;
-                } else if (typeof credentials.privateKey === 'object' && 'id' in credentials.privateKey && 'secret' in credentials.privateKey) {
-                    jwtParams['privateKey'] = credentials.privateKey;
-                }
-            }
-            return { params: jwtParams } as unknown as ConnectionConfig;
+
+            return { params: credentials } as unknown as ConnectionConfig;
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId as string,
-                    issuerId: credentials.issuerId as string,
-                    privateKey: credentials.privateKey as string
+                    privateKeyId: credentials['privateKeyId'],
+                    issuerId: credentials['issuerId'],
+                    privateKey: credentials['privateKey']
                 }
             };
 
-            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
-                appStoreCredentials.params['scope'] = credentials.scope;
+            if ('scope' in credentials && (typeof credentials['scope'] === 'string' || Array.isArray(credentials['scope']))) {
+                appStoreCredentials.params['scope'] = credentials['scope'];
             }
             return appStoreCredentials as unknown as ConnectionConfig;
         }
@@ -412,8 +409,8 @@ export default class Nango {
             const BillCredentials: BillCredentials = {
                 username: credentials.username,
                 password: credentials.password,
-                organization_id: credentials.organization_id as string,
-                dev_key: credentials.dev_key as string
+                organization_id: credentials.organization_id,
+                dev_key: credentials.dev_key
             };
 
             return { params: BillCredentials } as unknown as ConnectionConfig;
@@ -517,7 +514,7 @@ export default class Nango {
             });
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
+        if ('privateKey' in credentials || ('type' in credentials && credentials['type'] === 'JWT')) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as JwtCredentials

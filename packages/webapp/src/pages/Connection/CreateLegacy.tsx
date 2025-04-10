@@ -214,21 +214,20 @@ export const ConnectionCreateLegacy: React.FC = () => {
         if (authMode === 'JWT') {
             if (integration?.provider.includes('ghost-admin')) {
                 const privateKeyFormat = /^([^:]+):([^:]+)$/;
-                if (!privateKeyFormat.test(privateKey)) {
+                if (!privateKeyFormat.test(credentialsState.privateKey)) {
                     toast.error('The API key should be in the format id:secret.', {
                         position: toast.POSITION.BOTTOM_CENTER
                     });
                     return;
                 }
-                const [id, secret] = privateKey.split(':');
+                const [id, secret] = credentialsState.privateKey.split(':');
                 credentials = {
                     privateKey: { id, secret }
                 };
             } else {
                 credentials = {
-                    privateKeyId,
-                    issuerId,
-                    privateKey
+                    type: 'JWT',
+                    ...credentialsState
                 };
             }
         }
@@ -489,20 +488,11 @@ export const ConnectionCreateLegacy: React.FC = () => {
             const credentials: string[] = [];
 
             if (integration.provider.includes('ghost-admin')) {
-                const [id = '', secret = ''] = privateKey.split(':');
-                credentials.push(`privateKey: { id: '${id}', secret: '${secret}' }`);
-            } else {
-                if (privateKeyId) {
-                    credentials.push(`privateKeyId: '${privateKeyId}'`);
-                }
-                if (issuerId) {
-                    credentials.push(`issuerId: '${issuerId}'`);
-                }
-                if (privateKey) {
-                    credentials.push(`privateKey: '${privateKey}'`);
+                if (typeof credentialsState.privateKey === 'string') {
+                    const [id = '', secret = ''] = credentialsState.privateKey.split(':');
+                    credentials.push(`privateKey: { id: '${id}', secret: '${secret}' }`);
                 }
             }
-
             if (credentials.length > 0) {
                 jwtCredentialsString = `
     credentials: {
@@ -561,16 +551,16 @@ export const ConnectionCreateLegacy: React.FC = () => {
         }
 
         let twoStepCredentialsString = '';
-        if (authMode === 'TWO_STEP') {
+        if (authMode === 'TWO_STEP' || authMode === 'JWT') {
             const credentialEntries = Object.entries(credentialsState);
 
-            if (credentialEntries.length > 0) {
+            if (credentialEntries.length > 0 && integration && !integration.provider.includes('ghost-admin')) {
                 const credentialsString = credentialEntries.map(([key, value]) => `${key}: '${value}'`).join(',\n      ');
 
                 twoStepCredentialsString = `
     credentials: {
       ${credentialsString},
-      type: 'TWO_STEP'
+      type: '${authMode}'
     }
   `;
             }
@@ -1083,7 +1073,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                             )}
 
-                            {(authMode === 'APP_STORE' || authMode === 'JWT') && !integration?.provider.includes('ghost-admin') && (
+                            {authMode === 'APP_STORE' && (
                                 <div>
                                     <div className="flex mt-6">
                                         <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
@@ -1174,27 +1164,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                             )}
 
-                            {authMode === 'JWT' && integration?.provider.includes('ghost-admin') && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
-                                            API Key
-                                        </label>
-                                    </div>
-
-                                    <div className="mt-1">
-                                        <SecretInput
-                                            copy={true}
-                                            id="privateKey"
-                                            name="privateKey"
-                                            optionalValue={privateKey}
-                                            setOptionalValue={setPrivateKey}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
                             {(authMode === 'OAUTH1' || authMode === 'OAUTH2') && (
                                 <div>
                                     <div className="flex mt-6">
@@ -1229,7 +1198,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                 </div>
                             )}
-                            {authMode === 'TWO_STEP' && (
+                            {(authMode === 'TWO_STEP' || authMode === 'JWT') && (
                                 <div>
                                     {integration?.meta.credentialParams?.map((paramName: string) => (
                                         <div key={paramName}>

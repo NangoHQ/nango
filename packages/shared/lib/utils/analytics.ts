@@ -1,17 +1,23 @@
 import { PostHog } from 'posthog-node';
-import { localhostUrl, isCloud, isStaging, baseUrl, getLogger, NANGO_VERSION } from '@nangohq/utils';
-import { UserType } from '../utils/utils.js';
+
+import { NANGO_VERSION, baseUrl, getLogger, isCloud, isStaging, localhostUrl } from '@nangohq/utils';
+
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
-import { LogActionEnum } from '../models/Telemetry.js';
+import { UserType } from '../utils/utils.js';
 
 const logger = getLogger('analytics');
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
     ACCOUNT_JOINED = 'server:account_joined',
+    ACCOUNT_TRIAL_EXPIRING_MAIL = 'account:trial:expiring:mail',
+    ACCOUNT_TRIAL_EXPIRED = 'account:trial:expired',
+    ACCOUNT_TRIAL_EXTENDED = 'account:trial:extend',
+    ACCOUNT_TRIAL_STARTED = 'account:trial:started',
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',

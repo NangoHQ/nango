@@ -869,7 +869,6 @@ avalara:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 avalara-sandbox:
@@ -907,7 +906,6 @@ avalara-sandbox:
             type: string
             title: Avalara Client
             description: The Avalara client for your Avalara account
-            pattern: '^[a-zA-Z0-9_-]+$'
             doc_section: '#step-2-generating-an-avalara-client'
 
 aws:
@@ -4006,10 +4004,14 @@ ghost-admin:
         - design
         - cms
     auth_mode: JWT
+    signature:
+        protocol: HMAC
     token:
+        signing_key: ${credentials.privateKey.secret}
         expires_in_ms: 300000
-        headers:
+        header:
             alg: HS256
+            kid: ${credentials.privateKey.id}
         payload:
             aud: /admin/
     proxy:
@@ -4030,12 +4032,21 @@ ghost-admin:
             description: The domain of your Ghost Admin which can be different from your main domain
             example: 'mock.ghost.io'
             pattern: '^([a-z0-9_-]+\.|)(ghost\.io|[a-z0-9_-]+\.[a-z]{2,})$'
+            order: 1
         version:
             type: string
             title: API Version
             description: The version of the Ghost Admin API to use
             example: 'v3.0'
             pattern: '^v\d+\.\d+$'
+            order: 2
+    credentials:
+        privateKey:
+            type: string
+            title: API Key
+            description: The private key for your Ghost account
+            pattern: '^[a-fA-F0-9]{24}:[a-fA-F0-9]{64}$'
+            example: 1234567890abcdef12345678:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
 
 ghost-content:
     display_name: Ghost (Content API)
@@ -7630,6 +7641,32 @@ rippling-shop-app:
             description: ''
             automated: true
 
+rock-gym-pro:
+    display_name: Rock Gym Pro
+    categories:
+        - crm
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.rockgympro.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/ping
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            limit_name_in_request: limit
+    docs: https://docs.nango.dev/integrations/all/rock-gym-pro
+    credentials:
+        username:
+            type: string
+            title: API Username
+            description: Your Rock Gym Pro API username
+        password:
+            type: string
+            title: API Password
+            description: Your Rock Gym Pro API password
+
 segment:
     display_name: Segment
     categories:
@@ -8371,6 +8408,8 @@ slack:
         - team.id
     proxy:
         base_url: https://slack.com/api
+        retry:
+            after: 'retry-after'
         paginate:
             type: cursor
             cursor_path_in_response: response_metadata.next_cursor
@@ -8446,6 +8485,74 @@ snowflake:
             description: The domain of your Snowflake account
             format: hostname
             prefix: https://
+
+snowflake-jwt:
+    display_name: Snowflake (JWT)
+    categories:
+        - dev-tools
+    auth_mode: JWT
+    signature:
+        protocol: RSA
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 3600000
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.accountIdentifier}.${credentials.userName}.${credentials.fingerprint}
+            sub: ${credentials.accountIdentifier}.${credentials.userName}
+    proxy:
+        headers:
+            accept: application/json
+            authorization: Bearer ${accessToken}
+            x-snowflake-authorization-token-type: KEYPAIR_JWT
+        base_url: https://${connectionConfig.subdomain}.snowflakecomputing.com
+        verification:
+            method: POST
+            endpoints:
+                - /api/v2/statements
+            data: { 'statement': 'SELECT CURRENT_TIMESTAMP' }
+            headers:
+                x-snowflake-authorization-token-type: KEYPAIR_JWT
+    docs: https://docs.nango.dev/integrations/all/snowflake-jwt
+    docs_connect: https://docs.nango.dev/integrations/all/snowflake-jwt/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain for your Snowflake instance
+            example: KXOPMLU-RE00572
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        accountIdentifier:
+            type: string
+            title: Account Identifier
+            description: The unique identifier for your Snowflake account.
+            example: KXOPMLU-RE00572
+            doc_section: '#step-2-finding-your-account-identifier'
+        userName:
+            type: string
+            title: User Name
+            description: The username for your Snowflake account used for authentication
+            example: MYUSER
+            doc_section: '#step-3-finding-your-user-name'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The private key associated with your Snowflake account for JWT authentication
+            example: -----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----
+            secret: true
+            doc_section: '#step-4-generating-your-private-key'
+        fingerprint:
+            type: string
+            title: Fingerprint
+            description: SHA-256 fingerprint of the public key uploaded to your Snowflake user
+            example: SHA256:Zc9FB6P5bGsYa4WWCMsr3+PxUWr2F2HUdK/2XG5JQjg=
+            pattern: '^SHA256:[A-Za-z0-9+/]{43}[A-Za-z0-9+/=]$'
+            secret: true
+            doc_section: '#step-5-finding-your-fingerprint'
 
 splitwise:
     display_name: Splitwise

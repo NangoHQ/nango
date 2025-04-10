@@ -61,6 +61,7 @@ import type {
     DBConnectionDecrypted,
     DBEndUser,
     DBEnvironment,
+    DBPlan,
     DBTeam,
     JwtCredentials,
     MaybePromise,
@@ -1524,16 +1525,20 @@ class ConnectionService {
         providerConfigKey,
         environmentId,
         type,
-        limit
+        plan
     }: {
         providerConfigKey: string;
         environmentId: number;
         type: 'activate' | 'deploy';
-        limit: number;
+        plan: DBPlan | null;
     }): Promise<boolean> {
+        if (!plan || !plan.connection_with_scripts_max) {
+            return false;
+        }
+
         const count = await this.countConnections({ environmentId, providerConfigKey });
 
-        if (count > limit) {
+        if (count > plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             if (type === 'deploy') {
                 void analytics.trackByEnvironmentId(AnalyticsTypes.RESOURCE_CAPPED_SCRIPT_DEPLOY_IS_DISABLED, environmentId);
@@ -1603,8 +1608,13 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } else if (provider.auth_mode === 'JWT') {
-            const { privateKeyId, issuerId, privateKey } = connection.credentials as JwtCredentials;
-            const create = jwtClient.createCredentials({ privateKey, privateKeyId, issuerId, provider: provider as ProviderJwt });
+            const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
+            const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
+            const create = jwtClient.createCredentials({
+                config: providerConfig.unique_key,
+                provider: provider as ProviderJwt,
+                dynamicCredentials: cleanDynamicCredentials
+            });
 
             if (create.isErr()) {
                 return { success: false, error: create.error, response: null };
