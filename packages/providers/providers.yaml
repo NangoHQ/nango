@@ -9773,31 +9773,35 @@ workday:
         - popular
     auth_mode: BASIC
     proxy:
-        base_url: https://${connectionConfig.subdomain}.workday.com
+        base_url: https://${connectionConfig.hostname}/ccx/service/${connectionConfig.tenant}
     docs: https://docs.nango.dev/integrations/all/workday
     docs_connect: https://docs.nango.dev/integrations/all/workday/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
-            title: Workday Domain
-            description: The subdomain of your Workday account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .workday.com
+            title: Hostname
+            description: The hostname of your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
             prefix: https://
+            order: 1
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: yourtenant
+            order: 2
     credentials:
         username:
             type: string
-            title: Client ID
-            description: Workday Client ID
-            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
+            title: Username
+            description: Workday API Username
+            doc_section: '#step-1-generating-your-username'
         password:
             type: string
-            title: Client Secret
-            description: Workday Client Secret
-            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
-            # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
-            # Workday is using basic auth with client ID and client secret as username and password
+            title: Password
+            description: Workday API Password
+            doc_section: '#step-2-finding-your-password'
 
 wrike:
     display_name: Wrike
