@@ -9785,23 +9785,25 @@ workday:
             example: wd3-impl-services1.workday.com
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-hostname'
         tenant:
             type: string
             title: Tenant
             description: The tenant of your Workday account
             example: yourtenant
             order: 2
+            doc_section: '#step-2-finding-your-tenant'
     credentials:
         username:
             type: string
             title: Username
             description: Workday API Username
-            doc_section: '#step-1-generating-your-username'
+            doc_section: '#step-4-generating-your-username'
         password:
             type: string
             title: Password
             description: Workday API Password
-            doc_section: '#step-2-finding-your-password'
+            doc_section: '#step-5-finding-your-password'
 
 wrike:
     display_name: Wrike
