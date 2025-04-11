@@ -425,6 +425,7 @@
                 "integrations/all/garmin",
                 "integrations/all/google-gemini",
                 "integrations/all/gebruder-weiss",
+                "integrations/all/gem",
                 "integrations/all/gerrit",
                 "integrations/all/ghost-admin",
                 "integrations/all/ghost-content",
