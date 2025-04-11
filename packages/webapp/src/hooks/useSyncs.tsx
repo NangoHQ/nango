@@ -21,6 +21,7 @@ export async function apiRunSyncCommand(
         nango_connection_id: number;
         sync_id: string;
         sync_name: string;
+        sync_variant: string;
         provider: string;
         delete_records?: boolean;
     }

@@ -77,11 +77,15 @@ class SyncController {
 
     private async addRecordCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
         const byModel = await recordsService.getRecordCountsByModel({ connectionId, environmentId });
-
         if (byModel.isOk()) {
             return syncs.map((sync) => ({
                 ...sync,
-                record_count: Object.fromEntries(sync.models.map((model) => [model, byModel.value[model]?.count ?? 0]))
+                record_count: Object.fromEntries(
+                    sync.models.map((model) => {
+                        const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
+                        return [model, byModel.value[modelFullName]?.count ?? 0];
+                    })
+                )
             }));
         } else {
             return syncs.map((sync) => ({ ...sync, record_count: null }));
@@ -430,7 +434,7 @@ class SyncController {
         try {
             const { account, environment } = res.locals;
 
-            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider, delete_records } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, sync_variant, provider, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
             if (!connection) {
                 res.status(404).json({ error: { code: 'not_found' } });
@@ -471,6 +475,7 @@ class SyncController {
             const result = await orchestrator.runSyncCommand({
                 connectionId: connection.id,
                 syncId: sync_id,
+                syncVariant: sync_variant,
                 command,
                 environmentId: environment.id,
                 logCtx,
