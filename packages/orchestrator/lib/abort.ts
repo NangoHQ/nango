@@ -5,7 +5,7 @@ import type { Result } from '@nangohq/utils';
 import { logger } from './utils.js';
 import type { JsonValue } from 'type-fest';
 
-export async function scheduleAbortTask({ scheduler, task }: { scheduler: Scheduler; task: Task }): Promise<Result<Task>> {
+export async function scheduleAbortTask({ scheduler, task, reason }: { scheduler: Scheduler; task: Task; reason: string }): Promise<Result<Task>> {
     const aborted = validateTask(task);
     if (aborted.isErr()) {
         return Err(aborted.error);
@@ -16,7 +16,6 @@ export async function scheduleAbortTask({ scheduler, task }: { scheduler: Schedu
         return Err(`Task is already an abort task`);
     }
 
-    const reason = aborted.value.state === 'EXPIRED' ? 'Expired execution' : 'Execution was cancelled';
     const payload: JsonValue = {
         type: 'abort',
         abortedTask: {

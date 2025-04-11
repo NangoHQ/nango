@@ -42,6 +42,7 @@ export function getTestEnvironment(data?: Partial<DBEnvironment>): DBEnvironment
         webhook_url: null,
         webhook_url_secondary: null,
         deleted: false,
+        deleted_at: null,
         ...data
     };
 }

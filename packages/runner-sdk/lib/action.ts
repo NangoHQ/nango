@@ -24,6 +24,7 @@ import type {
     OAuth1Token,
     OAuth2ClientCredentials,
     Pagination,
+    PostPublicTrigger,
     SetMetadata,
     SignatureCredentials,
     TableauCredentials,
@@ -355,7 +356,7 @@ export abstract class NangoActionBase {
         providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
-        fullResync?: boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
     ): Promise<void | string>;
 
     public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
