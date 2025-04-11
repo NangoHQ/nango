@@ -46,6 +46,9 @@ export interface DBEnvironment extends Timestamps {
 
     webhook_receive_url: string | null;
     otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
+
+    deleted: boolean;
+    deleted_at?: Date | null;
 }
 
 export interface DBExternalWebhook extends Timestamps {
