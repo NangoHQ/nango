@@ -72,10 +72,9 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     source: { type: 'keyword' },
 
     message: { type: 'text', analyzer: 'standard', search_analyzer: 'standard', copy_to: 'meta_search' },
-    // @ts-expect-error it's a dynamic field not stored
-    meta_search: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' },
+
     meta: { type: 'object', enabled: false },
-    batchSave: {
+    persistResults: {
         type: 'object',
         properties: {
             model: { type: 'keyword' },
@@ -123,7 +122,10 @@ const props: Record<keyof MessageRow | keyof OperationRow, estypes.MappingProper
     startedAt: { type: 'date' },
     expiresAt: { type: 'date' },
     endedAt: { type: 'date' },
-    durationMs: { type: 'integer' }
+    durationMs: { type: 'integer' },
+
+    // @ts-expect-error it's a dynamic field not stored
+    meta_search: { type: 'text', analyzer: 'standard', search_analyzer: 'standard' }
 };
 
 export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRequest {
