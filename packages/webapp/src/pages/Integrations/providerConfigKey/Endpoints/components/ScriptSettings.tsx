@@ -14,10 +14,7 @@ import { mutate } from 'swr';
 import { Link } from 'react-router-dom';
 import { SimpleTooltip } from '../../../../../components/SimpleTooltip';
 import { IconCircleCheck, IconHelpCircle, IconPencil } from '@tabler/icons-react';
-
-// To sync with patchFrequency
-const frequencyRegex =
-    /^(?<every>every )?((?<amount>[0-9]+)?\s?(?<unit>(s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?))|(?<unit2>(month|week|half day|half hour|quarter hour)))$/;
+import { frequencyRegex } from '../../../../../utils/validation';
 
 export const ScriptSettings: React.FC<{
     integration: GetIntegration['Success']['data'];
