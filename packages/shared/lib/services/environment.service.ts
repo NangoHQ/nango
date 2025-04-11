@@ -4,11 +4,12 @@ import db from '@nangohq/database';
 import { isCloud } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
-import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
+import type { Orchestrator } from '../index.js';
 import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
@@ -475,8 +476,20 @@ class EnvironmentService {
         return globalCallbackUrl;
     }
 
-    async softDelete(id: number): Promise<void> {
-        await db.knex.from<DBEnvironment>(TABLE).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+    async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+
+        // TODO: Ideally we would soft delete everything down the tree in a transaction
+        const configs = await configService.listProviderConfigs(environmentId);
+        for (const config of configs) {
+            // This handles deleting connections and syncs down the line
+            await configService.deleteProviderConfig({
+                id: config.id!,
+                environmentId,
+                providerConfigKey: config.unique_key,
+                orchestrator
+            });
+        }
     }
 }
 

@@ -2,6 +2,7 @@ import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DeleteEnvironment } from '@nangohq/types';
 
@@ -19,7 +20,7 @@ export const deleteEnvironment = asyncWrapper<DeleteEnvironment>(async (req, res
         return;
     }
 
-    await environmentService.softDelete(environment.id);
+    await environmentService.softDelete({ environmentId: environment.id, orchestrator: getOrchestrator() });
 
     res.status(204).send();
 });
