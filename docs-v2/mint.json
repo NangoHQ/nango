@@ -373,6 +373,7 @@
                 "integrations/all/datev",
                 "integrations/all/deel",
                 "integrations/all/deel-sandbox",
+                "integrations/all/devin",
                 "integrations/all/dialpad",
                 "integrations/all/dialpad-sandbox",
                 "integrations/all/digitalocean",
