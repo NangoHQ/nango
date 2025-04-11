@@ -149,7 +149,7 @@ export const ShowIntegration: React.FC = () => {
                     <div className="flex gap-2 items-center">
                         <div className="flex gap-3 items-center">
                             <ErrorCircle icon="clock" variant="warning" />
-                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial Plan'}</Tag>
+                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial'}</Tag>
                             {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left!</span>}
                         </div>
                         <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
