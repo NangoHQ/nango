@@ -5,7 +5,7 @@ import type { MessageRow, OperationList, OperationRow, OperationState } from './
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
 export type ConcatOperationList = Concat<OperationList>;
-export type ConcatOperationListWithGroup = OperationList[keyof OperationList] | ConcatOperationList;
+export type ConcatOperationListWithGroup = OperationList['type'] | ConcatOperationList;
 
 export type SearchOperations = Endpoint<{
     Method: 'POST';

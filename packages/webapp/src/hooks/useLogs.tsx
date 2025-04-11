@@ -1,9 +1,11 @@
-import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
-import type { SWRError } from '../utils/api';
+
 import { apiFetch, swrFetcher } from '../utils/api';
 import { slidePeriod } from '../utils/logs';
+
+import type { SWRError } from '../utils/api';
+import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from '@nangohq/types';
 
 export function useSearchOperations(env: string, body: SearchOperations['Body'], isLive: boolean) {
     const [loading, setLoading] = useState<boolean>(false);

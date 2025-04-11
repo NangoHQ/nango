@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
 import { PROD_ENVIRONMENT_NAME } from './constants';
@@ -51,3 +52,5 @@ export const useStore = create<State>((set, get) => ({
         set({ debugMode: value });
     }
 }));
+
+export const queryClient = new QueryClient();
