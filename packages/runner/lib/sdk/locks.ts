@@ -10,7 +10,6 @@ interface Lock {
 
 export class Locks {
     private store = new Map<string, Lock>();
-    private mutex = new Map<string, boolean>();
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
         if (!owner || owner.length === 0 || owner.length > 255) {
@@ -23,47 +22,26 @@ export class Locks {
             return Err('Invalid lock TTL (must be greater than 0)');
         }
 
-        // If mutex is already held, fail immediately
-        if (this.mutex.get(key)) {
+        const now = new Date();
+
+        // If the lock is already held by the same owner, or if it has expired, we can acquire it
+        const existing = this.store.get(key);
+        if (existing && existing.expiresAt > now && existing.owner !== owner) {
             return Ok(false);
         }
+        this.store.set(key, { key, owner, expiresAt: new Date(now.getTime() + ttlMs) });
 
-        try {
-            this.mutex.set(key, true);
-
-            const now = new Date();
-
-            // If the lock is already held by the same owner, or if it has expired, we can acquire it
-            const existing = this.store.get(key);
-            if (existing && existing.expiresAt > now && existing.owner !== owner) {
-                return Ok(false);
-            }
-            this.store.set(key, { key, owner, expiresAt: new Date(now.getTime() + ttlMs) });
-
-            return Ok(true);
-        } finally {
-            this.mutex.delete(key);
-        }
+        return Ok(true);
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        // If mutex is already held, fail immediately
-        if (this.mutex.get(key)) {
-            return Ok(false);
+        // If the lock is held by the same owner, release it
+        const lock = this.store.get(key);
+        if (lock && lock.owner === owner) {
+            this.store.delete(key);
+            return Ok(true);
         }
-        try {
-            this.mutex.set(key, true);
-
-            // If the lock is held by the same owner, release it
-            const lock = this.store.get(key);
-            if (lock && lock.owner === owner) {
-                this.store.delete(key);
-                return Ok(true);
-            }
-            return Ok(false);
-        } finally {
-            this.mutex.delete(key);
-        }
+        return Ok(false);
     }
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
