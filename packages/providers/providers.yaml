@@ -4148,6 +4148,7 @@ gong-oauth:
             title: API Base URL
             description: The base URL of your Gong account
             format: uri
+            automated: true
             pattern: '^https?://.*$'
 
 google:
