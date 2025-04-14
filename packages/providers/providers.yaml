@@ -3811,6 +3811,28 @@ google-gemini:
             example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
             pattern: '^[0-9A-Za-z_-]+$'
 
+gem:
+    display_name: Gem
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.gem.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/users
+    docs: https://docs.nango.dev/integrations/all/gem
+    docs_connect: https://docs.nango.dev/integrations/all/gem/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Gem account
+            doc_section: '#step-1-finding-your-api-key'
+
 gerrit:
     display_name: Gerrit
     categories:
