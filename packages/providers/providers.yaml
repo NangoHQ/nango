@@ -2281,6 +2281,26 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+companycam:
+    display_name: CompanyCam
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.companycam.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/company
+    docs: https://docs.nango.dev/integrations/all/companycam
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your CompanyCam company
+
 copper:
     display_name: Copper (OAuth)
     categories:
