@@ -14,43 +14,6 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/api/v1/environments';
 
-// const orchestratorClientNoop: OrchestratorClientInterface = {
-//     recurring: () => Promise.resolve({}) as any,
-//     executeAction: () => Promise.resolve({}) as any,
-//     executeWebhook: () => Promise.resolve({}) as any,
-//     executeOnEvent: () => Promise.resolve({}) as any,
-//     executeSync: () => Promise.resolve({}) as any,
-//     cancel: () => Promise.resolve({}) as any,
-//     pauseSync: () => Promise.resolve({}) as any,
-//     unpauseSync: () => Promise.resolve({}) as any,
-//     deleteSync: () => Promise.resolve({}) as any,
-//     updateSyncFrequency: () => Promise.resolve({}) as any,
-//     searchSchedules: () => Promise.resolve({}) as any
-// };
-// const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
-
-// async function createSyncConfig(account: DBTeam, environment: DBEnvironment) {
-//     const syncs: CleanedIncomingFlowConfig[] = [];
-//     const debug = true;
-
-//     vi.spyOn(environmentService, 'getAccountFromEnvironment').mockImplementation(() => {
-//         return Promise.resolve({ id: 1, name: '' } as DBTeam);
-//     });
-
-//     // empty sync config should return back an empty array
-//     const emptyConfig = await deploy({
-//         account,
-//         environment,
-//         plan: null,
-//         flows: syncs,
-//         nangoYamlBody: '',
-//         logContextGetter,
-//         orchestrator: mockOrchestrator,
-//         debug,
-//         onEventScriptsByProvider: []
-//     });
-// }
-
 describe(`DELETE ${endpoint}`, () => {
     beforeAll(async () => {
         api = await runServer();
