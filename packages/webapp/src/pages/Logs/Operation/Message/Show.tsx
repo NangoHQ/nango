@@ -1,10 +1,10 @@
 import { Prism } from '@mantine/prism';
-import { CalendarIcon } from '@radix-ui/react-icons';
+import { IconCalendar } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
-import { LevelTag } from './components/LevelTag';
-import { Tag } from '../../components/ui/label/Tag';
-import { formatDateToLogFormat } from '../../utils/utils';
+import { Tag } from '../../../../components/ui/label/Tag';
+import { formatDateToLogFormat } from '../../../../utils/utils';
+import { LevelTag } from '../../components/LevelTag';
 
 import type { MessageRow } from '@nangohq/types';
 
@@ -52,7 +52,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </div>
                     <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <CalendarIcon />
+                        <IconCalendar stroke={1} size={18} />
                         <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
                     </div>
                 </div>
