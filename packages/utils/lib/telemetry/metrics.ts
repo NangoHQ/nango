@@ -93,10 +93,16 @@ export enum Types {
 type Dimensions = Record<string, string | number> | undefined;
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
 export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
