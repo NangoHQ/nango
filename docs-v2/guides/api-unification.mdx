@@ -86,24 +86,24 @@ In your `nango.yaml` configuration, standardize the configuration of endpoints a
 integrations:
   jira-basic:
     actions:
-    create-user:
-      description: Creates a user in Jira.
-      output: User # Common output between Jira & Zendesk
-      endpoint:  # Common endpoint between Jira & Zendesk
-        method: POST
-        path: /users
-        group: Users
-      input: User  # Common input between Jira & Zendesk
+      create-user:
+        description: Creates a user in Jira.
+        output: User # Common output between Jira & Zendesk
+        endpoint:  # Common endpoint between Jira & Zendesk
+          method: POST
+          path: /users
+          group: Users
+        input: User  # Common input between Jira & Zendesk
   zendesk:
     actions:
-    create-user:
-      description: Creates a user in Zendesk.
-      output: User
-      endpoint:
-        method: POST
-        path: /users
-        group: Users
-      input: User
+      create-user:
+        description: Creates a user in Zendesk.
+        output: User
+        endpoint:
+          method: POST
+          path: /users
+          group: Users
+        input: User
 ...
 ```
 
