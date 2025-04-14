@@ -87,8 +87,6 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 periodCopy = { from: new Date(period[0]).toISOString(), to: new Date(period[1]).toISOString() };
             }
 
-            // await wait(1000);
-
             const res = await apiFetch(`/api/v1/logs/operations?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -200,7 +198,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
-                <div className="w-full">{/* <Input before={<MagnifyingGlassIcon className="w-5 h-5" />} placeholder="Search operations..." /> */}</div>
+                <div className="w-full"> </div>
                 <div className="flex gap-2">
                     <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} all />
                     <TypesSelect selected={types} onChange={setTypes} />
@@ -282,7 +280,7 @@ const TableBody: React.FC<{
     // Important: Keep the row virtualizer in the lowest component possible to avoid unnecessary re-renders.
     const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
         count: rows.length,
-        estimateSize: () => 41, // estimate row height for accurate scrollbar dragging
+        estimateSize: () => 41,
         getScrollElement: () => tableContainerRef.current,
         // Measure dynamic row height, except in firefox because it measures table border height incorrectly
         measureElement:

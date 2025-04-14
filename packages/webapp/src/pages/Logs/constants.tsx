@@ -53,7 +53,6 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        // minSize: 290,
         size: 'auto' as unknown as number,
         meta: {
             isGrow: true

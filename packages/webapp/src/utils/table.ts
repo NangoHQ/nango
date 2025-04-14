@@ -1,13 +1,13 @@
 import type { Header } from '@tanstack/react-table';
 
-// Copied from
-// https://github.com/TanStack/table/discussions/4179#discussioncomment-11895847
-
 function getSize(size = 100, max = Number.MAX_SAFE_INTEGER, min = 40) {
     return Math.max(Math.min(size, max), min);
 }
 
 /**
+ * All code copied from
+ * https://github.com/TanStack/table/discussions/4179#discussioncomment-11895847
+ *
  * Calculates the sizing of table columns and distributes available width proportionally.
  * This function acts as an extension for TanStack Table, ensuring proper column sizing
  * based on provided metadata, including `isGrow`, `widthPercentage`, and size constraints.
@@ -22,7 +22,7 @@ function getSize(size = 100, max = Number.MAX_SAFE_INTEGER, min = 40) {
  */
 export const calculateTableSizing = (columns: Header<any, unknown>[], totalWidth: number): Record<string, number> => {
     let totalAvailableWidth = totalWidth;
-    let totalIsGrow = 0;
+    let growingColumnsCount = 0;
 
     columns.forEach((header) => {
         const column = header.column.columnDef;
@@ -41,7 +41,7 @@ export const calculateTableSizing = (columns: Header<any, unknown>[], totalWidth
             }
         }
 
-        if (column.meta?.isGrow) totalIsGrow += 1;
+        if (column.meta?.isGrow) growingColumnsCount += 1;
         else totalAvailableWidth -= getSize(column.size, column.maxSize, column.minSize);
     });
 
@@ -51,7 +51,7 @@ export const calculateTableSizing = (columns: Header<any, unknown>[], totalWidth
         const column = header.column.columnDef;
         if (column.meta?.isGrow) {
             let calculatedSize = 100;
-            calculatedSize = Math.floor(totalAvailableWidth / totalIsGrow);
+            calculatedSize = Math.floor(totalAvailableWidth / growingColumnsCount);
             const size = getSize(calculatedSize, column.maxSize, column.minSize);
             column.size = size;
         }
