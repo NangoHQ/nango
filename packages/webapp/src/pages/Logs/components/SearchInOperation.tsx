@@ -1,21 +1,23 @@
-import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Input } from '../../../components/ui/input/Input';
-import { useSearchMessages } from '../../../hooks/useLogs';
-import type { SearchMessages, SearchMessagesData } from '@nangohq/types';
-import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
-import { useStore } from '../../../store';
-import * as Table from '../../../components/ui/Table';
-import Spinner from '../../../components/ui/Spinner';
-import { Info } from '../../../components/Info';
-import { LevelTag } from './LevelTag';
-import { MessageRow } from './MessageRow';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useIntersection, useInterval } from 'react-use';
-import { Tag } from '../../../components/ui/label/Tag';
+
+import { LevelTag } from './LevelTag';
+import { MessageRow } from './MessageRow';
+import { Info } from '../../../components/Info';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import Spinner from '../../../components/ui/Spinner';
+import * as Table from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/button/Button';
+import { Input } from '../../../components/ui/input/Input';
+import { Tag } from '../../../components/ui/label/Tag';
+import { useSearchMessages } from '../../../hooks/useLogs';
+import { useStore } from '../../../store';
+import { formatDateToLogFormat, formatQuantity } from '../../../utils/utils';
+
+import type { SearchMessages, SearchMessagesData } from '@nangohq/types';
+import type { ColumnDef } from '@tanstack/react-table';
 
 export const columns: ColumnDef<SearchMessagesData>[] = [
     {
@@ -74,21 +76,27 @@ export const SearchInOperation: React.FC<{ operationId: string; isLive: boolean 
 
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
+    const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
     const cursorBefore = useRef<SearchMessages['Body']['cursorBefore']>();
     const cursorAfter = useRef<SearchMessages['Body']['cursorAfter']>();
     const [hasLoadedMore, setHasLoadedMore] = useState<boolean>(false);
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
-    const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search });
+    const { data, error, loading, trigger, manualFetch } = useSearchMessages(env, { limit, operationId, search: debouncedSearch });
     const [messages, setMessages] = useState<SearchMessagesData[]>([]);
 
     useDebounce(
         () => {
-            setMessages([]);
-            trigger({});
+            setDebouncedSearch(search);
         },
         250,
         [search]
     );
+
+    useEffect(() => {
+        setMessages([]);
+        trigger({});
+    }, [debouncedSearch]);
+
     useEffect(() => {
         // Data aggregation to enable infinite scroll
         // Because states are changing we need to deduplicate and update rows

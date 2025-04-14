@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import { envs, model } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { SearchOperations } from '@nangohq/types';
-import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
