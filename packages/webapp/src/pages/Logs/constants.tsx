@@ -1,18 +1,13 @@
-import type { ColumnDef } from '@tanstack/react-table';
-import type {
-    SearchOperationsConnection,
-    SearchOperationsData,
-    SearchOperationsIntegration,
-    SearchOperationsState,
-    SearchOperationsSync,
-    SearchOperationsType
-} from '@nangohq/types';
-import { formatDateToLogFormat } from '../../utils/utils';
-import { StatusTag } from './components/StatusTag';
-import { OperationTag } from './components/OperationTag';
-import type { MultiSelectArgs } from '../../components/MultiSelect';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
+
+import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
+import { StatusTag } from './components/StatusTag';
+import { formatDateToLogFormat } from '../../utils/utils';
+
+import type { MultiSelectArgs } from '../../components/MultiSelect';
+import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
+import type { ColumnDef } from '@tanstack/react-table';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -42,7 +37,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        minSize: 280,
+        minSize: 200,
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -50,7 +45,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        minSize: 280,
+        minSize: 150,
         cell: ({ row }) => {
             return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
         }
@@ -58,8 +53,10 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        minSize: 0,
-        size: 0,
+        size: 'auto' as unknown as number,
+        meta: {
+            isGrow: true
+        },
         cell: ({ row }) => {
             return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
         }
@@ -78,7 +75,8 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     }
 ];
 
-export const statusDefaultOptions: SearchOperationsState[] = ['all'];
+export const defaultLimit = 50;
+
 export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = [
     { name: 'All', value: 'all' },
     { name: 'Success', value: 'success' },
@@ -89,7 +87,6 @@ export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = 
     { name: 'Waiting', value: 'waiting' }
 ];
 
-export const typesDefaultOptions: SearchOperationsType[] = ['all'];
 export const typesOptions = [
     { value: 'all', name: 'All' },
     {
@@ -129,7 +126,37 @@ export const typesOptions = [
     { value: 'proxy', name: 'Proxy' },
     { value: 'deploy', name: 'Deploy' }
 ];
-
-export const integrationsDefaultOptions: SearchOperationsIntegration[] = ['all'];
-export const connectionsDefaultOptions: SearchOperationsConnection[] = ['all'];
-export const syncsDefaultOptions: SearchOperationsSync[] = ['all'];
+export const typesList = Object.keys({
+    'action:run': null,
+    'admin:impersonation': null,
+    'auth:connection_test': null,
+    'auth:create_connection': null,
+    'auth:post_connection': null,
+    'auth:refresh_token': null,
+    'deploy:custom': null,
+    'deploy:prebuilt': null,
+    'events:post_connection_creation': null,
+    'events:pre_connection_deletion': null,
+    'proxy:call': null,
+    'sync:cancel': null,
+    'sync:init': null,
+    'sync:pause': null,
+    'sync:request_run': null,
+    'sync:request_run_full': null,
+    'sync:run': null,
+    'sync:unpause': null,
+    'webhook:connection_create': null,
+    'webhook:connection_refresh': null,
+    'webhook:forward': null,
+    'webhook:incoming': null,
+    'webhook:sync': null,
+    action: null,
+    admin: null,
+    all: null,
+    auth: null,
+    deploy: null,
+    events: null,
+    proxy: null,
+    sync: null,
+    webhook: null
+} satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];
