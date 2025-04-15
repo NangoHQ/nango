@@ -2281,6 +2281,26 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+companycam:
+    display_name: CompanyCam
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.companycam.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/company
+    docs: https://docs.nango.dev/integrations/all/companycam
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your CompanyCam company
+
 copper:
     display_name: Copper (OAuth)
     categories:
@@ -2663,6 +2683,30 @@ deel-sandbox:
     proxy:
         base_url: https://api-sandbox.demo.deel.com
     docs: https://docs.nango.dev/integrations/all/deel-sandbox
+
+devin:
+    display_name: Devin
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.devin.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/sessions
+    docs: https://docs.nango.dev/integrations/all/devin
+    docs_connect: https://docs.nango.dev/integrations/all/devin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Devin account
+            pattern: '^apk_user_[A-Za-z0-9+/=]+$'
+            example: 'apk_user_dGVzdF9vcmdfeDY1NzRBUElLRVl8Njc1OTdjNDQzMjFhOTZlODhlMmE4MTI0X29yZ194NnB5QlVJa042anVKWWtMOjQ3NzQxYTVmYWE5MTRiNjQ5'
+            doc_section: '#step-1-finding-your-api-key'
 
 dialpad:
     display_name: Dialpad
@@ -3787,6 +3831,28 @@ google-gemini:
             example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
             pattern: '^[0-9A-Za-z_-]+$'
 
+gem:
+    display_name: Gem
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.gem.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/users
+    docs: https://docs.nango.dev/integrations/all/gem
+    docs_connect: https://docs.nango.dev/integrations/all/gem/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Gem account
+            doc_section: '#step-1-finding-your-api-key'
+
 gerrit:
     display_name: Gerrit
     categories:
@@ -4148,6 +4214,7 @@ gong-oauth:
             title: API Base URL
             description: The base URL of your Gong account
             format: uri
+            automated: true
             pattern: '^https?://.*$'
 
 google:
@@ -7700,6 +7767,30 @@ rock-gym-pro:
             title: API Password
             description: Your Rock Gym Pro API password
 
+rootly:
+    display_name: Rootly
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.rootly.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/rootly
+    docs_connect: https://docs.nango.dev/integrations/all/rootly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Rootly account
+            example: rootly_db86a6••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+            pattern: '^rootly_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 segment:
     display_name: Segment
     categories:
@@ -9806,31 +9897,37 @@ workday:
         - popular
     auth_mode: BASIC
     proxy:
-        base_url: https://${connectionConfig.subdomain}.workday.com
+        base_url: https://${connectionConfig.hostname}/ccx/service/${connectionConfig.tenant}
     docs: https://docs.nango.dev/integrations/all/workday
     docs_connect: https://docs.nango.dev/integrations/all/workday/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
-            title: Workday Domain
-            description: The subdomain of your Workday account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .workday.com
+            title: Hostname
+            description: The hostname of your Workday account
+            format: hostname
+            example: wd3-impl-services1.workday.com
             prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account
+            example: yourtenant
+            order: 2
+            doc_section: '#step-2-finding-your-tenant'
     credentials:
         username:
             type: string
-            title: Client ID
-            description: Workday Client ID
-            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
+            title: Username
+            description: Workday API Username
+            doc_section: '#step-4-generating-your-username'
         password:
             type: string
-            title: Client Secret
-            description: Workday Client Secret
-            doc_section: '#step-2-find-your-workday-client-id-and-client-secret'
-            # https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html
-            # Workday is using basic auth with client ID and client secret as username and password
+            title: Password
+            description: Workday API Password
+            doc_section: '#step-5-finding-your-password'
 
 wrike:
     display_name: Wrike
