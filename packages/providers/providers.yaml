@@ -7734,6 +7734,30 @@ rock-gym-pro:
             title: API Password
             description: Your Rock Gym Pro API password
 
+rootly:
+    display_name: Rootly
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.rootly.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/rootly
+    docs_connect: https://docs.nango.dev/integrations/all/rootly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Rootly account
+            example: rootly_db86a6••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+            pattern: '^rootly_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 segment:
     display_name: Segment
     categories:
