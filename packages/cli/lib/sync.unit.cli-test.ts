@@ -435,8 +435,11 @@ describe('generate function tests', () => {
 
         {
             // Compile one file
-            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
-            expect(success).toBe(true);
+            const result = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
     });
 
@@ -592,18 +595,24 @@ describe('generate function tests', () => {
 
         {
             // Compile everything
-            const success = await compileAllFiles({ fullPath: dir, debug: true });
+            const result = await compileAllFiles({ fullPath: dir, debug: true });
             expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
             expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
             expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
             expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
-            expect(success).toBe(true);
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
 
         {
             // Compile one file
-            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
-            expect(success).toBe(true);
+            const result = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(result).toEqual({
+                success: true,
+                failedFiles: []
+            });
         }
     });
 });
