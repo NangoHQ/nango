@@ -18575,6 +18575,20 @@ integrations:
                 scopes:
                     - accounting.transactions
                 version: 1.0.3
+            bank-transactions:
+                description: >
+                    Fetches all bank transactions in Xero. Incremental sync, detects
+                    deletes, metadata is not required.
+                runs: every hour
+                output: BankTransaction
+                sync_type: incremental
+                endpoint:
+                    method: GET
+                    path: /BankTransactions
+                    group: Bank Transactions
+                scopes:
+                    - accounting.transactions
+                version: 1.0.0
             general-ledger:
                 description: |
                     Fetch all general ledger entries in Xero
@@ -19022,6 +19036,39 @@ integrations:
                 trackingCategoryId: string
                 trackingOptionId: string
                 options: string[]
+            BankTransaction:
+                id: string
+                type: string
+                bank_account_id: string
+                bank_account_code: string
+                bank_account_name: string
+                contact_id: string
+                contact_name: string
+                date: string | null
+                status: string
+                reference: string | null
+                is_reconciled: boolean
+                currency_code: string
+                currency_rate: number | null
+                total: number
+                sub_total: number
+                total_tax: number
+                line_amount_types: string
+                line_items: BankTransactionLineItem[]
+                updated_date: string | null
+                url: string | null
+                has_attachments: boolean
+            BankTransactionLineItem:
+                description: string
+                quantity: number
+                unit_amount: number
+                account_code: string
+                item_code: string | null
+                line_item_id: string
+                tax_type: string | null
+                tax_amount: number
+                line_amount: number
+                tracking: TrackingCategory[] | null
     zendesk:
         syncs:
             tickets:
