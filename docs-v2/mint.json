@@ -482,6 +482,7 @@
                 "integrations/all/jira-basic",
                 "integrations/all/jira-data-center-api-key",
                 "integrations/all/jira-data-center",
+                "integrations/all/jira-data-center-basic",
                 "integrations/all/jotform",
                 "integrations/all/keap",
                 "integrations/all/keeper-scim",
