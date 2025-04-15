@@ -314,12 +314,12 @@ export function resolveTsFileLocation({
     providerConfigKey: string;
     type: ScriptFileType;
 }): string {
-    const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const nestedPath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
-        return fs.realpathSync(path.resolve(nestedPath, '../'));
+        return path.join(nestedPath, '../');
     }
 
-    return fs.realpathSync(path.join(fullPath, './'));
+    return path.join(fullPath, './');
 }
 
 export function listFilesToCompile({

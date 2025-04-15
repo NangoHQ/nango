@@ -1,8 +1,8 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
 import os from 'node:os';
+import path from 'node:path';
 
-export const fixturesPath = './packages/cli/fixtures';
+export const fixturesPath = path.resolve('./packages/cli/fixtures');
 
 export async function copyDirectoryAndContents(source: string, destination: string) {
     await fs.mkdir(destination, { recursive: true });

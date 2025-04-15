@@ -17,7 +17,7 @@ import { NANGO_VERSION, getLogger, initSentry, once, report, requestLoggerMiddle
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
-import { exportUsageMetricsCron } from './crons/exportMetrics.js';
+import { exportUsageCron } from './crons/usage.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
@@ -87,7 +87,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 getProviders();
 
 refreshConnectionsCron();
-exportUsageMetricsCron();
+exportUsageCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();
