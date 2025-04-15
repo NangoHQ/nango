@@ -7,13 +7,14 @@
 import fs from 'fs';
 import path from 'path';
 
-import { nangoConfigFile } from '@nangohq/nango-yaml';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
-import { configWatch, generate, tscWatch, version } from './cli.js';
+import { nangoConfigFile } from '@nangohq/nango-yaml';
+
+import { generate, tscWatch, version } from './cli.js';
 import { compileAllFiles } from './services/compile.service.js';
 import { parse } from './services/config.service.js';
 import deployService from './services/deploy.service.js';
@@ -164,11 +165,7 @@ program
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug, checkDist: false });
 
-        if (compileInterfaces) {
-            configWatch({ fullPath, debug });
-        }
-
-        tscWatch({ fullPath, debug });
+        tscWatch({ fullPath, debug, watchConfigFile: compileInterfaces });
     });
 
 program
