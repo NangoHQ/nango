@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
-import { stringifyError } from '@nangohq/utils';
+import { report, stringifyError } from '@nangohq/utils';
 import { logger } from '../utils/logger.js';
 import { setTimeout } from 'node:timers/promises';
 import type knex from 'knex';
@@ -26,11 +26,11 @@ export abstract class SchedulerWorker {
                 this.worker = new Worker(workerUrl, { workerData: { url: databaseUrl, schema: databaseSchema } });
 
                 this.worker.on('error', (err) => {
-                    logger.error(`${name} worker error: ${stringifyError(err)}`);
+                    report(`${name} worker error: ${stringifyError(err)}`);
                 });
 
                 this.worker.on('exit', (code) => {
-                    logger.error(`${name} worker exited with code: ${code}. Restarting...`);
+                    report(`${name} worker exited with code: ${code}. Restarting...`);
                     this.worker = null;
                     createWorker();
                     this.start();
