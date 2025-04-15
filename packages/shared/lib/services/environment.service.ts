@@ -216,15 +216,6 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async getAll(): Promise<{ environmentId: number; accountId: number }[]> {
-        const result = await db.knex
-            .select('id as environmentId', 'account_id as accountId', 'deleted')
-            .from<{ environmentId: number; accountId: number; deleted: boolean }>(TABLE)
-            .where({ deleted: false });
-
-        return result.map(({ environmentId, accountId }) => ({ environmentId, accountId }));
-    }
-
     async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
         const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
@@ -479,7 +470,6 @@ class EnvironmentService {
     async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
         await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 
-        // TODO: Ideally we would soft delete everything down the tree in a transaction
         const configs = await configService.listProviderConfigs(environmentId);
         for (const config of configs) {
             // This handles deleting connections and syncs down the line
