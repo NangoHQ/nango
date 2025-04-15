@@ -407,9 +407,7 @@ export async function searchForMessagesInsideOperations(opts: {
 
     const aggs = res.aggregations!['parentIdAgg']['buckets'];
 
-    return {
-        items: aggs
-    };
+    return { items: aggs as any };
 }
 
 /**
