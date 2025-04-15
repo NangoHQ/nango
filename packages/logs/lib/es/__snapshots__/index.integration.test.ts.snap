@@ -11,40 +11,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
       "accountName": {
         "type": "keyword",
       },
-      "batchSave": {
-        "properties": {
-          "added": {
-            "type": "integer",
-          },
-          "addedKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-          "deleteKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-          "deleted": {
-            "type": "integer",
-          },
-          "model": {
-            "type": "keyword",
-          },
-          "updated": {
-            "type": "integer",
-          },
-          "updatedKeys": {
-            "copy_to": [
-              "meta_search",
-            ],
-            "type": "keyword",
-          },
-        },
-      },
       "connectionId": {
         "type": "keyword",
       },
@@ -158,6 +124,40 @@ exports[`mapping > should create one index automatically on log 1`] = `
       },
       "parentId": {
         "type": "keyword",
+      },
+      "persistResults": {
+        "properties": {
+          "added": {
+            "type": "integer",
+          },
+          "addedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleteKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleted": {
+            "type": "integer",
+          },
+          "model": {
+            "type": "keyword",
+          },
+          "updated": {
+            "type": "integer",
+          },
+          "updatedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+        },
       },
       "providerName": {
         "type": "keyword",

@@ -86,7 +86,7 @@ export default async function fetchData(nango: NangoSync) {
         const res = getContactsFromSalesforceAPI(nango.lastSyncDate, nextPage);
         // ...
         // Save all dataset in memory (memory intensive).
-        responses.push(...response.data.records);
+        responses.push(...res.data.records);
     }
     // Save all Salesforce contacts at once.
     await nango.batchSave(mapContacts(responses), 'Contact');

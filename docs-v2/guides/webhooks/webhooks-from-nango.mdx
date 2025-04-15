@@ -122,11 +122,11 @@ Payload received following a successful sync execution:
 
 By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
 ```json
-[
+{
     "added": 0,
     "updated": 0,
     "deleted": 0
-  ]
+}
 ```
 
 The `syncType` possible values are:

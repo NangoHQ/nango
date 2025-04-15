@@ -6,6 +6,10 @@ description: 'Guide on how to use sync variants to partition data and optimize s
 
 Sync partitioning enables more flexible and scalable data synchronization by allowing you to create multiple independent “variants” of the same sync. This feature is particularly useful when dealing with large datasets, multiple tenants, or different filtering requirements within the same integration.
 
+<Info>
+This feature is available on Growth plans as a paid add-on, and on Enterprise plans. Reach out on your Slack Connect channel or the [community](https://nango.dev/slack) to enable it.
+</Info>
+
 # Overview
 
 Traditionally, a sync is defined once in the nango.yaml and executed for each connection. With sync partitioning, you can create multiple sync “variants” that share the same base configuration but run independently. Each variant has its own execution schedule, last sync timestamp, and data storage.

@@ -46,7 +46,7 @@ You can use zod models in your scripts too
 ```typescript
 import { myZodModel } from '../../schema.zod.js';
 
-export default async fetchData(nango: Nango) {
+export default async function fetchData(nango: Nango) {
   const response = await nango.get({ endpoint: '/tickets' });
   const isValid = myZodModel.parse(response.json);
   if (isValid) {
@@ -105,7 +105,7 @@ const validate = ajv.compile({
 });
 
 // Validate your data
-validate(mydata);
+validate(myData);
 ```
 </Tab>
 
