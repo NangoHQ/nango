@@ -31,6 +31,7 @@ export abstract class SchedulerWorker {
 
                 this.worker.on('exit', (code) => {
                     report(`${name} worker exited with code: ${code}. Restarting...`);
+                    this.worker?.removeAllListeners();
                     this.worker = null;
                     createWorker();
                     this.start();
