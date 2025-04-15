@@ -1684,7 +1684,7 @@ class ConnectionService {
         }
     }
 
-    // return the number of active connections per account
+    // return the number of connections per account
     async countMetric(): Promise<
         Result<
             {
@@ -1740,6 +1740,90 @@ class ConnectionService {
         }
 
         return Err(new NangoError('failed_to_get_connections_count'));
+    }
+
+    async billableConnections(referenceDate: Date): Promise<
+        Result<
+            {
+                accountId: number;
+                count: number;
+                year: number;
+                month: number;
+            }[],
+            NangoError
+        >
+    > {
+        // Note:
+        // a billable connection is a connection that is not deleted and has not been deleted during the month
+        // connections are pro-rated based on the number of seconds they were existing in the month
+
+        const targetDate = new Date(Date.UTC(referenceDate.getUTCFullYear(), referenceDate.getUTCMonth(), referenceDate.getUTCDate(), 0, 0, 0, 0));
+        const year = referenceDate.getUTCFullYear();
+        const month = referenceDate.getUTCMonth() + 1; // js months are 0-based
+
+        const res = await db.readOnly
+            .with('month_info', (qb) => {
+                qb.select(
+                    db.readOnly.raw(`DATE_TRUNC('month', ?::date) AS month_start`, [targetDate]),
+                    db.readOnly.raw(`(DATE_TRUNC('month', ?::date) + INTERVAL '1 month' - INTERVAL '1 day')::date AS month_end`, [targetDate]),
+                    db.readOnly.raw(
+                        `EXTRACT(EPOCH FROM (DATE_TRUNC('month', ?::date) + INTERVAL '1 month') - DATE_TRUNC('month', ?::date)) AS total_seconds_in_month`,
+                        [targetDate, targetDate]
+                    )
+                );
+            })
+            .with('billable_connections', (qb) => {
+                qb.select(
+                    'e.account_id',
+                    'c.id as connection_id',
+                    'c.created_at',
+                    db.readOnly.raw(`COALESCE(c.deleted_at, (SELECT month_end FROM month_info) + INTERVAL '1 day') AS effective_end_date`),
+                    db.readOnly.raw(`(SELECT month_start FROM month_info) AS month_start`),
+                    db.readOnly.raw(`(SELECT month_end FROM month_info) AS month_end`),
+                    db.readOnly.raw(`(SELECT total_seconds_in_month FROM month_info) AS total_seconds_in_month`)
+                )
+                    .from('nango._nango_connections as c')
+                    .join('nango._nango_environments as e', 'c.environment_id', 'e.id')
+                    .where((builder) => {
+                        builder.where('c.deleted_at', null).orWhereRaw(`c.deleted_at >= (SELECT month_start FROM month_info)`);
+                    })
+                    .whereRaw(`c.created_at <= (SELECT month_end FROM month_info) + INTERVAL '1 day'`);
+            })
+            .with('prorated', (qb) => {
+                qb.select(
+                    'account_id',
+                    'connection_id',
+                    db.readOnly.raw(`
+                        CASE
+                            WHEN created_at < month_start AND (effective_end_date > month_end OR effective_end_date IS NULL)
+                                THEN 1.0
+                            WHEN created_at < month_start AND effective_end_date <= month_end
+                                THEN EXTRACT(EPOCH FROM (effective_end_date - month_start)) / total_seconds_in_month
+                            WHEN created_at >= month_start AND (effective_end_date > month_end OR effective_end_date IS NULL)
+                                THEN EXTRACT(EPOCH FROM (month_end + INTERVAL '1 day' - created_at)) / total_seconds_in_month
+                            ELSE EXTRACT(EPOCH FROM (effective_end_date - created_at)) / total_seconds_in_month
+                        END AS connection_weight
+                    `)
+                ).from('billable_connections');
+            })
+            .with('totals', (qb) => {
+                qb.select(
+                    'account_id as accountId',
+                    db.readOnly.raw(`FLOOR(SUM(connection_weight)) as count`),
+                    db.readOnly.raw(`${year} as year`),
+                    db.readOnly.raw(`${month} as month`)
+                )
+                    .from('prorated')
+                    .groupBy('account_id');
+            })
+            .select('*')
+            .from('totals')
+            .where('count', '>', 0);
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new NangoError('failed_to_get_billable_connections'));
     }
 
     async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBConnection[]> {
