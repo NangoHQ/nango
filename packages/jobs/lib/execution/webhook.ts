@@ -72,7 +72,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
 
-        const logCtx = await logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
+        const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
 
         void logCtx.info(`Starting webhook '${task.webhookName}'`, {
             input: task.input,

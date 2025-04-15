@@ -199,7 +199,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 }
 
 export async function handleSyncSuccess({ taskId, nangoProps }: { taskId: string; nangoProps: NangoProps }): Promise<void> {
-    const logCtx = await logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
+    const logCtx = logContextGetter.get({ id: String(nangoProps.activityLogId), accountId: nangoProps.team.id });
     logCtx.attachSpan(
         new OtlpSpan(
             getFormattedOperation(
@@ -651,7 +651,7 @@ async function onFailure({
     error: NangoError;
     endUser: NangoProps['endUser'];
 }): Promise<void> {
-    const logCtx = activityLogId ? await logContextGetter.get({ id: activityLogId, accountId: team?.id }) : null;
+    const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
     if (team && environment) {
         if (logCtx) {
