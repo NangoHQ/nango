@@ -1,27 +1,31 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
-import type { AuthCredentials } from '@nangohq/shared';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    analytics,
-    configService,
     AnalyticsTypes,
-    connectionService,
-    errorManager,
     ErrorSourceEnum,
     LogActionEnum,
+    analytics,
+    configService,
+    connectionService,
+    errorManager,
     getProvider,
     linkConnection
 } from '@nangohq/shared';
-import type { PostPublicAppStoreAuthorization } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import db from '@nangohq/database';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { AuthCredentials } from '@nangohq/shared';
+import type { PostPublicAppStoreAuthorization } from '@nangohq/types';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+
+import type { NextFunction } from 'express';
 
 const bodyValidation = z
     .object({
@@ -88,7 +92,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },

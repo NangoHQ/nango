@@ -1,16 +1,18 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, connectionService, errorManager, getConnectionConfig, getProvider, linkConnection } from '@nangohq/shared';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import type { LogContext } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import db from '@nangohq/database';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -62,7 +64,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     try {
         const logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },

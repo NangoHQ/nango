@@ -22,12 +22,12 @@ interface Options {
  */
 export class LogContextStateless {
     id: OperationRow['id'];
-    accountId?: OperationRow['accountId'] | undefined;
+    accountId: OperationRow['accountId'];
     dryRun: boolean;
     logToConsole: boolean;
     transport: LogTransportAbstract;
 
-    constructor(data: { id: OperationRow['id']; accountId?: OperationRow['accountId'] | undefined }, options: Options = { dryRun: false, logToConsole: true }) {
+    constructor(data: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: true }) {
         this.id = data.id;
         this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
@@ -138,10 +138,7 @@ export class LogContext extends LogContextStateless {
     createdAt: string;
     span?: OtlpSpan;
 
-    constructor(
-        { id, createdAt, accountId }: { id: string; createdAt: string; accountId?: number | undefined },
-        options: Options = { dryRun: false, logToConsole: true }
-    ) {
+    constructor({ id, createdAt, accountId }: { id: string; createdAt: string; accountId: number }, options: Options = { dryRun: false, logToConsole: true }) {
         super({ id, accountId }, options);
         this.createdAt = createdAt;
     }
