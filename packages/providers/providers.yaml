@@ -2281,6 +2281,26 @@ commercetools:
             pattern: '^(gcp|aws)$'
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
+companycam:
+    display_name: CompanyCam
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.companycam.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/company
+    docs: https://docs.nango.dev/integrations/all/companycam
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your CompanyCam company
+
 copper:
     display_name: Copper (OAuth)
     categories:
@@ -4194,6 +4214,7 @@ gong-oauth:
             title: API Base URL
             description: The base URL of your Gong account
             format: uri
+            automated: true
             pattern: '^https?://.*$'
 
 google:
@@ -5094,6 +5115,39 @@ jira-data-center-api-key:
             title: API Key
             description: The API key for your Jira Data Center
             doc_section: '#step-2-generating-your-api-key'
+
+jira-data-center-basic:
+    display_name: Jira Data Center (Basic Auth)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: ${connectionConfig.baseUrl}
+        retry:
+            after: 'retry-after'
+    docs: https://docs.nango.dev/integrations/all/jira-data-center-basic
+    docs_connect: https://docs.nango.dev/integrations/all/jira-data-center-basic/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Instance Base Url
+            description: The base Url for your Jira Data Center instance
+            pattern: '^(https?:\/\/)?[a-zA-Z0-9.-]+(:\d+)?$'
+            example: https://foobar.atlassian.net
+            doc_section: '#step-1-finding-your-instance-base-url'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username for your Jira Data Center
+            doc_section: '#step-2-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Jira Data Center
+            doc_section: '#step-2-finding-your-credentials'
 
 jotform:
     display_name: Jotform
@@ -6478,7 +6532,7 @@ odoo-cc:
     proxy:
         base_url: https://${connectionConfig.serverUrl}/restapi
     docs: https://docs.nango.dev/integrations/all/odoo-cc
-    docs_connect: https://docs.nango.dev/integrations/all/odoo/connect
+    docs_connect: https://docs.nango.dev/integrations/all/odoo-cc/connect
     credentials:
         consumerId:
             type: string
@@ -7712,6 +7766,30 @@ rock-gym-pro:
             type: string
             title: API Password
             description: Your Rock Gym Pro API password
+
+rootly:
+    display_name: Rootly
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://api.rootly.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://docs.nango.dev/integrations/all/rootly
+    docs_connect: https://docs.nango.dev/integrations/all/rootly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Rootly account
+            example: rootly_db86a6••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+            pattern: '^rootly_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 segment:
     display_name: Segment
