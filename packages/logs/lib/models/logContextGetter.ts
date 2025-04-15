@@ -46,7 +46,7 @@ export const logContextGetter = {
     /**
      * Return a Context without creating an operation
      */
-    async get({ id, accountId }: { id: OperationRow['id']; accountId?: number | undefined }, options?: Options): Promise<LogContext> {
+    get({ id, accountId }: { id: OperationRow['id']; accountId: number }, options?: Options): LogContext {
         let createdAt: string | undefined;
         try {
             const split = id.split('_');
@@ -59,7 +59,7 @@ export const logContextGetter = {
         if (!createdAt) {
             createdAt = new Date().toISOString(); // Fallback to default date
         }
-        return Promise.resolve(new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED }));
+        return new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED });
     },
 
     getStateLess({ id, accountId }: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
