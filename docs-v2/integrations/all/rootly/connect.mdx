@@ -1,0 +1,48 @@
+---
+title: Rootly - How do I link my account?
+sidebarTitle: Rootly
+---
+
+
+# Overview
+
+To authenticate with Rootly, you need:
+1. **API Key** -  A key that grants secure access to the API, enabling authorized applications to interact with Rootly resources and services.
+
+This guide will walk you through generating your **API Key** within Rootly.
+
+### Prerequisites:
+
+- You must have an account with Rootly.
+
+### Instructions:
+
+#### Step 1: Generating Your API Key
+1. Log in to your [Rootly](https://rootly.com/users/sign_in) account.
+2. Navigate to the **Organization dropdown** and select **Organization Settings**.
+<img src="/integrations/all/rootly/organizations.png" />
+3. Go to the **API Keys** section and click **Generate New API Key**.
+<img src="/integrations/all/rootly/generate_api_key.png" />
+4. Choose the appropriate scope based on your needs. You can refer to the [scope table](https://docs.rootly.com/api-reference/overview#how-to-generate-an-api-key%3F) to determine the right one.
+<img src="/integrations/all/rootly/scopes.png" />
+5. Fill in the form that will pop up with the appropriate information: 
+- **Name** - A label to help you identify the purpose of this API key (e.g., **Nango Integration**).
+- **Description** - A brief summary of what the key will be used for.
+- **Expiration** - The duration for which the key should remain active.
+- **Incident Response Role** - If creating a **Global API Key**, you must select an appropriate incident response role.
+<img src="/integrations/all/rootly/create_api_key.png" />
+6. Click **Create**, and your **API Key** will be generated.
+<img src="/integrations/all/rootly/api_key.png" />
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with Rootly.
+2. Enter your **API Key** in its designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/rootly/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Rootly.
