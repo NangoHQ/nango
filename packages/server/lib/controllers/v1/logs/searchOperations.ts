@@ -9,6 +9,7 @@ import type { SearchOperations } from '@nangohq/types';
 
 const validation = z
     .object({
+        search: z.string().max(256).optional(),
         limit: z.number().max(500).optional().default(100),
         states: z
             .array(z.enum(['all', 'waiting', 'running', 'success', 'failed', 'timeout', 'cancelled']))
@@ -76,6 +77,17 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
 
     const env = res.locals['environment'];
     const body: SearchOperations['Body'] = val.data;
+
+    let operationIds: string[] | undefined;
+    if (body.search) {
+        const bucket = await model.searchForMessagesInsideOperations({ limit: body.limit || 100, search: body.search, period: body.period });
+        const tmp = new Set<string>();
+        for (const item of bucket.items) {
+            tmp.add(item.key);
+        }
+        operationIds = Array.from(tmp);
+    }
+
     const rawOps = await model.listOperations({
         accountId: env.account_id,
         environmentId: env.id,
@@ -86,7 +98,8 @@ export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) 
         connections: body.connections,
         syncs: body.syncs,
         period: body.period,
-        cursor: body.cursor
+        cursor: body.cursor,
+        operationIds
     });
 
     res.status(200).send({

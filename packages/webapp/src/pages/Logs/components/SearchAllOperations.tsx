@@ -1,9 +1,10 @@
+import { IconSearch } from '@tabler/icons-react';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useWindowSize } from 'react-use';
+import { useDebounce, useWindowSize } from 'react-use';
 
 import { DatePicker } from './DatePicker';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
@@ -12,6 +13,7 @@ import { MultiSelect } from '../../../components/MultiSelect';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Spinner from '../../../components/ui/Spinner';
 import * as Table from '../../../components/ui/Table';
+import { Input } from '../../../components/ui/input/Input';
 import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, statusOptions, typesList } from '../constants';
 import { OperationRow } from './OperationRow';
@@ -28,6 +30,7 @@ interface Props {
     onSelectOperation: (open: boolean, operationId: string) => void;
 }
 
+const parseSearch = parseAsString.withDefault('');
 const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
 const parseStates = parseAsArrayOf(parseAsStringLiteral(statusOptions.map((opt) => opt.value)), ',')
     .withDefault(['all'])
@@ -47,6 +50,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const windowSize = useWindowSize();
 
     // --- Data fetch
+    const [search, setSearch] = useQueryState('search', parseSearch);
     const [isLive, setLive] = useQueryState('live', parseLive);
     const [states, setStates] = useQueryState('states', parseStates);
     const [types, setTypes] = useQueryState('types', parseTypes);
@@ -57,6 +61,15 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
     const [isScrollTop, setIsScrollTop] = useState(false);
+
+    const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>(() => search);
+    useDebounce(
+        () => {
+            setDebouncedSearch(search);
+        },
+        250,
+        [search]
+    );
 
     /**
      * Because we haven't build a forward pagination it's currently impossible to have a proper infinite scroll both way and a live refresh
@@ -75,7 +88,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         unknown[],
         string | null
     >({
-        queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period],
+        queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period, debouncedSearch],
         queryFn: async ({ pageParam }) => {
             let periodCopy: SearchOperations['Body']['period'];
             // Slide the window automatically when live
@@ -97,7 +110,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     syncs,
                     period: periodCopy,
                     limit: defaultLimit,
-                    cursor: pageParam
+                    cursor: pageParam,
+                    search: debouncedSearch
                 } satisfies SearchOperations['Body'])
             });
             if (res.status !== 200) {
@@ -198,7 +212,16 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
-                <div className="w-full"> </div>
+                <div className="w-full">
+                    <Input
+                        before={<IconSearch stroke={1} size={16} />}
+                        placeholder="Search logs..."
+                        className="border-grayscale-900"
+                        onChange={(e) => setSearch(e.target.value)}
+                        inputSize={'sm'}
+                        value={search}
+                    />
+                </div>
                 <div className="flex gap-2">
                     <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} all />
                     <TypesSelect selected={types} onChange={setTypes} />
@@ -252,7 +275,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         </Table.Body>
                     )}
 
-                    {!isFetching && flatData.length <= 0 && (
+                    {!isLoading && flatData.length <= 0 && (
                         <Table.Body>
                             <Table.Row className="hover:bg-transparent flex absolute w-full">
                                 <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
