@@ -34,6 +34,7 @@ import { getOrchestrator } from '../utils/utils.js';
 import { getInterval } from '@nangohq/nango-yaml';
 import { getPublicRecords } from './records/getRecords.js';
 import type { DBConnectionDecrypted } from '@nangohq/types';
+import { billing } from '@nangohq/billing';
 
 const orchestrator = getOrchestrator();
 
@@ -228,6 +229,7 @@ class SyncController {
             });
 
             if (actionResponse.isOk()) {
+                void billing.send('billable_actions', 1, { accountId: account.id, transactionId: logCtx.id }); // TODO: do we only bill succssful actions?
                 span.finish();
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);

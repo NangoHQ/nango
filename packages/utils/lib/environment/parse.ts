@@ -130,6 +130,8 @@ export const ENVS = z.object({
 
     // Billing
     FLAG_PLAN_ENABLED: bool,
+    FLAG_BILLING_ENABLED: bool,
+    METRONOME_BEARER_TOKEN: z.string().optional(),
 
     // --- Third parties
     // AWS
