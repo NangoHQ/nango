@@ -4,7 +4,7 @@ export interface BillingClient {
 
 export interface IngestEvent {
     type: 'monthly_active_records' | 'billable_connections' | 'billable_actions';
-    transactionId: string;
+    idempotencyKey: string;
     accountId: number;
     timestamp: Date;
     properties: Record<string, string | number>;
@@ -13,5 +13,5 @@ export interface IngestEvent {
 export interface BillingMetric {
     type: IngestEvent['type'];
     value: number;
-    properties: { accountId: number; timestamp?: Date | undefined; transactionId?: string | undefined };
+    properties: { accountId: number; timestamp?: Date | undefined; idempotencyKey?: string | undefined };
 }

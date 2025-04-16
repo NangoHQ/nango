@@ -1,4 +1,4 @@
-import { metronome } from './clients/metronome.js';
+import { orb } from './clients/orb.js';
 import { Billing } from './billing.js';
 
-export const billing = new Billing(metronome);
+export const billing = new Billing(orb);

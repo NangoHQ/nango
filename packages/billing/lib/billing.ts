@@ -21,7 +21,7 @@ export class Billing {
                 {
                     type: event.type,
                     accountId: event.properties.accountId,
-                    transactionId: event.properties.transactionId || uuidv7(),
+                    idempotencyKey: event.properties.idempotencyKey || uuidv7(),
                     timestamp: event.properties.timestamp || new Date(),
                     properties: {
                         count: event.value

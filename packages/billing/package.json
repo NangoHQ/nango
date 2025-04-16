@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "@metronome/sdk": "^0.1.0-beta.9",
+        "orb-billing": "^4.72.1",
         "uuidv7": "^1.0.2"
     },
     "devDependencies": {
