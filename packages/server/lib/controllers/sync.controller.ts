@@ -228,8 +228,10 @@ class SyncController {
                 logCtx
             });
 
+            // Note: all executed actions are billed
+            void billing.send('billable_actions', 1, { accountId: account.id, transactionId: logCtx.id });
+
             if (actionResponse.isOk()) {
-                void billing.send('billable_actions', 1, { accountId: account.id, transactionId: logCtx.id }); // TODO: do we only bill succssful actions?
                 span.finish();
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
