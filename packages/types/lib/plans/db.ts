@@ -50,4 +50,8 @@ export interface DBPlan extends Timestamps {
      * @default "m"
      */
     api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
+
+    // Stripe custom fields
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string | null;
 }
