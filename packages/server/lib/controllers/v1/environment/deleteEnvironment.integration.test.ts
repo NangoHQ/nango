@@ -1,14 +1,13 @@
-import { randomUUID } from 'node:crypto';
-
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { PROD_ENVIRONMENT_NAME, configService, environmentService, getProvider, seeders } from '@nangohq/shared';
+import { PROD_ENVIRONMENT_NAME, environmentService, getProvider, seeders } from '@nangohq/shared';
+import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
+import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
 
 import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { Sync } from '@nangohq/shared';
-import type { DBConnection, DBSyncConfig } from '@nangohq/types';
+import type { DBConnection } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -92,38 +91,8 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error(`Provider ${providerName} not found`);
         }
 
-        const providerConfig = await configService.createProviderConfig(
-            {
-                environment_id: testEnv.id,
-                unique_key: providerName,
-                provider: providerName
-            },
-            provider
-        );
-
+        const providerConfig = await createConfigSeed(testEnv, providerName, providerName);
         expect(providerConfig).not.toBeNull();
-
-        // Create a syncConfig for this config
-        const syncName = 'test-sync';
-        const syncConfig = (
-            await db.knex
-                .from<DBSyncConfig>('_nango_sync_configs')
-                .insert({
-                    environment_id: testEnv.id,
-                    sync_name: syncName,
-                    file_location: 'test-location',
-                    type: 'sync',
-                    active: true,
-                    enabled: true,
-                    models: [],
-                    auto_start: true,
-                    deleted: false,
-                    nango_config_id: providerConfig!.id!,
-                    version: '1'
-                })
-                .returning('*')
-        )[0];
-        expect(syncConfig).not.toBeNull();
 
         // Create a connection for our sync
         const connection = (
@@ -133,7 +102,7 @@ describe(`DELETE ${endpoint}`, () => {
                     environment_id: testEnv.id,
                     connection_id: 'test-connection-id',
                     provider_config_key: providerName,
-                    config_id: providerConfig!.id!,
+                    config_id: providerConfig.id!,
                     deleted: false,
                     credentials: {}
                 })
@@ -141,20 +110,16 @@ describe(`DELETE ${endpoint}`, () => {
         )[0];
         expect(connection).not.toBeNull();
 
-        // Create a sync for this connection and syncConfig
-        const sync = (
-            await db.knex
-                .from<Sync>('_nango_syncs')
-                .insert({
-                    id: randomUUID(),
-                    nango_connection_id: connection!.id,
-                    name: syncName,
-                    variant: 'base',
-                    sync_config_id: syncConfig!.id,
-                    deleted: false
-                })
-                .returning('*')
-        )[0];
+        // Create a syncConfig and sync
+        const { syncConfig, sync } = await createSyncSeeds({
+            connectionId: connection!.id,
+            environment_id: testEnv.id,
+            nango_config_id: providerConfig.id!,
+            sync_name: 'test-sync',
+            type: 'sync'
+        });
+
+        expect(syncConfig).not.toBeNull();
         expect(sync).not.toBeNull();
 
         // Now delete the environment
@@ -175,7 +140,7 @@ describe(`DELETE ${endpoint}`, () => {
         const deletedConfig = await db.knex
             .from('_nango_configs')
             .where({
-                id: providerConfig!.id,
+                id: providerConfig.id,
                 deleted: true
             })
             .first();
@@ -185,7 +150,7 @@ describe(`DELETE ${endpoint}`, () => {
         const deletedSyncConfig = await db.knex
             .from('_nango_sync_configs')
             .where({
-                id: syncConfig!.id,
+                id: syncConfig.id,
                 deleted: true
             })
             .first();
@@ -195,7 +160,7 @@ describe(`DELETE ${endpoint}`, () => {
         const deletedSync = await db.knex
             .from('_nango_syncs')
             .where({
-                id: sync!.id,
+                id: sync.id,
                 deleted: true
             })
             .first();

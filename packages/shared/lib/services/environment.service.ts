@@ -468,8 +468,6 @@ class EnvironmentService {
     }
 
     async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
-        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-
         const configs = await configService.listProviderConfigs(environmentId);
         for (const config of configs) {
             // This handles deleting connections and syncs down the line
@@ -480,6 +478,8 @@ class EnvironmentService {
                 orchestrator
             });
         }
+
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 }
 
