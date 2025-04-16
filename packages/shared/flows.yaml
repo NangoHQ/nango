@@ -5363,7 +5363,7 @@ integrations:
                 description: |
                     Sync calendar events on the primary calendar going back one month and
                     save the entire object as specified by the Google API
-                version: 1.0.0
+                version: 1.0.1
                 runs: every 5 minutes
                 output: GoogleCalendarEvent
                 sync_type: incremental
@@ -5426,52 +5426,34 @@ integrations:
                 etag: string
                 id: string
                 status: string
-                htmlLink?: string
-                created?: string
-                updated?: string
-                summary?: string
+                htmlLink: string
+                created: string
+                updated: string
+                summary: string
                 description?: string
                 location?: string
                 colorId?: string
-                creator?:
-                    id?: string
-                    email: string
-                    displayName?: string
-                    self?: boolean
-                organizer?:
-                    id?: string
-                    email: string
-                    displayName?: string
-                    self?: boolean
-                start?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
-                end?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
+                creator?: CalendarUser
+                organizer?: CalendarUser
+                start: EventDateTime
+                end: EventDateTime
                 endTimeUnspecified?: boolean
-                recurrence?:
-                    - string
+                recurrence?: string[]
                 recurringEventId?: string
-                originalStartTime?:
-                    date?: string
-                    dateTime?: string
-                    timeZone?: string
+                originalStartTime?: EventDateTime
                 transparency?: string
                 visibility?: string
                 iCalUID?: string
                 sequence?: integer
                 attendees?:
                     - id?: string
-                      email: string
+                      email?: string
                       displayName?: string
                       organizer?: boolean
                       self?: boolean
                       resource?: boolean
                       optional?: boolean
-                      responseStatus: string
+                      responseStatus?: string
                       comment?: string
                       additionalGuests?: integer
                 attendeesOmitted?: boolean
@@ -5488,9 +5470,9 @@ integrations:
                             type: string
                         status:
                             statusCode: string
-                    entryPoints:
+                    entryPoints?:
                         - entryPointType: string
-                          uri: string
+                          uri?: string
                           label?: string
                           pin?: string
                           accessCode?: string
@@ -5498,28 +5480,28 @@ integrations:
                           passcode?: string
                           password?: string
                           regionCode?: string
-                    conferenceSolution:
+                    conferenceSolution?:
                         key:
                             type: string
                         name: string
                         iconUri: string
-                    conferenceId: string
+                    conferenceId?: string
                     signature?: string
                     notes?: string
                     parameters?:
                         addOnParameters?:
-                            parameters:
+                            parameters?:
                                 __string: string
                 gadget?:
-                    type: string
-                    title: string
-                    link: string
-                    iconLink: string
-                    width: integer
-                    height: integer
-                    display: string
-                    preferences:
-                        key: string
+                    type?: string
+                    title?: string
+                    link?: string
+                    iconLink?: string
+                    width?: integer
+                    height?: integer
+                    display?: string
+                    preferences?:
+                        __string: string
                 anyoneCanAddSelf?: boolean
                 guestsCanInviteOthers?: boolean
                 guestsCanModify?: boolean
@@ -5532,29 +5514,38 @@ integrations:
                         - method: string
                           minutes: integer
                 outOfOfficeProperties?:
-                    autoDeclineMode: string
-                    declineMessage: string
+                    autoDeclineMode?: string
+                    declineMessage?: string
                 source?:
-                    url: string
-                    title: string
+                    url?: string
+                    title?: string
                 workingLocationProperties?:
                     type: string
-                    homeOffice: string
-                    customLocation:
-                        label: string
-                    officeLocation:
-                        buildingId: string
-                        floorId: string
-                        floorSectionId: string
-                        deskId: string
-                        label: string
+                    homeOffice?: any
+                    customLocation?:
+                        label?: string
+                    officeLocation?:
+                        buildingId?: string
+                        floorId?: string
+                        floorSectionId?: string
+                        deskId?: string
+                        label?: string
                 attachments?:
                     - fileUrl: string
-                      title: string
-                      mimeType: string
-                      iconLink: string
-                      fileId: string
+                      title?: string
+                      mimeType?: string
+                      iconLink?: string
+                      fileId?: string
                 eventType?: string
+            CalendarUser:
+                id?: string
+                email?: string
+                displayName?: string
+                self?: boolean
+            EventDateTime:
+                date?: string
+                dateTime?: string
+                timeZone?: string
     google-docs:
         actions:
             fetch-document:
