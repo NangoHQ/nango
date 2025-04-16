@@ -40,6 +40,9 @@
         },
         {
             "path": "../fleet"
+        },
+        {
+            "path": "../billing"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts"]
