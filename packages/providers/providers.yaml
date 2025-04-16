@@ -4917,7 +4917,7 @@ incident-io:
     proxy:
         base_url: https://api.incident.io
         headers:
-            Authorization: Bearer ${apiKey}
+            authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/incident-io
     docs_connect: https://docs.nango.dev/integrations/all/incident-io/connect
     credentials:
