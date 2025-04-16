@@ -90,7 +90,7 @@ describe('Persist API', () => {
             }
         });
         expect(response.status).toEqual(400);
-        expect(await response.json()).toStrictEqual({ error: 'Entity too large' });
+        expect(await response.json()).toStrictEqual({ error: { code: 'request_too_large', message: 'Entity too large' } });
     });
 
     describe('save records', () => {

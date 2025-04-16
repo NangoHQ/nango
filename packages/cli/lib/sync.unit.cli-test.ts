@@ -584,7 +584,8 @@ describe('generate function tests', () => {
         expect(content).toMatchSnapshot();
     });
 
-    it('should be able to compile files in symlink', async () => {
+    // Windows symlink are annoying to create
+    it.skipIf(os.platform() === 'win32')('should be able to compile files in symlink', async () => {
         const dir = await getTestDirectory('symlink');
         init({ absolutePath: dir });
 
