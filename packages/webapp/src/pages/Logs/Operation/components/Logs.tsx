@@ -76,6 +76,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
         },
         initialPageParam: null,
         staleTime: 30_000,
+        gcTime: 30_000,
         placeholderData: keepPreviousData,
 
         getNextPageParam: (lastGroup) => {
