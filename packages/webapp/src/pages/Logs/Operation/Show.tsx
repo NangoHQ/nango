@@ -1,18 +1,19 @@
-import { useMemo } from 'react';
-import { Info } from '../../components/Info';
-import { useGetOperation } from '../../hooks/useLogs';
-import { useStore } from '../../store';
-import { OperationTag } from './components/OperationTag';
-import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
-import { Link } from 'react-router-dom';
-import { CalendarIcon, ClockIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
-import { SearchInOperation } from './components/SearchInOperation';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ProviderTag } from './components/ProviderTag';
 import { Prism } from '@mantine/prism';
+import { IconCalendar, IconClockHour4, IconShare2 } from '@tabler/icons-react';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
-import { CopyButton } from '../../components/ui/button/CopyButton';
+
+import { OperationTag } from '../components/OperationTag';
+import { ProviderTag } from '../components/ProviderTag';
+import { Logs } from './components/Logs';
+import { Info } from '../../../components/Info';
+import { Skeleton } from '../../../components/ui/Skeleton';
+import { CopyButton } from '../../../components/ui/button/CopyButton';
+import { useGetOperation } from '../../../hooks/useLogs';
+import { useStore } from '../../../store';
+import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
+import { StatusTag } from '../components/StatusTag';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -28,12 +29,14 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
 
         return getRunTime(new Date(operation.startedAt).toISOString(), new Date(operation.endedAt).toISOString());
     }, [operation]);
+
     const createdAt = useMemo(() => {
         return operation?.createdAt ? formatDateToLogFormat(operation?.createdAt) : 'n/a';
     }, [operation?.createdAt]);
 
     const isLive = useMemo(() => {
-        return !operation || operation.state === 'waiting' || operation.state === 'running';
+        // We keep refreshing N seconds after end to catch logs that could be indexed after the operation is done
+        return !operation || !operation.endedAt || new Date(operation.endedAt).getTime() > Date.now() - 160_000;
     }, [operation]);
 
     const payload = useMemo(() => {
@@ -106,12 +109,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     </div>
                     <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <ClockIcon />
+                        <IconClockHour4 stroke={1} size={18} />
                         <div className="text-gray-400 text-s pt-[1px] font-code">{duration}</div>
                     </div>
                     <div className="flex bg-border-gray-400 w-[1px] h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <CalendarIcon />
+                        <IconCalendar stroke={1} size={18} />
                         <div className="text-gray-400 text-s pt-[1px] font-code">{createdAt}</div>
                     </div>
                 </div>
@@ -137,7 +140,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                             >
                                 <ProviderTag msg={operation} />
                                 <div className="w-4">
-                                    <ExternalLinkIcon className="w-[14px]" />
+                                    <IconShare2 stroke={1} size={18} />
                                 </div>
                             </Link>
                         ) : (
@@ -157,7 +160,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                             >
                                 <div className="truncate">{operation.connectionName}</div>
                                 <div className="w-4">
-                                    <ExternalLinkIcon className="w-[14px]" />
+                                    <IconShare2 stroke={1} size={18} />
                                 </div>
                             </Link>
                         ) : (
@@ -190,7 +193,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
                 )}
             </div>
-            <SearchInOperation operationId={operationId} isLive={isLive} />
+            <Logs operationId={operationId} isLive={isLive} />
         </div>
     );
 };

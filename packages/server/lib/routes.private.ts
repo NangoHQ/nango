@@ -44,7 +44,7 @@ import { patchFlowEnable } from './controllers/v1/flows/id/patchEnable.js';
 import { patchFlowFrequency } from './controllers/v1/flows/id/patchFrequency.js';
 import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.js';
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
-import { getIntegrations } from './controllers/v1/integrations/getIintegrations.js';
+import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
