@@ -4925,7 +4925,6 @@ incident-io:
             type: string
             title: API Key
             description: The API key for your Incident.io account
-            pattern: '^[a-zA-Z0-9-]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 insightly:
