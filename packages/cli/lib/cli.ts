@@ -135,7 +135,7 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
 
 function showCompilationMessage(failedFiles: Set<string>) {
     if (failedFiles.size === 0) {
-        console.log(chalk.green('No compilation errors.'));
+        console.log(chalk.green('Compilation success! Watching files…'));
     }
 }
 
