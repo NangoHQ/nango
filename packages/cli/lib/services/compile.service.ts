@@ -101,6 +101,7 @@ export async function compileAllFiles({
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
             console.error(err);
             allSuccess = false;
+            failedFiles.push(file.inputPath);
             compilationErrors.push(`Error compiling ${file.inputPath}: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
