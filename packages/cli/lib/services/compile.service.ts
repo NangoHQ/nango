@@ -150,7 +150,7 @@ export async function compileSingleFile({
 
         return result === true;
     } catch (err) {
-        console.error(`Error compiling ${file.inputPath}:`);
+        console.error(chalk.red(`Error compiling ${file.inputPath}:`));
         console.error(err);
         return false;
     }
