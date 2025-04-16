@@ -74,6 +74,9 @@
             "path": "packages/providers"
         },
         {
+            "path": "packages/billing"
+        },
+        {
             "path": "packages/types"
         }
     ]
