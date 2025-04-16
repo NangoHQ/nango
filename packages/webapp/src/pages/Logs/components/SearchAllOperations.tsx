@@ -42,6 +42,7 @@ const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',')
 
 export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const env = useStore((state) => state.env);
+
     // The virtualizer will need a reference to the scrollable container element
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const windowSize = useWindowSize();
@@ -76,7 +77,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         string | null
     >({
         queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period],
-        queryFn: async ({ pageParam }) => {
+        queryFn: async ({ pageParam, signal }) => {
             let periodCopy: SearchOperations['Body']['period'];
             // Slide the window automatically when live
             // We do it only at query time so the URL stays the same
@@ -98,7 +99,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     period: periodCopy,
                     limit: defaultLimit,
                     cursor: pageParam
-                } satisfies SearchOperations['Body'])
+                } satisfies SearchOperations['Body']),
+                signal
             });
             if (res.status !== 200) {
                 throw new Error();
@@ -236,6 +238,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                             );
                         })}
                     </Table.Header>
+
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
 
                     {isLoading && (

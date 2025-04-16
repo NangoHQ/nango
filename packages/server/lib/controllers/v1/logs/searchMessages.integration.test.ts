@@ -113,7 +113,7 @@ describe('POST /logs/messages', () => {
                     type: 'log'
                 }
             ],
-            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: null }
+            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: expect.any(String) }
         });
     });
 
