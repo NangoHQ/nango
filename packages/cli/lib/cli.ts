@@ -174,55 +174,60 @@ export function tscWatch({ fullPath, debug = false, watchConfigFile }: { fullPat
     const failedFiles = new Set<string>();
 
     watcher.on('add', (filePath: string) => {
-        if (filePath === nangoConfigFile || !parsed) {
-            return;
-        }
-        void compileSingleFile({
-            fullPath,
-            file: getFileToCompile({ fullPath, filePath }),
-            tsconfig,
-            parsed,
-            debug
-        }).then((success) => {
+        async function onAdd() {
+            if (filePath === nangoConfigFile || !parsed) {
+                return;
+            }
+            const success = await compileSingleFile({
+                fullPath,
+                file: getFileToCompile({ fullPath, filePath }),
+                tsconfig,
+                parsed,
+                debug
+            });
             if (success) {
                 failedFiles.delete(filePath);
             } else {
                 failedFiles.add(filePath);
             }
             showCompilationMessage(failedFiles);
-        });
+        }
+
+        void onAdd();
     });
 
     watcher.on('change', (filePath: string) => {
-        if (filePath === nangoConfigFile) {
-            parsed = loadYamlAndGenerate({ fullPath, debug });
+        async function onChange() {
+            if (filePath === nangoConfigFile) {
+                parsed = loadYamlAndGenerate({ fullPath, debug });
 
-            if (!parsed) {
-                return;
-            }
+                if (!parsed) {
+                    return;
+                }
 
-            void compileAllFiles({ fullPath, debug }).then(({ failedFiles: newFailedFiles }) => {
+                const { failedFiles: newFailedFiles } = await compileAllFiles({ fullPath, debug });
                 failedFiles.clear();
                 for (const file of newFailedFiles) {
                     failedFiles.add(file);
                 }
                 showCompilationMessage(failedFiles);
-            });
-            return;
-        }
+                return;
+            }
 
-        if (!parsed) {
-            return;
-        }
+            if (!parsed) {
+                return;
+            }
 
-        void compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug }).then((success) => {
+            const success = await compileSingleFile({ fullPath, file: getFileToCompile({ fullPath, filePath }), parsed, debug });
             if (success) {
                 failedFiles.delete(filePath);
             } else {
                 failedFiles.add(filePath);
             }
             showCompilationMessage(failedFiles);
-        });
+        }
+
+        void onChange();
     });
 
     watcher.on('unlink', (filePath: string) => {
