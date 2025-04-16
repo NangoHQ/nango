@@ -195,7 +195,7 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 
     return value;
 }
-export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
+export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
     let interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         if (b.startsWith('base64.')) {
             return a;
