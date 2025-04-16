@@ -569,22 +569,15 @@ describe('generate function tests', () => {
         expect(content).toMatchSnapshot();
     });
 
-    it('should be able to compile files in symlink', async () => {
+    // Windows symlink are annoying to create
+    it.skipIf(os.platform() === 'win32')('should be able to compile files in symlink', async () => {
         const dir = await getTestDirectory('symlink');
         init({ absolutePath: dir });
 
         await fs.promises.rm(join(dir, 'nango.yaml'));
-
-        const isWindows = process.platform === 'win32';
-        if (isWindows) {
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'), 'junction');
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'), 'junction');
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/hubspot'), join(dir, 'hubspot'), 'junction');
-        } else {
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
-            await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/hubspot'), join(dir, 'hubspot'));
-        }
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/hubspot'), join(dir, 'hubspot'));
 
         {
             // Compile everything
