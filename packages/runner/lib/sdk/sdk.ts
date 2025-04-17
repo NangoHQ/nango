@@ -94,11 +94,12 @@ export class NangoActionRunner extends NangoActionBase {
 
         const res = await proxy.request();
 
-        this.runnerStats.proxy_egress_bytes += sizeInBytes(proxy.config.data);
         if (res.isOk()) {
-            this.runnerStats.proxy_ingress_bytes += Number(res.value.headers['content-length']) || sizeInBytes(res.value.data);
+            this.runnerStats.proxy_success_egress_bytes += sizeInBytes(proxy.config.data);
+            this.runnerStats.proxy_success_ingress_bytes += Number(res.value.headers['content-length']) || sizeInBytes(res.value.data);
         } else if (isAxiosError(res.error)) {
-            this.runnerStats.proxy_ingress_bytes += Number(res.error.response?.headers['content-length']) || sizeInBytes(res.error.response?.data);
+            this.runnerStats.proxy_failure_egress_bytes += sizeInBytes(proxy.config.data);
+            this.runnerStats.proxy_failure_ingress_bytes += Number(res.error.response?.headers['content-length']) || sizeInBytes(res.error.response?.data);
         }
 
         return res.unwrap();

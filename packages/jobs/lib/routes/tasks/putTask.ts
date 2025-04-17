@@ -89,10 +89,12 @@ const validate = validateRequest<PutTask>({
                 output: jsonSchema.default(null),
                 stats: z
                     .object({
-                        proxy_egress_bytes: z.number().default(0),
-                        proxy_ingress_bytes: z.number().default(0)
+                        proxy_success_egress_bytes: z.number().default(0),
+                        proxy_success_ingress_bytes: z.number().default(0),
+                        proxy_failure_egress_bytes: z.number().default(0),
+                        proxy_failure_ingress_bytes: z.number().default(0)
                     })
-                    .default({ proxy_egress_bytes: 0, proxy_ingress_bytes: 0 })
+                    .default({ proxy_success_egress_bytes: 0, proxy_success_ingress_bytes: 0, proxy_failure_egress_bytes: 0, proxy_failure_ingress_bytes: 0 })
             })
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)

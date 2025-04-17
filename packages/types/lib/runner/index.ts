@@ -20,6 +20,8 @@ export interface RunnerFlags {
 }
 
 export interface RunnerStats {
-    proxy_egress_bytes: number;
-    proxy_ingress_bytes: number;
+    proxy_success_egress_bytes: number;
+    proxy_success_ingress_bytes: number;
+    proxy_failure_egress_bytes: number;
+    proxy_failure_ingress_bytes: number;
 }

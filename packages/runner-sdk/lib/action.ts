@@ -77,8 +77,10 @@ export abstract class NangoActionBase {
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
         this.runnerStats = {
-            proxy_egress_bytes: 0,
-            proxy_ingress_bytes: 0
+            proxy_success_egress_bytes: 0,
+            proxy_success_ingress_bytes: 0,
+            proxy_failure_egress_bytes: 0,
+            proxy_failure_ingress_bytes: 0
         };
 
         if (config.syncId) {
