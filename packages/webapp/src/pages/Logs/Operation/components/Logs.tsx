@@ -1,5 +1,5 @@
 import { IconArrowLeft, IconX, IconZoom } from '@tabler/icons-react';
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -54,17 +54,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     limit: defaultLimit,
                     search: debouncedSearch,
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-
-                    // Some cache bug issue I haven't solved yet
-                    // Lib is sometimes storing an old pageParam, when we re-open the Drawer it's incorrect in the past
-                    // So we discard any cursor that are too old unless we search
-                    cursorBefore:
-                        pageParam &&
-                        'before' in pageParam &&
-                        pageParam.before &&
-                        (JSON.parse(atob(pageParam.before))[0] > Date.now() - 30_000 || debouncedSearch)
-                            ? pageParam.before
-                            : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
@@ -75,9 +65,8 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
             return (await res.json()) as SearchMessages['Success'];
         },
         initialPageParam: null,
-        staleTime: 30_000,
-        gcTime: 30_000,
-        placeholderData: keepPreviousData,
+        staleTime: isLive ? 0 : 10_000,
+        gcTime: isLive ? 0 : 10_000,
 
         getNextPageParam: (lastGroup) => {
             return { after: lastGroup.pagination.cursorAfter };
@@ -104,7 +93,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
 
     useInterval(
         async () => {
-            await fetchPreviousPage();
+            await fetchPreviousPage({ cancelRefetch: true });
         },
         isLive ? 5000 : null
     );
