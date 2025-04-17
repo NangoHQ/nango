@@ -54,8 +54,12 @@ export async function createCredentials({
         if (parseRes.isErr()) {
             return parseRes;
         }
+        const creds = parseRes.value;
+        creds.pat_name = patName;
+        creds.pat_secret = patSecret;
+        creds.content_url = contentUrl ?? '';
 
-        return Ok(parseRes.value);
+        return Ok(creds);
     } catch (err) {
         return Err(new AuthCredentialsError('tableau_tokens_fetch_error', { cause: err }));
     }
