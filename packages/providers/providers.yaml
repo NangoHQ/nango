@@ -8152,7 +8152,6 @@ sendgrid:
 sentry:
     display_name: Sentry
     categories:
-        - error-tracking
         - dev-tools
         - analytics
     auth_mode: API_KEY
@@ -8167,7 +8166,6 @@ sentry:
             type: string
             title: Domain
             description: The base domain of your Sentry account
-            default_value: sentry.io
             example: us.sentry.io
             format: hostname
             pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
