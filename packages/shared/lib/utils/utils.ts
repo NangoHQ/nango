@@ -202,8 +202,8 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     });
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        const r = b.split('.').reduce((o: Record<string, any>, i: string) => o?.[i], replacers);
-        return typeof r === 'string' || typeof r === 'number' ? String(r) : a;
+        const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
+        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
     return interpolated;
 }
