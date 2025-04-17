@@ -7610,12 +7610,12 @@ redtail-crm-sandbox:
     token_url: https://review.crm.redtailtechnology.com/api/public/v1/authentication
     token_request_method: GET
     token_headers:
-        authorization: Basic ${base64.${credentials.apiKey}:${credentials.username}:${credentials.password}}
+        authorization: Basic ${base64(${credentials.apiKey}:${credentials.username}:${credentials.password})}
     token_response:
         token: authenticated_user.user_key
     proxy:
         headers:
-            authorization: Userkeyauth ${base64.${credentials.apiKey}:${accessToken}}
+            authorization: Userkeyauth ${base64(${credentials.apiKey}:${accessToken})}
         base_url: https://review.crm.redtailtechnology.com/api/public
     docs: https://docs.nango.dev/integrations/all/redtail-crm-sandbox
     docs_connect: https://docs.nango.dev/integrations/all/redtail-crm-sandbox/connect

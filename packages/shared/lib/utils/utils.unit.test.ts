@@ -168,7 +168,7 @@ describe('interpolateString', () => {
     });
 
     it('should resolve values inside base64 properly', () => {
-        const input = '${base64.${username}:${password}}';
+        const input = '${base64(${username}:${password})}';
         const output = utils.interpolateString(input, replacers);
         const expected = Buffer.from('john:doe123').toString('base64');
         expect(output).toBe(expected);
@@ -206,7 +206,7 @@ describe('interpolateStringFromObject', () => {
     });
 
     it('works with multiple mixed expressions', () => {
-        const input = 'Hi ${name}, auth=${base64.${credentials.username}:${credentials.apiKey}}, age=${age}';
+        const input = 'Hi ${name}, auth=${base64(${credentials.username}:${credentials.apiKey})}, age=${age}';
         const encoded = Buffer.from('user123:XYZ-987').toString('base64');
         const output = utils.interpolateStringFromObject(input, context);
         expect(output).toBe(`Hi Alice, auth=${encoded}, age=30`);
@@ -219,7 +219,7 @@ describe('interpolateStringFromObject', () => {
     });
 
     it('handles base64 encoding of a combined interpolated string', () => {
-        const input = 'Authorization: ${base64.${credentials.apiKey}:${token}}';
+        const input = 'Authorization: ${base64(${credentials.apiKey}:${token})}';
         const output = utils.interpolateStringFromObject(input, context);
         const expected = Buffer.from('XYZ-987:abc.def.ghi').toString('base64');
         expect(output).toBe(`Authorization: ${expected}`);
