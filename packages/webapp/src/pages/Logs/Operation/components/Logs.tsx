@@ -54,11 +54,7 @@ export const Logs: React.FC<{ operationId: string; isLive: boolean }> = ({ opera
                     limit: defaultLimit,
                     search: debouncedSearch,
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-
-                    // Some cache bug issue I haven't solved yet
-                    // Lib is sometimes storing an old pageParam, when we re-open the Drawer it's incorrect in the past
-                    // So we discard any cursor that are too old unless we search
-                    cursorBefore: pageParam && 'before' in pageParam && pageParam.before ? pageParam.before : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
