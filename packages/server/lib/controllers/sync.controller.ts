@@ -229,12 +229,12 @@ class SyncController {
             });
 
             // Note: all executed actions are billed
-            void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
-
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
+
+                void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
 
                 return;
             } else {

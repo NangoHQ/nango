@@ -1,4 +1,4 @@
-import { orb } from './clients/orb.js';
+import { lago } from './clients/lago.js';
 import { Billing } from './billing.js';
 
-export const billing = new Billing(orb);
+export const billing = new Billing(lago);

@@ -32,7 +32,7 @@ export class Billing {
         return this.ingest(mapped);
     }
 
-    // Note: Events are sent immediately, not batching for now
+    // Note: Events are sent immediately
     private async ingest(events: IngestEvent[]): Promise<Result<void>> {
         if (!flagHasUsage) {
             return Ok(undefined);
