@@ -1,31 +1,24 @@
-import { setTimeout } from 'node:timers/promises';
-
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
-import { records } from '@nangohq/records';
-import {
-    configService,
-    connectionService,
-    deleteExpiredInvitations,
-    deleteJobsByDate,
-    getSoftDeletedSyncConfig,
-    hardDeleteEndpoints,
-    hardDeleteSync,
-    hardDeleteSyncConfig
-} from '@nangohq/shared';
+import { configService, connectionService, deleteExpiredInvitations, deleteJobsByDate, environmentService, getSoftDeletedSyncConfig } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
+import { batchDelete } from './utils/batchDelete.js';
+import { deleteConnectionData } from './utils/deleteConnectionData.js';
+import { deleteEnvironmentData } from './utils/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from './utils/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from './utils/deleteSyncConfigData.js';
 
+import type { BatchDeleteSharedOptions } from './utils/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
-import type { Sync } from '@nangohq/shared';
-import type { DBSyncConfig } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
 
 const logger = getLogger('cron.deleteOldData');
 
@@ -41,6 +34,7 @@ const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
 const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
 const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
+const deleteEnvironmentsOlderThan = envs.CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS;
 
 export function deleteOldData(): void {
     if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN <= 0) {
@@ -83,76 +77,55 @@ export async function exec(): Promise<void> {
             return;
         }
 
+        const opts: BatchDeleteSharedOptions = {
+            deadline,
+            limit,
+            logger
+        };
+
         // Delete jobs
         await batchDelete({
+            ...opts,
             name: 'jobs',
-            deadline,
             deleteFn: async () => await deleteJobsByDate({ olderThan: deleteJobsOlderThan, limit })
         });
 
         // Delete connect session
         await batchDelete({
+            ...opts,
             name: 'connect session',
-            deadline,
             deleteFn: async () => await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit })
         });
 
         // Delete private keys
         await batchDelete({
+            ...opts,
             name: 'private keys',
-            deadline,
             deleteFn: async () => await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit })
         });
 
         // Delete oauth sessions
         await batchDelete({
+            ...opts,
             name: 'oauth sessions',
-            deadline,
             deleteFn: async () => await oauthSessionService.deleteExpiredSessions({ limit, olderThan: deleteOauthSessionOlderThan })
         });
 
         // Delete invitations
         await batchDelete({
+            ...opts,
             name: 'invitations',
-            deadline,
             deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
         });
 
         // Delete integrations and all associated data
         await batchDelete({
+            ...opts,
             name: 'integration',
-            deadline,
             deleteFn: async () => {
                 const integrations = await configService.getSoftDeleted({ limit, olderThan: deleteConfigsOlderThan });
                 for (const integration of integrations) {
-                    logger.info('Deleting integration...', integration.id, integration.unique_key);
-
-                    await batchDelete({
-                        name: 'sync configs < integration',
-                        deadline,
-                        deleteFn: async () => {
-                            const syncsConfigs = await db.knex
-                                .from<DBSyncConfig>('_nango_sync_configs')
-                                .select<DBSyncConfig[]>()
-                                .where({ nango_config_id: integration.id! })
-                                .limit(limit);
-
-                            for (const syncConfig of syncsConfigs) {
-                                await deleteSyncConfigData({ syncConfig, deadline });
-                            }
-
-                            return syncsConfigs.length;
-                        }
-                    });
-
-                    // Delete connections
-                    await batchDelete({
-                        name: 'connections < integration',
-                        deadline,
-                        deleteFn: async () => await connectionService.hardDeleteByIntegration({ limit, integrationId: integration.id! })
-                    });
-
-                    await configService.hardDelete(integration.id!);
+                    await deleteProviderConfigData(integration as Config, opts);
                 }
 
                 return integrations.length;
@@ -161,13 +134,13 @@ export async function exec(): Promise<void> {
 
         // Delete sync configs and all associated data
         await batchDelete({
+            ...opts,
             name: 'sync configs',
-            deadline,
             deleteFn: async () => {
                 const syncsConfigs = await getSoftDeletedSyncConfig({ limit, olderThan: deleteSyncConfigsOlderThan });
 
                 for (const syncConfig of syncsConfigs) {
-                    await deleteSyncConfigData({ syncConfig, deadline });
+                    await deleteSyncConfigData(syncConfig, opts);
                 }
 
                 return syncsConfigs.length;
@@ -176,31 +149,30 @@ export async function exec(): Promise<void> {
 
         // Delete connections and all associated data
         await batchDelete({
+            ...opts,
             name: 'connections',
-            deadline,
             deleteFn: async () => {
                 const connections = await connectionService.getSoftDeleted({ limit, olderThan: deleteConnectionsOlderThan });
 
                 for (const connection of connections) {
-                    logger.info('Deleting connection...', connection.id, connection.connection_id);
-                    const resSyncs = await db.knex
-                        .select<
-                            {
-                                sync: Sync;
-                                syncConfig: DBSyncConfig;
-                            }[]
-                        >(db.knex.raw('row_to_json(_nango_syncs.*) as sync'), db.knex.raw('row_to_json(_nango_sync_configs.*) as "syncConfig"'))
-                        .from<Sync>('_nango_syncs')
-                        .join('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
-                        .where({ nango_connection_id: connection.id });
-                    for (const res of resSyncs) {
-                        await deleteSyncData({ ...res });
-                    }
-
-                    await connectionService.hardDelete(connection.id);
+                    await deleteConnectionData(connection, opts);
                 }
 
                 return connections.length;
+            }
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'environments',
+            deleteFn: async () => {
+                const environments = await environmentService.getSoftDeleted({ limit, olderThan: deleteEnvironmentsOlderThan });
+
+                for (const environment of environments) {
+                    await deleteEnvironmentData(environment, opts);
+                }
+
+                return environments.length;
             }
         });
     } finally {
@@ -208,68 +180,4 @@ export async function exec(): Promise<void> {
             locking.release(lock);
         }
     }
-}
-
-async function batchDelete({ name, deleteFn, deadline }: { name: string; deleteFn: () => Promise<number>; deadline: Date }) {
-    while (true) {
-        const deleted = await deleteFn();
-        if (deleted) {
-            logger.info(`Deleted ${deleted} ${name}`);
-        }
-        if (deleted < limit) {
-            break;
-        }
-        if (Date.now() > deadline.getTime()) {
-            logger.info(`Time limit reached, stopping`);
-            return;
-        }
-        await setTimeout(1000);
-    }
-}
-
-async function deleteSyncConfigData({ syncConfig, deadline }: { syncConfig: DBSyncConfig; deadline: Date }) {
-    logger.info('Deleting sync config...', syncConfig.id, syncConfig.sync_name);
-
-    await batchDelete({
-        name: 'syncs',
-        deadline,
-        deleteFn: async () => {
-            const syncs = await db.knex.from<Sync>('_nango_syncs').select<Sync[]>().where({ sync_config_id: syncConfig.id }).limit(limit);
-
-            for (const sync of syncs) {
-                await deleteSyncData({ sync, syncConfig });
-            }
-
-            return syncs.length;
-        }
-    });
-
-    const delEndpoints = await hardDeleteEndpoints({ syncConfigId: syncConfig.id });
-    if (delEndpoints) {
-        logger.info('deleted', delEndpoints, 'endpoints');
-    }
-
-    // delete sync_config
-    await hardDeleteSyncConfig(syncConfig.id);
-}
-
-async function deleteSyncData({ sync, syncConfig }: { sync: Sync; syncConfig: DBSyncConfig }) {
-    logger.info('Deleting sync...', sync.id, sync.name);
-
-    for (const model of syncConfig.models) {
-        // delete records for each model
-        const res = await records.deleteRecordsBySyncId({
-            connectionId: sync.nango_connection_id,
-            environmentId: syncConfig.environment_id,
-            model,
-            syncId: sync.id,
-            limit: limit
-        });
-        if (res.totalDeletedRecords) {
-            logger.info('deleted', res.totalDeletedRecords, 'records for model', model);
-        }
-    }
-
-    // delete sync
-    await hardDeleteSync(sync.id);
 }
