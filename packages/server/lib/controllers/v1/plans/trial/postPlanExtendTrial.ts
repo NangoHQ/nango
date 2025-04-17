@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { startTrial } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PostPlanExtendTrial } from '@nangohq/types';
 

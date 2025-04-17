@@ -1,17 +1,8 @@
-import {
-    AdjustmentsHorizontalIcon,
-    ArrowRightOnRectangleIcon as LogoutIcon,
-    EllipsisHorizontalIcon,
-    LinkIcon,
-    QueueListIcon,
-    SquaresPlusIcon,
-    UserCircleIcon,
-    UserGroupIcon
-} from '@heroicons/react/24/outline';
+import { AdjustmentsHorizontalIcon, EllipsisHorizontalIcon, LinkIcon, QueueListIcon, SquaresPlusIcon } from '@heroicons/react/24/outline';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
-import { IconX } from '@tabler/icons-react';
+import { IconCreditCard, IconLogout, IconRocket, IconUserCircle, IconUsersGroup, IconX } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
@@ -21,6 +12,7 @@ import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
 import { globalEnv } from '../utils/env';
 import { useSignout } from '../utils/user';
+import { cn } from '../utils/utils';
 
 import type { MaybePromise } from '@nangohq/types';
 
@@ -31,6 +23,7 @@ export enum LeftNavBarItems {
     EnvironmentSettings,
     Syncs,
     TeamSettings,
+    TeamBilling,
     UserSettings,
     GettingStarted,
     Logs
@@ -53,7 +46,6 @@ const navHoverBg = 'hover:bg-hover-gray';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
-    const navigate = useNavigate();
     const signout = useSignout();
     const { meta, mutate: mutateMeta } = useMeta();
     const { user: me } = useUser();
@@ -167,39 +159,56 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         {globalEnv.features.auth && showUserSettings && (
                             <div className="absolute bottom-[45px] text-sm left-0 group-hover:block border border-neutral-700 w-[223px] bg-pure-black z-10 rounded">
                                 <ul className="text-gray-400 space-y-1 p-0.5 px-1">
-                                    <li
-                                        className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white bg-active-gray' : ''}`}
-                                        onClick={() => navigate(`/${env}/user-settings`)}
+                                    <Link
+                                        className={cn(
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400',
+                                            props.selectedItem === LeftNavBarItems.UserSettings && `${navActiveBg} text-white`
+                                        )}
+                                        to={`/${env}/user-settings`}
                                     >
-                                        <UserCircleIcon className="h-5 w-5 mr-2" />
+                                        <IconUserCircle stroke={1} size={18} />
                                         <span>Profile</span>
-                                    </li>
-                                    <li
-                                        className={`flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1 ${props.selectedItem === LeftNavBarItems.TeamSettings ? 'text-white bg-active-gray' : ''}`}
-                                        onClick={() => navigate(`/${env}/team-settings`)}
+                                    </Link>
+                                    <Link
+                                        className={cn(
+                                            'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400',
+                                            props.selectedItem === LeftNavBarItems.TeamSettings && `${navActiveBg} text-white`
+                                        )}
+                                        to={`/${env}/team-settings`}
                                     >
-                                        <UserGroupIcon className="h-5 w-5 mr-2" />
+                                        <IconUsersGroup stroke={1} size={18} />
                                         <span>Team</span>
-                                    </li>
+                                    </Link>
                                     {showGettingStarted && meta.onboardingComplete && (
                                         <Link
                                             to="/dev/getting-started"
-                                            className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.GettingStarted
-                                                    ? `${navActiveBg} text-white`
-                                                    : `text-gray-400 ${navHoverBg}`
-                                            }`}
+                                            className={cn(
+                                                'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400',
+                                                props.selectedItem === LeftNavBarItems.GettingStarted && `${navActiveBg} text-white`
+                                            )}
                                         >
-                                            <RocketIcon />
+                                            <IconRocket stroke={1} size={18} />
                                             <p>Getting Started</p>
+                                        </Link>
+                                    )}
+                                    {globalEnv.features.plan && (
+                                        <Link
+                                            className={cn(
+                                                'flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400',
+                                                props.selectedItem === LeftNavBarItems.TeamBilling && `${navActiveBg} text-white`
+                                            )}
+                                            to={`/${env}/team/billing`}
+                                        >
+                                            <IconCreditCard stroke={1} size={18} />
+                                            <div>Billing</div>
                                         </Link>
                                     )}
 
                                     <li
-                                        className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
+                                        className={cn('flex gap-2 items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded text-gray-400')}
                                         onClick={async () => await signout()}
                                     >
-                                        <LogoutIcon className="h-5 w-5 mr-2" />
+                                        <IconLogout stroke={1} size={18} />
                                         <span>Log Out</span>
                                     </li>
                                 </ul>

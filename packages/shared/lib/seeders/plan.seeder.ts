@@ -18,6 +18,8 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         api_rate_limit_size: 'm',
         created_at: new Date(),
         updated_at: new Date(),
+        stripe_customer_id: null,
+        stripe_subscription_id: null,
         ...override
     };
 }

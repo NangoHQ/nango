@@ -19,6 +19,23 @@ export async function getPlan(db: Knex, { accountId }: { accountId: number }): P
     }
 }
 
+export async function getPlansBy(db: Knex, where: Pick<DBPlan, 'stripe_subscription_id'>): Promise<Result<DBPlan[]>> {
+    try {
+        const q = db.from<DBPlan>('plans').select<DBPlan[]>('*');
+        if (where.stripe_subscription_id) {
+            q.where('stripe_subscription_id', where.stripe_subscription_id);
+        }
+        if (!Object.keys(where)) {
+            return Err(new Error('no_where'));
+        }
+
+        const res = await q;
+        return res ? Ok(res) : Err(new Error('unknown_plan_for_account'));
+    } catch (err) {
+        return Err(new Error('failed_to_get_plan', { cause: err }));
+    }
+}
+
 export async function createPlan(
     db: Knex,
     { account_id, ...rest }: Pick<DBPlan, 'account_id' | 'name'> & Partial<Omit<DBPlan, 'account_id' | 'created_at' | 'updated_at'>>
