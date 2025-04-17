@@ -24,12 +24,17 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
     const [loading, setLoading] = useState(false);
     const [clientId, setClientId] = useState(integration.oauth_client_id || '');
     const [clientSecret, setClientSecret] = useState(integration.oauth_client_secret || '');
-    const [scopes, setScopes] = useState(integration.oauth_scopes || '');
+    const [scopes, setScopes] = useState(template.default_scopes || '');
 
     const onSave = async () => {
         setLoading(true);
 
-        const updated = await apiPatchIntegration(env, integration.unique_key, { authType: template.auth_mode as any, clientId, clientSecret, scopes });
+        const updated = await apiPatchIntegration(env, integration.unique_key, {
+            authType: template.auth_mode as any,
+            clientId,
+            clientSecret,
+            scopes: Array.isArray(scopes) ? scopes.join(',') : scopes
+        });
 
         setLoading(false);
         if ('error' in updated.json) {
@@ -81,7 +86,14 @@ export const SettingsOAuth: React.FC<{ data: GetIntegration['Success']['data']; 
 
                 {template.auth_mode !== 'TBA' && (
                     <InfoBloc title="Scopes">
-                        <TagsInput id="scopes" name="scopes" type="text" defaultValue={scopes} onScopeChange={setScopes} minLength={1} />
+                        <TagsInput
+                            id="scopes"
+                            name="scopes"
+                            type="text"
+                            defaultValue={Array.isArray(scopes) ? scopes.join(',') : scopes}
+                            onScopeChange={setScopes}
+                            minLength={1}
+                        />
                     </InfoBloc>
                 )}
 
