@@ -49,54 +49,14 @@ export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, re
 
     logger.info('[stripe-hook]', event.type);
 
-    /**
-     * Please note the field `Metadata` is not persisted on every webhook
-     * It should not be a reliable source of data.
-     */
     switch (event.type) {
-        // case 'checkout.session.completed': {
-        //     await db.knex.transaction(async (trx) => {
-        //         const data = event.data.object;
-        //         // A customer completed their first checkout
-        //         // We need to register the customerId and subscriptionId
-        //         if (!data.metadata || !data.metadata['accountId']) {
-        //             res.status(403).send({ error: { code: 'forbidden', message: 'no accountId in metadata' } });
-        //             return;
-        //         }
-
-        //         const accountId = parseInt(data.metadata['accountId'], 10);
-        //         // TODO: support transaction
-        //         const account = await accountService.getAccountById(accountId);
-        //         if (!account) {
-        //             res.status(403).send({ error: { code: 'forbidden', message: 'no account' } });
-        //             return;
-        //         }
-
-        //         const planRes = await getPlan(trx, { accountId: account.id });
-        //         if (planRes.isErr()) {
-        //             res.status(403).send({ error: { code: 'forbidden', message: 'no plan' } });
-        //             return;
-        //         }
-
-        //         const plan = planRes.value;
-
-        //         await updatePlan(trx, { id: plan.id, stripe_customer_id: data.customer as string, stripe_subscription_id: data.subscription as string });
-        //         await stripe.subscriptions.update(data.subscription as string, {
-        //             metadata: data.metadata
-        //         });
-        //         res.status(200).send({ success: true });
-        //     });
-
-        //     break;
-        // }
-
         case 'customer.subscription.created':
         case 'customer.subscription.updated': {
             // A customer completed their first checkout
             // We need to register the customerId and subscriptionId
             await db.knex.transaction(async (trx) => {
                 const data = event.data.object;
-                console.dir(data, { depth: 10, colors: true });
+
                 // A customer completed their first checkout
                 // We need to register the customerId and subscriptionId
                 if (!data.metadata || !data.metadata['accountUuid']) {
@@ -146,7 +106,7 @@ export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, re
                     ...planDefinition.flags
                 });
                 if (update.isErr()) {
-                    report(new Error('failed to update plan'), { stripe_customer_id: data.customer, stripe_subscription_id: data.id });
+                    report(new Error('failed to update plan'), { stripe_customer_id: data.customer as string, stripe_subscription_id: data.id });
                     res.status(400).send({ error: { code: 'invalid_body', message: 'no matching plan' } });
                     return;
                 }
@@ -180,48 +140,4 @@ export const postStripWebhooks = asyncWrapper<PostStripeWebhooks>(async (req, re
             res.status(200).send({ success: false });
             break;
     }
-
-    // if (event.type === 'invoice.payment_succeeded') {
-    //     const data = event.data.object;
-
-    //     if (data['billing_reason'] == 'subscription_create') {
-    //         const subscriptionId = data['subscription'] as string;
-    //         const paymentIntentId = data['payment_intent'] as string;
-    //         if (!paymentIntentId) {
-    //             // Free plan
-    //             return;
-    //         }
-    //         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    //         await stripe.subscriptions.update(subscriptionId, {
-    //             default_payment_method: paymentIntent.payment_method as string
-    //         });
-    //     }
-
-    //     res.status(200).send({ success: true });
-    //     return;
-    // }
-
-    // if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
-    //     // A customer completed their first checkout
-    //     // We need to register the customerId and subscriptionId
-    //     const data = event.data.object;
-    //     const price = data.items.data[0].price;
-
-    //     await prisma.orgs.updateMany({
-    //         where: {
-    //             stripeCustomerId: data.customer as string
-    //         },
-    //         data: {
-    //             stripeSubscriptionId: data.id,
-    //             stripePriceId: price.id,
-    //             currentPlanId: price.product as string,
-    //             stripeCurrentPeriodStart: new Date(data.current_period_start * 1000),
-    //             stripeCurrentPeriodEnd: new Date(data.current_period_end * 1000)
-    //         }
-    //     });
-
-    //     res.status(200).send({ success: true });
-    //     return;
-    // }
 });

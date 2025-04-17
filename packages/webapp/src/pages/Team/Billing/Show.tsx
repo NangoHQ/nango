@@ -7,7 +7,6 @@ import { ErrorPageComponent } from '../../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../../components/LeftNavBar';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Button } from '../../../components/ui/button/Button';
-import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useApiGetPlans } from '../../../hooks/usePlan';
 import { apiPostStripeSessionCheckout } from '../../../hooks/useStripe';
@@ -87,19 +86,17 @@ export const TeamBilling: React.FC = () => {
             <h2 className="text-3xl font-semibold text-white mb-16">Billing</h2>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2.5">
-                    <h2 className="text-grayscale-10">Plan List</h2>
+                    <h2 className="text-grayscale-10">Plan</h2>
                     <div className="grid grid-cols-3 gap-4">
                         {plans.map((def) => {
                             return <PlanCard key={def.plan.code} env={env} def={def} />;
                         })}
                     </div>
 
-                    <div className="flex justify-end text-white text-sm">
-                        <Link to="https://nango.dev/pricing" target="_blank">
-                            <Button variant={'link'}>
-                                <IconExternalLink stroke={1} size={18} />
-                                View pricing page
-                            </Button>
+                    <div className="flex text-white text-sm">
+                        <Link to="https://nango.dev/pricing" target="_blank" className="flex gap-2">
+                            <IconExternalLink stroke={1} size={18} />
+                            View pricing page
                         </Link>
                     </div>
                 </div>
@@ -145,7 +142,7 @@ export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ e
     return (
         <Link
             className={cn(
-                'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-4',
+                'flex flex-col gap-4 text-white rounded-lg bg-grayscale-3 py-7 px-6 border border-grayscale-5',
                 def.active && 'bg-grayscale-1 border-grayscale-7'
             )}
             to={def.above && !def.plan.canUpgrade ? 'mailto:upgrade@nango.dev' : ''}
@@ -153,18 +150,14 @@ export const PlanCard: React.FC<{ env: string; def: PlanDefinitionList }> = ({ e
         >
             <div className="flex flex-col gap-2.5">
                 <header className="flex gap-3 items-center">
-                    <div>
-                        {def.active && <Tag variant={'neutral'}>Current</Tag>}
-                        {def.below && !def.active && <Tag variant={'gray1'}>Downgrade</Tag>}
-                        {def.above && <Tag variant={'info'}>Upgrade</Tag>}
-                    </div>
                     <div className="capitalize">{def.plan.title}</div>
+                    {def.active && <div className="bg-success-4 h-1.5 w-1.5 rounded-full"></div>}
                 </header>
                 <div className="text-sm text-grayscale-10">{def.plan.description}</div>
             </div>
             <footer>
                 {!def.active && (
-                    <Button variant={'emptyFaded'} isLoading={loading}>
+                    <Button variant={'primary'} isLoading={loading}>
                         {def.plan.cta ? def.plan.cta : def.below ? 'Downgrade Plan' : 'Upgrade plan'}
                     </Button>
                 )}
