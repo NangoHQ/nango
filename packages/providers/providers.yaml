@@ -804,7 +804,7 @@ attio:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://app.attio.com
+        base_url: https://api.attio.com
         retry:
             after: 'retry-after'
     docs: https://docs.nango.dev/integrations/all/attio
