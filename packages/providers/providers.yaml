@@ -4918,6 +4918,10 @@ incident-io:
         base_url: https://api.incident.io
         headers:
             authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/identity
     docs: https://docs.nango.dev/integrations/all/incident-io
     docs_connect: https://docs.nango.dev/integrations/all/incident-io/connect
     credentials:
@@ -4925,6 +4929,8 @@ incident-io:
             type: string
             title: API Key
             description: The API key for your Incident.io account
+            example: 'inc_************************************f2c5e6a7b3d4**********'
+            pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
 
 insightly:
