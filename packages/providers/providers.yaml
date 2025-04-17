@@ -8176,6 +8176,8 @@ sentry:
             type: string
             title: Auth Token
             description: The Authentication token for your Sentry account
+            example: sntryu_795225***************b9864a*********************
+            pattern: '^sntryu_[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-sentry-auth-token'
 
 sedna:
