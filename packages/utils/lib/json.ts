@@ -63,3 +63,7 @@ export function truncateJson<TObject extends Record<string, any>>(value: TObject
 export function truncateJsonString(value: string, maxSize: number = MAX_LOG_PAYLOAD): string {
     return truncateJsonPkg(value, maxSize).jsonString;
 }
+
+export function sizeInBytes(value: any): number {
+    return value ? Buffer.byteLength(stringifyObject(value), 'utf8') : 0;
+}

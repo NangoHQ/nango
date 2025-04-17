@@ -25,6 +25,7 @@ import type {
     OAuth2ClientCredentials,
     Pagination,
     PostPublicTrigger,
+    RunnerStats,
     SetMetadata,
     SignatureCredentials,
     TableauCredentials,
@@ -58,6 +59,7 @@ export abstract class NangoActionBase {
     abortSignal?: NangoProps['abortSignal'];
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
+    public runnerStats: RunnerStats;
 
     public connectionId: string;
     public providerConfigKey: string;
@@ -74,6 +76,10 @@ export abstract class NangoActionBase {
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
+        this.runnerStats = {
+            proxy_egress_bytes: 0,
+            proxy_ingress_bytes: 0
+        };
 
         if (config.syncId) {
             this.syncId = config.syncId;

@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 
 import { Nango } from '@nangohq/node';
@@ -5,7 +6,17 @@ import type { ProxyConfiguration } from '@nangohq/runner-sdk';
 import { InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import type { MessageRowInsert, NangoProps, UserLogParameters, MergingStrategy, PostPublicTrigger } from '@nangohq/types';
-import { isTest, MAX_LOG_PAYLOAD, metrics, redactHeaders, redactURL, stringifyAndTruncateValue, stringifyObject, truncateJson } from '@nangohq/utils';
+import {
+    isTest,
+    MAX_LOG_PAYLOAD,
+    metrics,
+    redactHeaders,
+    redactURL,
+    sizeInBytes,
+    stringifyAndTruncateValue,
+    stringifyObject,
+    truncateJson
+} from '@nangohq/utils';
 import { PersistClient } from './persist.js';
 import { logger } from '../logger.js';
 import type { Locks } from './locks.js';
@@ -80,9 +91,17 @@ export class NangoActionRunner extends NangoActionBase {
                 return connection;
             }
         });
-        const response = (await proxy.request()).unwrap();
 
-        return response;
+        const res = await proxy.request();
+
+        this.runnerStats.proxy_egress_bytes += sizeInBytes(proxy.config.data);
+        if (res.isOk()) {
+            this.runnerStats.proxy_ingress_bytes += Number(res.value.headers['content-length']) || sizeInBytes(res.value.data);
+        } else if (isAxiosError(res.error)) {
+            this.runnerStats.proxy_ingress_bytes += Number(res.error.response?.headers['content-length']) || sizeInBytes(res.error.response?.data);
+        }
+
+        return res.unwrap();
     }
 
     public override async log(...args: [...any]): Promise<void> {

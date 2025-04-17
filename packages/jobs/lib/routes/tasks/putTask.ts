@@ -5,6 +5,7 @@ import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/u
 import { handleError, handleSuccess } from '../../execution/operations/handler.js';
 import type { JsonValue } from 'type-fest';
 import { operationIdRegex } from '@nangohq/logs';
+import { logger } from '../../logger.js';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
@@ -85,7 +86,13 @@ const validate = validateRequest<PutTask>({
                         additional_properties: z.record(z.string(), z.unknown()).optional()
                     })
                     .optional(),
-                output: jsonSchema.default(null)
+                output: jsonSchema.default(null),
+                stats: z
+                    .object({
+                        proxy_egress_bytes: z.number().default(0),
+                        proxy_ingress_bytes: z.number().default(0)
+                    })
+                    .default({ proxy_egress_bytes: 0, proxy_ingress_bytes: 0 })
             })
             .parse(data),
     parseParams: (data) => z.object({ taskId: z.string().uuid() }).strict().parse(data)
@@ -93,7 +100,7 @@ const validate = validateRequest<PutTask>({
 
 const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutTask>) => {
     const { taskId } = req.params;
-    const { nangoProps, error, output } = req.body;
+    const { nangoProps, error, output, stats } = req.body;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
         return;
@@ -103,6 +110,9 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
     } else {
         await handleSuccess({ taskId, nangoProps, output: output || null });
     }
+
+    logger.info(`Stats for task ${taskId}`, stats); // TODO: do something with stats
+
     res.status(204).send();
     return;
 };

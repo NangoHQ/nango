@@ -48,6 +48,7 @@ describe('Exec', () => {
         const res = await exec({ nangoProps, code });
         expect(res.error).toEqual(null);
         expect(res.success).toEqual(true);
+        expect(res.stats).toEqual({ proxy_egress_bytes: 0, proxy_ingress_bytes: 0 });
     });
 
     it('should return a formatted error when receiving an Error', async () => {

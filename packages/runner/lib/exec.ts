@@ -103,7 +103,7 @@ export async function exec({
                 }
 
                 const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
-                return { success: true, response: output, error: null };
+                return { success: true, response: output, error: null, stats: nango.runnerStats };
             }
 
             if (!scriptExports.default || typeof scriptExports.default !== 'function') {
@@ -126,7 +126,12 @@ export async function exec({
                     metrics.increment(metrics.Types.RUNNER_INVALID_ACTION_INPUT);
                     if (nangoProps.runnerFlags?.validateActionInput) {
                         span.setTag('error', new Error('invalid_action_input'));
-                        return { success: false, response: null, error: { type: 'invalid_action_input', status: 400, payload: valInput } };
+                        return {
+                            success: false,
+                            response: null,
+                            error: { type: 'invalid_action_input', status: 400, payload: valInput, stats: nango.runnerStats },
+                            stats: nango.runnerStats
+                        };
                     } else {
                         await nango.log('Invalid action input', { validation: valInput }, { level: 'warn' });
                         logger.error('data_validation_invalid_action_input');
@@ -149,7 +154,8 @@ export async function exec({
                         return {
                             success: false,
                             response: null,
-                            error: { type: 'invalid_action_output', status: 400, payload: { output, validation: valOutput } }
+                            error: { type: 'invalid_action_output', status: 400, payload: { output, validation: valOutput } },
+                            stats: nango.runnerStats
                         };
                     } else {
                         await nango.log('Invalid action output', { output, validation: valOutput }, { level: 'warn' });
@@ -157,10 +163,10 @@ export async function exec({
                     }
                 }
 
-                return { success: true, response: output, error: null };
+                return { success: true, response: output, error: null, stats: nango.runnerStats };
             } else {
                 await scriptExports.default(nango);
-                return { success: true, response: true, error: null };
+                return { success: true, response: true, error: null, stats: nango.runnerStats };
             }
         } catch (err) {
             if (err instanceof ActionError) {
@@ -176,7 +182,8 @@ export async function exec({
                         ), // TODO: fix ActionError so payload is always an object
                         status: 500
                     },
-                    response: null
+                    response: null,
+                    stats: nango.runnerStats
                 };
             }
 
@@ -189,7 +196,8 @@ export async function exec({
                         payload: truncateJson(err.payload),
                         status: 500
                     },
-                    response: null
+                    response: null,
+                    stats: nango.runnerStats
                 };
             } else if (isAxiosError<unknown, unknown>(err)) {
                 // isAxiosError lets us use something the shape of an axios error in
@@ -230,7 +238,8 @@ export async function exec({
                                 }
                             }
                         },
-                        response: null
+                        response: null,
+                        stats: nango.runnerStats
                     };
                 } else {
                     const tmp = errorToObject(err);
@@ -241,7 +250,8 @@ export async function exec({
                             payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500
                         },
-                        response: null
+                        response: null,
+                        stats: nango.runnerStats
                     };
                 }
             } else if (err instanceof Error) {
@@ -255,7 +265,8 @@ export async function exec({
                         payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                         status: 500
                     },
-                    response: null
+                    response: null,
+                    stats: nango.runnerStats
                 };
             } else {
                 const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
@@ -281,7 +292,8 @@ export async function exec({
                         }),
                         status: 500
                     },
-                    response: null
+                    response: null,
+                    stats: nango.runnerStats
                 };
             }
         } finally {

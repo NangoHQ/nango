@@ -1,6 +1,6 @@
 import type { JsonValue } from 'type-fest';
 import type { ApiError, Endpoint } from '../api';
-import type { RunnerOutputError } from '../runner';
+import type { RunnerOutputError, RunnerStats } from '../runner';
 import type { NangoProps } from '../runner/sdk';
 
 export type PostHeartbeat = Endpoint<{
@@ -24,6 +24,7 @@ export type PutTask = Endpoint<{
         nangoProps?: NangoProps | undefined;
         error?: RunnerOutputError | undefined;
         output?: JsonValue | undefined;
+        stats?: RunnerStats | undefined;
     };
     Error: ApiError<'put_task_failed'>;
     Success: never;
