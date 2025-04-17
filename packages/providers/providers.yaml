@@ -4909,6 +4909,30 @@ hubspot:
             response_path: results
     docs: https://docs.nango.dev/integrations/all/hubspot
 
+incident-io:
+    display_name: Incident.io
+    categories:
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.incident.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/identity
+    docs: https://docs.nango.dev/integrations/all/incident-io
+    docs_connect: https://docs.nango.dev/integrations/all/incident-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Incident.io account
+            example: 'inc_************************************f2c5e6a7b3d4**********'
+            pattern: 'inc_[a-f0-9]{64}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 insightly:
     display_name: Insightly
     categories:
