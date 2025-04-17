@@ -3,10 +3,8 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     errorManager,
@@ -101,7 +99,6 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
                       },
                       { account, environment }
                   );
-        void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
         if (!isConnectSession) {
             const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
@@ -173,8 +170,7 @@ export const postPublicTableauAuthorization = asyncWrapper<PostPublicTableauAuth
             connectionConfig,
             metadata: {},
             config,
-            environment,
-            account
+            environment
         });
         if (!updatedConnection) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });

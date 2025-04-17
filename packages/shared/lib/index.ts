@@ -14,10 +14,10 @@ import { errorNotificationService } from './services/notification/error.service.
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
-import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
+export { eventTracking } from './utils/eventTracking.js';
 export * as jwtClient from './auth/jwt.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/on-event-scripts.service.js';
@@ -46,12 +46,10 @@ export * from './utils/error.js';
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 
 export {
-    AnalyticsTypes,
     ErrorSourceEnum,
     Orchestrator,
     SlackService,
     accountService,
-    analytics,
     configService,
     connectionService,
     encryptionManager,

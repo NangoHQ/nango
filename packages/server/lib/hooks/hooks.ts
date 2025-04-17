@@ -1,11 +1,10 @@
 import tracer from 'dd-trace';
 
 import {
-    AnalyticsTypes,
     NangoError,
     ProxyRequest,
-    analytics,
     errorNotificationService,
+    eventTracking,
     externalWebhookService,
     getProxyConfiguration,
     getSyncConfigsWithConnections,
@@ -48,11 +47,13 @@ export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
     creationType,
+    team,
     plan
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
     creationType: 'create' | 'import';
+    team: DBTeam;
     plan: DBPlan;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
@@ -69,9 +70,11 @@ export const connectionCreationStartCapCheck = async ({
 
         if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
-            const analyticsType =
-                creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
-            void analytics.trackByEnvironmentId(analyticsType, environmentId);
+            if (creationType === 'create') {
+                eventTracking.track({ name: 'server:resource_capped:connection_creation', team });
+            } else {
+                eventTracking.track({ name: 'server:resource_capped:connection_imported', team });
+            }
             return true;
         }
     }
