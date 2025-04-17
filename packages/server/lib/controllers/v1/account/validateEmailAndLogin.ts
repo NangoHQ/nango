@@ -1,9 +1,12 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import { userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, userService, AnalyticsTypes } from '@nangohq/shared';
-import type { ValidateEmailAndLogin } from '@nangohq/types';
+
 import { userToAPI } from '../../../formatters/user.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { ValidateEmailAndLogin } from '@nangohq/types';
 
 const logger = getLogger('Server.ValidateEmailAndLogin');
 
@@ -56,10 +59,6 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
     const user = tokenResponse.value;
 
     await userService.verifyUserEmail(user.id);
-
-    const { account_id, email } = user;
-
-    void analytics.track(AnalyticsTypes.ACCOUNT_CREATED, account_id, {}, { email });
 
     req.login(user, function (err) {
         if (err) {

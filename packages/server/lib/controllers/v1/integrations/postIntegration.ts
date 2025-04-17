@@ -1,10 +1,13 @@
 import { z } from 'zod';
+
+import { configService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import type { PostIntegration } from '@nangohq/types';
-import { AnalyticsTypes, analytics, configService, getProvider } from '@nangohq/shared';
+
 import { integrationToApi } from '../../../formatters/integration.js';
 import { providerSchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import type { PostIntegration } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -36,11 +39,9 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment } = res.locals;
 
     const integration = await configService.createEmptyProviderConfig(body.provider, environment.id, provider);
-
-    void analytics.track(AnalyticsTypes.CONFIG_CREATED, account.id, { provider: body.provider });
 
     res.status(200).send({
         data: integrationToApi(integration)

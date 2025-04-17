@@ -14,11 +14,9 @@ export const createConnectionSeeds = async (env: DBEnvironment): Promise<number[
         const result = await connectionService.upsertConnection({
             connectionId: `conn-${name}`,
             providerConfigKey: `provider-${name}`,
-            provider: 'google',
             parsedRawCredentials: {} as AuthCredentials,
             connectionConfig: {},
-            environmentId: env.id,
-            accountId: 0
+            environmentId: env.id
         });
 
         for (const res of result) {
@@ -51,11 +49,9 @@ export const createConnectionSeed = async ({
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
-        provider: provider,
         parsedRawCredentials: rawCredentials || ({} as AuthCredentials),
         connectionConfig: connectionConfig || {},
-        environmentId: env.id,
-        accountId: 0
+        environmentId: env.id
     });
 
     if (!result || result[0] === undefined || !result[0].connection.id) {

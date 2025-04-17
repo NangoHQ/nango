@@ -5,7 +5,7 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 
 export const resourceCapping = asyncWrapper<Endpoint<{ Method: 'POST'; Path: ''; Success: any; Error: ApiError<'resource_capped'> }>>(
     async (req, res, next) => {
-        const { environment, plan } = res.locals;
+        const { environment, plan, account } = res.locals;
 
         const { providerConfigKey } = req.params;
 
@@ -14,6 +14,7 @@ export const resourceCapping = asyncWrapper<Endpoint<{ Method: 'POST'; Path: '';
                 providerConfigKey,
                 environmentId: environment.id,
                 creationType: 'create',
+                team: account,
                 plan
             });
             if (isCapped) {

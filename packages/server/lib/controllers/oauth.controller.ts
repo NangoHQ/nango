@@ -6,10 +6,8 @@ import * as uuid from 'uuid';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
-    analytics,
     configService,
     connectionService,
     environmentService,
@@ -52,7 +50,6 @@ import type { NextFunction, Request, Response } from 'express';
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
         const { account, environment, connectSession } = res.locals;
-        const accountId = account.id;
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
@@ -80,9 +77,6 @@ class OAuthController {
                           },
                           { account, environment }
                       );
-            if (!wsClientId) {
-                void analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
-            }
 
             const callbackUrl = await environmentService.getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -322,7 +316,6 @@ class OAuthController {
                           },
                           { account, environment }
                       );
-            void analytics.track(AnalyticsTypes.PRE_OAUTH2_CC_AUTH, account.id);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -427,11 +420,9 @@ class OAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: config.provider,
                 parsedRawCredentials: credentials,
                 connectionConfig,
-                environmentId: environment.id,
-                accountId: account.id
+                environmentId: environment.id
             });
             if (!updatedConnection) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
@@ -1120,11 +1111,9 @@ class OAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: session.provider,
                 parsedRawCredentials,
                 connectionConfig,
-                environmentId: session.environmentId,
-                accountId: account.id
+                environmentId: session.environmentId
             });
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');
@@ -1311,11 +1300,9 @@ class OAuthController {
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
-                    provider: session.provider,
                     parsedRawCredentials: parsedAccessTokenResult,
                     connectionConfig,
-                    environmentId: environment.id,
-                    accountId: account.id
+                    environmentId: environment.id
                 });
                 if (!updatedConnection) {
                     void logCtx.error('Failed to create connection');

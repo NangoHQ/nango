@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { AnalyticsTypes, analytics, configService, connectionService, environmentService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
+import { configService, connectionService, environmentService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
 import { stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -49,8 +49,6 @@ class AppAuthController {
         }
 
         const { environment, account } = environmentAndAccountLookup;
-
-        void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
@@ -156,11 +154,9 @@ class AppAuthController {
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
-                provider: session.provider,
                 parsedRawCredentials: credentials as unknown as AuthCredentials,
                 connectionConfig,
-                environmentId: environment.id,
-                accountId: account.id
+                environmentId: environment.id
             });
             if (!updatedConnection) {
                 void logCtx.error('Failed to create connection');

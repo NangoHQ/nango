@@ -1,14 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import get from 'lodash-es/get.js';
-import type { Provider, DBConnection } from '@nangohq/types';
 
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
+import get from 'lodash-es/get.js';
+
+import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+
+import type { DBConnection, Provider } from '@nangohq/types';
 
 export enum NodeEnv {
     Dev = 'development',

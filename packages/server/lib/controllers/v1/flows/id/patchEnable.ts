@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, enableScriptConfig, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
+import { configService, connectionService, enableScriptConfig, eventTracking, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationBody, validationParams } from './patchDisable.js';
@@ -34,7 +34,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, plan } = res.locals;
+    const { environment, account, plan, user } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -54,12 +54,15 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
     }
     if (plan && !plan.trial_end_at && plan.name === 'free') {
         await startTrial(db.knex, plan);
+        eventTracking.track({ name: 'account:trial:started', team: account, user });
     }
 
     const isCapped = await connectionService.shouldCapUsage({
         providerConfigKey: body.providerConfigKey,
         environmentId: environment.id,
         type: 'activate',
+        team: account,
+        user,
         plan
     });
     if (isCapped) {

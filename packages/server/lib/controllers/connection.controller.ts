@@ -165,6 +165,7 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     environmentId: environment.id,
                     creationType: 'import',
+                    team: account,
                     plan
                 });
                 if (isCapped) {
@@ -252,10 +253,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -317,10 +316,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -368,10 +365,8 @@ class ConnectionController {
                 const [imported] = await connectionService.importOAuthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig: { ...connection_config },
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
@@ -415,7 +410,6 @@ class ConnectionController {
                     provider: providerName,
                     metadata,
                     environment,
-                    account,
                     credentials,
                     connectionConfig: { ...connection_config },
                     connectionCreatedHook: connCreatedHook
@@ -459,7 +453,6 @@ class ConnectionController {
                     provider: providerName,
                     metadata,
                     environment,
-                    account,
                     connectionConfig: { ...connection_config },
                     credentials,
                     connectionCreatedHook: connCreatedHook
@@ -503,11 +496,9 @@ class ConnectionController {
                 const [imported] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     parsedRawCredentials: credentials as unknown as AuthCredentials,
                     connectionConfig,
                     environmentId: environment.id,
-                    accountId: account.id,
                     metadata
                 });
 
@@ -559,8 +550,7 @@ class ConnectionController {
                     },
                     metadata,
                     config,
-                    environment,
-                    account
+                    environment
                 });
 
                 if (imported) {
@@ -571,9 +561,7 @@ class ConnectionController {
                 const [imported] = await connectionService.upsertUnauthConnection({
                     connectionId,
                     providerConfigKey: provider_config_key,
-                    provider: providerName,
                     environment,
-                    account,
                     metadata,
                     connectionConfig: { ...connection_config }
                 });

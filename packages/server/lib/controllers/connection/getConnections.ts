@@ -1,10 +1,13 @@
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import type { GetPublicConnections } from '@nangohq/types';
-import { AnalyticsTypes, analytics, connectionService } from '@nangohq/shared';
-import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
 import { z } from 'zod';
+
+import { connectionService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { bodySchema } from '../connect/postSessions.js';
+
+import type { GetPublicConnections } from '@nangohq/types';
 
 const validationQuery = z
     .object({
@@ -24,10 +27,9 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment } = res.locals;
     const queryParam: GetPublicConnections['Querystring'] = queryParamValues.data;
 
-    void analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, account.id);
     const connections = await connectionService.listConnections({
         environmentId: environment.id,
         connectionId: queryParam.connectionId,
