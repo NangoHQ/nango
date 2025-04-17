@@ -1,6 +1,6 @@
+import type { InternalNango } from './internal-nango.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { InternalNango } from './internal-nango.js';
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
@@ -16,6 +16,7 @@ export type WebhookResponse =
           acknowledgementResponse?: unknown;
           parsedBody?: unknown;
           connectionIds?: string[] | undefined;
+          statusCode?: number;
       }
     | undefined;
 

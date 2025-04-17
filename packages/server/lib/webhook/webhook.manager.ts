@@ -1,13 +1,16 @@
-import type { Config } from '@nangohq/shared';
+import tracer from 'dd-trace';
+
 import { externalWebhookService, getProvider } from '@nangohq/shared';
-import { internalNango } from './internal-nango.js';
 import { getLogger } from '@nangohq/utils';
+import { forwardWebhook } from '@nangohq/webhooks';
+
 import * as webhookHandlers from './index.js';
+import { internalNango } from './internal-nango.js';
+
 import type { WebhookHandlersMap } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import { forwardWebhook } from '@nangohq/webhooks';
+import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
-import tracer from 'dd-trace';
 
 const logger = getLogger('Webhook.Manager');
 
@@ -72,5 +75,5 @@ export async function routeWebhook({
         });
     });
 
-    return res ? res.acknowledgementResponse : null;
+    return res ? { acknowledgementResponse: res.acknowledgementResponse, statusCode: res.statusCode } : null;
 }

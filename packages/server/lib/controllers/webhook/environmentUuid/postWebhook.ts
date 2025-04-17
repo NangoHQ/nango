@@ -1,14 +1,16 @@
-import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { logContextGetter } from '@nangohq/logs';
 import tracer from 'dd-trace';
 import { z } from 'zod';
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { configService, environmentService } from '@nangohq/shared';
-import type { PostPublicWebhook } from '@nangohq/types';
 
-import { routeWebhook } from '../../../webhook/webhook.manager.js';
+import { logContextGetter } from '@nangohq/logs';
+import { configService, environmentService } from '@nangohq/shared';
+import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { featureFlags } from '../../../utils/utils.js';
+import { routeWebhook } from '../../../webhook/webhook.manager.js';
+
+import type { PostPublicWebhook } from '@nangohq/types';
 
 const paramValidation = z
     .object({
@@ -72,7 +74,14 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 res.status(200).send();
                 return;
             }
-            res.status(200).send(response);
+
+            const typedResponse = response as { statusCode?: number; acknowledgementResponse?: unknown };
+
+            if (typedResponse.statusCode) {
+                res.status(typedResponse.statusCode).send(typedResponse.acknowledgementResponse || {});
+            } else {
+                res.status(200).send(typedResponse.acknowledgementResponse || {});
+            }
         } catch (err) {
             span.setTag('nango.error', err);
 

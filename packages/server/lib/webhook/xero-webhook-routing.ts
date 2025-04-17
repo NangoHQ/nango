@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
 
-import type { Config as ProviderConfig } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import { getLogger } from '@nangohq/utils';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 
 const logger = getLogger('Webhook.Xero');
 
@@ -70,11 +71,11 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
         // Return 401 for incorrectly signed payloads, 200 for correctly signed payloads
         if (!isValidSignature) {
             logger.error('Invalid signature for Intent to receive validation', { configId: integration.id });
-            return { statusCode: 401 };
+            return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
         }
 
         logger.info('Valid signature for Intent to receive validation', { configId: integration.id });
-        return { statusCode: 200 };
+        return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
     }
 
     // For regular webhook events, validate the signature
@@ -82,7 +83,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
 
     if (!isValidSignature) {
         logger.error('Invalid signature', { configId: integration.id });
-        return { statusCode: 401 };
+        return { statusCode: 401, acknowledgementResponse: { error: 'Invalid signature' } };
     }
 
     // For valid signatures, we return 200
@@ -91,7 +92,7 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
 
     // For empty events, just return success
     if (parsedBody.events.length === 0) {
-        return { statusCode: 200 };
+        return { statusCode: 200, acknowledgementResponse: { status: 'success' } };
     }
 
     let connectionIds: string[] = [];
@@ -103,7 +104,12 @@ const route: WebhookHandler = async (nango, integration, headers, body, rawBody,
     }
     const response = { connectionIds };
 
-    return { parsedBody, connectionIds: response?.connectionIds || [] };
+    return {
+        statusCode: 200,
+        acknowledgementResponse: { status: 'success' },
+        parsedBody,
+        connectionIds: response?.connectionIds || []
+    };
 };
 
 export default route;
