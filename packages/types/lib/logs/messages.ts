@@ -112,6 +112,8 @@ export interface MessageRow {
     // Operation row id
     parentId: string;
 
+    accountId: number;
+
     // Associated meta
     error?: MessageError | undefined;
     request?: MessageHTTPRequest | undefined;

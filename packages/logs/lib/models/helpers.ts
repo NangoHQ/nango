@@ -63,10 +63,12 @@ export function getFormattedOperation(
         expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
-export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId'>): MessageRow {
+export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId' | 'accountId'>): MessageRow {
     const now = new Date();
     return {
         id: data.id || nanoid(),
+
+        accountId: data.accountId,
 
         source: data.source || 'internal',
         level: data.level || 'info',

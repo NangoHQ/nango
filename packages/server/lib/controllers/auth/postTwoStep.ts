@@ -1,28 +1,31 @@
-import type { NextFunction } from 'express';
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP, stringifyError, metrics } from '@nangohq/utils';
+
+import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    analytics,
-    configService,
     AnalyticsTypes,
-    getConnectionConfig,
-    connectionService,
-    errorManager,
     ErrorSourceEnum,
     LogActionEnum,
+    analytics,
+    configService,
+    connectionService,
+    errorManager,
+    getConnectionConfig,
+    getConnectionMetadataFromTokenResponse,
     getProvider,
-    linkConnection,
-    getConnectionMetadataFromTokenResponse
+    linkConnection
 } from '@nangohq/shared';
-import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { connectionIdSchema, providerConfigKeySchema, connectionCredential } from '../../helpers/validation.js';
-import db from '@nangohq/database';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
+import type { NextFunction } from 'express';
 
 const bodyValidation = z.object({}).catchall(z.any()).strict();
 
@@ -84,7 +87,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
     try {
         logCtx =
             isConnectSession && connectSession.operationId
-                ? await logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(
                       {
                           operation: { type: 'auth', action: 'create_connection' },

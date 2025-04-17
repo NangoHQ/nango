@@ -327,8 +327,9 @@ export async function listMessages(opts: {
         return {
             count: total,
             items,
-            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
-            cursorAfter: null
+            // Because there is no way to build a cursor if we have no results we resend the same one
+            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : opts.cursorBefore,
+            cursorAfter: totalPage > 0 ? createCursor(hits.hits[0]!) : null
         };
     }
 
@@ -336,7 +337,7 @@ export async function listMessages(opts: {
         count: total,
         items,
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
-        cursorAfter: totalPage > 0 && total > totalPage && totalPage >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursorAfter: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 

@@ -1,4 +1,4 @@
-import type { Timestamps } from '../db';
+import type { Timestamps, TimestampsAndDeletedCorrect } from '../db';
 
 export interface DBEnvironmentVariable extends Timestamps {
     id: number;
@@ -9,7 +9,7 @@ export interface DBEnvironmentVariable extends Timestamps {
     value_tag: string | null;
 }
 
-export interface DBEnvironment extends Timestamps {
+export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     id: number;
     uuid: string;
     name: string;

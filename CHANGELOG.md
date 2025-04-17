@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.58.5] - 2025-04-11
+
+### Added
+
+- *(jwt)* Use dynamic credentials to build the jwt (#3862) by @hassan254-prog
+- Add comprehensive Google OAuth setup guide (#3702) by @devin-ai-integration[bot]
+- *(integrations)* Add support for shopify partner (#3869) by @kmclaugh
+- *(logs)* Search in global field, index batchSave (#3877) by @bodinsamuel
+- *(webapp)* Revamp error circles (#3873) by @kaposke
+- *(integrations)* Enforce regex pattern matching for snowflake jwt (#3878) by @hassan254-prog
+- *(integrations)* Add support for smartlead ai (#3879) by @hassan254-prog
+- *(docs)* Add xero note about offline_access scope (#3880) by @khaliqgant
+- *(db)* Add soft delete columns to environment (#3891) by @kaposke
+
+### Fixed
+
+- *(rateLimit)* Use dynamic size (#3868) by @bodinsamuel
+- *(es)* Do not index meta (#3870) by @bodinsamuel
+- *(rateLimit)* Correctly store limiter (#3872) by @bodinsamuel
+- *(frontend)* Better modal handling (#3867) by @bodinsamuel
+- *(integration-deploy)* Fix install of a public integration to install the latest version (#3871) by @hassan254-prog
+- *(rateLimit)* Increase limit for providers.json (#3876) by @bodinsamuel
+- Runner-sdk triggerSync signature (#3874) by @TBonnin
+- Expose reason a task was expired (#3875) by @TBonnin
+- Clearing cache of variant syncs deletes records of the base sync (#3883) by @TBonnin
+- *(runner-sdk)* No need for a mutex (#3884) by @TBonnin
+- *(integrations)* Workday require user to add tenant and hostname as connectionConfigs (#3887) by @hassan254-prog
+- Do not increment/decrement DD metric if value = 0 (#3885) by @TBonnin
+- *(logs)* Wrong es schema (#3886) by @bodinsamuel
+- *(ui)* Switch size and alignement (#3890) by @bodinsamuel
+
 ## [v0.58.4] - 2025-04-08
 
 ### Added
@@ -3642,6 +3673,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.58.5]: https://github.com/NangoHQ/nango/compare/v0.58.4..v0.58.5
 [v0.58.4]: https://github.com/NangoHQ/nango/compare/v0.58.3..v0.58.4
 [v0.58.3]: https://github.com/NangoHQ/nango/compare/v0.58.2..v0.58.3
 [v0.58.2]: https://github.com/NangoHQ/nango/compare/v0.58.1..v0.58.2
