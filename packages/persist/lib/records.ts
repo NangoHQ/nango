@@ -122,9 +122,10 @@ export async function persistRecords({
         await updateSyncJobResult(syncJobId, updatedResults, baseModel);
 
         const allModifiedKeys = new Set([...summary.addedKeys, ...summary.updatedKeys, ...(summary.deletedKeys || [])]);
+        const total = allModifiedKeys.size + summary.unchangedKeys.length;
 
         void logCtx.info(
-            `Successfully batched ${allModifiedKeys.size} record${allModifiedKeys.size > 1 ? 's' : ''} for model ${baseModel}`,
+            `Successfully batched ${total} record${allModifiedKeys.size > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
             { persistType },
             {
                 persistResults: {
@@ -132,10 +133,12 @@ export async function persistRecords({
                     added: summary.addedKeys.length,
                     updated: summary.updatedKeys.length,
                     deleted: summary.deletedKeys?.length || 0,
+                    unchanged: summary.unchangedKeys.length,
 
                     addedKeys: summary.addedKeys,
                     updatedKeys: summary.updatedKeys,
-                    deleteKeys: summary.deletedKeys || []
+                    deleteKeys: summary.deletedKeys || [],
+                    unchangedKeys: summary.unchangedKeys
                 }
             }
         );

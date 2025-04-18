@@ -1,11 +1,13 @@
-import { expect, describe, it, beforeAll, afterAll } from 'vitest';
 import dayjs from 'dayjs';
 import * as uuid from 'uuid';
-import { migrate } from '../db/migrate.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
 import { RECORDS_TABLE } from '../constants.js';
 import { db } from '../db/client.js';
-import * as Records from '../models/records.js';
+import { migrate } from '../db/migrate.js';
 import { formatRecords } from '../helpers/format.js';
+import * as Records from '../models/records.js';
+
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '../types.js';
 import type { MergingStrategy } from '@nangohq/types';
 
@@ -338,7 +340,8 @@ describe('Records service', () => {
                     deletedKeys: (acc.deletedKeys || []).concat(curr.deletedKeys || []),
                     nonUniqueKeys: acc.nonUniqueKeys.concat(curr.nonUniqueKeys),
                     billedKeys: acc.billedKeys.concat(curr.billedKeys),
-                    nextMerging: curr.nextMerging
+                    nextMerging: curr.nextMerging,
+                    unchangedKeys: acc.unchangedKeys.concat(curr.unchangedKeys)
                 };
             });
             expect(agg).toStrictEqual({
