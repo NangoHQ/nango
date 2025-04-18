@@ -125,7 +125,7 @@ export async function persistRecords({
         const total = allModifiedKeys.size + summary.unchangedKeys.length;
 
         void logCtx.info(
-            `Successfully batched ${total} record${allModifiedKeys.size > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
+            `Successfully batched ${total} record${total > 1 ? 's' : ''} (${allModifiedKeys.size} modified) for model ${baseModel} `,
             { persistType },
             {
                 persistResults: {
