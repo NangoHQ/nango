@@ -76,6 +76,7 @@ describe('Records service', () => {
             updatedKeys: [],
             deletedKeys: [],
             billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+            unchangedKeys: [],
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
         });
@@ -89,6 +90,7 @@ describe('Records service', () => {
             addedKeys: [],
             updatedKeys: ['2'],
             billedKeys: [],
+            unchangedKeys: ['1'],
             deletedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
@@ -106,6 +108,7 @@ describe('Records service', () => {
             updatedKeys: ['1'],
             deletedKeys: [],
             billedKeys: [],
+            unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
@@ -131,6 +134,7 @@ describe('Records service', () => {
                     updatedKeys: [],
                     deletedKeys: [],
                     billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    unchangedKeys: [],
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
                 });
@@ -145,6 +149,7 @@ describe('Records service', () => {
                     updatedKeys: ['2'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: ['1'],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
                 });
@@ -183,6 +188,7 @@ describe('Records service', () => {
                     updatedKeys: [],
                     deletedKeys: [],
                     billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -200,6 +206,7 @@ describe('Records service', () => {
                     addedKeys: ['5'],
                     updatedKeys: ['4'],
                     billedKeys: ['5'],
+                    unchangedKeys: [],
                     deletedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
@@ -225,6 +232,7 @@ describe('Records service', () => {
                     updatedKeys: ['1'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -275,6 +283,7 @@ describe('Records service', () => {
                     updatedKeys: [],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: ['1', '2'],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -301,6 +310,7 @@ describe('Records service', () => {
                     updatedKeys: ['3'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -350,6 +360,7 @@ describe('Records service', () => {
                 deletedKeys: [],
                 billedKeys: ['1'],
                 nonUniqueKeys: [],
+                unchangedKeys: ['1', '1', '1', '1'],
                 nextMerging: { strategy: 'override' }
             });
         });
@@ -369,6 +380,7 @@ describe('Records service', () => {
                 updatedKeys: [],
                 deletedKeys: [],
                 billedKeys: ['1'],
+                unchangedKeys: [],
                 nonUniqueKeys: [],
                 nextMerging: {
                     strategy: 'override'
@@ -398,6 +410,7 @@ describe('Records service', () => {
                 updatedKeys: ['1'],
                 deletedKeys: [],
                 billedKeys: [],
+                unchangedKeys: [],
                 nonUniqueKeys: [],
                 nextMerging: {
                     strategy: 'override'
@@ -437,6 +450,7 @@ describe('Records service', () => {
                     updatedKeys: [],
                     deletedKeys: [],
                     billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    unchangedKeys: [],
                     nonUniqueKeys: ['1'],
                     nextMerging: { strategy: 'override' }
                 });
@@ -447,6 +461,7 @@ describe('Records service', () => {
                     updatedKeys: ['1'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
                 });
@@ -478,6 +493,7 @@ describe('Records service', () => {
                     updatedKeys: [],
                     deletedKeys: [],
                     billedKeys: expect.arrayContaining(['1', '2', '3', '4']),
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
@@ -498,6 +514,7 @@ describe('Records service', () => {
                     updatedKeys: ['4'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'override' }
                 });
@@ -521,6 +538,7 @@ describe('Records service', () => {
                     updatedKeys: ['1'],
                     deletedKeys: [],
                     billedKeys: [],
+                    unchangedKeys: [],
                     nonUniqueKeys: [],
                     nextMerging: { strategy: 'ignore_if_modified_after_cursor', cursor: nextCursor }
                 });
@@ -576,6 +594,7 @@ describe('Records service', () => {
             updatedKeys: [],
             deletedKeys: expect.arrayContaining(['1', '2']),
             billedKeys: [],
+            unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
@@ -588,6 +607,7 @@ describe('Records service', () => {
             updatedKeys: [],
             deletedKeys: [],
             billedKeys: [],
+            unchangedKeys: [],
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
