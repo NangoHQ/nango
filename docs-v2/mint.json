@@ -617,6 +617,7 @@
                 "integrations/all/sedna-basic",
                 "integrations/all/segment",
                 "integrations/all/sendgrid",
+                "integrations/all/sentry",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
                 "integrations/all/sharepoint-online",

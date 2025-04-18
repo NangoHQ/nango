@@ -8173,6 +8173,38 @@ sendgrid:
             description: The API key for your Sendgrid account
             doc_section: '#step-1-generating-your-sendgrid-api-key'
 
+sentry:
+    display_name: Sentry
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://docs.nango.dev/integrations/all/sentry
+    docs_connect: https://docs.nango.dev/integrations/all/sentry/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Hostname of your Sentry account
+            example: us.sentry.io
+            format: hostname
+            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Auth Token
+            description: The Authentication token for your Sentry account
+            example: sntryu_795225***************b9864a*********************
+            pattern: '^sntryu_[a-f0-9]{64}$'
+            doc_section: '#step-2-generating-your-sentry-auth-token'
+
 sedna:
     display_name: Sedna (OAuth)
     auth_mode: OAUTH2_CC
