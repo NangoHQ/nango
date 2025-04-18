@@ -4,7 +4,6 @@ import type { AllAuthCredentials, DBConnection, DBConnectionAsJSONRow } from '@n
 
 export const DEFAULT_EXPIRES_AT_MS = ms('1day');
 export const DEFAULT_OAUTHCC_EXPIRES_AT_MS = ms('55minutes'); // This ensures we have an expiresAt value
-export const DEFAULT_BILL_EXPIRES_AT_MS = ms('35minutes'); //This ensures we have an expireAt value for Bill
 export const DEFAULT_INFINITE_EXPIRES_AT_MS = ms('99years');
 export const MAX_CONSECUTIVE_DAYS_FAILED_REFRESH = 4;
 export const REFRESH_MARGIN_S = ms('15minutes') / 1000;

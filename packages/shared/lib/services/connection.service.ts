@@ -6,6 +6,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
 import configService from './config.service.js';
+import * as billClient from '../auth/bill.js';
 import * as jwtClient from '../auth/jwt.js';
 import * as tableauClient from '../auth/tableau.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
@@ -15,12 +16,7 @@ import syncManager from './sync/manager.service.js';
 import { generateWsseSignature } from '../signatures/wsse.signature.js';
 import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import {
-    DEFAULT_BILL_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
+import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, MAX_CONSECUTIVE_DAYS_FAILED_REFRESH, getExpiresAtFromCredentials } from './connections/utils.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
@@ -67,6 +63,7 @@ import type {
     MaybePromise,
     Metadata,
     Provider,
+    ProviderBill,
     ProviderJwt,
     ProviderOAuth2,
     ProviderSignature,
@@ -941,25 +938,6 @@ class ConnectionService {
                 return oauth2Creds;
             }
 
-            case 'BILL': {
-                if (!rawCreds['sessionId']) {
-                    throw new NangoError(`incomplete_raw_credentials`);
-                }
-                const expiresAt = new Date(Date.now() + DEFAULT_BILL_EXPIRES_AT_MS);
-                const billCredentials: BillCredentials = {
-                    type: 'BILL',
-                    username: '',
-                    password: '',
-                    organization_id: rawCreds['organizationId'],
-                    dev_key: '',
-                    raw: rawCreds,
-                    session_id: rawCreds['sessionId'],
-                    user_id: rawCreds['userId'],
-                    expires_at: expiresAt
-                };
-                return billCredentials;
-            }
-
             case 'TWO_STEP': {
                 if (!template || !('token_response' in template)) {
                     throw new NangoError(`Token response structure is missing for TWO_STEP.`);
@@ -1220,65 +1198,6 @@ class ConnectionService {
         parsedCreds.client_secret = client_secret;
 
         return { success: true, error: null, response: parsedCreds };
-    }
-
-    public async getBillCredentials(
-        provider: Provider,
-        username: string,
-        password: string,
-        organizationId: string,
-        devKey: string
-    ): Promise<ServiceResponse<BillCredentials>> {
-        let tokenUrl: string;
-        if (typeof provider.token_url === 'string') {
-            tokenUrl = provider.token_url;
-        } else {
-            logger.error('Token URL is missing or invalid');
-            return {
-                success: false,
-                error: new NangoError('missing_token_url', { message: 'Token URL is missing' }),
-                response: null
-            };
-        }
-
-        const postBody = {
-            username: username,
-            password: password,
-            organizationId: organizationId,
-            devKey: devKey
-        };
-
-        const headers: Record<string, string> = {
-            'content-type': 'application/json'
-        };
-
-        const requestOptions = { headers };
-
-        try {
-            const response = await axios.post(tokenUrl, postBody, requestOptions);
-
-            if (response.status !== 200) {
-                return { success: false, error: new NangoError('invalid_bill_credentials'), response: null };
-            }
-
-            const { data } = response;
-
-            const parsedCreds = this.parseRawCredentials(data, 'BILL') as BillCredentials;
-            parsedCreds.username = username;
-            parsedCreds.password = password;
-            parsedCreds.dev_key = devKey;
-
-            return { success: true, error: null, response: parsedCreds };
-        } catch (err: any) {
-            const errorPayload = {
-                message: err.message || 'Unknown error',
-                name: err.name || 'Error'
-            };
-            logger.error(`Error fetching Bill credentials ${stringifyError(err)}`);
-            const error = new NangoError('bill_credentials_fetch_error', errorPayload);
-
-            return { success: false, error, response: null };
-        }
     }
 
     public async getTwoStepCredentials(
@@ -1574,13 +1493,19 @@ class ConnectionService {
             return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'BILL') {
             const { username, password, organization_id, dev_key } = connection.credentials as BillCredentials;
-            const { success, error, response: credentials } = await this.getBillCredentials(provider, username, password, organization_id, dev_key);
+            const create = await billClient.createCredentials({
+                provider: provider as ProviderBill,
+                username,
+                password,
+                organizationId: organization_id,
+                devKey: dev_key
+            });
 
-            if (!success || !credentials) {
-                return { success, error, response: null };
+            if (create.isErr()) {
+                return { success: false, error: create.error, response: null };
             }
 
-            return { success: true, error: null, response: credentials };
+            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'TWO_STEP') {
             const { token, expires_at, type, raw, ...dynamicCredentials } = connection.credentials as TwoStepCredentials;
             const {

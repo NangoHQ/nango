@@ -18,6 +18,7 @@ import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
+export * as billClient from './auth/bill.js';
 export * as jwtClient from './auth/jwt.js';
 export * as tableauClient from './auth/tableau.js';
 export * from './services/connections/credentials/refresh.js';
