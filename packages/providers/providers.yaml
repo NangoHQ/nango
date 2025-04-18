@@ -8156,20 +8156,21 @@ sentry:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}/api
+        base_url: https://${connectionConfig.hostname}/api
         headers:
             authorization: Bearer ${apiKey}
     docs: https://docs.nango.dev/integrations/all/sentry
     docs_connect: https://docs.nango.dev/integrations/all/sentry/connect
     connection_config:
-        domain:
+        hostname:
             type: string
-            title: Domain
-            description: The base domain of your Sentry account
+            title: Hostname
+            description: The Hostname of your Sentry account
             example: us.sentry.io
             format: hostname
             pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
             prefix: https://
+            order: 1
             doc_section: '#step-1-finding-your-api-domain'
     credentials:
         apiKey:
