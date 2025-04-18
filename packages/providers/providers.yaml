@@ -8195,7 +8195,7 @@ sentry:
             pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
             prefix: https://
             order: 1
-            doc_section: '#step-1-finding-your-api-domain'
+            doc_section: '#step-1-finding-your-hostname'
     credentials:
         apiKey:
             type: string
