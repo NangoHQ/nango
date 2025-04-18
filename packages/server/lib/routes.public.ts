@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
@@ -50,7 +50,7 @@ import { postPublicTrigger } from './controllers/sync/postTrigger.js';
 import syncController from './controllers/sync.controller.js';
 import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.js';
 import authMiddleware from './middleware/access.middleware.js';
-import { cliMinVersion } from './middleware/cliVersionCheck.js';
+import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { resourceCapping } from './middleware/resource-capping.middleware.js';
@@ -77,6 +77,11 @@ const connectSessionOrPublicAuth: RequestHandler[] = [
 export const publicAPI = express.Router();
 
 const bodyLimit = '75mb';
+
+if (flagEnforceCLIVersion) {
+    publicAPI.use(cliMaxVersion());
+}
+
 publicAPI.use(
     express.json({
         limit: bodyLimit,
