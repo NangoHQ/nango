@@ -1,35 +1,41 @@
 import { expect, describe, it, vi, afterEach } from 'vitest';
-import type { Config } from './flow.service.js';
 import FlowService from './flow.service.js';
+import type { FlowsYaml } from '@nangohq/types';
 
-const flows = {
+const flows: FlowsYaml = {
     integrations: {
         github: {
-            issues: {
-                runs: 'every half hour',
-                returns: ['GithubIssue'],
-                description:
-                    "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
+            syncs: {
+                issues: {
+                    runs: 'every half hour',
+                    output: ['GithubIssue'],
+                    endpoint: { method: 'GET', path: '/issues' },
+                    description:
+                        "Fetches the Github issues from all a user's repositories.\nDetails: full sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
+                },
+                'issues-lite': {
+                    runs: 'every day',
+                    auto_start: false,
+                    output: ['GithubIssue'],
+                    endpoint: { method: 'GET', path: '/issues/lite' },
+                    description:
+                        "Fetches the Github issues but up to a maximum of 15 for demo\npurposes.\nDetails: limited sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
+                },
+                'list-files-sync': {
+                    runs: 'every hour',
+                    auto_start: false,
+                    output: ['GithubRepoFile'],
+                    endpoint: { method: 'GET', path: '/files' }
+                }
             },
-            'issues-lite': {
-                runs: 'every day',
-                auto_start: false,
-                returns: ['GithubIssue'],
-                description:
-                    "Fetches the Github issues but up to a maximum of 15 for demo\npurposes.\nDetails: limited sync, doesn't track deletes, metadata is not required.\nScope(s): repo or public_repo\n"
-            },
-            'list-files-sync': {
-                type: 'sync',
-                runs: 'every hour',
-                auto_start: false,
-                returns: ['GithubRepoFile']
-            },
-            'list-repos-action': {
-                type: 'action',
-                returns: ['GithubRepo']
-            },
-            'write-file-action': {
-                type: 'action'
+            actions: {
+                'list-repos-action': {
+                    output: ['GithubRepo'],
+                    endpoint: { method: 'POST', path: '/repos' }
+                },
+                'write-file-action': {
+                    endpoint: { method: 'POST', path: '/files' }
+                }
             },
             models: {
                 GithubIssue: {
@@ -64,9 +70,12 @@ const flows = {
             }
         },
         gmail: {
-            emails: {
-                runs: 'every hour',
-                returns: ['GmailEmail']
+            syncs: {
+                emails: {
+                    runs: 'every hour',
+                    output: ['GmailEmail'],
+                    endpoint: { method: 'GET', path: '/emails' }
+                }
             },
             models: {
                 GmailEmail: {
@@ -81,18 +90,23 @@ const flows = {
             }
         },
         google: {
-            'workspace-org-units': {
-                runs: 'every 6 hours',
-                track_deletes: true,
-                returns: ['OrganizationalUnit']
-            },
-            'workspace-users': {
-                runs: 'every hour',
-                returns: ['User']
-            },
-            'workspace-user-access-tokens': {
-                runs: 'every hour',
-                returns: ['GoogleWorkspaceUserToken']
+            syncs: {
+                'workspace-org-units': {
+                    runs: 'every 6 hours',
+                    track_deletes: true,
+                    output: ['OrganizationalUnit'],
+                    endpoint: { method: 'GET', path: '/org-unit' }
+                },
+                'workspace-users': {
+                    runs: 'every hour',
+                    output: ['User'],
+                    endpoint: { method: 'GET', path: '/users' }
+                },
+                'workspace-user-access-tokens': {
+                    runs: 'every hour',
+                    output: ['GoogleWorkspaceUserToken'],
+                    endpoint: { method: 'GET', path: '/users/tokens' }
+                }
             },
             models: {
                 OrganizationalUnit: {
@@ -131,8 +145,7 @@ const flows = {
                     anonymous_app: 'boolean',
                     scopes: 'string'
                 }
-            },
-            rawName: 'google-workspace'
+            }
         }
     }
 };
@@ -144,7 +157,7 @@ describe('Flow service tests', () => {
 
     it('Fetch a flow config by providing a name', () => {
         vi.spyOn(FlowService, 'getAllAvailableFlows').mockImplementation(() => {
-            return flows as unknown as Config;
+            return flows;
         });
 
         const flow = FlowService.getFlow('issues-lite');
@@ -177,7 +190,7 @@ describe('Flow service tests', () => {
 `,
                     output: 'AlgoliaContact',
                     input: 'AlgoliaCreateContactInput',
-                    endpoint: 'POST /contacts'
+                    endpoint: { method: 'POST', path: '/contacts' }
                 }
             }
         });

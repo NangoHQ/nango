@@ -3,26 +3,39 @@ title: Instantly
 sidebarTitle: Instantly
 ---
 
-API configuration: [`instantly`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/instantly/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/instantly/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+
+
+## Useful links
 
 -   [Generate an API key](https://app.instantly.ai/app/settings/integrations)
 -   [API docs](https://app.theneo.io/instantly-ai/instantlyapidocs/introduction)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
 
 ## API gotchas
 - You need to be on the Hypergrowth plan (or above) to be able to access the API key.
@@ -51,6 +64,6 @@ API configuration: [`instantly`](https://nango.dev/providers.yaml)
         data: postData
     });
 ```
-- You can have a look at the following simple [action template](/integrations/integration-templates/instantly) based on [Instantly Set campaign name action](https://app.theneo.io/instantly-ai/instantlyapidocs/campaign-1/set-campaign-name)
+- You can have a look at the [pre-built integrations](#pre-built-integrations) based on [Instantly Set campaign name action](https://app.theneo.io/instantly-ai/instantlyapidocs/campaign-1/set-campaign-name)
 - Instantly enforces a general rate limit of 10 requests per second. For more details check [Instantly rate limits](https://app.theneo.io/instantly-ai/instantlyapidocs/introduction/rate-limits)
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/instantly.mdx)</Note>

@@ -1,0 +1,70 @@
+name: Run Client Tests
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+    merge_group:
+
+jobs:
+    compute-matrix:
+        runs-on: ubuntu-latest
+        outputs:
+            os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
+        steps:
+            - name: Set OS Matrix
+              id: set-os-matrix
+              run: |
+                  if [[ '${{ github.ref }}' == 'refs/heads/master' ]]; then
+                    echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
+                  else
+                    echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+                  fi
+    tests:
+        needs: compute-matrix
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [18.x, 20.x, 22.x]
+                os: ${{ fromJson(needs.compute-matrix.outputs.os-matrix) }}
+
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version: ${{ matrix.node-version }}
+
+            - run: npm ci
+
+            - name: Build Typescript
+              run: npm run ts-build
+
+            - run: npm run test:cli
+            - run: npm run test:unit -- packages/cli
+
+            - name: Build Node Client
+              run: |
+                  npm run -w @nangohq/node build
+
+            - name: Test Node CJS
+              shell: bash
+              run: |
+                  RES=$(node packages/node-client/tests/built.cjs)
+                  echo "$RES";
+                  [ "$RES" != *"Done"* ] || { exit 1; }
+
+            - name: Test Node ESM
+              shell: bash
+              run: |
+                  RES=$(node packages/node-client/tests/built.js)
+                  echo "$RES";
+                  [ "$RES" != *"Done"* ] || { exit 1; }

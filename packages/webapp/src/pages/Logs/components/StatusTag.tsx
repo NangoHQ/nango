@@ -3,41 +3,17 @@ import { Tag } from '../../../components/ui/label/Tag';
 
 export const StatusTag: React.FC<{ state: SearchOperationsData['state'] }> = ({ state }) => {
     if (state === 'success') {
-        return (
-            <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
-                Success
-            </Tag>
-        );
+        return <Tag variant={'success'}>Success</Tag>;
     } else if (state === 'running') {
-        return (
-            <Tag bgClassName="bg-blue-400 bg-opacity-30" textClassName="text-blue-400">
-                Running
-            </Tag>
-        );
+        return <Tag variant={'info'}>Running</Tag>;
     } else if (state === 'cancelled') {
-        return (
-            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
-                Cancelled
-            </Tag>
-        );
+        return <Tag variant={'gray'}>Cancelled</Tag>;
     } else if (state === 'failed') {
-        return (
-            <Tag bgClassName="bg-red-400 bg-opacity-30" textClassName="text-red-400">
-                Failed
-            </Tag>
-        );
+        return <Tag variant={'alert'}>Failed</Tag>;
     } else if (state === 'timeout') {
-        return (
-            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
-                Timeout
-            </Tag>
-        );
+        return <Tag variant={'gray'}>Timeout</Tag>;
     } else if (state === 'waiting') {
-        return (
-            <Tag bgClassName="bg-gray-400 bg-opacity-30" textClassName="text-gray-400">
-                Waiting
-            </Tag>
-        );
+        return <Tag variant={'gray'}>Waiting</Tag>;
     }
 
     return null;

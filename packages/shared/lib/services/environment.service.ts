@@ -1,30 +1,38 @@
 import * as uuid from 'uuid';
+
 import db from '@nangohq/database';
-import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
-import type { DBTeam, DBEnvironmentVariable, DBEnvironment } from '@nangohq/types';
-import { LogActionEnum } from '../models/Telemetry.js';
-import accountService from './account.service.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '@nangohq/utils';
+
+import { PROD_ENVIRONMENT_NAME } from '../constants.js';
+import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
+import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+
+import type { Orchestrator } from '../index.js';
+import type { DBEnvironment, DBEnvironmentVariable, DBTeam } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
-export const defaultEnvironments = ['prod', 'dev'];
+export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 const hashLocalCache = new Map<string, string>();
 
 class EnvironmentService {
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'name'>[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
         try {
-            const result = await db.knex.select<Pick<DBEnvironment, 'name'>[]>('name').from<DBEnvironment>(TABLE).where({ account_id });
+            const result = await db.knex
+                .select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name')
+                .from<DBEnvironment>(TABLE)
+                .where({ account_id, deleted: false });
 
             if (result == null || result.length == 0) {
                 return [];
             }
 
             return result;
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 accountId: account_id
@@ -50,7 +58,7 @@ class EnvironmentService {
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)
-                        .where({ name: envName })
+                        .where({ name: envName, deleted: false })
                         .first();
 
                     if (!env) {
@@ -66,7 +74,7 @@ class EnvironmentService {
     }
 
     async getAccountIdFromEnvironment(environment_id: number): Promise<number | null> {
-        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ id: environment_id });
+        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ id: environment_id, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -86,20 +94,6 @@ class EnvironmentService {
         return result || null;
     }
 
-    async getAccountUUIDFromEnvironmentUUID(environment_uuid: string): Promise<string | null> {
-        const result = await db.knex.select('account_id').from<DBEnvironment>(TABLE).where({ uuid: environment_uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        const accountId = result[0].account_id;
-
-        const uuid = await accountService.getUUIDFromAccountId(accountId);
-
-        return uuid;
-    }
-
     async getAccountAndEnvironmentByPublicKey(publicKey: string): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
@@ -115,7 +109,7 @@ class EnvironmentService {
                     const env = await db.knex
                         .select<Pick<DBEnvironment, 'account_id'>>('account_id')
                         .from<DBEnvironment>(TABLE)
-                        .where({ name: envName })
+                        .where({ name: envName, deleted: false })
                         .first();
                     if (!env) {
                         return null;
@@ -139,13 +133,14 @@ class EnvironmentService {
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
     ): Promise<{ account: DBTeam; environment: DBEnvironment } | null> {
-        const q = db.knex
+        const q = db.readOnly
             .select<{
                 account: DBTeam;
                 environment: DBEnvironment;
             }>(db.knex.raw('row_to_json(_nango_environments.*) as environment'), db.knex.raw('row_to_json(_nango_accounts.*) as account'))
             .from<DBEnvironment>(TABLE)
             .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .where('_nango_environments.deleted', false)
             .first();
 
         let hash: string | undefined;
@@ -184,49 +179,22 @@ class EnvironmentService {
         };
     }
 
-    async getIdByUuid(uuid: string): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ uuid });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
-    }
-
     async getById(id: number): Promise<DBEnvironment | null> {
-        try {
-            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id });
-
-            if (result == null || result.length == 0 || result[0] == null) {
-                return null;
-            }
-
-            return encryptionManager.decryptEnvironment(result[0]);
-        } catch (e) {
-            errorManager.report(e, {
-                environmentId: id,
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.DATABASE,
-                metadata: {
-                    id
-                }
-            });
-            return null;
-        }
+        const raw = await this.getRawById(id);
+        return encryptionManager.decryptEnvironment(raw);
     }
 
     async getRawById(id: number): Promise<DBEnvironment | null> {
         try {
-            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id });
+            const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ id, deleted: false });
 
             if (result == null || result.length == 0 || result[0] == null) {
                 return null;
             }
 
             return result[0];
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
@@ -239,7 +207,7 @@ class EnvironmentService {
     }
 
     async getByEnvironmentName(accountId: number, name: string): Promise<DBEnvironment | null> {
-        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ account_id: accountId, name });
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ account_id: accountId, name, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -248,82 +216,47 @@ class EnvironmentService {
         return encryptionManager.decryptEnvironment(result[0]);
     }
 
-    async createEnvironment(accountId: number, environment: string): Promise<DBEnvironment | null> {
-        const result = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name: environment }).returning('id');
+    async createEnvironment(accountId: number, name: string): Promise<DBEnvironment | null> {
+        const [environment] = await db.knex.from<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
 
-        if (Array.isArray(result) && result.length === 1 && result[0] && 'id' in result[0]) {
-            const environmentId = result[0]['id'];
-            const environment = await this.getById(environmentId);
-            if (!environment) {
-                return null;
-            }
-
-            const encryptedEnvironment = await encryptionManager.encryptEnvironment({
-                ...environment,
-                secret_key_hashed: await hashSecretKey(environment.secret_key)
-            });
-            await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update(encryptedEnvironment);
-
-            const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
-            return env;
+        if (!environment) {
+            return null;
         }
 
-        return null;
+        const encryptedEnvironment = await encryptionManager.encryptEnvironment({
+            ...environment,
+            secret_key_hashed: await hashSecretKey(environment.secret_key)
+        });
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environment.id }).update(encryptedEnvironment);
+
+        const env = encryptionManager.decryptEnvironment(encryptedEnvironment);
+        return env;
     }
 
     async createDefaultEnvironments(accountId: number): Promise<void> {
         for (const environment of defaultEnvironments) {
-            await this.createEnvironment(accountId, environment);
+            const newEnv = await this.createEnvironment(accountId, environment);
+            if (newEnv) {
+                await externalWebhookService.update(newEnv.id, {
+                    on_auth_creation: true,
+                    on_auth_refresh_error: true,
+                    on_sync_completion_always: true,
+                    on_sync_error: true
+                });
+            }
         }
-    }
-
-    async getEnvironmentName(id: number): Promise<string | null> {
-        const result = await db.knex.select('name').from<DBEnvironment>(TABLE).where({ id });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].name;
-    }
-
-    /**
-     * Get Environment Id For Account Assuming Prod
-     * @desc legacy function to get the environment id for an account assuming prod
-     * while the transition is being made from account_id to environment_id
-     */
-    async getEnvironmentIdForAccountAssumingProd(accountId: number): Promise<number | null> {
-        const result = await db.knex.select('id').from<DBEnvironment>(TABLE).where({ account_id: accountId, name: 'prod' });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0].id;
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {
-        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).whereNotNull('otlp_settings');
+        const result = await db.knex.select('*').from<DBEnvironment>(TABLE).where({ deleted: false }).whereNotNull('otlp_settings');
         if (result == null) {
             return [];
         }
         return result.map((env) => encryptionManager.decryptEnvironment(env));
     }
 
-    async editCallbackUrl(callbackUrl: string, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
-    }
-
-    async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
-    }
-
-    async editSlackNotifications(slack_notifications: boolean, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ slack_notifications }, ['id']);
-    }
-
-    async getSlackNotificationsEnabled(environmentId: number): Promise<boolean | null> {
-        const result = await db.knex.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId });
+    async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
+        const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -332,12 +265,17 @@ class EnvironmentService {
         return result[0].slack_notifications;
     }
 
-    async editHmacKey(hmacKey: string, id: number): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
-    }
-
-    async editOtlpSettings(environmentId: number, otlpSettings: { endpoint: string; headers: Record<string, string> } | null): Promise<DBEnvironment | null> {
-        return db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId }).update({ otlp_settings: otlpSettings }, ['id']);
+    async update({
+        accountId,
+        environmentId,
+        data
+    }: {
+        accountId: number;
+        environmentId: number;
+        data: Omit<Partial<DBEnvironment>, 'account_id' | 'id' | 'created_at' | 'updated_at'>;
+    }): Promise<DBEnvironment | null> {
+        const [res] = await db.knex.from<DBEnvironment>(TABLE).where({ account_id: accountId, id: environmentId, deleted: false }).update(data).returning('*');
+        return res || null;
     }
 
     async getEnvironmentVariables(environment_id: number): Promise<DBEnvironmentVariable[] | null> {
@@ -357,12 +295,14 @@ class EnvironmentService {
             return null;
         }
 
-        const mappedValues: DBEnvironmentVariable[] = values.map((value) => {
+        const mappedValues: Omit<DBEnvironmentVariable, 'id'>[] = values.map((value) => {
             return {
                 ...value,
                 created_at: new Date(),
                 updated_at: new Date(),
-                environment_id
+                environment_id,
+                value_iv: null,
+                value_tag: null
             };
         });
 
@@ -513,6 +453,33 @@ class EnvironmentService {
             });
 
         return true;
+    }
+
+    async getOauthCallbackUrl(environmentId?: number): Promise<string> {
+        const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+        if (environmentId != null) {
+            // TODO: remove this call
+            const environment: DBEnvironment | null = await this.getById(environmentId);
+            return environment?.callback_url || globalCallbackUrl;
+        }
+
+        return globalCallbackUrl;
+    }
+
+    async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
+        const configs = await configService.listProviderConfigs(environmentId);
+        for (const config of configs) {
+            // This handles deleting connections and syncs down the line
+            await configService.deleteProviderConfig({
+                id: config.id!,
+                environmentId,
+                providerConfigKey: config.unique_key,
+                orchestrator
+            });
+        }
+
+        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 }
 

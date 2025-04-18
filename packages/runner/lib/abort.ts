@@ -1,10 +1,11 @@
 import { abortControllers } from './state.js';
-import { logger } from './utils.js';
+import { logger } from './logger.js';
 
 export const abort = (taskId: string): boolean => {
     const ac = abortControllers.get(taskId);
     if (ac) {
         ac.abort();
+        abortControllers.delete(taskId);
         logger.info('Aborted task', { taskId });
         return true;
     } else {

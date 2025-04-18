@@ -27,11 +27,18 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
+            - run: npm ci
             - name: Validate YAML
-              run: |
-                  npm ci
-
-                  npx tsx scripts/validation/providers/validate.ts
+              run: npm run test:providers
 
             - name: Validate OpenAPI
               run: npm run test:openapi
+
+            - name: Ensure there are no broken mintlify links
+              run: |
+                  npm install -g mintlify
+                  cd docs-v2
+                  if ! mintlify broken-links | grep -q "No broken links found."; then
+                    echo "Broken links found in documentation"
+                    exit 1
+                  fi

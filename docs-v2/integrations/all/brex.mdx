@@ -3,21 +3,34 @@ title: Brex
 sidebarTitle: Brex
 ---
 
-API configurations: [`brex`](https://nango.dev/providers.yaml), [`brex-staging`](https://nango.dev/providers.yaml), [`brex-api-key`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/brex/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/brex/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth + Basic)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brex.mdx)</Note>
+
+
+## Useful links
 Brex offers both Basic auth `API key` and OAuth as authentication and Nango implements both. To register an OAuth app, you wil need to register as a brex developer partner. If you are a Brex client–i.e., you have your own Brex account, you can use Basic auth `API key`.
 
 -   [Register as Partner](https://www.brex.com/partners)
@@ -28,7 +41,7 @@ Brex offers both Basic auth `API key` and OAuth as authentication and Nango impl
 -   [Generate an API key](https://dashboard.brex.com/settings/developer)
 -   [Basic Auth-related docs](https://developer.brex.com/docs/authentication/#2-pass-the-user-token-in-your-api-call-headers)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brex.mdx)</Note>
 
 ## API gotchas
 
@@ -36,4 +49,11 @@ Brex offers both Basic auth `API key` and OAuth as authentication and Nango impl
 -   Refresh tokens expire after 90 days of non use. Make sure you regularly make an API request as long as you need the connection.
 -   Brex offers a staging system to test your apps, you will get access when you register as a partner. Staging details are [here](https://developer.brex.com/docs/partner_authentication/#api-servers)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brex.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brex.mdx)</Note>
+
+
+## Going further
+
+<Card title="Connect to Brex (api key)" icon="link" href="/integrations/all/brex-api-key/connect" horizontal>
+  Guide to connect to Brex (api key) using Connect UI
+</Card>

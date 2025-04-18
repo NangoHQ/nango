@@ -4,7 +4,7 @@ sidebarTitle: 'API config (providers.yaml)'
 icon: 'network-wired'
 ---
 
-API configurations are listed in the `providers.yaml` file, located in the [Nango GitHub repository](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml). Learn more about [API configurations](/understand/concepts/integrations#api-configurations).
+API configurations are listed in the `providers.yaml` file, located in the [Nango GitHub repository](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
 
 # Examples
 
@@ -193,7 +193,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="auth_mode" type="string" >
-    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL", "TWO_STEP".
+    The authentication mode. Must be one of: "API_KEY", "APP", "APP_STORE", "BASIC", "NONE", "OAUTH1", "OAUTH2", "OAUTH2_CC", "CUSTOM", "TBA", "TABLEAU", "JWT", "BILL", "TWO_STEP", "SIGNATURE".
 </ResponseField>
 
 <ResponseField name="auth" type="object">
@@ -275,11 +275,11 @@ slack:
 </ResponseField>
 
 <ResponseField name="disable_pkce" type="boolean">
-    Disables the [PKCE](https://oauth.net/2/pkce/) extention to the Authorization Code flow.
+    Disables the [PKCE](https://oauth.net/2/pkce/) extension to the Authorization Code flow.
 </ResponseField>
 
 <ResponseField name="docs" type="string">
-    The URL to the developper API documentation.
+    The URL to the developer API documentation.
 </ResponseField>
 
 <ResponseField name="docs_connect" type="string">
@@ -447,7 +447,7 @@ slack:
 </ResponseField>
 
 <ResponseField name="webhook_routing_script" type="array">
-    Specifies a script to handle external [webhooks](/understand/concepts/webhooks).
+    Specifies a script to handle external [webhooks](/guides/webhooks/webhooks-from-nango).
 </ResponseField>
 
 <ResponseField name="authorization_url_fragment" type="string">

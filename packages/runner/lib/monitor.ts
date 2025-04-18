@@ -1,29 +1,24 @@
 import os from 'os';
 import fs from 'fs';
-import type { NangoProps } from '@nangohq/shared';
-import { httpFetch, logger } from './utils.js';
-
-const MEMORY_WARNING_PERCENTAGE_THRESHOLD = 75;
+import { logger } from './logger.js';
+import { idle } from './idle.js';
+import { envs } from './env.js';
+import type { NangoProps } from '@nangohq/types';
+import { persistClient } from './clients/persist.js';
 
 export class RunnerMonitor {
-    private runnerId: string;
+    private runnerId: number;
     private tracked: Map<number, NangoProps> = new Map<number, NangoProps>();
-    private jobsServiceUrl: string = '';
-    private persistServiceUrl: string = '';
-    private idleMaxDurationMs = parseInt(process.env['IDLE_MAX_DURATION_MS'] || '') || 0;
+    private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
     private idleInterval: NodeJS.Timeout | null = null;
     private memoryInterval: NodeJS.Timeout | null = null;
 
-    constructor({ runnerId, jobsServiceUrl, persistServiceUrl }: { runnerId: string; jobsServiceUrl: string; persistServiceUrl: string }) {
+    constructor({ runnerId }: { runnerId: number }) {
         this.runnerId = runnerId;
-        this.jobsServiceUrl = jobsServiceUrl;
-        this.persistServiceUrl = persistServiceUrl;
-        if (this.jobsServiceUrl.length > 0) {
-            this.memoryInterval = this.checkMemoryUsage();
-            this.idleInterval = this.checkIdle();
-        }
+        this.memoryInterval = this.checkMemoryUsage();
+        this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
     }
 
@@ -49,13 +44,17 @@ export class RunnerMonitor {
         }
     }
 
+    resetIdleMaxDurationMs(): void {
+        this.idleMaxDurationMs = 1; // 0 is a special value that disables idle tracking
+    }
+
     private checkMemoryUsage(): NodeJS.Timeout {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return setInterval(async () => {
             const rss = process.memoryUsage().rss;
             const total = getTotalMemoryInBytes();
             const memoryUsagePercentage = (rss / total) * 100;
-            if (memoryUsagePercentage > MEMORY_WARNING_PERCENTAGE_THRESHOLD) {
+            if (memoryUsagePercentage > envs.RUNNER_MEMORY_WARNING_THRESHOLD) {
                 await this.reportHighMemoryUsage(memoryUsagePercentage);
             }
         }, 1000);
@@ -71,41 +70,47 @@ export class RunnerMonitor {
             }
         }
         this.lastMemoryReportDate = new Date();
-        for (const { environmentId, activityLogId } of this.tracked.values()) {
+        for (const { environmentId, activityLogId, secretKey } of this.tracked.values()) {
             if (!environmentId || !activityLogId) {
                 continue;
             }
-            await httpFetch({
-                method: 'post',
-                url: `${this.persistServiceUrl}/environment/${environmentId}/log`,
-                data: JSON.stringify({
+            await persistClient.postLog({
+                secretKey,
+                environmentId,
+                data: {
                     activityLogId: activityLogId,
-                    level: 'warn',
-                    msg: `Memory usage of nango scripts is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`
-                })
+                    log: {
+                        type: 'log',
+                        level: 'warn',
+                        message: `Memory usage is high: ${memoryUsagePercentage.toFixed(2)}% of the total available memory.`,
+                        createdAt: new Date().toISOString()
+                    }
+                }
             });
         }
     }
 
-    private checkIdle(): NodeJS.Timeout {
+    private checkIdle(timeoutMs: number = 10000): NodeJS.Timeout | null {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        return setInterval(async () => {
+        return setTimeout(async () => {
+            let nextTimeout = timeoutMs;
             if (this.idleMaxDurationMs > 0 && this.tracked.size == 0) {
                 const idleTimeMs = Date.now() - this.lastIdleTrackingDate;
                 if (idleTimeMs > this.idleMaxDurationMs) {
                     logger.info(`Runner '${this.runnerId}' idle for more than ${this.idleMaxDurationMs}ms`);
-                    await httpFetch({
-                        method: 'post',
-                        url: `${this.jobsServiceUrl}/idle`,
-                        data: JSON.stringify({
-                            runnerId: this.runnerId,
-                            idleTimeMs
-                        })
-                    });
+                    const res = await idle();
+                    if (res.isErr()) {
+                        logger.error(`Failed to idle runner`, res.error);
+                        nextTimeout = timeoutMs; // Reset to default on error
+                    }
+                    // Increase the timeout to 2 minutes after a successful idle
+                    // to give enough time to fleet to terminate the runner
+                    nextTimeout = 120_000;
                     this.lastIdleTrackingDate = Date.now();
                 }
             }
-        }, 10000);
+            this.checkIdle(nextTimeout);
+        }, timeoutMs);
     }
 }
 

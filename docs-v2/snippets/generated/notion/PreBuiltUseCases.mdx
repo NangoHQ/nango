@@ -1,0 +1,39 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Contents">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /contents/single` | Retrieve the entity type as well as an id for a Notion entity to later call<br />fetch-database or fetch-rich-page based on the type. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-content-metadata.md) |
+| `GET /contents` | Sync pages and databases metadata to further fetch the content<br />using a dedicated action | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/content-metadata.md) |
+</Accordion>
+
+
+<Accordion title="Databases">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /databases/single` | Fetch a specific Notion database by passing in the database id. This action fetches the database and outputs an object. Note that this should be used for small databases. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-database.md) |
+| `POST /databases/row` | Create a new row in a specified Notion database. <br />The properties are mapped to Notion-compatible formats based on the database schema. <br />Supported property types include:<br />- `title` (string): Creates a title property.<br />- `select` (string): Creates a select property.<br />- `multi_select` (array of strings): Creates a multi-select property.<br />- `status` (string): Creates a status property.<br />- `date` (string or object): Supports ISO date strings or objects with a `start` field.<br />- `checkbox` (boolean): Creates a checkbox property.<br />- `number` (number): Creates a number property.<br />- `url` (string): Creates a URL property.<br />- `email` (string): Creates an email property.<br />- `phone_number` (string): Creates a phone number property.<br />- `rich_text` (string): Creates a rich text property.<br />- `relation` (array of IDs): Creates a relation property. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/create-database-row.md) |
+| `GET /databases` | Sync a database content with each row as an entry. Store the top level<br />database information in the metadata to be able to reconcile the database | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/databases.md) |
+</Accordion>
+
+
+<Accordion title="Pages">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /pages/single` | Fetch a specific page in Notion by passing a pageId. This action fetches a page,<br />and its content and converts it into a full markdown. It transforms images,<br />tables, uploaded files, etc., into their markdown counterparts, providing a complete markdown. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/actions/fetch-rich-page.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /users` | Fetches a list of users from Notion | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/syncs/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

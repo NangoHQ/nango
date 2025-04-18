@@ -6,6 +6,7 @@ import { useStore } from '../../../store';
 import * as Table from '../../../components/ui/Table';
 import { InvitationAction, UserAction } from './Actions';
 import { Tag } from '../../../components/ui/label/Tag';
+import { useMemo } from 'react';
 
 export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
     {
@@ -37,7 +38,7 @@ export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
                 return null;
             }
 
-            return <Tag bgClassName="bg-yellow-base-35 text-yellow-base">invited</Tag>;
+            return <Tag variant={'info'}>invited</Tag>;
         }
     },
     {
@@ -57,9 +58,10 @@ export const columns: ColumnDef<ApiUser | ApiInvitation>[] = [
 export const TeamUsers: React.FC = () => {
     const env = useStore((state) => state.env);
     const { users, invitedUsers } = useTeam(env);
+    const tableData = useMemo(() => (users && invitedUsers ? [...users, ...invitedUsers] : []), [users, invitedUsers]);
 
     const table = useReactTable({
-        data: users && invitedUsers ? [...users, ...invitedUsers] : [],
+        data: tableData,
         columns,
         getCoreRowModel: getCoreRowModel()
     });

@@ -1,0 +1,19 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /list-sites` | This action will be used to display a list of sites to the end-user, who will pick the ones he wants to sync.<br />The connection metadata should be set based on the file selection. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/sharepoint-online/actions/list-shared-sites.md) |
+| `GET /fetch-file` | This action will be used to fetch the latest file download_url which can be used to download the actual file. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/sharepoint-online/actions/fetch-file.md) |
+| `GET /user-files` | Fetch all files from the user's drive and sync the metadata for each file. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/sharepoint-online/syncs/user-files.md) |
+| `GET /user-files/selected` | Fetch all selected files from a user's drive | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/sharepoint-online/syncs/user-files-selection.md) |
+| `GET /shared-files/selected` | This sync will be used to sync file metadata from SharePoint site based on the ones the user has picked. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/sharepoint-online/syncs/shared-sites-selection.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

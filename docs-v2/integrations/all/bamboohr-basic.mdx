@@ -1,0 +1,73 @@
+---
+title: BambooHR Basic
+sidebarTitle: BambooHR Basic
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/bamboohr-basic/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/bamboohr-basic/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
+
+
+## Useful links
+
+-   [Web API docs (their REST API)](https://documentation.bamboohr.com/docs/getting-started)
+-   [How to register/integrate an Application](https://documentation.bamboohr.com/docs#what-will-you-need-to-get-started)
+-   [Web API docs (their REST API)](https://documentation.bamboohr.com/reference/get-employee)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
+
+## Connection configuration in Nango
+
+BambooHR requires a user specific subdomain to authenticate
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
+        credentials: {
+            username: '<END-USER-API-KEY>',
+            password: 'x'
+        },
+        params: {
+            subdomain: '<bamboohr-subdomain>'
+        }
+    })
+```
+
+For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+
+## API gotchas
+
+- When creating a connection, you need to add the subdomain as a params argument, for example: `nango.auth('bamhoo-hr', '1', {params: {subdomain: '<your-subdomain>'}})`.
+- Authenticating via API key: BambooHR gives only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username and use `x` for the password. See BambooHR [documentation](https://documentation.bamboohr.com/docs#section-authentication)
+
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr-basic.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to BambooHR (basic auth)" icon="link" href="/integrations/all/bamboohr-basic/connect" horizontal>
+  Guide to connect to BambooHR (basic auth) using Connect UI
+</Card>

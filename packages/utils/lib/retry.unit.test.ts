@@ -33,8 +33,8 @@ describe('retry', () => {
                     delayMs: () => 0
                 }
             );
-        } catch (error: any) {
-            expect(error.message).toEqual('my error');
+        } catch (err: any) {
+            expect(err.message).toEqual('my error');
         }
         expect(count).toBe(3);
     });
@@ -53,8 +53,8 @@ describe('retry', () => {
                     retryIf: (n) => n == -1
                 }
             );
-        } catch (error: any) {
-            expect(error.message).toEqual('my error');
+        } catch (err: any) {
+            expect(err.message).toEqual('my error');
         }
         expect(count).toBe(1);
     });
@@ -76,8 +76,8 @@ describe('retry', () => {
                     retryOnError: (error) => error.message === 'another error'
                 }
             );
-        } catch (error: any) {
-            expect(error.message).toEqual('my error');
+        } catch (err: any) {
+            expect(err.message).toEqual('my error');
         }
         expect(count).toBe(1);
     });

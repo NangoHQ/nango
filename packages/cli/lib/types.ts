@@ -3,18 +3,19 @@ export interface GlobalOptions {
     debug: boolean;
 }
 
-export type ENV = 'local' | 'staging' | 'production';
+export type ENV = 'local' | 'cloud';
 
 export interface DeployOptions extends GlobalOptions {
     env?: ENV;
     local?: boolean;
-    staging?: boolean;
     version?: string;
     sync?: string;
     action?: string;
     allowDestructive?: boolean;
+    integration?: string;
 }
 
 export interface InternalDeployOptions {
     env?: ENV;
+    integration?: string;
 }

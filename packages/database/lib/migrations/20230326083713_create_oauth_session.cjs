@@ -1,4 +1,4 @@
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable('_nango_oauth_sessions', function (table) {
         table.uuid('id').notNullable();
         table.string('provider_config_key').notNullable();
@@ -17,6 +17,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable('_nango_oauth_sessions');
 };

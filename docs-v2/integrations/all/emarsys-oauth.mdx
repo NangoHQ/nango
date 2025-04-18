@@ -1,0 +1,51 @@
+---
+title: Emarsys OAuth
+sidebarTitle: Emarsys OAuth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/emarsys-oauth/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/emarsys-oauth/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys-oauth.mdx)</Note>
+
+
+## Useful links
+
+-   [Emarsys Core API WSSE Authentication](https://dev.emarsys.com/docs/core-api-reference/b3c3a1eba8515-authentication)
+-   [Emarsys Core API Oauth Authentication](https://dev.emarsys.com/docs/emarsys-core-api-guides/b3c3a1eba8515-authentication-in-v3-api#openid-connect-oauth-20)
+-   [Emarsys Core API docs](https://dev.emarsys.com/docs/core-api-reference/64bjdnkvt328t-overview-of-endpoint-batches)
+-   [Emarsys Core API rate limiting](https://dev.emarsys.com/docs/core-api-reference/cd1025a4f6b0d-miscellaneous)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys-oauth.mdx)</Note>
+
+## API gotchas
+
+- Emarsys offers different APIs(Emarsys core, Loyalty V4 and SMS), currently Nango support Emarsys core API which offers WSSE over SSL authentication.
+- When creating a new connection in Nango, use a combination of the `username` and `secret` that you received during onboarding. The `username` follows the format `account_name00X`, where X is a digit.
+- The OAuth Token has a fetch rate limiting of per `client_id`: 2 requests per minute, 10 requests per hour or per `customer_id`: 10,000 requests per day. For more details [OAuth Token Fetch Rate Limiting](https://dev.emarsys.com/docs/emarsys-core-api-guides/branches/OAuth-2.0/b3c3a1eba8515-authentication-in-v3-api#oauth-token-fetch-rate-limiting)
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/emarsys-oauth.mdx)</Note>
+
+<Card title="Connect to emarsys-oauth" icon="link" href="/integrations/all/emarsys-oauth/connect" horizontal>
+  Guide to connect to Emarsys Core API (Ouath) using Nango Connect.
+</Card>

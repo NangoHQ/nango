@@ -20,12 +20,11 @@
         "express": "4.20.0",
         "get-port": "7.1.0",
         "p-queue": "8.0.1",
-        "zod": "3.23.8"
+        "zod": "3.24.2"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "type-fest": "4.26.1",
-        "@types/node": "20.12.2",
-        "vitest": "1.6.0"
+        "type-fest": "4.32.0",
+        "vitest": "3.1.1"
     }
 }

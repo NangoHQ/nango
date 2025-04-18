@@ -1,0 +1,53 @@
+---
+title: bitdefender - How do I link my account?
+sidebarTitle: bitdefender
+---
+
+
+# Overview
+
+To authenticate with bitdefender, you need two key pieces of information:
+1. **API Key** - A unique identifier for your application on bitdefender.
+2. **Access Url** - API URL provided by bitdefender
+
+
+This guide will walk you through finding or creating those credentials within bitdefender.
+
+
+### Prerequisites:
+
+- You must set up an administrator account with bitdefender with the following rights: **Manage Networks**, **Manage Users**, **Manage Company**, and **View and analyze data**.
+
+
+#### Step 1: Finding Your API Key
+1. Log into `https://gravityzone.bitdefender.com/` with your bitdefender administrator account and navigate and select **My Account**
+
+<img src="/integrations/all/bitdefender/bitdefender-1.png" />
+
+
+2. To find the **Access Url**, click your username in the upper-right corner of the console and choose **My Account**. Go to the **Control Center API section**.
+
+<img src="/integrations/all/bitdefender/bitdefender-4.png" />
+
+
+3. Similarily, to generate an API key, navigate to the **API keys** and click **Add** button.
+
+<img src="/integrations/all/bitdefender/bitdefender-2.png" />
+
+
+4. Create a description for this key and select the  APIs you want to enable with this key. Finally, click **Generate**.
+
+<img src="/integrations/all/bitdefender/bitdefender-3.png" />
+
+Important: Copy and store your API Key securely. It will not be available when the modal closes.
+
+
+#### Step 2: Connect Your bitdefender Account
+
+<img src="/integrations/all/bitdefender/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the bitdefender authentication form.
+Enter your credentials as follows:
+- API Key: Your API Key
+- Access URL: Your access url
+Click "Connect" to complete the authentication.

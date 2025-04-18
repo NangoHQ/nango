@@ -5,7 +5,7 @@
  */
 const DB_TABLE = '_nango_connections';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     const existingCC = await knex.select('id', 'connection_config').from(DB_TABLE).whereNotNull('connection_config').andWhere('connection_config', '!=', '{}');
 
     for (const record of existingCC) {
@@ -18,7 +18,6 @@ exports.up = async function (knex, _) {
             if (key.includes('connectionConfig.params.')) {
                 const newKey = key.replace('connectionConfig.params.', '');
                 connection_config[newKey] = connection_config[key];
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete connection_config[key];
 
                 await knex.update({ connection_config }).from(DB_TABLE).where({ id });
@@ -29,6 +28,6 @@ exports.up = async function (knex, _) {
     return Promise.resolve();
 };
 
-exports.down = async function (_knex, _) {
+exports.down = async function () {
     return Promise.resolve();
 };

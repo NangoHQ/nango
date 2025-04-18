@@ -1,0 +1,76 @@
+---
+title: Workable OAuth
+sidebarTitle: Workable OAuth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/workable-oauth/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/workable-oauth/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workable-oauth.mdx)</Note>
+
+
+## Useful links
+
+Workable offers API keys ("API access token"), partner tokens, and OAuth for authentication. Nango currently only supports API-key-based authentication.
+
+-   [API Docs](https://workable.readme.io/reference)
+-   [How to generate an API key](https://workable.readme.io/reference/generate-an-access-token#generate-an-api-access-token)
+-   [OAuth related docs](https://workable.readme.io/page/oauth)
+-   [Workable API rate limits](https://workable.readme.io/reference/rate-limits)
+-   [Web API docs (their REST API)](https://workable.readme.io/reference/accounts)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workable-oauth.mdx)</Note>
+
+## Connection configuration in Nango
+
+Workable requires a user specific subdomain for the API base URL.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('workable', '<CONNECTION-ID>', {params: {subdomain: '<workable-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+
+## API gotchas
+
+- To authorize a Workable Connection in Nango you need to pass both the API key and the company's workable subdomain:
+```js
+nango.auth('workable', '<CONNECTION-ID>', {
+        credentials: {
+            apiKey: '<END-USER-API-KEY>'
+        },
+        params: {
+            subdomain: '<WORKABLE-SUBDOMAIN>'
+        }});
+```
+
+- The API base URL in Nango is set to `https://{subdomain}.workable.com` for future forward compatability. To call endpoints of the V3 API, prefix the endpoint with `/spi/v3/`, e.g. `/spi/v3/candidates`.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workable-oauth.mdx)</Note>
+
+<Card title="Connect to Workable" icon="link" href="/integrations/all/workable/connect" horizontal>
+  Guide to connect to Workable using Nango Connect.
+</Card>

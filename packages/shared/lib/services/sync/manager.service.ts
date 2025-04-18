@@ -1,29 +1,22 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
-import connectionService from '../connection.service.js';
-import { getLatestSyncJob } from './job.service.js';
-import {
-    createSync,
-    getSyncsByConnectionId,
-    getSyncsByProviderConfigKey,
-    getSyncsByProviderConfigAndSyncNames,
-    getSyncByIdAndName,
-    getSyncNamesByConnectionId,
-    softDeleteSync
-} from './sync.service.js';
-import { errorNotificationService } from '../notification/error.service.js';
-import configService from '../config.service.js';
-import type { Connection, NangoConnection } from '../../models/Connection.js';
-import type { SyncDeploymentResult, Sync, ReportedSyncJobStatus, SyncCommand } from '../../models/Sync.js';
-import { SyncType, SyncStatus } from '../../models/Sync.js';
-import { NangoError } from '../../utils/error.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { ServiceResponse } from '../../models/Generic.js';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import { getLogger, stringifyError } from '@nangohq/utils';
+
+import connectionService from '../connection.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
+import { getLatestSyncJob } from './job.service.js';
+import { createSync, getSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSyncsBySyncConfigId, softDeleteSync } from './sync.service.js';
+import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
+import { NangoError } from '../../utils/error.js';
+import configService from '../config.service.js';
 import environmentService from '../environment.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
+
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
-import type { DBEnvironment, IncomingFlowConfig } from '@nangohq/types';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ReportedSyncJobStatus, SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { CLIDeployFlowConfig, ConnectionInternal, DBConnection, DBConnectionDecrypted, DBEnvironment, SyncDeploymentResult } from '@nangohq/types';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -35,18 +28,29 @@ export const syncCommandToOperation = {
 } as const;
 
 export interface CreateSyncArgs {
-    connections: Connection[];
+    connections: ConnectionInternal[];
     providerConfigKey: string;
     environmentId: number;
-    sync: IncomingFlowConfig;
+    sync: CLIDeployFlowConfig;
     syncName: string;
+    syncVariant: string;
 }
 
 const logger = getLogger('sync.manager');
 
 export class SyncManagerService {
-    public async createSyncForConnection(nangoConnectionId: number, logContextGetter: LogContextGetter, orchestrator: Orchestrator): Promise<void> {
-        const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
+    public async createSyncForConnection({
+        connectionId,
+        syncVariant,
+        logContextGetter,
+        orchestrator
+    }: {
+        connectionId: number;
+        syncVariant: string;
+        logContextGetter: LogContextGetter;
+        orchestrator: Orchestrator;
+    }): Promise<void> {
+        const nangoConnection = (await connectionService.getConnectionById(connectionId))!;
         const nangoConfig = await getSyncConfig({ nangoConnection });
         if (!nangoConfig) {
             logger.error(
@@ -78,13 +82,20 @@ export class SyncManagerService {
             if (!syncConfig) {
                 continue;
             }
-            const sync = await createSync(nangoConnectionId, syncConfig);
+
+            const existingSync = await getSync({ connectionId, name: syncName, variant: syncVariant });
+            if (existingSync) {
+                await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: nangoConnection.environment_id });
+                continue;
+            }
+            const sync = await createSync({ connectionId, syncConfig, variant: syncVariant });
             if (sync) {
                 await orchestrator.scheduleSync({
                     nangoConnection,
                     sync,
                     providerConfig,
                     syncName,
+                    syncVariant,
                     syncData,
                     logContextGetter
                 });
@@ -92,51 +103,65 @@ export class SyncManagerService {
         }
     }
 
-    public async createSyncForConnections(
-        connections: Connection[],
-        syncName: string,
-        providerConfigKey: string,
-        environmentId: number,
-        sync: IncomingFlowConfig,
-        logContextGetter: LogContextGetter,
-        orchestrator: Orchestrator,
+    public async createSyncForConnections({
+        connections,
+        syncName,
+        syncVariant,
+        providerConfigKey,
+        environmentId,
+        flowConfig,
+        logContextGetter,
+        orchestrator,
         debug = false,
-        logCtx?: LogContext
-    ): Promise<boolean> {
+        logCtx
+    }: {
+        connections: ConnectionInternal[];
+        syncName: string;
+        syncVariant: string;
+        providerConfigKey: string;
+        environmentId: number;
+        flowConfig: Pick<CLIDeployFlowConfig, 'runs' | 'auto_start'>;
+        logContextGetter: LogContextGetter;
+        orchestrator: Orchestrator;
+        debug: boolean;
+        logCtx?: LogContext | undefined;
+    }): Promise<boolean> {
         try {
             const providerConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
             if (!providerConfig) {
                 throw new Error(`Provider config not found for ${providerConfigKey} in environment ${environmentId}`);
-            }
-            if (debug) {
-                await logCtx?.debug(`Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
             for (const connection of connections) {
                 const syncConfig = await getSyncConfigByParams(connection.environment_id, syncName, providerConfigKey);
                 if (!syncConfig) {
                     continue;
                 }
-                const createdSync = await createSync(connection.id as number, syncConfig);
-                if (!createdSync) {
+                const existingSync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
+                if (existingSync) {
+                    await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: connection.environment_id });
                     continue;
                 }
-                await orchestrator.scheduleSync({
-                    nangoConnection: connection,
-                    sync: createdSync,
-                    providerConfig: providerConfig,
-                    syncName,
-                    syncData: { ...sync, returns: sync.models, input: '' } as NangoIntegrationData,
-                    logContextGetter,
-                    debug
-                });
+                const sync = await createSync({ connectionId: connection.id, syncConfig, variant: syncVariant });
+                if (sync) {
+                    await orchestrator.scheduleSync({
+                        nangoConnection: connection,
+                        sync: sync,
+                        providerConfig: providerConfig,
+                        syncName,
+                        syncVariant,
+                        syncData: { runs: flowConfig.runs, auto_start: flowConfig.auto_start },
+                        logContextGetter,
+                        debug
+                    });
+                }
             }
             if (debug) {
-                await logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
+                void logCtx?.debug(`Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`);
             }
 
             return true;
-        } catch (e) {
-            await logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: e });
+        } catch (err) {
+            void logCtx?.error(`Error starting syncs for ${syncName} with ${connections.length} connections`, { error: err });
 
             return false;
         }
@@ -151,18 +176,19 @@ export class SyncManagerService {
     ): Promise<boolean> {
         let success = true;
         for (const syncToCreate of syncArgs) {
-            const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            const result = await this.createSyncForConnections(
+            const { connections, providerConfigKey, environmentId, sync: flowConfig, syncName, syncVariant } = syncToCreate;
+            const result = await this.createSyncForConnections({
                 connections,
                 syncName,
+                syncVariant,
                 providerConfigKey,
                 environmentId,
-                sync,
+                flowConfig,
                 logContextGetter,
                 orchestrator,
                 debug,
                 logCtx
-            );
+            });
             if (!result) {
                 success = false;
             }
@@ -188,8 +214,8 @@ export class SyncManagerService {
         await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
     }
 
-    public async softDeleteSyncsByConnection(connection: Connection, orchestrator: Orchestrator) {
-        const syncs = await getSyncsByConnectionId(connection.id!);
+    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {
+        const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
 
         if (!syncs) {
             return;
@@ -201,7 +227,7 @@ export class SyncManagerService {
     }
 
     public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
-        const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+        const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey });
 
         if (!syncs) {
             return;
@@ -217,21 +243,23 @@ export class SyncManagerService {
         orchestrator,
         environment,
         providerConfigKey,
-        syncNames,
+        syncIdentifiers,
         command,
         logContextGetter,
         connectionId,
-        initiator
+        initiator,
+        deleteRecords
     }: {
         recordsService: RecordsServiceInterface;
         orchestrator: Orchestrator;
         environment: DBEnvironment;
         providerConfigKey: string;
-        syncNames: string[];
+        syncIdentifiers: { syncName: string; syncVariant: string }[];
         command: SyncCommand;
         logContextGetter: LogContextGetter;
-        connectionId?: string;
+        connectionId?: string | undefined;
         initiator: string;
+        deleteRecords?: boolean;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id);
         const account = (await environmentService.getAccountFromEnvironment(environment.id))!;
@@ -248,35 +276,38 @@ export class SyncManagerService {
                 return { success: false, error, response: false };
             }
 
-            let syncs = syncNames;
+            let syncs = syncIdentifiers;
 
             if (syncs.length === 0) {
-                syncs = await getSyncNamesByConnectionId(connection.id as number);
+                syncs =
+                    (await getSyncsByConnectionId({ connectionId: connection.id }))?.map((sync) => ({
+                        syncName: sync.name,
+                        syncVariant: sync.variant
+                    })) || [];
             }
 
-            for (const syncName of syncs) {
-                const sync = await getSyncByIdAndName(connection.id as number, syncName);
+            for (const { syncName, syncVariant } of syncs) {
+                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
                     throw new Error(`Sync "${syncName}" doesn't exists.`);
                 }
 
                 await orchestrator.runSyncCommand({
-                    connectionId: connection.id!,
+                    connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         } else {
-            const syncs =
-                syncNames.length > 0
-                    ? await getSyncsByProviderConfigAndSyncNames(environment.id, providerConfigKey, syncNames)
-                    : await getSyncsByProviderConfigKey(environment.id, providerConfigKey);
+            const syncs = await getSyncsByProviderConfigKey({ environmentId: environment.id, providerConfigKey, filter: syncIdentifiers });
 
-            if (!syncs) {
+            if (!syncs || syncs.length === 0) {
                 const error = new NangoError('no_syncs_found');
 
                 return { success: false, error, response: false };
@@ -289,32 +320,44 @@ export class SyncManagerService {
                 }
 
                 await orchestrator.runSyncCommand({
-                    connectionId: connection.id!,
+                    connectionId: connection.id,
                     syncId: sync.id,
+                    syncVariant: sync.variant,
                     command,
                     environmentId: environment.id,
                     logCtx,
                     recordsService,
-                    initiator
+                    initiator,
+                    delete_records: deleteRecords
                 });
             }
         }
 
-        await logCtx.info('Sync was successfully updated', { command, syncNames });
+        void logCtx.info('Sync was successfully updated', { command, syncIdentifiers });
         await logCtx.success();
 
         return { success: true, error: null, response: true };
     }
 
-    public async getSyncStatus(
-        environmentId: number,
-        providerConfigKey: string,
-        syncNames: string[],
-        orchestrator: Orchestrator,
-        connectionId?: string,
+    public async getSyncStatus({
+        environmentId,
+        providerConfigKey,
+        syncIdentifiers,
+        orchestrator,
+        recordsService,
+        connectionId,
         includeJobStatus = false,
-        optionalConnection?: Connection | null
-    ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
+        optionalConnection
+    }: {
+        environmentId: number;
+        providerConfigKey: string;
+        syncIdentifiers: { syncName: string; syncVariant: string }[];
+        orchestrator: Orchestrator;
+        recordsService: RecordsServiceInterface;
+        connectionId?: string;
+        includeJobStatus: boolean;
+        optionalConnection?: DBConnectionDecrypted | null;
+    }): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
         let connection = optionalConnection;
@@ -327,28 +370,33 @@ export class SyncManagerService {
         }
 
         if (connection) {
-            for (const syncName of syncNames) {
-                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+            for (const { syncName, syncVariant } of syncIdentifiers) {
+                const sync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (!sync) {
                     continue;
                 }
 
-                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
+                const syncWithConnectionId: SyncWithConnectionId = {
+                    ...sync,
+                    connection_id: connection.connection_id
+                };
+
+                const reportedStatus = await this.syncStatus({
+                    sync: syncWithConnectionId,
+                    environmentId,
+                    providerConfigKey,
+                    includeJobStatus,
+                    orchestrator,
+                    recordsService
+                });
 
                 syncsWithStatus.push(reportedStatus);
             }
         } else {
-            const syncs =
-                syncNames.length > 0
-                    ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
-                    : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+            const syncs: SyncWithConnectionId[] = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey, filter: syncIdentifiers });
 
-            if (!syncs) {
-                return { success: true, error: null, response: syncsWithStatus };
-            }
-
-            for (const sync of syncs) {
-                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator });
+            for (const sync of syncs || []) {
+                const reportedStatus = await this.syncStatus({ sync, environmentId, providerConfigKey, includeJobStatus, orchestrator, recordsService });
 
                 syncsWithStatus.push(reportedStatus);
             }
@@ -379,12 +427,18 @@ export class SyncManagerService {
      * Trigger If Connections Exist
      * @desc for the recently deploy flows, create the sync and trigger it if there are connections
      */
-    public async triggerIfConnectionsExist(
-        flows: SyncDeploymentResult[],
-        environmentId: number,
-        logContextGetter: LogContextGetter,
-        orchestrator: Orchestrator
-    ) {
+    public async triggerIfConnectionsExist({
+        flows,
+        environmentId,
+        logContextGetter,
+        orchestrator
+    }: {
+        flows: SyncDeploymentResult[];
+        environmentId: number;
+        logContextGetter: LogContextGetter;
+        orchestrator: Orchestrator;
+    }) {
+        const variant = 'base';
         for (const flow of flows) {
             if (flow.type === 'action') {
                 continue;
@@ -399,16 +453,34 @@ export class SyncManagerService {
             const { providerConfigKey } = flow;
             const name = flow.name || flow.syncName;
 
-            await this.createSyncForConnections(
-                existingConnections as Connection[],
-                name as string,
+            await this.createSyncForConnections({
+                connections: existingConnections,
+                syncName: name as string,
+                syncVariant: variant,
                 providerConfigKey,
                 environmentId,
-                flow as unknown as IncomingFlowConfig,
+                flowConfig: flow as Required<SyncDeploymentResult>,
                 logContextGetter,
                 orchestrator,
-                false
-            );
+                debug: false
+            });
+        }
+    }
+    public async pauseSchedules({
+        syncConfigId,
+        environmentId,
+        orchestrator
+    }: {
+        syncConfigId: number;
+        environmentId: number;
+        orchestrator: Orchestrator;
+    }): Promise<void> {
+        const syncs = await getSyncsBySyncConfigId(environmentId, syncConfigId);
+        for (const sync of syncs) {
+            const res = await orchestrator.pauseSync({ syncId: sync.id, environmentId });
+            if (res.isErr()) {
+                logger.error('Failed to delete schedule for sync', { syncId: sync.id, error: res.error });
+            }
         }
     }
 
@@ -417,13 +489,15 @@ export class SyncManagerService {
         environmentId,
         providerConfigKey,
         includeJobStatus,
-        orchestrator
+        orchestrator,
+        recordsService
     }: {
-        sync: Sync;
+        sync: SyncWithConnectionId;
         environmentId: number;
         providerConfigKey: string;
         includeJobStatus: boolean;
         orchestrator: Orchestrator;
+        recordsService: RecordsServiceInterface;
     }): Promise<ReportedSyncJobStatus> {
         const latestJob = await getLatestSyncJob(sync.id);
         const schedules = await orchestrator.searchSchedules([{ syncId: sync.id, environmentId }]);
@@ -432,25 +506,43 @@ export class SyncManagerService {
         }
         const schedule = schedules.value.get(sync.id);
         let frequency = sync.frequency;
+        const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
         if (!frequency) {
-            const syncConfig = await getSyncConfigByParams(environmentId, sync.name, providerConfigKey);
             frequency = syncConfig?.runs || null;
         }
         if (!schedule) {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
+
+        const countRes = await recordsService.getRecordCountsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
+        if (countRes.isErr()) {
+            throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
+        }
+
+        const recordCount: Record<string, number> =
+            syncConfig?.models.reduce(
+                (acc, model) => {
+                    acc[model] = countRes.isOk() ? countRes.value[model]?.count || 0 : 0;
+                    return acc;
+                },
+                {} as Record<string, number>
+            ) || {};
+
         return {
             id: sync.id,
-            type: latestJob?.type === SyncType.INCREMENTAL ? latestJob.type : 'INITIAL',
+            connection_id: sync.connection_id,
+            type: latestJob?.type === SyncJobsType.INCREMENTAL ? latestJob.type : 'INITIAL',
             finishedAt: latestJob?.updated_at,
             nextScheduledSyncAt: schedule.nextDueDate,
             name: sync.name,
+            variant: sync.variant,
             status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule.state),
             frequency,
             latestResult: latestJob?.result,
             latestExecutionStatus: latestJob?.status,
+            recordCount,
             ...(includeJobStatus ? { jobStatus: latestJob?.status as SyncStatus } : {})
-        } as ReportedSyncJobStatus;
+        };
     }
 }
 

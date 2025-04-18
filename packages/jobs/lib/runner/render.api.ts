@@ -1,5 +1,6 @@
-import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
+
+import type { AxiosInstance, AxiosResponse } from 'axios';
 
 export class RenderAPI {
     httpClient: AxiosInstance;
@@ -22,7 +23,7 @@ export class RenderAPI {
         name: string;
         ownerId: string;
         image: { ownerId: string; imagePath: string };
-        serviceDetails: { env: string };
+        serviceDetails: { runtime: 'image'; plan: 'starter' | 'standard' | 'pro' | 'pro_plus' | 'pro_max' | 'pro_ultra' };
         envVars: { key: string; value: string }[];
     }): Promise<AxiosResponse> {
         return await this.httpClient.post('/services', data);
@@ -34,5 +35,9 @@ export class RenderAPI {
 
     async resumeService(params: { serviceId: string }): Promise<AxiosResponse> {
         return await this.httpClient.post(`/services/${params.serviceId}/resume`, {});
+    }
+
+    async deleteService(params: { serviceId: string }): Promise<AxiosResponse> {
+        return await this.httpClient.delete(`/services/${params.serviceId}`, {});
     }
 }

@@ -1,19 +1,20 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '@nangohq/database';
+
+import db, { dbNamespace, schema } from '@nangohq/database';
+
+import { LogActionEnum } from '../../../models/Telemetry.js';
+import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
-import { SyncType } from '../../../models/Sync.js';
-import type { Action, SyncConfigWithProvider, SyncConfig } from '../../../models/Sync.js';
-import { LogActionEnum } from '../../../models/Telemetry.js';
-import type { NangoConnection } from '../../../models/Connection.js';
+
+import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfigV1, StandardNangoConfig, NangoSyncConfig } from '../../../models/NangoConfig.js';
-import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { DBSyncConfig, NangoSyncEndpointV2, SlimSync } from '@nangohq/types';
+import type { Action, SyncConfigWithProvider } from '../../../models/Sync.js';
+import type { DBConnection, DBSyncConfig, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-type ExtendedSyncConfig = SyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] };
+type ExtendedSyncConfig = DBSyncConfig & { provider: string; unique_key: string; endpoints_object: NangoSyncEndpointV2[] | null };
 
 function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): StandardNangoConfig[] {
     const tmp: Record<string, StandardNangoConfig> = {};
@@ -22,43 +23,41 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
         if (!tmp[syncConfig.provider]) {
             tmp[syncConfig.provider] = {
                 actions: [],
-                postConnectionScripts: [],
                 providerConfigKey: syncConfig.unique_key,
                 provider: syncConfig.provider,
-                syncs: []
+                syncs: [],
+                [`on-events`]: []
             };
         }
 
         const integration = tmp[syncConfig.provider]!;
 
-        const input = syncConfig.input ? syncConfig.model_schema.find((m) => m.name === syncConfig.input) : undefined;
+        const input = syncConfig.input ? syncConfig.model_schema?.find((m) => m.name === syncConfig.input) : undefined;
         const flowObject: NangoSyncConfig = {
-            id: syncConfig.id!,
+            id: syncConfig.id,
             name: syncConfig.sync_name,
-            runs: syncConfig.runs,
             type: syncConfig.type,
             returns: syncConfig.models,
             description: syncConfig.metadata?.description || '',
-            track_deletes: syncConfig.track_deletes,
-            auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata?.scopes || [],
-            version: syncConfig.version as string,
+            version: syncConfig.version,
             is_public: syncConfig.is_public || false,
             pre_built: syncConfig.pre_built || false,
-            endpoints: syncConfig.endpoints_object,
-            input: input as any,
-            nango_yaml_version: 'v2',
+            endpoints: syncConfig.endpoints_object || [],
+            input: input,
             enabled: syncConfig.enabled,
-            layout_mode: 'nested',
-            models: syncConfig.model_schema as any,
+            models: syncConfig.model_schema || [],
             last_deployed: syncConfig.updated_at.toISOString(),
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null
         };
 
         if (syncConfig.type === 'sync') {
-            flowObject.sync_type = syncConfig.sync_type || SyncType.FULL;
+            flowObject.sync_type = syncConfig.sync_type || 'full';
+            flowObject.auto_start = syncConfig.auto_start;
+            flowObject.runs = syncConfig.runs;
+            flowObject.track_deletes = syncConfig.track_deletes;
             integration['syncs'].push(flowObject);
         } else {
             integration['actions'].push(flowObject);
@@ -73,7 +72,7 @@ export async function getSyncConfig({
     syncName,
     isAction = false
 }: {
-    nangoConnection: NangoConnection;
+    nangoConnection: DBConnection;
     syncName?: string;
     isAction?: boolean;
 }): Promise<NangoConfigV1 | null> {
@@ -112,7 +111,7 @@ export async function getSyncConfig({
             const fileLocation = syncConfig.file_location;
 
             providerConfig[configSyncName] = {
-                sync_config_id: syncConfig.id!,
+                sync_config_id: syncConfig.id,
                 runs: syncConfig.runs,
                 type: syncConfig.type,
                 returns: syncConfig.models,
@@ -124,7 +123,7 @@ export async function getSyncConfig({
                 version: syncConfig.version || '',
                 pre_built: syncConfig.pre_built || false,
                 is_public: syncConfig.is_public || false,
-                metadata: syncConfig.metadata!,
+                metadata: syncConfig.metadata,
                 enabled: syncConfig.enabled
             };
 
@@ -135,7 +134,7 @@ export async function getSyncConfig({
     return nangoConfig;
 }
 
-export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<SyncConfig[] | null> {
+export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<DBSyncConfig[] | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -145,9 +144,9 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
     return getSyncConfigsByConfigId(environment_id, config.id as number, isAction);
 }
 
-export async function getSyncConfigsByConfigId(environment_id: number, nango_config_id: number, isAction = false): Promise<SyncConfig[] | null> {
+export async function getSyncConfigsByConfigId(environment_id: number, nango_config_id: number, isAction = false): Promise<DBSyncConfig[] | null> {
     const result = await schema()
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .where({
             environment_id,
             nango_config_id,
@@ -164,26 +163,27 @@ export async function getSyncConfigsByConfigId(environment_id: number, nango_con
     return null;
 }
 
-export async function getFlowConfigsByParams(environment_id: number, providerConfigKey: string): Promise<DBSyncConfig[]> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
-    const result = await db.knex.from<DBSyncConfig>(TABLE).select<DBSyncConfig[]>('*').where({
-        environment_id,
-        nango_config_id: config.id!,
-        active: true,
-        deleted: false
-    });
+export async function countSyncConfigByConfigId(environmentId: number): Promise<{ nango_config_id: number; count: string }[]> {
+    const result = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .select<{ nango_config_id: number; count: string }[]>('nango_config_id', db.knex.raw('COUNT(1) as count'))
+        .where({
+            environment_id: environmentId,
+            active: true,
+            deleted: false
+        })
+        .groupBy('nango_config_id');
 
     return result;
 }
 
-export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
+export async function getSyncAndActionConfigsBySyncNameAndConfigId(
+    environment_id: number,
+    nango_config_id: number,
+    sync_name: string
+): Promise<DBSyncConfig[]> {
     try {
-        const result = await schema().from<SyncConfig>(TABLE).where({
+        const result = await schema().from<DBSyncConfig>(TABLE).where({
             environment_id,
             nango_config_id,
             sync_name,
@@ -194,8 +194,8 @@ export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_i
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -217,7 +217,7 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
     }
 
     const result = await schema()
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .where({
             environment_id,
             nango_config_id,
@@ -242,7 +242,7 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
         return [];
     }
 
-    const result = await schema().from<SyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at').where({
+    const result = await schema().from<DBSyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at').where({
         environment_id,
         nango_config_id,
         deleted: false,
@@ -257,20 +257,26 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
     return [];
 }
 
-export async function getUniqueSyncsByProviderConfig(environment_id: number, unique_key: string): Promise<SyncConfig[]> {
+export async function getUniqueSyncsByProviderConfig(
+    environment_id: number,
+    unique_key: string
+): Promise<Pick<DBSyncConfig, 'sync_name' | 'created_at' | 'updated_at' | 'metadata'>[]> {
     const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
 
     if (!nango_config_id) {
         return [];
     }
 
-    const result = await schema().from<SyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at', 'metadata').where({
-        environment_id,
-        nango_config_id,
-        deleted: false,
-        active: true,
-        type: 'sync'
-    });
+    const result = await schema()
+        .from<DBSyncConfig>(TABLE)
+        .select<Pick<DBSyncConfig, 'sync_name' | 'created_at' | 'updated_at' | 'metadata'>[]>('sync_name', 'created_at', 'updated_at', 'metadata')
+        .where({
+            environment_id,
+            nango_config_id,
+            deleted: false,
+            active: true,
+            type: 'sync'
+        });
 
     if (result) {
         return result;
@@ -279,7 +285,7 @@ export async function getUniqueSyncsByProviderConfig(environment_id: number, uni
     return [];
 }
 
-export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
+export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<DBSyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -288,7 +294,7 @@ export async function getSyncAndActionConfigByParams(environment_id: number, syn
 
     try {
         const result = await schema()
-            .from<SyncConfig>(TABLE)
+            .from<DBSyncConfig>(TABLE)
             .where({
                 environment_id,
                 sync_name,
@@ -302,8 +308,8 @@ export async function getSyncAndActionConfigByParams(environment_id: number, syn
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -324,7 +330,7 @@ export async function getSyncConfigByParams(
     sync_name: string,
     providerConfigKey: string,
     isAction?: boolean
-): Promise<SyncConfig | null> {
+): Promise<DBSyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -333,7 +339,7 @@ export async function getSyncConfigByParams(
 
     try {
         const result = await schema()
-            .from<SyncConfig>(TABLE)
+            .from<DBSyncConfig>(TABLE)
             .where({
                 environment_id,
                 sync_name,
@@ -349,8 +355,8 @@ export async function getSyncConfigByParams(
         if (result) {
             return result;
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId: environment_id,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -367,7 +373,7 @@ export async function getSyncConfigByParams(
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id, deleted: false }).update({
+    await schema().from<DBSyncConfig>(TABLE).where({ id, deleted: false }).update({
         active: false,
         deleted: true,
         deleted_at: new Date()
@@ -375,26 +381,26 @@ export async function deleteSyncConfig(id: number): Promise<void> {
 }
 
 export async function disableScriptConfig({ id, environmentId }: { id: number; environmentId: number }): Promise<number> {
-    return await db.knex.from<SyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: false });
+    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: false });
 }
 
 export async function enableScriptConfig({ id, environmentId }: { id: number; environmentId: number }): Promise<number> {
-    return await db.knex.from<SyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: true });
+    return await db.knex.from<DBSyncConfig>(TABLE).where({ id, environment_id: environmentId }).update({ enabled: true });
 }
 
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ nango_config_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+    await schema().from<DBSyncConfig>(TABLE).where({ nango_config_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 }
 
 export async function deleteSyncFilesForConfig(id: number, environmentId: number): Promise<void> {
     try {
-        const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
+        const files = await schema().from<DBSyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
         if (files.length > 0) {
             await remoteFileService.deleteFiles(files);
         }
-    } catch (error) {
-        errorManager.report(error, {
+    } catch (err) {
+        errorManager.report(err, {
             environmentId,
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
@@ -403,6 +409,12 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
             }
         });
     }
+}
+
+export async function getSyncsByEnvironmentId(environment_id: number): Promise<DBSyncConfig[]> {
+    const result = await db.knex.select('*').from<DBSyncConfig>(TABLE).where({ active: true, environment_id, enabled: true, deleted: false });
+
+    return result;
 }
 
 export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
@@ -417,7 +429,7 @@ export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: 
             '_nango_configs.provider',
             '_nango_configs.unique_key'
         )
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             active: true,
@@ -430,7 +442,7 @@ export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: 
     return result;
 }
 
-export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
+export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_id: number): Promise<(DBSyncConfig & ProviderConfig)[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
@@ -463,7 +475,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
                 `
             )
         )
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.environment_id': environment_id,
@@ -479,7 +491,7 @@ export async function getSyncConfigsWithConnections(
     providerConfigKey: string,
     environment_id: number
 ): Promise<{ connections: { connection_id: string }[]; provider: string; unique_key: string }[]> {
-    const result = await db.knex
+    const result = await db.readOnly
         .select(
             `${TABLE}.id`,
             '_nango_configs.provider',
@@ -500,7 +512,7 @@ export async function getSyncConfigsWithConnections(
                 `
             )
         )
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.environment_id': environment_id,
@@ -521,7 +533,7 @@ export async function getSyncConfigsWithConnections(
 export async function getSyncConfigsByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<SlimSync[]> {
     const result = await schema()
         .select(`${TABLE}.sync_name as name`, `${TABLE}.id`, `${TABLE}.enabled`)
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.environment_id': environment_id,
@@ -534,14 +546,13 @@ export async function getSyncConfigsByProviderConfigKey(environment_id: number, 
     return result;
 }
 
-export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig | null> {
-    const result = await schema()
-        .from<SyncConfig>(TABLE)
-        .select(`${TABLE}.*`)
+export async function getSyncConfigByJobId(job_id: number): Promise<DBSyncConfig | null> {
+    const result = await db.readOnly
+        .from<DBSyncConfig>(TABLE)
+        .select<DBSyncConfig>(`${TABLE}.*`)
         .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
         .where({
             '_nango_sync_jobs.id': job_id,
-            '_nango_sync_jobs.deleted': false,
             [`${TABLE}.deleted`]: false
         })
         .first()
@@ -554,10 +565,10 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
     return result;
 }
 
-export async function getSyncConfigBySyncId(syncId: string): Promise<SyncConfig | null> {
+export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfig | null> {
     const result = await schema()
-        .from<SyncConfig>(TABLE)
-        .select(`${TABLE}.*`)
+        .from<DBSyncConfig>(TABLE)
+        .select<DBSyncConfig>(`${TABLE}.*`)
         .join('_nango_syncs', `${TABLE}.id`, '_nango_syncs.sync_config_id')
         .where({
             '_nango_syncs.id': syncId
@@ -572,8 +583,8 @@ export async function getSyncConfigBySyncId(syncId: string): Promise<SyncConfig 
 }
 
 export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
-    const result = await schema()
-        .from<SyncConfig>(TABLE)
+    const result = await db.readOnly
+        .from<DBSyncConfig>(TABLE)
         .select(`${TABLE}.attributes`)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
@@ -591,27 +602,6 @@ export async function getAttributes(provider_config_key: string, sync_name: stri
     }
 
     return result.attributes;
-}
-
-export async function getProviderConfigBySyncAndAccount(sync_name: string, environment_id: number): Promise<string | null> {
-    const providerConfigKey = await schema()
-        .from<SyncConfig>(TABLE)
-        .select('_nango_configs.unique_key')
-        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .where({
-            active: true,
-            sync_name,
-            '_nango_configs.environment_id': environment_id,
-            '_nango_configs.deleted': false,
-            [`${TABLE}.deleted`]: false
-        })
-        .first();
-
-    if (providerConfigKey) {
-        return providerConfigKey.unique_key;
-    }
-
-    return null;
 }
 
 export function increment(input: number | string): number | string {
@@ -636,9 +626,9 @@ export function increment(input: number | string): number | string {
     }
 }
 
-export async function getPublicConfig(environment_id: number): Promise<SyncConfig[]> {
+export async function getPublicConfig(environment_id: number): Promise<DBSyncConfig[]> {
     return schema()
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .select(`${TABLE}.*`, '_nango_configs.provider', '_nango_configs.unique_key')
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
@@ -651,9 +641,9 @@ export async function getPublicConfig(environment_id: number): Promise<SyncConfi
         });
 }
 
-export async function getSyncConfigById(environmentId: number, id: number): Promise<SyncConfig | null> {
+export async function getSyncConfigById(environmentId: number, id: number): Promise<DBSyncConfig | null> {
     const result = await schema()
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .select('*')
         .where({
             id,
@@ -667,7 +657,7 @@ export async function getSyncConfigById(environmentId: number, id: number): Prom
 
 export async function updateFrequency(sync_config_id: number, runs: string): Promise<number> {
     return await db.knex
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .update({
             runs
         })
@@ -686,14 +676,14 @@ export async function getSyncConfigsAsStandardConfig(
     name?: string
 ): Promise<StandardNangoConfig[] | StandardNangoConfig | null> {
     const query = db.knex
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .select<ExtendedSyncConfig[]>(
             `${TABLE}.*`,
             '_nango_configs.unique_key',
             '_nango_configs.provider',
             db.knex.raw(
                 `(
-                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    SELECT json_agg(json_build_object('method', method, 'path', path, 'group', group_name))
                     FROM _nango_sync_endpoints
                     WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
                 ) as endpoints_object`
@@ -728,9 +718,9 @@ export async function getSyncConfigsAsStandardConfig(
     return standardConfig[0]!;
 }
 
-export async function getSyncConfigsByConfigIdForWebhook(environment_id: number, nango_config_id: number): Promise<SyncConfig[]> {
+export async function getSyncConfigsByConfigIdForWebhook(environment_id: number, nango_config_id: number): Promise<DBSyncConfig[]> {
     const result = await schema()
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .where({
             environment_id,
             nango_config_id,
@@ -742,9 +732,9 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
     return result;
 }
 
-export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<SyncConfig | null> {
-    const query = db.knex
-        .select<SyncConfig>('*')
+export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<DBSyncConfig | null> {
+    const query = db.readOnly
+        .select<DBSyncConfig>('*')
         .where({
             environment_id: opts.environmentId,
             sync_name: opts.name,
@@ -754,10 +744,26 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
             type: opts.isAction ? 'action' : 'sync',
             deleted: false
         })
-        .from<SyncConfig>(TABLE)
+        .from<DBSyncConfig>(TABLE)
         .first();
 
     const res = await query;
 
     return res || null;
+}
+
+export async function getSoftDeletedSyncConfig({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBSyncConfig[]> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db.knex
+        .select('*')
+        .from<DBSyncConfig>(`_nango_sync_configs`)
+        .where('deleted', true)
+        .andWhere('deleted_at', '<=', dateThreshold.toISOString())
+        .limit(limit);
+}
+
+export async function hardDeleteSyncConfig(id: number) {
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ id }).delete();
 }

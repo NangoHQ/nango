@@ -28,7 +28,7 @@ export async function dueSchedules(db: knex.Knex): Promise<Result<Schedule[]>> {
             .forUpdate('s')
             .skipLocked();
         return Ok(schedules.map(DbSchedule.from));
-    } catch (err: unknown) {
+    } catch (err) {
         console.log(err);
         return Err(new Error(`Error getting due schedules: ${stringifyError(err)}`));
     }

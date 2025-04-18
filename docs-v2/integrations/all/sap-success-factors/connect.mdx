@@ -1,0 +1,87 @@
+---
+title: SAP SuccessFactors - How do I link my account?
+sidebarTitle: SAP SuccessFactors
+---
+
+
+# Overview
+
+To authenticate with SAP SuccessFactors, you need:
+1. **API Server** - The base URL of the SAP SuccessFactors OData API.
+2. **Company ID** - Your company's unique identifier in SAP SuccessFactors.
+3. **API Key** - The API Key generated during the OAuth client application registration process in SAP SuccessFactors. 
+4. **SAML Assertion** - A Base64-encoded XML document generated using the private key of the X.509 certificate.
+
+This guide will walk you through obtaining these credentials within SAP SuccessFactors.
+
+### Prerequisites:
+
+- You must have an account with SAP SuccessFactors.
+
+### Instructions:
+#### Step 1: Finding your API Server
+1. Please visit the following [API Server URLs](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/93f95815070049ebaaff042d8322d518/af2b8d5437494b12be88fe374eba75b6.html)
+2. In the listed API Server URLs, search for the environment that matches your subdomain.
+- For example, if your domain was https://**salesdemo4**.successfactors.com, search for **salesdemo4**.
+<img src="/integrations/all/sap-success-factors/api_servers.png" />
+
+#### Step 2: Finding your Company ID
+1. Login to your **SAP SuccessFactors** account. Go to the upper right hand side and click on your profile image to view your username.
+<img src="/integrations/all/sap-success-factors/profile.png" />
+2. To find your SAP SuccessFactors **Company ID**, in the same dropdown menu, click **Show version information**. Locate **Company ID** in the modal that pops up:
+<img src="/integrations/all/sap-success-factors/company_id.png" />
+
+#### Step 3: Generating your API Key
+1. In your **Admin Center**, go to Tools, and search **Manage OAuth2 Client Applications** (If your page looks different, search for **Manage OAuth2Client Applications** in the search tool on your homepage).
+<img src="/integrations/all/sap-success-factors/search.png" />
+2. Click **Register Client Application**.
+<img src="/integrations/all/sap-success-factors/register.png" />
+3. Fill out **Application Name** & **Application URL** (what actually goes in these fields is not important, except that the URL has to begin with **https://**). You can also have a look at this [guide](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/d599f15995d348a1b45ba5603e2aba9b/6b3c741483de47b290d075d798163bc1.html#procedure) on how to fill this form.
+4. Click **Register** to save your registration.
+5. You’ve successfully registered your client application for OAuth2 authentication. An **API key** is generated and assigned to your application. You can view the **API key** by clicking **View** on the registered application list.
+
+#### Step 4: Generating your SAML Assertion
+- You can use a corporate IdP, for example, **SAP Identity Authentication Services**, or a third-party IdP.
+- You can also use the example code attached to [3031657](https://sap.github.io/SapMachine/#download) to generate SAML assertions for your application. This sample code provides a SAML generator tool that processes the input information offline and generates a **SAML assertion** without having to expose your **private key** to the Internet. For this example we will use a **Windows setup** to generate the SAML assertion.
+1. Download the file from [Downloading Apache Maven](https://maven.apache.org/download.cgi) and unzip it to your local drive. In the example below, the folder has been extracted to the C drive:
+2. At your computer: Click on **File Explorer > This PC (right button) > Properties > Advanced System Settings > Environment Variables**.
+3. At **System Variables**, ensure **JAVA_HOME** variable is set and points to the path of your JDK installation.
+<img src="/integrations/all/sap-success-factors/env.png" />
+4. At User Variables, click on new and set the path of the **bin** folder (from your JDK installation folders) to the variable **PATH** as shown below:
+5. Go to Command Prompt and execute the command below:**echo %JAVA_HOME%**
+- If it prints the folder path of the JDK installation, it means the installation was successful.
+<img src="/integrations/all/sap-success-factors/validate_jdk.png" />
+6. Open the Command Prompt and execute the command below:**mvn -v**
+- This means Maven installation is successful. Now we are good to proceed with generating SAML assertion using SAP provided offline tool.
+<img src="/integrations/all/sap-success-factors/validate_mvn.png" />
+7. Go to attachment section of this KBA and download the zip file.
+8. Extract folder from zip file to your local drive.
+9. Go to the folder and open **SAMLAssertion.properties** file.
+<img src="/integrations/all/sap-success-factors/folder.png" />
+<img src="/integrations/all/sap-success-factors/file.png" />
+10. Fill the data there;
+- **tokenUrl**: your API server endpoint from guide page [List of SAP SuccessFactors API Servers](https://help.sap.com/docs/SAP_SUCCESSFACTORS_PLATFORM/d599f15995d348a1b45ba5603e2aba9b/af2b8d5437494b12be88fe374eba75b6.html) followed by **/oauth/token**.
+- **clientId**: API Key which you received while registering the client in SF.
+- **userId**: the userId of the API user. If you use this field, you shouldn't use the **userName** field, leaving it blank.
+- **userName**: the username of the API user. If you use this field, you shouldn't use the **userId** field, leaving it blank.
+- **privateKey**: X.509 private key.
+- **expireInMinutes**: SAML assertions usually expires in 5-10 minutes. Anyway, here you should set it according your business requirements.
+<img src="/integrations/all/sap-success-factors/notepad.png" />
+11. Save the file and close.
+12. Open a new Command Prompt window and go to the directory where folder was extracted.
+13. Execute the command below: **mvn compile exec:java -Dexec.args="SAMLAssertion.properties"**.
+<img src="/integrations/all/sap-success-factors/execute_saml.png" />
+14. Once completed, it would generate **SAML Assertion**. Copy this and store it securely in your local drive.
+<img src="/integrations/all/sap-success-factors/generated_saml.png" />
+#### Step 5: Enter credentials in the Connect UI
+
+Once you have both the above keys:
+1. Open the form where you need to authenticate with SAP SuccessFactors.
+2. Enter the **API Server**, **Company ID**, **API Key** and **SAML Assertion** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/sap-success-factors/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to SAP SuccessFactors.
+ 

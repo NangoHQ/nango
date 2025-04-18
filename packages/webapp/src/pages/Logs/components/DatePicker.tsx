@@ -4,7 +4,7 @@ import { addDays, addMonths, format } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import { cn } from '../../../utils/utils';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Calendar } from '../../../components/ui/Calendar';
 import type { Preset } from '../../../utils/logs';
 import { getPresetRange, matchPresetFromRange, presets } from '../../../utils/logs';

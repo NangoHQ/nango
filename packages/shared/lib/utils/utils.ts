@@ -1,12 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
-import environmentService from '../services/environment.service.js';
-import type { Connection } from '../models/Connection.js';
-import type { DBEnvironment } from '@nangohq/types';
+
 import get from 'lodash-es/get.js';
 
-export { cloudHost, stagingHost };
+import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+
+import type { DBConnection, Provider } from '@nangohq/types';
 
 export enum UserType {
     Local = 'localhost',
@@ -95,18 +94,6 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
-export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
-    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
-    const [days, hours, minutes] = timeStr.split(':').map(Number);
-
-    if (days && hours && minutes) {
-        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
-        return new Date(Date.now() + milliseconds);
-    }
-
-    return undefined;
-}
-
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
@@ -135,37 +122,18 @@ export function getApiUrl() {
     return getServerBaseUrl();
 }
 
+export function getProvidersUrl() {
+    return `${getApiUrl()}/providers.json`;
+}
+
 export function getGlobalOAuthCallbackUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
 }
 
-export function getGlobalAppCallbackUrl() {
-    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
-    return baseUrl + '/app-auth/connect';
-}
-
 export function getGlobalWebhookReceiveUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
-}
-
-export async function getOauthCallbackUrl(environmentId?: number) {
-    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
-
-    if (environmentId != null) {
-        const environment: DBEnvironment | null = await environmentService.getById(environmentId);
-        return environment?.callback_url || globalCallbackUrl;
-    }
-
-    return globalCallbackUrl;
-}
-
-export function getAppCallbackUrl(_environmentId?: number) {
-    const globalAppCallbackUrl = getGlobalAppCallbackUrl();
-
-    // TODO add this to settings and make it configurable
-    return globalAppCallbackUrl;
 }
 
 /**
@@ -187,11 +155,27 @@ export function getWebsocketsPath(): string {
  */
 export function interpolateString(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
-        const r = replacers[b];
+        if (b === 'now') {
+            return new Date().toISOString();
+        }
+        const r = resolveKey(b, replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
 }
+function resolveKey(key: string, replacers: Record<string, any>): any {
+    const keys = key.split('.');
+    let value = replacers;
 
+    for (const part of keys) {
+        if (value && part in value) {
+            value = value[part];
+        } else {
+            return undefined;
+        }
+    }
+
+    return value;
+}
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
@@ -229,7 +213,7 @@ export function interpolateObject(obj: Record<string, any>, dynamicValues: Recor
 
 export function stripCredential(obj: any): any {
     if (typeof obj === 'string') {
-        return obj.replace(/credential\./g, '');
+        return obj.replace(/credentials\./g, '');
     } else if (typeof obj === 'object' && obj !== null) {
         const strippedObject: any = {};
         for (const [key, value] of Object.entries(obj)) {
@@ -240,11 +224,44 @@ export function stripCredential(obj: any): any {
     return obj;
 }
 
+export function stripStepResponse(obj: any, step: Record<string, any>): any {
+    if (typeof obj === 'string') {
+        return obj.replace(/\${step\d+\.(.*?)}/g, (_, key) => {
+            return step[key] || '';
+        });
+    } else if (typeof obj === 'object' && obj !== null) {
+        const strippedObject: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+            strippedObject[key] = stripStepResponse(value, step);
+        }
+        return strippedObject;
+    }
+    return obj;
+}
+
+export function extractStepNumber(str: string): number | null {
+    const match = str.match(/\${step(\d+)\..*?}/);
+
+    if (match && match[1]) {
+        const stepNumber = parseInt(match[1], 10);
+        return stepNumber;
+    }
+
+    return null;
+}
+
+export function getStepResponse(stepNumber: number, stepResponses: any[]): Record<string, any> {
+    if (stepResponses && stepResponses.length > stepNumber - 1 && stepResponses[stepNumber - 1]) {
+        return stepResponses[stepNumber - 1];
+    }
+    return {};
+}
+
 export function extractValueByPath(obj: Record<string, any>, path: string): any {
     return get(obj, path);
 }
 
-export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
+export function connectionCopyWithParsedConnectionConfig(connection: Pick<DBConnection, 'connection_config'>) {
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;
@@ -275,10 +292,21 @@ export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined):
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
     if (str.includes('${')) {
+        if (str.includes('||')) {
+            const parts = str.split('||').map((part) => part.trim());
+            const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+
+            if (left && left !== parts[0]) {
+                return left;
+            }
+
+            return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
+        }
+
         return interpolateStringFromObject(str, replacers);
-    } else {
-        return str;
     }
+
+    return str;
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {
@@ -288,4 +316,44 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 
 export function encodeParameters(params: Record<string, any>): Record<string, string> {
     return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, encodeURIComponent(String(value))]));
+}
+
+/**
+ * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ * It can parse booleans or strings only
+ */
+export function getConnectionMetadataFromTokenResponse(params: any, provider: Provider): Record<string, any> {
+    if (!params || !provider.token_response_metadata) {
+        return {};
+    }
+
+    const whitelistedKeys = provider.token_response_metadata;
+
+    const getValueFromDotNotation = (obj: any, key: string): any => {
+        return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
+    };
+
+    // Filter out non-strings, non-booleans & non-whitelisted keys.
+    const arr = Object.entries(params).filter(([k, v]) => {
+        const isStringValueOrBoolean = typeof v === 'string' || typeof v === 'boolean';
+        if (isStringValueOrBoolean && whitelistedKeys.includes(k)) {
+            return true;
+        }
+        // Check for dot notation keys
+        const dotNotationValue = getValueFromDotNotation(params, k);
+        return isStringValueOrBoolean && whitelistedKeys.includes(dotNotationValue);
+    });
+
+    // Add support for dot notation keys
+    const dotNotationArr = whitelistedKeys
+        .map((key) => {
+            const value = getValueFromDotNotation(params, key);
+            const isStringValueOrBoolean = typeof value === 'string' || typeof value === 'boolean';
+            return isStringValueOrBoolean ? [key, value] : null;
+        })
+        .filter(Boolean);
+
+    const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
+
+    return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }

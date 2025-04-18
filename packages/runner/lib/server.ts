@@ -3,14 +3,16 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import timeout from 'connect-timeout';
-import { getJobsUrl, getPersistAPIUrl } from '@nangohq/shared';
-import type { NangoProps } from '@nangohq/shared';
 import { RunnerMonitor } from './monitor.js';
 import { exec } from './exec.js';
 import { abort } from './abort.js';
 import superjson from 'superjson';
-import { httpFetch, logger } from './utils.js';
 import { abortControllers } from './state.js';
+import { envs, heartbeatIntervalMs } from './env.js';
+import type { NangoProps } from '@nangohq/types';
+import { jobsClient } from './clients/jobs.js';
+import { logger } from './logger.js';
+import { Locks } from './sdk/locks.js';
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -29,7 +31,8 @@ interface StartParams {
 const appRouter = router({
     health: healthProcedure(),
     abort: abortProcedure(),
-    start: startProcedure()
+    start: startProcedure(),
+    notifyWhenIdle: notifyWhenIdleProcedure()
 });
 
 export type AppRouter = typeof appRouter;
@@ -40,11 +43,8 @@ function healthProcedure() {
     });
 }
 
-const heartbeatIntervalMs = 30_000;
-const runnerId = process.env['RUNNER_ID'] || '';
-const jobsServiceUrl = process.env['NOTIFY_IDLE_ENDPOINT']?.replace(/\/idle$/, '') || getJobsUrl(); // TODO: remove legacy NOTIFY_IDLE_ENDPOINT once all runners are updated with JOBS_SERVICE_URL env var
-const persistServiceUrl = getPersistAPIUrl();
-const usage = new RunnerMonitor({ runnerId, jobsServiceUrl, persistServiceUrl });
+const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID });
+const locks = new Locks();
 
 function startProcedure() {
     return publicProcedure
@@ -65,26 +65,18 @@ function startProcedure() {
             // sending the result to the jobs service when done
             setImmediate(async () => {
                 const heartbeat = setInterval(async () => {
-                    await httpFetch({
-                        method: 'POST',
-                        url: `${jobsServiceUrl}/tasks/${taskId}/heartbeat`
-                    });
+                    await jobsClient.postHeartbeat({ taskId });
                 }, heartbeatIntervalMs);
                 try {
                     const abortController = new AbortController();
-                    if (nangoProps.scriptType == 'sync' && nangoProps.activityLogId) {
-                        abortControllers.set(taskId, abortController);
-                    }
+                    abortControllers.set(taskId, abortController);
 
-                    const { error, response: output } = await exec(nangoProps, code, codeParams, abortController);
+                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
 
-                    await httpFetch({
-                        method: 'PUT',
-                        url: `${jobsServiceUrl}/tasks/${taskId}`,
-                        data: JSON.stringify({
-                            nangoProps,
-                            ...(error ? { error } : { output })
-                        })
+                    await jobsClient.putTask({
+                        taskId,
+                        nangoProps,
+                        ...(error ? { error } : { output: output as any })
                     });
                 } finally {
                     clearInterval(heartbeat);
@@ -104,6 +96,14 @@ function abortProcedure() {
             logger.info('Received cancel', { input });
             return abort(input.taskId);
         });
+}
+
+function notifyWhenIdleProcedure() {
+    return publicProcedure.mutation(() => {
+        logger.info('Received notifyWhenIdle');
+        usage.resetIdleMaxDurationMs();
+        return true;
+    });
 }
 
 export const server = express();

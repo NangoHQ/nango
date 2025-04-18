@@ -1,0 +1,77 @@
+---
+title: Bill.com - How do I link my account?
+sidebarTitle: Bill
+---
+
+
+# Overview
+
+To authenticate with Bill, you need these pieces of information:
+1. **organizaton ID** - A unique identifier for your organization on Bill.
+2. **Developer Key** - Used to identify your developer account in API requests.
+3. **apiToken** - A unique token for your application on Bill.
+4. **session_id** - A unique sessionId for your application on Bill.
+
+
+This guide will walk you through finding or creating those credentials within Bill.
+
+
+### Prerequisites:
+
+- You must set up an account with Bill.
+
+
+#### Step 1: Finding Your API Key (token) and bill credentials
+1. Sign up for bill.com sandbox here **https://app-dev-sandbox.divvy.co/create-sandbox-company**
+
+
+2. As part of the setup, you receive a set of information for testing in the API sandbox environment.
+- **apiToken**: Your API token is used to uniquely identify your developer account in your API requests.
+- **username**: Your username is the email address used to sign in to your sandbox developer account. Use this value to sign in to the web app.
+- **password**: After setting up a test company with the Sandbox Access Form, click Set up password to complete the flow of creating a password.
+Use this value to sign in to the web app on your sandbox developer account.
+
+Important:
+- Copy and securely store your API Token. It will not be available after registration.
+- To get your **Organization ID** and **Developer Key** you must send an email to bill at [email](mailto:developerprogram@hq.bill.com).
+- Your organization ID will begin with `008`.
+- You will have to contact bill to get production credentials.
+
+3. Make this request to get your seesionId using cURL
+
+- Request
+```
+curl --request POST \
+--url 'https://gateway.stage.bill.com/connect/v3/login' \
+--header 'content-type: application/json' \
+--data '{
+  "username": "{username}",
+  "password": "{password}",
+  "organizationId": "{organization_id}",
+  "devKey": "{developer_key}"
+}'
+```
+
+- Response
+```
+{
+    "sessionId": "{session_id}",
+    "organizationId": "{organization_id}",
+    "userId": "{user_id}"
+}
+```
+
+
+
+#### Step 2: Connect Your Bill Account
+
+<img src="/integrations/all/bill-sandbox/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Bill authentication form.
+Enter your credentials as follows:
+- User Name: Your username is the email address used to sign in to your account
+- Password: Password associated with email address for your account
+- Organization ID: Your Organization ID
+- Developer Key: Your developer key
+
+Click "Connect" to complete the authentication.

@@ -1,6 +1,5 @@
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { useLogoutAPI } from '../utils/api';
-import { useNavigate } from 'react-router-dom';
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 import { useSWRConfig } from 'swr';
 import type { ApiUser } from '@nangohq/types';
@@ -20,8 +19,8 @@ export function useSignin() {
 
 export function useSignout() {
     const analyticsReset = useAnalyticsReset();
-    const nav = useNavigate();
-    const { mutate } = useSWRConfig();
+    //const nav = useNavigate();
+    const { mutate, cache } = useSWRConfig();
     const logoutAPI = useLogoutAPI();
 
     return async () => {
@@ -30,6 +29,18 @@ export function useSignout() {
         await logoutAPI(); // Destroy server session.
 
         await mutate(() => true, undefined, { revalidate: false }); // clean all cache
-        nav('/signin', { replace: true });
+
+        // swr/infinite doesn't currently support clearing cache keys with the
+        // default mechanism. see https://github.com/vercel/swr/issues/2497
+        for (const key of cache.keys()) {
+            await mutate(key, undefined, { revalidate: false });
+        }
+
+        if (window.ko && window.ko.reset) {
+            window.ko.reset();
+        }
+
+        // force a full reload to ensure all state is cleared
+        window.location.href = '/signin';
     };
 }

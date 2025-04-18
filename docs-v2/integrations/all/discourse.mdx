@@ -3,29 +3,42 @@ title: Discourse
 sidebarTitle: Discourse
 ---
 
-API configuration: [`discourse`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/discourse/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/discourse/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/discourse.mdx)</Note>
+
+
+## Useful links
 
 -   [Discourse API docs](https://docs.discourse.org)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/discourse.mdx)</Note>
 
 ## API gotchas
 
 - Discourse uses API_KEY authentication mode with `Api-Key: apiKey` and `Api-Username: API Username` in the request header to access different endpoints. Both keys can be obtained from the admin panel.
 - Since Nango automatically sets the `Accept: application/json` header, there is no need to include the `.json` suffix in API endpoint URLs. For example, instead of sending a request to `/categories.json`, you can send it to `/categories`, and the JSON response will still be returned.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/discourse.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/discourse.mdx)</Note>

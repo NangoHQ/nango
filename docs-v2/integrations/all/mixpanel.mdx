@@ -3,31 +3,48 @@ title: Mixpanel
 sidebarTitle: Mixpanel
 ---
 
-API configuration: [`mixpanel`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/mixpanel/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/mixpanel/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mixpanel.mdx)</Note>
+
+
+## Useful links
 
 -   [How to find API credentials (for end-users)](https://developer.mixpanel.com/reference/service-accounts)
 -   [Auth docs](https://developer.mixpanel.com/reference/service-accounts)
 -   [Web API docs (their REST API)](https://developer.mixpanel.com/reference/overview)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mixpanel.mdx)</Note>
 
 ## API gotchas
 
 - For Basic auth, Mixpanel uses the service account username as username and service account secret as password.
 - Mixpanel has [different API base URLs](https://docs.mixpanel.com/docs/other-bits/privacy-and-security/eu-residency) for querying data from European Unions projects.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mixpanel.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mixpanel.mdx)</Note>
+
+<Card title="Connect to Mixpanel" icon="link" href="/integrations/all/mixpanel/connect" horizontal>
+  Guide to connect to Mixpanel using Nango Connect.
+</Card>

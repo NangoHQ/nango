@@ -1,4 +1,12 @@
+import { errors } from '@elastic/elasticsearch';
+
+import { isTest } from '@nangohq/utils';
+
+import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
 import { client } from '../es/client.js';
+import { indexMessages } from '../es/schema.js';
+
+import type { estypes } from '@elastic/elasticsearch';
 import type {
     MessageRow,
     OperationRow,
@@ -9,12 +17,7 @@ import type {
     SearchOperationsSync,
     SearchOperationsType
 } from '@nangohq/types';
-import { indexMessages } from '../es/schema.js';
-import type { estypes } from '@elastic/elasticsearch';
-import { errors } from '@elastic/elasticsearch';
 import type { SetRequired } from 'type-fest';
-import { getFullIndexName, createCursor, parseCursor } from './helpers.js';
-import { isTest } from '@nangohq/utils';
 
 export interface ListOperations {
     count: number;
@@ -200,15 +203,21 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
 /**
  * Update a row (can be a partial update)
  */
-export async function update(opts: { id: OperationRow['id']; data: SetRequired<Partial<Omit<MessageRow, 'id'>>, 'createdAt'> }): Promise<void> {
+export async function updateOperation({
+    id,
+    data: { createdAt, ...rest }
+}: {
+    id: OperationRow['id'];
+    data: SetRequired<Partial<Omit<OperationRow, 'id'>>, 'createdAt'>;
+}): Promise<void> {
     await client.update({
-        index: getFullIndexName(indexMessages.index, opts.data.createdAt),
-        id: opts.id,
+        index: getFullIndexName(indexMessages.index, createdAt),
+        id: id,
         retry_on_conflict: 3,
         refresh: isTest,
         body: {
             doc: {
-                ...opts.data,
+                ...rest,
                 updatedAt: new Date().toISOString()
             }
         }
@@ -219,35 +228,35 @@ export async function update(opts: { id: OperationRow['id']; data: SetRequired<P
  * Set an operation as currently running
  */
 export async function setRunning(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'running', startedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as success
  */
 export async function setSuccess(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'success', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
 export async function setFailed(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'failed', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as failed
  */
 export async function setCancelled(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'cancelled', endedAt: new Date().toISOString() } });
 }
 
 /**
  * Set an operation as timeout
  */
 export async function setTimeouted(opts: Pick<OperationRow, 'id' | 'createdAt'>): Promise<void> {
-    await update({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
+    await updateOperation({ id: opts.id, data: { createdAt: opts.createdAt, state: 'timeout', endedAt: new Date().toISOString() } });
 }
 
 /**
@@ -280,7 +289,7 @@ export async function listMessages(opts: {
     }
     if (opts.search) {
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
-            match_phrase_prefix: { message: { query: opts.search } }
+            match_phrase_prefix: { meta_search: { query: opts.search } }
         });
     }
 
@@ -318,8 +327,9 @@ export async function listMessages(opts: {
         return {
             count: total,
             items,
-            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null,
-            cursorAfter: null
+            // Because there is no way to build a cursor if we have no results we resend the same one
+            cursorBefore: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : opts.cursorBefore,
+            cursorAfter: totalPage > 0 ? createCursor(hits.hits[0]!) : null
         };
     }
 
@@ -327,7 +337,7 @@ export async function listMessages(opts: {
         count: total,
         items,
         cursorBefore: totalPage > 0 ? createCursor(hits.hits[0]!) : null,
-        cursorAfter: totalPage > 0 && total > totalPage && totalPage >= opts.limit ? createCursor(hits.hits[hits.hits.length - 1]!) : null
+        cursorAfter: totalPage > 0 ? createCursor(hits.hits[hits.hits.length - 1]!) : null
     };
 }
 
@@ -379,6 +389,33 @@ export async function listFilters(opts: {
     return {
         items: agg.buckets as any
     };
+}
+
+export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+    await client.updateByQuery({
+        index: indexMessages.index,
+        wait_for_completion: opts.wait === true,
+        refresh: opts.wait === true,
+        query: {
+            bool: {
+                filter: [
+                    { range: { expiresAt: { lt: 'now' } } },
+                    { term: { 'operation.type': 'auth' } },
+                    { term: { 'operation.action': 'create_connection' } },
+                    {
+                        bool: {
+                            should: [{ term: { state: 'waiting' } }, { term: { state: 'running' } }]
+                        }
+                    }
+                ],
+                must_not: { exists: { field: 'parentId' } },
+                should: []
+            }
+        },
+        script: {
+            source: "ctx._source.state = 'cancelled'"
+        }
+    });
 }
 
 export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {

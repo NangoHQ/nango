@@ -1,9 +1,10 @@
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { GetIntegration, GetIntegrationFlows } from '@nangohq/types';
-import type { NangoSyncConfig } from '@nangohq/shared';
 import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
+
+import type { GetIntegration, GetIntegrationFlows, NangoSyncConfig } from '@nangohq/types';
 
 export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -60,7 +61,7 @@ export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req,
 function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
     for (const endpointObjA of flowA.endpoints) {
         for (const endpointObjB of flowB.endpoints) {
-            if (endpointObjB.method && endpointObjA.method && endpointObjB.path === endpointObjA.path) {
+            if (endpointObjB.method === endpointObjA.method && endpointObjB.path === endpointObjA.path) {
                 return true;
             }
         }

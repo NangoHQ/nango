@@ -1,50 +1,20 @@
 import type { Endpoint } from '../../api.js';
 
-export interface WebhookSettings {
-    alwaysSendWebhook: boolean;
-    sendAuthWebhook: boolean;
-    sendRefreshFailedWebhook: boolean;
-    sendSyncFailedWebhook: boolean;
-}
-
-export type UpdateWebhookSettings = Endpoint<{
+export type PatchWebhook = Endpoint<{
     Method: 'PATCH';
     Querystring: {
         env: string;
     };
-    Path: '/api/v1/environment/webhook/settings';
-    Body: WebhookSettings;
-    Success: WebhookSettings;
-}>;
-
-export type UpdatePrimaryUrl = Endpoint<{
-    Method: 'PATCH';
-    Querystring: {
-        env: string;
-    };
-    Path: '/api/v1/environment/webhook/url/primary-url';
+    Path: '/api/v1/environments/webhook';
     Body: {
-        url: string;
+        primary_url?: string | undefined;
+        secondary_url?: string | undefined;
+        on_sync_completion_always?: boolean | undefined;
+        on_auth_creation?: boolean | undefined;
+        on_auth_refresh_error?: boolean | undefined;
+        on_sync_error?: boolean | undefined;
     };
     Success: {
-        data: {
-            url: string;
-        };
-    };
-}>;
-
-export type UpdateSecondaryUrl = Endpoint<{
-    Method: 'PATCH';
-    Querystring: {
-        env: string;
-    };
-    Path: '/api/v1/environment/webhook/secondary-url';
-    Body: {
-        url: string;
-    };
-    Success: {
-        data: {
-            url: string;
-        };
+        success: boolean;
     };
 }>;

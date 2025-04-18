@@ -22,15 +22,20 @@ class OAuthSessionService {
     }
 
     /**
-     * This will clear the sessions that have been created for more than 24hrs,
+     * This will clear the sessions that have been created for more than "olderThan"
      * it's possible that some sessions are created but at the end the callback url
      * was not called hence the sessions still remains.
-     * We will use the method to clean such for now its cleans in the last 24hrs
      */
-    async clearStaleSessions() {
-        const currentTime = new Date().getTime();
-        const time24HoursAgo = new Date(currentTime - 24 * 60 * 60 * 1000);
-        return this.queryBuilder().where('created_at', '<', time24HoursAgo).delete();
+    async deleteExpiredSessions({ limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await db.knex
+            .from<OAuthSession>('_nango_oauth_sessions')
+            .whereIn('id', function (sub) {
+                sub.select('id').from<OAuthSession>('_nango_oauth_sessions').where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+            })
+            .delete();
     }
 
     private queryBuilder() {

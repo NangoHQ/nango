@@ -3,52 +3,86 @@ import * as Table from '../../../components/ui/Table';
 import { Tag } from '../../../components/ui/label/Tag';
 import { Link } from 'react-router-dom';
 import { EllipsisHorizontalIcon, QueueListIcon } from '@heroicons/react/24/outline';
-import { formatFrequency, getRunTime, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../../../utils/utils';
+import {
+    formatFrequency,
+    getRunTime,
+    parseLatestSyncResult,
+    formatDateToUSFormat,
+    interpretNextRun,
+    formatQuantity,
+    truncateMiddle
+} from '../../../utils/utils';
 import { getLogsUrl } from '../../../utils/logs';
 import { UserFacingSyncCommand } from '../../../types';
 import type { RunSyncCommand, SyncResponse } from '../../../types';
-import { useRunSyncAPI } from '../../../utils/api';
 import { useStore } from '../../../store';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import type { ApiConnectionFull } from '@nangohq/types';
-import Button from '../../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../../components/ui/button/Button';
 import { Popover, PopoverTrigger } from '../../../components/ui/Popover';
 import { PopoverContent } from '@radix-ui/react-popover';
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
 import { SimpleTooltip } from '../../../components/SimpleTooltip';
-import { IconClockPause, IconClockPlay, IconPlayerPlay, IconRefresh, IconX } from '@tabler/icons-react';
+import { IconClockPause, IconClockPlay, IconRefresh, IconX } from '@tabler/icons-react';
 import { useToast } from '../../../hooks/useToast';
 import { mutate } from 'swr';
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from '../../../components/ui/Select';
+import { Checkbox } from '../../../components/ui/Checkbox';
+import { apiRunSyncCommand } from '../../../hooks/useSyncs';
 
-export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null }> = ({ sync, connection, provider }) => {
+export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFull; provider: string | null; showSyncVariant: boolean }> = ({
+    sync,
+    connection,
+    provider,
+    showSyncVariant
+}) => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const runCommandSyncAPI = useRunSyncAPI(env);
 
     const [syncCommandButtonsDisabled, setSyncCommandButtonsDisabled] = useState(false);
 
     const [showPauseStartLoader, setShowPauseStartLoader] = useState(false);
     const [showInterruptLoader, setShowInterruptLoader] = useState(false);
-    const [showTriggerIncrementalLoader, setShowTriggerIncrementalLoader] = useState(false);
+    const [triggerMode, setTriggerMode] = useState<'incremental' | 'full'>(sync.sync_type === 'full' ? 'full' : 'incremental');
+    const [deleteRecords, setDeleteRecords] = useState(false);
     const [modalSpinner, setModalShowSpinner] = useState(false);
     const [openConfirm, setOpenConfirm] = useState(false);
 
-    const confirmFullRefresh = async () => {
-        if (!sync || syncCommandButtonsDisabled) {
+    const confirmTrigger = async () => {
+        if (!sync || !provider) {
             return;
         }
 
         setSyncCommandButtonsDisabled(true);
         setModalShowSpinner(true);
-        const res = await runCommandSyncAPI('RUN_FULL', sync.schedule_id, sync.nango_connection_id, sync.id, sync.name, provider || '');
+        const res =
+            triggerMode === 'incremental'
+                ? await apiRunSyncCommand(env, {
+                      command: 'RUN',
+                      schedule_id: sync.schedule_id,
+                      nango_connection_id: sync.nango_connection_id,
+                      sync_id: sync.id,
+                      sync_name: sync.name,
+                      sync_variant: sync.variant,
+                      provider
+                  })
+                : await apiRunSyncCommand(env, {
+                      command: 'RUN_FULL',
+                      schedule_id: sync.schedule_id,
+                      nango_connection_id: sync.nango_connection_id,
+                      sync_id: sync.id,
+                      sync_name: sync.name,
+                      sync_variant: sync.variant,
+                      provider,
+                      delete_records: deleteRecords
+                  });
 
-        if (res?.status === 200) {
-            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`), undefined);
+        if (res.res.status === 200) {
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
             toast({ title: `The full resync was successfully triggered`, variant: 'success' });
         } else {
-            const data = await res?.json();
-            toast({ title: data.error, variant: 'error' });
+            const data = res.json;
+            toast({ title: data.error.message, variant: 'error' });
         }
 
         setModalShowSpinner(false);
@@ -69,24 +103,38 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
     const resetLoaders = () => {
         setShowPauseStartLoader(false);
         setShowInterruptLoader(false);
-        setShowTriggerIncrementalLoader(false);
     };
 
-    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: string, syncName: string) => {
-        if (syncCommandButtonsDisabled) {
+    const syncCommand = async (
+        command: RunSyncCommand,
+        nango_connection_id: number,
+        scheduleId: string,
+        syncId: string,
+        syncName: string,
+        syncVariant: string
+    ) => {
+        if (syncCommandButtonsDisabled || !provider) {
             return;
         }
 
         setSyncCommandButtonsDisabled(true);
-        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, provider || '');
+        const res = await apiRunSyncCommand(env, {
+            command,
+            schedule_id: scheduleId,
+            nango_connection_id,
+            sync_id: syncId,
+            sync_name: syncName,
+            sync_variant: syncVariant,
+            provider
+        });
 
-        if (res?.status === 200) {
-            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`), undefined);
+        if (res.res.status === 200) {
+            await mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/sync`));
             const niceCommand = UserFacingSyncCommand[command];
             toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
         } else {
-            const data = await res?.json();
-            toast({ title: data.error, variant: 'error' });
+            const data = res.json;
+            toast({ title: data.error.message, variant: 'error' });
         }
 
         setSyncCommandButtonsDisabled(false);
@@ -96,7 +144,18 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
     return (
         <Table.Row className="text-white">
             <Table.Cell bordered>
-                <div className="w-36 max-w-3xl truncate">{sync.name}</div>
+                <div className="w-36 max-w-3xl truncate">
+                    <div className="flex gap-2">
+                        {sync.name}
+                        {showSyncVariant && (
+                            <SimpleTooltip tooltipContent={sync.variant}>
+                                <Tag variant="gray1" textCase="normal" size="sm">
+                                    {truncateMiddle(sync.variant)}
+                                </Tag>
+                            </SimpleTooltip>
+                        )}
+                    </div>
+                </div>
             </Table.Cell>
             <Table.Cell bordered>
                 <div className="w-36 max-w-3xl truncate">{Array.isArray(sync.models) ? sync.models.join(', ') : sync.models}</div>
@@ -105,36 +164,21 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                 {sync.latest_sync && (
                     <SimpleTooltip tooltipContent={getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}>
                         <Link to={logUrl}>
-                            {sync.latest_sync.status === 'PAUSED' && (
-                                <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
-                                    Paused
-                                </Tag>
-                            )}
-                            {sync.latest_sync.status === 'STOPPED' && (
-                                <Tag bgClassName="bg-red-base bg-opacity-30" textClassName="text-red-base">
-                                    Failed
-                                </Tag>
-                            )}
-                            {sync.latest_sync.status === 'RUNNING' && (
-                                <Tag bgClassName="bg-blue-base bg-opacity-30" textClassName="text-blue-base">
-                                    Syncing
-                                </Tag>
-                            )}
-                            {sync.latest_sync.status === 'SUCCESS' && (
-                                <Tag bgClassName="bg-green-base bg-opacity-30" textClassName="text-green-base">
-                                    Success
-                                </Tag>
-                            )}
+                            {sync.latest_sync.status === 'PAUSED' && <Tag variant={'warning'}>Paused</Tag>}
+                            {sync.latest_sync.status === 'STOPPED' && <Tag variant={'alert'}>Failed</Tag>}
+                            {sync.latest_sync.status === 'RUNNING' && <Tag variant={'info'}>Syncing</Tag>}
+                            {sync.latest_sync.status === 'SUCCESS' && <Tag variant={'success'}>Success</Tag>}
                         </Link>
                     </SimpleTooltip>
                 )}
-                {!sync.latest_sync && (
-                    <Tag bgClassName="bg-gray-500 bg-opacity-30" textClassName="text-gray-500">
-                        NEVER RUN
-                    </Tag>
-                )}
+                {!sync.latest_sync && <Tag variant={'gray'}>NEVER RUN</Tag>}
             </Table.Cell>
             <Table.Cell bordered>{formatFrequency(sync.frequency)}</Table.Cell>
+            <Table.Cell bordered>
+                <SimpleTooltip tooltipContent={JSON.stringify(sync.record_count, null, 2)}>
+                    {formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0))}
+                </SimpleTooltip>
+            </Table.Cell>
             <Table.Cell bordered>
                 <SimpleTooltip
                     tooltipContent={
@@ -157,21 +201,17 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                     </>
                 )}
 
-                {sync.schedule_status === 'PAUSED' && (
-                    <Tag bgClassName="bg-yellow-500 bg-opacity-30" textClassName="text-yellow-500">
-                        Schedule Paused
-                    </Tag>
-                )}
+                {sync.schedule_status === 'PAUSED' && <Tag variant="warning">Schedule Paused</Tag>}
             </Table.Cell>
             <Table.Cell bordered>
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="zombie">
+                        <Button variant="icon" size="xs">
                             <EllipsisHorizontalIcon className="flex h-5 w-5 cursor-pointer" />
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="z-10">
-                        <div className="bg-active-gray rounded">
+                        <div className="bg-grayscale-800 rounded">
                             <div className="flex flex-col w-[240px] p-[10px]">
                                 <Button
                                     variant="popoverItem"
@@ -183,7 +223,8 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                             sync.nango_connection_id,
                                             sync.schedule_id,
                                             sync.id,
-                                            sync.name
+                                            sync.name,
+                                            sync.variant
                                         );
                                     }}
                                     isLoading={showPauseStartLoader}
@@ -206,33 +247,12 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                         disabled={syncCommandButtonsDisabled}
                                         onClick={() => {
                                             setShowInterruptLoader(true);
-                                            void syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
+                                            void syncCommand('CANCEL', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name, sync.variant);
                                         }}
                                         isLoading={showInterruptLoader}
                                     >
                                         <IconX className="flex h-4 w-4" />
                                         <span className="pl-2">Cancel Execution</span>
-                                    </Button>
-                                )}
-                                {sync.status !== 'RUNNING' && (
-                                    <Button
-                                        variant="popoverItem"
-                                        disabled={syncCommandButtonsDisabled}
-                                        isLoading={showTriggerIncrementalLoader}
-                                        onClick={() => {
-                                            setShowTriggerIncrementalLoader(true);
-                                            void syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name);
-                                        }}
-                                    >
-                                        <IconPlayerPlay className="flex h-4 w-4" />
-                                        <div className="pl-2 flex gap-2 items-center">
-                                            Trigger {sync.sync_type === 'incremental' ? 'Incremental' : 'Execution'}
-                                            {sync.sync_type === 'incremental' && (
-                                                <SimpleTooltip tooltipContent="Incremental: the existing cache and the last sync date will be preserved, only new/updated data will be synced.">
-                                                    {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                                </SimpleTooltip>
-                                            )}
-                                        </div>
                                     </Button>
                                 )}
 
@@ -241,29 +261,78 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                         <DialogTrigger asChild>
                                             <Button variant="popoverItem" disabled={syncCommandButtonsDisabled} isLoading={modalSpinner}>
                                                 <IconRefresh className="flex h-4 w-4" />
-                                                <div className="pl-2 flex gap-2 items-center">
-                                                    Trigger Full Refresh
-                                                    <SimpleTooltip tooltipContent="Full refresh: the existing cache and last sync date will be deleted, all historical data will be resynced.">
-                                                        {!syncCommandButtonsDisabled && <QuestionMarkCircledIcon />}
-                                                    </SimpleTooltip>
-                                                </div>
+                                                <div className="pl-2 flex gap-2 items-center">Trigger Execution</div>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogTitle>Are you absolutely sure?</DialogTitle>
-                                            <DialogDescription>
-                                                Triggering a full refresh in Nango will clear all existing records and reset the last sync date used for
-                                                incremental syncs. This means every record will be fetched again from the start of your sync window and treated
-                                                as new.
-                                            </DialogDescription>
+                                        <DialogContent className="h-[368px]">
+                                            <div className="flex flex-col gap-8">
+                                                <DialogTitle>Trigger sync execution</DialogTitle>
+                                                <div className="flex flex-col gap-7">
+                                                    <div className="flex flex-col gap-4">
+                                                        <div className="flex gap-4 items-center">
+                                                            <label className="text-grayscale-100 text-sm">Sync mode</label>
+                                                            <Select defaultValue={triggerMode} onValueChange={(value) => setTriggerMode(value as any)}>
+                                                                <SelectTrigger className="w-[200px] h-8">
+                                                                    <SelectValue placeholder="Sync mode" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="incremental" disabled={sync.sync_type === 'full'}>
+                                                                        Incremental {sync.sync_type === 'full' && <Tag>Not supported by this sync</Tag>}
+                                                                    </SelectItem>
+                                                                    <SelectItem value="full">Full Refresh</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <DialogDescription>
+                                                            {triggerMode === 'incremental' ? (
+                                                                <>
+                                                                    Incremental sync mode will fetch the data modified since the last execution.{' '}
+                                                                    <Link
+                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#incremental-syncing"
+                                                                        className="underline"
+                                                                    >
+                                                                        Learn more
+                                                                    </Link>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    Full refresh sync mode will fetch all the data.{' '}
+                                                                    <Link
+                                                                        to="https://docs.nango.dev/guides/syncs/large-datasets#full-refresh-syncing-small-datasets-only"
+                                                                        className="underline"
+                                                                    >
+                                                                        Learn more
+                                                                    </Link>{' '}
+                                                                </>
+                                                            )}
+                                                        </DialogDescription>
+                                                    </div>
+                                                    {triggerMode === 'full' && (
+                                                        <div className="flex flex-col gap-4">
+                                                            <div className="flex gap-4 items-center">
+                                                                <label className="text-grayscale-100 text-sm" htmlFor="emptycache">
+                                                                    Empty cache
+                                                                </label>
+                                                                <Checkbox
+                                                                    id="emptycache"
+                                                                    checked={deleteRecords}
+                                                                    onCheckedChange={(e) => setDeleteRecords(e === true)}
+                                                                />
+                                                            </div>
+                                                            <DialogDescription>
+                                                                All records will be considered new. Cursors will be invalidated. Your backend should reprocess
+                                                                all records.
+                                                            </DialogDescription>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
 
                                             <DialogFooter>
                                                 <DialogClose asChild>
-                                                    <Button className="!text-text-light-gray" variant="zombieGray">
-                                                        Cancel
-                                                    </Button>
+                                                    <Button variant="secondary">Cancel</Button>
                                                 </DialogClose>
-                                                <Button type="submit" disabled={modalSpinner} onClick={confirmFullRefresh} isLoading={modalSpinner}>
+                                                <Button type="submit" disabled={modalSpinner} onClick={confirmTrigger} isLoading={modalSpinner}>
                                                     Confirm
                                                 </Button>
                                             </DialogFooter>
@@ -271,12 +340,10 @@ export const SyncRow: React.FC<{ sync: SyncResponse; connection: ApiConnectionFu
                                     </Dialog>
                                 )}
 
-                                <Link to={logUrl} className="w-full">
-                                    <Button variant="popoverItem">
-                                        <QueueListIcon className="flex h-4 w-4 cursor-pointer" />
-                                        <div className="pl-2 flex gap-2 items-center">View Logs</div>
-                                    </Button>
-                                </Link>
+                                <ButtonLink to={logUrl} className="w-full" variant="popoverItem">
+                                    <QueueListIcon className="flex h-4 w-4 cursor-pointer" />
+                                    <div className="pl-2 flex gap-2 items-center">View Logs</div>
+                                </ButtonLink>
                             </div>
                         </div>
                     </PopoverContent>

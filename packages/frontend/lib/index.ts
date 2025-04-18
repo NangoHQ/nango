@@ -1,33 +1,52 @@
 /*
  * Copyright (c) 2024 Nango, all rights reserved.
  */
-import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
-import type { ConnectUIProps } from './connectUI';
+import { AuthorizationModal, computeLayout, windowFeaturesToString } from './authModal.js';
 import { ConnectUI } from './connectUI.js';
+
+import type { ConnectUIProps } from './connectUI';
 import type {
-    ConnectionConfig,
     ApiKeyCredentials,
     AppStoreCredentials,
     AuthErrorType,
     AuthOptions,
     AuthResult,
     BasicApiCredentials,
+    BillCredentials,
+    ConnectionConfig,
     ErrorHandler,
+    JwtCredentials,
     OAuth2ClientCredentials,
+    OAuthCredentialsOverride,
+    SignatureCredentials,
     TBACredentials,
     TableauCredentials,
-    TwoStepCredentials,
-    JwtCredentials,
-    OAuthCredentialsOverride,
-    BillCredentials
+    TwoStepCredentials
 } from './types';
-import { AuthorizationStatus, WSMessageType } from './types.js';
+import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 
 export type * from './types';
 export * from './connectUI.js';
 
 const prodHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
+
+export type NangoOptions = {
+    host?: string;
+    websocketsPath?: string;
+    width?: number;
+    height?: number;
+    debug?: boolean;
+} & (
+    | {
+          connectSessionToken?: string;
+          publicKey?: never;
+      }
+    | {
+          connectSessionToken?: never;
+          publicKey?: string;
+      }
+);
 
 export class AuthError extends Error {
     type;
@@ -41,25 +60,17 @@ export class AuthError extends Error {
 export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
-    private status: AuthorizationStatus;
     private publicKey: string | undefined;
     private connectSessionToken: string | undefined;
     private debug = false;
-    private width: number | null = null;
-    private height: number | null = null;
+    private width: number = 500;
+    private height: number = 600;
     private tm: null | NodeJS.Timer = null;
 
+    // Do not rename, part of the public api
     public win: AuthorizationModal | null = null;
 
-    constructor(config: {
-        host?: string;
-        websocketsPath?: string;
-        publicKey?: string;
-        connectSessionToken?: string;
-        width?: number;
-        height?: number;
-        debug?: boolean;
-    }) {
+    constructor(config: NangoOptions = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -77,12 +88,7 @@ export default class Nango {
             this.height = config.height;
         }
 
-        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
-        this.status = AuthorizationStatus.IDLE;
-
-        if ((!config.publicKey && !config.connectSessionToken) || (config.publicKey && config.connectSessionToken)) {
-            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
-        }
+        this.hostBaseUrl = config.host.replace(/\/+$/, ''); // Remove trailing slash.
 
         this.publicKey = config.publicKey;
         this.connectSessionToken = config.connectSessionToken;
@@ -112,6 +118,8 @@ export default class Nango {
         connectionIdOrConnectionConfig?: string | ConnectionConfig,
         moreConnectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let connectionConfig: ConnectionConfig | undefined = moreConnectionConfig;
         if (typeof connectionIdOrConnectionConfig === 'string') {
@@ -138,6 +146,8 @@ export default class Nango {
     public auth(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionId: string, options?: AuthOptions): Promise<AuthResult>;
     public auth(providerConfigKey: string, connectionIdOrOptions?: string | AuthOptions, moreOptions?: AuthOptions): Promise<AuthResult> {
+        this.ensureCredentials();
+
         let connectionId: string | null = null;
         let options: AuthOptions | undefined = moreOptions;
         if (typeof connectionIdOrOptions === 'string') {
@@ -148,6 +158,10 @@ export default class Nango {
                 ...connectionIdOrOptions
             };
         }
+
+        // -----------
+        // Non popup auth
+        // -----------
         if (
             options &&
             'credentials' in options &&
@@ -162,90 +176,83 @@ export default class Nango {
             return this.customAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
-        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`;
+        // -----------
+        // Auth with popup (e.g: OAuth)
+        // -----------
 
-        try {
-            new URL(url);
-        } catch {
-            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
-        }
+        // /!\ /!\ /!\ /!\
+        //
+        // Some popup blocker are more sensitive than others
+        // e.g: safari is blocking any popup opened in a different function or in async mode so it has to be opened here before everything else
+        //
+        const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
         return new Promise<AuthResult>((resolve, reject) => {
-            // Clear state if the modal is closed
-            if (this.win?.modal?.closed) {
-                this.clear();
-            }
-
             const successHandler = (providerConfigKey: string, connectionId: string, isPending = false) => {
-                if (this.status !== AuthorizationStatus.BUSY) {
-                    return;
-                }
-
-                this.status = AuthorizationStatus.DONE;
-
-                resolve({
-                    providerConfigKey: providerConfigKey,
-                    connectionId: connectionId,
-                    isPending
-                });
+                resolve({ providerConfigKey: providerConfigKey, connectionId: connectionId, isPending });
                 return;
             };
 
             const errorHandler: ErrorHandler = (errorType, errorDesc) => {
-                if (this.status !== AuthorizationStatus.BUSY) {
-                    return;
-                }
-
-                this.status = AuthorizationStatus.DONE;
-
-                const error = new AuthError(errorDesc, errorType);
-                reject(error);
+                reject(new AuthError(errorDesc, errorType));
                 return;
             };
 
-            if (this.status === AuthorizationStatus.BUSY) {
-                const error = new AuthError('The authorization window is already opened', 'windowIsOpened');
-                reject(error);
+            // Clear state if the modal is already opened
+            if (this.win) {
+                this.clear();
+            }
+
+            if (!modal || modal.closed || typeof modal.closed == 'undefined') {
+                errorHandler('blocked_by_browser', 'Modal blocked by browser');
                 return;
             }
 
-            // Save authorization status (for handler)
-            this.status = AuthorizationStatus.BUSY;
-
-            // Open authorization modal
-            this.win = new AuthorizationModal(
-                this.websocketsBaseUrl,
-                url,
-                successHandler,
-                errorHandler,
-                { width: this.width, height: this.height },
-                this.debug
-            );
-
-            if (options?.detectClosedAuthWindow) {
-                this.tm = setInterval(() => {
-                    if (!this.win || !this.win.modal) {
-                        return;
-                    }
-
-                    if (this.win.modal.window && !this.win.modal.window.closed) {
-                        return;
-                    }
-
-                    if (this.win.isProcessingMessage) {
-                        // Modal is still processing a web socket message from the server
-                        // We ignore the window being closed for now
-                        return;
-                    }
-
-                    clearInterval(this.tm as unknown as number);
-                    this.win = null;
-                    this.status = AuthorizationStatus.CANCELED;
-                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                    reject(error);
-                }, 500);
+            let url: URL;
+            try {
+                url = new URL(`${this.hostBaseUrl}/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, options as ConnectionConfig)}`);
+            } catch {
+                errorHandler('invalidHostUrl', 'Invalid URL provided for the Nango host.');
+                return;
             }
+
+            this.win = new AuthorizationModal({ baseUrl: url, debug: this.debug, webSocketUrl: this.websocketsBaseUrl, successHandler, errorHandler });
+            this.win.setModal(modal);
+
+            this.tm = setInterval(() => {
+                if (!this.win || !this.win.modal) {
+                    return;
+                }
+
+                if (this.win.modal.window && !this.win.modal.window.closed) {
+                    return;
+                }
+
+                if (this.win.isProcessingMessage) {
+                    // Modal is still processing a web socket message from the server
+                    // We ignore the window being closed for now
+                    return;
+                }
+
+                clearInterval(this.tm as unknown as number);
+                this.win.close();
+
+                if (options?.detectClosedAuthWindow) {
+                    this.win = null;
+                    reject(new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed'));
+                }
+            }, 500);
+        }).finally(() => {
+            this.clear();
         });
+    }
+
+    public reconnect(providerConfigKey: string, options?: AuthOptions): Promise<AuthResult> {
+        if (!this.connectSessionToken) {
+            throw new AuthError('Reconnect requires a session token', 'missing_connect_session_token');
+        }
+
+        return this.auth(providerConfigKey, options);
     }
 
     /**
@@ -259,20 +266,19 @@ export default class Nango {
         if (this.win) {
             try {
                 this.win.close();
-            } catch {
+            } catch (err) {
+                console.log('err', err);
                 // do nothing
             }
             this.win = null;
         }
-
-        this.status = AuthorizationStatus.IDLE;
     }
 
     /**
      * Open managed Connect UI
      */
     public openConnectUI(params: ConnectUIProps) {
-        const connect = new ConnectUI(params);
+        const connect = new ConnectUI({ sessionToken: this.connectSessionToken, ...params });
         connect.open();
         return connect;
     }
@@ -294,8 +300,19 @@ export default class Nango {
             | OAuth2ClientCredentials
             | BillCredentials
             | TwoStepCredentials
+            | SignatureCredentials
     ): ConnectionConfig {
         const params: Record<string, string> = {};
+
+        if ('type' in credentials && 'username' in credentials && 'password' in credentials && credentials.type === 'SIGNATURE') {
+            const signatureCredentials: SignatureCredentials = {
+                type: credentials.type,
+                username: credentials.username,
+                password: credentials.password
+            };
+
+            return { params: signatureCredentials } as unknown as ConnectionConfig;
+        }
 
         if ('username' in credentials) {
             params['username'] = credentials.username || '';
@@ -307,35 +324,32 @@ export default class Nango {
             params['apiKey'] = credentials.apiKey || '';
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
-            const jwtParams: Record<string, string | { id: string; secret: string }> = {};
-            if (credentials.privateKeyId) {
-                jwtParams['privateKeyId'] = credentials.privateKeyId;
+        if (
+            // for backwards compatibility with the old JWT credentials (ghost-admin)
+            'privateKey' in credentials ||
+            ('type' in credentials && credentials.type === 'JWT')
+        ) {
+            const { privateKey, ...rest } = credentials;
+            const params: Record<string, any> = { ...rest };
+
+            if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
+                params['privateKey'] = privateKey;
             }
-            if (credentials.issuerId) {
-                jwtParams['issuerId'] = credentials.issuerId;
-            }
-            if (credentials.privateKey) {
-                if (typeof credentials.privateKey === 'string') {
-                    jwtParams['privateKey'] = credentials.privateKey;
-                } else if (typeof credentials.privateKey === 'object' && 'id' in credentials.privateKey && 'secret' in credentials.privateKey) {
-                    jwtParams['privateKey'] = credentials.privateKey;
-                }
-            }
-            return { params: jwtParams } as unknown as ConnectionConfig;
+
+            return { params: credentials } as unknown as ConnectionConfig;
         }
 
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
-                    privateKeyId: credentials.privateKeyId as string,
-                    issuerId: credentials.issuerId as string,
-                    privateKey: credentials.privateKey as string
+                    privateKeyId: credentials['privateKeyId'],
+                    issuerId: credentials['issuerId'],
+                    privateKey: credentials['privateKey']
                 }
             };
 
-            if ('scope' in credentials && (typeof credentials.scope === 'string' || Array.isArray(credentials.scope))) {
-                appStoreCredentials.params['scope'] = credentials.scope;
+            if ('scope' in credentials && (typeof credentials['scope'] === 'string' || Array.isArray(credentials['scope']))) {
+                appStoreCredentials.params['scope'] = credentials['scope'];
             }
             return appStoreCredentials as unknown as ConnectionConfig;
         }
@@ -383,8 +397,8 @@ export default class Nango {
             const BillCredentials: BillCredentials = {
                 username: credentials.username,
                 password: credentials.password,
-                organization_id: credentials.organization_id as string,
-                dev_key: credentials.dev_key as string
+                organization_id: credentials.organization_id,
+                dev_key: credentials.dev_key
             };
 
             return { params: BillCredentials } as unknown as ConnectionConfig;
@@ -414,6 +428,7 @@ export default class Nango {
             | BillCredentials
             | OAuth2ClientCredentials
             | TwoStepCredentials
+            | SignatureCredentials
             | undefined;
     }): Promise<AuthResult> {
         const res = await fetch(authUrl, {
@@ -459,6 +474,13 @@ export default class Nango {
             });
         }
 
+        if ('type' in credentials && credentials['type'] === 'SIGNATURE' && 'username' in credentials && 'password' in credentials) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/signature/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as SignatureCredentials
+            });
+        }
+
         if ('username' in credentials && 'password' in credentials && 'organization_id' in credentials && 'dev_key' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/bill/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
@@ -480,7 +502,7 @@ export default class Nango {
             });
         }
 
-        if ('privateKeyId' in credentials || 'issuerId' in credentials || 'privateKey' in credentials) {
+        if ('privateKey' in credentials || ('type' in credentials && credentials['type'] === 'JWT')) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as JwtCredentials
@@ -585,163 +607,14 @@ export default class Nango {
 
         return query.length === 0 ? '' : '?' + query.join('&');
     }
-}
-
-/**
- * AuthorizationModal class
- */
-class AuthorizationModal {
-    private url: string;
-    private features: Record<string, string | number>;
-    private width = 500;
-    private height = 600;
-    private swClient: WebSocket;
-    private debug: boolean;
-    private wsClientId: string | undefined;
-    private errorHandler: ErrorHandler;
-    public modal: Window | undefined;
-    public isProcessingMessage = false;
-
-    constructor(
-        webSocketUrl: string,
-        url: string,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
-        errorHandler: ErrorHandler,
-        { width, height }: { width?: number | null; height?: number | null },
-        debug?: boolean
-    ) {
-        // Window modal URL
-        this.url = url;
-        this.debug = debug || false;
-
-        const { left, top, computedWidth, computedHeight } = this.layout(width || this.width, height || this.height);
-
-        // Window modal features
-        this.features = {
-            width: computedWidth,
-            height: computedHeight,
-            top,
-            left,
-            scrollbars: 'yes',
-            resizable: 'yes',
-            status: 'no',
-            toolbar: 'no',
-            location: 'no',
-            copyhistory: 'no',
-            menubar: 'no',
-            directories: 'no'
-        };
-
-        this.swClient = new WebSocket(webSocketUrl);
-        this.errorHandler = errorHandler;
-
-        this.swClient.onmessage = (message: MessageEvent) => {
-            this.isProcessingMessage = true;
-            this.handleMessage(message, successHandler);
-            this.isProcessingMessage = false;
-        };
-    }
 
     /**
-     * Handles the messages received from the Nango server via WebSocket
-     * @param message - The message event containing data from the server
-     * @param successHandler - The success handler function to be called when a success message is received
+     * Check that we have one valid credential
+     * It's not done in the constructor because if you only use Nango Connect it's not relevant to throw an error
      */
-    handleMessage(message: MessageEvent, successHandler: (providerConfigKey: string, connectionId: string) => any) {
-        const data = JSON.parse(message.data);
-
-        switch (data.message_type) {
-            case WSMessageType.ConnectionAck: {
-                if (this.debug) {
-                    console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
-                }
-
-                this.wsClientId = data.ws_client_id;
-                this.open();
-                break;
-            }
-            case WSMessageType.Error:
-                if (this.debug) {
-                    console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
-                }
-
-                this.errorHandler(data.error_type, data.error_desc);
-                this.swClient.close();
-                break;
-            case WSMessageType.Success:
-                if (this.debug) {
-                    console.log(debugLogPrefix, 'Success received. Resolving authorization...');
-                }
-
-                successHandler(data.provider_config_key, data.connection_id);
-                this.swClient.close();
-                break;
-            default:
-                if (this.debug) {
-                    console.log(debugLogPrefix, 'Unknown message type received from Nango server. Ignoring...');
-                }
-                return;
-        }
-    }
-
-    /**
-     * Calculates the layout dimensions for a modal window based on the expected width and height
-     * @param expectedWidth - The expected width of the modal window
-     * @param expectedHeight - The expected height of the modal window
-     * @returns The layout details including left and top positions, as well as computed width and height
-     */
-    layout(expectedWidth: number, expectedHeight: number) {
-        const screenWidth = window.screen.width;
-        const screenHeight = window.screen.height;
-        const left = screenWidth / 2 - expectedWidth / 2;
-        const top = screenHeight / 2 - expectedHeight / 2;
-
-        const computedWidth = Math.min(expectedWidth, screenWidth);
-        const computedHeight = Math.min(expectedHeight, screenHeight);
-
-        return { left: Math.max(left, 0), top: Math.max(top, 0), computedWidth, computedHeight };
-    }
-
-    /**
-     * Opens a modal window with the specified WebSocket client ID
-     */
-    open() {
-        if (!this.wsClientId) {
-            this.errorHandler('missing_ws_client_id', 'Missing WS Client ID while opening modal');
-            return;
-        }
-
-        const popup = window.open(this.url + '&ws_client_id=' + this.wsClientId, '_blank', this.featuresToString());
-
-        if (!popup || popup.closed || typeof popup.closed == 'undefined') {
-            this.errorHandler('blocked_by_browser', 'Modal blocked by browser');
-            return;
-        }
-
-        this.modal = popup;
-    }
-
-    /**
-     * Converts the features object of this class to a string
-     * @returns The string representation of features
-     */
-    featuresToString(): string {
-        const features = this.features;
-        const featuresAsString: string[] = [];
-
-        for (const key in features) {
-            featuresAsString.push(key + '=' + features[key]);
-        }
-
-        return featuresAsString.join(',');
-    }
-
-    /**
-     * Close modal, if opened
-     */
-    close() {
-        if (this.modal && !this.modal.closed) {
-            this.modal.close();
+    private ensureCredentials() {
+        if (!this.publicKey && !this.connectSessionToken) {
+            throw new AuthError('You must specify a public key OR a connect session token (cf. documentation).', 'missingAuthToken');
         }
     }
 }

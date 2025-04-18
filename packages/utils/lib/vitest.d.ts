@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export * from 'vitest';
 
-/* eslint-disable @typescript-eslint/no-empty-interface */
 interface CustomMatchers<TR = unknown> {
     toBeIsoDate: () => string;
     toBeIsoDateTimezone: () => string;

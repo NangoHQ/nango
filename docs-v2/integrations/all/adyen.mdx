@@ -3,22 +3,35 @@ title: Adyen
 sidebarTitle: Adyen
 ---
 
-API configuration: [`adyen`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/adyen/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/adyen/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
 
-## Features
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Setup guide
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+_No setup guide yet._
 
-## Getting started
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adyen.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register your Oauth client](https://docs.adyen.com/development-resources/oauth/integration/#step-1-register-your-client)
 -   [OAuth related docs](https://docs.adyen.com/development-resources/oauth/integration/)
@@ -26,11 +39,11 @@ API configuration: [`adyen`](https://nango.dev/providers.yaml)
 -   [Adyen API versioning](https://docs.adyen.com/development-resources/versioning/)
 -   [Adyen API docs](https://docs.adyen.com/development-resources/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adyen.mdx)</Note>
 
 ## API gotchas
 
 - You can choose between `live` and `test` for your connectionConfig environment when adding a connection on Nango.
 - Additionally, depending on the resource in your request, you can specify your desired resource. For example, use `kyc` for the manage legal entities resource.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adyen.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adyen.mdx)</Note>

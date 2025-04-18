@@ -6,11 +6,26 @@
     },
     "references": [
         {
+            "path": "../database"
+        },
+        {
+            "path": "../node-client"
+        },
+        {
+            "path": "../runner-sdk"
+        },
+        {
             "path": "../shared"
+        },
+        {
+            "path": "../providers"
+        },
+        {
+            "path": "../types"
         },
         {
             "path": "../utils"
         }
     ],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
 }

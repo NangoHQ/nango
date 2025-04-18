@@ -1,10 +1,12 @@
-import { Outlet, Navigate } from 'react-router-dom';
-import { useMeta } from '../hooks/useMeta';
 import { useEffect, useState } from 'react';
-import { useStore } from '../store';
-import { useAnalyticsIdentify } from '../utils/analytics';
+import { Navigate, Outlet } from 'react-router-dom';
+
+import { useEnvironment } from '../hooks/useEnvironment';
+import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import PageNotFound from '../pages/PageNotFound';
+import { useStore } from '../store';
+import { useAnalyticsIdentify } from '../utils/analytics';
 
 export const PrivateRoute: React.FC = () => {
     const { meta, error, loading: loadingMeta } = useMeta();
@@ -18,6 +20,7 @@ export const PrivateRoute: React.FC = () => {
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
+    const { environmentAndAccount } = useEnvironment(env);
 
     useEffect(() => {
         if (!meta || error) {
@@ -64,10 +67,11 @@ export const PrivateRoute: React.FC = () => {
     }, [meta, loadingMeta, env, error, setEnv]);
 
     useEffect(() => {
-        if (user) {
+        if (user && environmentAndAccount && meta && !meta.debugMode) {
             identify(user);
+            window.ko?.identify(user.email, { name: user.name, $account: { group_id: user.accountId, name: environmentAndAccount.name } });
         }
-    }, [user, identify]);
+    }, [user, environmentAndAccount, meta, identify]);
 
     if (loadingMeta || !ready || loadingUser) {
         return null;

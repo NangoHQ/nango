@@ -23,7 +23,7 @@
         "uuidv7": "0.6.3"
     },
     "devDependencies": {
-        "type-fest": "4.26.1",
-        "vitest": "1.6.0"
+        "type-fest": "4.32.0",
+        "vitest": "3.1.1"
     }
 }

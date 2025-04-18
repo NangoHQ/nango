@@ -4,6 +4,7 @@ import { getTestDbClient } from '../db/helpers.test.js';
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
 import { uuidv7 } from 'uuidv7';
+import { setTimeout } from 'timers/promises';
 
 describe('Schedules', () => {
     const dbClient = getTestDbClient();
@@ -37,6 +38,7 @@ describe('Schedules', () => {
     });
     it('should be successfully deleted', async () => {
         const schedule = await createSchedule(db);
+        await setTimeout(1);
         const deleted = (await schedules.remove(db, schedule.id)).unwrap();
         expect(deleted.state).toBe('DELETED');
         expect(deleted.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -44,6 +46,7 @@ describe('Schedules', () => {
     });
     it('should be successfully paused/unpaused', async () => {
         const schedule = await createSchedule(db);
+        await setTimeout(1);
         const paused = (await schedules.transitionState(db, schedule.id, 'PAUSED')).unwrap();
         expect(paused.state).toBe('PAUSED');
         expect(paused.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -62,6 +65,7 @@ describe('Schedules', () => {
     });
     it('should be successfully updated', async () => {
         const schedule = await createSchedule(db);
+        await setTimeout(1);
         const updated = (await schedules.update(db, { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 }, lastScheduledTaskId: uuidv7() })).unwrap();
         expect(updated.frequencyMs).toBe(600_000);
         expect(updated.payload).toMatchObject({ i: 2 });

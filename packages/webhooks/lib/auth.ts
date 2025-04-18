@@ -1,41 +1,44 @@
 import type {
     NangoAuthWebhookBodySuccess,
     NangoAuthWebhookBodyError,
-    ExternalWebhook,
-    Connection,
-    WebhookTypes,
+    DBExternalWebhook,
     AuthModeType,
     ErrorPayload,
     AuthOperationType,
     NangoAuthWebhookBodyBase,
-    DBEnvironment
+    DBEnvironment,
+    EndUser,
+    IntegrationConfig,
+    DBTeam,
+    DBConnection
 } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
+import { metrics } from '@nangohq/utils';
 
-export const sendAuth = async ({
+export async function sendAuth({
     connection,
     environment,
     webhookSettings,
     auth_mode,
     success,
+    endUser,
     error,
     operation,
-    provider,
-    type,
-    logCtx
+    providerConfig,
+    account
 }: {
-    connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
+    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key'>; // Either a true connection or a fake one
     environment: DBEnvironment;
-    webhookSettings: ExternalWebhook | null;
+    webhookSettings: DBExternalWebhook | null;
     auth_mode: AuthModeType;
     success: boolean;
+    endUser?: EndUser | undefined;
     error?: ErrorPayload;
     operation: AuthOperationType;
-    provider: string;
-    type: WebhookTypes;
-    logCtx?: LogContext | undefined;
-} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> => {
+    providerConfig?: IntegrationConfig | undefined;
+    account: DBTeam;
+} & ({ success: true } | { success: false; error: ErrorPayload })): Promise<void> {
     if (!webhookSettings) {
         return;
     }
@@ -53,9 +56,10 @@ export const sendAuth = async ({
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
         authMode: auth_mode,
-        provider,
+        provider: providerConfig?.provider || 'unknown',
         environment: environment.name,
-        operation
+        operation,
+        endUser: endUser ? { endUserId: endUser.endUserId, organizationId: endUser.organization?.organizationId } : undefined
     };
 
     if (success) {
@@ -71,16 +75,39 @@ export const sendAuth = async ({
         };
     }
 
-    const webhooks = [
-        { url: webhookSettings.primary_url, type: 'webhook url' },
-        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
-    ].filter((webhook) => webhook.url) as { url: string; type: string }[];
+    const webhooks: { url: string; type: string }[] = [];
+    if (webhookSettings.primary_url) {
+        webhooks.push({ url: webhookSettings.primary_url, type: 'webhook url' });
+    }
+    if (webhookSettings.secondary_url) {
+        webhooks.push({ url: webhookSettings.secondary_url, type: 'secondary webhook url' });
+    }
 
-    await deliver({
+    const action = operation === 'creation' ? 'connection_create' : 'connection_refresh';
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'webhook', action } },
+        {
+            account,
+            environment,
+            ...(providerConfig ? { integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider } } : {}),
+            ...('id' in connection ? { connection: { id: connection.id, name: connection.connection_id } } : {})
+        }
+    );
+    logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
+    const res = await deliver({
         webhooks,
         body: success ? successBody : errorBody,
-        webhookType: type,
+        webhookType: 'auth',
         environment,
         logCtx
     });
-};
+
+    if (res.isErr()) {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_FAILED, 1, { type: 'auth', operation });
+        await logCtx.failed();
+    } else {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_SUCCESS, 1, { type: 'auth', operation });
+        await logCtx.success();
+    }
+}

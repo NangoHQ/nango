@@ -1,6 +1,8 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSuccess, runServer, shouldBeProtected, getConnectSessionToken } from '../../utils/tests.js';
+
+import { seeders } from '@nangohq/shared';
+
+import { getConnectSessionToken, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -20,14 +22,14 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be accessible with private key', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should be accessible with connect session token', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const token = await getConnectSessionToken(api, env);
         const res = await api.fetch(endpoint, { method: 'GET', token });
         isSuccess(res.json);
@@ -35,7 +37,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should enforce no query params', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -54,7 +56,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list empty', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
 
@@ -66,7 +68,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list one', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });
@@ -78,7 +80,7 @@ describe(`GET ${endpoint}`, () => {
                 {
                     provider: 'github',
                     unique_key: 'github',
-                    display_name: 'GitHub',
+                    display_name: 'GitHub (User OAuth)',
                     logo: 'http://localhost:3003/images/template-logos/github.svg',
                     created_at: expect.toBeIsoDate(),
                     updated_at: expect.toBeIsoDate()
@@ -88,8 +90,8 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not list other env', async () => {
-        const env = await seeders.createEnvironmentSeed();
-        const env2 = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env: env2 } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env2, 'github', 'github');
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key });

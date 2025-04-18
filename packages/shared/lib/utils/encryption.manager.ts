@@ -1,12 +1,15 @@
-import utils from 'node:util';
 import crypto from 'crypto';
-import { getLogger, Encryption } from '@nangohq/utils';
-import type { Config as ProviderConfig } from '../models/Provider';
-import type { DBConfig } from '../models/Generic.js';
-import type { DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
-import type { Connection, StoredConnection } from '../models/Connection.js';
+import utils from 'node:util';
+
 import db from '@nangohq/database';
+import { Encryption, getLogger } from '@nangohq/utils';
+
+import { isConnectionJsonRow } from '../services/connections/utils.js';
 import { hashSecretKey } from '../services/environment.service.js';
+
+import type { DBConfig } from '../models/Generic.js';
+import type { Config as ProviderConfig } from '../models/Provider';
+import type { DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -64,41 +67,49 @@ export class EncryptionManager extends Encryption {
         return decryptedEnvironment;
     }
 
-    public encryptConnection(
-        connection: Omit<Connection, 'created_at' | 'updated_at' | 'end_user_id'>
-    ): Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'> {
+    public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
         if (!this.shouldEncrypt()) {
-            return connection;
+            return connection as unknown as DBConnection;
         }
 
-        const storedConnection = Object.assign({}, connection) as Omit<StoredConnection, 'created_at' | 'updated_at' | 'end_user_id'>;
-
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
-        const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
-
-        storedConnection.credentials = encryptedCreds;
-        storedConnection.credentials_iv = iv;
-        storedConnection.credentials_tag = authTag;
+        const storedConnection: Omit<DBConnection, 'end_user_id'> = {
+            ...connection,
+            credentials: { encrypted_credentials: encryptedClientSecret },
+            credentials_iv: iv,
+            credentials_tag: authTag
+        };
 
         return storedConnection;
     }
 
-    public decryptConnection(connection: StoredConnection | null): Connection | null {
-        // Check if the individual row is encrypted.
-        if (connection == null || connection.credentials_iv == null || connection.credentials_tag == null) {
-            return connection as Connection;
+    public decryptConnection(connection: DBConnection | DBConnectionAsJSONRow): DBConnectionDecrypted {
+        const credentials =
+            connection.credentials['encrypted_credentials'] && connection.credentials_iv && connection.credentials_tag
+                ? JSON.parse(this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag))
+                : connection.credentials;
+        if (isConnectionJsonRow(connection)) {
+            const parsed: DBConnectionDecrypted = {
+                ...connection,
+                credentials,
+                last_fetched_at: connection.last_fetched_at ? new Date(connection.last_fetched_at) : null,
+                credentials_expires_at: connection.credentials_expires_at ? new Date(connection.credentials_expires_at) : null,
+                last_refresh_success: connection.last_refresh_success ? new Date(connection.last_refresh_success) : null,
+                last_refresh_failure: connection.last_refresh_failure ? new Date(connection.last_refresh_failure) : null,
+                created_at: new Date(connection.created_at),
+                updated_at: new Date(connection.updated_at),
+                deleted_at: connection.deleted_at ? new Date(connection.deleted_at) : null
+            };
+            return parsed;
         }
 
-        const decryptedConnection: StoredConnection = Object.assign({}, connection);
-
-        decryptedConnection.credentials = JSON.parse(
-            this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag)
-        );
-
-        return decryptedConnection as Connection;
+        return {
+            ...connection,
+            credentials
+        } satisfies DBConnectionDecrypted;
     }
 
-    public encryptEnvironmentVariables(environmentVariables: DBEnvironmentVariable[]): DBEnvironmentVariable[] {
+    public encryptEnvironmentVariables(environmentVariables: Omit<DBEnvironmentVariable, 'id'>[]): Omit<DBEnvironmentVariable, 'id'>[] {
         if (!this.shouldEncrypt()) {
             return environmentVariables;
         }
@@ -252,7 +263,7 @@ export class EncryptionManager extends Encryption {
             await db.knex.from<DBEnvironment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
-        const connections: Connection[] = await db.knex.select('*').from<Connection>(`_nango_connections`);
+        const connections = await db.knex.select('*').from<DBConnectionDecrypted>(`_nango_connections`);
 
         for (const connection of connections) {
             if (connection.credentials_iv && connection.credentials_tag) {
@@ -260,7 +271,7 @@ export class EncryptionManager extends Encryption {
             }
 
             const storedConnection = this.encryptConnection(connection);
-            await db.knex.from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
+            await db.knex.from<DBConnection>(`_nango_connections`).where({ id: storedConnection.id }).update(storedConnection);
         }
 
         const providerConfigs: ProviderConfig[] = await db.knex.select('*').from<ProviderConfig>(`_nango_configs`);
@@ -286,10 +297,7 @@ export class EncryptionManager extends Encryption {
             environmentVariable.value_iv = iv;
             environmentVariable.value_tag = authTag;
 
-            await db.knex
-                .from<DBEnvironmentVariable>(`_nango_environment_variables`)
-                .where({ id: environmentVariable.id as number })
-                .update(environmentVariable);
+            await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ id: environmentVariable.id }).update(environmentVariable);
         }
 
         logger.info('🔐✅ Encryption of database complete!');

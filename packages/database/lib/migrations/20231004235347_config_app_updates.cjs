@@ -1,6 +1,6 @@
 const tableName = '_nango_configs';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(tableName, function (table) {
         table.text('oauth_client_secret').alter();
     });
@@ -9,7 +9,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(tableName, function (table) {
         table.string('oauth_client_secret', 255).alter();
     });

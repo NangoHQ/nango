@@ -1,0 +1,43 @@
+---
+title: PostHog - How do I link my account?
+sidebarTitle: PostHog
+---
+
+# Overview
+
+To authenticate with PostHog, you need one key piece of information:
+1. **API Key** - Your PostHog Access Key
+
+This guide will walk you through finding or creating those credentials within PostHog.
+
+### Prerequisites:
+
+- You must set up an account with PostHog.
+
+#### Step 1: Finding Your PostHog API Key
+1. Go to the [Personal API](https://us.posthog.com/settings/user-api-keys) keys section in your account settings.
+
+2. Click `+ Create a personal API Key`.
+
+3. Give your key a label - this is just for you, usually to describe the key's purpose.
+
+4. Choose the scopes for your key. We recommend selecting only the scopes required for the API endpoints you really need. This is a security best practice. You can always modify the scopes later if you need to.
+
+5. At the top of the list, you should see your brand new key. Securely copy its value, as you'll never see it again after refreshing the page.
+
+#### Step 2: Finding your PostHog domain
+
+1. You must make API requests to the correct domain. 
+On US Cloud, these are `https://us.i.posthog.com` for public endpoints and `https://us.posthog.com` for private ones.
+On EU Cloud, these are `https://eu.i.posthog.com` for public endpoints and `https://eu.posthog.com` for private ones.
+For self-hosted instances, use your self-hosted domain.
+Confirm yours by checking your PostHog instance URL.
+
+<img src="/integrations/all/posthog/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the PostHog authentication form.
+Enter your credentials as follows:
+- API Key: Your PostHog API Key
+- PostHog Domain: Your PostHog Domain
+
+Click "Connect" to complete the authentication.

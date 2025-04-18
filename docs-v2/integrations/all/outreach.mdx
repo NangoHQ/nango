@@ -3,28 +3,118 @@ title: Outreach
 sidebarTitle: Outreach
 ---
 
-API configuration: [`outreach`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/outreach/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/outreach/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free Outreach account is sufficient for development. |
+| Paid test account | ✅ Not required | Free Outreach account is sufficient for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | No review process for OAuth apps. |
+| Security audit | ✅ Not required | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
 
--   [How to register an Application](https://support.outreach.io/hc/en-us/articles/9986965571867-How-to-Access-Outreach-APIs)
--   [OAuth-related docs](https://api.outreach.io/api/v2/docs#authentication)
--   [Web API docs (their REST API)](https://developers.outreach.io/api/reference/overview/)
+<Steps>
+  <Step title="Create an Outreach account">
+    1. If you don't already have an Outreach account, go to [Outreach's signup page](https://www.outreach.io/free-trial) and create one.
+    2. Sign in to your Outreach account.
+  </Step>
+
+  <Step title="Access the developer portal">
+    1. Go to the [Outreach Developer Portal](https://developers.outreach.io/).
+    2. Sign in with your Outreach credentials.
+    3. Navigate to "My apps" in the top navigation bar.
+  </Step>
+
+  <Step title="Create a new Outreach app">
+    1. In the developer portal, click on **Create App**.
+    2. Fill in the required information for your application:
+       - **App Name**: Enter a name for your application.
+       - **App Description**: Provide a brief description of what your application does.
+       - **Company Name**: Enter your company name.
+       - **App Website**: Enter the URL of your application's website.
+       - **Support Email**: Enter an email address for support inquiries.
+  </Step>
+
+  <Step title="Configure API access">
+    1. After creating your app, navigate to the **API access** tab.
+    2. Enable the Outreach API access by toggling the switch.
+    3. Add the following redirect URI:
+       - `https://api.nango.dev/oauth/callback`
+
+    4. Select the appropriate scopes for your application based on your needs. Common scopes include:
+       - `accounts.all` - Access to account information
+       - `prospects.all` - Access to prospect information
+       - `sequences.all` - Access to sequence information
+       - `users.all` - Access to user information
+
+    5. Save your application settings.
+  </Step>
+
+  <Step title="Obtain your OAuth credentials">
+    After configuring API access, you'll receive:
+
+    - **Client ID**: A unique identifier for your application
+    - **Client Secret**: A secret key for your application
+
+    Make sure to store these securely, especially the Client Secret, as you'll need them when configuring your integration in Nango. Note that the Client Secret will only be displayed once, so make sure to copy it immediately.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+
+
+## Useful links
+
+-   [Outreach Developer Portal](https://developers.outreach.io/)
+-   [API Overview](https://developers.outreach.io/api/)
+-   [Authentication Documentation](https://developers.outreach.io/api/oauth/)
+-   [OAuth in a Nutshell](https://developers.outreach.io/api/oauth/#oauth-in-a-nutshell)
+-   [Setting up OAuth](https://developers.outreach.io/api/oauth/#setting-up-oauth)
+-   [API Reference](https://developers.outreach.io/api/reference/overview/)
+-   [Getting Started](https://developers.outreach.io/api/getting-started/)
+-   [Making Requests](https://developers.outreach.io/api/making-requests/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+
+
+## Common Scopes
+
+| Scope | Description |
+| ----- | ----------- |
+| `accounts.all` | Read and write access to account information |
+| `accounts.read` | Read-only access to account information |
+| `prospects.all` | Read and write access to prospect information |
+| `prospects.read` | Read-only access to prospect information |
+| `sequences.all` | Read and write access to sequence information |
+| `sequences.read` | Read-only access to sequence information |
+| `users.all` | Read and write access to user information |
+| `users.read` | Read-only access to user information |
+| `mailboxes.all` | Read and write access to mailbox information |
+| `mailboxes.read` | Read-only access to mailbox information |
+| `calls.all` | Read and write access to call information |
+| `calls.read` | Read-only access to call information |
+| `emails.all` | Read and write access to email information |
+| `emails.read` | Read-only access to email information |
+
+
 ## API gotchas
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>
+- Rate limits apply to the Outreach API. If you exceed the rate limit, you'll receive a 429 Too Many Requests response.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/outreach.mdx)</Note>

@@ -1,27 +1,43 @@
 import { stringifyError } from '@nangohq/utils';
 
-export class NangoError extends Error {
-    public readonly status: number = 500;
-    public readonly type: string;
-    public payload: Record<string, unknown>;
+import type { JsonValue } from 'type-fest';
+
+export class NangoInternalError extends Error {
+    public type: string;
+
+    // -- Legacy stuff to remove
+    public status: number = 500;
+    public payload: Record<string, unknown> = {};
+
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+        this.type = type;
+    }
+
+    // For compat with NangoError
+    // If we end up needing it we could pass use options as payload
+    public setPayload(payload: any) {
+        this.payload = payload;
+    }
+}
+
+export class AuthCredentialsError extends NangoInternalError {}
+
+export class NangoError extends NangoInternalError {
+    public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
 
-    constructor(type: string, payload = {}, status?: number) {
-        super();
+    constructor(type: string, payload = {}, status?: number, additional_properties?: Record<string, JsonValue>) {
+        super(type);
 
-        this.type = type;
         this.payload = payload;
+        this.additional_properties = additional_properties;
 
         if (status) {
             this.status = status;
         }
 
         switch (type) {
-            case 'failed_to_get_sync_client':
-                this.status = 500;
-                this.message = 'Failed to get the sync client.';
-                break;
-
             case 'missing_auth_header':
                 this.status = 401;
                 this.message = 'Authentication failed. The request is missing the Authorization header.';
@@ -92,59 +108,9 @@ export class NangoError extends Error {
                 this.message = 'Missing request body.';
                 break;
 
-            case 'missing_email_param':
-                this.status = 400;
-                this.message = `Missing parameter 'email'.`;
-                break;
-
-            case 'missing_name_param':
-                this.status = 400;
-                this.message = `Missing parameter 'name'.`;
-                break;
-
-            case 'missing_password_param':
-                this.status = 400;
-                this.message = `Missing parameter 'password'.`;
-                break;
-
-            case 'duplicate_account':
-                this.status = 409;
-                this.message = 'Email already exists.';
-                break;
-
-            case 'unknown_user':
-                this.status = 404;
-                this.message = 'No user matching this email.';
-                break;
-
-            case 'unknown_endpoint':
-                this.status = 404;
-                this.message = 'The API endpoint could not be found and returned a 404. Please ensure you have the endpoint specified and spelled correctly.';
-                break;
-
-            case 'forbidden':
-                this.status = 403;
-                this.message = 'The API endpoint returned back a 403 error. Check the scopes requested to make sure proper access is requested to the API.';
-                break;
-
-            case 'bad_request':
-                this.status = 400;
-                this.message = 'The API endpoint returned back a 400 error. Check the headers to ensure all proper headers are passed to the API.';
-                break;
-
             case 'invalid_oauth_scopes':
                 this.status = 400;
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
-                break;
-
-            case 'invalid_env':
-                this.status = 400;
-                this.message = "Invalid param 'env'";
-                break;
-
-            case 'missing_environment_id':
-                this.status = 400;
-                this.message = `Missing param 'environment_id'.`;
                 break;
 
             case 'invalid_invite_token':
@@ -190,26 +156,6 @@ export class NangoError extends Error {
             case 'missing_basic_username':
                 this.status = 400;
                 this.message = `Missing param username for basic api authentication.`;
-                break;
-
-            case 'missing_username_mismatch_template':
-                this.status = 400;
-                this.message = `Missing param 'username' for the provider template of Basic auth.`;
-                break;
-
-            case 'missing_password_mismatch_template':
-                this.status = 400;
-                this.message = `Missing param 'password' for the provider template of Basic auth.`;
-                break;
-
-            case 'missing_api_key_mismatch_template':
-                this.status = 400;
-                this.message = `Missing param 'api_key' for the provider template of API Key auth.`;
-                break;
-
-            case 'missing_basic_password':
-                this.status = 400;
-                this.message = `Missing param password for basic api authentication.`;
                 break;
 
             case 'missing_access_token':
@@ -280,9 +226,9 @@ export class NangoError extends Error {
                 this.message = `Failed to perform the webhook`;
                 break;
 
-            case 'post_connection_failure':
+            case 'on_event_failure':
                 this.status = 400;
-                this.message = `Failed to perform the post connection script`;
+                this.message = `Failed to perform the on-event script`;
                 break;
 
             case 'missing_provider_template':
@@ -310,11 +256,6 @@ export class NangoError extends Error {
                 this.message = `Missing param 'app_secret'.`;
                 break;
 
-            case 'missing_scopes':
-                this.status = 400;
-                this.message = `Missing param 'oauth_scopes'.`;
-                break;
-
             case 'missing_connection':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
@@ -323,11 +264,6 @@ export class NangoError extends Error {
             case 'missing_connection_id':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
-                break;
-
-            case 'invalid_offset':
-                this.status = 400;
-                this.message = 'Invalid offset provided. The offset should be a number.';
                 break;
 
             case 'invalid_limit':
@@ -366,17 +302,6 @@ export class NangoError extends Error {
                 }
                 break;
 
-            case 'connection_already_exists':
-                this.status = 409;
-                this.message = 'A connection already exists for this provider configuration.';
-                break;
-
-            case 'missing_base_api_url':
-                this.status = 400;
-                this.message =
-                    'The proxy is either not supported for this provider or it does not have a default base URL configured (use the baseUrlOverride config param to specify a base URL).';
-                break;
-
             case 'provider_config_edit_not_allowed':
                 this.status = 400;
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
@@ -407,16 +332,6 @@ export class NangoError extends Error {
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
                 break;
 
-            case 'missing_password_reset_token':
-                this.status = 400;
-                this.message = 'Missing reset token (or password).';
-                break;
-
-            case 'unknown_password_reset_token':
-                this.status = 404;
-                this.message = 'Reset password token expired on unknown.';
-                break;
-
             case 'missing_required_fields_on_deploy':
                 this.status = 400;
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
@@ -427,11 +342,6 @@ export class NangoError extends Error {
                 this.message = 'Error uploading file. Please contact support with the filename and connection details';
                 break;
 
-            case 'empty_insert_data_on_deploy':
-                this.status = 400;
-                this.message = 'The data to insert for a deploy is empty. Please try again or reach out to support with the sync name and connection details';
-                break;
-
             case 'error_creating_sync_config':
                 this.status = 500;
                 this.message = 'Error creating sync config from a deploy. Please contact support with the sync name and connection details';
@@ -439,12 +349,7 @@ export class NangoError extends Error {
 
             case 'generic_error_support':
                 this.status = 500;
-                this.message = 'An error occurred. Please contact support with this unique id: ' + this.payload;
-                break;
-
-            case 'missing_id_field':
-                this.status = 400;
-                this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
+                this.message = `An error occurred. Please contact support with this unique id: ${JSON.stringify(this.payload)}`;
                 break;
 
             case 'sync_interval_too_short':
@@ -473,24 +378,7 @@ export class NangoError extends Error {
                 break;
 
             case 'sync_script_failure':
-                this.message = `The sync script failed with an error: ${this.payload}`;
-                break;
-
-            case 'error_loading_nango_config':
-                this.status = 400;
-                this.message = `Error loading nango config. Please make sure it is present and formatted correctly.${
-                    this.payload ? ` Error: ${JSON.stringify(this.payload, null, 2)}` : ''
-                }`;
-                break;
-
-            case 'endpoint_output_mismatch':
-                this.status = 400;
-                this.message = `The number of endpoints doesn't match the number of models returned from the output for ${this.payload}. The endpoints to model should match 1 to 1.`;
-                break;
-
-            case 'action_single_endpoint':
-                this.status = 400;
-                this.message = `Actions are only allowed to have one model to be returned and only allow a single endpoint`;
+                this.message = `The sync script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'two_step_credentials_fetch_error':
@@ -498,29 +386,29 @@ export class NangoError extends Error {
                 this.message = `Error fetching Two Step credentials`;
                 break;
 
+            case 'invalid_two_step_credentials_second_request':
+                this.status = 400;
+                this.message = `Error fetching Two Step credentials in the second request`;
+                break;
+
+            case 'signature_token_generation_error':
+                this.status = 400;
+                this.message = `Error generating signature based token`;
+                break;
+
+            case 'unsupported_signature_protocol':
+                this.status = 400;
+                this.message = `Signature protocol not currently supported`;
+                break;
+
             case 'invalid_two_step_credentials':
                 this.status = 400;
                 this.message = `Invalid credentials provided to create a Two Step connection`;
                 break;
 
-            case 'duplicate_endpoint':
-                this.status = 400;
-                this.message = `Duplicate endpoint "${this.payload}" found. Please make sure all endpoints are unique within an integration.`;
-                break;
-
-            case 'duplicate_model':
-                this.status = 400;
-                this.message = `Duplicate model "${this.payload['model']}" for the ${this.payload['type']} "${this.payload['name']}" found. Please make sure all models are unique within an integration.`;
-                break;
-
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
-                break;
-
-            case 'invalid_api_key_format':
-                this.status = 400;
-                this.message = `Invalid API key format. It should be of "id:secret".`;
                 break;
 
             case 'invalid_jwt_private_key':
@@ -533,47 +421,16 @@ export class NangoError extends Error {
                 this.message = `Invalid private key Id provided for JWT creation.`;
                 break;
 
-            case 'no_config_found':
-                this.status = 400;
-                this.message = 'No nango config found. Please make sure it is present and formatted correctly.';
-                break;
-
-            case 'conflicting_model_and_input':
-                this.status = 400;
-                this.message = 'Cannot have a model in the endpoint and in the input';
-                break;
-
-            case 'invalid_model_identifier':
-                this.status = 400;
-                this.message =
-                    'Invalid model identifier. Please make sure to include a model identifier in the endpoint or in the input by using a colon (:) to separate the model name and the model identifier.';
-                break;
-
-            case 'missing_model_identifier':
-                this.status = 400;
-                this.message = `The model identifier was not found in the model. Please make sure the field "${this.payload}" is included in the model.`;
-                break;
-
-            case 'missing_model_name':
-                this.status = 400;
-                this.message = `Model ${this.payload} not found included in models definition`;
-                break;
-
             case 'action_script_failure':
-                this.message = `The action script failed with an error: ${this.payload}`;
+                this.message = `The action script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'webhook_script_failure':
-                this.message = `The webhook script failed with an error: ${this.payload}`;
+                this.message = `The webhook script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
-            case 'post_connection_script_failure':
-                this.message = `The post-connection script failed with an error: ${this.payload}`;
-                break;
-
-            case 'pass_through_error':
-                this.status = 400;
-                this.message = `${this.payload}`;
+            case 'on_event_script_failure':
+                this.message = `The on-event script failed with an error: ${stringifyError(this.payload)}`;
                 break;
 
             case 'action_script_runtime_error':
@@ -585,39 +442,14 @@ export class NangoError extends Error {
                 this.message = 'The script was cancelled';
                 break;
 
-            case 'run_id_not_found':
-                this.status = 400;
-                this.message = 'The run id was not found';
-                break;
-
-            case 'sync_job_not_running':
-                this.status = 400;
-                this.message = 'The sync is not currently running so cannot be cancelled';
-                break;
-
             case 'incorrect_param':
                 this.status = 400;
-                this.message = `The parameter ${this.payload['incorrect']} is invalid. Did you mean ${this.payload['correct']}?`;
-                break;
-
-            case 'invalid_provider':
-                this.status = 400;
-                this.message = `The provider is not allowed. Please try again with a valid provider`;
+                this.message = `The parameter ${this.payload['incorrect'] as string} is invalid. Did you mean ${this.payload['correct'] as string}?`;
                 break;
 
             case 'workos_not_configured':
                 this.status = 400;
                 this.message = `WorkOS is not configured. Please reach out to support to obtain valid WorkOS credentials.`;
-                break;
-
-            case 'missing_managed_login_callback_code':
-                this.status = 400;
-                this.message = `Missing param 'code' for the managed login callback.`;
-                break;
-
-            case 'missing_name_for_account_creation':
-                this.status = 400;
-                this.message = `Missing an account name for account login/signup.`;
                 break;
 
             case 'account_not_found':
@@ -632,14 +464,9 @@ export class NangoError extends Error {
                     'You have reached the maximum number of integrations with active scripts. Upgrade or deactivate the scripts to create more connections (https://docs.nango.dev/reference/limits).';
                 break;
 
-            case 'failed_to_parse_nango_yaml':
-                this.status = 400;
-                this.message = `Your nango.yaml contains some errors`;
-                break;
-
             case 'deploy_missing_json_schema_model':
                 this.status = 400;
-                this.message = String(this.payload);
+                this.message = JSON.stringify(this.payload);
                 break;
 
             case 'invalid_action_input':
@@ -657,14 +484,14 @@ export class NangoError extends Error {
                 this.message = 'Failed to validate a record in batchSave';
                 break;
 
-            case 'script_output_too_big':
+            case 'script_output_too_large':
                 this.status = 400;
-                this.message = 'Script output is too big';
+                this.message = 'Script output is too large';
                 break;
 
             case 'sync_job_update_failure':
                 this.status = 500;
-                this.message = `The sync job results could not be updated: ${this.payload}`;
+                this.message = `The sync job results could not be updated: ${JSON.stringify(this.payload)}`;
                 break;
 
             case 'script_invalid_error':
@@ -672,8 +499,13 @@ export class NangoError extends Error {
                 this.message = `An invalid error of type: ${typeof this.payload}`;
                 break;
 
-            case 'script_http_error':
+            case 'script_network_error':
                 this.status = 500;
+                this.message = 'A network error occurred during an HTTP call';
+                break;
+
+            case 'script_http_error':
+                this.status = 424;
                 this.message = `An error occurred during an HTTP call`;
                 break;
 
@@ -682,42 +514,28 @@ export class NangoError extends Error {
                 this.message = `An internal error occurred during the script execution`;
                 break;
 
+            case 'wsse_token_generation_error':
+                this.status = 500;
+                this.message = `An error occurred while generating an WSSE token`;
+                break;
+
+            case 'script_aborted':
+                this.status = 410;
+                this.message = `The script was aborted`;
+                break;
+
+            case 'concurrent_deployment':
+                this.status = 409;
+                this.message = 'A deployment is already in progress. Please wait for the current deployment to finish.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
                 this.message = `An unhandled error of type '${type}' with payload '${JSON.stringify(this.payload)}' has occurred`;
         }
     }
-
-    public setPayload(payload: any) {
-        this.payload = payload;
-    }
 }
-
-export const formatScriptError = (err: any, errorType: string, scriptName: string) => {
-    let errorMessage: string;
-
-    if ('response' in err && 'data' in err.response) {
-        if (typeof err.response.data === 'string' && (err.response.data.trim().startsWith('<!DOCTYPE html>') || /<\/?[a-z][\s\S]*>/i.test(err.response.data))) {
-            errorMessage = err.response.data;
-        } else {
-            errorMessage = JSON.stringify(err.response.data, null, 2);
-        }
-    } else if (err.message) {
-        errorMessage = err.message;
-    } else if (err && typeof err === 'object' && Object.keys(err as object).length > 0) {
-        errorMessage = stringifyError(err, { pretty: true, stack: true });
-    } else {
-        errorMessage = String(err);
-    }
-
-    const content = `Script for '${scriptName}' failed to execute with error: ${errorMessage}`;
-
-    const status = err?.response?.status || 500;
-    const error = new NangoError(errorType, content, status);
-
-    return { success: false, error, response: null };
-};
 
 export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
     return Boolean(typeof obj === 'object' && obj && 'payload' in obj && 'type' in obj);
@@ -725,7 +543,7 @@ export function isNangoErrorAsJson(obj: unknown): obj is NangoError {
 
 export function deserializeNangoError(err: unknown): NangoError | null {
     if (isNangoErrorAsJson(err)) {
-        return new NangoError(err['type'], err.payload, err.status);
+        return new NangoError(err['type'], err.payload, err.status, err.additional_properties);
     }
     return null;
 }

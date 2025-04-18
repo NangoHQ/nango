@@ -1,0 +1,33 @@
+name: Webflow Sync
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - packages/providers/providers.yaml
+            - docs-v2/integrations/all/*.md
+            - packages/shared/flows.yaml
+    workflow_dispatch:
+
+concurrency:
+    group: webflow-sync
+
+jobs:
+    webflow-sync-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - run: npx tsx scripts/webflow-api-sync.ts
+              env:
+                  WEBFLOW_CMS_API_TOKEN: ${{ secrets.WEBFLOW_CMS_API_TOKEN }}

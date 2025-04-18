@@ -5,7 +5,7 @@ import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, RouteHandler, Route } from '@nangohq/utils';
 import { validateRequest } from '@nangohq/utils';
 import type { TaskType } from '../../types.js';
-import { syncArgsSchema, actionArgsSchema, postConnectionArgsSchema, webhookArgsSchema, syncAbortArgsSchema } from '../../clients/validate.js';
+import { syncArgsSchema, actionArgsSchema, onEventArgsSchema, webhookArgsSchema, syncAbortArgsSchema } from '../../clients/validate.js';
 
 const path = '/v1/immediate';
 const method = 'POST';
@@ -43,8 +43,8 @@ const validate = validateRequest<PostImmediate>({
                         return actionArgsSchema;
                     case 'webhook':
                         return webhookArgsSchema;
-                    case 'post-connection-script':
-                        return postConnectionArgsSchema;
+                    case 'on-event':
+                        return onEventArgsSchema;
                     case 'abort':
                         return syncAbortArgsSchema;
                     default:
@@ -88,9 +88,11 @@ const handler = (scheduler: Scheduler) => {
             heartbeatTimeoutSecs: req.body.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
-            return res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
+            res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
+            return;
         }
-        return res.status(200).json({ taskId: task.value.id });
+        res.status(200).json({ taskId: task.value.id });
+        return;
     };
 };
 

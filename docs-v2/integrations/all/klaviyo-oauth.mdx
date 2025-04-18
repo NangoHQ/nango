@@ -1,0 +1,56 @@
+---
+title: Klaviyo OAuth
+sidebarTitle: Klaviyo OAuth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/klaviyo-oauth/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/klaviyo-oauth/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo-oauth.mdx)</Note>
+
+
+## Useful links
+
+-   [How to generate private & public API keys in your Klaviyo account](https://developers.klaviyo.com/en/docs/authenticate_)
+-   [API docs](https://developers.klaviyo.com/en/reference)
+-   [API Key rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling)
+-   [API Key auth related docs](https://developers.klaviyo.com/en/docs/authenticate_)
+-   [API Key scopes](https://developers.klaviyo.com/en/reference/api_overview#api-key-scopes)
+-   [How to generate an OAuth application](https://developers.klaviyo.com/en/docs/set_up_oauth#create-an-oauth-integration-in-klaviyo)
+-   [OAuth related docs](https://developers.klaviyo.com/en/docs/set_up_oauth#oauth-authorization-code-flow)
+-   [List of OAuth scopes](https://developers.klaviyo.com/en/docs/retrieve_api_credentials#scopes)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo-oauth.mdx)</Note>
+
+## API gotchas
+
+- For `API_KEY` auth mode, `Klaviyo` uses Public and Private API Keys to access different endpoints. Endpoints that begin with `/api` need to be authenticated with the private API key, while endpoints that begin with `/client` need to be authenticated using the public API key.
+- If you want to use a different API version than the default one set in Nango you can override the `revision` by adding in the necessary header. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
+- Rate limiting in `klaviyo-oauth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [klaviyo-oauth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo-oauth.mdx)</Note>
+
+<Card title="Connect to Klaviyo" icon="link" href="/integrations/all/klaviyo/connect" horizontal>
+  Guide to connect to Klaviyo using Nango Connect.
+</Card>

@@ -1,4 +1,4 @@
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     return knex.schema.createTable('_nango_users', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
@@ -11,6 +11,6 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable('_nango_users');
 };

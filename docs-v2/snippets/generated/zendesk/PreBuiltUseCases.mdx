@@ -1,0 +1,51 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Categories">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /categories` | Create a category within the help center | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-category.md) |
+| `GET /categories` | Fetches a list of help center categories | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/categories.md) |
+</Accordion>
+
+
+<Accordion title="Sections">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /sections` | Create a section within a category in the help center | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-section.md) |
+| `GET /sections` | Fetches a list of sections in Help center from Zendesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/sections.md) |
+</Accordion>
+
+
+<Accordion title="Tickets">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /tickets` | Create a Zendesk ticket | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-ticket.md) |
+| `GET /tickets` | Fetches a list of tickets from Zendesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/tickets.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `DELETE /users` | Delete a user in Zendesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/delete-user.md) |
+| `POST /users` | Create an admin or agent user in Zendesk. Defaults to agent if a role is not provided | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-user.md) |
+</Accordion>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /all-articles` | Fetch all help center articles metadata | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/fetch-articles.md) |
+| `GET /single-article` | Fetch a single full help center article | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/fetch-article.md) |
+| `GET /search-tickets` | An action that performs a search for tickets in Zendesk based on the specified filter. It can take up to a few minutes for new tickets and users to be indexed for search. If new resources don't appear in your search results, wait a few minutes and try again. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/search-tickets.md) |
+| `GET /articles` | Fetches a list of articles in Help center from Zendesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/articles.md) |
+| `GET /users` | Fetches a list of admin or agent users from Zendesk | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

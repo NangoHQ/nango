@@ -1,0 +1,81 @@
+---
+title: 'Re-authorize a connection'
+sidebarTitle: 'Re-authorize a connection'
+description: 'Guide on how to re-authorize a connection.'
+---
+
+There are cases where you need to re-authorize a connection, e.g. credentials have expired or the scopes/permissions have changed.
+
+The simplest way is to delete and recreate the connection, but this will reset the connection's attached data ([metadata](/guides/customer-configuration#store-customer-specific-data), [synced records](/guides/syncs/overview#sync-endpoints-and-data-caching)). Most of the time when testing, this is fine. 
+
+Follow the instructions below if you need to re-authorize a connection without altering it's attached data.
+
+# Re-authorize a connection from your app
+
+<Tip>
+This is the recommended way to re-authorize **production** connections, so customers can re-authorize independently, without having to manually send you their account credentials.
+</Tip>
+
+You can implement the re-authorization flow in your app by having your backend call a different endpoint when the connection already exists.
+
+Instead of generating the [default endpoint](/guides/api-authorization/authorize-in-your-app-default-ui#1-generate-a-session-token-backend) to generate a session token, use the `POST /connect/sessions/reconnect` endpoint ([API](/reference/api/connect/sessions/reconnect)/[SDK](/reference/sdks/node#create-a-reconnect-session) reference) to generate a session token meant for reconnection. This token is then used on the frontend in the same way as when creating a connection, but it will reconnect the existing connection instead.
+
+<Tabs>
+
+<Tab title="Node">
+
+```ts
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+
+api.post('/sessionToken', (req, res) => {
+  // Ask Nango for a secure token to reconnect
+  const res = await nango.createReconnectSession({
+    connection_id: "<CONNECTION-ID>",
+    integration_id: '<INTEGRATION-ID>',
+  });
+
+  // Send this token back to your frontend
+  res.status(200).send({
+    sessionToken: res.data.token
+  });
+});
+```
+</Tab>
+
+<Tab title="cURL">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/connect/sessions/reconnect \
+  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "connection_id": "<CONNECTION-ID>",
+    "integration_id": "<INTEGRATION-ID>"
+  }'
+
+```
+
+</Tab>
+
+</Tabs>
+
+# Re-authorize a connection from the Nango UI
+
+<Tip>
+    This is only recommended for **test** connections, not production connections. 
+
+    If you do intend to re-authorize a production connection from the Nango UI, be sure to use your customer's account credentials.
+</Tip>
+
+<Note>
+    The flow to re-authorize connections from the Nango UI is legacy. It will revamp shortly. 
+</Note>
+
+To re-connect from the UI, go to the _Connections_ tab > click _Add Test Connection_ > click _Or use deprecated flow_. Pick the relevant integration and enter the connection ID of the connection you want to re-authorize. 
+
+This flow leverage's the headless client. Check out the [reference](/reference/sdks/frontend#connect-using-the-headless-client) to pass the right parameters based on the integration's authorization type (OAuth, API key, basic auth).
+
+

@@ -1,19 +1,24 @@
-import { expect, describe, it, vi, beforeAll } from 'vitest';
-import type { Request, NextFunction } from 'express';
-import type { User } from '@nangohq/shared';
-import { NangoError } from '@nangohq/shared';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
 import db, { multipleMigrations } from '@nangohq/database';
+import { NangoError, seeders } from '@nangohq/shared';
+
 import configController from './config.controller';
+
 import type { RequestLocals } from '../utils/express.js';
-import type { DBTeam, DBEnvironment, ConnectSession } from '@nangohq/types';
+import type { ConnectSession, DBEnvironment, DBTeam, DBUser, EndUser } from '@nangohq/types';
+import type { NextFunction, Request } from 'express';
 
 const locals: Required<RequestLocals> = {
     authType: 'secretKey',
     account: { id: 0 } as DBTeam,
     environment: { id: 1 } as DBEnvironment,
-    user: { id: 0 } as User,
-    connectSession: { id: 0 } as ConnectSession
+    user: { id: 0 } as DBUser,
+    connectSession: { id: 0 } as ConnectSession,
+    endUser: { id: 0 } as EndUser,
+    plan: seeders.getTestPlan()
 };
+
 /**
  * LIST: ✅
  * GET: ✅

@@ -1,14 +1,33 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { zodErrorToHTTP } from '@nangohq/utils';
-import { analytics, configService, AnalyticsTypes, getConnectionConfig, connectionService, getProvider } from '@nangohq/shared';
-import type { TbaCredentials, PostPublicTbaAuthorization } from '@nangohq/types';
-import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
-import { hmacCheck } from '../../utils/hmac.js';
-import { connectionCreated as connectionCreatedHook, connectionTest as connectionTestHook } from '../../hooks/hooks.js';
-import { connectSessionTokenSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { linkConnection } from '../../services/endUser.service.js';
+
 import db from '@nangohq/database';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import {
+    AnalyticsTypes,
+    ErrorSourceEnum,
+    LogActionEnum,
+    analytics,
+    configService,
+    connectionService,
+    errorManager,
+    getConnectionConfig,
+    getProvider,
+    linkConnection
+} from '@nangohq/shared';
+import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import {
+    connectionCreated as connectionCreatedHook,
+    connectionCreationFailed as connectionCreationFailedHook,
+    testConnectionCredentials
+} from '../../hooks/hooks.js';
+import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { hmacCheck } from '../../utils/hmac.js';
+
+import type { LogContext } from '@nangohq/logs';
+import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
@@ -23,11 +42,9 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         params: z.record(z.any()).optional(),
-        hmac: z.string().optional(),
-        public_key: z.string().uuid().optional(),
-        connect_session_token: connectSessionTokenSchema.optional()
+        user_scope: z.string().optional()
     })
-    .strict();
+    .and(connectionCredential);
 
 const paramValidation = z
     .object({
@@ -35,7 +52,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res) => {
+export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res, next) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -60,153 +77,203 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         return;
     }
 
-    const { account, environment, authType } = res.locals;
+    const { account, environment, connectSession } = res.locals;
 
     const body: PostPublicTbaAuthorization['Body'] = val.data;
-
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
-
-    const { connection_id: receivedConnectionId, params, hmac }: PostPublicTbaAuthorization['Querystring'] = queryStringVal.data;
+    const queryString: PostPublicTbaAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTbaAuthorization['Params'] = paramVal.data;
+    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    let connectionId = queryString.connection_id || connectionService.generateConnectionId();
+    const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
+    const isConnectSession = res.locals['authType'] === 'connectSession';
 
-    const logCtx = await logContextGetter.create(
-        {
-            operation: { type: 'auth', action: 'create_connection' },
-            meta: { authType: 'tba' },
-            expiresAt: defaultOperationExpiration.auth()
-        },
-        { account, environment }
-    );
-    void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
-
-    await hmacCheck({ environment, logCtx, providerConfigKey, connectionId: receivedConnectionId, hmac, res });
-
-    const config = await configService.getProviderConfig(providerConfigKey, environment.id);
-
-    if (config == null) {
-        await logCtx.error('Unknown provider config');
-        await logCtx.failed();
-
-        res.status(404).send({
-            error: { code: 'unknown_provider_config' }
-        });
-
+    if (isConnectSession && queryString.connection_id) {
+        errorRestrictConnectionId(res);
         return;
     }
 
-    const provider = getProvider(config.provider);
-    if (!provider) {
-        await logCtx.error('Unknown provider');
-        await logCtx.failed();
-        res.status(404).send({ error: { code: 'unknown_provider_template' } });
-        return;
-    }
+    let logCtx: LogContext | undefined;
 
-    if (provider.auth_mode !== 'TBA') {
-        await logCtx.error('Provider does not support TBA auth', { provider: config.provider });
-        await logCtx.failed();
+    try {
+        logCtx =
+            isConnectSession && connectSession.operationId
+                ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
+                : await logContextGetter.create(
+                      {
+                          operation: { type: 'auth', action: 'create_connection' },
+                          meta: { authType: 'tba', connectSession: endUserToMeta(res.locals.endUser) },
+                          expiresAt: defaultOperationExpiration.auth()
+                      },
+                      { account, environment }
+                  );
+        void analytics.track(AnalyticsTypes.PRE_TBA_AUTH, account.id);
 
-        res.status(400).send({
-            error: { code: 'invalid_auth_mode' }
-        });
-
-        return;
-    }
-
-    await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
-
-    const connectionConfig = params ? getConnectionConfig(params) : {};
-
-    const tbaCredentials: TbaCredentials = {
-        type: 'TBA',
-        token_id: tokenId,
-        token_secret: tokenSecret,
-        config_override: {}
-    };
-
-    if (oauth_client_id_override || oauth_client_secret_override) {
-        const obfuscatedClientSecret = oauth_client_secret_override ? oauth_client_secret_override.slice(0, 4) + '***' : '';
-
-        await logCtx.info('Credentials override', {
-            oauth_client_id: oauth_client_id_override || '',
-            oauth_client_secret: obfuscatedClientSecret
-        });
-
-        if (oauth_client_id_override) {
-            tbaCredentials.config_override['client_id'] = oauth_client_id_override;
+        if (!isConnectSession) {
+            const checked = await hmacCheck({ environment, logCtx, providerConfigKey, connectionId, hmac, res });
+            if (!checked) {
+                return;
+            }
         }
 
-        if (oauth_client_secret_override) {
-            tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
+        const config = await configService.getProviderConfig(providerConfigKey, environment.id);
+        if (!config) {
+            void logCtx.error('Unknown provider config');
+            await logCtx.failed();
+            res.status(404).send({ error: { code: 'unknown_provider_config' } });
+            return;
         }
-    }
 
-    const connectionId = receivedConnectionId || connectionService.generateConnectionId();
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            void logCtx.error('Unknown provider');
+            await logCtx.failed();
+            res.status(404).send({ error: { code: 'unknown_provider_template' } });
+            return;
+        }
 
-    const connectionResponse = await connectionTestHook(
-        config.provider,
-        provider,
-        tbaCredentials,
-        connectionId,
-        providerConfigKey,
-        environment.id,
-        connectionConfig
-    );
+        if (provider.auth_mode !== 'TBA') {
+            void logCtx.error('Provider does not support TBA auth', { provider: config.provider });
+            await logCtx.failed();
 
-    if (connectionResponse.isErr()) {
-        await logCtx.error('Provided credentials are invalid', { provider: config.provider });
-        await logCtx.failed();
+            res.status(400).send({
+                error: { code: 'invalid_auth_mode' }
+            });
 
-        res.send({
-            error: { code: 'invalid_credentials', message: 'The provided credentials did not succeed in a test API call' }
-        });
+            return;
+        }
 
-        return;
-    }
+        if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
+            return;
+        }
 
-    const [updatedConnection] = await connectionService.upsertTbaConnection({
-        connectionId,
-        providerConfigKey,
-        credentials: tbaCredentials,
-        connectionConfig: {
-            ...connectionConfig,
-            oauth_client_id: config.oauth_client_id,
-            oauth_client_secret: config.oauth_client_secret
-        },
-        metadata: {},
-        config,
-        environment,
-        account
-    });
-    if (!updatedConnection) {
-        res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
-        await logCtx.error('Failed to create connection');
-        await logCtx.failed();
-        return;
-    }
+        // Reconnect mechanism
+        if (isConnectSession && connectSession.connectionId) {
+            const connection = await connectionService.getConnectionById(connectSession.connectionId);
+            if (!connection) {
+                void logCtx.error('Invalid connection');
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'invalid_connection' } });
+                return;
+            }
+            connectionId = connection?.connection_id;
+        }
 
-    if (authType === 'connectSession') {
-        const session = res.locals.connectSession;
-        await linkConnection(db.knex, { endUserId: session.endUserId, connection: updatedConnection.connection });
-    }
+        await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-    await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
-    await logCtx.info('Tba connection creation was successful');
-    await logCtx.success();
+        const tbaCredentials: TbaCredentials = {
+            type: 'TBA',
+            token_id: tokenId,
+            token_secret: tokenSecret,
+            config_override: {}
+        };
 
-    void connectionCreatedHook(
-        {
-            connection: updatedConnection.connection,
+        if (oauth_client_id_override || oauth_client_secret_override) {
+            const obfuscatedClientSecret = oauth_client_secret_override ? oauth_client_secret_override.slice(0, 4) + '***' : '';
+
+            void logCtx.info('Credentials override', {
+                oauth_client_id: oauth_client_id_override || '',
+                oauth_client_secret: obfuscatedClientSecret
+            });
+
+            if (oauth_client_id_override) {
+                tbaCredentials.config_override['client_id'] = oauth_client_id_override;
+            }
+
+            if (oauth_client_secret_override) {
+                tbaCredentials.config_override['client_secret'] = oauth_client_secret_override;
+            }
+        }
+
+        const connectionResponse = await testConnectionCredentials({ config, connectionConfig, connectionId, credentials: tbaCredentials, provider, logCtx });
+        if (connectionResponse.isErr()) {
+            void logCtx.error('Provided credentials are invalid');
+            await logCtx.failed();
+
+            res.send({
+                error: { code: 'invalid_credentials', message: 'The provided credentials did not succeed in a test API call' }
+            });
+
+            return;
+        }
+
+        const [updatedConnection] = await connectionService.upsertAuthConnection({
+            connectionId,
+            providerConfigKey,
+            credentials: tbaCredentials,
+            connectionConfig: {
+                ...connectionConfig,
+                oauth_client_id: config.oauth_client_id,
+                oauth_client_secret: config.oauth_client_secret
+            },
+            metadata: {},
+            config,
             environment,
-            account,
-            auth_mode: 'TBA',
-            operation: updatedConnection.operation
-        },
-        config.provider,
-        logContextGetter,
-        undefined,
-        logCtx
-    );
+            account
+        });
+        if (!updatedConnection) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to create connection' } });
+            void logCtx.error('Failed to create connection');
+            await logCtx.failed();
+            return;
+        }
 
-    res.status(200).send({ providerConfigKey, connectionId });
+        if (isConnectSession) {
+            await linkConnection(db.knex, { endUserId: connectSession.endUserId, connection: updatedConnection.connection });
+        }
+
+        await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+        void logCtx.info('Tba connection creation was successful');
+        await logCtx.success();
+
+        void connectionCreatedHook(
+            {
+                connection: updatedConnection.connection,
+                environment,
+                account,
+                auth_mode: 'TBA',
+                operation: updatedConnection.operation,
+                endUser: isConnectSession ? res.locals['endUser'] : undefined
+            },
+            account,
+            config,
+            logContextGetter
+        );
+
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode });
+
+        res.status(200).send({ providerConfigKey, connectionId });
+    } catch (err) {
+        const prettyError = stringifyError(err, { pretty: true });
+
+        void connectionCreationFailedHook(
+            {
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                environment,
+                account,
+                auth_mode: 'TBA',
+                error: {
+                    type: 'unknown',
+                    description: `Error during Unauth create: ${prettyError}`
+                },
+                operation: 'unknown'
+            },
+            account
+        );
+        if (logCtx) {
+            void logCtx.error('Error during Tableau credentials creation', { error: err });
+            await logCtx.failed();
+        }
+
+        errorManager.report(err, {
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.AUTH,
+            environmentId: environment.id,
+            metadata: { providerConfigKey, connectionId }
+        });
+
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TBA' });
+
+        next(err);
+    }
 });

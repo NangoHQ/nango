@@ -1,7 +1,9 @@
+import type { OnEventType } from '../scripts/on-events/api';
+
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type SyncTypeLiteral = 'incremental' | 'full';
-export type ScriptFileType = 'actions' | 'syncs' | 'post-connection-scripts';
-export type ScriptTypeLiteral = 'action' | 'sync';
+export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
+export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
 
 // --------------
 // YAML V1
@@ -27,14 +29,23 @@ export interface NangoYamlV2 {
     integrations: Record<string, NangoYamlV2Integration>;
     models: NangoYamlModel;
 }
+export interface NangoYamlV2Endpoint {
+    method?: HTTP_METHOD;
+    path: string;
+    group?: string | undefined;
+}
 export interface NangoYamlV2Integration {
     provider?: string;
     syncs?: Record<string, NangoYamlV2IntegrationSync>;
     actions?: Record<string, NangoYamlV2IntegrationAction>;
+    'on-events'?: Record<string, string[]>;
+    /**
+     * @deprecated
+     */
     'post-connection-scripts'?: string[];
 }
 export interface NangoYamlV2IntegrationSync {
-    endpoint: string | string[] | NangoSyncEndpointV2 | NangoSyncEndpointV2[];
+    endpoint: string | string[] | NangoYamlV2Endpoint | NangoYamlV2Endpoint[];
     output: string | string[];
     description?: string;
     sync_type?: SyncTypeLiteral;
@@ -47,7 +58,7 @@ export interface NangoYamlV2IntegrationSync {
     version?: string;
 }
 export interface NangoYamlV2IntegrationAction {
-    endpoint: string;
+    endpoint: string | NangoYamlV2Endpoint;
     output?: string | string[];
     description?: string;
     scopes?: string | string[];
@@ -61,7 +72,7 @@ export interface NangoYamlV2IntegrationAction {
 export interface NangoYamlModel {
     [key: string]: NangoYamlModelFields;
 }
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+
 export interface NangoYamlModelFields {
     [key: string]: NangoYamlModelField;
 }
@@ -80,7 +91,11 @@ export interface NangoYamlParsedIntegration {
     providerConfigKey: string;
     syncs: ParsedNangoSync[];
     actions: ParsedNangoAction[];
-    postConnectionScripts: string[];
+    onEventScripts: Record<OnEventType, string[]>;
+    /**
+     * @deprecated
+     */
+    postConnectionScripts?: string[];
 }
 export interface ParsedNangoSync {
     name: string;
@@ -129,11 +144,15 @@ export interface NangoModelField {
     optional?: boolean | undefined;
 }
 
-export type NangoSyncEndpointOld = {
-    [key in HTTP_METHOD]?: string | undefined;
-};
+export type NangoSyncEndpointOld = Partial<Record<HTTP_METHOD, string | undefined>>;
 
 export interface NangoSyncEndpointV2 {
     method: HTTP_METHOD;
     path: string;
+    group?: string | undefined;
+}
+
+// --- Providers Yaml is a modified nango.yaml
+export interface FlowsYaml {
+    integrations: Record<string, NangoYamlV2Integration & { models: NangoYamlModel }>;
 }

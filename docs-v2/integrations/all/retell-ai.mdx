@@ -1,0 +1,53 @@
+---
+title: Retell AI
+sidebarTitle: Retell AI
+provider: retell-ai
+---
+
+import Overview from "/snippets/overview.mdx";
+import PreBuiltTooling from "/snippets/generated/retell-ai/PreBuiltTooling.mdx";
+import PreBuiltUseCases from "/snippets/generated/retell-ai/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | Required for API access |
+| Paid test account | ✅ | Available for testing purposes |
+| Partnership | ❌ | Not required |
+| App review | ❌ | Not required |
+| Security audit | ❌ | Not required |
+
+## Setup guide
+
+1. **Create an account**: Sign up for a Retell AI account at [Retell AI](https://www.retellai.com/).
+2. **Generate an API key**: Navigate to your workspace settings and generate an API key. This key will be used for authentication.
+3. **Configure your integration**: Use the API key in your requests by including it in the `Authorization` header as a Bearer token.
+4. **Test your integration**: Use the `/v1/agent` endpoint to verify your setup.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/retell-ai.mdx)</Note>
+
+## Useful links
+
+-   [Retell AI API Documentation](https://docs.retellai.com/api-references)
+-   [Authentication Guide](https://docs.retellai.com/accounts/api-keys-overview)
+-   [API Playground](https://docs.retellai.com/test/llm_playground)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/retell-ai.mdx)</Note>
+
+## API gotchas
+
+-   **API Key Security**: Never expose your API key in client-side code or public repositories. Always use environment variables or secure storage.
+-   **Rate Limits**: Be mindful of API rate limits. Check the [API documentation](https://docs.retellai.com/deploy/concurrency#understand-concurrency-and-limits) for details.
+-   **Webhook Security**: Use the designated webhook API key for signing and verifying webhook requests to ensure they are legitimate.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/retell-ai.mdx)</Note>
+
+<Card title="Connect to Retell Ai" icon="link" href="/integrations/all/retell-ai/connect" horizontal>
+  Guide to connect to Retell Ai using Nango Connect.
+</Card>

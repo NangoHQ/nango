@@ -1,10 +1,32 @@
-import type { User } from '@nangohq/shared';
-import type { DBEnvironment, DBTeam, ConnectSession } from '@nangohq/types';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, DBUser, EndUser } from '@nangohq/types';
+
+// Types are historically loose so we need to fix them at some point
+// export type RequestLocals =
+//     | {
+//           authType: 'connectSession';
+//           account: DBTeam;
+//           environment: DBEnvironment;
+//           connectSession: ConnectSession;
+//           endUser: EndUser;
+//       }
+//     | {
+//           authType: 'publicKey';
+//           account: DBTeam;
+//           environment: DBEnvironment;
+//       }
+//     | {
+//           authType: 'basic' | 'session' | 'secretKey' | 'adminKey' | 'none';
+//           account?: DBTeam;
+//           environment?: DBEnvironment;
+//           user: Pick<DBUser, 'id' | 'email' | 'name'>;
+//       };
 
 export interface RequestLocals {
     authType?: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
-    user?: Pick<User, 'id' | 'email' | 'name'>;
+    user?: DBUser;
     account?: DBTeam;
     environment?: DBEnvironment;
     connectSession?: ConnectSession;
+    endUser?: EndUser;
+    plan?: DBPlan | null;
 }

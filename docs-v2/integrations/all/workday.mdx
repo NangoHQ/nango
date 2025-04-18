@@ -3,36 +3,53 @@ title: Workday
 sidebarTitle: Workday
 ---
 
-API configuration: [`workday`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/workday/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/workday/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | 🚫 |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+
+
+## Useful links
 
 Workday provides two APIs, a REST and a SOAP one. Only the SOAP is currently supported.
 
 ## Connection configuration in Nango
 
-Workday requires a user specific subdomain for the API base URL.
+Workday requires a user specific hostname and tenant for the API base URL.
 
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
-nango.auth('workday', '<CONNECTION-ID>', {params: {subdomain: '<workday-subdomain>'}});
+nango.auth('workday', '<CONNECTION-ID>', { params: { hostname: '<workday-hostname>', tenant: '<workday-tenant>' }});
 ```
 
-For more details see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
+For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/workday.mdx)</Note>
+
+<Card title="Connect to Workday" icon="link" href="/integrations/all/workday/connect" horizontal>
+  Guide to connect to Workday using Nango Connect.
+</Card>

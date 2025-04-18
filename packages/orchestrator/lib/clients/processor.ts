@@ -41,6 +41,10 @@ export class OrchestratorProcessor {
         }
     }
 
+    public queueSize() {
+        return this.queue.size;
+    }
+
     private async processingLoop(ctx: { tracer: Tracer }) {
         while (!this.stopped) {
             // wait for the queue to have space before dequeuing more tasks
@@ -85,7 +89,7 @@ export class OrchestratorProcessor {
                         span.setTag('error', res.error);
                     }
                 }
-            } catch (err: unknown) {
+            } catch (err) {
                 const error = err instanceof Error ? err : new Error(stringifyError(err));
                 logger.error(`Failed to process task ${task.id}`, error);
                 const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });

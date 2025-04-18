@@ -1,25 +1,32 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { Result } from '@nangohq/utils';
-import { isCloud, isBasicAuthEnabled, getLogger, metrics, stringifyError, Err, Ok } from '@nangohq/utils';
-import { LogActionEnum, ErrorSourceEnum, environmentService, errorManager, userService } from '@nangohq/shared';
-import db from '@nangohq/database';
-import * as connectSessionService from '../services/connectSession.service.js';
-import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
+import path from 'node:path';
+
 import tracer from 'dd-trace';
+
+import db from '@nangohq/database';
+import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { Err, Ok, flagHasPlan, getLogger, isBasicAuthEnabled, isCloud, metrics, stringTimingSafeEqual, stringifyError, tagTraceUser } from '@nangohq/utils';
+
+import { NANGO_ADMIN_UUID } from '../controllers/account.controller.js';
+import { envs } from '../env.js';
+import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import * as connectSessionService from '../services/connectSession.service.js';
+
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBEnvironment, DBTeam } from '@nangohq/types';
-import { connectSessionTokenSchema, connectSessionTokenPrefix } from '../helpers/validation.js';
+import type { ConnectSession, DBEnvironment, DBPlan, DBTeam, EndUser } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const ignoreEnvPaths = ['/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
+const ignoreEnvPaths = ['/api/v1/environments', '/api/v1/meta', '/api/v1/user', '/api/v1/user/name', '/api/v1/signin', '/api/v1/invite/:id'];
 
 export class AccessMiddleware {
     private async validateSecretKey(secret: string): Promise<
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            plan: DBPlan | null;
         }>
     > {
         if (!keyRegex.test(secret)) {
@@ -29,7 +36,17 @@ export class AccessMiddleware {
         if (!result) {
             return Err('unknown_user_account');
         }
-        return Ok(result);
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
+        return Ok({ ...result, plan });
     }
 
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -53,6 +70,7 @@ export class AccessMiddleware {
                 errorManager.errRes(res, 'malformed_auth_header');
                 return;
             }
+
             const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
@@ -62,14 +80,15 @@ export class AccessMiddleware {
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
-            tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
             return errorManager.errRes(res, 'malformed_auth_header');
         } finally {
-            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start);
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
         }
     }
@@ -91,16 +110,28 @@ export class AccessMiddleware {
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
+            plan: DBPlan | null;
         }>
     > {
         if (!keyRegex.test(publicKey)) {
             return Err('invalid_secret_key_format');
         }
+
         const result = await environmentService.getAccountAndEnvironmentByPublicKey(publicKey);
         if (!result) {
             return Err('unknown_user_account');
         }
-        return Ok(result);
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
+        return Ok({ ...result, plan });
     }
 
     async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
@@ -169,6 +200,8 @@ export class AccessMiddleware {
             account: DBTeam;
             environment: DBEnvironment;
             connectSession: ConnectSession;
+            endUser: EndUser;
+            plan: DBPlan | null;
         }>
     > {
         const parsedToken = connectSessionTokenSchema.safeParse(token);
@@ -182,16 +215,27 @@ export class AccessMiddleware {
         }
 
         const result = await environmentService.getAccountAndEnvironment({
-            environmentId: getConnectSession.value.environmentId
+            environmentId: getConnectSession.value.connectSession.environmentId
         });
         if (!result) {
             return Err('unknown_account');
         }
 
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: result.account.id });
+            if (planRes.isErr()) {
+                return Err('plan_not_found');
+            }
+            plan = planRes.value;
+        }
+
         return Ok({
             account: result.account,
             environment: result.environment,
-            connectSession: getConnectSession.value
+            connectSession: getConnectSession.value.connectSession,
+            endUser: getConnectSession.value.endUser,
+            plan
         });
     }
 
@@ -216,7 +260,6 @@ export class AccessMiddleware {
             }
 
             const result = await this.validateConnectSessionToken(token);
-
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
@@ -226,11 +269,51 @@ export class AccessMiddleware {
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
             res.locals['connectSession'] = result.value.connectSession;
-            tracer.setUser({
-                id: String(result.value.account.id),
-                environmentId: String(result.value.environment.id),
-                connectSessionId: String(result.value.connectSession.id)
-            });
+            res.locals['endUser'] = result.value.endUser;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
+            span.setTag('error', err);
+            return errorManager.errRes(res, 'unknown_account');
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    /**
+     * This is the same as connectSessionAuth expect we check the body
+     * Only used for /connect/telemetry because we use sendBeacon that does not accept headers
+     */
+    async connectSessionAuthBody(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('connectSessionAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const token = req.is('application/json') && req.body && req.body['token'];
+            if (!token) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const result = await this.validateConnectSessionToken(token);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'connectSession';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['connectSession'] = result.value.connectSession;
+            res.locals['endUser'] = result.value.endUser;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_connect_session ${stringifyError(err)}`);
@@ -282,20 +365,17 @@ export class AccessMiddleware {
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
-                tracer.setUser({
-                    id: String(secretKeyResult.value.account.id),
-                    environmentId: String(secretKeyResult.value.environment.id)
-                });
+                res.locals['plan'] = secretKeyResult.value.plan;
+
+                tagTraceUser(secretKeyResult.value);
             } else {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
-                tracer.setUser({
-                    id: String(connectSessionResult.value.account.id),
-                    environmentId: String(connectSessionResult.value.environment.id),
-                    connectSessionId: String(connectSessionResult.value.connectSession.id)
-                });
+                res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['plan'] = connectSessionResult.value.plan;
+                tagTraceUser(connectSessionResult.value);
             }
             next();
         } catch (err) {
@@ -323,15 +403,14 @@ export class AccessMiddleware {
                     errorManager.errRes(res, connectSessionResult.error.message);
                     return;
                 }
+
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
-                tracer.setUser({
-                    id: String(connectSessionResult.value.account.id),
-                    environmentId: String(connectSessionResult.value.environment.id),
-                    connectSessionId: String(connectSessionResult.value.connectSession.id)
-                });
+                res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['plan'] = connectSessionResult.value.plan;
+                tagTraceUser(connectSessionResult.value);
             } else {
                 const publicKey = req.query['public_key'] as string;
 
@@ -348,10 +427,12 @@ export class AccessMiddleware {
                     errorManager.errRes(res, result.error.message);
                     return;
                 }
+
                 res.locals['authType'] = 'publicKey';
                 res.locals['account'] = result.value.account;
                 res.locals['environment'] = result.value.environment;
-                tracer.setUser({ id: String(result.value.account.id), environmentId: String(result.value.environment.id) });
+                res.locals['plan'] = result.value.plan;
+                tagTraceUser(result.value);
             }
             next();
         } catch (err) {
@@ -388,6 +469,27 @@ export class AccessMiddleware {
 
         next();
     }
+
+    internal(req: Request, res: Response, next: NextFunction) {
+        const key = envs.NANGO_INTERNAL_API_KEY;
+
+        if (!key) {
+            return errorManager.errRes(res, 'internal_private_key_configuration');
+        }
+
+        const authorizationHeader = req.get('authorization');
+
+        if (!authorizationHeader) {
+            return errorManager.errRes(res, 'missing_auth_header');
+        }
+
+        const receivedKey = authorizationHeader.split('Bearer ').pop();
+        if (!receivedKey || !stringTimingSafeEqual(receivedKey, key)) {
+            return errorManager.errRes(res, 'invalid_internal_private_key');
+        }
+
+        next();
+    }
 }
 
 /**
@@ -400,9 +502,29 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             res.status(401).send({ error: { code: 'unknown_user' } });
             return;
         }
-        res.locals['user'] = req.user!;
 
-        if (ignoreEnvPaths.includes(req.route.path)) {
+        const account = await accountService.getAccountById(user.account_id);
+        if (!account) {
+            res.status(401).send({ error: { code: 'unknown_account' } });
+            return;
+        }
+
+        let plan: DBPlan | null = null;
+        if (flagHasPlan) {
+            const planRes = await getPlan(db.knex, { accountId: user.account_id });
+            if (planRes.isErr()) {
+                res.status(401).send({ error: { code: 'plan_not_found' } });
+                return;
+            }
+            plan = planRes.value;
+        }
+
+        res.locals['user'] = user;
+        res.locals['account'] = account;
+        res.locals['plan'] = plan;
+
+        const fullPath = path.join(req.baseUrl, req.route.path);
+        if (ignoreEnvPaths.includes(fullPath)) {
             next();
             return;
         }
@@ -413,14 +535,14 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        const result = await environmentService.getAccountAndEnvironment({ accountId: user.account_id, envName: currentEnv });
-        if (!result) {
+        const environment = await environmentService.getByEnvironmentName(account.id, currentEnv);
+        if (!environment) {
             res.status(401).send({ error: { code: 'unknown_account_or_env' } });
             return;
         }
 
-        res.locals['account'] = result.account;
-        res.locals['environment'] = result.environment;
+        res.locals['environment'] = environment;
+        tagTraceUser({ account, environment, plan });
         next();
     } catch (err) {
         errorManager.report(err);

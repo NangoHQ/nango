@@ -1,0 +1,35 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Contacts">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /contacts` | Create a contact in the system | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/create-contact.md) |
+</Accordion>
+
+
+<Accordion title="Leads">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /leads` | Create a lead with with information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/create-lead.md) |
+| `PUT /leads` | Update a lead with any changed information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/update-lead.md) |
+| `GET /leads` | Fetch all leads | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/get-leads.md) |
+</Accordion>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /schema` | Get the schema of any entity. Useful to know the properties of any object that exists in the system. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/get-schema.md) |
+| `GET /company` | Retrieve information about a company | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/get-company.md) |
+| `POST /company` | Create a company in the system | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/create-company.md) |
+| `POST /opportunity` | Create an opportunity in the system. Requires a stage that exists<br />in the system. Use the list-stages action to find the appropriate stage. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/create-opportunity.md) |
+| `GET /stages` | List all the stages that exist in the system. Use this action to find<br />the correct stage to be able to create an opportunity. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/unanet/actions/list-stages.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

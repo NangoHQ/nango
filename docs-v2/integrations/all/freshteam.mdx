@@ -1,0 +1,54 @@
+---
+title: Freshteam
+sidebarTitle: Freshteam
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/freshteam/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/freshteam/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshteam.mdx)</Note>
+
+## Useful links
+
+-   [How to find your API key in your Freshteam account](https://support.freshteam.com/support/solutions/articles/19000107073)
+-   [Freshteam API docs](https://developers.freshteam.com/api/#introduction)
+-   [Freshteam Authentication](https://developers.freshteam.com/api/#authentication)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshteam.mdx)</Note>
+
+## API gotchas
+
+- Freshteam is not currently available for new customers, but support is still provided for existing customers.
+- Freshteam uses API_KEY auth mode with `authorization: Bearer API_KEY` as a request header to access different endpoints.
+- When creating a connection, you need to add the `accountName` as a connection configuration parameter.
+- Freshteam enforces a rate limit per minute based on the organization's plan and the number of subscribed employees, applying to the account regardless of the originating IP address. For more details check [Freshteam rate limit](https://developers.freshteam.com/api/#ratelimit)
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/freshteam.mdx)</Note>
+
+
+## Going further
+
+<Card title="Connect to Freshteam" icon="link" href="/integrations/all/freshteam/connect" horizontal>
+  Guide to connect to Freshteam using Connect UI
+</Card>

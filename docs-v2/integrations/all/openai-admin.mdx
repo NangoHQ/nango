@@ -1,0 +1,53 @@
+---
+title: OpenAI Administration
+sidebarTitle: OpenAI Administration
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/openai/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/openai/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate an Admin key in your OpenAI account](https://platform.openai.com/settings/organization/admin-keys)
+-   [OpenAI API docs](https://platform.openai.com/docs/api-reference/administration)
+-   [OpenAI Authentication](https://platform.openai.com/docs/api-reference/authentication)
+-   [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai-admin.mdx)</Note>
+
+## API gotchas
+- Admin API keys cannot be used for non-administration endpoints.
+- OpenAI uses API_KEY auth mode with `Authorization: Bearer API_KEY` in the request header to access different endpoints.
+- Nango supports automatic retries based on the `x-ratelimit-reset-requests` header from OpenAI's API. This header indicates when the request limit will reset, allowing Nango to efficiently manage API calls. Unlike `x-ratelimit-reset-tokens`, which pertains to the total token usage,`x-ratelimit-reset-requests` specifically addresses the number of API requests.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai-admin.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Openai Administration" icon="link" href="/integrations/all/openai-admin/connect" horizontal>
+  Guide to connect to Openai with Admin Keys using Nango Connect.
+</Card>

@@ -1,13 +1,14 @@
 import { expect, describe, it, beforeAll, afterAll, vi } from 'vitest';
-import db, { multipleMigrations } from '@nangohq/database';
+import { multipleMigrations } from '@nangohq/database';
 import type { UnencryptedRecordData, ReturnedRecord } from '@nangohq/records';
 import { records as recordsService, format as recordsFormatter, migrate as migrateRecords, clearDbTestsOnly as clearRecordsDb } from '@nangohq/records';
 import { handleSyncSuccess, startSync } from './sync.js';
-import type { TaskSync } from '@nangohq/nango-orchestrator';
-import type { Connection, Sync, SyncResult, Job as SyncJob, SyncConfig } from '@nangohq/shared';
+import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
+import type { Sync, SyncResult, Job as SyncJob } from '@nangohq/shared';
 import { isSyncJobRunning, seeders, getLatestSyncJob, updateSyncJobResult } from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
+import { Ok, stringifyError } from '@nangohq/utils';
 import { envs } from '../env.js';
+import type { ConnectionJobs, DBSyncConfig } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 
@@ -18,7 +19,6 @@ describe('Running sync', () => {
     });
 
     afterAll(async () => {
-        await clearDb();
         await clearRecordsDb();
     });
 
@@ -170,15 +170,11 @@ const initDb = async () => {
     await migrateRecords();
 };
 
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-};
-
 const runJob = async (
     rawRecords: UnencryptedRecordData[],
-    connection: Connection,
+    connection: ConnectionJobs,
     sync: Sync,
-    syncConfig: SyncConfig,
+    syncConfig: DBSyncConfig,
     softDelete: boolean
 ): Promise<SyncResult> => {
     const task: TaskSync = {
@@ -186,38 +182,40 @@ const runJob = async (
         name: 'task-name',
         syncId: sync.id,
         syncName: sync.name,
+        syncVariant: 'base',
         groupKey: 'group-key',
         attempt: 0,
         state: 'CREATED',
         debug: false,
         connection: {
-            id: connection.id!,
+            id: connection.id,
             environment_id: connection.environment_id,
             provider_config_key: connection.provider_config_key,
             connection_id: connection.connection_id
         },
-        isSync: () => true,
-        isAction: () => false,
-        isPostConnection: () => false,
-        isSyncAbort: () => false,
-        isWebhook: () => false
+        isSync: (): this is TaskSync => true,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
     };
     const nangoProps = await startSync(task, mockStartScript);
     if (nangoProps.isErr()) {
-        throw new Error(`failed to start sync: ${nangoProps.error.message}`);
+        throw new Error(`failed to start sync: ${stringifyError(nangoProps.error)}`);
     }
 
     // check that sync job is running
     const syncJob = await isSyncJobRunning(task.syncId);
     if (!syncJob || syncJob.run_id !== 'task-id' || !syncJob.log_id) {
-        throw new Error(`Incorrect sync job detected: ${syncJob}`);
+        throw new Error(`Incorrect sync job detected: ${syncJob?.id}`);
     }
 
     const model = syncConfig.models[0]!;
     // format and upsert records
     const formatting = recordsFormatter.formatRecords({
         data: rawRecords,
-        connectionId: connection.id as number,
+        connectionId: connection.id,
         model: model,
         syncId: sync.id,
         syncJobId: syncJob.id,
@@ -228,7 +226,7 @@ const runJob = async (
     }
     const upserting = await recordsService.upsert({
         records: formatting.value,
-        connectionId: connection.id as number,
+        connectionId: connection.id,
         environmentId: connection.environment_id,
         model,
         softDelete
@@ -246,7 +244,7 @@ const runJob = async (
     };
     await updateSyncJobResult(syncJob.id, updatedResults, model);
 
-    await handleSyncSuccess({ nangoProps: nangoProps.value });
+    await handleSyncSuccess({ taskId: 'abc', nangoProps: nangoProps.value });
 
     const latestSyncJob = await getLatestSyncJob(sync.id);
     if (!latestSyncJob) {
@@ -268,7 +266,7 @@ const verifySyncRun = async (
     expectedResult: SyncResult,
     trackDeletes: boolean,
     softDelete = false
-): Promise<{ connection: Connection; model: string; sync: Sync; syncConfig: SyncConfig; records: ReturnedRecord[] }> => {
+): Promise<{ connection: ConnectionJobs; model: string; sync: Sync; syncConfig: DBSyncConfig; records: ReturnedRecord[] }> => {
     // Write initial records
     const { connection, model, sync, syncConfig } = await populateRecords(initialRecords, trackDeletes);
 
@@ -281,8 +279,8 @@ const verifySyncRun = async (
     return { connection, model, sync, syncConfig, records };
 };
 
-const getRecords = async (connection: Connection, model: string) => {
-    const res = await recordsService.getRecords({ connectionId: connection.id!, model });
+const getRecords = async (connection: ConnectionJobs, model: string) => {
+    const res = await recordsService.getRecords({ connectionId: connection.id, model });
     if (res.isOk()) {
         return res.value.records;
     }
@@ -293,10 +291,10 @@ async function populateRecords(
     toInsert: UnencryptedRecordData[],
     trackDeletes: boolean
 ): Promise<{
-    connection: Connection;
+    connection: ConnectionJobs;
     model: string;
     sync: Sync;
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     syncJob: SyncJob;
 }> {
     const {
@@ -308,7 +306,7 @@ async function populateRecords(
     for (let i = 0; i < records.length; i += chunkSize) {
         const res = await recordsService.upsert({
             records: records.slice(i, i + chunkSize),
-            connectionId: connection.id!,
+            connectionId: connection.id,
             environmentId: connection.environment_id,
             model
         });
@@ -317,7 +315,7 @@ async function populateRecords(
         }
     }
     return {
-        connection: connection as Connection,
+        connection,
         model,
         sync,
         syncConfig,
@@ -326,22 +324,18 @@ async function populateRecords(
 }
 
 async function seeds(records: UnencryptedRecordData[], trackDeletes: boolean) {
-    const envName = Math.random().toString(36).substring(7);
-    const env = await seeders.createEnvironmentSeed(0, envName);
-    const providerConfigKey = Math.random().toString(36).substring(7);
-    const model = Math.random().toString(36).substring(7);
+    const { env } = await seeders.seedAccountEnvAndUser();
+    const model = 'GithubIssue';
 
-    const connection = await seeders.createConnectionSeed(env, providerConfigKey);
+    const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
-    if (!connection.id) {
-        throw new Error('Failed to create connection');
-    }
-
+    const config = await seeders.createConfigSeed(env, 'github', 'github');
     const { syncConfig, sync } = await seeders.createSyncSeeds({
         connectionId: connection.id,
-        envId: env.id,
-        providerConfigKey,
-        trackDeletes,
+        environment_id: env.id,
+        nango_config_id: config.id!,
+        sync_name: Math.random().toString(36).substring(7),
+        track_deletes: trackDeletes,
         models: [model]
     });
 

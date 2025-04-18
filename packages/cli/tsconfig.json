@@ -6,7 +6,7 @@
     },
     "references": [
         {
-            "path": "../shared"
+            "path": "../runner-sdk"
         },
         {
             "path": "../types"

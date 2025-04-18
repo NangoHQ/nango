@@ -1,38 +1,45 @@
-import axios from 'axios';
-import type { Span } from 'dd-trace';
+import tracer from 'dd-trace';
+
 import {
-    CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT,
+    AnalyticsTypes,
     NangoError,
-    SpanTypes,
-    proxyService,
-    getSyncConfigsWithConnections,
+    ProxyRequest,
     analytics,
     errorNotificationService,
-    SlackService,
     externalWebhookService,
-    AnalyticsTypes,
+    getProxyConfiguration,
+    getSyncConfigsWithConnections,
     syncManager
 } from '@nangohq/shared';
+import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
+import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+
+import { getOrchestrator } from '../utils/utils.js';
+import executeVerificationScript from './connection/credentials-verification-script.js';
+import { slackService } from '../services/slack.js';
+import { postConnectionCreation } from './connection/on/connection-created.js';
+import postConnection from './connection/post-connection.js';
+
+import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq/logs';
+import type { ApiKeyCredentials, BasicApiCredentials, Config } from '@nangohq/shared';
 import type {
     ApplicationConstructedProxyConfiguration,
-    InternalProxyConfiguration,
-    ApiKeyCredentials,
-    BasicApiCredentials,
-    RecentlyCreatedConnection,
-    Connection,
     ConnectionConfig,
-    RecentlyFailedConnection
-} from '@nangohq/shared';
-import { getLogger, Ok, Err, isHosted } from '@nangohq/utils';
-import { getOrchestrator } from '../utils/utils.js';
-import type { TbaCredentials, IntegrationConfig, DBEnvironment, Provider, JwtCredentials } from '@nangohq/types';
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    IntegrationConfig,
+    InternalProxyConfiguration,
+    JwtCredentials,
+    Provider,
+    RecentlyCreatedConnection,
+    RecentlyFailedConnection,
+    SignatureCredentials,
+    TbaCredentials
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
-import { logContextGetter } from '@nangohq/logs';
-import postConnection from './connection/post-connection.js';
-import { externalPostConnection } from './connection/external-post-connection.js';
-import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
-import tracer from 'dd-trace';
+import type { Span } from 'dd-trace';
 
 const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
@@ -40,13 +47,18 @@ const orchestrator = getOrchestrator();
 export const connectionCreationStartCapCheck = async ({
     providerConfigKey,
     environmentId,
-    creationType
+    creationType,
+    plan
 }: {
     providerConfigKey: string | undefined;
     environmentId: number;
     creationType: 'create' | 'import';
+    plan: DBPlan;
 }): Promise<boolean> => {
     if (!providerConfigKey) {
+        return false;
+    }
+    if (!plan.connection_with_scripts_max) {
         return false;
     }
 
@@ -55,7 +67,7 @@ export const connectionCreationStartCapCheck = async ({
     for (const script of scriptConfigs) {
         const { connections } = script;
 
-        if (connections && connections.length >= CONNECTIONS_WITH_SCRIPTS_CAP_LIMIT) {
+        if (connections && connections.length >= plan.connection_with_scripts_max) {
             logger.info(`Reached cap for providerConfigKey: ${providerConfigKey} and environmentId: ${environmentId}`);
             const analyticsType =
                 creationType === 'create' ? AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_CREATED : AnalyticsTypes.RESOURCE_CAPPED_CONNECTION_IMPORTED;
@@ -67,22 +79,63 @@ export const connectionCreationStartCapCheck = async ({
     return false;
 };
 
+export async function testConnectionCredentials({
+    config,
+    connectionConfig,
+    connectionId,
+    credentials,
+    provider,
+    logCtx
+}: {
+    config: Config;
+    connectionConfig: ConnectionConfig;
+    connectionId: string;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+    provider: Provider;
+    logCtx: LogContextStateless;
+}): Promise<Result<{ tested: boolean }, NangoError>> {
+    try {
+        if (provider.credentials_verification_script) {
+            void logCtx.info('Running automatic credentials verification via verification script');
+            await executeVerificationScript(config, credentials, connectionId, connectionConfig);
+            return Ok({ tested: true });
+        }
+
+        if (provider.proxy?.verification) {
+            const result = await credentialsTest({
+                config,
+                provider,
+                credentials,
+                connectionId,
+                connectionConfig,
+                logCtx
+            });
+            return result;
+        }
+        return Ok({ tested: false });
+    } catch (err) {
+        void logCtx.error('Connection test verification failed');
+
+        return Err(new NangoError('connection_test_failed', { err }));
+    }
+}
+
 export const connectionCreated = async (
     createdConnectionPayload: RecentlyCreatedConnection,
-    provider: string,
+    account: DBTeam,
+    providerConfig: IntegrationConfig,
     logContextGetter: LogContextGetter,
-    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true },
-    logCtx?: LogContext
+    options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
-    const { connection, environment, auth_mode } = createdConnectionPayload;
-
-    if (options.initiateSync === true && !isHosted) {
-        await syncManager.createSyncForConnection(connection.id as number, logContextGetter, orchestrator);
-    }
+    const { connection, environment, auth_mode, endUser } = createdConnectionPayload;
 
     if (options.runPostConnectionScript === true) {
-        await postConnection(createdConnectionPayload, provider, logContextGetter);
-        await externalPostConnection(createdConnectionPayload, provider, logContextGetter);
+        await postConnection(createdConnectionPayload, providerConfig.provider, logContextGetter);
+        await postConnectionCreation(createdConnectionPayload, providerConfig.provider, logContextGetter);
+    }
+
+    if (options.initiateSync === true && !isHosted) {
+        await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -92,15 +145,19 @@ export const connectionCreated = async (
         environment,
         webhookSettings,
         auth_mode,
+        endUser,
         success: true,
         operation: 'creation',
-        provider,
-        type: 'auth',
-        logCtx
+        providerConfig,
+        account
     });
 };
 
-export const connectionCreationFailed = async (failedConnectionPayload: RecentlyFailedConnection, provider: string, logCtx?: LogContext): Promise<void> => {
+export const connectionCreationFailed = async (
+    failedConnectionPayload: RecentlyFailedConnection,
+    account: DBTeam,
+    providerConfig?: IntegrationConfig
+): Promise<void> => {
     const { connection, environment, auth_mode, error } = failedConnectionPayload;
 
     if (error) {
@@ -114,43 +171,42 @@ export const connectionCreationFailed = async (failedConnectionPayload: Recently
             success: false,
             error,
             operation: 'creation',
-            provider,
-            type: 'auth',
-            logCtx
+            providerConfig,
+            account
         });
     }
 };
 
 export const connectionRefreshSuccess = async ({
     connection,
-    environment,
     config
 }: {
-    connection: Connection;
-    environment: DBEnvironment;
+    connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
 }): Promise<void> => {
-    if (!connection.id) {
-        return;
+    try {
+        await errorNotificationService.auth.clear({
+            connection_id: connection.id
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
 
-    await errorNotificationService.auth.clear({
-        connection_id: connection.id
-    });
-
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
-
-    await slackNotificationService.removeFailingConnection({
-        connection,
-        name: connection.connection_id,
-        type: 'auth',
-        originalActivityLogId: null,
-        environment_id: environment.id,
-        provider: config.provider
-    });
+    try {
+        await slackService.removeFailingConnection({
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: null,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
 export const connectionRefreshFailed = async ({
+    account,
     connection,
     logCtx,
     authError,
@@ -159,7 +215,8 @@ export const connectionRefreshFailed = async ({
     config,
     action
 }: {
-    connection: Connection;
+    account: DBTeam;
+    connection: DBConnectionDecrypted;
     environment: DBEnvironment;
     provider: Provider;
     config: IntegrationConfig;
@@ -167,16 +224,19 @@ export const connectionRefreshFailed = async ({
     logCtx: LogContext;
     action: 'token_refresh' | 'connection_test';
 }): Promise<void> => {
-    await errorNotificationService.auth.create({
-        type: 'auth',
-        action,
-        connection_id: connection.id!,
-        log_id: logCtx.id,
-        active: true
-    });
+    try {
+        await errorNotificationService.auth.create({
+            type: 'auth',
+            action,
+            connection_id: connection.id,
+            log_id: logCtx.id,
+            active: true
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
-
     void sendAuthWebhook({
         connection,
         environment,
@@ -185,109 +245,137 @@ export const connectionRefreshFailed = async ({
         operation: 'refresh',
         error: authError,
         success: false,
-        provider: config.provider,
-        type: 'auth',
-        logCtx
+        providerConfig: config,
+        account
     });
 
-    const slackNotificationService = new SlackService({ orchestrator, logContextGetter });
-
-    await slackNotificationService.reportFailure(connection, connection.connection_id, 'auth', logCtx.id, environment.id, config.provider);
+    try {
+        await slackService.reportFailure({
+            account,
+            environment,
+            connection,
+            name: connection.connection_id,
+            type: 'auth',
+            originalActivityLogId: logCtx.id,
+            provider: config.provider
+        });
+    } catch (err) {
+        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+    }
 };
 
-export const connectionTest = async (
-    providerName: string,
-    provider: Provider,
-    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials,
-    connectionId: string,
-    providerConfigKey: string,
-    environment_id: number,
-    connection_config: ConnectionConfig
-): Promise<Result<boolean, NangoError>> => {
+export async function credentialsTest({
+    config,
+    provider,
+    credentials,
+    connectionId,
+    connectionConfig,
+    logCtx
+}: {
+    config: Config;
+    provider: Provider;
+    credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+    connectionId: string;
+    connectionConfig: ConnectionConfig;
+    logCtx: LogContextStateless;
+}): Promise<Result<{ tested: boolean }, NangoError>> {
     const providerVerification = provider?.proxy?.verification;
 
-    if (!providerVerification) {
-        return Ok(true);
+    if (!providerVerification?.endpoints?.length) {
+        return Ok({ tested: false });
     }
 
     const active = tracer.scope().active();
-    const span = tracer.startSpan(SpanTypes.CONNECTION_TEST, {
+    const span = tracer.startSpan('nango.server.hooks.credentialsTest', {
         childOf: active as Span,
         tags: {
-            'nango.provider': provider,
-            'nango.providerConfigKey': providerConfigKey,
-            'nango.connectionId': connectionId
+            provider: provider,
+            providerConfigKey: config.unique_key,
+            connectionId: connectionId
         }
     });
 
-    const { method, endpoint, base_url_override: baseUrlOverride, headers } = providerVerification;
+    const { method, base_url_override: baseUrlOverride, headers, endpoints, data } = providerVerification;
 
-    const connection: Connection = {
+    const connection: DBConnectionDecrypted = {
         id: -1,
         end_user_id: null,
-        provider_config_key: providerConfigKey,
+        provider_config_key: config.unique_key,
         connection_id: connectionId,
         credentials,
-        connection_config,
-        environment_id,
+        connection_config: connectionConfig,
+        environment_id: config.environment_id,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
+        config_id: -1,
+        credentials_iv: null,
+        credentials_tag: null,
+        deleted: false,
+        deleted_at: null,
+        last_fetched_at: null,
+        metadata: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false
     };
 
-    const configBody: ApplicationConstructedProxyConfiguration = {
-        endpoint,
-        method: method ?? 'GET',
-        provider,
-        token: credentials,
-        providerName: providerName,
-        providerConfigKey,
-        connectionId,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        connection
-    };
-
-    if (headers) {
-        configBody.headers = headers;
-    }
-
-    if (baseUrlOverride) {
-        configBody.baseUrlOverride = baseUrlOverride;
-    }
+    void logCtx.info(`Running automatic credentials verification`);
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName,
-        connection
+        providerName: config.provider
     };
 
-    try {
-        const { response } = await proxyService.route(configBody, internalConfig);
+    for (const endpoint of endpoints) {
+        const configBody: ApplicationConstructedProxyConfiguration = {
+            endpoint,
+            method: method ?? 'GET',
+            provider,
+            providerName: config.provider,
+            providerConfigKey: config.unique_key,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            decompress: false
+        };
 
-        if (axios.isAxiosError(response)) {
-            span.setTag('nango.error', response);
-            const error = new NangoError('connection_test_failed', response, response.response?.status);
-            return Err(error);
+        if (headers) {
+            configBody.headers = headers;
         }
 
-        if (!response || response instanceof Error) {
-            const error = new NangoError('connection_test_failed');
-            span.setTag('nango.error', response);
-            return Err(error);
+        if (baseUrlOverride) {
+            configBody.baseUrlOverride = baseUrlOverride;
         }
 
-        if (response.status && (response?.status < 200 || response?.status > 300)) {
-            const error = new NangoError('connection_test_failed');
-            span.setTag('nango.error', response);
-            return Err(error);
+        if (data) {
+            configBody.data = data;
         }
 
-        return Ok(true);
-    } catch (err) {
-        const error = new NangoError('connection_test_failed');
-        span.setTag('nango.error', err);
-        return Err(error);
-    } finally {
-        span.finish();
+        try {
+            const proxyConfig = getProxyConfiguration({ externalConfig: configBody, internalConfig }).unwrap();
+            const proxy = new ProxyRequest({
+                logger: (msg) => {
+                    void logCtx.log(msg);
+                },
+                proxyConfig,
+                getConnection: () => {
+                    return connection;
+                }
+            });
+
+            const response = (await proxy.request()).unwrap();
+
+            if (response.status && response.status >= 200 && response.status < 300) {
+                return Ok({ tested: true });
+            }
+        } catch {
+            // Already covered
+        }
     }
-};
+
+    const error = new NangoError('connection_test_failed');
+    span.setTag('error', error);
+    span.finish();
+    return Err(error);
+}

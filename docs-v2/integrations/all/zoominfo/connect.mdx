@@ -1,0 +1,32 @@
+---
+title: ZoomInfo - How do I link my account?
+sidebarTitle: ZoomInfo
+---
+
+
+# Overview
+To authenticate with ZoomInfo, you need two key pieces of information:
+1. **Client ID** - A unique identifier for your application on ZoomInfo.
+2. **Private Key** - A secret key that is used to generate a JWT.
+
+This guide will walk you through finding or creating those credentials within ZoomInfo.
+
+### Prerequisites:
+
+- You must have an account with ZoomInfo with administrator access.
+
+#### Step 1: Finding Your Client ID and Private Key
+1. Log into your admin ZoomInfo account and navigate to `Admin Portal` > `API` and click `Generate New Key`.
+    This will provide you with a `Client ID` and a `Private Key`.
+
+#### Step 2: Connect Your ZoomInfo Account
+
+<img src="/integrations/all/zoominfo/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the ZoomInfo authentication form.
+Enter your credentials as follows:
+- Client ID: Your ZoomInfo Client ID
+- Client Secret: Your ZoomInfo Private Key
+Click "Connect" to complete the authentication.
+
+Note: Make sure to match the credentials exactly as shown above - the field names in the form may differ from your ZoomInfo dashboard.

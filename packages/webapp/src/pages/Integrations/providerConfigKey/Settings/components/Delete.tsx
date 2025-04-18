@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import Button from '../../../../../components/ui/button/Button';
+import { Button } from '../../../../../components/ui/button/Button';
 import { apiDeleteIntegration } from '../../../../../hooks/useIntegration';
 import type { ApiIntegration } from '@nangohq/types';
 import { useToast } from '../../../../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
-import { mutate } from 'swr';
+import { useSWRConfig } from 'swr';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../../../components/ui/Dialog';
+import { clearConnectionsCache } from '../../../../../hooks/useConnections';
 
 export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration }> = ({ env, integration }) => {
     const { toast } = useToast();
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const { mutate, cache } = useSWRConfig();
 
     const onDelete = async () => {
         setLoading(true);
@@ -24,6 +26,9 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
         } else {
             toast({ title: `Integration "${integration.unique_key}" has been deleted`, variant: 'success' });
             void mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/integrations`), undefined);
+
+            clearConnectionsCache(cache, mutate);
+
             navigate(`/${env}/integrations`);
         }
     };

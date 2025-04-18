@@ -3,20 +3,22 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useSearchParam } from 'react-use';
 
-import type { ConnectUIEventToken } from '@nangohq/frontend';
-
 import { ErrorFallback } from '@/components/ErrorFallback';
 import { LoadingView } from '@/components/LoadingView';
 import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
+import { telemetry } from '@/lib/telemetry';
+
+import type { ConnectUIEventToken } from '@nangohq/frontend';
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setApiURL, setSession, setSessionToken } = useGlobal();
+    const { sessionToken, setApiURL, setSession, setSessionToken, setDetectClosedAuthWindow } = useGlobal();
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
+    const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
 
     useEffect(() => {
         // Listen to parent
@@ -28,6 +30,8 @@ export const Home: React.FC = () => {
 
             const data = evt.data as ConnectUIEventToken;
             setSessionToken(data.sessionToken);
+            // Let the state propagate
+            setTimeout(() => telemetry('open'), 1);
         };
         window.addEventListener('message', listener, false);
 
@@ -49,6 +53,10 @@ export const Home: React.FC = () => {
     useEffect(() => {
         if (apiURL) setApiURL(apiURL);
     }, [apiURL]);
+
+    useEffect(() => {
+        if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
+    }, [detectClosedAuthWindow]);
 
     useEffect(() => {
         if (data) {

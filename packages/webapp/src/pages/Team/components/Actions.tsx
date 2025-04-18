@@ -1,5 +1,5 @@
 import { Cross1Icon } from '@radix-ui/react-icons';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger, DialogClose } from '../../../components/ui/Dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import type { ApiInvitation, ApiUser } from '@nangohq/types';
@@ -26,7 +26,7 @@ export const UserAction: React.FC<{ user: ApiUser }> = ({ user }) => {
         setLoading(true);
         const updated = await apiDeleteTeamUser(env, { id: user.id });
 
-        if ('error' in updated) {
+        if ('error' in updated.json) {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         } else {
             if (user.id === me!.id) {
@@ -89,7 +89,7 @@ export const InvitationAction: React.FC<{ invitation: ApiInvitation }> = ({ invi
         setLoading(true);
         const deleted = await apiDeleteInvite(env, { email: invitation.email });
 
-        if ('error' in deleted) {
+        if ('error' in deleted.json) {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         } else {
             toast({ title: `${invitation.email}'s invitation has been revoked`, variant: 'success' });

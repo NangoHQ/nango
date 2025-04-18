@@ -3,26 +3,39 @@ title: Exact Online
 sidebarTitle: Exact Online
 ---
 
-API Configuration: [`exact-online`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/exact-online/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/exact-online/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/exact-online.mdx)</Note>
+
+
+## Useful links
 
 -   Register your app on the [Dev Portal](https://apps.exactonline.com/)
 -   Nango implements the [Auth Web APIs mentioned here](https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-gettingstarted) (specifically, it implements the `authorization code` flow).
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/exact-online.mdx)</Note>
 
 ## Connection configuration in Nango
 
@@ -34,11 +47,11 @@ You need to pass the domain extension to use to Nango in the `nango.auth()` call
 nango.auth('exact-online', '<CONNECTION-ID>', {params: {extension: 'com'}});
 ```
 
-For more details, see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
+For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
 -   Access Token refreshes are only possible in the last 30 seconds of the last one being valid, or of course when there is no valid Access Token anymore.
 -   Access Tokens stay valid for only 10 minutes.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/exact-online.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/exact-online.mdx)</Note>

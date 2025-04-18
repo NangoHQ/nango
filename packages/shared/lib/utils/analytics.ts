@@ -1,44 +1,41 @@
 import { PostHog } from 'posthog-node';
-import { localhostUrl, isCloud, isStaging, baseUrl } from '@nangohq/utils';
-import { UserType } from '../utils/utils.js';
+
+import { NANGO_VERSION, baseUrl, getLogger, isCloud, isStaging, localhostUrl } from '@nangohq/utils';
+
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
-import type { User } from '../models/Admin.js';
-import { LogActionEnum } from '../models/Telemetry.js';
-import { NANGO_VERSION } from '../version.js';
-import type { DBTeam } from '@nangohq/types';
+import { UserType } from '../utils/utils.js';
+
+const logger = getLogger('analytics');
 
 export enum AnalyticsTypes {
     ACCOUNT_CREATED = 'server:account_created',
     ACCOUNT_JOINED = 'server:account_joined',
+    ACCOUNT_TRIAL_EXPIRING_MAIL = 'account:trial:expiring:mail',
+    ACCOUNT_TRIAL_EXPIRED = 'account:trial:expired',
+    ACCOUNT_TRIAL_EXTENDED = 'account:trial:extend',
+    ACCOUNT_TRIAL_STARTED = 'account:trial:started',
     API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
     API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     TBA_CONNECTION_INSERTED = 'server:tba_connection_inserted',
+    TBA_CONNECTION_UPDATED = 'server:tba_connection_updated',
     TABLEAU_CONNECTION_INSERTED = 'server:tableau_connection_inserted',
+    TABLEAU_CONNECTION_UPDATED = 'server:tableau_connection_updated',
     JWT_CONNECTION_INSERTED = 'server:jwt_connection_inserted',
+    JWT_CONNECTION_UPDATED = 'server:jwt_connection_updated',
     BILL_CONNECTION_INSERTED = 'server:bill_connection_inserted',
+    BILL_CONNECTION_UPDATED = 'server:bill_connection_updated',
     TWO_STEP_CONNECTION_INSERTED = 'server:two_step_connection_inserted',
+    TWO_STEP_CONNECTION_UPDATED = 'server:two_step_connection_updated',
+    SIGNATURE_CONNECTION_INSERTED = 'server:signature_connection_inserted',
+    SIGNATURE_CONNECTION_UPDATED = 'server:signature_connection_updated',
     CONFIG_CREATED = 'server:config_created',
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
     CONNECTION_UPDATED = 'server:connection_updated',
-    DEMO_0 = 'demo:step_0',
-    DEMO_1 = 'demo:step_1',
-    DEMO_1_ERR = 'demo:step_1:error',
-    DEMO_1_SUCCESS = 'demo:step_1:success',
-    DEMO_2 = 'demo:step_2',
-    DEMO_2_ERR = 'demo:step_2:error',
-    DEMO_2_SUCCESS = 'demo:step_2:success',
-    DEMO_3 = 'demo:step_3',
-    DEMO_4 = 'demo:step_4',
-    DEMO_4_ERR = 'demo:step_4:error',
-    DEMO_4_SUCCESS = 'demo:step_4:success',
-    DEMO_5 = 'demo:step_5',
-    DEMO_5_ERR = 'demo:step_5:error',
-    DEMO_5_SUCCESS = 'demo:step_5:success',
-    DEMO_6 = 'demo:step_6',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
     PRE_APP_STORE_AUTH = 'server:pre_app_store_auth',
@@ -50,6 +47,7 @@ export enum AnalyticsTypes {
     PRE_OAUTH2_CC_AUTH = 'server:pre_oauth2_cc_auth',
     PRE_TBA_AUTH = 'server:pre_tba_auth',
     PRE_JWT_AUTH = 'server:pre_jwt_auth',
+    PRE_SIGNATURE_AUTH = 'server:pre_signature_auth',
     RESOURCE_CAPPED_CONNECTION_CREATED = 'server:resource_capped:connection_creation',
     RESOURCE_CAPPED_CONNECTION_IMPORTED = 'server:resource_capped:connection_imported',
     RESOURCE_CAPPED_SCRIPT_ACTIVATE = 'server:resource_capped:script_activate',
@@ -65,19 +63,67 @@ export enum AnalyticsTypes {
     WEB_ACCOUNT_SIGNUP = 'web:account_signup'
 }
 
+type OperationType = 'override' | 'creation';
+type ProviderType = 'SIGNATURE' | 'TWO_STEP' | 'BILL' | 'JWT' | 'TABLEAU' | 'TBA' | 'API_KEY' | 'BASIC';
+
+const AnalyticsEventMapping: Record<ProviderType, Record<OperationType, AnalyticsTypes>> = {
+    TWO_STEP: {
+        creation: AnalyticsTypes.TWO_STEP_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TWO_STEP_CONNECTION_UPDATED
+    },
+    SIGNATURE: {
+        creation: AnalyticsTypes.SIGNATURE_CONNECTION_INSERTED,
+        override: AnalyticsTypes.SIGNATURE_CONNECTION_UPDATED
+    },
+    BILL: {
+        creation: AnalyticsTypes.BILL_CONNECTION_INSERTED,
+        override: AnalyticsTypes.BILL_CONNECTION_UPDATED
+    },
+    JWT: {
+        creation: AnalyticsTypes.JWT_CONNECTION_INSERTED,
+        override: AnalyticsTypes.JWT_CONNECTION_UPDATED
+    },
+    TABLEAU: {
+        creation: AnalyticsTypes.TABLEAU_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TABLEAU_CONNECTION_UPDATED
+    },
+    TBA: {
+        creation: AnalyticsTypes.TBA_CONNECTION_INSERTED,
+        override: AnalyticsTypes.TBA_CONNECTION_UPDATED
+    },
+    API_KEY: {
+        creation: AnalyticsTypes.API_CONNECTION_INSERTED,
+        override: AnalyticsTypes.API_CONNECTION_UPDATED
+    },
+    BASIC: {
+        creation: AnalyticsTypes.API_CONNECTION_INSERTED,
+        override: AnalyticsTypes.API_CONNECTION_UPDATED
+    }
+};
+
 class Analytics {
     client: PostHog | undefined;
     packageVersion: string | undefined;
 
     constructor() {
+        const hasTelemetry = process.env['TELEMETRY'] !== 'false' && !isStaging;
+        if (!hasTelemetry) {
+            return;
+        }
+
+        // hardcoded for OSS telemetry
+        const key = process.env['PUBLIC_POSTHOG_KEY'] || 'phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl';
+        if (!key) {
+            logger.error('No PostHog key');
+            return;
+        }
+
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging) {
-                this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
-                this.client.enable();
-                this.packageVersion = NANGO_VERSION;
-            }
-        } catch (e) {
-            errorManager.report(e, {
+            this.client = new PostHog(key);
+            this.client.enable();
+            this.packageVersion = NANGO_VERSION;
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.ANALYTICS
             });
@@ -102,9 +148,9 @@ class Analytics {
             eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
             if (isCloud && accountId != null) {
-                const account: DBTeam | null = await accountService.getAccountById(accountId);
+                const account = await accountService.getAccountById(accountId);
                 if (account !== null && account.id !== undefined) {
-                    const users: User[] = await userService.getUsersByAccountId(account.id);
+                    const users = await userService.getUsersByAccountId(account.id);
 
                     if (users.length > 0) {
                         userProperties['email'] = users.map((user) => user.email).join(',');
@@ -122,8 +168,8 @@ class Analytics {
                 distinctId: userId,
                 properties: eventProperties
             });
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.ANALYTICS,
                 accountId: accountId
@@ -164,6 +210,22 @@ class Analytics {
             default:
                 return 'unknown';
         }
+    }
+
+    public async trackConnectionEvent({
+        provider_type,
+        operation,
+        accountId
+    }: {
+        provider_type: string;
+        operation: OperationType;
+        accountId: number;
+    }): Promise<void> {
+        const providerKey = provider_type as ProviderType;
+
+        const eventType = AnalyticsEventMapping[providerKey][operation];
+
+        await this.track(eventType, accountId, { provider_type });
     }
 }
 

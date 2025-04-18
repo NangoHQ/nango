@@ -96,11 +96,11 @@ describe('Webhook route unit tests', () => {
         const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
         const headers = { 'x-hubspot-signature': createdHash };
 
-        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, body.toString(), logContextGetter);
+        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, '', logContextGetter);
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 
-        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0][1];
+        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0]?.[1];
         expect(firstCallFirstArgument.eventId).toBe(4023112300);
     });
 
@@ -149,13 +149,13 @@ describe('Webhook route unit tests', () => {
         const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
         const headers = { 'x-hubspot-signature': createdHash };
 
-        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, body.toString(), logContextGetter);
+        await HubspotWebhookRouting.default(nangoMock as unknown as Nango, integration as ProviderConfig, headers, body, '', logContextGetter);
 
         expect(nangoMock.executeScriptForWebhooks).toHaveBeenCalledTimes(body.length);
 
-        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0][1];
+        const firstCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[0]?.[1];
         expect(firstCallFirstArgument.eventId).toBe(1234);
-        const secondCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[1][1];
+        const secondCallFirstArgument = nangoMock.executeScriptForWebhooks.mock.calls[1]?.[1];
         expect(secondCallFirstArgument.eventId).toBe(123);
     });
 });

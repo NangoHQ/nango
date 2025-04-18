@@ -1,15 +1,18 @@
-import { expect, describe, it, afterEach, vi } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
 import path, { join } from 'node:path';
-import fs from 'fs';
+
 import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
-import { init, generate } from './cli.js';
-import { exampleSyncName } from './constants.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { generate } from './cli.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
-import parserService from './services/parser.service.js';
-import { copyDirectoryAndContents, removeVersion, fixturesPath, getTestDirectory } from './tests/helpers.js';
 import { parse } from './services/config.service.js';
-import { directoryMigration } from './services/migration.service.js';
+import { init } from './services/init.service.js';
+import { directoryMigration, endpointMigration } from './services/migration.service.js';
+import parserService from './services/parser.service.js';
+import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from './tests/helpers.js';
 
 describe('generate function tests', () => {
     // Not the best but until we have a logger it will work
@@ -17,33 +20,6 @@ describe('generate function tests', () => {
 
     afterEach(() => {
         consoleMock.mockReset();
-    });
-
-    it('should init the expected files in the nango-integrations directory', async () => {
-        const dir = await getTestDirectory('init');
-        init({ absolutePath: path.resolve(dir, '..'), debug: false });
-        expect(fs.existsSync(join(dir, `demo-github-integration/syncs/${exampleSyncName}.ts`))).toBe(true);
-        expect(fs.existsSync(join(dir, '.env'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'nango.yaml'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
-        expect(removeVersion(fs.readFileSync(join(dir, '.nango/schema.ts')).toString())).toMatchSnapshot();
-        expect(removeVersion(fs.readFileSync(join(dir, '.nango/schema.json')).toString())).toMatchSnapshot();
-    });
-
-    it('should not overwrite existing integration files', async () => {
-        const dir = await getTestDirectory('overwrite');
-        init({ absolutePath: dir, debug: false });
-        await fs.promises.writeFile(join(dir, `${exampleSyncName}.ts`), 'dummy fake content', 'utf8');
-
-        const dummyContent = 'This is dummy content. Do not overwrite!';
-        const exampleFilePath = join(dir, `${exampleSyncName}.ts`);
-        await fs.promises.writeFile(exampleFilePath, dummyContent, 'utf8');
-
-        init({ absolutePath: dir });
-
-        expect(fs.existsSync(exampleFilePath)).toBe(true);
-        const fileContentAfterInit = await fs.promises.readFile(exampleFilePath, 'utf8');
-        expect(fileContentAfterInit).toBe(dummyContent);
     });
 
     it('should generate a different sync correctly', async () => {
@@ -254,11 +230,12 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
 
         const acc: string[] = [];
-        consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
+        consoleMock.mockImplementation((m) => acc.push(typeof m === 'string' ? stripAnsi(m) : m));
         generate({ debug: false, fullPath: dir });
 
         expect(acc).toStrictEqual([
@@ -332,6 +309,7 @@ describe('generate function tests', () => {
                 }
             }
         };
+
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(join(dir, 'nango.yaml'), yamlData, 'utf8');
         generate({ debug: false, fullPath: dir });
@@ -439,15 +417,24 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
 
-        const success = await compileAllFiles({ fullPath: dir, debug: true });
+        {
+            // Compile everything
+            const success = await compileAllFiles({ fullPath: dir, debug: true });
 
-        //. these should report any failed paths somehow, not just true!=false
-        expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
-        expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
+            //. these should report any failed paths somehow, not just true!=false
+            expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
 
-        expect(success).toBe(true);
+            expect(success).toBe(true);
+        }
+
+        {
+            // Compile one file
+            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(success).toBe(true);
+        }
     });
 
     it('should be backwards compatible with the single directory for integration files', async () => {
@@ -492,7 +479,7 @@ describe('generate function tests', () => {
 
         const success = await compileAllFiles({ fullPath: dir, debug: false });
 
-        const module = await import(join(dir, 'dist/issues-github.js'));
+        const module = await import(path.normalize(join(dir, 'dist/issues-github.js')));
 
         const result = module.default.default();
         expect(result).toBe('Hello, world!');
@@ -508,13 +495,15 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        expect(response?.parsed).not.toBeNull();
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
+        }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: response!.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);
@@ -528,13 +517,15 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        expect(response).not.toBeNull();
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
+        }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: response!.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);
@@ -549,15 +540,59 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/github/actions/welcomer.ts`), join(dir, 'welcomer.ts'));
 
-        const { response } = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        expect(response).not.toBeNull();
+        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
+        if (parsing.isErr()) {
+            throw parsing.error;
+        }
 
         const result = await compileSingleFile({
             fullPath: dir,
             file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: response!.parsed!,
+            parsed: parsing.value.parsed!,
             debug: false
         });
         expect(result).toBe(false);
+    });
+
+    // Problem with double lines
+    it.skipIf(os.platform() === 'win32')('should be able to migrate-endpoints', async () => {
+        const dir = await getTestDirectory('old-endpoint');
+        init({ absolutePath: dir });
+
+        const dest = join(dir, 'nango.yaml');
+        await fs.promises.copyFile(join(fixturesPath, 'nango-yaml/v2/nango.yaml'), dest);
+
+        endpointMigration(dir);
+
+        const content = await fs.promises.readFile(dest, 'utf8');
+
+        expect(content).toMatchSnapshot();
+    });
+
+    // Windows symlink are annoying to create
+    it.skipIf(os.platform() === 'win32')('should be able to compile files in symlink', async () => {
+        const dir = await getTestDirectory('symlink');
+        init({ absolutePath: dir });
+
+        await fs.promises.rm(join(dir, 'nango.yaml'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/nango.yaml'), join(dir, 'nango.yaml'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/github'), join(dir, 'github'));
+        await fs.promises.symlink(join(fixturesPath, 'nango-yaml/v2/nested-integrations/hubspot'), join(dir, 'hubspot'));
+
+        {
+            // Compile everything
+            const success = await compileAllFiles({ fullPath: dir, debug: true });
+            expect(fs.existsSync(join(dir, 'models.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'hubspot/syncs/contacts.ts'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/contacts-hubspot.js'))).toBe(true);
+            expect(fs.existsSync(join(dir, 'dist/issues-github.js'))).toBe(true);
+            expect(success).toBe(true);
+        }
+
+        {
+            // Compile one file
+            const success = await compileAllFiles({ fullPath: dir, debug: true, scriptName: 'contacts', providerConfigKey: 'hubspot', type: 'syncs' });
+            expect(success).toBe(true);
+        }
     });
 });

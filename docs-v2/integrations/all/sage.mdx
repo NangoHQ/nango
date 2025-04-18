@@ -3,30 +3,52 @@ title: Sage
 sidebarTitle: Sage
 ---
 
-API configuration: [`sage`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sage/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sage/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://developer.sage.com/accounting/guides/getting-started/client_app_registration/)
 -   [OAuth-related docs](https://developer.sage.com/accounting/guides/authenticating/authentication/)
 -   [API](https://developer.sage.com/accounting/reference/)
+-   [Sage Intacct Auth docs](https://developer.intacct.com/web-services/your-first-api-calls/)
+-   [Sage Intacct API docs](https://developer.intacct.com/api/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage.mdx)</Note>
 
 ## API gotchas
 
--   Scopes can only be `readonly` or `full_access`.
+-   Sage OAuth scopes can only be `readonly` or `full_access`.
+-   Sage also supports XML integration. When creating a new connection on Nango for Sage Intacct, please provide your web service `senderId` and `password`, as well as credentials to access the target company. These credentials include `userId`, `companyId`, and `userPassword`. Additionally, the target company must [authorize your sender ID]https://developer.intacct.com/support/faq/#why-am-i-getting-an-error-about-an-invalid-web-services-authorization to allow API calls.
+-   After successfully creating a new connection, you can use [getConnection](/reference/scripts#get-the-connection-credentials) in your integration scripts to retrieve the `sessionId`, for subsequent api calls.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage.mdx)</Note>
+
+## Going further
+<Card title="Connect to sage-intacct" icon="link" href="/integrations/all/sage-intacct/connect" horizontal>
+  Guide to connect to sage-intacct using Nango Connect.
+</Card>

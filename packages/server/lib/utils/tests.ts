@@ -3,7 +3,7 @@ import type { Server } from 'node:http';
 import { createServer } from 'node:http';
 import express from 'express';
 import { expect } from 'vitest';
-import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, ApiError } from '@nangohq/types';
+import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath } from '@nangohq/types';
 import getPort from 'get-port';
 import { migrateLogsMapping } from '@nangohq/logs';
 import db, { multipleMigrations } from '@nangohq/database';
@@ -34,21 +34,23 @@ export function apiFetch(baseUrl: string) {
             query,
             token,
             body,
-            params
-        }: { token?: string } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
+            params,
+            headers: additionalHeaders
+        }: { token?: string; headers?: Record<string, string> } & (TMethod extends 'GET' ? { method?: TMethod } : { method: TMethod }) &
             (TEndpoint['Querystring'] extends never ? { query?: never } : { query: TEndpoint['Querystring'] }) &
             (TEndpoint['Body'] extends never ? { body?: never } : { body: TEndpoint['Body'] }) &
-            (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] })
+            (TEndpoint['Params'] extends never ? { params?: never } : { params: TEndpoint['Params'] }) &
+            (TEndpoint['Headers'] extends never ? { headers?: Record<string, string> } : { headers: TEndpoint['Headers'] })
     ): Promise<{ res: Response; json: APIEndpointsPicker<TMethod, TPath>['Reply'] }> {
         const url = new URL(`${baseUrl}${path}`);
         if (query) {
             Object.entries(query).forEach(([name, value]) => {
                 if (Array.isArray(value)) {
                     for (const el of value) {
-                        url.searchParams.set(name, el);
+                        url.searchParams.append(name, el);
                     }
                 } else {
-                    url.searchParams.set(name, (value as any) || '');
+                    url.searchParams.set(name, value || '');
                 }
             });
         }
@@ -60,6 +62,14 @@ export function apiFetch(baseUrl: string) {
         if (body) {
             headers.append('content-type', 'application/json');
         }
+        if (additionalHeaders) {
+            for (const [k, v] of Object.entries(additionalHeaders)) {
+                if (v) {
+                    headers.set(k, v);
+                }
+            }
+        }
+
         const res = await fetch(params ? uriParamsReplacer(url.href, params) : url, {
             method: method || 'GET',
             headers,
@@ -78,7 +88,9 @@ export function apiFetch(baseUrl: string) {
 /**
  * Assert API response is an error
  */
-export function isError(json: any): asserts json is ApiError<any> {
+export function isError<TType extends Record<string, any>>(
+    json: TType extends { json: any } ? never : TType
+): asserts json is Extract<TType extends { json: any } ? never : TType, { error: any }> {
     if (!('error' in json)) {
         console.log('isError', inspect(json, true, 100));
         throw new Error('Response is not an error');
@@ -88,7 +100,9 @@ export function isError(json: any): asserts json is ApiError<any> {
 /**
  * Assert API response is a success
  */
-export function isSuccess<TType extends Record<string, any>>(json: TType): asserts json is Exclude<TType, { error: any }> {
+export function isSuccess<TType extends Record<string, any>>(
+    json: TType extends { json: any } ? never : TType
+): asserts json is Exclude<TType extends { json: any } ? never : TType, { error: any }> {
     if (json && 'error' in json) {
         console.log('isSuccess', inspect(json, true, 100));
         throw new Error('Response is not a success');

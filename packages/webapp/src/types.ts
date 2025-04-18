@@ -13,6 +13,7 @@ export interface SyncResponse {
     created_at: string;
     nango_connection_id: number;
     name: string;
+    variant: string;
     frequency: string;
     frequency_override: string | null;
     futureActionTimes: number[];
@@ -34,7 +35,7 @@ export interface SyncResponse {
         models: string[];
     };
     active_logs: Pick<ActiveLog, 'log_id'> | null;
-    record_count: number;
+    record_count: Record<string, number>;
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL' | 'CANCEL';

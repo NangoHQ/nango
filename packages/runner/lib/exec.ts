@@ -1,6 +1,4 @@
-import type { NangoProps, RunnerOutput } from '@nangohq/shared';
-import { AxiosError } from 'axios';
-import { ActionError, NangoSync, NangoAction, instrumentSDK, SpanTypes, validateData, NangoError } from '@nangohq/shared';
+import { isAxiosError } from 'axios';
 import { Buffer } from 'buffer';
 import * as vm from 'node:vm';
 import * as url from 'url';
@@ -8,30 +6,55 @@ import * as crypto from 'crypto';
 import * as zod from 'zod';
 import * as soap from 'soap';
 import * as botbuilder from 'botbuilder';
+import * as unzipper from 'unzipper';
 import tracer from 'dd-trace';
-import { errorToObject, metrics } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { errorToObject, metrics, truncateJson } from '@nangohq/utils';
+import { logger } from './logger.js';
+import type { NangoProps, RunnerOutput } from '@nangohq/types';
+import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
+import type { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { ActionError, SDKError, validateData } from '@nangohq/runner-sdk';
+import { Locks } from './sdk/locks.js';
 
-export async function exec(
-    nangoProps: NangoProps,
-    code: string,
-    codeParams?: object,
-    abortController: AbortController = new AbortController()
-): Promise<RunnerOutput> {
-    const rawNango = nangoProps.scriptType === 'action' ? new NangoAction(nangoProps) : new NangoSync(nangoProps);
+interface ScriptExports {
+    onWebhookPayloadReceived?: (nango: NangoSyncBase, payload?: object) => Promise<unknown>;
+    default: (nango: NangoActionBase, payload?: object) => Promise<unknown>;
+}
+
+export async function exec({
+    nangoProps,
+    code,
+    codeParams,
+    abortController = new AbortController(),
+    locks = new Locks()
+}: {
+    nangoProps: NangoProps;
+    code: string;
+    codeParams?: object | undefined;
+    abortController?: AbortController;
+    locks?: Locks;
+}): Promise<RunnerOutput> {
+    const rawNango = (() => {
+        switch (nangoProps.scriptType) {
+            case 'sync':
+            case 'webhook':
+                return new NangoSyncRunner(nangoProps, { locks });
+            case 'action':
+            case 'on-event':
+                return new NangoActionRunner(nangoProps, { locks });
+        }
+    })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
 
-    const wrappedCode = `
-        (function() {
-            var module = { exports: {} };
-            var exports = module.exports;
-            ${code}
-            return module.exports;
-        })();
+    const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}
+        return module.exports;
+    })();
     `;
 
-    return await tracer.trace<Promise<RunnerOutput>>(SpanTypes.RUNNER_EXEC, async (span) => {
+    const filename = `${nangoProps.syncConfig.sync_name}-${nangoProps.providerConfigKey}.js`;
+
+    return await tracer.trace<Promise<RunnerOutput>>('nango.runner.exec', async (span) => {
         span.setTag('accountId', nangoProps.team?.id)
             .setTag('environmentId', nangoProps.environmentId)
             .setTag('connectionId', nangoProps.connectionId)
@@ -39,7 +62,9 @@ export async function exec(
             .setTag('syncId', nangoProps.syncId);
 
         try {
-            const script = new vm.Script(wrappedCode);
+            const script = new vm.Script(wrappedCode, {
+                filename
+            });
             const sandbox: vm.Context = {
                 console,
                 require: (moduleName: string) => {
@@ -54,6 +79,8 @@ export async function exec(
                             return botbuilder;
                         case 'soap':
                             return soap;
+                        case 'unzipper':
+                            return unzipper;
                         default:
                             throw new Error(`Module '${moduleName}' is not allowed`);
                     }
@@ -66,7 +93,7 @@ export async function exec(
             };
 
             const context = vm.createContext(sandbox);
-            const scriptExports = script.runInContext(context);
+            const scriptExports = script.runInContext(context) as ScriptExports;
 
             if (nangoProps.scriptType === 'webhook') {
                 if (!scriptExports.onWebhookPayloadReceived) {
@@ -75,7 +102,7 @@ export async function exec(
                     throw new Error(content);
                 }
 
-                const output = await scriptExports.onWebhookPayloadReceived(nango, codeParams);
+                const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
                 return { success: true, response: output, error: null };
             }
 
@@ -112,7 +139,7 @@ export async function exec(
                 const valOutput = validateData({
                     version: nangoProps.syncConfig.version || '1',
                     input: output,
-                    modelName: nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
+                    modelName: nangoProps.syncConfig.models && nangoProps.syncConfig.models.length > 0 ? nangoProps.syncConfig.models[0] : undefined,
                     jsonSchema: nangoProps.syncConfig.models_json_schema
                 });
                 if (Array.isArray(valOutput)) {
@@ -135,84 +162,134 @@ export async function exec(
                 await scriptExports.default(nango);
                 return { success: true, response: true, error: null };
             }
-        } catch (error) {
-            if (error instanceof ActionError) {
+        } catch (err) {
+            if (err instanceof ActionError) {
                 // It's not a mistake, we don't want to report user generated error
                 // span.setTag('error', error);
-                const { type, payload } = error;
+                const { type, payload } = err;
                 return {
                     success: false,
                     error: {
                         type,
-                        payload: Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}, // TODO: fix ActionError so payload is always an object
+                        payload: truncateJson(
+                            Array.isArray(payload) || (typeof payload !== 'object' && payload !== null) ? { message: payload } : payload || {}
+                        ), // TODO: fix ActionError so payload is always an object
                         status: 500
                     },
                     response: null
                 };
             }
 
-            if (error instanceof NangoError) {
-                span.setTag('error', error);
+            if (err instanceof SDKError) {
+                span.setTag('error', err);
                 return {
                     success: false,
                     error: {
-                        type: error.type,
-                        payload: error.payload,
-                        status: error.status
+                        type: err.code,
+                        payload: truncateJson(err.payload),
+                        status: 500
                     },
                     response: null
                 };
-            } else if (error instanceof AxiosError) {
-                span.setTag('error', error);
-                if (error.response?.data) {
-                    const errorResponse = error.response.data.payload || error.response.data;
+            } else if (isAxiosError<unknown, unknown>(err)) {
+                // isAxiosError lets us use something the shape of an axios error in
+                // testing, which is handy with how strongly typed everything is
+
+                span.setTag('error', err);
+                if (err.response) {
+                    const maybeData = err.response.data;
+
+                    let errorResponse: unknown = {};
+                    if (maybeData && typeof maybeData === 'object' && 'payload' in maybeData) {
+                        errorResponse = maybeData.payload as Record<string, unknown>;
+                    } else {
+                        errorResponse = maybeData;
+                    }
+
+                    const headers = Object.fromEntries(
+                        Object.entries(err.response.headers)
+                            .map<[string, string]>(([k, v]) => [k.toLowerCase(), String(v)])
+                            .filter(([k]) => k === 'content-type' || k.startsWith('x-rate'))
+                    );
+
+                    const responseBody: Record<string, unknown> = truncateJson(
+                        errorResponse && typeof errorResponse === 'object' ? (errorResponse as Record<string, unknown>) : { message: errorResponse }
+                    );
+
                     return {
                         success: false,
                         error: {
                             type: 'script_http_error',
-                            payload: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
-                            status: error.response.status
+                            payload: responseBody,
+                            status: err.response.status,
+                            additional_properties: {
+                                upstream_response: {
+                                    status: err.response.status,
+                                    headers,
+                                    body: responseBody
+                                }
+                            }
                         },
                         response: null
                     };
                 } else {
-                    const tmp = errorToObject(error);
+                    const tmp = errorToObject(err);
                     return {
                         success: false,
                         error: {
-                            type: 'script_http_error',
-                            payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                            type: 'script_network_error',
+                            payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                             status: 500
                         },
                         response: null
                     };
                 }
-            } else if (error instanceof Error) {
-                const tmp = errorToObject(error);
+            } else if (err instanceof Error) {
+                const tmp = errorToObject(err);
                 span.setTag('error', tmp);
+
                 return {
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        payload: truncateJson({ name: tmp.name || 'Error', code: tmp.code, message: tmp.message }),
                         status: 500
                     },
                     response: null
                 };
             } else {
-                const tmp = errorToObject(!error || typeof error !== 'object' ? new Error(JSON.stringify(error)) : error);
+                const tmp = errorToObject(!err || typeof err !== 'object' ? new Error(JSON.stringify(err)) : err);
                 span.setTag('error', tmp);
+
+                const stacktrace = tmp.stack
+                    ? tmp.stack
+                          .split('\n')
+                          .filter((s, i) => i === 0 || s.includes(filename))
+                          .map((s) => s.trim())
+                          .slice(0, 5) // max 5 lines
+                    : [];
+
                 return {
                     success: false,
                     error: {
                         type: 'script_internal_error',
-                        payload: { name: tmp.name || 'Error', code: tmp.code, message: tmp.message },
+                        payload: truncateJson({
+                            name: tmp.name || 'Error',
+                            code: tmp.code,
+                            message: tmp.message,
+                            ...(stacktrace.length > 0 ? { stacktrace } : {})
+                        }),
                         status: 500
                     },
                     response: null
                 };
             }
         } finally {
+            try {
+                await nango.releaseAllLocks();
+            } catch (err) {
+                logger.warning('Failed to release all locks', { reason: err });
+            }
             span.finish();
         }
     });

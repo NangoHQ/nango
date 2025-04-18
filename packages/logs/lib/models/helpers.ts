@@ -1,112 +1,95 @@
-import { nanoid } from '@nangohq/utils';
-import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
 import { z } from 'zod';
-import type { estypes } from '@elastic/elasticsearch';
+
+import { nanoid } from '@nangohq/utils';
+
 import { defaultOperationExpiration } from '../env.js';
 
-export const operationIdRegex = z.string().regex(/([0-9]|[a-zA-Z0-9]{20})/);
+import type { estypes } from '@elastic/elasticsearch';
+import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
+import type { SetRequired } from 'type-fest';
 
-export interface FormatMessageData {
+export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
+
+export interface AdditionalOperationData {
     account?: { id: number; name: string };
     user?: { id: number } | undefined;
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined;
+    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to script or something similar because it also apply to actions and on-events scripts
     meta?: MessageRow['meta'];
 }
 
 export function getFormattedOperation(
     data: OperationRowInsert,
-    { account, user, environment, integration, connection, syncConfig, meta }: FormatMessageData = {}
+    { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
+    const now = new Date();
+    const createdAt = data.createdAt ? new Date(data.createdAt) : now;
     return {
-        ...getFormattedMessage(data as unknown as MessageRow),
         message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
-        id: data.id || nanoid(),
+        id: data.id || `${createdAt.getTime()}_${nanoid(8)}`,
         operation: data.operation,
+        state: data.state || 'waiting',
+        source: 'internal',
+        level: data.level || 'info',
+        type: 'operation',
 
         accountId: account?.id ?? data.accountId ?? -1,
         accountName: account?.name || data.accountName || '',
 
-        environmentId: environment?.id ?? data.environmentId ?? null,
-        environmentName: environment?.name || data.environmentName || null,
+        environmentId: environment?.id ?? data.environmentId ?? undefined,
+        environmentName: environment?.name || data.environmentName || undefined,
 
-        integrationId: integration?.id ?? data.integrationId ?? null,
-        integrationName: integration?.name || data.integrationName || null,
-        providerName: integration?.provider || data.providerName || null,
+        integrationId: integration?.id ?? data.integrationId ?? undefined,
+        integrationName: integration?.name || data.integrationName || undefined,
+        providerName: integration?.provider || data.providerName || undefined,
 
-        connectionId: connection?.id ?? data.connectionId ?? null,
-        connectionName: connection?.name || data.connectionName || null,
+        connectionId: connection?.id ?? data.connectionId ?? undefined,
+        connectionName: connection?.name || data.connectionName || undefined,
 
-        syncConfigId: syncConfig?.id || data.syncConfigId || null,
-        syncConfigName: syncConfig?.name || data.syncConfigName || null,
+        syncConfigId: syncConfig?.id || data.syncConfigId || undefined,
+        syncConfigName: syncConfig?.name || data.syncConfigName || undefined,
 
-        jobId: data.jobId || null,
-        meta: meta || data.meta || null,
+        jobId: data.jobId || undefined,
+        meta: meta || data.meta || undefined,
 
-        userId: user?.id || data.userId || null,
-        parentId: null
-    };
-}
-export function getFormattedMessage(data: Partial<MessageRow>, { meta }: FormatMessageData = {}): MessageRow {
-    const now = new Date();
-    return {
-        id: data.id || nanoid(), // This ID is for debugging purpose, not for insertion
-
-        source: data.source || 'internal',
-        level: data.level || 'info',
-        operation: data.operation || null,
-        type: data.type || 'log',
-        message: data.message || '',
-        title: data.title || null,
-        code: data.code || null,
-        state: data.state || 'waiting',
-
-        accountId: null,
-        accountName: null,
-
-        environmentId: null,
-        environmentName: null,
-
-        integrationId: null,
-        integrationName: null,
-        providerName: null,
-
-        connectionId: null,
-        connectionName: null,
-
-        syncConfigId: null,
-        syncConfigName: null,
-
-        jobId: data.jobId || null,
-
-        userId: null,
-        parentId: data.parentId || null,
-
-        error: data.error || null,
-        request: data.request || null,
-        response: data.response || null,
-        meta: meta || data.meta || null,
+        userId: user?.id || data.userId || undefined,
 
         createdAt: data.createdAt || now.toISOString(),
         updatedAt: data.updatedAt || now.toISOString(),
         startedAt: data.startedAt || null,
         endedAt: data.endedAt || null,
-        expiresAt: data.operation ? data.expiresAt || defaultOperationExpiration.sync() : null
+        expiresAt: data.expiresAt || defaultOperationExpiration.sync()
     };
 }
+export function getFormattedMessage(data: SetRequired<Partial<MessageRow>, 'parentId' | 'accountId'>): MessageRow {
+    const now = new Date();
+    return {
+        id: data.id || nanoid(),
 
-// TODO: remove once not used by persist anymore
-export const oldLevelToNewLevel = {
-    debug: 'debug',
-    info: 'info',
-    warn: 'warn',
-    error: 'error',
-    verbose: 'debug',
-    silly: 'debug',
-    http: 'info'
-} as const;
+        accountId: data.accountId,
+
+        source: data.source || 'internal',
+        level: data.level || 'info',
+        type: data.type || 'log',
+        message: data.message || '',
+        context: data.context,
+
+        parentId: data.parentId,
+
+        error: data.error,
+        request: data.request,
+        response: data.response,
+        retry: data.retry,
+        meta: data.meta,
+        persistResults: data.persistResults,
+
+        createdAt: data.createdAt || now.toISOString(),
+        endedAt: data.endedAt,
+        durationMs: data.durationMs
+    };
+}
 
 export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
@@ -121,22 +104,27 @@ export function parseCursor(str: string): any[] {
 }
 
 export const operationTypeToMessage: Record<ConcatOperationList, string> = {
-    'action:run': 'Action execution',
+    'action:run': 'Action',
     'admin:impersonation': 'Admin logged into another account',
-    'auth:create_connection': 'Create connection',
-    'auth:post_connection': 'Post connection script execution',
-    'auth:refresh_token': 'Token refresh',
+    'auth:create_connection': 'Connection created',
+    'auth:post_connection': 'post connection execution',
+    'auth:refresh_token': 'Token refreshed',
     'auth:connection_test': 'Connection test',
-    'deploy:custom': 'Deploying custom scripts',
-    'deploy:prebuilt': 'Deploying pre-built flow',
-    'proxy:call': 'Proxy call',
+    'deploy:custom': 'Deploys',
+    'deploy:prebuilt': 'Deploys',
+    'proxy:call': 'Proxy',
     'sync:cancel': 'Sync execution canceled',
-    'sync:init': 'Sync initialization',
+    'sync:init': 'Sync initialized',
     'sync:pause': 'Sync schedule paused',
-    'sync:request_run_full': 'Sync execution triggered (full)',
-    'sync:request_run': 'Sync execution triggered (incremental)',
-    'sync:run': 'Sync execution',
-    'sync:unpause': 'Sync schedule started',
-    'webhook:incoming': 'Received a webhook',
-    'webhook:forward': 'Forwarding Webhook'
+    'sync:request_run_full': 'Full execution triggered',
+    'sync:request_run': 'Incremental execution triggered',
+    'sync:run': 'Sync executed',
+    'sync:unpause': 'Sync schedule resumed',
+    'webhook:incoming': 'External webhook executed',
+    'webhook:forward': 'External webhook forwarded',
+    'webhook:sync': 'Sync completion webhooks',
+    'webhook:connection_create': 'Connection creation webhooks',
+    'webhook:connection_refresh': 'Token refresh webhooks',
+    'events:post_connection_creation': 'Event-based executions',
+    'events:pre_connection_deletion': 'Event-based executions'
 };

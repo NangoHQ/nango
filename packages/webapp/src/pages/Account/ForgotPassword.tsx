@@ -4,7 +4,8 @@ import { toast } from 'react-toastify';
 import { useRequestPasswordResetAPI } from '../../utils/api';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Input } from '../../components/ui/input/Input';
-import Button from '../../components/ui/button/Button';
+import { Button } from '../../components/ui/button/Button';
+import { Helmet } from 'react-helmet';
 
 export default function Signin() {
     const requestPasswordResetAPI = useRequestPasswordResetAPI();
@@ -34,6 +35,9 @@ export default function Signin() {
 
     return (
         <DefaultLayout>
+            <Helmet>
+                <title>Forgot Password - Nango</title>
+            </Helmet>
             <div className="flex flex-col justify-center">
                 <div className="w-80 flex flex-col gap-6">
                     <h2 className="mt-4 text-center text-[20px] text-white">Request password reset</h2>

@@ -1,0 +1,37 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Accounts">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /accounts` | Fetch account list and user information from Basecamp | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/basecamp/actions/fetch-accounts.md) |
+</Accordion>
+
+
+<Accordion title="Projects">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /projects` | Fetch all projects from Basecamp | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/basecamp/actions/fetch-projects.md) |
+</Accordion>
+
+
+<Accordion title="Todolists">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /todolists` | Fetch all todolists in a project.Fetch your projects via the fetch-projects action, then locate the project's dock item where "name": "todoset". The id there is your todoSetId. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/basecamp/actions/fetch-todolists.md) |
+</Accordion>
+
+
+<Accordion title="Todos">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /todos` | Create a new to-do in a specific project + list. Fetch your todolists via the fetch-todolists action. Identify the list you want to add the todo to and retrieve the id from there. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/basecamp/actions/create-todo.md) |
+| `GET /todos` | Syncs to-dos from Basecamp for the specified projects. Example of a metadata input Example: `{ projects: [ { projectId: 1234, todoSetId: 9999 }, ... ] }` | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/basecamp/syncs/todos.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

@@ -1,0 +1,30 @@
+---
+title: 'Webhook forwarding'
+sidebarTitle: 'Webhook forwarding'
+description: 'Guide to forward webhooks received from external APIs to your app.'
+---
+
+<Info>
+    Pre-requisites: 
+    - Configure webhooks in the external API portal ([details](/guides/webhooks/webhooks-from-apis/overview#pre-requisite-configure-webhooks-in-the-external-api-portal))
+    - Ensure you receive [webhooks from Nango](/guides/webhooks/webhooks-from-nango#webhook-settings)
+</Info>
+
+Nango will automatically forwards all webhooks from [supported APIs](/guides/webhooks/webhooks-from-apis/overview#supported-apis) to your app.
+
+Nango webhook forwards are POST requests with the following JSON body:
+```json
+{
+   "from": "hubspot",
+   "type": "forward",
+   "connectionId": "<CONNECTION-ID>",
+   "providerConfigKey": "<INTEGRATION-ID>",
+   "payload": ... // Raw payload from Hubspot webhook
+}
+```
+
+External webhook forwarding can be disabled from the _Environment Settings_ tab. 
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

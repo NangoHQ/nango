@@ -2,10 +2,10 @@ import type { Result } from '@nangohq/utils';
 import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
 import tracer from 'dd-trace';
 import type { LogContext } from '@nangohq/logs';
-import type { NangoProps } from '@nangohq/shared';
 import { localFileService, remoteFileService } from '@nangohq/shared';
-import { getRunner } from './utils/getRunner.js';
+import { getRunner } from '../../runner/runner.js';
 import type { JsonValue } from 'type-fest';
+import type { NangoProps } from '@nangohq/types';
 
 export async function startScript({
     taskId,
@@ -37,7 +37,7 @@ export async function startScript({
 
         if (!script) {
             const content = `Unable to find integration file for ${nangoProps.syncConfig.sync_name}`;
-            await logCtx.error(content);
+            void logCtx.error(content);
             return Err('Unable to find integration file');
         }
         if (!nangoProps.team) {
@@ -64,7 +64,7 @@ export async function startScript({
     } catch (err) {
         span.setTag('error', err);
         const errMessage = `Error starting integration '${nangoProps.syncConfig.sync_name}': ${stringifyError(err, { pretty: true })}`;
-        await logCtx.error(errMessage, { error: err });
+        void logCtx.error(errMessage, { error: err });
         return Err(errMessage);
     } finally {
         span.finish();

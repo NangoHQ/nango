@@ -1,11 +1,13 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PatchIntegration } from '@nangohq/types';
-import { configService } from '@nangohq/shared';
 import { z } from 'zod';
 
-import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { configService, connectionService } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { validationParams } from './getIntegration.js';
+import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+
+import type { PatchIntegration } from '@nangohq/types';
 
 const privateKey = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
 const validationBody = z
@@ -91,6 +93,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             return;
         }
 
+        const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
+        if (count > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: "Can't rename an integration with active connections" } });
+            return;
+        }
+
         integration.unique_key = body.integrationId;
     }
 
@@ -108,10 +116,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         } else if (body.authType === 'CUSTOM') {
             integration.oauth_client_id = body.clientId;
             integration.oauth_client_secret = body.clientSecret;
-            integration.oauth_client_id = body.appId;
             integration.app_link = body.appLink;
             // This is a legacy thing
-            integration.custom = { private_key: Buffer.from(body.privateKey).toString('base64') };
+            integration.custom = { app_id: body.appId, private_key: Buffer.from(body.privateKey).toString('base64') };
         }
     }
 
@@ -121,7 +128,6 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             integration.custom = {};
         }
         if (!body.webhookSecret) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete integration.custom['webhookSecret'];
         } else {
             integration.custom['webhookSecret'] = body.webhookSecret;

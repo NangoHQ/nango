@@ -1,6 +1,6 @@
 const tableName = '_nango_sync_jobs';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(tableName, function (table) {
         table.increments('id').primary();
         table.integer('nango_connection_id').unsigned().notNullable();
@@ -13,6 +13,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(tableName);
 };

@@ -22,16 +22,15 @@
         "@nangohq/logs": "file:../logs",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.21.0",
         "express": "^4.20.0",
-        "zod": "3.23.8"
+        "zod": "3.24.2"
     },
     "devDependencies": {
-        "@types/node": "20.12.2",
+        "@nangohq/types": "file:../types",
         "node-fetch": "^3.3.2",
-        "typescript": "5.3.3",
-        "vitest": "1.6.0"
+        "typescript": "5.7.3",
+        "vitest": "3.1.1"
     }
 }

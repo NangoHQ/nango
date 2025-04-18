@@ -2,13 +2,12 @@ import fs from 'fs';
 import chalk from 'chalk';
 import promptly from 'promptly';
 import path from 'path';
-
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { parse } from './config.service.js';
 import { compileAllFiles, listFilesToCompile } from './compile.service.js';
 import { printDebug } from '../utils.js';
-import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
-import { init, generate } from '../cli.js';
+import { generate } from '../cli.js';
+import { init } from './init.service.js';
 
 class VerificationService {
     public async necessaryFilesExist({
@@ -29,11 +28,6 @@ class VerificationService {
         const currentDirectory = path.basename(fullPath);
         if (debug) {
             printDebug(`Current stripped directory is read as: ${currentDirectory}`);
-        }
-
-        if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
-            console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));
-            process.exit(1);
         }
 
         if (!fs.existsSync(path.join(fullPath, nangoConfigFile))) {
@@ -101,26 +95,27 @@ class VerificationService {
     }
 
     public filesMatchConfig({ fullPath }: { fullPath: string }): boolean {
-        const { success, error, response } = parse(fullPath);
-
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const parsing = parse(fullPath);
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             return false;
         }
 
-        const syncNames = response.parsed.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
-        const actionNames = response.parsed.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
-        const flows = [...syncNames, ...actionNames].filter((name) => name);
+        const parser = parsing.value;
+        const syncNames = parser.parsed!.integrations.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+        const actionNames = parser.parsed!.integrations.map((provider) => provider.actions.map((action) => action.name)).flat();
+        const onEventsScriptNames = parser.parsed!.integrations.map((provider) => Object.values(provider.onEventScripts).flat()).flat();
+        const flows = [...syncNames, ...actionNames, ...onEventsScriptNames].filter((name) => name);
 
-        const tsFiles = listFilesToCompile({ fullPath, parsed: response.parsed });
+        const tsFiles = listFilesToCompile({ fullPath, parsed: parser.parsed! });
 
-        const tsFileNames = tsFiles.filter((file) => !file.inputPath.includes('models.ts')).map((file) => file.baseName);
+        const tsFileNames = tsFiles.filter((file) => file.baseName !== 'models').map((file) => file.baseName);
 
-        const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
+        const missingFiles = flows.filter((scriptName) => !tsFileNames.includes(scriptName));
 
-        if (missingSyncsAndActions.length > 0) {
-            console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncsAndActions.join(', ')}`));
-            throw new Error('Syncs missing .ts files');
+        if (missingFiles.length > 0) {
+            console.log(chalk.red(`The following scripts are missing a corresponding .ts file: ${missingFiles.join(', ')}`));
+            throw new Error('Script missing .ts files');
         }
 
         return true;

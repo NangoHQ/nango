@@ -1,0 +1,97 @@
+---
+title: Sage Intacct (OAuth)
+sidebarTitle: Sage Intacct (OAuth)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sage-intacct-oauth/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sage-intacct-oauth/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup [here](https://developer.sage.com/intacct/). |
+| Paid test account | ✅ Not required | Create a 30 day free trial account [here](https://online.sageintacct.com/WebsiteAssets_request_trial.html). | 
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+- You must have an active Sage Intacct Web Services developer license, which includes a Web Services sender ID and password or access to a free trial period account.
+<Tip>If you need a developer license, contact your account manager.</Tip>
+
+<Steps>
+  <Step title="Create a new developer workspace">
+    Go to [developer console](https://developer.sage.com/intacct/) and login if you have an account or signup for a free developer's account.
+    
+    Click **View workspaces**, then enter your Sage account email address and password to log in.
+    
+    Click **Add workspace** to create a workspace for your company.
+    
+    Enter a name for your workspace and a contact email address, then click **Create**.
+  </Step>
+
+  <Step title="Add a client application">
+    Click **Apps** in the left column navigation.
+    
+    Click **Add application**.
+    
+    Enter a name to identify the application in your workspace, a home page URL, and a contact email address for the application, then click **Create**.
+  </Step>
+  <Step title="Obtaining Client Credentials">
+    From the list of applications in your workspace, click your new application to open it.
+    
+    Click **Create API keys**.
+    
+    From the **Sage Product API** drop-down list, select Sage Intacct.
+    
+    Enter a Redirect URI as a full URL. During the authorization process, users will be redirected to this URL after authorizing your application to access their data in Sage Intacct. You can configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+    
+    If you have custom applications that send Sage Intacct API requests from your domains, enter those domains in **Allowed Origin Domains** as full https URLs.
+    
+    Enter your Sage Intacct Web Services sender ID and password.
+    
+    From the **Client Scope** drop-down list, select the type of company to associate with these API keys:
+      
+      - **Non-Production**: Choose this option if you're working with a sandbox implementation or other non-production company.
+      
+      - **Production**: Choose this option if you're working with a live production company. Production companies are limited to no more than five associated API keys.
+    
+    <Note>You cannot change the client scope after it has been set</Note>
+    
+    Click **Create**.
+    
+    When your registration is complete, the Application Details page will include an API Keys section. Click **Sage Intacct** in that list to view your application's **client ID** and **secret key**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct-oauth.mdx)</Note>
+
+
+## Useful links
+
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.sage.com/en-gb/sage-business-cloud/intacct/) |
+| | [Create a test account](https://online.sageintacct.com/WebsiteAssets_request_trial.html) |
+| Developer | [API documentation](https://developer.sage.com/intacct/docs/) |
+| | [Create or Login to a developer account](https://app-registry.sage.com/) |
+| | [Developer console](https://developer.sage.com/intacct/) |
+| | [Authorization documentation](https://developer.sage.com/intacct/docs/developer-portal/guides/oauth2/#authorization-code-grant-type) |
+
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct-oauth.mdx)</Note>
+
+## API gotchas
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sage-intacct-oauth.mdx)</Note>

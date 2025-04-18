@@ -1,0 +1,79 @@
+---
+title: Personio v2
+sidebarTitle: Personio v2
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/personio/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/personio/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/personio-v2.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register an Application](https://developer.personio.de/docs/getting-started-with-the-personio-api)
+-   [OAuth-related docs](https://developer.personio.de/reference/auth)
+-   [Web API docs (their REST API)](https://developer.personio.de/reference/introduction)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/personio-v2.mdx)</Note>
+
+## API gotchas
+
+-   Personio offers a separate recruiting API that is API key based and is listed under `personio-recruiting`
+-   The other API Personio offers is a client credentials token that authorizes as app instead of a user. This is listed under `personio`.
+-   (Api V1): The `companyId` value is required for `personio-recruiting` and can be retrieved at Settings > Integrations (API Credentials) and clicking on the "Recruiting API Key".
+    The value for `company` as required for `personio-recruiting` is the name you use to login to your account
+    and is the subdomain of your Personio instance.
+-   (Api V1): The values for `partnerId` and `appId` are optional but strongly recommended by Personio. Both can be defined by you, but should represent your company name and application name and MUST follow the UPPER_SNAKE_CASE format. For example `MY_APPLICATION`, `ACME` are valid values.
+    An example of setting them in the `nango.auth` call:
+    ```ts
+    nango.auth('personio-recruiting', 'test-connection-id', { params: { companyId: '33434', partnerId: 'YOUR_CUSTOM_NAME', appId: 'UNIQUE_ID', company: 'company-b' },
+        credentials: {
+          apiKey: '<secure-key>'
+        }
+      })
+      .then((result: { providerConfigKey: string; connectionId: string }) => {
+        // do something
+      }).catch((err: { message: string; type: string }) => {
+        // handle error
+      });
+
+    nango.auth('personio', 'test-connection-id', { params: { partnerId: 'YOUR_CUSTOM_NAME', appId: 'UNIQUE_NAME' },
+        credentials: {
+            client_id: '<your-client-id>',
+            client_secret: '<your-client-secret>'
+        }
+      })
+      .then((result: { providerConfigKey: string; connectionId: string }) => {
+        // do something
+      }).catch((err: { message: string; type: string }) => {
+        // handle error
+      });
+    ```
+    
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/personio-v2.mdx)</Note>
+
+<Card title="Connect to Personio" icon="link" href="/integrations/all/personio/connect" horizontal>
+  Guide to connect to Personio using Nango Connect.
+</Card>

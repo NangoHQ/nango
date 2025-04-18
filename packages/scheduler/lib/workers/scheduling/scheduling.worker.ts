@@ -1,6 +1,4 @@
-import * as fs from 'fs';
 import type { MessagePort } from 'node:worker_threads';
-import { Worker, isMainThread } from 'node:worker_threads';
 import type { Result } from '@nangohq/utils';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { setTimeout } from 'node:timers/promises';
@@ -9,96 +7,34 @@ import { logger } from '../../utils/logger.js';
 import { dueSchedules } from './scheduling.js';
 import * as tasks from '../../models/tasks.js';
 import * as schedules from '../../models/schedules.js';
+import { SchedulerWorker, SchedulerWorkerChild } from '../worker.js';
 import tracer from 'dd-trace';
 
-interface CreatedTasksMessage {
-    ids: string[];
-}
-
-export class SchedulingWorker {
-    private worker: Worker | null;
+export class SchedulingWorker extends SchedulerWorker {
     constructor({ databaseUrl, databaseSchema }: { databaseUrl: string; databaseSchema: string }) {
-        if (isMainThread) {
-            const url = new URL('../../../dist/workers/scheduling/scheduling.worker.boot.js', import.meta.url);
-            if (!fs.existsSync(url)) {
-                throw new Error(`Scheduling script not found at ${url}`);
-            }
-
-            this.worker = new Worker(url, { workerData: { url: databaseUrl, schema: databaseSchema } });
-            // Throw error if worker exits with error
-            this.worker.on('error', (err) => {
-                throw new Error(`Scheduling exited with error: ${stringifyError(err)}`);
-            });
-            // Throw error if worker exits with non-zero exit code
-            this.worker.on('exit', (code) => {
-                if (code !== 0) {
-                    throw new Error(`Scheduling exited with exit code: ${code}`);
-                }
-            });
-        } else {
-            throw new Error('SchedulingWorker should be instantiated in the main thread');
-        }
-    }
-
-    start(): void {
-        this.worker?.postMessage('start');
-    }
-
-    stop(): void {
-        if (this.worker) {
-            this.worker.postMessage('stop');
-            this.worker = null;
-        }
-    }
-
-    on(callback: (message: CreatedTasksMessage) => void): void {
-        this.worker?.on('message', callback);
+        super({
+            workerUrl: new URL('../../../dist/workers/scheduling/scheduling.worker.boot.js', import.meta.url),
+            name: 'Scheduling',
+            databaseUrl: databaseUrl,
+            databaseSchema
+        });
     }
 }
 
-export class SchedulingChild {
-    private db: knex.Knex;
-    private parent: MessagePort;
-    private cancelled: boolean = false;
-    private tickIntervalMs = 100;
-
+export class SchedulingChild extends SchedulerWorkerChild {
     constructor(parent: MessagePort, db: knex.Knex) {
-        if (isMainThread) {
-            throw new Error('Scheduling should not be instantiated in the main thread');
-        }
-        this.db = db;
-        this.parent = parent;
-        this.parent.on('message', async (msg: 'start' | 'stop') => {
-            switch (msg) {
-                case 'start':
-                    await this.start();
-                    break;
-                case 'stop':
-                    this.stop();
-                    break;
-            }
+        super({
+            name: 'Scheduling',
+            parent,
+            db,
+            tickIntervalMs: 100
         });
     }
 
-    async start(): Promise<void> {
-        logger.info('Starting scheduling...');
-        // eslint-disable-next-line no-constant-condition
-        while (!this.cancelled) {
-            await this.schedule();
-            await setTimeout(this.tickIntervalMs);
-        }
-    }
-
-    stop(): void {
-        logger.info('Stopping scheduling...');
-        this.cancelled = true;
-    }
-
-    async schedule(): Promise<void> {
+    async run(): Promise<void> {
         const res = await this.db.transaction(async (trx): Promise<Result<string[]>> => {
             const taskIds: string[] = [];
             const span = tracer.startSpan('scheduler.scheduling.schedule');
-
             try {
                 // Try to acquire a lock to prevent multiple instances from scheduling at the same time
                 const lockSpan = tracer.startSpan('scheduler.scheduling.acquire_lock', { childOf: span });
@@ -155,9 +91,9 @@ export class SchedulingChild {
                     await setTimeout(1000); // wait for 1s to prevent retrying too quickly
                 }
                 return Ok(taskIds);
-            } catch (error) {
-                span.setTag('error', error);
-                throw error;
+            } catch (err) {
+                span.setTag('error', err);
+                throw err;
             } finally {
                 span.finish();
             }

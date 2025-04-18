@@ -1,3 +1,4 @@
+import type { useSWRConfig, Cache } from 'swr';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import type { SWRError } from '../utils/api';
@@ -36,6 +37,15 @@ export function useConnections(queries: GetConnections['Querystring']) {
     const loading = !data && !error;
 
     return { loading, error: error?.json, data, hasNext, offset: size, setOffset: setSize, mutate };
+}
+
+export function clearConnectionsCache(cache: Cache, mutate: ReturnType<typeof useSWRConfig>['mutate']) {
+    for (const key of cache.keys()) {
+        if (key.includes('/api/v1/connections')) {
+            void mutate(key, undefined);
+            cache.delete(key);
+        }
+    }
 }
 
 export function useConnectionsCount(env: string) {

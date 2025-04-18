@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import jsYaml from 'js-yaml';
+
 import Ajv from 'ajv';
 import chalk from 'chalk';
+import jsYaml from 'js-yaml';
+
 import type { Provider } from '@nangohq/types';
 
 // Function to recursively search for connectionConfig in the provider value
@@ -19,7 +21,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const pathSchema = path.join(__dirname, 'schema.json');
-const pathProviders = path.join(__dirname, '../../../packages/shared/providers.yaml');
+const pathProviders = path.join(__dirname, '../../../packages/providers/providers.yaml');
+const pathConnectionScripts = path.join(__dirname, '../../../packages/server/lib/hooks/connection/index.ts');
+const pathWebhooks = path.join(__dirname, '../../../packages/server/lib/webhook/index.ts');
 
 // Schema
 const ajv = new Ajv({ allErrors: true, discriminator: true });
@@ -32,6 +36,8 @@ const providersYaml = fs.readFileSync(pathProviders);
 console.log('loaded providers.yaml', pathProviders, providersYaml.toString().length);
 const providersJson = jsYaml.load(providersYaml.toString()) as Record<string, Provider>;
 console.log('parsed providers', Object.keys(providersJson));
+const webhookContent = fs.readFileSync(pathWebhooks, 'utf-8');
+const scriptsContent = fs.readFileSync(pathConnectionScripts, 'utf-8');
 
 // Validation
 console.log('validating...');
@@ -43,6 +49,10 @@ if (validator.errors) {
 
 const invalidInterpolation = /(?<!(\$|]))\{/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
+    // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
+    if (providerKey === 'sage-intacct') {
+        continue;
+    }
     const { credentials, connection_config, ...providerWithoutSensitive } = provider;
     const strippedProviderYaml = jsYaml.dump({ [providerKey]: providerWithoutSensitive });
     const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
@@ -78,9 +88,28 @@ console.log('✅ All providers are valid');
  * Validate one provider
  */
 function validateProvider(providerKey: string, provider: Provider) {
-    const filename = provider.docs.split('/').slice(-1)[0];
+    const filename = provider.docs?.split('/').slice(-1)[0]; // filename could be different from providerConfigKey
     const mdx = path.join(docsPath, `${filename}.mdx`);
     const svg = path.join(svgPath, `${providerKey}.svg`);
+    const connectMdx = path.join(docsPath, `${providerKey}/connect.mdx`);
+    let hasValidConnect = false;
+    const headers = new Set<string>();
+
+    // Check if provider exists in docs-v2/integrations/all folder
+    const providerFolder = path.join(docsPath, providerKey);
+    const providerExistsInDocs = fs.existsSync(providerFolder);
+
+    // Only validate docs and docs_connect if provider exists in docs folder
+    if (providerExistsInDocs && !['OAUTH1', 'OAUTH2', 'OAUTH2CC'].includes(provider.auth_mode)) {
+        if (!provider.docs_connect) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs_connect" property defined`);
+            error = true;
+        }
+        if (!provider.docs) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `does not have a "docs" property defined`);
+            error = true;
+        }
+    }
 
     if (!fs.existsSync(mdx)) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `Documentation file not found`);
@@ -91,6 +120,26 @@ function validateProvider(providerKey: string, provider: Provider) {
         console.error(chalk.red('error'), chalk.blue(providerKey), `SVG file not found`);
         console.error(`Expected file: ${svg}`);
         error = true;
+    }
+    if (provider.docs_connect) {
+        if (!fs.existsSync(connectMdx)) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `Connect.mdx file not found`);
+            console.error(`Expected file: ${connectMdx}`);
+            error = true;
+        } else {
+            hasValidConnect = true;
+            const content = fs.readFileSync(connectMdx).toString();
+            const matched = content.matchAll(/^[#]+\sStep[a-zA-Z0-9:()._ -]+$/gim);
+            for (const match of matched) {
+                headers.add(
+                    match[0]
+                        .toLocaleLowerCase()
+                        .replace(/^[#]+ /, '#')
+                        .replaceAll(/\s/g, '-')
+                        .replaceAll(/[:()._]/g, '')
+                );
+            }
+        }
     }
 
     // Find all connectionConfig references
@@ -112,14 +161,50 @@ function validateProvider(providerKey: string, provider: Provider) {
                 continue;
             }
         }
+
+        // Check connection config validity
         for (const [key, schema] of Object.entries(provider.connection_config || [])) {
-            if (schema.doc_section && !provider.docs_connect) {
-                console.error(
-                    chalk.red('error'),
-                    chalk.blue(providerKey),
-                    `"connection_config > ${key}" defines a "doc_section" but has no "docs_connect" property`
-                );
-                error = true;
+            if (schema.doc_section) {
+                if (!provider.docs_connect) {
+                    console.error(
+                        chalk.red('error'),
+                        chalk.blue(providerKey),
+                        `"connection_config > ${key}" defines a "doc_section" but has no "docs_connect" property`
+                    );
+                    error = true;
+                } else if (hasValidConnect) {
+                    if (!headers.has(schema.doc_section)) {
+                        console.error(
+                            chalk.red('error'),
+                            chalk.blue(providerKey),
+                            `"connection_config > ${key} > doc_section" does not exist in ${providerKey}/connect.mdx`
+                        );
+                        error = true;
+                    }
+                }
+            }
+        }
+
+        // Check credentials validity
+        for (const [key, schema] of Object.entries(provider.credentials || [])) {
+            if (schema.doc_section) {
+                if (!provider.docs_connect) {
+                    console.error(
+                        chalk.red('error'),
+                        chalk.blue(providerKey),
+                        `"credentials > ${key}" defines a "doc_section" but has no "docs_connect" property`
+                    );
+                    error = true;
+                } else if (hasValidConnect) {
+                    if (!headers.has(schema.doc_section)) {
+                        console.error(
+                            chalk.red('error'),
+                            chalk.blue(providerKey),
+                            `"credentials > ${key} > doc_section" does not exist in ${providerKey}/connect.mdx`
+                        );
+                        error = true;
+                    }
+                }
             }
         }
     } else if (provider.connection_config) {
@@ -133,9 +218,9 @@ function validateProvider(providerKey: string, provider: Provider) {
             error = true;
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
         }
-    } else if (provider.auth_mode === 'BASIC') {
+    } else if (provider.auth_mode === 'BASIC' || provider.auth_mode === 'SIGNATURE') {
         if (!provider.credentials?.['username']) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "username" is not defined`);
         }
@@ -143,11 +228,60 @@ function validateProvider(providerKey: string, provider: Provider) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" > "password" is not defined`);
         }
         if (!provider.proxy?.verification) {
-            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `do not have "proxy" > "verification" set`);
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `does not have "proxy" > "verification" set`);
+        }
+    } else if (provider.auth_mode === 'TWO_STEP') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for TWO_STEP auth mode`);
+        }
+    } else if (provider.auth_mode === 'JWT') {
+        if (!provider.credentials) {
+            console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for JWT auth mode`);
         }
     } else {
         if (provider.credentials) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" is defined but not required`);
+            error = true;
+        }
+    }
+    if (provider.proxy?.verification && provider?.credentials_verification_script) {
+        console.error(
+            chalk.red('error'),
+            chalk.blue(providerKey),
+            `"cannot contain both "proxy.verification" and "credentials_verification_script". Only one should be defined.`
+        );
+        error = true;
+    }
+
+    if (provider.webhook_routing_script) {
+        if (!webhookContent.includes(provider.webhook_routing_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `webhook_routing_script "${provider.webhook_routing_script}" not found in webhook routing index.ts`
+            );
+            error = true;
+        }
+    }
+
+    if (provider.post_connection_script) {
+        if (!scriptsContent.includes(provider.post_connection_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `post_connection_script "${provider.post_connection_script}" not found in connection scripts index.ts`
+            );
+            error = true;
+        }
+    }
+
+    if (provider.credentials_verification_script) {
+        if (!scriptsContent.includes(provider.credentials_verification_script)) {
+            console.error(
+                chalk.red('error'),
+                chalk.blue(providerKey),
+                `credentials_verification_script "${provider.credentials_verification_script}" not found in connection scripts index.ts`
+            );
             error = true;
         }
     }

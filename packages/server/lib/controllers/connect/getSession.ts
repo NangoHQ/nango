@@ -1,8 +1,10 @@
-import type { GetConnectSession } from '@nangohq/types';
 import db from '@nangohq/database';
+import * as endUserService from '@nangohq/shared';
+import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import * as endUserService from '../../services/endUser.service.js';
-import { requireEmptyQuery, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+
+import type { GetConnectSession } from '@nangohq/types';
 
 export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -38,13 +40,15 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     const response: GetConnectSession['Success'] = {
         data: {
             end_user: {
-                id: endUser.endUserId,
-                email: endUser.email
+                id: endUser.endUserId
             }
         }
     };
     if (endUser.displayName) {
         response.data.end_user.display_name = endUser.displayName;
+    }
+    if (endUser.email) {
+        response.data.end_user.email = endUser.email;
     }
     if (endUser.organization) {
         response.data.organization = {
@@ -59,8 +63,18 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     }
     if (connectSession.integrationsConfigDefaults) {
         response.data.integrations_config_defaults = Object.fromEntries(
-            Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [key, { connection_config: value.connectionConfig }])
+            Object.entries(connectSession.integrationsConfigDefaults).map(([key, value]) => [
+                key,
+                {
+                    connection_config: value.connectionConfig,
+                    // For debugging reason, it's enforced in the backend
+                    authorization_params: value.authorization_params
+                }
+            ])
         );
+    }
+    if (connectSession.connectionId) {
+        response.data.isReconnecting = true;
     }
 
     res.status(200).send(response);

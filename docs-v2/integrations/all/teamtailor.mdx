@@ -3,21 +3,34 @@ title: Teamtailor
 sidebarTitle: Teamtailor
 ---
 
-API configuration: [`teamtailor`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/teamtailor/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/teamtailor/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/teamtailor.mdx)</Note>
+
+
+## Useful links
 
 -   [Generate an API key in your Teamtailor account](https://app.teamtailor.com/app/settings/integrations/api_keys)
 -   [Teamtailor API docs](https://docs.teamtailor.com)
@@ -25,7 +38,7 @@ API configuration: [`teamtailor`](https://nango.dev/providers.yaml)
 -   [API rate limits](https://docs.teamtailor.com/#rate-limit)
 -   [API versioning](https://docs.teamtailor.com/#versioning)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/teamtailor.mdx)</Note>
 
 ## API gotchas
 
@@ -34,4 +47,4 @@ API configuration: [`teamtailor`](https://nango.dev/providers.yaml)
 - All API calls must have `X-Api-Version` as a header to resolve API versions.
 - Teamtailor uses different domain extensions for different regions, i.e `na` for US West(Oregon) Hosted Customers. For EU(Ireland) based clients, add `api` as your extension but for US West(Oregon) based customers add `api.na` as your extension.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/teamtailor.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/teamtailor.mdx)</Note>

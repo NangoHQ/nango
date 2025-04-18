@@ -1,0 +1,69 @@
+---
+title: Jira Basic Auth
+sidebarTitle: Jira Basic Auth
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/jira-basic/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/jira-basic/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-basic.mdx)</Note>
+
+
+## Useful links
+
+-   [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
+-   [OAuth-related docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
+-   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
+-   [API v3 docs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/#about)
+-   [OAuth app list (developer console)](https://developer.atlassian.com/console/myapps/)
+-   [API rate limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/)
+-   [Basic Auth-related docs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-basic.mdx)</Note>
+
+## API gotchas
+
+-   Refreshing tokens require the `offline_access` scope when creating the integration on the Nango UI.
+-   You will need to fetch your Cloud ID to be able to make API requests to the Jira API v3. You can do this with the proxy by calling:
+
+```ts
+const response = await nango.get({
+    endpoint: `oauth/token/accessible-resources`,
+    baseUrlOverride: 'https://api.atlassian.com'
+});
+const cloudId = response.data[0].id;
+```
+
+You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
+
+-   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
+-   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+-   Nango also supports `BASIC` auth for REST APIs in Jira. To use this feature, provide your `email` as the username and your `api_token` as the password. To generate an `api_token`, please refer to the [Manage Atlassian API Tokens](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) section
+-   You will also need to supply your `subdomain`. When logged into your Atlassian account or Jira instance, look at the URL in your web browser. The `subdomain` part before `.atlassian.net` is your Jira subdomain.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira-basic.mdx)</Note>
+
+<Card title="Connect to jira-basic" icon="link" href="/integrations/all/jira-basic/connect" horizontal>
+  Guide to connect to jira-basic using Nango Connect.
+</Card>

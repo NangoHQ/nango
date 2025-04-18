@@ -3,30 +3,50 @@ title: Make
 sidebarTitle: Make
 ---
 
-API configuration: [`make`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/make/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/make/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) |  🚫 (time to contribute: &lt;48h)  |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) |  🚫 (time to contribute: &lt;48h)  |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | 🚫 (time to contribute: &lt;48h) |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/make.mdx)</Note>
+
+
+## Useful links
 
 - [How to generate an authentication token](https://www.make.com/en/api-documentation/authentication-token)
 - [Make Authentication](https://www.make.com/en/api-documentation/authentication)
 - [Make API-rate limiting](https://www.make.com/en/api-documentation/rate-limiting)
 - [API docs](https://www.make.com/en/api-documentation)
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/make.mdx)</Note>
 
 ## API gotchas
 
 - When adding a new connection, you will also need to add your `environmentUrl`, this can be the link to your private instance of Make, for example, `development.make.cloud`, or the link to Make (with or without the zone, depending on a specific endpoint), for example, `eu1.make.com`. For more details, check [API structure](https://www.make.com/en/api-documentation/api-structure).
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/make.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/make.mdx)</Note>
+
+
+ ## Going further
+
+<Card title="Connect to Make" icon="link" href="/integrations/all/make/connect" horizontal>
+  Guide to connect to Make using Nango Connect.
+</Card>

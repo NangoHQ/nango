@@ -9,13 +9,13 @@
             "path": "../database"
         },
         {
+            "path": "../kvstore"
+        },
+        {
             "path": "../logs"
         },
         {
             "path": "../nango-yaml"
-        },
-        {
-            "path": "../node-client"
         },
         {
             "path": "../types"
@@ -24,13 +24,13 @@
             "path": "../utils"
         },
         {
-            "path": "../webhooks"
-        },
-        {
             "path": "../records"
         },
         {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../providers"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

@@ -1,0 +1,43 @@
+---
+title: Personio - How do I link my account?
+sidebarTitle: Personio
+---
+
+
+# Overview
+
+To authenticate with Personio, you need a few pieces of information:
+1. **Client ID** - Your unique account identifier.
+2. **Client Secret** - Your unique account secret associated with the Client ID.
+
+This guide will walk you through finding or creating those credentials within Personio.
+
+### Prerequisites:
+
+- You must set up an account with Personio.
+
+#### Step 1: Finding Personio Client ID
+1. Log into your Personio account with admin access and navigate to `Settings` > `API credentials` page in settings.
+2. Click `Create custom integration`.
+3. In the `Name` field, enter the name of the new integration. Click `Next`.
+4. Select the needed scopes and attributes, then click `Create integration`.
+5. Copy your `Client ID`.
+
+#### Step 2: Finding Personio Client Secret
+1. From the previous step, copy the `Client secret` values and store them in a safe place. Click `Finish`.
+
+Important: Copy and store your API secret securely, it will not be visible again once you leave the creation dialog.
+
+#### Step 3: Connect Your Personio Account
+
+<img src="/integrations/all/personio/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Personio authentication form.
+Enter your credentials as follows:
+- Partner ID: User-created identifier in Personio (must follow: *UPPER_SNAKE_CASE* case).
+- App ID: User-created unique identifier for the application (must follow: *UPPER_SNAKE_CASE* case).
+- Client ID: Personio generated Client ID.
+- Client Secret: Personio generated Client Secret.
+
+
+Click "Connect" to complete the authentication.

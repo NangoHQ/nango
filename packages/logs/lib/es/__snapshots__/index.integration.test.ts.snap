@@ -11,9 +11,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
       "accountName": {
         "type": "keyword",
       },
-      "code": {
-        "type": "keyword",
-      },
       "connectionId": {
         "type": "keyword",
       },
@@ -26,8 +23,20 @@ exports[`mapping > should create one index automatically on log 1`] = `
         },
         "type": "text",
       },
+      "context": {
+        "type": "keyword",
+      },
       "createdAt": {
         "type": "date",
+      },
+      "durationMs": {
+        "type": "integer",
+      },
+      "endUserId": {
+        "type": "keyword",
+      },
+      "endUserName": {
+        "type": "keyword",
       },
       "endedAt": {
         "type": "date",
@@ -39,8 +48,30 @@ exports[`mapping > should create one index automatically on log 1`] = `
         "type": "keyword",
       },
       "error": {
-        "enabled": false,
-        "type": "object",
+        "properties": {
+          "message": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "name": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "payload": {
+            "enabled": false,
+            "type": "object",
+          },
+          "type": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+        },
       },
       "expiresAt": {
         "type": "date",
@@ -68,11 +99,18 @@ exports[`mapping > should create one index automatically on log 1`] = `
       },
       "message": {
         "analyzer": "standard",
+        "copy_to": [
+          "meta_search",
+        ],
         "type": "text",
       },
       "meta": {
         "enabled": false,
         "type": "object",
+      },
+      "meta_search": {
+        "analyzer": "standard",
+        "type": "text",
       },
       "operation": {
         "properties": {
@@ -86,6 +124,40 @@ exports[`mapping > should create one index automatically on log 1`] = `
       },
       "parentId": {
         "type": "keyword",
+      },
+      "persistResults": {
+        "properties": {
+          "added": {
+            "type": "integer",
+          },
+          "addedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleteKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "deleted": {
+            "type": "integer",
+          },
+          "model": {
+            "type": "keyword",
+          },
+          "updated": {
+            "type": "integer",
+          },
+          "updatedKeys": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+        },
       },
       "providerName": {
         "type": "keyword",
@@ -107,11 +179,27 @@ exports[`mapping > should create one index automatically on log 1`] = `
       "response": {
         "properties": {
           "code": {
+            "copy_to": [
+              "meta_search",
+            ],
             "type": "integer",
           },
           "headers": {
             "enabled": false,
             "type": "object",
+          },
+        },
+      },
+      "retry": {
+        "properties": {
+          "attempt": {
+            "type": "integer",
+          },
+          "max": {
+            "type": "integer",
+          },
+          "waited": {
+            "type": "integer",
           },
         },
       },
@@ -135,9 +223,6 @@ exports[`mapping > should create one index automatically on log 1`] = `
           },
         },
         "type": "text",
-      },
-      "title": {
-        "type": "keyword",
       },
       "type": {
         "type": "keyword",

@@ -17,6 +17,7 @@
         "directory": "packages/records"
     },
     "dependencies": {
+        "@fastify/deepmerge": "2.0.1",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.10",
         "knex": "3.1.0",
@@ -26,6 +27,6 @@
     },
     "devDependencies": {
         "@types/md5": "2.3.2",
-        "vitest": "1.6.0"
+        "vitest": "3.1.1"
     }
 }

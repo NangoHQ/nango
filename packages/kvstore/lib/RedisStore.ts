@@ -1,20 +1,15 @@
 import type { KVStore } from './KVStore.js';
-import { createClient } from 'redis';
 import type { RedisClientType } from 'redis';
 
 export class RedisKVStore implements KVStore {
     private client: RedisClientType;
 
-    constructor(url: string) {
-        this.client = createClient({ url: url });
-
-        this.client.on('error', (err) => {
-            console.error(`Redis (kvstore) error: ${err}`);
-        });
+    constructor(client: RedisClientType) {
+        this.client = client;
     }
 
-    public async connect(): Promise<void> {
-        return this.client.connect().then(() => {});
+    public async destroy(): Promise<void> {
+        // Do nothing because the client is shared across other class
     }
 
     public async get(key: string): Promise<string | null> {

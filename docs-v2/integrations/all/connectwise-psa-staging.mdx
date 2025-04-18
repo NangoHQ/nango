@@ -1,0 +1,49 @@
+---
+title: Connectwise PSA Staging
+sidebarTitle: Connectwise PSA Staging
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/connectwise-psa-staging/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/connectwise-psa-staging/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/connectwise-psa-staging.mdx)</Note>
+
+
+## Useful links
+
+-   [How to obtain your keys](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Obtaining_your_Keys)
+-   [REST docs](https://developer.connectwise.com/Products/ConnectWise_PSA/REST)
+-   [Auth related docs](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Authentication)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/connectwise-psa-staging.mdx)</Note>
+
+
+## API gotchas
+- To access the API documentation, you will need to log in to their developer [portal](https://developer.connectwise.com/).
+- ConnectWise PSA uses BASIC authentication. The username will always begin with the CompanyId followed by either the public key, integrator username, or MemberId. The password will be the private key, integrator password, or member hash.
+- When creating a new connection on Nango, you will need to include the `apiVersion` in the format `2019.1`. For more details, visit [Versioning](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Versioning)
+- You will also need to provide the `subdomain` in the format `api-{region}`, with the region being specified (see [Authentication](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Authentication))
+- Additionally, you will be required to enter the `clientId`, which can be found at [ClientID](https://developer.connectwise.com/ClientID)
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/connectwise-psa-staging.mdx)</Note>

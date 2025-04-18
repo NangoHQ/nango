@@ -1,0 +1,140 @@
+---
+title: 'Intro to Nango'
+sidebarTitle: 'Intro to Nango'
+description: 'Discover the main resources about Nango.'
+---
+
+Nango is **a product integration platform for developers**. It helps you build, manage, and scale integrations with third-party APIs, through a single interface.
+
+New to Nango? Start with:
+<CardGroup cols={3}>
+    <Card title="Demo video" icon="tv" href="#demo-video"></Card>
+    <Card title="What is Nango?" icon="info" href="#what-is-nango"></Card>
+    <Card title="Quickstart" icon="play" href="/getting-started/quickstart"></Card>
+    <Card title="All Integrations" icon="list" href="/integrations"></Card>
+    <Card title="Join our Slack" icon="slack" href="https://nango.dev/slack"></Card>
+    <Card title="Talk to an expert" icon="comment-dots" href="https://nango.dev/demo"></Card>
+</CardGroup>
+
+# Demo video
+
+<div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
+    <iframe
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+        src="https://www.youtube.com/embed/oTpWlmnv7dM?modestbranding=1&rel=0&autohide=1"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+    ></iframe>
+</div>
+
+# What is Nango?
+
+Nango is the **most comprehensive product integrations platform** designed for developers at B2B SaaS companies. 
+
+Nango helps you build, manage, and scale integrations with third-party APIs, through a single interface. It is as flexible as building integrations in-house, while taking care of API-specific complexities for you, so you can focus on making integrations your best product feature.
+
+With Nango you get:
+
+- **Hundreds of pre-built integrations**
+- **Developer tooling pre-configured for each API**
+- **Comprehensive API documentation**
+- **Access to API experts**
+
+### How is Nango different from unified APIs and embedded iPaaS? 
+
+Nango is built to replace building integrations in-house—offering the same flexibility and control, but faster and with less maintenance overhead. It is strictly developer-first, designed to support any API and empower developers to create exactly the integrations their customers need.
+
+Unified APIs and embedded iPaaS tools take a more rigid approach, focusing on pre-built use cases that limit what you can build. Embedded iPaaS lack key abstractions developers rely on, like end-to-end type safety and API unification. Unified APIs, meanwhile, are locked into predefined schemas and use cases, making them a point solution at best.
+
+Nango is built with a different mindset: **to unleash integration creativity.** By providing best-in-class developer tooling tailored to each API, Nango removes limitations and empowers developers to create integrations that stand out—whether through deep customization, polished experiences, or handling the unique quirks of external APIs.
+
+For a full comparison, read [How is Nango different from embedded iPaaS and Unified APIs?](https://www.nango.dev/blog/how-is-nango-different-from-embedded-ipaas-or-unified-api)
+
+# 3 steps to integrate Nango
+
+<Frame caption="The steps to integrate Nango.">
+  <img src="/images/integrate-nango.png" />
+</Frame>
+
+<Steps>
+  <Step title="Get user permission in your app">
+    Use the Nango frontend SDK to get the user's permission to access their external data.
+
+    Nango guides the user through the auth flow in a popup window.
+
+    Store the `connectionId` in your database to retrieve the user's data later.
+
+    ```ts Frontend: Trigger the OAuth flow.
+    const nango = new Nango({ connectSessionToken });
+
+    // Shows authorization popup to the user.
+    await nango.openConnectUI({
+        onEvent: (event) {
+            if (event.type === 'connect') {
+                // The auth flow succeeded. The user is connected!
+                saveToDatabase(event.payload.connectionId, event.payload.providerConfigKey);
+            }
+        }
+    });
+    ```
+
+    <Tip>
+    When a new user connects your integration, Nango automatically starts fetching their data (e.g. issues, contacts, files, etc.) in the background.
+    </Tip>
+  </Step>
+  <Step title="Receive updates & fetch the new data">
+    Nango uses webhooks to notify your backend when external user data has been added, updated or deleted. Nango will only notify you when there are actual changes.
+
+    ```json Backend: Webhook payload with new data
+    {
+        "connectionId": "user123",
+        "providerConfigKey": "zendesk",
+        "model": "ticket",
+        "responseResults": { "added": 2, "updated": 6, "deleted": 0 },
+        "modifiedAfter": "2023-05-31T11:46:13.390Z"
+    }
+    ```
+
+    When you receive a Nango webhook, fetch the most recent data from Nango using the backend SDK or API.
+
+    Nango returns the data in the schema of your choice, which can be standardized across different APIs.
+
+    You can directly save this data to your database, or process it further, as needed.
+
+    ```ts Backend: Fetch & save new records.
+    const records = await nango.listRecords<Ticket>({
+        providerConfigKey: 'zendesk',
+        connectionId: 'user123',
+        model: 'ticket',
+        modifiedAfter: modifiedAfter
+    });
+
+    saveToDatabase(records);
+    ```
+  </Step>
+  <Step title="Write back to external APIs">
+    Push updates back to external APIs with standardized schemas across different APIs. 
+
+    ```ts Backend: Write back to external APIs.
+    const result = await nango.triggerAction({
+        providerConfigKey: 'zendesk',
+        connectionId: 'user123',
+        action: 'create-ticket',
+        input: { "title": "...", "content": "..." }
+    });
+    ```
+  </Step>
+  <Step title="Optional: Customize integrations">
+    Nango stands out in its ability to let you create [custom integrations](/guides/custom-integrations/overview) through code. 
+
+    Support intricate workflows with composed API calls, custom schemas & complex transformations.
+    
+    Your custom integration code is deployed and run by Nango, similarly to lambda functions.
+
+    <Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+    </Tip>
+  </Step>
+</Steps>

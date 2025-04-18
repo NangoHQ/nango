@@ -1,0 +1,69 @@
+---
+title: Checkr Partner Staging
+sidebarTitle: Checkr Partner Staging
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/checkr-partner-staging/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/checkr-partner-staging/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner-staging.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register a partner Application](https://docs.checkr.com/partners/#section/Getting-Started/Create-a-Partner-Application-for-your-Checkr-account)
+-   [OAuth related docs](https://docs.checkr.com/partners/#section/Getting-Started/Connect-your-customers-to-Checkr)
+-   [Checkr API docs](https://docs.checkr.com/)
+-   [Checkr rate limiting](https://docs.checkr.com/#section/Reference/Rate-limiting)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner-staging.mdx)</Note>
+
+## API gotchas
+
+-  As a partner you are provided with both staging and a production account. For more details check [staging vs production accounts](https://docs.checkr.com/partners/#section/Getting-Started/Staging-vs-Production-accounts)
+-  The `access_token` generated are long lived, until revoked and don't need to be refreshed.
+-  Checkr requires partners to comply with a quick integration review so as to make the integration production ready. For more details check [production approval process](https://docs.checkr.com/partners/#section/Production-Approval-Process)
+-  After creating a connection, Checkr requires you to pass the `access_token` as Basic Authentication as follows:
+```js
+        const connection = await nango.getConnection();
+        let access_token: string;
+        if ('access_token' in connection.credentials) {
+            access_token = connection.credentials.access_token;
+        } else {
+            throw new nango.ActionError({
+                message: `access_token is missing`
+            });
+        }
+        const config = {
+            endpoint: '/v1/account',
+            headers: {
+                Authorization: 'Basic ' + Buffer.from(access_token + ':').toString('base64')
+            }
+        }
+
+        const response = await nango.get(config);
+```
+- You can have a look at the [pre-built integrations](#pre-built-integrations) based on [Checkr retrieve authenticated account details](https://docs.checkr.com/#tag/Account)
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner-staging.mdx)</Note>

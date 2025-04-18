@@ -9,6 +9,9 @@ export function securityMiddlewares(): RequestHandler[] {
     hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
+    const additionalConnectSources = [process.env['PUBLIC_KOALA_API_URL'] ? new URL(process.env['PUBLIC_KOALA_API_URL']).origin : ''];
+    const additionalScriptSources = [process.env['PUBLIC_KOALA_CDN_URL'] ? new URL(process.env['PUBLIC_KOALA_CDN_URL']).origin : ''];
+
     return [
         helmet.xssFilter(),
         helmet.noSniff(),
@@ -22,11 +25,21 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi],
+                defaultSrc: ["'self'", hostPublic, hostApi, connectUrl],
                 childSrc: "'self'",
-                connectSrc: ["'self'", 'https://*.google-analytics.com', 'https://*.sentry.io', hostPublic, hostApi, hostWs.href, 'https://*.posthog.com'],
+                connectSrc: [
+                    "'self'",
+                    'https://*.google-analytics.com',
+                    'https://*.sentry.io',
+                    hostPublic,
+                    hostApi,
+                    hostWs.href,
+                    connectUrl,
+                    'https://*.posthog.com',
+                    ...additionalConnectSources
+                ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
-                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl],
+                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com'],
                 imgSrc: [
                     "'self'",
                     'data:',
@@ -35,7 +48,8 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://*.posthog.com',
-                    'https://img.logo.dev'
+                    'https://img.logo.dev',
+                    'https://*.ytimg.com'
                 ],
                 manifestSrc: "'self'",
                 mediaSrc: "'self'",
@@ -49,7 +63,9 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.google-analytics.com',
                     'https://*.googleapis.com',
                     'https://apis.google.com',
-                    'https://*.posthog.com'
+                    'https://*.posthog.com',
+                    'https://www.youtube.com',
+                    ...additionalScriptSources
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']

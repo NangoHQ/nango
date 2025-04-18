@@ -1,0 +1,86 @@
+---
+title: Bill Sandbox
+sidebarTitle: Bill Sandbox
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/bill-sandbox/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/bill-sandbox/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bill-sandbox.mdx)</Note>
+
+
+## Useful links
+
+-   [Bill Authentication docs](https://developer.bill.com/docs/api-sandbox-sign-in)
+-   [Bill API docs](https://developer.bill.com/reference)
+-   [API rate limiting](https://developer.bill.com/docs/api-rate-limits)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bill-sandbox.mdx)</Note>
+
+## API gotchas
+
+- If you would like to set up a sandbox API environment, one can sign up [here](https://www-test.bill.com/signup?env=stage). Once you have successfully created an account, please [email](mailto:developerprogram@hq.bill.com) the team and they will send you the API credentials.
+- When creating a new connection in Nango, please provide the following: Username (the email address used to sign in to your BILL developer account), Password (used to sign in to your BILL developer account), Organization ID (a unique alphanumeric value beginning with 008 that represents your organization), and Developer key (provided by the team and used to identify your developer account in API requests).
+- After creating a connection, you can use the credentials as follows;
+```js
+const connection = await nango.getConnection();
+// Initialize credentials object
+let credentials: { session_id?: string; dev_key?: string } = {};
+
+// Check for session ID and developer key
+if ('session_id' in connection.credentials && 'dev_key' in connection.credentials) {
+    credentials = {
+        session_id: connection.credentials.session_id,
+        dev_key: connection.credentials.dev_key,
+        };
+    } else {
+        throw new nango.ActionError({
+            message: `Session ID and Developer Key are incomplete or missing`
+        });
+    }
+
+    // Define the configuration for the API call
+    const config: ProxyConfiguration = {
+        endpoint: 'users',
+        retries: 10,
+        paginate: {
+            type: 'cursor',
+            cursor_name_in_request: 'page',
+            cursor_path_in_response: 'nextPage',
+            response_path: 'results',
+            limit_name_in_request: 'max',
+            limit: 100
+        },
+        headers: {
+            sessionId: credentials.session_id,
+            devKey: credentials.dev_key
+        },
+    };
+```
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bill-sandbox.mdx)</Note>
+
+<Card title="Connect to Bill.com" icon="link" href="/integrations/all/bill-sandbox/connect" horizontal>
+  Guide to connect to Bill.com sandbox using Nango Connect.
+</Card>

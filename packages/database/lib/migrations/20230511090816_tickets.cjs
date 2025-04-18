@@ -1,6 +1,6 @@
 const tableName = '_nango_unified_tickets';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(tableName, function (table) {
         table.uuid('id').notNullable();
         table.string('external_id').notNullable();
@@ -25,6 +25,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(tableName);
 };

@@ -3,21 +3,34 @@ title: Chargebee
 sidebarTitle: Chargebee
 ---
 
-API configuration: [`chargebee`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/chargebee/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/chargebee/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/chargebee.mdx)</Note>
+
+
+## Useful links
 
 Chargebee provides REST APIs and webhook to interact with their data. Only the REST APIs is currently supported.
 [API docs](https://apidocs.chargebee.com/docs/api/)
@@ -32,7 +45,7 @@ You should request this from the user and pass it to Nango in the `nango.auth()`
 nango.auth('chargebee', '<CONNECTION-ID>', {params: {subdomain: '<chargebee-subdomain>'}});
 ```
 
-For more details see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
+For more details see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
@@ -41,4 +54,4 @@ For more details see the [docs here](/integrate/guides/authorize-an-api#apis-req
     - Test sites: ~750 API calls per every 5 minutes
     - Live sites: ~150 API calls per site per minute
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/chargebee.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/chargebee.mdx)</Note>

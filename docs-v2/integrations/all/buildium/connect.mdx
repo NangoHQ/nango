@@ -1,0 +1,46 @@
+---
+title: Buildium - How do I link my account?
+sidebarTitle: Buildium
+---
+
+
+# Overview
+
+To authenticate with Buildium, you will need:
+1. **Client ID** - A key that is used to identify your Buildium account.
+1. **API Key** - A secret key used in conjunction with the Client ID to grant Nango permission to access Buildium's API resources and services.
+
+This guide will walk you through finding these Keys within Buildium.
+
+### Prerequisites:
+
+- You must have a registered Buildium account with an administrator user role.
+- A Premium Subscription is also required.
+- Additionally, you need to enable the API in the settings. To do so, please follow these [steps](#step-1-enabling-api)
+### Instructions:
+
+#### Step 1: Enabling API
+1. **Log in** to your Buildium dashboard.
+2. Open the **Settings** menu and click **Application settings**.
+3. Under **System preferences**, click **Api settings**. A modal will appear.
+4. Click the **Open API** toggle to turn it on. Then click **Save**.
+
+
+#### Step 2: Finding Your Client ID and Secret
+1. **Log in** to your Buildium dashboard.
+2. Open the **Settings** menu and click **Developer Tools**.
+3. Click the **Create API Key** button. A modal will appear, enter a **Name** and **Description** for your **API key** submit the form. 
+4. Now, choose which pieces of Buildium data you want this API key to have access to by marking the corresponding checkboxes. Once finished, click **Next**.
+
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have both the **Client ID** and **Secret**:
+1. Open the form where you need to authenticate with Buildium.
+2. Enter both the **Client ID** and **Secret** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/buildium/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Buildium.

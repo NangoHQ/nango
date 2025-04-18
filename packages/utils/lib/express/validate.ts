@@ -11,7 +11,7 @@ interface RequestParser<E extends Endpoint<any>> {
 
 export const validateRequest =
     <E extends Endpoint<any>>(parser: RequestParser<E>) =>
-    (req: EndpointRequest<E>, res: EndpointResponse<E>, next: NextFunction) => {
+    (req: EndpointRequest<E>, res: EndpointResponse<E, any>, next: NextFunction) => {
         try {
             if (parser.parseBody) {
                 req.body = parser.parseBody(req.body);
@@ -29,14 +29,14 @@ export const validateRequest =
                 z.object({}).strict('Url parameters are not allowed').parse(req.params);
             }
             return next();
-        } catch (error: unknown) {
-            if (error instanceof z.ZodError) {
-                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(error) } });
+        } catch (err) {
+            if (err instanceof z.ZodError) {
+                res.status(400).send({ error: { code: 'invalid_request', errors: zodErrorToHTTP(err) } });
             }
         }
     };
 
-export function zodErrorToHTTP(error: z.ZodError): ValidationError[] {
+export function zodErrorToHTTP(error: Pick<z.ZodError, 'issues'>): ValidationError[] {
     return error.issues.map(({ code, message, path }) => {
         return { code, message, path };
     });

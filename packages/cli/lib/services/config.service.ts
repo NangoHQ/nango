@@ -5,10 +5,11 @@ import addErrors from 'ajv-errors';
 import chalk from 'chalk';
 
 import { getNangoRootPath, printDebug } from '../utils.js';
-import type { ServiceResponse } from '@nangohq/shared';
-import { NangoError } from '@nangohq/shared';
 import type { NangoYamlParser } from '@nangohq/nango-yaml';
 import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
+import { CLIError } from '../utils/errors.js';
+import { Err, Ok } from '../utils/result.js';
+import type { Result } from '../utils/result.js';
 
 export interface ValidationMessage {
     msg: string;
@@ -17,7 +18,7 @@ export interface ValidationMessage {
     params?: Record<string, any> | undefined;
 }
 
-export function parse(fullPath: string, debug = false): ServiceResponse<NangoYamlParser> {
+export function parse(fullPath: string, debug = false): Result<NangoYamlParser> {
     if (debug) {
         printDebug(`Loading ${fullPath}`);
     }
@@ -30,7 +31,7 @@ export function parse(fullPath: string, debug = false): ServiceResponse<NangoYam
 
         const valid = validateAndOutput(parser.raw);
         if (!valid) {
-            return { success: false, error: new NangoError('failed_to_parse_nango_yaml'), response: null };
+            return Err(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         }
 
         parser.parse();
@@ -40,7 +41,7 @@ export function parse(fullPath: string, debug = false): ServiceResponse<NangoYam
                 console.log(`  ${chalk.red('error')} ${error.message}${error.code ? chalk.dim(` [${error.code}]`) : ''}`);
                 console.log('');
             }
-            return { success: false, error: new NangoError('failed_to_parse_nango_yaml'), response: null };
+            return Err(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         }
         if (parser.warnings.length > 0) {
             parser.warnings.forEach((warn) => {
@@ -50,9 +51,9 @@ export function parse(fullPath: string, debug = false): ServiceResponse<NangoYam
             });
         }
 
-        return { success: true, error: null, response: parser };
-    } catch {
-        return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
+        return Ok(parser);
+    } catch (err) {
+        return Err(new CLIError('error_loading_nango_yaml', err instanceof Error ? err.message : (err as any)));
     }
 }
 

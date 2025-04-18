@@ -12,6 +12,11 @@ describe('stringifyAndTruncateValue', () => {
         expect(str).toStrictEqual('he... (truncated)');
     });
 
+    it('should limit a string with multi-bytes characters', () => {
+        const str = stringifyAndTruncateValue('👋👋👋', 7); // 4 bytes each
+        expect(str).toStrictEqual('👋... (truncated)'); // 7 bytes limit is not enough for 2 characters => truncating after the first one
+    });
+
     it('should limit an object', () => {
         const str = stringifyAndTruncateValue({ foo: 'bar' }, 10);
         expect(str).toStrictEqual('{}');

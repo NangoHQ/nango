@@ -5,10 +5,8 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
-import { spawn } from 'child_process';
-import type { ChildProcess } from 'node:child_process';
 
-import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
+import { getNangoRootPath, printDebug } from './utils.js';
 import { loadYamlAndGenerate } from './services/model.service.js';
 import { TYPES_FILE_NAME, exampleSyncName } from './constants.js';
 import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
@@ -34,23 +32,22 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
-    const postConnectionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/post-connection.ejs'), 'utf8');
+    const onEventTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/on-event.ejs'), 'utf8');
 
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res.success) {
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return;
     }
 
-    const parsed = res.response!;
     const allSyncNames: Record<string, boolean> = {};
 
     for (const integration of parsed.integrations) {
-        const { syncs, actions, postConnectionScripts, providerConfigKey } = integration;
+        const { syncs, actions, onEventScripts, providerConfigKey } = integration;
 
-        if (postConnectionScripts) {
-            const type = 'post-connection-script';
-            for (const name of postConnectionScripts) {
-                const rendered = ejs.render(postConnectionTemplateContents, {
+        if (onEventScripts) {
+            const type = 'on-event';
+            for (const name of Object.values(onEventScripts).flat()) {
+                const rendered = ejs.render(onEventTemplateContents, {
                     interfaceFileName: TYPES_FILE_NAME.replace('.ts', '')
                 });
                 const stripped = rendered.replace(/^\s+/, '');
@@ -132,106 +129,13 @@ export function generate({ fullPath, debug = false }: { fullPath: string; debug?
     }
 }
 
-/**
- * Init
- * If we're not currently in the nango-integrations directory create one
- * and create an example nango.yaml file
- */
-export function init({ absolutePath, debug = false }: { absolutePath: string; debug?: boolean }) {
-    const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
-
-    // if currently in the nango-integrations directory then don't create another one
-    const currentDirectory = path.basename(absolutePath);
-    let fullPath: string;
-
-    if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
-        if (debug) {
-            printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
-        }
-        fullPath = absolutePath;
-    } else {
-        fullPath = path.resolve(absolutePath, NANGO_INTEGRATIONS_NAME);
-    }
-
-    if (fs.existsSync(fullPath)) {
-        console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
-    } else {
-        if (debug) {
-            printDebug(`Creating the nango integrations directory at ${absolutePath}`);
-        }
-        fs.mkdirSync(fullPath);
-    }
-
-    const configFileLocation = path.resolve(fullPath, nangoConfigFile);
-    if (!fs.existsSync(configFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
-        }
-        fs.writeFileSync(configFileLocation, yamlData);
-    } else {
-        if (debug) {
-            printDebug(`Nango config file already exists at ${configFileLocation} so not creating a new one`);
-        }
-    }
-
-    const envFileLocation = path.resolve(fullPath, '.env');
-    if (!fs.existsSync(envFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the .env file at ${envFileLocation}`);
-        }
-        fs.writeFileSync(
-            envFileLocation,
-            `# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
-#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
-#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
-
-# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
-NANGO_HOSTPORT=https://api.nango.dev # Default value
-
-# How to handle CLI upgrades ("prompt", "auto" or "ignore").
-NANGO_CLI_UPGRADE_MODE=prompt # Default value
-
-# Whether to prompt before deployments.
-NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
-        );
-    } else {
-        if (debug) {
-            printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
-        }
-    }
-
-    const gitIgnoreFileLocation = path.resolve(fullPath, '.gitignore');
-    if (!fs.existsSync(gitIgnoreFileLocation)) {
-        if (debug) {
-            printDebug(`Creating the .gitignore file at ${gitIgnoreFileLocation}`);
-        }
-        fs.writeFileSync(
-            gitIgnoreFileLocation,
-            `dist
-.env
-`
-        );
-    } else {
-        if (debug) {
-            printDebug(`.gitignore file already exists at ${gitIgnoreFileLocation} so not creating a new one`);
-        }
-    }
-
-    generate({ debug, fullPath });
-}
-
 export function tscWatch({ fullPath, debug = false }: { fullPath: string; debug?: boolean }) {
     const tsconfig = fs.readFileSync(path.resolve(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res.success) {
-        console.log(chalk.red(res.error?.message));
-        if (res.error?.payload) {
-            console.log(res.error.payload);
-        }
+    const parsed = loadYamlAndGenerate({ fullPath, debug });
+    if (!parsed) {
         return;
     }
 
-    const parsed = res.response!;
     const watchPath = ['./**/*.ts', `./${nangoConfigFile}`];
 
     if (debug) {
@@ -298,50 +202,3 @@ export function configWatch({ fullPath, debug = false }: { fullPath: string; deb
         loadYamlAndGenerate({ fullPath, debug });
     });
 }
-
-let child: ChildProcess | undefined;
-process.on('SIGINT', () => {
-    if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'down'], {
-            stdio: 'inherit'
-        });
-        dockerDown.on('exit', () => {
-            process.exit();
-        });
-    } else {
-        process.exit();
-    }
-});
-
-/**
- * Docker Run
- * @desc spawn a child process to run the docker compose located in the cli
- * Look into https://www.npmjs.com/package/docker-compose to avoid dependency maybe?
- */
-export const dockerRun = async (debug = false) => {
-    const cwd = process.cwd();
-
-    const args = ['compose', '-f', path.join(getNangoRootPath(), 'docker/docker-compose.yaml'), '--project-directory', '.', 'up', '--build'];
-
-    if (debug) {
-        printDebug(`Running docker with args: ${args.join(' ')}`);
-    }
-
-    child = spawn('docker', args, {
-        cwd,
-        detached: false,
-        stdio: 'inherit'
-    });
-
-    await new Promise((resolve, reject) => {
-        child?.on('exit', (code) => {
-            if (code !== 0) {
-                reject(new Error(`Error with the nango docker containers, please check your containers using 'docker ps''`));
-                return;
-            }
-            resolve(true);
-        });
-
-        child?.on('error', reject);
-    });
-};

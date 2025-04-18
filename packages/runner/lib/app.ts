@@ -1,40 +1,51 @@
 import './tracer.js';
 import { server } from './server.js';
 import { stringifyError } from '@nangohq/utils';
-import { logger } from './utils.js';
+import { logger } from './logger.js';
+import { monitorProviders } from '@nangohq/shared';
+import { register } from './register.js';
+import { envs } from './env.js';
+
+const providersMonitorCleanup = await monitorProviders();
 
 try {
     const port = parseInt(process.argv[2] || '') || 3006;
-    const id = process.argv[3] || process.env['RUNNER_ID'] || 'unknown-id';
-    const srv = server.listen(port, () => {
-        logger.info(`🚀 '${id}' ready at http://localhost:${port}`);
+    const id = process.argv[3] || envs.RUNNER_NODE_ID;
+    const srv = server.listen(port, async () => {
+        logger.info(`🏃‍♀️ '${id}' ready at http://localhost:${port}`);
+
+        const res = await register();
+        if (res.isErr()) {
+            logger.error(`${id} Unable to register`, res.error);
+        }
     });
 
     const close = () => {
-        logger.info('Closing...');
+        logger.info(`${id} Closing...`);
+        providersMonitorCleanup();
+
         srv.close(() => {
             process.exit();
         });
     };
 
     process.on('SIGINT', () => {
-        logger.info('Received SIGINT...');
+        logger.info(`${id} Received SIGINT...`);
         close();
     });
 
     process.on('SIGTERM', () => {
-        logger.info('Received SIGTERM...');
+        logger.info(`${id} Received SIGTERM...`);
         close();
     });
 
     process.on('unhandledRejection', (reason) => {
-        logger.error('Received unhandledRejection...', reason);
-        process.exitCode = 1;
-        close();
+        logger.error(`${id} Received uncaughtException...`, reason);
+        // not closing on purpose
     });
 
     process.on('uncaughtException', (e) => {
-        logger.error('Received uncaughtException...', e);
+        logger.error(`${id} Received uncaughtException...`, e);
         // not closing on purpose
     });
 } catch (err) {

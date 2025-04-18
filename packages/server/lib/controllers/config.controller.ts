@@ -1,41 +1,26 @@
-import type { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
-import type { StandardNangoConfig, Config as ProviderConfig, IntegrationWithCreds, Integration as ProviderIntegration, NangoSyncConfig } from '@nangohq/shared';
-import { isHosted } from '@nangohq/utils';
-import type { AuthModeType, ProviderTwoStep } from '@nangohq/types';
+
 import {
-    flowService,
-    errorManager,
+    AnalyticsTypes,
     NangoError,
     analytics,
-    AnalyticsTypes,
     configService,
     connectionService,
-    getUniqueSyncsByProviderConfig,
+    errorManager,
+    flowService,
     getActionsByProviderConfigKey,
-    getFlowConfigsByParams,
     getGlobalWebhookReceiveUrl,
-    getSyncConfigsAsStandardConfig,
     getProvider,
-    getProviders
+    getProviders,
+    getSyncConfigsAsStandardConfig,
+    getUniqueSyncsByProviderConfig
 } from '@nangohq/shared';
-import { parseConnectionConfigParamsFromTemplate, parseCredentialParamsFromTemplate } from '../utils/utils.js';
+import { isHosted } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express.js';
-
-export interface Integration {
-    authMode: AuthModeType;
-    uniqueKey: string;
-    provider: string;
-    connection_count: number;
-    scripts: number;
-    creationDate: Date | undefined;
-    connectionConfigParams?: string[];
-    credentialParams?: string[];
-}
-
-export interface ListIntegration {
-    integrations: Integration[];
-}
+import type { Config as ProviderConfig, Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
+import type { NangoSyncConfig, StandardNangoConfig } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
 interface FlowConfigs {
     enabledFlows: NangoSyncConfig[];
@@ -110,55 +95,6 @@ const getEnabledAndDisabledFlows = (publicFlows: StandardNangoConfig, allFlows: 
 };
 
 class ConfigController {
-    /**
-     * Webapp
-     */
-
-    async listProviderConfigsWeb(_: Request, res: Response<ListIntegration, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const { environment } = res.locals;
-
-            const configs = await configService.listIntegrationForApi(environment.id);
-
-            const integrations = await Promise.all(
-                configs.map(async (config) => {
-                    const provider = getProvider(config.provider);
-                    const activeFlows = await getFlowConfigsByParams(environment.id, config.unique_key);
-
-                    const integration: Integration = {
-                        authMode: provider?.auth_mode || 'APP',
-                        uniqueKey: config.unique_key,
-                        provider: config.provider,
-                        scripts: activeFlows.length,
-                        connection_count: Number(config.connection_count),
-                        creationDate: config.created_at
-                    };
-
-                    // Used by legacy connection create
-                    // TODO: remove this
-                    if (provider) {
-                        if (provider.auth_mode !== 'APP' && provider.auth_mode !== 'CUSTOM') {
-                            integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(provider);
-                        }
-
-                        // Check if provider is of type ProviderTwoStep
-                        if (provider.auth_mode === 'TWO_STEP') {
-                            integration['credentialParams'] = parseCredentialParamsFromTemplate(provider as ProviderTwoStep);
-                        }
-                    }
-
-                    return integration;
-                })
-            );
-
-            res.status(200).send({
-                integrations: integrations
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
         const providers = getProviders();
         if (!providers) {
@@ -229,45 +165,51 @@ class ConfigController {
             }
 
             const syncConfigs = await getUniqueSyncsByProviderConfig(environmentId, providerConfigKey);
-            const syncs = syncConfigs.map((sync) => {
-                const { metadata, ...config } = sync;
+            const syncs: ProviderIntegration['syncs'] = syncConfigs.map((sync) => {
                 return {
-                    ...config,
-                    description: metadata?.description
+                    name: sync.sync_name,
+                    created_at: sync.created_at,
+                    updated_at: sync.updated_at,
+                    description: sync.metadata?.description || null
                 };
             });
 
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
             const hasWebhook = provider.webhook_routing_script;
-            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
-            const connection_count = connections.length;
             let webhookUrl: string | null = null;
             if (hasWebhook) {
                 webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${config.provider}`;
             }
 
-            const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
-                ? ({
-                      unique_key: config.unique_key,
-                      provider: config.provider,
-                      client_id: config.oauth_client_id,
-                      client_secret,
-                      custom: config.custom,
-                      scopes: config.oauth_scopes,
-                      app_link: config.app_link,
-                      auth_mode: authMode,
-                      created_at: config.created_at,
-                      syncs,
-                      actions,
-                      has_webhook: Boolean(hasWebhook),
-                      webhook_secret,
-                      connections,
-                      docs: provider.docs,
-                      connection_count,
-                      has_webhook_user_defined_secret: provider.webhook_user_defined_secret,
-                      webhook_url: webhookUrl
-                  } as IntegrationWithCreds)
-                : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
+            let configRes: ProviderIntegration | IntegrationWithCreds;
+            if (includeCreds) {
+                const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
+                const connection_count = connections.length;
+                configRes = {
+                    unique_key: config.unique_key,
+                    provider: config.provider,
+                    client_id: config.oauth_client_id,
+                    client_secret,
+                    custom: config.custom,
+                    scopes: config.oauth_scopes,
+                    app_link: config.app_link,
+                    auth_mode: authMode,
+                    created_at: config.created_at,
+                    syncs,
+                    actions,
+                    has_webhook: Boolean(hasWebhook),
+                    webhook_secret,
+                    connections: connections.map(({ connection_config, connection_id, environment_id, id, provider_config_key }) => {
+                        return { connection_config, connection_id, environment_id, id, provider_config_key };
+                    }),
+                    docs: provider.docs,
+                    connection_count,
+                    has_webhook_user_defined_secret: provider.webhook_user_defined_secret || false,
+                    webhook_url: webhookUrl
+                } satisfies IntegrationWithCreds;
+            } else {
+                configRes = { unique_key: config.unique_key, provider: config.provider, syncs, actions } satisfies ProviderIntegration;
+            }
 
             if (includeFlows && !isHosted) {
                 const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
@@ -284,24 +226,6 @@ class ConfigController {
             }
 
             res.status(200).send({ config: configRes });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getConnections(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const providerConfigKey = req.params['providerConfigKey'] as string | null;
-            const environmentId = res.locals['environment'].id;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
-
-            res.status(200).send(connections);
         } catch (err) {
             next(err);
         }
@@ -418,13 +342,14 @@ class ConfigController {
                 app_link,
                 environment_id: environmentId,
                 created_at: new Date(),
-                updated_at: new Date()
+                updated_at: new Date(),
+                missing_fields: []
             };
             if (custom) {
                 config.custom = custom;
             }
 
-            const result = await configService.createProviderConfig(config);
+            const result = await configService.createProviderConfig(config, provider);
 
             if (result) {
                 void analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: result.provider });

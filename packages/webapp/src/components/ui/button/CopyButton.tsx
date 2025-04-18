@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { CopyIcon, Link2Icon } from '@radix-ui/react-icons';
 import type { ClassValue } from 'clsx';
 import { cn } from '../../../utils/utils';
-import Button from './Button';
+import { Button } from './Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip';
 
 interface ClipboardButtonProps {

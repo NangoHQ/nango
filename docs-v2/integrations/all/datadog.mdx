@@ -3,31 +3,48 @@ title: Datadog
 sidebarTitle: Datadog
 ---
 
-API configuration: [`datadog`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/datadog/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/datadog/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/datadog.mdx)</Note>
+
+
+## Useful links
 
 -   [How to generate API and Application keys](https://docs.datadoghq.com/account_management/api-app-keys/#add-an-api-key-or-client-token)
 -   [Datadog Auth related docs](https://docs.datadoghq.com/api/latest/authentication/)
 -   [Datadog API docs](https://docs.datadoghq.com/api/latest/)
 -   [Datadog rate limiting](https://docs.datadoghq.com/api/latest/rate-limits/)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/datadog.mdx)</Note>
 
 ## API gotchas
 
 - When creating a new connection in Nango, please add your specific `siteParameter`. To obtain this, kindly visit [Access the Datadog site](https://docs.datadoghq.com/getting_started/site/#access-the-datadog-site).
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/datadog.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/datadog.mdx)</Note>
+
+<Card title="Connect to datadog" icon="link" href="/integrations/all/datadog/connect" horizontal>
+  Guide to connect to datadog using Nango Connect.
+</Card>

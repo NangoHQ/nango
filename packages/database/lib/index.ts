@@ -9,26 +9,43 @@ const directory = path.join(projectRoot, 'packages/database/lib/migrations');
 
 export class KnexDatabase {
     knex: Knex;
+    readOnly: Knex;
 
     constructor({ timeoutMs } = { timeoutMs: 60000 }) {
         const dbConfig = getDbConfig({ timeoutMs });
         this.knex = knex(dbConfig);
+
+        const readOnlyURL = process.env['NANGO_DB_READ_URL'];
+        if (readOnlyURL) {
+            const readConfig = getDbConfig({ timeoutMs });
+            (readConfig.connection as knex.Knex.PgConnectionConfig).connectionString = readOnlyURL;
+            this.readOnly = knex(readConfig);
+        } else {
+            this.readOnly = this.knex;
+        }
     }
 
     async migrate(): Promise<any> {
         return retry(
-            async () =>
+            async () => {
                 await this.knex.migrate.latest({
                     directory: directory,
                     tableName: '_nango_auth_migrations',
                     schemaName: this.schema()
-                }),
+                });
+            },
             {
                 maxAttempts: 4,
-                delayMs: (attempt) => 500 * attempt,
-                retryIf: () => true
+                delayMs: (attempt) => 500 * attempt
             }
         );
+    }
+
+    async destroy() {
+        await this.knex.destroy();
+        if (process.env['NANGO_DB_READ_URL']) {
+            await this.readOnly.destroy();
+        }
     }
 
     schema() {
@@ -65,7 +82,7 @@ export const multipleMigrations = async (): Promise<void> => {
             });
             console.log('Migrations completed.');
         }
-    } catch (error: any) {
-        console.error(error.message || error);
+    } catch (err: any) {
+        console.error(err.message || err);
     }
 };

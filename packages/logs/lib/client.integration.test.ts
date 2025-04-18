@@ -35,7 +35,7 @@ describe('client', () => {
 
     it('should insert an operation', async () => {
         const spy = vi.spyOn(model, 'createOperation');
-        const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
+        const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
         expect(ctx).toMatchObject({ id: expect.any(String) });
         expect(spy).toHaveBeenCalled();
 
@@ -47,35 +47,19 @@ describe('client', () => {
                 {
                     accountId: 1234,
                     accountName: 'test',
-                    code: null,
-                    integrationId: null,
-                    integrationName: null,
-                    providerName: null,
-                    connectionId: null,
-                    connectionName: null,
                     createdAt: expect.toBeIsoDate(),
                     endedAt: null,
                     environmentId: 5678,
                     environmentName: 'dev',
-                    error: null,
                     expiresAt: expect.toBeIsoDate(),
                     id: ctx.id,
-                    jobId: null,
                     level: 'info',
-                    message: 'Sync execution',
-                    meta: null,
-                    parentId: null,
-                    request: null,
-                    response: null,
+                    message: 'Sync executed',
                     source: 'internal',
                     startedAt: null,
                     state: 'waiting',
-                    syncConfigId: null,
-                    syncConfigName: null,
-                    title: null,
-                    type: 'log',
+                    type: 'operation',
                     updatedAt: expect.toBeIsoDate(),
-                    userId: null,
                     operation: { action: 'run', type: 'sync' }
                 }
             ]

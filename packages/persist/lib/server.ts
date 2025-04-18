@@ -3,11 +3,14 @@ import type { Request, Response, NextFunction } from 'express';
 import { getLogger, createRoute, requestLoggerMiddleware } from '@nangohq/utils';
 import { authMiddleware } from './middleware/auth.middleware.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
-import { routeHandler as postLogHandler, path as logsPath } from './routes/environment/environmentId/postLog.js';
+import { routeHandler as postLogHandler } from './routes/environment/environmentId/postLog.js';
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as deleteRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteRecords.js';
+import { routeHandler as getCursorHandler, path as cursorPath } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
+import { routeHandler as getRecordsHandler, path as getRecordsPath } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
 import { recordsPath } from './records.js';
+import type { ApiError } from '@nangohq/types';
 
 const logger = getLogger('Persist');
 const maxSizeJsonLog = '100kb';
@@ -21,29 +24,33 @@ if (process.env['ENABLE_REQUEST_LOG'] !== 'false') {
 }
 
 server.use('/environment/:environmentId/*', authMiddleware);
-server.use(logsPath, express.json({ limit: maxSizeJsonLog }));
+server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
+server.use(cursorPath, express.json());
+server.use(getRecordsPath, express.json());
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
 createRoute(server, postRecordsHandler);
 createRoute(server, deleteRecordsHandler);
 createRoute(server, putRecordsHandler);
+createRoute(server, getCursorHandler);
+createRoute(server, getRecordsHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
     next();
 });
 
-server.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+server.use((err: unknown, _req: Request, res: Response<ApiError<'request_too_large' | 'server_error'>>, next: NextFunction) => {
     if (err instanceof Error) {
         if (err.message === 'request entity too large') {
-            res.status(400).json({ error: 'Entity too large' });
+            res.status(400).json({ error: { code: 'request_too_large', message: 'Entity too large' } });
             return;
         }
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: { code: 'server_error', message: err.message } });
     } else if (err) {
-        res.status(500).json({ error: 'uncaught error' });
+        res.status(500).json({ error: { code: 'server_error' } });
     } else {
         next();
     }

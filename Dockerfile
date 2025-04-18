@@ -9,7 +9,8 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:20.12.2-bullseye-slim AS build
+FROM node:20.18.1-bookworm-slim AS build
+
 
 # Setup the app WORKDIR
 WORKDIR /app/tmp
@@ -36,6 +37,9 @@ COPY packages/connect-ui/package.json ./packages/connect-ui/package.json
 COPY packages/utils/package.json ./packages/utils/package.json
 COPY packages/webapp/package.json ./packages/webapp/package.json
 COPY packages/webhooks/package.json ./packages/webhooks/package.json
+COPY packages/fleet/package.json ./packages/fleet/package.json
+COPY packages/providers/package.json ./packages/providers/package.json
+COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY package*.json  ./
 
 # Install every dependencies
@@ -52,15 +56,6 @@ RUN true \
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
-ARG image_env
-ARG posthog_key
-ARG sentry_key
-
-# TODO: remove the need for this
-ENV REACT_APP_ENV $image_env
-ENV REACT_APP_PUBLIC_POSTHOG_HOST https://app.posthog.com
-ENV REACT_APP_PUBLIC_POSTHOG_KEY $posthog_key
-ENV REACT_APP_PUBLIC_SENTRY_KEY $sentry_key
 
 # Build the frontend
 RUN true \
@@ -79,8 +74,10 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:20.12.2-bullseye-slim as web
+FROM node:20.18.1-bookworm-slim as web
 
+# Install a more recent npm
+RUN npm install -g npm@10.9.2
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \
@@ -100,12 +97,10 @@ WORKDIR /app/nango
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp /app/nango
 
-ARG image_env
 ARG git_hash
 
 ENV PORT=8080
 ENV NODE_ENV=production
-ENV IMAGE_ENV $image_env
 ENV GIT_HASH $git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 

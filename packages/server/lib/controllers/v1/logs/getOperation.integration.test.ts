@@ -61,7 +61,7 @@ describe('GET /logs/operations/:operationId', () => {
         const res = await api.fetch('/api/v1/logs/operations/:operationId', {
             query: { env: 'dev' },
             token: env.secret_key,
-            params: { operationId: '1' }
+            params: { operationId: '1741878251660_XQMgbkGG' }
         });
 
         expect(res.res.status).toBe(404);
@@ -88,39 +88,23 @@ describe('GET /logs/operations/:operationId', () => {
             data: {
                 accountId: env.account_id,
                 accountName: account.name,
-                code: null,
-                integrationId: null,
-                integrationName: null,
-                providerName: null,
-                connectionId: null,
-                connectionName: null,
                 createdAt: expect.toBeIsoDate(),
                 endedAt: expect.toBeIsoDate(),
                 environmentId: env.id,
                 environmentName: 'dev',
-                error: null,
                 expiresAt: expect.toBeIsoDate(),
                 id: logCtx.id,
-                jobId: null,
                 level: 'info',
-                message: 'Proxy call',
-                meta: null,
+                message: 'Proxy',
                 operation: {
                     type: 'proxy',
                     action: 'call'
                 },
-                parentId: null,
-                request: null,
-                response: null,
                 source: 'internal',
                 startedAt: expect.toBeIsoDate(),
                 state: 'success',
-                syncConfigId: null,
-                syncConfigName: null,
-                title: null,
-                type: 'log',
-                updatedAt: expect.toBeIsoDate(),
-                userId: null
+                type: 'operation',
+                updatedAt: expect.toBeIsoDate()
             }
         });
     });

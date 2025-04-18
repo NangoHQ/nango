@@ -18,15 +18,9 @@ export type MessageMeta = Record<any, any>;
 export type MessageType = 'log' | 'http';
 
 /**
- * Error code attached to the message
- * Not used yet
- */
-export type MessageCode = 'success';
-
-/**
  * State of the Operation
  */
-export type MessageState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
+export type OperationState = 'waiting' | 'running' | 'success' | 'failed' | 'timeout' | 'cancelled';
 
 /**
  * Operations
@@ -43,6 +37,13 @@ export interface OperationAction {
     type: 'action';
     action: 'run';
 }
+
+export interface OperationOnEvents {
+    type: 'events';
+    action: 'post_connection_creation' | 'pre_connection_deletion';
+}
+
+// TODO: rename to OperationConnection
 export interface OperationAuth {
     type: 'auth';
     action: 'create_connection' | 'refresh_token' | 'post_connection' | 'connection_test';
@@ -53,18 +54,52 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
 }
+
 export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
-export type OperationList = OperationSync | OperationProxy | OperationAction | OperationWebhook | OperationDeploy | OperationAuth | OperationAdmin;
+export type OperationList =
+    | OperationSync
+    | OperationProxy
+    | OperationAction
+    | OperationWebhook
+    | OperationOnEvents
+    | OperationDeploy
+    | OperationAuth
+    | OperationAdmin;
+export interface MessageError {
+    name: string;
+    message: string;
+    type?: string | undefined;
+    payload?: any;
+}
+export interface MessageHTTPRequest {
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    body?: unknown;
+}
+export interface MessageHTTPResponse {
+    code: number;
+    headers: Record<string, string>;
+}
+export interface MessageHTTPRetry {
+    attempt: number;
+    max: number;
+    waited: number;
+}
 
 /**
  * Full schema
  */
 export interface MessageRow {
+    /**
+     * This ID is for debugging purpose, not for insertion
+     * It should never be used to index
+     */
     id: string;
 
     // State
@@ -72,55 +107,85 @@ export interface MessageRow {
     level: LogLevel;
     type: MessageType;
     message: string;
-    title: string | null;
-    state: MessageState;
-    code: MessageCode | null;
-    operation: null;
+    context?: 'script' | 'proxy' | 'webhook' | 'auth' | undefined;
+
+    // Operation row id
+    parentId: string;
+
+    accountId: number;
+
+    // Associated meta
+    error?: MessageError | undefined;
+    request?: MessageHTTPRequest | undefined;
+    response?: MessageHTTPResponse | undefined;
+    meta?: MessageMeta | null | undefined;
+    persistResults?:
+        | {
+              model: string;
+              added: number;
+              addedKeys: string[];
+              updated: number;
+              updatedKeys: string[];
+              deleted: number;
+              deleteKeys: string[];
+          }
+        | undefined;
+    retry?: MessageHTTPRetry | undefined;
+
+    // Dates
+    createdAt: string;
+    endedAt?: string | undefined;
+    durationMs?: number | undefined;
+}
+
+export interface OperationRow {
+    id: string;
+
+    // State
+    source: 'internal';
+    level: LogLevel;
+    type: 'operation';
+    message: string;
+    operation: OperationList;
+    state: OperationState;
 
     // Ids
-    accountId: number | null;
-    accountName: string | null;
+    accountId: number;
+    accountName: string;
 
-    environmentId: number | null;
-    environmentName: string | null;
+    environmentId?: number | undefined;
+    environmentName?: string | undefined;
 
     /**
      * Provider name, i.e: github
      */
-    providerName: string | null;
+    providerName?: string | undefined;
     /**
      * Database ID of the config, i.e: 9
      */
-    integrationId: number | null;
+    integrationId?: number | undefined;
     /**
      * Unique config name, i.e: github-demo
      */
-    integrationName: string | null;
+    integrationName?: string | undefined;
 
-    connectionId: number | null;
-    connectionName: string | null;
+    connectionId?: number | undefined;
+    connectionName?: string | undefined;
+    endUserId?: string | undefined;
+    endUserName?: string | undefined;
 
-    syncConfigId: number | null;
-    syncConfigName: string | null;
+    syncConfigId?: number | undefined;
+    syncConfigName?: string | undefined;
 
-    jobId: string | null;
+    jobId?: string | undefined;
 
-    userId: number | null;
-
-    parentId: string | null;
+    userId?: number | undefined;
 
     // Associated meta
-    error: { name: string; message: string; type?: string | null; payload?: any } | null;
-    request: {
-        url: string;
-        method: string;
-        headers: Record<string, string>;
-    } | null;
-    response: {
-        code: number;
-        headers: Record<string, string>;
-    } | null;
-    meta: MessageMeta | null;
+    error?: MessageError | undefined;
+    request?: MessageHTTPRequest | undefined;
+    response?: MessageHTTPResponse | undefined;
+    meta?: MessageMeta | undefined;
 
     // Dates
     createdAt: string;
@@ -128,17 +193,18 @@ export interface MessageRow {
     startedAt: string | null;
     endedAt: string | null;
     expiresAt: string | null;
+    durationMs?: number | undefined;
 }
 
 /**
- * What is required to insert a Message
+ * What is required to insert an Operation
  */
-export type OperationRowInsert = Omit<Merge<Partial<MessageRow>, { operation: OperationList }>, 'message'>;
-export type OperationRow = Merge<Required<OperationRowInsert>, { message: string; accountId: number; accountName: string }>;
+export type OperationRowInsert = Merge<Partial<OperationRow>, Pick<OperationRow, 'operation'>>;
 
 /**
  * What is required to insert a Message
  */
-export type MessageRowInsert = Pick<MessageRow, 'type' | 'message'> & Partial<Omit<MessageRow, 'type' | 'message'>> & { id?: never };
+export type MessageRowInsert = Pick<MessageRow, 'type' | 'message' | 'createdAt' | 'level'> &
+    Partial<Omit<MessageRow, 'type' | 'message' | 'meta_search'>> & { id?: never };
 
 export type MessageOrOperationRow = MessageRow | OperationRow;

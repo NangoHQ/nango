@@ -1,0 +1,49 @@
+---
+title: eBay Sandbox
+sidebarTitle: eBay Sandbox
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/ebay-sandbox/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/ebay-sandbox/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ebay-sandbox.mdx)</Note>
+
+## Useful links
+
+-   [OAuth docs](https://developer.ebay.com/api-docs/static/oauth-consent-request.html)
+-   Join the eBay Ebay Developer Program [here](https://developer.ebay.com/signin?tab=register). 
+**Note:** It takes around 24 hours to be approved.
+-   Once you have an app, you can get credentials and scopes [here](https://developer.ebay.com/my/keys) 
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ebay-sandbox.mdx)</Note>
+
+## API gotchas
+
+-   App ID is Client ID and Cert ID is Client Secret
+-   For sandbox, use `ebay-sandbox` integration, for production use `ebay` integration
+-   Add a Redirect URL and set "Your auth accepted URL" to your Nango callback URL:
+        - Default: `https://api.nango.dev/oauth/callback`
+        - Self-hosted: Your custom redirect URL
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/ebay-sandbox.mdx)</Note>

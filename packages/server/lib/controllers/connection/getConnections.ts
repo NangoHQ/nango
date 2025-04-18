@@ -2,13 +2,16 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { zodErrorToHTTP } from '@nangohq/utils';
 import type { GetPublicConnections } from '@nangohq/types';
 import { AnalyticsTypes, analytics, connectionService } from '@nangohq/shared';
-import { connectionToPublicApi } from '../../formatters/connection.js';
+import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
 import { z } from 'zod';
+import { bodySchema } from '../connect/postSessions.js';
 
 const validationQuery = z
     .object({
         connectionId: z.string().min(1).max(255).optional(),
-        search: z.string().min(1).max(255).optional()
+        search: z.string().min(1).max(255).optional(),
+        endUserId: bodySchema.shape.end_user.shape.id.optional(),
+        endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional()
     })
     .strict();
 
@@ -29,16 +32,19 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         environmentId: environment.id,
         connectionId: queryParam.connectionId,
         search: queryParam.search,
+        endUserId: queryParam.endUserId,
+        endUserOrganizationId: queryParam.endUserOrganizationId,
         limit: 10000
     });
 
     res.status(200).send({
         connections: connections.map((data) => {
             // TODO: return end_user
-            return connectionToPublicApi({
+            return connectionSimpleToPublicApi({
                 data: data.connection,
                 activeLog: data.active_logs,
-                provider: data.provider
+                provider: data.provider,
+                endUser: data.end_user
             });
         })
     });

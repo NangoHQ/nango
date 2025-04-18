@@ -3,7 +3,7 @@ import { forwardRef, useCallback, useState } from 'react';
 import { CopyButton } from '../button/CopyButton';
 import { cn } from '../../../utils/utils';
 import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons';
-import Button from '../button/Button';
+import { Button } from '../button/Button';
 import { Input } from './Input';
 
 interface SecretTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {

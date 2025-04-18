@@ -1,38 +1,34 @@
-import type React from 'react';
-import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import * as Table from '../../components/ui/Table';
+import { useDebounce } from 'react-use';
 
-import { Input } from '../../components/ui/input/Input';
-import { useConnections, useConnectionsCount } from '../../hooks/useConnections';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import DashboardLayout from '../../layout/DashboardLayout';
+import { EndUserProfile } from './components/EndUserProfile';
+import { AvatarOrganization } from '../../components/AvatarCustom';
+import { CopyText } from '../../components/CopyText';
+import { ErrorCircle } from '../../components/ErrorCircle';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import { MultiSelect } from '../../components/MultiSelect';
-
-import { useStore } from '../../store';
-import Button from '../../components/ui/button/Button';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { baseUrl, formatDateToInternationalFormat } from '../../utils/utils';
-import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
-import Nango from '@nangohq/frontend';
-import { useDebounce, useUnmount } from 'react-use';
-import { globalEnv } from '../../utils/env';
-import { apiConnectSessions } from '../../hooks/useConnect';
-import { useListIntegration } from '../../hooks/useIntegration';
-import { Info } from '../../components/Info';
-import { Skeleton } from '../../components/ui/Skeleton';
-import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { SimpleTooltip } from '../../components/SimpleTooltip';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import { ErrorCircle } from '../../components/ui/label/error-circle';
+import { Skeleton } from '../../components/ui/Skeleton';
 import Spinner from '../../components/ui/Spinner';
-import { AvatarOrganization } from '../../components/AvatarCustom';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../components/ui/DropdownMenu';
-import { IconChevronDown } from '@tabler/icons-react';
-import { useToast } from '../../hooks/useToast';
+import * as Table from '../../components/ui/Table';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
+import { Input } from '../../components/ui/input/Input';
+import { useConnections, useConnectionsCount } from '../../hooks/useConnections';
+import { useListIntegration } from '../../hooks/useIntegration';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
+import { getConnectionDisplayName } from '../../utils/endUser';
+import { formatDateToInternationalFormat } from '../../utils/utils';
+
 import type { ApiConnectionSimple } from '@nangohq/types';
-import { CopyText } from '../../components/CopyText';
+import type { ColumnDef } from '@tanstack/react-table';
+import type React from 'react';
 
 const defaultFilter = ['all'];
 const filterErrors = [
@@ -47,26 +43,42 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         size: 300,
         cell: ({ row }) => {
             const data = row.original;
+
+            const errorCounts = data.errors.reduce(
+                (acc, error) => {
+                    if (error.type === 'auth') {
+                        acc.auth += 1;
+                    } else if (error.type === 'sync') {
+                        acc.sync += 1;
+                    }
+                    return acc;
+                },
+                { auth: 0, sync: 0 }
+            );
+
             return (
                 <div className="flex gap-3 items-center">
                     <AvatarOrganization
                         email={data.endUser?.email ? data.endUser.email : null}
-                        displayName={data.endUser ? data.endUser.displayName || data.endUser.email : data.connection_id}
+                        displayName={getConnectionDisplayName({ endUser: data.endUser, connectionId: data.connection_id })}
                     />
 
                     {data.endUser ? (
-                        <div className="flex flex-col overflow-hidden">
-                            <div className="text-white break-words break-all truncate">{data.endUser.email}</div>
-
-                            <div className="text-dark-500 text-xs font-code flex gap-2">
-                                {data.endUser.displayName && <span>{data.endUser.displayName}</span>}
-                                {data.endUser.organization?.displayName && <span>({data.endUser.organization?.displayName})</span>}
-                            </div>
-                        </div>
+                        <EndUserProfile endUser={data.endUser} connectionId={data.connection_id} />
                     ) : (
                         <span className="break-words break-all truncate">{data.connection_id}</span>
                     )}
-                    {row.original.errors.length > 0 && <ErrorCircle />}
+                    {errorCounts.auth > 0 && (
+                        <SimpleTooltip tooltipContent="Expired credentials">
+                            <ErrorCircle icon="auth" />
+                        </SimpleTooltip>
+                    )}
+
+                    {errorCounts.sync > 0 && (
+                        <SimpleTooltip tooltipContent="Failed syncs">
+                            <ErrorCircle icon="sync" />
+                        </SimpleTooltip>
+                    )}
                 </div>
             );
         }
@@ -107,33 +119,22 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 ];
 
 export const ConnectionList: React.FC = () => {
-    const toast = useToast();
     const env = useStore((state) => state.env);
 
-    const connectUI = useRef<ConnectUI>();
-    const hasConnected = useRef<AuthResult | undefined>();
-
-    const { environmentAndAccount } = useEnvironment(env);
     const { list: listIntegration } = useListIntegration(env);
     const { data: connectionsCount } = useConnectionsCount(env);
 
     const [selectedIntegration, setSelectedIntegration] = useState<string[]>(defaultFilter);
     const [search, setSearch] = useState<string>('');
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    const [filterWithError, setFilterWithError] = useState<string[]>(defaultFilter);
+    const [filterWithError, setFilterWithError] = useState<string>('all');
     const [readyToDisplay, setReadyToDisplay] = useState<boolean>(false);
 
-    const { data, loading, error, hasNext, offset, setOffset, mutate } = useConnections({
+    const { data, loading, error, hasNext, offset, setOffset } = useConnections({
         env,
         search: debouncedSearch,
         integrationIds: selectedIntegration,
-        withError: filterWithError[0] === 'all' ? undefined : filterWithError[0] === 'error'
-    });
-
-    useUnmount(() => {
-        if (connectUI.current) {
-            connectUI.current.close();
-        }
+        withError: filterWithError === 'all' ? undefined : filterWithError === 'error'
     });
 
     useDebounce(() => setDebouncedSearch(search), 250, [search]);
@@ -150,57 +151,19 @@ export const ConnectionList: React.FC = () => {
         setSelectedIntegration(values);
     };
 
-    const onEvent: OnConnectEvent = useCallback(
-        (event) => {
-            if (event.type === 'close') {
-                void mutate();
-                if (hasConnected.current) {
-                    toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
-                }
-            } else if (event.type === 'connect') {
-                void mutate();
-                hasConnected.current = event.payload;
-            }
-        },
-        [toast]
-    );
-
-    const onClickConnectUI = () => {
-        if (!environmentAndAccount) {
-            return;
-        }
-
-        const nango = new Nango({
-            host: environmentAndAccount.host || baseUrl(),
-            websocketsPath: environmentAndAccount.environment.websockets_path || '',
-            publicKey: environmentAndAccount.environment.public_key
-        });
-
-        connectUI.current = nango.openConnectUI({
-            baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
-            onEvent
-        });
-
-        // We defer the token creation so the iframe can open and display a loading screen
-        //   instead of blocking the main loop and no visual clue for the end user
-        setTimeout(async () => {
-            const res = await apiConnectSessions(env, {});
-            if ('error' in res.json) {
-                return;
-            }
-            connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
+    const handleFilterErrorChange = (values: string[]) => {
+        const newItems = values.filter((f) => !filterWithError.includes(f));
+        setFilterWithError(newItems.length > 0 ? newItems[0] : defaultFilter[0]);
     };
 
     const integrations = useMemo(() => {
         if (!listIntegration) {
             return [];
         }
-        return listIntegration.integrations.map((integration) => {
-            return { name: integration.uniqueKey, value: integration.uniqueKey };
+        return listIntegration.map((integration) => {
+            return { name: integration.unique_key, value: integration.unique_key };
         });
-    }, [listIntegration?.integrations]);
+    }, [listIntegration]);
 
     // --- Table Display
     useEffect(() => {
@@ -220,26 +183,18 @@ export const ConnectionList: React.FC = () => {
         columns,
         getCoreRowModel: getCoreRowModel()
     });
-    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError[0] !== 'all';
+    const hasFiltered = debouncedSearch || selectedIntegration[0] !== 'all' || filterWithError !== 'all';
 
     if (error) {
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-                <Info variant={'destructive'}>
-                    An error occurred, refresh your page or reach out to the support.{' '}
-                    {error.error.code === 'generic_error_support' && (
-                        <>
-                            (id: <span className="select-all">{error.error.payload}</span>)
-                        </>
-                    )}
-                </Info>
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Connections" error={error} page={LeftNavBarItems.Connections} />;
     }
 
     if (!connections || !readyToDisplay) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+                <Helmet>
+                    <title>Connections - Nango</title>
+                </Helmet>
                 <h2 className="text-3xl font-semibold text-white mb-4">Connections</h2>
 
                 <div className="flex gap-2 flex-col">
@@ -253,29 +208,16 @@ export const ConnectionList: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <Helmet>
+                <title>Connections - Nango</title>
+            </Helmet>
             <div className="flex justify-between mb-8 items-center">
                 <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Connections</h2>
                 <div className="flex gap-2">
-                    <div className="flex items-center bg-white rounded-md">
-                        <Button onClick={onClickConnectUI} className="rounded-r-none">
-                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
-                                    <IconChevronDown stroke={1} size={18} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/${env}/connections/create`}>
-                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    <ButtonLink to={`/${env}/connections/create`}>
+                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                        Add Test Connection
+                    </ButtonLink>
                 </div>
             </div>
             {connections && (connections.length > 0 || hasFiltered) && (
@@ -283,10 +225,14 @@ export const ConnectionList: React.FC = () => {
                     {connectionsCount?.data && (
                         <div className="flex justify-end w-full text-[12px] text-white">
                             {connectionsCount.data.total} connection{connectionsCount.data.total !== 1 ? 's' : ''}
-                            {connectionsCount.data.withAuthError > 0 && (
-                                <span className="flex items-center ml-1">
-                                    ({connectionsCount?.data.withAuthError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
-                                </span>
+                            {connectionsCount.data.withError > 0 && (
+                                <SimpleTooltip
+                                    tooltipContent={`${connectionsCount.data.withAuthError} authorization error${connectionsCount.data.withAuthError !== 1 ? 's' : ''}, ${connectionsCount.data.withSyncError} synchronization error${connectionsCount.data.withSyncError !== 1 ? 's' : ''}`}
+                                >
+                                    <span className="flex items-center ml-1">
+                                        ({connectionsCount?.data.withError} errored)<span className="ml-1 bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    </span>
+                                </SimpleTooltip>
                             )}
                         </div>
                     )}
@@ -314,9 +260,9 @@ export const ConnectionList: React.FC = () => {
                             <MultiSelect
                                 label="Filter Errors"
                                 options={filterErrors}
-                                selected={filterWithError}
+                                selected={[filterWithError]}
                                 defaultSelect={defaultFilter}
-                                onChange={setFilterWithError}
+                                onChange={handleFilterErrorChange}
                                 all
                             />
                         </div>
@@ -402,16 +348,19 @@ export const ConnectionList: React.FC = () => {
                     <h2 className="text-2xl text-center w-full">Connect to an external API</h2>
                     <div className="text-gray-400">
                         Connections can be created by using{' '}
-                        <Link to="https://docs.nango.dev/integrate/guides/authorize-an-api#authorize-users-from-your-app" className="text-blue-500">
+                        <Link
+                            to="https://docs.nango.dev/guides/api-authorization/authorize-in-your-app-default-ui#authorize-users-from-your-app"
+                            className="text-blue-500"
+                        >
                             Nango Connect
                         </Link>
                         , or manually here.
                     </div>
                     <div className="flex my-2 items-center bg-white rounded-md">
-                        <Button onClick={onClickConnectUI} className="rounded-r-none">
+                        <ButtonLink to={`/${env}/connections/create`}>
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
-                        </Button>
+                            Add Test Connection
+                        </ButtonLink>
                     </div>
                 </div>
             )}

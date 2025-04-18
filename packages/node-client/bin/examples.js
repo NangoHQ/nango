@@ -5,6 +5,6 @@ nango
     .then((connections) => {
         console.log(connections);
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
         console.log(err.response?.data || err.message);
     });

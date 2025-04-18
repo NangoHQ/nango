@@ -3,6 +3,7 @@ import type { MessagePort } from 'node:worker_threads';
 import { Worker, isMainThread } from 'node:worker_threads';
 import { getLogger, stringifyError } from '@nangohq/utils';
 import { OrchestratorClient, OrchestratorProcessor } from '@nangohq/nango-orchestrator';
+import type { TaskType } from '@nangohq/nango-orchestrator';
 import { handler } from './handler.js';
 import tracer from 'dd-trace';
 
@@ -10,11 +11,11 @@ const logger = getLogger('jobs.processor.worker');
 
 export class ProcessorWorker {
     private worker: Worker | null;
-    constructor({ orchestratorUrl, groupKey, maxConcurrency }: { orchestratorUrl: string; groupKey: string; maxConcurrency: number }) {
+    constructor({ orchestratorUrl, groupKey, maxConcurrency }: { orchestratorUrl: string; groupKey: TaskType; maxConcurrency: number }) {
         if (isMainThread) {
             const url = new URL('../../dist/processor/processor.worker.boot.js', import.meta.url);
             if (!fs.existsSync(url)) {
-                throw new Error(`Processor worker boot script not found at ${url}`);
+                throw new Error(`Processor worker boot script not found at ${url.href}`);
             }
             this.worker = new Worker(url, { workerData: { orchestratorUrl, groupKey, maxConcurrency } });
             this.worker.on('error', (err) => {

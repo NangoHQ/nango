@@ -1,4 +1,3 @@
-import type { ParamsSerializerOptions } from 'axios';
 import type {
     NangoSyncWebhookBodySuccess,
     NangoSyncWebhookBodyError,
@@ -14,6 +13,7 @@ import type {
     HTTP_METHOD,
     NangoSyncEndpointV2,
     AllAuthCredentials,
+    OAuth1Token,
     OAuth1Credentials,
     OAuth2Credentials,
     OAuth2ClientCredentials,
@@ -38,7 +38,13 @@ import type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
-    PostConnectSessions
+    GetPublicConnection,
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect,
+    GetPublicRecords,
+    UserProvidedProxyConfiguration,
+    StandardNangoConfig,
+    NangoSyncConfig
 } from '@nangohq/types';
 
 export type {
@@ -56,6 +62,7 @@ export type {
     AuthModeType,
     AuthModes,
     AllAuthCredentials,
+    OAuth1Token,
     OAuth1Credentials,
     OAuth2Credentials,
     OAuth2ClientCredentials,
@@ -82,8 +89,13 @@ export type {
     GetPublicListIntegrationsLegacy,
     GetPublicIntegration,
     GetPublicConnections,
-    PostConnectSessions
+    GetPublicConnection,
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect,
+    GetPublicRecords
 };
+
+export type { StandardNangoConfig, NangoSyncConfig };
 
 export interface NangoProps {
     host?: string;
@@ -101,33 +113,16 @@ export interface CreateConnectionOAuth1 extends OAuth1Credentials {
     type: AuthModes['OAuth1'];
 }
 
-export interface OAuth1Token {
-    oAuthToken: string;
-    oAuthTokenSecret: string;
-}
-
 export interface CreateConnectionOAuth2 extends OAuth2Credentials {
     connection_id: string;
     provider_config_key: string;
     type: AuthModes['OAuth2'];
 }
 
-export interface ProxyConfiguration {
-    endpoint: string;
+export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey'> & {
     providerConfigKey?: string;
     connectionId?: string;
-
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
-    headers?: Record<string, string>;
-    params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
-    data?: unknown;
-    retries?: number;
-    baseUrlOverride?: string;
-    decompress?: boolean;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
-    retryOn?: number[] | null;
-}
+};
 
 export type FilterAction = 'added' | 'updated' | 'deleted' | 'ADDED' | 'UPDATED' | 'DELETED';
 export type CombinedFilterAction = `${FilterAction},${FilterAction}`;
@@ -136,6 +131,7 @@ export interface ListRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
     model: string;
+    variant?: string;
     /**
      * @deprecated use modifiedAfter
      */
@@ -144,6 +140,7 @@ export interface ListRecordsRequestConfig {
     limit?: number;
     filter?: FilterAction | CombinedFilterAction;
     cursor?: string | null;
+    ids?: string[];
 }
 
 export type Metadata = Record<string, unknown>;
@@ -152,21 +149,6 @@ export interface MetadataChangeResponse {
     metadata: Metadata;
     provider_config_key: string;
     connection_id: string | string[];
-}
-
-export interface Connection {
-    id?: number;
-    end_user_id: number | null;
-    created_at: Date;
-    updated_at: Date;
-    provider_config_key: string;
-    connection_id: string;
-    connection_config: Record<string, string>;
-    environment_id: number;
-    metadata?: Metadata | null;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
-    credentials: AllAuthCredentials;
 }
 
 export interface IntegrationWithCreds extends Integration {
@@ -217,6 +199,7 @@ export interface SyncStatus {
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
     frequency: string;
     latestResult: Record<string, StatusAction>;
+    recordCount: Record<string, number>;
 }
 
 export interface StatusAction {
@@ -233,15 +216,6 @@ export interface UpdateSyncFrequencyResponse {
     frequency: string;
 }
 
-export interface StandardNangoConfig {
-    providerConfigKey: string;
-    rawName?: string;
-    provider?: string;
-    syncs: NangoSyncConfig[];
-    actions: NangoSyncConfig[];
-    postConnectionScripts?: string[];
-}
-
 export enum SyncConfigType {
     SYNC = 'sync',
     ACTION = 'action'
@@ -256,29 +230,6 @@ export interface NangoSyncModel {
     name: string;
     description?: string;
     fields: NangoSyncModelField[];
-}
-
-export interface NangoSyncConfig {
-    name: string;
-    type?: SyncConfigType;
-    runs: string;
-    auto_start?: boolean;
-    attributes?: object;
-    description?: string;
-    scopes?: string[];
-    track_deletes?: boolean;
-    returns: string[];
-    models: NangoSyncModel[];
-    endpoints: NangoSyncEndpointV2[];
-    is_public?: boolean;
-    pre_built?: boolean;
-    version?: string | null;
-    last_deployed?: string | null;
-
-    input?: NangoSyncModel;
-    sync_type?: SyncType;
-    nango_yaml_version?: string;
-    webhookSubscriptions?: string[];
 }
 
 export interface SyncResult {

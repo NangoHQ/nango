@@ -1,20 +1,23 @@
 import { Prism } from '@mantine/prism';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { mutate } from 'swr';
 
-import PrismPlus from '../../components/ui/prism/PrismPlus';
-import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
-import { formatDateToShortUSFormat } from '../../utils/utils';
+import { CopyText } from '../../components/CopyText';
+import { Info } from '../../components/Info';
 import SecretInput from '../../components/ui/input/SecretInput';
 import TagsInput from '../../components/ui/input/TagsInput';
-import type React from 'react';
+import PrismPlus from '../../components/ui/prism/PrismPlus';
 import { apiRefreshConnection } from '../../hooks/useConnections';
-import { useState } from 'react';
-import { useStore } from '../../store';
 import { useToast } from '../../hooks/useToast';
-import { mutate } from 'swr';
+import { useStore } from '../../store';
 import { getLogsUrl } from '../../utils/logs';
-import { Info } from '../../components/Info';
-import { Link } from 'react-router-dom';
-import { CopyText } from '../../components/CopyText';
+import { formatDateToShortUSFormat } from '../../utils/utils';
+
+import type { ActiveLog, ApiConnectionFull, ApiEndUser } from '@nangohq/types';
+import type React from 'react';
+
+const JSON_DISPLAY_LIMIT = 250_000;
 
 interface AuthorizationProps {
     connection: ApiConnectionFull;
@@ -42,12 +45,21 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
         }
     };
 
+    const connectionConfig = useMemo(() => JSON.stringify(connection.connection_config, null, 4) || '{}', [connection.connection_config]);
+    const connectionMetadata = useMemo(() => JSON.stringify(connection.metadata, null, 4) || '{}', [connection.metadata]);
+    const rawTokenResponse = useMemo(
+        () => ('raw' in connection.credentials ? JSON.stringify(connection.credentials.raw, null, 4) : '{}'),
+        [connection.credentials]
+    );
+
     return (
         <div className="mx-auto space-y-12 text-sm w-[976px]">
             {errorLog && (
                 <div className="flex my-4">
                     <Info variant={'destructive'}>
-                        There was an error refreshing the credentials
+                        {connection.credentials.type === 'BASIC' || connection.credentials.type === 'API_KEY'
+                            ? 'There was an error while testing credentials validity'
+                            : 'There was an error refreshing the credentials'}
                         <Link
                             to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
                             className="ml-1 cursor-pointer underline"
@@ -71,10 +83,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         <span className="text-white">{endUser.id}</span>
                     </div>
                 )}
-                {endUser?.displayName && (
+                {endUser?.display_name && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">User Display Name</span>
-                        <span className="text-white">{endUser.displayName}</span>
+                        <span className="text-white">{endUser.display_name}</span>
                     </div>
                 )}
                 {endUser?.email && (
@@ -89,10 +101,10 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                         <span className="text-white">{endUser.organization.id}</span>
                     </div>
                 )}
-                {endUser?.organization?.displayName && (
+                {endUser?.organization?.display_name && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Organization Name</span>
-                        <span className="text-white">{endUser.organization.displayName}</span>
+                        <span className="text-white">{endUser.organization.display_name}</span>
                     </div>
                 )}
                 {connection.created_at && (
@@ -114,13 +126,13 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 {'expires_at' in connection.credentials && connection.credentials.expires_at && (
                     <div className="flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Access Token Expiration</span>
-                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at.toString())}</span>
+                        <span className="text-white">{formatDateToShortUSFormat(connection.credentials.expires_at as unknown as string)}</span>
                     </div>
                 )}
             </div>
 
             {connection.credentials &&
-                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL') &&
+                (connection.credentials.type === 'BASIC' || connection.credentials.type === 'BILL' || connection.credentials.type === 'SIGNATURE') &&
                 'password' in connection.credentials && (
                     <div className="flex">
                         {connection?.credentials.username && (
@@ -186,22 +198,28 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                     />
                 </div>
             )}
-            {connection.credentials?.type === 'TWO_STEP' && (
+            {(connection.credentials?.type === 'TWO_STEP' || connection.credentials?.type === 'JWT') && (
                 <div>
-                    {Object.keys(connection.credentials)
-                        .filter((key) => !['type', 'token', 'expires_at', 'raw'].includes(key))
-                        .map((key) => {
-                            const value = (connection.credentials as Record<string, string>)[key];
-
-                            return (
-                                <div className="flex flex-col" key={key}>
-                                    <span className="text-gray-400 text-xs uppercase mb-1">
-                                        {key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
-                                    </span>
-                                    <SecretInput disabled defaultValue={value} copy={true} />
-                                </div>
-                            );
-                        })}
+                    {Object.keys(connection.credentials).flatMap((key) => {
+                        const privateKey = (connection.credentials as Record<string, any>)['privateKey'];
+                        let value: string;
+                        let label: string;
+                        if (key === 'privateKey' && privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
+                            value = `${privateKey.id}:${privateKey.secret}`;
+                            label = 'PRIVATE KEY';
+                        } else if (!['type', 'token', 'expires_at', 'raw'].includes(key)) {
+                            value = (connection.credentials as Record<string, string>)[key];
+                            label = key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+                        } else {
+                            return [];
+                        }
+                        return [
+                            <div className="flex flex-col" key={key}>
+                                <span className="text-gray-400 text-xs uppercase mb-1">{label}</span>
+                                <SecretInput disabled defaultValue={value} copy={true} />
+                            </div>
+                        ];
+                    })}
                 </div>
             )}
             {connection.credentials.type === 'TABLEAU' && connection.credentials.pat_name && (
@@ -270,36 +288,6 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                     <SecretInput disabled value={connection.credentials.refresh_token} copy={true} />
                 </div>
             )}
-            {connection.credentials.type === 'JWT' && connection.credentials.issuerId && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Issuer ID</span>
-                    <SecretInput disabled defaultValue={connection.credentials.issuerId} copy={true} />
-                </div>
-            )}
-
-            {connection.credentials.type === 'JWT' && connection.credentials.privateKeyId && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Private Key ID</span>
-                    <SecretInput disabled defaultValue={connection.credentials.privateKeyId} copy={true} />
-                </div>
-            )}
-
-            {connection.credentials.type === 'JWT' && connection.credentials.privateKey && (
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase mb-1">
-                        {typeof connection.credentials.privateKey === 'string' ? 'Private Key' : 'API Key'}
-                    </span>
-                    <SecretInput
-                        disabled
-                        defaultValue={
-                            typeof connection.credentials.privateKey === 'string'
-                                ? connection.credentials.privateKey
-                                : `${(connection.credentials.privateKey as { id: string; secret: string }).id}:${(connection.credentials.privateKey as { id: string; secret: string }).secret}`
-                        }
-                        copy={true}
-                    />
-                </div>
-            )}
             {connection.credentials.type === 'BILL' && connection.credentials.organization_id && (
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-1">Organization Id</span>
@@ -321,13 +309,13 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Configuration</span>
                 <Prism language="json" colorScheme="dark">
-                    {JSON.stringify(connection.connection_config, null, 4) || '{}'}
+                    {connectionConfig.length < JSON_DISPLAY_LIMIT ? connectionConfig : 'Connection config too large to display'}
                 </Prism>
             </div>
             <div className="flex flex-col">
                 <span className="text-gray-400 text-xs uppercase mb-2">Connection Metadata</span>
                 <Prism language="json" colorScheme="dark">
-                    {JSON.stringify(connection.metadata, null, 4) || '{}'}
+                    {connectionMetadata.length < JSON_DISPLAY_LIMIT ? connectionMetadata : 'Connection metadata too large to display'}
                 </Prism>
             </div>
             {(connection.credentials.type === 'OAUTH1' ||
@@ -339,7 +327,7 @@ export const Authorization: React.FC<AuthorizationProps> = ({ connection, errorL
                 <div className="flex flex-col">
                     <span className="text-gray-400 text-xs uppercase mb-2">Raw Token Response</span>
                     <PrismPlus language="json" colorScheme="dark">
-                        {JSON.stringify(connection.credentials.raw, null, 4) || '{}'}
+                        {rawTokenResponse.length > JSON_DISPLAY_LIMIT ? 'Token response too large to display' : rawTokenResponse}
                     </PrismPlus>
                 </div>
             )}

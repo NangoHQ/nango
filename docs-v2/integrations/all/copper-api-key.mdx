@@ -1,0 +1,60 @@
+---
+title: Copper API Key
+sidebarTitle: Copper API Key
+---
+
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/copper-api-key/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/copper-api-key/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/copper-api-key.mdx)</Note>
+
+
+## Useful links
+
+-   [Generate a copper API token in your copper developer account](https://support.copper.com/en/articles/8823347-generating-an-api-key)
+-   [How to register your Oauth Application](https://developer.copper.com/introduction/oauth/index.html#2-prerequisites)
+-   [OAuth related docs](https://developer.copper.com/introduction/oauth/quickstart.html)
+-   [List of OAuth scopes](https://developer.copper.com/introduction/oauth/index.html#7-scopes)
+-   [Copper API docs](https://developer.copper.com/introduction/requests.html#headers)
+-   [API rate liming](https://developer.copper.com/introduction/requests.html#rate-limits)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/copper-api-key.mdx)</Note>
+
+## API gotchas
+
+- Copper offers both OAuth and API_KEY authentication modes. To use OAuth2.0 with Copper, you must first register your application.
+
+- To register your application, [contact](https://developer.copper.com/introduction/oauth/index.html#:~:text=To%20register%20your,all%20authorization%20flows.) copper.
+
+- You will need to provide the name and purpose of your application as well as a URL to an HTTPS endpoint that will handle the secure callback.
+You will receive two credentials, client_id and client_secret, required for all authorization flows.
+
+- To generate an API token, in the Copper web app navigate to `System settings` > `Integrations` > `API Keys` and click the `GENERATE API KEY` button.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/copper-api-key.mdx)</Note>
+
+<Card title="Connect to copper-api-key" icon="link" href="/integrations/all/copper-api-key/connect" horizontal>
+  Guide to connect to Copper using Nango Connect.
+</Card>

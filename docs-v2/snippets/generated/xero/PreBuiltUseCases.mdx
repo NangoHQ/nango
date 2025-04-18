@@ -1,0 +1,79 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Accounts">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /accounts` | Fetches all accounts in Xero (chart of accounts). Incremental sync, detects deletes, metadata is not required. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/accounts.md) |
+</Accordion>
+
+
+<Accordion title="Bank Transactions">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /BankTransactions` | Fetches all bank transactions in Xero. Incremental sync, detects deletes, metadata is not required. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/bank-transactions.md) |
+</Accordion>
+
+
+<Accordion title="Contacts">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /contacts` | Creates one or multiple contacts in Xero.<br />Note: Does NOT check if these contacts already exist. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/create-contact.md) |
+| `PUT /contacts` | Updates one or multiple contacts in Xero. Only fields that are passed in are modified. If a field should not be changed, omit it in the input. The id field is mandatory. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/update-contact.md) |
+| `GET /contacts` | Fetches all Xero contacts.<br />Details: incremental sync, detects deletes, metadata is not required. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/contacts.md) |
+</Accordion>
+
+
+<Accordion title="Credit Notes">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /credit-notes` | Creates one or more credit notes in Xero.<br />Note: Does NOT check if the credit note already exists. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/create-credit-note.md) |
+| `PUT /credit-notes` | Updates one or more credit notes in Xero. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/update-credit-note.md) |
+</Accordion>
+
+
+<Accordion title="General Ledger">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /general-ledger` | Fetch all general ledger entries in Xero | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/general-ledger.md) |
+</Accordion>
+
+
+<Accordion title="Invoices">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /invoices` | Creates one or more invoices in Xero.<br />Note: Does NOT check if the invoice already exists. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/create-invoice.md) |
+| `PUT /invoices` | Updates one or more invoices in Xero. To delete an invoice<br />that is in DRAFT or SUBMITTED set the status to DELETED. If an<br />invoice has been AUTHORISED it can't be deleted but you can set<br />the status to VOIDED. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/update-invoice.md) |
+| `GET /invoices` | Fetches all invoices in Xero. Incremental sync. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/invoices.md) |
+</Accordion>
+
+
+<Accordion title="Items">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /items` | Creates one or more items in Xero.<br />Note: Does NOT check if the item already exists. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/create-item.md) |
+| `PUT /items` | Updates one or more items in Xero. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/update-item.md) |
+| `GET /items` | Fetches all items in Xero. Incremental sync, does not detect deletes, metadata is not<br />required. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/items.md) |
+</Accordion>
+
+
+<Accordion title="Payments">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /payments` | Creates one or more payments in Xero.<br />Note: Does NOT check if the payment already exists. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/create-payment.md) |
+| `GET /payments` | Fetches all payments in Xero. Incremental sync. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/syncs/payments.md) |
+</Accordion>
+
+
+<Accordion title="Tenants">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /tenants` | Fetches all the tenants the connection has access to.<br />This can be used to set the metadata to the selected tenant. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/xero/actions/get-tenants.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

@@ -48,12 +48,15 @@ const handler = (scheduler: Scheduler) => {
             updatedSchedule = await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: schedule.frequencyMs });
         }
         if (!updatedSchedule) {
-            return res.status(400).json({ error: { code: 'put_recurring_failed', message: `invalid parameters: ${schedule}` } });
+            res.status(400).json({ error: { code: 'put_recurring_failed', message: `invalid parameters: ${JSON.stringify(schedule)}` } });
+            return;
         }
         if (updatedSchedule.isErr()) {
-            return res.status(500).json({ error: { code: 'put_recurring_failed', message: updatedSchedule.error.message } });
+            res.status(500).json({ error: { code: 'put_recurring_failed', message: updatedSchedule.error.message } });
+            return;
         }
-        return res.status(200).json({ scheduleId: updatedSchedule.value.id });
+        res.status(200).json({ scheduleId: updatedSchedule.value.id });
+        return;
     };
 };
 

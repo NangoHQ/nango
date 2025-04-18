@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 
 import type { ApiError, Endpoint, GetConnectSession, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 

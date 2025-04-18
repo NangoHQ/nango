@@ -37,9 +37,11 @@ const handler = (scheduler: Scheduler) => {
             ...(names ? { names } : {})
         });
         if (getSchedules.isErr()) {
-            return res.status(500).json({ error: { code: 'search_failed', message: getSchedules.error.message } });
+            res.status(500).json({ error: { code: 'search_failed', message: getSchedules.error.message } });
+            return;
         }
-        return res.status(200).json(getSchedules.value);
+        res.status(200).json(getSchedules.value);
+        return;
     };
 };
 

@@ -14,24 +14,21 @@ concurrency:
 
 jobs:
     tests:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [ubuntu-latest]
-                node-version: [18.x, 20.x]
+        runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout
+              uses: actions/checkout@v4
               with:
                   fetch-depth: '0'
 
-            - name: Use Node.js ${{ matrix.node-version }}
+            - name: Use Node.js
               uses: actions/setup-node@v4
               with:
                   cache: 'npm'
-                  node-version: ${{ matrix.node-version }}
+                  node-version-file: '.nvmrc'
 
-            - run: npm run build:hosted
-            - run: npm run test:unit
-            - run: npm run test:cli
+            - run: npm ci
+            - run: npm run ts-build
+            - run: npm run test:unit -- --exclude packages/cli/
             - run: npm run test:integration

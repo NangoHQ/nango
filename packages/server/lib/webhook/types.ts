@@ -5,7 +5,7 @@ import type { InternalNango } from './internal-nango.js';
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
     integration: ProviderConfig,
-    headers: Record<string, any>,
+    headers: Record<string, string>,
     body: T,
     rawBody: string,
     logContextGetter: LogContextGetter

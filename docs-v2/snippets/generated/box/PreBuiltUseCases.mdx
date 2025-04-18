@@ -1,0 +1,33 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Files">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /file` | Fetches the content of a file given its ID, processes the data using a response stream, and encodes it into a base64 string. This base64-encoded string can be used to recreate the file in its original format using an external tool. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/fetch-file.md) |
+| `GET /files` | Sync the metadata of a specified files or folders paths from Box. A file or folder id or path can be used. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/files.md) |
+</Accordion>
+
+
+<Accordion title="Folders">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /folder-content` | Fetches the top-level content (files and folders) of a folder given its ID. If no folder ID is provided, it fetches content from the root folder. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/folder-content.md) |
+| `GET /root-folders` | Sync the folders at the root level from Box | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/folders.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /users` | Creates a user in Box. Requires an enterprise account. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/create-user.md) |
+| `DELETE /users` | Deletes a user in Box. Requires an enterprise account. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-user.md) |
+| `GET /users` | Fetches a list of users from Box. Requires an enterprise account. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

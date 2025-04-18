@@ -1,10 +1,10 @@
 import braintree from 'braintree';
-import type { Config as ProviderConfig, Connection, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
-import type { ProviderOAuth2 } from '@nangohq/types';
+import type { Config as ProviderConfig, AuthorizationTokenResponse, RefreshTokenResponse } from '../models/index.js';
+import type { DBConnectionDecrypted, ProviderOAuth2 } from '@nangohq/types';
 import qs from 'qs';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
-import { getLogger, axiosInstance as axios } from '@nangohq/utils';
+import { getLogger, axiosInstance as axios, stringifyError } from '@nangohq/utils';
 
 const stripeAppExpiresIn = 3600;
 const corosExpiresIn = 2592000;
@@ -66,7 +66,7 @@ class ProviderClient {
         }
     }
 
-    public async refreshToken(provider: ProviderOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
+    public async refreshToken(provider: ProviderOAuth2, config: ProviderConfig, connection: DBConnectionDecrypted): Promise<object> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
@@ -112,7 +112,7 @@ class ProviderClient {
         }
     }
 
-    public async introspectedTokenExpired(config: ProviderConfig, connection: Connection): Promise<boolean> {
+    public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
@@ -209,8 +209,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('tiktok_token_request_error');
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_request_error', err.message);
         }
     }
 
@@ -241,8 +241,8 @@ class ProviderClient {
             }
 
             throw new NangoError('stripe_app_token_request_error');
-        } catch (e: any) {
-            throw new NangoError('stripe_app_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('stripe_app_token_request_error', err.message);
         }
     }
 
@@ -273,8 +273,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('stripe_app_token_refresh_request_error');
-        } catch (e: any) {
-            throw new NangoError('stripe_app_token_refresh_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('stripe_app_token_refresh_request_error', err.message);
         }
     }
 
@@ -304,8 +304,8 @@ class ProviderClient {
             }
 
             throw new NangoError('tiktok_token_request_error', response.data);
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_request_error', err.message);
         }
     }
 
@@ -333,8 +333,8 @@ class ProviderClient {
                 };
             }
             throw new NangoError('tiktok_token_refresh_request_error');
-        } catch (e: any) {
-            throw new NangoError('tiktok_token_refresh_request_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('tiktok_token_refresh_request_error', err.message);
         }
     }
 
@@ -417,8 +417,8 @@ class ProviderClient {
             };
             // Sample failure response: { "result": "5002", "message": "Unauthorized client ID" }
             throw new NangoError('request_token_external_error', payload);
-        } catch (e: any) {
-            throw new NangoError('request_token_external_error', e.message);
+        } catch (err: any) {
+            throw new NangoError('request_token_external_error', err.message);
         }
     }
 
@@ -512,9 +512,9 @@ class ProviderClient {
 
             return isTokenExpired(expireDate, 15 * 60);
         } catch (err) {
-            logger.error(err);
+            logger.error('introspectSalesforce', stringifyError(err));
             // TODO add observability
-            return false;
+            return true;
         }
     }
 }

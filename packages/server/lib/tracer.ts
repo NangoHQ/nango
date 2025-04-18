@@ -1,7 +1,12 @@
 import tracer from 'dd-trace';
 
 tracer.init({
-    service: 'nango'
+    service: 'nango',
+    samplingRules: [
+        { service: 'server-net', sampleRate: 0.01, name: '*' },
+        { service: 'nango-elasticsearch', sampleRate: 0.1, name: '*' },
+        { service: 'nango-redis', sampleRate: 0.1, name: '*' }
+    ]
 });
 tracer.use('pg', {
     service: (params: { database: string }) => `postgres-${params.database}`

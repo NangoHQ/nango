@@ -16,11 +16,11 @@ Ship integrations fast. Maintain full control.
     <br />
 
   <br/>
-    <a href="https://nango.dev/integrations">250+ pre-configured APIs</a>
+    <a href="https://nango.dev/integrations">400+ pre-configured APIs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
-    <a href="https://docs.nango.dev/customize/guides/contribute-an-api">Contribute an API</a>
+    <a href="https://docs.nango.dev/guides/api-authorization/new-api-support">Contribute an API</a>
     ·
     <a href="https://nango.dev/slack">Slack Community</a>
 </p>
@@ -31,7 +31,7 @@ Nango is a single API to interact with all other external APIs. It should be the
 
 # 📺 Demo video
 
-[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://www.youtube.com/watch?v=pvUpbi04IjQ)
+[![what-is-nango](/docs-v2/images/video-thumbnail.png)](https://youtu.be/oTpWlmnv7dM)
 
 # 👩‍💻 Sample code
 
@@ -59,9 +59,9 @@ Nango's flexibility ensures it supports any API integration:
 2. **Custom integrations**: Build your own integrations in code with limitless customization capabilities.
 3. **Managed integrations**: Leverage Nango experts to create and maintain your integrations end-to-end.
 
-# 🔌 250+ pre-built APIs & integrations, or build your own!
+# 🔌 400+ pre-built APIs & integrations, or build your own!
 
-[Over 250 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
+[Over 400 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box. We support 25+ categories such:
 
 - **Accounting**: Netsuite, Quickbooks, Xero, ...
 - **Communications**: Slack, Discord, Teams, ...
@@ -79,7 +79,7 @@ But remember, Nango can work with **any API and any use-case**!
 
 # 🚀 Get started
 
-Sign up for free and try the interactive demo:
+Sign up for free:
 
 <a href="https://app.nango.dev/signup" target="_blank">
   <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
@@ -89,9 +89,9 @@ Sign up for free and try the interactive demo:
 
 Our mission is to enable all SaaS to seamlessly integrate together. By being open source, every engineer can contribute improvements to the platform for everyone:
 
-- [Contribute an API](https://docs.nango.dev/customize/guides/contribute-an-api)
-- [Create a custom integration](https://docs.nango.dev/customize/guides/create-a-custom-integration)
-- [Extend an integration template](https://docs.nango.dev/customize/guides/extend-an-integration-template)
+- [Contribute an API](https://docs.nango.dev/guides/api-authorization/new-api-support)
+- [Create a custom integration](https://docs.nango.dev/guides/custom-integrations/overview)
+- [Extend an integration template](https://docs.nango.dev/guides/custom-integrations/extend-a-pre-built-integration)
 
 # 📚 Learn more
 

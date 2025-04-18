@@ -11,6 +11,6 @@ export const getUser = asyncWrapper<GetUser, never>((req, res) => {
     }
 
     res.status(200).send({
-        data: userToAPI(req.user!)
+        data: userToAPI(res.locals['user'])
     });
 });

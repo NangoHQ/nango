@@ -1,0 +1,59 @@
+---
+title: Blackbaud (Basic Auth) - How do I link my account?
+sidebarTitle: Blackbaud (Basic Auth)
+---
+
+
+# Overview
+
+To authenticate with Blackbaud (Basic Auth), you need:
+1. **Host Name** -  Your Blackbaud environment URL for API access.
+1. **Username** -  Your unique account identifier used for authentication.
+2. **Password** -  A key used in combination with the username for API authentication. 
+
+This guide will walk you through finding or generating these credentials within Blackbaud.
+
+### Prerequisites:
+
+The following prerequisites are only required when you opt for authenticating API requests with the **Username and PAT** option.
+- To add a proxy user, you must have system role administrator rights.
+- You must also be signed in with the Blackbaud ID you wish to link the proxy user to.
+
+#### Step 1: Finding your Host Name
+1. Log in to your application as you normally would.
+2. Once logged in, look at the URL in your browser’s address bar.
+3. Copy the entire URL up to `/webui/` For example if the url is `http://localhost/bbappfx/webui/webshellpage.aspx?databasename=BBInfinity`, the **Host Name** would be `http://localhost/bbappfx`.
+
+#### Step 2: Finding your Password
+- This is the password you use to log into your Infinity account.  
+- The following steps are for users who prefer to authenticate their API requests with a proxy user PAT instead of their Infinity login password.
+
+<Note>When you add a proxy user, the user automatically inherits the same system roles as its proxy owner. You can remove roles from the proxy user at any time.</Note>
+1. From Administration, **Application Users**, select **Add proxy user**.
+2. Enter a unique **username** and save. Be sure to copy this **username**, as it will be required later.
+<img src="/integrations/all/blackbaud-basic/add-proxy-user.png" />
+3. From the list of application users — or from the **Proxy Users** tab of your Blackbaud ID record — open the proxy user record.
+<img src="/integrations/all/blackbaud-basic/proxy-user-tab.png" />
+4. Select the **Personal Access Token** tab, then select **Add**.
+<img src="/integrations/all/blackbaud-basic/add-PAT.png" />
+5. To help you keep track of where the PAT is in use, enter the name of the service or process that uses the token.
+
+<img src="/integrations/all/blackbaud-basic/addPAT.png" />
+<Note>For your security, you won't be able to view it again.</Note>
+
+#### Step 3: Finding your Username
+- This is the **username** you use to log into your Infinity account.  
+- If you prefer using your proxy user PAT, please use the username from the unique **username** saved from [step 2](#step-2-finding-your-password) above. 
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Host Name**, **Username** and **Password**:
+1. Open the form where you need to authenticate with Blackbaud (Basic Auth).
+2. Enter your **Host Name**, **Username** and **Password** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/integrations/all/blackbaud-basic/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Blackbaud (Basic Auth).
+ 

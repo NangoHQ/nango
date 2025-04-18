@@ -12,6 +12,7 @@ import { useSWRConfig } from 'swr';
 import type { AuthModeType } from '@nangohq/types';
 import { apiPostIntegration } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
+import { Helmet } from 'react-helmet';
 
 interface Provider {
     name: string;
@@ -96,6 +97,9 @@ export default function Create() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <Helmet>
+                <title>Integrations Create - Nango</title>
+            </Helmet>
             {providers && (
                 <div className="w-full">
                     <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-8">Create Integration</h2>

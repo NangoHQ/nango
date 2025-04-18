@@ -3,57 +3,17 @@ import type { ClassValue } from 'clsx';
 import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import type { SyncResult } from '../types';
+import { globalEnv } from './env';
 
-export const localhostUrl: string = 'http://localhost:3003';
-export const stagingUrl: string = 'https://api-staging.nango.dev';
-export const prodUrl: string = 'https://api.nango.dev';
-
-export const syncDocs = 'https://docs.nango.dev/integrate/guides/sync-data-from-an-api';
 export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
 export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
 
-export function isHosted() {
-    return process.env.REACT_APP_ENV === 'hosted';
-}
-
-export function isStaging() {
-    return process.env.REACT_APP_ENV === 'staging';
-}
-
-export function isProd() {
-    return process.env.REACT_APP_ENV === 'production';
-}
-
-export function baseUrl() {
-    switch (process.env.REACT_APP_ENV) {
-        case 'hosted':
-            return localhostUrl;
-        case 'staging':
-            return stagingUrl;
-        case 'production':
-            return prodUrl;
-        default:
-            return localhostUrl;
-    }
+export function isCloudProd() {
+    return window.location.origin === 'https://app.nango.dev';
 }
 
 export function defaultCallback() {
-    return baseUrl() + '/oauth/callback';
-}
-
-export function elapsedTime(start: Date | number, end: Date | number): string {
-    const startTime = start instanceof Date ? start.getTime() : new Date(start).getTime();
-    const endTime = end instanceof Date ? end.getTime() : new Date(end).getTime();
-
-    if (isNaN(startTime) || isNaN(endTime)) {
-        return '';
-    }
-
-    const elapsedTime = endTime - startTime;
-    const elapsedSeconds = Math.floor(elapsedTime / 1000);
-    const elapsedMilliseconds = elapsedTime % 1000;
-
-    return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
+    return globalEnv.apiUrl + '/oauth/callback';
 }
 
 export function formatDateToShortUSFormat(dateString: string): string {
@@ -118,7 +78,7 @@ export function formatDateToInternationalFormat(dateString: string): string {
 
 export function formatDateToLogFormat(dateString: string): string {
     const date = new Date(dateString);
-    return format(date, 'MMM dd, HH:mm:ss:SS');
+    return format(date, 'MMM dd, HH:mm:ss.SSS');
 }
 
 function formatFutureRun(nextRun: number): Date | undefined {
@@ -277,4 +237,13 @@ export function stringArrayEqual(prev: string[], next: string[]) {
         }
     }
     return true;
+}
+
+export function truncateMiddle(str: string, maxLength: number = 14, ellipsis: string = '...'): string {
+    if (str.length <= maxLength) return str;
+    if (maxLength <= ellipsis.length) return ellipsis.substring(0, maxLength);
+    const charsToShow = maxLength - ellipsis.length;
+    const frontChars = Math.ceil(charsToShow / 2);
+    const backChars = Math.floor(charsToShow / 2);
+    return str.substring(0, frontChars) + ellipsis + str.substring(str.length - backChars);
 }

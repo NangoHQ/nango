@@ -32,3 +32,12 @@ export function displayValidationError({ data, validation, model }: { data: any;
         console.log('');
     }
 }
+
+export class CLIError extends Error {
+    code;
+    constructor(code: 'failed_to_parse_nango_yaml' | 'error_loading_nango_yaml', message?: string) {
+        super(message || code);
+
+        this.code = code;
+    }
+}

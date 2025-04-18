@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-    content: ['./src/**/*.{js,ts,jsx,tsx,html}', './public/**/*.{js,ts,jsx,tsx,html}'],
+export default {
+    content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}', './public/**/*.{js,ts,jsx,tsx,html}'],
     theme: {
         fontFamily: {
             sans: ['Inter', 'sans-serif'],
@@ -63,19 +63,87 @@ module.exports = {
                 'dark-800': '#09090B',
                 'border-gray-400': '#323439',
                 'text-light': '#A9ACB3',
-                ring: '#A9ACB3'
+                ring: '#A9ACB3',
+
+                // -----
+                // Design system v2
+                //
+                'grayscale-100': '#fafafa',
+                'grayscale-200': '#ececec',
+                'grayscale-300': '#d0d1d0',
+                'grayscale-400': '#a2a2a2',
+                'grayscale-500': '#737473',
+                'grayscale-600': '#454545',
+                'grayscale-700': '#333333',
+                'grayscale-800': '#262626',
+                'grayscale-900': '#111111',
+                'grayscale-1000': '#09090b',
+
+                'code-mint': '#6ed6ac',
+                'code-blue': '#90a1f0',
+                'code-violet': '#c695c6',
+                'code-gray': '#cfd4d9',
+                'code-orange': '#f09745',
+                'code-yellow': '#f7c752',
+
+                'success-100': '#f9fef1',
+                'success-200': '#edfbd8',
+                'success-300': '#d4f1c5',
+                'success-400': '#84d65a',
+                'success-500': '#2b641e',
+
+                'warning-100': '#fffcf0',
+                'warning-200': '#fef7d1',
+                'warning-300': '#fcebc2',
+                'warning-400': '#f7c752',
+                'warning-500': '#e6a70d',
+
+                'alert-100': '#fef6f1',
+                'alert-200': '#fce8db',
+                'alert-300': '#f9c9c6',
+                'alert-400': '#ef665b',
+                'alert-500': '#71192f',
+
+                'info-100': '#f0fafe',
+                'info-200': '#d7f1fd',
+                'info-300': '#c2dcfd',
+                'info-400': '#509af8',
+                'info-500': '#0c2a75'
+            },
+            fontSize: {
+                xs: ['11px', '16px'],
+                s: ['12px', '18px'],
+                sm: '14px',
+                base: '16px',
+                xl: '20px',
+                '2xl': '24px',
+                '3xl': '28px',
+                '4xl': '32px',
+                '5xl': '36px'
             },
             width: {
                 largebox: '1200px',
                 largecell: '480px'
             },
-            fontSize: {
-                xs: '11px',
-                s: '13px',
-                '3xl': '28px'
-            },
             fontFamily: {
                 code: ['"Roboto Mono"', '"Source Code Pro"', 'system-ui', 'sans-serif']
+            },
+            boxShadow: {
+                card: '0px 2px 50px 5px rgba(51, 51, 51, 0.30), 0px 8px 10px 0px rgba(0, 0, 0, 0.30)'
+            },
+            keyframes: {
+                'accordion-down': {
+                    from: { height: '0' },
+                    to: { height: 'var(--radix-accordion-content-height)' }
+                },
+                'accordion-up': {
+                    from: { height: 'var(--radix-accordion-content-height)' },
+                    to: { height: '0' }
+                }
+            },
+            animation: {
+                'accordion-down': 'accordion-down 0.2s ease-out',
+                'accordion-up': 'accordion-up 0.2s ease-out'
             }
         }
     },

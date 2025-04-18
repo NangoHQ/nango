@@ -4,7 +4,7 @@ sidebarTitle: 'Integration config (nango.yaml)'
 icon: 'arrow-right-arrow-left'
 ---
 
-Integrations are configured in the `nango.yaml` file, which lives in your code base ([learn more](/understand/concepts/scripts#integration-configuration)).
+Integrations are configured in the `nango.yaml` file, which lives in your code base.
 
 # Example
 
@@ -17,7 +17,10 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Synced model
-        endpoint: GET /tasks # Generated endpoint to access the synced model.
+        endpoint: # Generated endpoint to access the synced model.
+          method: GET
+          path: /tasks
+          group: Tasks
         sync_type: incremental # Data is replaced ('full') or upserted ('incremental') on each sync execution.
         runs: every 30min # Sync frequency.
         input:  AsanaProject # Necessary input to execute the sync.
@@ -36,12 +39,21 @@ integrations:
           Some long description, some long description, some long description,
           some long description, some long description, some long description.
         output: AsanaTask # Returned model
-        endpoint: POST /tasks # Generated endpoint to trigger to action.
+        endpoint: # Generated endpoint to trigger to action.
+          method: POST
+          path: /tasks
+          group: Tasks
         input: # Necessary input to execute the action.
         scopes: # Required scopes.
           - scope1
           - scope2
 
+    on-events:
+        post-connection-creation:
+            - setup
+            - moreSetup
+        pre-connection-deletion:
+            - cleanup
 
 models:
   AsanaTask: # Schema for sync output AND action input/output.
@@ -66,6 +78,10 @@ Integration configuration fields are under `integrations.<INTEGRATION-ID>`.
 
 <ResponseField name="actions" type="object">
     Lists the actions for a given integration.
+</ResponseField>
+
+<ResponseField name="on-events" type="object">
+    Lists the events and scripts executed when those events occur.
 </ResponseField>
 
 ### Sync fields
@@ -95,26 +111,36 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
             - AsanaTask
             - AsanaComment
           endpoint:
-            - GET /tasks
-            - GET /comments
+            - method: GET
+              path: /tasks
+            - method: GET
+              path: /comments
       ```
     </Tip>
 </ResponseField>
 
-<ResponseField name="endpoint" type="string" required>
+<ResponseField name="endpoint" type="string|object" required>
     Defines the endpoint to use to fetch the output model.
 
-    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
+    ```yaml
+    endpoint:
+      method: GET
+      path: /tasks
+      group?: Tasks
+    ```
 
-    Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+    Possible method values are: `GET`
 
     The method/endpoint combination can be shared across syncs to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
+
+    Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `GET /tasks`.
 </ResponseField>
 
 <ResponseField name="sync_type" type="incremental | full" required>
     Specifies whether each sync execution replaces all of the data (`full`) or upserts it (`incremental`).
 
-    Learn more about [incremental vs. full refresh](/understand/concepts/syncs#sync-modes-full-refresh-vs-incremental) syncing.
+    Learn more about [incremental vs. full refresh](/guides/syncs/overview#sync-modes-full-refresh-vs-incremental) syncing.
 </ResponseField>
 
 <ResponseField name="runs" type="string">
@@ -126,7 +152,7 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
 <ResponseField name="input" type="string">
     Defines the schema of the data required to run the sync. References a schema from the [models](#model-fields).
 
-    Sync inputs are passed from your app to the sync script via the connection metadata ([step-by-step guide](/integrate/guides/advanced/store-customer-specific-data)).
+    Sync inputs are passed from your app to the sync script via the connection metadata ([step-by-step guide](/guides/customer-configuration)).
 </ResponseField>
 
 <ResponseField name="scopes" type="string[]">
@@ -144,17 +170,17 @@ Sync configuration fields are under `integrations.<INTEGRATION-ID>.syncs.<SYNC-N
 </ResponseField>
 
 <ResponseField name="track_deletes" type="boolean">
-    If `true`, automatically detects deleted records and flags them when you [fetch the latest data](/integrate/guides/sync-data-from-an-api#fetch-the-latest-data).
+    If `true`, automatically detects deleted records and flags them when you [fetch the latest data](/guides/syncs/use-a-sync#fetch-the-latest-data).
 
     Defaults to `false`.
 
     <Info>
-        This setting only applies if `sync_type: full` ([details](/understand/concepts/syncs#detecting-deletions-incremental-vs-full-refresh-syncs)). For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync script using `nango.batchDelete()` ([reference](/reference/scripts)).
+        This setting only applies if `sync_type: full` ([details](/guides/syncs/overview#detecting-deletions-incremental-vs-full-refresh-syncs)). For incremental syncs, this setting is ignored; instead, you must flag deleted records in the sync script using `nango.batchDelete()` ([reference](/reference/scripts)).
     </Info>
 </ResponseField>
 
 <ResponseField name="webhook-subscriptions" type="string | string[]">
-    Lists the types of external webhooks the sync script will handle. Multiple syncs can listen to the same subscription. Learn more about handling external webhooks in syncs: [step-by-step guide](/integrate/guides/receive-webhooks-from-an-api#handle-external-webhooks-in-syncs).
+    Lists the types of external webhooks the sync script will handle. Multiple syncs can listen to the same subscription. Learn more about handling external webhooks in syncs: [step-by-step guide](/guides/webhooks/webhooks-from-apis#handle-external-webhooks-in-syncs).
 </ResponseField>
 
 ### Action fields
@@ -171,14 +197,21 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Each action has a corresponding generated endpoint to trigger it, configured in the `endpoint` field below.
 </ResponseField>
 
-<ResponseField name="endpoint" type="string" required>
+<ResponseField name="endpoint" type="string|object" required>
     Defines the endpoint to use to trigger the action.
 
-    The value is formatted as follows: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
+    ```yaml
+    endpoint:
+      method: POST
+      path: /tasks
+    ```
 
     Possible method values are: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
 
     The method/endpoint combination can be shared across actions to unify the communication with external APIs.
+    The `group` is an optional value to group endpoints across scripts.
+
+    Legacy format: `<METHOD> <URL-PATH>`.  e.g.: `POST /tasks`.
 </ResponseField>
 
 <ResponseField name="input" type="string">
@@ -195,9 +228,45 @@ Action configuration fields are under `integrations.<INTEGRATION-ID>.actions.<AC
     Defaults to no scope.
 </ResponseField>
 
-# Model types
+### On-events fields
 
-The `models` section contains the schemas referenced in the inputs & outputs of the above `integrations` section.
+`on-events` configuration fields are under `integrations.<INTEGRATION-ID>.on-events.<EVENT-NAME>`.
+
+<Tip>
+    Nango currently supports the following events:
+    - post-connection-creation
+    - pre-connection-deletion
+
+    Read the [Execute scripts based on events](/guides/custom-integrations/event-based-scripts) guide.
+</Tip>
+
+<ResponseField name="post-connection-creation" type="string[]">
+    Lists the scripts to execute after a new connection is created.
+
+    Example:
+    ```yaml
+    integrations:
+      airtable:
+        on-events:
+          post-connection-creation:
+            - setup # Name of your event-based script (without the .ts extension)
+            - initialize-webhooks
+    ```
+</ResponseField>
+
+<ResponseField name="pre-connection-deletion" type="string[]">
+    Lists the scripts to execute before a connection is deleted.
+
+    Example:
+    ```yaml
+    integrations:
+      airtable:
+        on-events:
+          pre-connection-deletion:
+            - cleanup # Name of your event-based script (without the .ts extension)
+            - remove-webhooks
+    ```
+</ResponseField>
 
 ### Basic types
 
@@ -378,9 +447,9 @@ This change will be reflected in the Nango UI in _Integrations_ > _select your i
 
 ### Changing a model or script
 
-For [full refresh syncs](/understand/concepts/syncs#full-refresh-syncs), as the data is replaced on each sync execution, the new model and script logic will apply to all records as soon as the sync executes following the deployment.
+For [full refresh syncs](/guides/syncs/overview#full-refresh-syncs), as the data is replaced on each sync execution, the new model and script logic will apply to all records as soon as the sync executes following the deployment.
 
-For [incremental syncs](/understand/concepts/syncs#incremental-syncs), you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model.
+For [incremental syncs](/guides/syncs/overview#incremental-syncs), you can end up with model disparities, as older records will have outdated content. You will still be able to fetch them from the Nango cache. In some cases, it's better to trigger a full resync via the [API](/reference/api/sync/trigger) or the Nango UI, so that all historical records are fetched again using the new script & model.
 
 <Warning>
 Changing a model name in your configuration is the equivalent of deleting the model with the old name, and creating a new one.

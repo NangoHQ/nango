@@ -11,7 +11,7 @@ Trigger authorization flows in your frontend with this SDK. It is available on [
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKEN>' });
 ```
 
 **Parameters**
@@ -19,7 +19,7 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="options" defaultOpen>
-      <ResponseField name="publicKey" type="string" required>
+      <ResponseField name="publicKey" type="string" deprecated>
     Get your public key in the environment settings of the Nango UI. This is key is not sensitive.
       </ResponseField>
 
@@ -62,16 +62,20 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
     The unique token to identify your user. It is required but can be set asynchronously.
   </ResponseField>
 
-  <ResponseField name="baseURL" type="string">
-    The base URL to load the UI, default: `https://connect.nango.dev`
+  <ResponseField name="baseURL" type="string" default="https://connect.nango.dev">
+    The base URL to load the UI
   </ResponseField>
 
-  <ResponseField name="apiURL" type="string">
-    The base URL to reach Nango API, default: `https://api.nango.dev`
+  <ResponseField name="apiURL" type="string" default="https://api.nango.dev">
+    The base URL to reach Nango API
   </ResponseField>
 
   <ResponseField name="onEvent" type="function">
     A callback to listen to events sent by Nango Connect
+  </ResponseField>
+
+  <ResponseField name="detectClosedAuthWindow" type="boolean" default="false">
+    Control OAuth popup close detection. If set to true, a closed popup will be detected as a failed authorization.
   </ResponseField>
 </Expandable>
 
@@ -85,7 +89,7 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
 
 # Connect using the headless client
 
-You store end-user credentials with the `nango.auth` method. It creates a [connection](/understand/concepts/connections) in Nango.
+You store end-user credentials with the `nango.auth` method. It creates a connection in Nango.
 
 <Tabs>
 
@@ -143,11 +147,11 @@ const result = nango.auth('<INTEGRATION-ID>', {
   <ResponseField name="options" type="object">
     <Expandable title="options" defaultOpen>
       <ResponseField name="params" type="object">
-        Specify additional [connection configuration](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization) necessary to perform the authorization request.
+        Specify additional [connection configuration](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization) necessary to perform the authorization request.
       </ResponseField>
 
-      <ResponseField name="hmac" type="string">
-        HMAC key to secure the authorization flow (cf. (instructions)[TODO]).
+      <ResponseField name="hmac" type="string" deprecated>
+        HMAC key to secure the authorization flow
       </ResponseField>
 
       <ResponseField name="detectClosedAuthWindow" type="boolean">
@@ -215,11 +219,6 @@ const result = nango.auth('<INTEGRATION-ID>', {
     </Expandable>
   </ResponseField>
 </Expandable>
-
-By default we are auto generating the `connectionId` which is the unique identifier of this connection but ou can also specify it like this:
-```js
-const result = await nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>');
-```
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

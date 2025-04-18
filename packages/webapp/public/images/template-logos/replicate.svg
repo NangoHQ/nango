@@ -1,7 +1,1 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000" class="logo" fill="currentColor" xml:space="preserve">
-  <g>
-    <polygon points="1000,427.6 1000,540.6 603.4,540.6 603.4,1000 477,1000 477,427.6"></polygon>
-    <polygon points="1000,213.8 1000,327 364.8,327 364.8,1000 238.4,1000 238.4,213.8"></polygon>
-    <polygon points="1000,0 1000,113.2 126.4,113.2 126.4,1000 0,1000 0,0"></polygon>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 62 62" class="logo" fill="currentColor" xml:space="preserve" width="62" height="62"><rect width="62" height="62" fill="#fff"/><path d="M62 26.511v7.006H37.411V62H29.574V26.511z"/><path d="M62 13.256V20.274H22.618v41.726H14.781V13.256z"/><path d="M62 0v7.018H7.837V62H0V0z"/></svg>

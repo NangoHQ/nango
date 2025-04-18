@@ -1,17 +1,37 @@
 import fs from 'fs';
+import path from 'path';
+
+import chalk from 'chalk';
 import { glob } from 'glob';
 import * as tsNode from 'ts-node';
-import chalk from 'chalk';
-import path from 'path';
 import { build } from 'tsup';
+
+import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
 import { getNangoRootPath, printDebug, slash } from '../utils.js';
 import { loadYamlAndGenerate } from './model.service.js';
 import parserService from './parser.service.js';
-import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
-import { getProviderConfigurationFromPath } from '@nangohq/nango-yaml';
 
-const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap'];
+import type { NangoYamlParsed, ScriptFileType, ScriptTypeLiteral } from '@nangohq/types';
+
+const ALLOWED_IMPORTS = ['url', 'crypto', 'zod', 'node:url', 'node:crypto', 'botbuilder', 'soap', 'unzipper'];
+
+function getCachedParser({ fullPath, debug }: { fullPath: string; debug: boolean }): () => NangoYamlParsed | null {
+    let lastYamlModifiedTime = 0;
+    let cachedParsed: NangoYamlParsed | null = null;
+    const yamlPath = path.join(fullPath, 'nango.yaml');
+
+    return () => {
+        const stats = fs.statSync(yamlPath);
+
+        if (stats.mtimeMs > lastYamlModifiedTime || !cachedParsed) {
+            cachedParsed = loadYamlAndGenerate({ fullPath, debug });
+            lastYamlModifiedTime = stats.mtimeMs;
+        }
+
+        return cachedParsed;
+    };
+}
 
 export async function compileAllFiles({
     debug,
@@ -36,12 +56,12 @@ export async function compileAllFiles({
         fs.mkdirSync(distDir);
     }
 
-    const res = loadYamlAndGenerate({ fullPath, debug });
-    if (!res.success) {
+    const cachedParser = getCachedParser({ fullPath, debug });
+    const parsed = cachedParser();
+    if (!parsed) {
         return false;
     }
 
-    const parsed = res.response!;
     const compilerOptions = (JSON.parse(tsconfig) as { compilerOptions: Record<string, any> }).compilerOptions;
     const compiler = tsNode.create({
         skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -58,31 +78,41 @@ export async function compileAllFiles({
         console.log(chalk.green(`Compiling ${scriptName}.ts in ${fullPath}${scriptDirectory}`));
     }
 
-    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug });
-    let success = true;
+    const integrationFiles = listFilesToCompile({ scriptName, fullPath, scriptDirectory, parsed, debug, providerConfigKey });
+    let allSuccess = true;
+    const compilationErrors: string[] = [];
 
     for (const file of integrationFiles) {
         try {
-            const completed = await compile({ fullPath, file, parsed, compiler, debug });
+            const completed = await compile({ fullPath, file, compiler, debug, cachedParser });
             if (completed === false) {
-                if (scriptName && file.inputPath.includes(scriptName)) {
-                    success = false;
-                }
+                allSuccess = false;
+                compilationErrors.push(`Failed to compile ${file.inputPath}`);
+                continue;
             }
-        } catch (error) {
+        } catch (err) {
             console.log(chalk.red(`Error compiling "${file.inputPath}":`));
-            console.error(error);
-            success = false;
+            console.error(err);
+            allSuccess = false;
+            compilationErrors.push(`Error compiling ${file.inputPath}: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
 
-    return success;
+    if (debug && compilationErrors.length > 0) {
+        printDebug('Compilation errors summary:');
+        compilationErrors.forEach((error) => printDebug(`- ${error}`));
+    }
+
+    if (allSuccess) {
+        console.log(chalk.green('Successfully compiled all files present in the Nango YAML config file.'));
+    }
+
+    return allSuccess;
 }
 
 export async function compileSingleFile({
     fullPath,
     file,
-    parsed,
     tsconfig,
     debug = false
 }: {
@@ -94,6 +124,8 @@ export async function compileSingleFile({
 }) {
     const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
 
+    const cachedParser = getCachedParser({ fullPath, debug });
+
     try {
         const compiler = tsNode.create({
             skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
@@ -103,15 +135,15 @@ export async function compileSingleFile({
         const result = await compile({
             fullPath,
             file,
-            parsed,
             compiler,
+            cachedParser,
             debug
         });
 
         return result === true;
-    } catch (error) {
+    } catch (err) {
         console.error(`Error compiling ${file.inputPath}:`);
-        console.error(error);
+        console.error(err);
         return false;
     }
 }
@@ -183,23 +215,40 @@ function compileImportedFile({
 async function compile({
     fullPath,
     file,
-    parsed,
     compiler,
+    cachedParser,
     debug = false
 }: {
     fullPath: string;
+    cachedParser: () => NangoYamlParsed | null;
     file: ListedFile;
-    parsed: NangoYamlParsed;
     compiler: tsNode.Service;
     debug: boolean;
 }): Promise<boolean | null> {
+    const parsed = cachedParser();
+    if (!parsed) {
+        return false;
+    }
+
     const providerConfiguration = getProviderConfigurationFromPath({ filePath: file.inputPath, parsed });
     if (!providerConfiguration) {
         return null;
     }
 
-    const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === file.baseName);
-    const type = syncConfig?.type || 'sync';
+    const onEventScripts: { name: string; type: ScriptTypeLiteral; event: string }[] = Object.entries(providerConfiguration.onEventScripts).flatMap(
+        ([event, scripts]) => scripts.map((name) => ({ name, type: 'on-event' as const, event }))
+    );
+
+    const config = [...providerConfiguration.syncs, ...providerConfiguration.actions, ...onEventScripts].find((script) => script.name === file.baseName);
+
+    const absoluteFullPath = path.resolve(fullPath, file.inputPath);
+
+    if (!config) {
+        console.log(chalk.red(`Skipping compilation: No configuration found for ${absoluteFullPath}`));
+        return null;
+    }
+
+    const type = config.type;
 
     const success = compileImportedFile({ fullPath, filePath: file.inputPath, compiler, type, parsed });
     if (!success) {
@@ -265,12 +314,12 @@ export function resolveTsFileLocation({
     providerConfigKey: string;
     type: ScriptFileType;
 }): string {
-    const nestedPath = path.resolve(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const nestedPath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
     if (fs.existsSync(nestedPath)) {
-        return fs.realpathSync(path.resolve(nestedPath, '../'));
+        return path.join(nestedPath, '../');
     }
 
-    return fs.realpathSync(path.join(fullPath, './'));
+    return path.join(fullPath, './');
 }
 
 export function listFilesToCompile({
@@ -278,52 +327,68 @@ export function listFilesToCompile({
     scriptDirectory,
     scriptName,
     parsed,
-    debug
+    debug,
+    providerConfigKey
 }: {
     fullPath: string;
     scriptDirectory?: string | undefined;
     scriptName?: string | undefined;
     parsed: NangoYamlParsed;
     debug?: boolean;
+    providerConfigKey?: string | undefined;
 }): ListedFile[] {
     let files: string[] = [];
+
+    // Compiling a specific script
     if (scriptName) {
         if (debug) {
-            printDebug(`Compiling ${scriptName}.ts`);
+            printDebug(`Compiling script: ${scriptName}.ts`);
         }
-
         files = [path.join(fullPath, scriptDirectory || '', `${scriptName}.ts`)];
-    } else {
-        files = globFiles(fullPath, '*.ts');
-
-        // models.ts is the one expected file
-        if (files.length === 1 && debug) {
-            printDebug(`No files found in the root: ${fullPath}`);
+    }
+    // Filtering by providerConfigKey or compiling all files
+    else {
+        // Always include models.ts
+        const modelsPath = path.join(fullPath, 'models.ts');
+        if (fs.existsSync(modelsPath)) {
+            files = [modelsPath];
+        } else {
+            files = [];
         }
 
-        parsed.integrations.forEach((integration) => {
-            const syncPath = `${integration.providerConfigKey}/syncs`;
-            const actionPath = `${integration.providerConfigKey}/actions`;
-            const postConnectionPath = `${integration.providerConfigKey}/post-connection-scripts`;
+        // If not filtering by provider, include all root TypeScript files
+        if (!providerConfigKey) {
+            const rootFiles = globFiles(fullPath, '*.ts').filter((file) => path.basename(file) !== 'models.ts');
+            files.push(...rootFiles);
 
-            const syncFiles = globFiles(fullPath, syncPath, '*.ts');
-            const actionFiles = globFiles(fullPath, actionPath, '*.ts');
-            const postFiles = globFiles(fullPath, postConnectionPath, '*.ts');
-
-            files = [...files, ...syncFiles, ...actionFiles, ...postFiles];
-
-            if (debug) {
-                if (syncFiles.length > 0) {
-                    printDebug(`Found nested sync files in ${syncPath}`);
-                }
-                if (actionFiles.length > 0) {
-                    printDebug(`Found nested action files in ${actionPath}`);
-                }
-                if (postFiles.length > 0) {
-                    printDebug(`Found nested post connection script files in ${postConnectionPath}`);
-                }
+            if (debug && rootFiles.length > 0) {
+                printDebug(`Found ${rootFiles.length} TypeScript files in the root directory`);
             }
-        });
+        }
+        const filteredIntegrations = providerConfigKey
+            ? parsed.integrations.filter((integration) => integration.providerConfigKey === providerConfigKey)
+            : parsed.integrations;
+
+        if (providerConfigKey && debug) {
+            if (filteredIntegrations.length > 0) {
+                printDebug(`Compiling file(s) for integration: ${providerConfigKey}`);
+            } else {
+                printDebug(`Warning: No '${providerConfigKey}' integration found`);
+            }
+        }
+
+        for (const integration of filteredIntegrations) {
+            // Look for files in each script type directory
+            const scriptTypes: ScriptFileType[] = ['syncs', 'actions', 'on-events', 'post-connection-scripts'];
+            for (const scriptType of scriptTypes) {
+                const scriptPath = `${integration.providerConfigKey}/${scriptType}`;
+                const scriptFiles = globFiles(fullPath, scriptPath, '*.ts');
+                if (scriptFiles.length > 0 && debug) {
+                    printDebug(`Found ${scriptFiles.length} files in ${scriptPath}`);
+                }
+                files.push(...scriptFiles);
+            }
+        }
     }
 
     return files.map((filePath) => {

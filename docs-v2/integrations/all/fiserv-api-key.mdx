@@ -1,0 +1,48 @@
+---
+title: Fiserv API Key
+sidebarTitle: Fiserv API Key
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/fiserv-api-key/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/fiserv-api-key/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/fiserv-api-key.mdx)</Note>
+
+
+## Useful links
+
+-   [How to generate OAuth Client Credentials](https://developer.fiserv.com/product/BankingHub/docs/?path=docs/getting-started/before-you-start.md#creating-a-banking-hub-workspace)
+-   [OAuth related docs](https://developer.fiserv.com/product/BankingHub/docs/?path=docs/getting-started/before-you-start.md#generating-access-token)
+-   [Fiserv OAuth docs](https://developer.fiserv.com)
+-   [How to generate a Fiserv APIKey](https://docs.fiserv.dev/public/docs/general-getting-started#steps-to-api-success)
+-   [Fiserv APIKey docs](https://docs.fiserv.dev/public/reference)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/fiserv-api-key.mdx)</Note>
+
+## API gotchas
+
+-   Fiserv, supports different authentication methods for different products.
+-   When creating a new Fiserv connection in Nango, please provide your `API key` as your client Id and `API secret` as your client secret.
+-   To obtain the Fiserv `hostUrl`, navigate to the API key section of your workspace. If your `hostUrl` from Fiserv is `https://card-sandbox.api.fiservapps.com`, add your `hostUrl` in Nango as `card-sandbox.api.fiservapps.com`. For more details check [request URL](https://developer.fiserv.com/product/BankingHub/docs/?path=docs/get-started.md&branch=main#request-url)
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/fiserv-api-key.mdx)</Note>

@@ -1,0 +1,121 @@
+---
+title: 'Authorize in your app (custom UI)'
+sidebarTitle: 'Customize the authorization UI'
+description: 'Guide to letting your users authorize an external API from your application, with your own UI.'
+---
+
+<Info>
+Pre-requisites:
+- complete the [Configure an integration](/guides/api-authorization/configuration) guide
+- generate a [Connect session token](/guides/api-authorization/authorize-in-your-app-default-ui#1-generate-a-session-token-backend)
+</Info>
+
+## Integrate the frontend SDK
+
+In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantiate-the-frontend-sdk)):
+
+```ts
+import Nango from '@nangohq/frontend';
+
+const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
+```
+
+Initiate the authorization flow ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
+
+<Tabs>
+
+<Tab title="OAuth">
+
+For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
+
+```js
+nango
+    .auth('<INTEGRATION-ID>')
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+
+</Tab>
+
+<Tab title="API Key">
+
+For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', {
+        credentials: {
+            apiKey: '<END-USER-API-KEY>'
+        }
+    })
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+
+</Tab>
+
+<Tab title="Basic Auth">
+
+For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', {
+        credentials: {
+            username: '<END-USER-API-KEY>',
+            password: '<END-USER-PASSWORD>'
+        }
+    })
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+</Tab>
+
+</Tabs>
+
+## Handle APIs requiring connection-specific configuration for authorization
+
+Some APIs require connection-specific configuration (e.g. Zendesk, Shopify).
+
+For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
+
+`https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
+
+When using the [Connect UI](/guides/api-authorization/authorize-in-your-app-default-ui#option-1-use-the-nango-connect-ui), this information is collected from the end user with an automatically-generated form.
+
+But when using a custom UI, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#collect-and-store-end-user-credentials)):
+
+```js
+nango.auth('zendesk', {
+    params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
+});
+```
+
+In some cases you might want to override the scopes provided by an integration at the connection level. For this case you can pass in the scopes to `nango.auth`:
+
+```js
+nango.auth('zendesk', {
+    params: { oauth_scopes_override: 'custom-connection-scope' }
+});
+```
+
+This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connection/get)), or see it in connection details in the Nango UI.
+
+# Next
+Once the authorization succeeds, [_save the connection ID_](/guides/api-authorization/authorize-in-your-app-default-ui#3-save-the-connection-id-backend).
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

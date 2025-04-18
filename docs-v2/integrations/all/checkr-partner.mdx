@@ -3,28 +3,41 @@ title: Checkr Partner
 sidebarTitle: Checkr Partner
 ---
 
-API configurations: [`checkr-partner`](https://nango.dev/providers.yaml), [`checkr-partner-staging`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/checkr-partner/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/checkr-partner/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | ✅  |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register a partner Application](https://docs.checkr.com/partners/#section/Getting-Started/Create-a-Partner-Application-for-your-Checkr-account)
 -   [OAuth related docs](https://docs.checkr.com/partners/#section/Getting-Started/Connect-your-customers-to-Checkr)
 -   [Checkr API docs](https://docs.checkr.com/)
 -   [Checkr rate limiting](https://docs.checkr.com/#section/Reference/Rate-limiting)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner.mdx)</Note>
 
 ## API gotchas
 
@@ -51,6 +64,6 @@ API configurations: [`checkr-partner`](https://nango.dev/providers.yaml), [`chec
 
         const response = await nango.get(config);
 ```
-- You can have a look at the following simple [sync template](/integrations/integration-templates/checkr-partner) based on [Checkr retrieve authenticated account details](https://docs.checkr.com/#tag/Account)
+- You can have a look at the [pre-built integrations](#pre-built-integrations) based on [Checkr retrieve authenticated account details](https://docs.checkr.com/#tag/Account)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/checkr-partner.mdx)</Note>

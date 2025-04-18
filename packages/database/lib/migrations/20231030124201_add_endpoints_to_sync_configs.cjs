@@ -1,6 +1,6 @@
 const tableName = '_nango_sync_endpoints';
 
-exports.up = function (knex, _) {
+exports.up = function (knex) {
     return knex.schema.createTable(tableName, function (table) {
         table.increments('id').primary();
         table.string('method').notNullable().index();
@@ -11,6 +11,6 @@ exports.up = function (knex, _) {
     });
 };
 
-exports.down = function (knex, _) {
+exports.down = function (knex) {
     return knex.schema.dropTable(tableName);
 };

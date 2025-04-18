@@ -1,0 +1,85 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Applications">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /applications` | Fetches a list of all applications for a candidate in Lever | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities-applications.md) |
+</Accordion>
+
+
+<Accordion title="Archived">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /archived/reasons` | Get all archived reasons | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/get-archive-reasons.md) |
+</Accordion>
+
+
+<Accordion title="Notes">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /notes` | Action to create a note and add it to an opportunity. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/create-note.md) |
+| `GET /notes` | Fetches a list of all notes for every single opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities-notes.md) |
+</Accordion>
+
+
+<Accordion title="Offers">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /offers` | Fetches a list of all offers for every single opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities-offers.md) |
+</Accordion>
+
+
+<Accordion title="Opportunities">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /opportunities` | Create an opportunity and optionally candidates associated with the opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/create-opportunity.md) |
+| `POST /opportunities/links` | Update the links in an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity-links.md) |
+| `POST /opportunities/sources` | Update the sources in an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity-sources.md) |
+| `POST /opportunities/stages` | Update the stage in an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity-stage.md) |
+| `POST /opportunities/tags` | Update the tags in an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity-tags.md) |
+| `PUT /opportunities/archived` | Update the archived state of an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity-archived.md) |
+| `PATCH /opportunities` | Update an opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/update-opportunity.md) |
+| `GET /opportunities` | Fetches all opportunities | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities.md) |
+| `GET /opportunities/feedback` | Fetches a list of all feedback forms for a candidate for every single opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities-feedbacks.md) |
+| `GET /opportunities/interviews` | Fetches a list of all interviews for every single opportunity | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/opportunities-interviews.md) |
+</Accordion>
+
+
+<Accordion title="Postings">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /postings` | Fetches a list of all postings in Lever | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/postings.md) |
+| `GET /postings/questions` | Fetches a list of all questions included in a posting’s application form in Lever | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/postings-questions.md) |
+</Accordion>
+
+
+<Accordion title="Posts">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /posts/limited` | Get all posts for your account. Note that this does<br />not paginate the response so it is possible that not all postings <br />are returned. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/get-postings.md) |
+| `GET /posts/single` | Get single post for your account in Lever | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/get-posting.md) |
+| `POST /posts/apply` | Submit an application on behalf of a candidate. This endpoint can only be used to submit applications to published or unlisted postings. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/apply-posting.md) |
+</Accordion>
+
+
+<Accordion title="Stages">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /stages/limited` | Action to get lists all pipeline stages. Note that this does <br />not paginate the response so it is possible that not all stages <br />are returned. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/get-stages.md) |
+| `GET /stages` | Fetches a list of all pipeline stages in Lever | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/syncs/stages.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /users` | Lists all the users in your Lever account. Only active users are included by default. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/lever/actions/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

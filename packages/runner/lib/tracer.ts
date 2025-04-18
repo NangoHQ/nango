@@ -1,7 +1,8 @@
 import tracer from 'dd-trace';
 
 tracer.init({
-    service: 'nango-runner'
+    service: 'nango-runner',
+    samplingRules: [{ service: 'runner-net', sampleRate: 0.1, name: '*' }]
 });
 tracer
     .use('pg', {

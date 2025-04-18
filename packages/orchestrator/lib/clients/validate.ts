@@ -1,9 +1,9 @@
 import { taskStates } from '@nangohq/scheduler';
 import type { Schedule, Task } from '@nangohq/scheduler';
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
-import { TaskAction, TaskWebhook, TaskPostConnection, TaskSync, TaskSyncAbort } from './types.js';
+import { TaskAction, TaskWebhook, TaskOnEvent, TaskSync, TaskSyncAbort, TaskAbort } from './types.js';
 import { z } from 'zod';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { jsonSchema } from '../utils/validation.js';
 
@@ -16,26 +16,33 @@ export const commonSchemaArgsFields = {
     })
 };
 
-export const syncArgsSchema = z.object({
-    type: z.literal('sync'),
-    syncId: z.string().min(1),
-    syncName: z.string().min(1),
-    debug: z.boolean(),
-    ...commonSchemaArgsFields
-});
-
-export const syncAbortArgsSchema = z.object({
+export const abortArgsSchema = z.object({
     type: z.literal('abort'),
     abortedTask: z.object({
         id: z.string().uuid(),
         state: z.enum(taskStates)
     }),
     reason: z.string().min(1),
+    ...commonSchemaArgsFields
+});
+
+export const syncArgsSchema = z.object({
+    type: z.literal('sync'),
     syncId: z.string().min(1),
     syncName: z.string().min(1),
+    syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
     debug: z.boolean(),
     ...commonSchemaArgsFields
 });
+
+export const syncAbortArgsSchema = z
+    .object({
+        syncId: z.string().min(1),
+        syncName: z.string().min(1),
+        syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
+        debug: z.boolean()
+    })
+    .merge(abortArgsSchema);
 
 export const actionArgsSchema = z.object({
     type: z.literal('action'),
@@ -52,9 +59,9 @@ export const webhookArgsSchema = z.object({
     input: jsonSchema,
     ...commonSchemaArgsFields
 });
-export const postConnectionArgsSchema = z.object({
-    type: z.literal('post-connection-script'),
-    postConnectionName: z.string().min(1),
+export const onEventArgsSchema = z.object({
+    type: z.literal('on-event'),
+    onEventName: z.string().min(1),
     version: z.string().min(1),
     fileLocation: z.string().min(1),
     activityLogId: z.string(),
@@ -68,6 +75,10 @@ const commonSchemaFields = {
     state: z.enum(taskStates),
     retryCount: z.number().int()
 };
+const abortSchema = z.object({
+    ...commonSchemaFields,
+    payload: abortArgsSchema
+});
 const syncSchema = z.object({
     ...commonSchemaFields,
     payload: syncArgsSchema
@@ -84,9 +95,9 @@ const webhookSchema = z.object({
     ...commonSchemaFields,
     payload: webhookArgsSchema
 });
-const postConnectionSchema = z.object({
+const onEventSchema = z.object({
     ...commonSchemaFields,
-    payload: postConnectionArgsSchema
+    payload: onEventArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -100,6 +111,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: sync.data.retryCount + 1,
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
+                syncVariant: sync.data.payload.syncVariant,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
                 debug: sync.data.payload.debug
@@ -117,6 +129,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: syncAbort.data.retryCount + 1,
                 syncId: syncAbort.data.payload.syncId,
                 syncName: syncAbort.data.payload.syncName,
+                syncVariant: syncAbort.data.payload.syncVariant,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
                 reason: syncAbort.data.payload.reason,
@@ -157,26 +170,39 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
             })
         );
     }
-    const postConnection = postConnectionSchema.safeParse(task);
-    if (postConnection.success) {
+    const onEvent = onEventSchema.safeParse(task);
+    if (onEvent.success) {
         return Ok(
-            TaskPostConnection({
-                id: postConnection.data.id,
-                state: postConnection.data.state,
-                name: postConnection.data.name,
-                attempt: postConnection.data.retryCount + 1,
-                postConnectionName: postConnection.data.payload.postConnectionName,
-                version: postConnection.data.payload.version,
-                connection: postConnection.data.payload.connection,
-                groupKey: postConnection.data.groupKey,
-                fileLocation: postConnection.data.payload.fileLocation,
-                activityLogId: postConnection.data.payload.activityLogId
+            TaskOnEvent({
+                id: onEvent.data.id,
+                state: onEvent.data.state,
+                name: onEvent.data.name,
+                attempt: onEvent.data.retryCount + 1,
+                onEventName: onEvent.data.payload.onEventName,
+                version: onEvent.data.payload.version,
+                connection: onEvent.data.payload.connection,
+                groupKey: onEvent.data.groupKey,
+                fileLocation: onEvent.data.payload.fileLocation,
+                activityLogId: onEvent.data.payload.activityLogId
             })
         );
     }
-    return Err(
-        `Cannot validate task ${JSON.stringify(task)}: ${stringifyError(sync.error || action.error || webhook.error || postConnection.error || syncAbort.error)}`
-    );
+    const abort = abortSchema.safeParse(task);
+    if (abort.success) {
+        return Ok(
+            TaskAbort({
+                id: abort.data.id,
+                abortedTask: abort.data.payload.abortedTask,
+                state: abort.data.state,
+                name: abort.data.name,
+                attempt: abort.data.retryCount + 1,
+                connection: abort.data.payload.connection,
+                groupKey: abort.data.groupKey,
+                reason: abort.data.payload.reason
+            })
+        );
+    }
+    return Err(`Cannot validate task ${JSON.stringify(task)}`);
 }
 
 export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedule> {
@@ -221,5 +247,5 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
         };
         return Ok(schedule);
     }
-    return Err(`Cannot validate task ${JSON.stringify(schedule)}: ${validation.error}`);
+    return Err(new Error('Cannot validate schedule', { cause: { err: validation.error, context: schedule } }));
 }

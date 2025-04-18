@@ -24,8 +24,8 @@ class FlowController {
             const addedFlows = await flowService.getAddedPublicFlows(res.locals['environment'].id);
 
             res.send({ addedFlows, availableFlows });
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -58,11 +58,16 @@ class FlowController {
                 return;
             }
 
-            await syncManager.triggerIfConnectionsExist(preBuiltResponse.result, environment.id, logContextGetter, orchestrator);
+            await syncManager.triggerIfConnectionsExist({
+                flows: preBuiltResponse.result,
+                environmentId: environment.id,
+                logContextGetter,
+                orchestrator
+            });
 
             res.sendStatus(200);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -101,20 +106,8 @@ class FlowController {
                 await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location, providerConfigKey, flowType);
                 return;
             }
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getFlowConfig(_: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            const environmentId = res.locals['environment'].id;
-
-            const nangoConfigs = await getSyncConfigsAsStandardConfig(environmentId);
-
-            res.send(nangoConfigs);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -135,12 +128,12 @@ class FlowController {
             }
 
             const flow = flowService.getSingleFlowAsStandardConfig(flowName);
-            const provider = await configService.getProviderName(providerConfigKey);
+            const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
             const flowConfig = await getSyncConfigsAsStandardConfig(environment.id, providerConfigKey, flowName);
 
-            res.send({ flowConfig, unEnabledFlow: flow, provider });
-        } catch (e) {
-            next(e);
+            res.send({ flowConfig, unEnabledFlow: flow, provider: integration?.provider });
+        } catch (err) {
+            next(err);
         }
     }
 }

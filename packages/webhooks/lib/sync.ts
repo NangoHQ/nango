@@ -1,18 +1,21 @@
 import type {
-    Connection,
     SyncResult,
     ErrorPayload,
-    SyncType,
-    ExternalWebhook,
+    SyncOperationType,
+    DBExternalWebhook,
     NangoSyncWebhookBody,
     NangoSyncWebhookBodyBase,
-    DBEnvironment
+    DBEnvironment,
+    DBTeam,
+    DBSyncConfig,
+    IntegrationConfig,
+    ConnectionJobs
 } from '@nangohq/types';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import type { LogContext } from '@nangohq/logs';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { deliver, shouldSend } from './utils.js';
-import { Ok } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 
 dayjs.extend(utc);
@@ -20,27 +23,31 @@ dayjs.extend(utc);
 export const sendSync = async ({
     connection,
     environment,
+    account,
+    providerConfig,
     webhookSettings,
-    syncName,
+    syncConfig,
+    syncVariant,
     model,
     now,
     responseResults,
     success,
     operation,
-    error,
-    logCtx
+    error
 }: {
-    connection: Connection | Pick<Connection, 'connection_id' | 'provider_config_key'>;
-    environment: DBEnvironment;
-    webhookSettings: ExternalWebhook | null;
-    syncName: string;
+    connection: ConnectionJobs;
+    environment: Pick<DBEnvironment, 'id' | 'name' | 'secret_key'>;
+    account: Pick<DBTeam, 'id' | 'name'>;
+    providerConfig: IntegrationConfig;
+    webhookSettings: DBExternalWebhook | null;
+    syncConfig: Pick<DBSyncConfig, 'id' | 'sync_name' | 'version'>;
+    syncVariant: string;
     model: string;
     now: Date | undefined;
-    operation: SyncType;
+    operation: SyncOperationType;
     error?: ErrorPayload;
     responseResults?: SyncResult;
     success: boolean;
-    logCtx?: LogContext | undefined;
 } & ({ success: true; responseResults: SyncResult } | { success: false; error: ErrorPayload })): Promise<Result<void>> => {
     if (!webhookSettings) {
         return Ok(undefined);
@@ -50,12 +57,26 @@ export const sendSync = async ({
         return Ok(undefined);
     }
 
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'webhook', action: 'sync' } },
+        {
+            account,
+            environment,
+            integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+            connection: { id: connection.id, name: connection.connection_id },
+            syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+            meta: { scriptVersion: syncConfig.version, syncVariant, model }
+        }
+    );
+    logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
     const bodyBase: NangoSyncWebhookBodyBase = {
         from: 'nango',
         type: 'sync',
         connectionId: connection.connection_id,
         providerConfigKey: connection.provider_config_key,
-        syncName,
+        syncName: syncConfig.sync_name,
+        syncVariant,
         model,
         // For backward compatibility reason we are sending the syncType as INITIAL instead of FULL
         syncType: operation === 'FULL' ? 'INITIAL' : operation
@@ -69,7 +90,8 @@ export const sendSync = async ({
             responseResults?.added === 0 && responseResults?.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
 
         if (!webhookSettings.on_sync_completion_always && noChanges) {
-            await logCtx?.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
+            void logCtx.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
+            await logCtx.success();
 
             return Ok(undefined);
         }
@@ -101,11 +123,11 @@ export const sendSync = async ({
     }
 
     const webhooks = [
-        { url: webhookSettings.primary_url, type: 'webhook url' },
-        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
+        { url: webhookSettings.primary_url, type: 'primary' },
+        { url: webhookSettings.secondary_url, type: 'secondary' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
-    return deliver({
+    const result = await deliver({
         webhooks,
         body: finalBody,
         webhookType: 'sync',
@@ -113,4 +135,14 @@ export const sendSync = async ({
         environment,
         logCtx
     });
+
+    if (result.isErr()) {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_FAILED, 1, { type: 'sync', operation });
+        await logCtx.failed();
+    } else {
+        metrics.increment(metrics.Types.WEBHOOK_OUTGOING_SUCCESS, 1, { type: 'sync', operation });
+        await logCtx.success();
+    }
+
+    return result;
 };

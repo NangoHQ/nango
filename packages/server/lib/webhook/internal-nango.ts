@@ -1,14 +1,15 @@
 import get from 'lodash-es/get.js';
-import { environmentService, connectionService, telemetry, getSyncConfigsByConfigIdForWebhook, LogActionEnum, LogTypes } from '@nangohq/shared';
-import type { Config as ProviderConfig, SyncConfig, Connection } from '@nangohq/shared';
+import { environmentService, connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
+import type { Config as ProviderConfig } from '@nangohq/shared';
 import type { LogContextGetter } from '@nangohq/logs';
 import { getOrchestrator } from '../utils/utils.js';
+import type { DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
 
 export interface InternalNango {
-    getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[]>;
+    getWebhooks: (environment_id: number, nango_config_id: number) => Promise<DBSyncConfig[]>;
     executeScriptForWebhooks(
         integration: ProviderConfig,
-        body: any,
+        body: Record<string, any>,
         webhookType: string,
         connectionIdentifier: string,
         logContextGetter: LogContextGetter,
@@ -29,23 +30,10 @@ export const internalNango: InternalNango = {
         propName
     ): Promise<{ connectionIds: string[] }> => {
         if (!get(body, connectionIdentifier)) {
-            await telemetry.log(
-                LogTypes.INCOMING_WEBHOOK_ISSUE_WRONG_CONNECTION_IDENTIFIER,
-                'Incoming webhook had the wrong connection identifier',
-                LogActionEnum.WEBHOOK,
-                {
-                    environmentId: String(integration.environment_id),
-                    provider: integration.provider,
-                    providerConfigKey: integration.unique_key,
-                    connectionIdentifier,
-                    payload: JSON.stringify(body),
-                    level: 'error'
-                }
-            );
             return { connectionIds: [] };
         }
 
-        let connections: Connection[] | null = null;
+        let connections: DBConnectionDecrypted[] | null = null;
         if (propName === 'connectionId') {
             const { success, response: connection } = await connectionService.getConnection(
                 get(body, connectionIdentifier),
@@ -73,21 +61,6 @@ export const internalNango: InternalNango = {
         }
 
         if (!connections || connections.length === 0) {
-            await telemetry.log(
-                LogTypes.INCOMING_WEBHOOK_ISSUE_CONNECTION_NOT_FOUND,
-                'Incoming webhook received but no connection found for it',
-                LogActionEnum.WEBHOOK,
-                {
-                    environmentId: String(integration.environment_id),
-                    provider: integration.provider,
-                    providerConfigKey: integration.unique_key,
-                    propName: String(propName),
-                    connectionIdentifier,
-                    payload: JSON.stringify(body),
-                    level: 'error'
-                }
-            );
-
             return { connectionIds: [] };
         }
 
@@ -98,14 +71,6 @@ export const internalNango: InternalNango = {
         }
 
         const { account, environment } = (await environmentService.getAccountAndEnvironment({ environmentId: integration.environment_id }))!;
-
-        await telemetry.log(LogTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
-            accountId: String(account.id),
-            environmentId: String(integration.environment_id),
-            provider: integration.provider,
-            providerConfigKey: integration.unique_key,
-            connectionIds: connections.map((connection) => connection.connection_id).join(',')
-        });
 
         const type = get(body, webhookType);
 

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs, { writeFileSync } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { exec } from 'child_process';
@@ -12,12 +12,12 @@ export const v1toV2Migration = (loadLocation: string): void => {
         return;
     }
 
-    const { response, success } = parse(loadLocation);
-    if (!success || !response?.parsed) {
+    const parsing = parse(loadLocation);
+    if (parsing.isErr()) {
         return;
     }
 
-    if (response.parsed.yamlVersion === 'v2') {
+    if (parsing.value.parsed!.yamlVersion === 'v2') {
         console.log(chalk.blue(`nango.yaml is already at v2.`));
         return;
     }
@@ -71,23 +71,23 @@ async function updateModelImport(filePath: string, debug = false): Promise<void>
         if (debug) {
             printDebug(`Updated imports in ${filePath}.`);
         }
-    } catch (error) {
-        console.error(chalk.red(`There was an issue updating the imports in ${filePath}.`), error);
+    } catch (err) {
+        console.error(chalk.red(`There was an issue updating the imports in ${filePath}.`), err);
     }
 }
 
 export const directoryMigration = async (loadLocation: string, debug?: boolean): Promise<void> => {
-    const { response, success } = parse(loadLocation);
-    if (!success || !response?.parsed) {
+    const parsing = parse(loadLocation);
+    if (parsing.isErr()) {
         return;
     }
 
-    if (response.parsed.yamlVersion !== 'v2') {
+    if (parsing.value.parsed!.yamlVersion !== 'v2') {
         console.log(chalk.red(`nango.yaml is not at v2. Nested directories are not supported in v1.`));
         return;
     }
 
-    for (const integration of response.parsed.integrations) {
+    for (const integration of parsing.value.parsed!.integrations) {
         const integrationPath = path.join(loadLocation, integration.providerConfigKey);
         await createDirectory(integrationPath, debug);
 
@@ -118,3 +118,24 @@ export const directoryMigration = async (loadLocation: string, debug?: boolean):
 
     console.log(chalk.green(`Migration to nested directories complete.`));
 };
+
+export function endpointMigration(loadLocation: string): void {
+    const parsing = parse(loadLocation);
+    if (parsing.isErr()) {
+        return;
+    }
+
+    if (parsing.value.parsed!.yamlVersion !== 'v2') {
+        console.log(chalk.red(`nango.yaml is not at v2. New endpoint format is only supported in V2`));
+        return;
+    }
+
+    let dump = parsing.value.yaml.replace(
+        /^(\s+)endpoint: ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim,
+        `$1endpoint:\r\n$1  method: $3\r\n$1  path: $4`
+    );
+    dump = dump.replace(/^(\s+)- ((GET|POST|PUT|PATCH|DELETE)\s)?(\/[a-zA-Z0-9-:{}./_]+)$/gim, `$1- method: $3\r\n$1  path: $4`);
+
+    writeFileSync(`${loadLocation}/nango.yaml`, dump);
+    console.log(chalk.green(`Migration complete.`));
+}

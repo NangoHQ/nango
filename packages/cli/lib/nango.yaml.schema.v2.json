@@ -18,6 +18,32 @@
                             "_": "post-connection-scripts must be an array of strings."
                         }
                     },
+                    "on-events": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "post-connection-creation": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-zA-Z0-9_-]+$"
+                                },
+                                "errorMessage": {
+                                    "_": "post-connection-creation must be an array of strings."
+                                }
+                            },
+                            "pre-connection-deletion": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-zA-Z0-9_-]+$"
+                                },
+                                "errorMessage": {
+                                    "_": "post-connection-creation must be an array of strings."
+                                }
+                            }
+                        }
+                    },
                     "syncs": {
                         "type": "object",
                         "patternProperties": {
@@ -67,7 +93,7 @@
                                             }
                                         ],
                                         "errorMessage": {
-                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
+                                            "_": "version must be an integer, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
                                         }
                                     },
                                     "runs": {
@@ -79,25 +105,27 @@
                                     "endpoint": {
                                         "oneOf": [
                                             {
-                                                "type": "string",
-                                                "pattern": "^(GET\\s)?/[a-zA-Z0-9-./_]+$",
-                                                "errorMessage": {
-                                                    "_": " "
-                                                }
+                                                "$ref": "#/$defs/endpointV1Sync"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/endpointV2Sync"
                                             },
                                             {
                                                 "type": "array",
                                                 "items": {
-                                                    "type": "string",
-                                                    "pattern": "^(GET\\s)?/[a-zA-Z0-9-./_]+$",
-                                                    "errorMessage": {
-                                                        "_": " "
-                                                    }
+                                                    "oneOf": [
+                                                        {
+                                                            "$ref": "#/$defs/endpointV1Sync"
+                                                        },
+                                                        {
+                                                            "$ref": "#/$defs/endpointV2Sync"
+                                                        }
+                                                    ]
                                                 }
                                             }
                                         ],
                                         "errorMessage": {
-                                            "_": "endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e: \"GET /tickets/ticket\""
+                                            "_": "endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e:\n- endpoint: GET /tickets\n- endpoint:\n    method: GET\n    path: /tickets"
                                         }
                                     },
                                     "scopes": {
@@ -196,15 +224,20 @@
                                             }
                                         ],
                                         "errorMessage": {
-                                            "_": "version must be an interger, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
+                                            "_": "version must be an integer, string or a semver string. Example: \"10\", \"1.0.0\", or 10"
                                         }
                                     },
                                     "endpoint": {
-                                        "type": "string",
-                                        "pattern": "^((GET|POST|PUT|PATCH|DELETE)\\s)?/[a-zA-Z0-9-:{}./_]+$",
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/$defs/endpointV1Action"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/endpointV2Action"
+                                            }
+                                        ],
                                         "errorMessage": {
-                                            "type": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\"",
-                                            "pattern": "endpoint must be a URI with an HTTP verb, i.e: \"POST /tickets/ticket\""
+                                            "_": "endpoint must be a URL with an HTTP verb, i.e:\n- endpoint: POST /tickets\n- endpoint:\n    method: POST\n    path: /tickets"
                                         }
                                     },
                                     "scopes": {
@@ -266,6 +299,66 @@
                     "type": "object",
                     "additionalProperties": true
                 }
+            }
+        }
+    },
+    "$defs": {
+        "endpointV1Action": {
+            "type": "string",
+            "pattern": "^((GET|POST|PUT|PATCH|DELETE)\\s)?/[a-zA-Z0-9-:{}./_]+$",
+            "errorMessage": {
+                "_": " "
+            }
+        },
+        "endpointV1Sync": {
+            "type": "string",
+            "pattern": "^(GET\\s)?/[a-zA-Z0-9-./_]+$",
+            "errorMessage": {
+                "_": " "
+            }
+        },
+        "endpointV2Action": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+                },
+                "path": {
+                    "type": "string",
+                    "pattern": "^/[a-zA-Z0-9-:{}./_]+$"
+                },
+                "group": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z _-]{1,64}$"
+                }
+            },
+            "errorMessage": {
+                "_": " "
+            }
+        },
+        "endpointV2Sync": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": ["GET"]
+                },
+                "path": {
+                    "type": "string",
+                    "pattern": "^/[a-zA-Z0-9-:{}./_]+$"
+                },
+                "group": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z _-]{1,64}$"
+                }
+            },
+            "errorMessage": {
+                "_": " "
             }
         }
     }

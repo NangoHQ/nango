@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 exports.config = { transaction: false };
 
 const utils = require('node:util');

@@ -1,0 +1,49 @@
+---
+title: Amazon Selling Partner (Beta) - How do I link my account?
+sidebarTitle: Amazon Selling Partner (Beta)
+---
+
+
+# Overview
+
+To authenticate with Amazon Selling Partner (Beta), you need:
+1. **Application ID** - The unique identifier for your Amazon Selling Partner (Beta) application.
+2. **Domain** - The domain representing the Amazon platform you are integrating with.
+3. **Proxy BaseUrl Region** - The geographical region associated with the Amazon marketplace.
+
+This guide will walk you through finding or creating these credentials within Amazon Selling Partner (Beta).
+
+### Prerequisites:
+
+- You must have an Amazon Selling Partner account.
+
+<Tip>The beta version is an application still in draft status.</Tip>
+#### Step 1: Finding Your App Id
+1. Login to your Seller Central account.
+2. Go to Developer Console.
+3. Once in the Developer Console, find the specific application you're looking for, and the corresponding Application ID will be visible alongside it.
+
+
+#### Step 2: Finding Your Domain
+- You need to provide the domain for your application, which varies based on your application's type and marketplace.
+
+- For Public Applications & Private Seller Applications (authorized through Seller Central),you should use the Seller Central domain.
+- For Private Vendor Applications (authorized through Vendor Central), you should use the Vendor Central domain.
+- To find the correct domain for your marketplace, visit this [link](https://developer-docs.amazon.com/amazon-shipping/docs/seller-central-urls).
+- For example, based on the table, the Seller Central URL for the Saudi Arabia marketplace is https://sellercentral.amazon.com.sa, so the full domain is `sellercentral.amazon.com.sa`.
+<img src="/integrations/all/amazon-selling-partner/subdomain.png" />
+
+#### Step 3: Finding Your Proxy BaseUrl Region
+-  Please visit this [link](https://developer-docs.amazon.com/amazon-shipping/docs/sp-api-endpoints) to find the proxy base URL for your API endpoint. For example, for the North America selling region (including Canada, US, Mexico, and Brazil marketplaces), the endpoint is `https://sellingpartnerapi-na.amazon.com`, and the proxy baseUrl region will be **na**.
+<img src="/integrations/all/amazon-selling-partner/proxy_base_url.png" />
+
+#### Step 5: Enter credentials in the Connect UI
+
+Once you have your credentials:
+1. Open the form where you need to authenticate with Amazon Selling Partner (Beta).
+2. Enter the **Application ID**, **Domain** and **Proxy BaseUrl Region** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/integrations/all/amazon-selling-partner-beta/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Amazon Selling Partner (Beta).

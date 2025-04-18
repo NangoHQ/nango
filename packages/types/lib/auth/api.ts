@@ -13,6 +13,7 @@ export interface AuthModes {
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
+    Signature: 'SIGNATURE';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -56,6 +57,11 @@ export interface CredentialsCommon<T = Record<string, any>> {
     raw: T;
 }
 
+export interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
+}
+
 export interface BasicApiCredentials {
     type: AuthModes['Basic'];
     username: string;
@@ -66,8 +72,6 @@ export interface ApiKeyCredentials {
     type: AuthModes['ApiKey'];
     apiKey: string;
 }
-
-export type AuthCredentials = OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
 
 export interface AppCredentials {
     type: AuthModes['App'];
@@ -156,14 +160,7 @@ export interface TableauCredentials extends CredentialsCommon {
 
 export interface JwtCredentials {
     type: AuthModes['Jwt'];
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey:
-        | {
-              id: string;
-              secret: string;
-          }
-        | string; // Colon-separated string for Ghost Admin: 'id:secret'
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -175,6 +172,14 @@ export interface TwoStepCredentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface SignatureCredentials {
+    type: AuthModes['Signature'];
+    username: string;
+    password: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
+
 export type UnauthCredentials = Record<string, never>;
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;
@@ -182,6 +187,18 @@ export type RefreshTokenResponse = AuthorizationTokenResponse;
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
+
+export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials;
+export type RefreshableCredentials =
+    | OAuth2Credentials
+    | AppCredentials
+    | AppStoreCredentials
+    | OAuth2ClientCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | TwoStepCredentials
+    | BillCredentials
+    | SignatureCredentials;
 
 export type AllAuthCredentials =
     | OAuth1Credentials
@@ -197,4 +214,5 @@ export type AllAuthCredentials =
     | TableauCredentials
     | JwtCredentials
     | BillCredentials
-    | TwoStepCredentials;
+    | TwoStepCredentials
+    | SignatureCredentials;

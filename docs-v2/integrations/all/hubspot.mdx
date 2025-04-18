@@ -3,29 +3,68 @@ title: HubSpot
 sidebarTitle: HubSpot
 ---
 
-API configuration: [`hubspot`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/hubspot/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/hubspot/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | ✅ |
+## Access requirements
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free, self-signup [here](https://developers.hubspot.com/). |
+| Paid test account | ✅ Not required | Create free Enterprise account for testing from your developer account. | 
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | Only required for marketplace listing, not for integration distribution. |
+| Security audit | ✅ Not required | |
 
-## Getting started
+## Setup guide
 
--   [How to register an Application](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
--   [OAuth-related docs](https://developers.hubspot.com/docs/api/oauth-quickstart-guide)
--   [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes)
--   [API](https://developers.hubspot.com/docs/api/overview)
+<Steps>
+  <Step title="Create a developer account">
+    Go to [Hubspot's developer signup page](https://app.hubspot.com/signup-hubspot/developers) and create an account. 
+  </Step>
+  <Step title="Create & configure a Hubspot app">
+    Start creating a Hubspot app by clicking on the _Create app_ button. 
+
+    In the _Auth_ tab, configure the following Redirect URL: `https://api.nango.dev/oauth/callback`.
+
+    Create the Hubspot app. In the _Auth_ tab, copy/paste the `Client ID` and `Client secret`, you will need to specify it in Nango later on. 
+  </Step>
+  <Step title="Set up the OAuth scopes">
+    Still in the _Auth_ tab, add the scopes that are relevant to how you want to consume the Hubspot API. Copy/paste the list of scopes, you will need to specify it in Nango later on.
+  </Step>
+  <Step title="Create a Hubspot test account">
+    If you don't have a Hubspot account already, create one to test your integration. 
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Useful links
+
+| Topic | Links | 
+| - | - | 
+| General | [Website](https://www.hubspot.com/) |
+| | [Create a test account](https://app.hubspot.com/signup-hubspot/crm) |
+| Developer | [API documentation](https://developers.hubspot.com/beta-docs/reference/api/overview) |
+| | [Create a developer account](https://app.hubspot.com/signup-hubspot/developers) |
+| | [Developer console](https://app.hubspot.com/) |
+| | [Authorization documentation](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) |
+| | [Register an OAuth app](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0) |
+| | [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) |
+| | [Details on rate limits](https://developers.hubspot.com/beta-docs/guides/apps/api-usage/usage-details) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+
 ## API gotchas
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>
+_No reported gotchas yet_
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/hubspot.mdx)</Note>

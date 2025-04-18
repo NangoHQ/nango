@@ -1,8 +1,6 @@
-## Describe your changes
+<!-- Describe the problem and your solution --> 
 
-## Issue ticket number and link
+<!-- Issue ticket number and link (if applicable) -->
 
-## Checklist before requesting a review (skip if just adding/editing APIs & templates)
-- [ ] I added tests, otherwise the reason is: 
-- [ ] I added observability, otherwise the reason is:
-- [ ] I added analytics, otherwise the reason is: 
+<!-- Testing instructions (skip if just adding/editing providers) -->
+

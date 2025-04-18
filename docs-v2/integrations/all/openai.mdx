@@ -3,28 +3,41 @@ title: OpenAI
 sidebarTitle: OpenAI
 ---
 
-API configuration: [`openai`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/openai/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/openai/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai.mdx)</Note>
+
+
+## Useful links
 
 -   [Generate an API key in your OpenAI account](https://platform.openai.com/api-keys)
 -   [OpenAI API docs](https://platform.openai.com/docs/api-reference/introduction)
 -   [OpenAI Authentication](https://platform.openai.com/docs/api-reference/authentication)
 -   [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai.mdx)</Note>
 
 ## API gotchas
 
@@ -42,4 +55,10 @@ const config:ProxyConfiguration = {
 };
 ```
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/openai.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Openai" icon="link" href="/integrations/all/openai/connect" horizontal>
+  Guide to connect to Openai using Nango Connect.
+</Card>

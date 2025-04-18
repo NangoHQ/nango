@@ -4,8 +4,8 @@ import * as uuid from 'uuid';
 import { createClient } from 'redis';
 import { getLogger } from '@nangohq/utils';
 import type { WSErr } from '../utils/web-socket-error.js';
-import { errorHtml, successHtml } from '../utils/utils.js';
 import { getRedisUrl } from '@nangohq/shared';
+import { authHtml } from '../utils/html.js';
 
 const logger = getLogger('Server.Publisher');
 
@@ -26,16 +26,18 @@ export class Redis {
 
     constructor(url: string) {
         this.url = url;
+
         this.pub = createClient({ url: this.url });
-        this.pub.on('error', (err) => {
-            logger.error(`Redis (publisher) error: ${err}`);
+        this.pub.on('error', (err: Error) => {
+            logger.error(`Redis (publisher) error`, err);
         });
         this.pub.on('connect', () => {
             logger.info(`Redis (publisher) connected to ${this.url}`);
         });
-        this.sub = createClient({ url: this.url }) as RedisClientType;
-        this.sub.on('error', (err) => {
-            logger.error(`Redis (subscriber) error: ${err}`);
+
+        this.sub = createClient({ url: this.url });
+        this.sub.on('error', (err: Error) => {
+            logger.error(`Redis (subscriber) error`, err);
         });
         this.sub.on('connect', () => {
             logger.info(`Redis Subscriber connected to ${this.url}`);
@@ -77,7 +79,7 @@ class RedisPublisher {
             await this.redis.publish(channel, message);
             return true;
         } catch (err) {
-            logger.error(`Error publishing message '${message}' to channel '${channel}': ${err}`);
+            logger.error(`Error publishing message '${message}' to channel '${channel}'`, err);
             return false;
         }
     }
@@ -90,7 +92,7 @@ class RedisPublisher {
                 onMessage(message, wsClientId);
             });
         } catch (err) {
-            logger.error(`Error subscribing to redis channel "${channel}": ${err}`);
+            logger.error(`Error subscribing to redis channel "${channel}"`, err);
         }
     }
 
@@ -99,7 +101,7 @@ class RedisPublisher {
         try {
             await this.redis.unsubscribe(channel);
         } catch (err) {
-            logger.error(`Error unsubscribing from redis channel "${channel}": ${err}`);
+            logger.error(`Error unsubscribing from redis channel "${channel}"`, err);
         }
     }
 }
@@ -202,7 +204,7 @@ export class Publisher {
                 await this.unsubscribe(wsClientId);
             }
         }
-        errorHtml(res, wsClientId, wsErr);
+        authHtml({ res, error: wsErr.message });
     }
 
     public async notifySuccess(res: any, wsClientId: WebSocketClientId | undefined, providerConfigKey: string, connectionId: string, isPending = false) {
@@ -218,7 +220,7 @@ export class Publisher {
                 await this.unsubscribe(wsClientId);
             }
         }
-        successHtml(res, wsClientId, providerConfigKey, connectionId);
+        authHtml({ res });
     }
 }
 

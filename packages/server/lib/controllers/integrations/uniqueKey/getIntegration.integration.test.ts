@@ -1,5 +1,7 @@
-import { seeders } from '@nangohq/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
 import { getConnectSessionToken, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -21,7 +23,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be accessible with connect session token', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         const token = await getConnectSessionToken(api, env);
         const res = await api.fetch(endpoint, { method: 'GET', token, params: { uniqueKey: 'github' }, query: {} });
         isError(res.json);
@@ -29,7 +31,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should enforce no query params', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
@@ -48,7 +50,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list empty', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
 
@@ -60,7 +62,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list one', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
@@ -71,7 +73,7 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 provider: 'github',
                 unique_key: 'github',
-                display_name: 'GitHub',
+                display_name: 'GitHub (User OAuth)',
                 logo: 'http://localhost:3003/images/template-logos/github.svg',
                 created_at: expect.toBeIsoDate(),
                 updated_at: expect.toBeIsoDate()
@@ -80,7 +82,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get webhook', async () => {
-        const env = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: { include: ['webhook'] } });
@@ -91,13 +93,24 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not list other env', async () => {
-        const env = await seeders.createEnvironmentSeed();
-        const env2 = await seeders.createEnvironmentSeed();
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const { env: env2 } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env2, 'github', 'github');
 
         const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: {} });
 
         isError(res.json);
         expect(res.res.status).toBe(404);
+    });
+
+    it('should get credentials', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'foo', oauth_client_secret: 'bar', oauth_scopes: 'hello, world' });
+
+        const res = await api.fetch(endpoint, { method: 'GET', token: env.secret_key, params: { uniqueKey: 'github' }, query: { include: ['credentials'] } });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.credentials).toStrictEqual({ client_id: 'foo', client_secret: 'bar', scopes: 'hello, world', type: 'OAUTH2' });
     });
 });

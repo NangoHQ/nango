@@ -1,10 +1,12 @@
 import { toast } from 'react-toastify';
+
+import { globalEnv } from './env';
 import { useSignout } from './user';
-import type { RunSyncCommand } from '../types';
+
 import type { PostSignup } from '@nangohq/types';
 
-export async function apiFetch(input: string | URL | Request, init?: RequestInit | undefined) {
-    return await fetch(input, {
+export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
+    return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
         credentials: 'include' // For cookies
@@ -23,10 +25,11 @@ export interface SWRError<TError> {
 /**
  * Default SWR fetcher does not throw on HTTP error
  */
-export async function swrFetcher<TBody>(url: string, req?: RequestInit | undefined): Promise<TBody> {
+export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise<TBody> {
     const res = await apiFetch(url, req);
 
     if (!res.ok) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/only-throw-error
         throw { json: await res.json(), status: res.status };
     }
 
@@ -59,7 +62,7 @@ export function useSignupAPI() {
                 body: JSON.stringify(body)
             };
 
-            return apiFetch('/api/v1/account/signup', options);
+            return await apiFetch('/api/v1/account/signup', options);
         } catch {
             requestErrorToast();
         }
@@ -77,7 +80,8 @@ export function useSigninAPI() {
             const res = await apiFetch('/api/v1/account/signin', options);
 
             if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
-                return serverErrorToast();
+                serverErrorToast();
+                return;
             }
 
             return res;
@@ -93,279 +97,8 @@ export function useHostedSigninAPI() {
             const res = await apiFetch('/api/v1/basic');
 
             if (res.status !== 200 && res.status !== 401) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditCallbackUrlAPI(env: string) {
-    const signout = useSignout();
-
-    return async (callbackUrl: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ callback_url: callbackUrl })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/callback?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditHmacEnabledAPI(env: string) {
-    const signout = useSignout();
-
-    return async (hmacEnabled: boolean) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ hmac_enabled: hmacEnabled })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/hmac-enabled?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditAlwaysSendWebhookAPI(env: string) {
-    const signout = useSignout();
-
-    return async (alwaysSendWebhook: boolean) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/webhook-send?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditSendAuthWebhookAPI(env: string) {
-    const signout = useSignout();
-
-    return async (sendAuthWebhook: boolean) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ send_auth_webhook: sendAuthWebhook })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/webhook-auth-send?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditHmacKeyAPI(env: string) {
-    const signout = useSignout();
-
-    return async (hmacKey: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ hmac_key: hmacKey })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/hmac-key?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditEnvVariablesAPI(env: string) {
-    const signout = useSignout();
-
-    return async (envVariables: Record<string, string>[]) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify(envVariables)
-            };
-
-            const res = await apiFetch(`/api/v1/environment/environment-variables?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditWebhookUrlAPI(env: string) {
-    const signout = useSignout();
-
-    return async (webhookUrl: string) => {
-        try {
-            const options = {
-                method: 'PATCH',
-                body: JSON.stringify({ url: webhookUrl })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/webhook/primary-url?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditWebhookSecondaryUrlAPI(env: string) {
-    const signout = useSignout();
-
-    return async (webhookSecondaryUrl: string) => {
-        try {
-            const options = {
-                method: 'PATCH',
-                body: JSON.stringify({ url: webhookSecondaryUrl })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/webhook/secondary-url?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useEditOtlpSettingsAPI(env: string) {
-    const signout = useSignout();
-
-    return async ({ endpoint, headers }: { endpoint: string; headers: Record<string, string> }) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ endpoint, headers })
-            };
-
-            const res = await apiFetch(`/api/v1/environment/otlp/settings?env=${env}`, options);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status === 403) {
-                const { error } = await res.json();
-                const msg = 'message' in error ? error.message : 'Forbidden';
-                toast.error(msg, { position: toast.POSITION.BOTTOM_CENTER });
+                serverErrorToast();
                 return;
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useGetIntegrationListAPI(env: string) {
-    const signout = useSignout();
-
-    return async () => {
-        try {
-            const res = await apiFetch(`/api/v1/integrations?env=${env}`);
-
-            if (res.status === 401) {
-                return signout();
-            }
-
-            if (res.status !== 200) {
-                return serverErrorToast();
             }
 
             return res;
@@ -383,11 +116,12 @@ export function useGetProvidersAPI(env: string) {
             const res = await apiFetch(`/api/v1/provider?env=${env}`);
 
             if (res.status === 401) {
-                return signout();
+                await signout();
+                return;
             }
 
             if (res.status !== 200) {
-                return serverErrorToast();
+                serverErrorToast();
             }
 
             return res;
@@ -432,21 +166,6 @@ export function useGetHmacAPI(env: string) {
         try {
             const res = await apiFetch(`/api/v1/environment/hmac?env=${env}&connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET'
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useRunSyncAPI(env: string) {
-    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: string, sync_name: string, provider?: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/sync/command?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id, sync_name, provider })
             });
 
             return res;

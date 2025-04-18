@@ -1,41 +1,18 @@
 import { z } from 'zod';
-import type { ApiError, Endpoint } from '@nangohq/types';
+import type { PutTask } from '@nangohq/types';
 import { validateRequest } from '@nangohq/utils';
 import type { EndpointRequest, EndpointResponse, RouteHandler } from '@nangohq/utils';
-import { handleError, handleSuccess } from '../../execution/operations/output.js';
+import { handleError, handleSuccess } from '../../execution/operations/handler.js';
 import type { JsonValue } from 'type-fest';
-import type { NangoProps } from '@nangohq/shared';
-
-const path = '/tasks/:taskId';
-const method = 'PUT';
-
-type PutTask = Endpoint<{
-    Method: typeof method;
-    Path: typeof path;
-    Params: {
-        taskId: string;
-    };
-    Body: {
-        nangoProps?: NangoProps;
-        error?:
-            | {
-                  type: string;
-                  payload: Record<string, unknown>;
-                  status: number;
-              }
-            | undefined;
-        output: JsonValue;
-    };
-    Error: ApiError<'put_task_failed'>;
-    Success: never;
-}>;
+import { operationIdRegex } from '@nangohq/logs';
 
 const jsonLiteralSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() => z.union([jsonLiteralSchema, z.array(jsonSchema), z.record(jsonSchema)]));
 const nangoPropsSchema = z
     .object({
-        scriptType: z.enum(['action', 'webhook', 'sync', 'post-connection-script']),
+        scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
         connectionId: z.string().min(1),
+        nangoConnectionId: z.number(),
         environmentId: z.number(),
         environmentName: z.string().min(1),
         providerConfigKey: z.string().min(1),
@@ -46,30 +23,42 @@ const nangoPropsSchema = z
         }),
         syncConfig: z
             .object({
+                id: z.number(),
                 sync_name: z.string().min(1),
-                type: z.enum(['sync', 'action']),
+                type: z.enum(['sync', 'action', 'on-event']),
                 environment_id: z.number(),
                 models: z.array(z.string()),
                 file_location: z.string(),
                 nango_config_id: z.number(),
                 active: z.boolean(),
-                runs: z.string(),
+                runs: z.string().nullable(),
                 track_deletes: z.boolean(),
                 auto_start: z.boolean(),
                 enabled: z.boolean(),
                 webhook_subscriptions: z.array(z.string()).or(z.null()),
                 model_schema: z.array(z.any()),
-                models_json_schema: z.any(),
+                models_json_schema: z.object({}).nullable(),
                 created_at: z.coerce.date(),
-                updated_at: z.coerce.date()
+                updated_at: z.coerce.date(),
+                version: z.string(),
+                attributes: z.record(z.string(), z.any()),
+                pre_built: z.boolean(),
+                is_public: z.boolean(),
+                input: z.string().nullable(),
+                sync_type: z.enum(['full', 'incremental']).nullable(),
+                metadata: z.record(z.string(), z.any())
+                // TODO: fix this missing fields
+                // deleted: z.boolean().optional(),
+                // deleted_at: z.coerce.date().optional().nullable(),
             })
             .passthrough(),
         syncId: z.string().uuid().optional(),
         syncJobId: z.number().optional(),
-        activityLogId: z.string().min(1),
+        activityLogId: operationIdRegex,
         secretKey: z.string().min(1),
         debug: z.boolean(),
         startedAt: z.coerce.date(),
+        endUser: z.object({ id: z.number(), endUserId: z.string().nullable(), orgId: z.string().nullable() }).nullable(),
         runnerFlags: z
             .object({
                 validateActionInput: z.boolean().default(false),
@@ -92,7 +81,8 @@ const validate = validateRequest<PutTask>({
                     .object({
                         type: z.string(),
                         payload: z.record(z.string(), z.unknown()).or(z.unknown().transform((v) => ({ message: v }))),
-                        status: z.number()
+                        status: z.number(),
+                        additional_properties: z.record(z.string(), z.unknown()).optional()
                     })
                     .optional(),
                 output: jsonSchema.default(null)
@@ -111,15 +101,15 @@ const handler = async (req: EndpointRequest<PutTask>, res: EndpointResponse<PutT
     if (error) {
         await handleError({ taskId, nangoProps, error });
     } else {
-        await handleSuccess({ taskId, nangoProps, output: output });
+        await handleSuccess({ taskId, nangoProps, output: output || null });
     }
     res.status(204).send();
     return;
 };
 
 export const routeHandler: RouteHandler<PutTask> = {
-    path,
-    method,
+    method: 'PUT',
+    path: '/tasks/:taskId',
     validate,
     handler
 };

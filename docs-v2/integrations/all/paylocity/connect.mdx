@@ -1,0 +1,62 @@
+---
+title: Paylocity - How to Connect Your Account
+sidebarTitle: Paylocity
+---
+
+# Overview
+
+To connect your **Paylocity** account, you need to authenticate using **OAuth 2.0 Client Credentials**. This integration allows Nango to securely retrieve employee and HR data from Paylocity.
+
+This guide will help you retrieve your **Client ID**, **Client Secret**, and **choose the correct Paylocity environment**.
+
+---
+
+### Prerequisites
+
+- ✅ **You must be an existing Paylocity customer** or have an approved sponsor.
+- ✅ **You need Paylocity API credentials** (`client_id` and `client_secret`).
+- ✅ **Access to the correct Paylocity environment** (Production, Sandbox, or Preview).
+- ✅ **Approval from Paylocity** before going live.
+
+🚨 **Important**:  
+Paylocity requires **API secrets to be rotated every 365 days**. Make sure to update credentials before expiration.
+
+---
+
+### Step 1: Select the Correct Paylocity Environment
+
+Paylocity offers **three environments** for API access. Choose the one that matches your use case:
+
+| Environment | Base URL | Purpose |
+|------------|------------|----------------|
+| **Production** | `api.paylocity.com` | Live data for real-world use. |
+| **Sandbox** | `apisandbox.paylocity.com` | Safe testing environment with test data. |
+| **Preview** | `gwext.paylocity.com` | Staging environment for upcoming API updates. |
+
+input api or apisandbox or gwext based on you requirements
+
+**Where to Find Your Environment?**
+1. Log in to the Paylocity Developer Portal.
+2. Go to **API Access** → **Environments**.
+3. Select the **correct environment** for your integration.
+
+---
+
+### Step 2: Retrieve Your Paylocity API Credentials
+
+1. Log in to the Paylocity Developer Portal.
+2. Navigate to **API Access** → **Client Credentials**.
+3. Click **Create New Credentials**.
+4. Copy the **Client ID** and **Client Secret**.
+5. Store these securely; Paylocity **does not allow retrieving the secret again**.
+
+---
+
+### Step 3: Connect Your Paylocity Account
+
+To authenticate with Paylocity, follow these steps:
+
+1. Open the **Paylocity integration setup** in Nango.
+2. Enter your **Paylocity environment** .
+3. Enter your **Client ID** and **Client Secret**.
+4. Click **Connect** to validate the credentials and establish the connection.

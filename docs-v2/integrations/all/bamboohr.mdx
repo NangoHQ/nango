@@ -3,28 +3,41 @@ title: BambooHR
 sidebarTitle: BambooHR
 ---
 
-API configuration: [`bambookhr`](https://nango.dev/providers.yaml), [`bamboohr-basic`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/bamboohr/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/bamboohr/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+
+
+## Useful links
 
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/docs/getting-started)
 -   [How to register/integrate an Application](https://documentation.bamboohr.com/docs#what-will-you-need-to-get-started)
 -   [OAuth-related docs](https://documentation.bamboohr.com/page/single-sign-on-sso-with-openid-connect)
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/reference/get-employee)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
 
 ## Connection configuration in Nango
 
@@ -33,8 +46,6 @@ BambooHR requires a user specific subdomain to authenticate
 You should request this from the user and pass it to Nango in the `nango.auth()` call:
 
 ```js
-// oAuth
-nango.auth('bamboohr', '<CONNECTION-ID>', {params: {subdomain: '<bamboohr-subdomain>'}});
 // API key
 nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
         credentials: {
@@ -47,7 +58,7 @@ nango.auth('bamboohr-basic', '<CONNECTION-ID>', {
     })
 ```
 
-For more details, see the [docs here](/integrate/guides/authorize-an-api#apis-requiring-connection-specific-configuration-for-authorization).
+For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
 
 ## API gotchas
 
@@ -55,4 +66,10 @@ For more details, see the [docs here](/integrate/guides/authorize-an-api#apis-re
 - Authenticating via API key: BambooHR gives only an `API Key` but uses Basic auth for the API. Pass the `API Key` as the username and use `x` for the password. See BambooHR [documentation](https://documentation.bamboohr.com/docs#section-authentication)
 
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/bamboohr.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to BambooHR (basic auth)" icon="link" href="/integrations/all/bamboohr-basic/connect" horizontal>
+  Guide to connect to BambooHR (basic auth) using Connect UI
+</Card>

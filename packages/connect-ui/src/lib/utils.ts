@@ -14,11 +14,20 @@ export function cn(...inputs: ClassValue[]) {
 export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
     let fieldString = z.string();
     if (schema.format === 'hostname') {
-        fieldString = fieldString.regex(/^[a-zA-Z0-9-]$/);
+        fieldString = fieldString.regex(/^[a-zA-Z0-9.-]+$/, 'Invalid hostname');
     } else if (schema.format === 'uuid') {
         fieldString = fieldString.uuid();
     } else if (schema.format === 'uri') {
         fieldString = fieldString.url();
+    } else if (schema.format === 'email') {
+        fieldString = fieldString.email();
+    } else {
+        // Some providers takes empty default_value
+        // so we need to differentiate empty and not defined
+        // note that "optional" could work but does not exactly mean the same
+        if (typeof schema.default_value === 'undefined') {
+            fieldString = fieldString.min(1, 'This field is required');
+        }
     }
     if (schema.pattern) {
         fieldString = fieldString.regex(new RegExp(schema.pattern), { message: `Incorrect ${schema.title}` });

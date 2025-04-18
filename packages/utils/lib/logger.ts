@@ -41,10 +41,16 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
+    let instanceId = '';
+    if (isCloud && process.env['RENDER_INSTANCE_ID']) {
+        const parts = process.env['RENDER_INSTANCE_ID'].split('-');
+        instanceId = parts[parts.length - 1] ? ` ${parts[parts.length - 1]}` : '';
+    }
+
     formatters = [
         winston.format.printf((info) => {
             const splat = info[SPLAT] && info[SPLAT].length > 0 ? JSON.stringify(info[SPLAT]) : '';
-            return `[${info.level.toUpperCase()}]${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
+            return `[${info.level.toUpperCase()}]${instanceId}${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
         })
     ];
 }

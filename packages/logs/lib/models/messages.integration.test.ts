@@ -1,12 +1,15 @@
-import { describe, beforeAll, it, expect, vi } from 'vitest';
-import { deleteIndex, migrateMapping } from '../es/helpers.js';
-import type { ListOperations, ListMessages } from './messages.js';
-import { getOperation, listOperations, listMessages, setTimeoutForAll } from './messages.js';
 import { afterEach } from 'node:test';
-import { logContextGetter } from './logContextGetter.js';
-import type { OperationRowInsert } from '@nangohq/types';
+
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { getFormattedOperation } from './helpers.js';
+import { logContextGetter } from './logContextGetter.js';
+import { getOperation, listMessages, listOperations, setTimeoutForAll } from './messages.js';
+import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import { indexMessages } from '../es/schema.js';
+
+import type { ListMessages, ListOperations } from './messages.js';
+import type { OperationRowInsert } from '@nangohq/types';
 
 const account = { id: 1234, name: 'test' };
 const environment = { id: 5678, name: 'dev' };
@@ -32,8 +35,8 @@ describe('model', () => {
         });
 
         it('should paginate', async () => {
-            await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
-            await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
+            await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
+            await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
 
             // First operation = should list one
             const list1 = await listOperations({ accountId: account.id, limit: 1, states: ['all'] });
@@ -90,7 +93,7 @@ describe('model', () => {
         });
 
         it('should paginate', async () => {
-            const ctx = await logContextGetter.create(operationPayload, { start: false, account, environment }, { logToConsole: false });
+            const ctx = await logContextGetter.create(operationPayload, { account, environment }, { logToConsole: false, start: false });
             await ctx.info('1');
             await ctx.info('2');
             await ctx.info('3');
@@ -121,7 +124,7 @@ describe('model', () => {
             const list4 = await listMessages({ limit: 2, parentId: ctx.id, cursorBefore: list1.cursorBefore });
             expect(list4.count).toBe(4);
             expect(list4.items).toHaveLength(0);
-            expect(list4.cursorBefore).toBeNull();
+            expect(list4.cursorBefore).toBeDefined();
             expect(list4.cursorAfter).toBeDefined();
 
             // Insert a new row

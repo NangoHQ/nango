@@ -3,31 +3,44 @@ title: Sedna
 sidebarTitle: Sedna
 ---
 
-API configurations: [`sedna`](https://nango.dev/providers.yaml), [`sedna-basic`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sedna/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sedna/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth + Basic)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sedna.mdx)</Note>
+
+
+## Useful links
 
 -   [OAuth-related docs](https://developers.sedna.com/reference/authentication-1#oauth-20)
 -   [Basic auth related doc](https://developers.sedna.com/reference/authentication-1#basic-auth)
 -   [Sedna API docs](https://developers.sedna.com/reference)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sedna.mdx)</Note>
 
 ## API gotchas
 
 -   In order to use Basic Auth, simply use the `client_id` and `client_secret` from the API Credentials on the Sedna API Management settings page as the Basic Auth `username` and `password`, respectively.
 -   Sedna enforces a general rate limit of 100 requests, per second, per API key or IP address.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sedna.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/sedna.mdx)</Note>

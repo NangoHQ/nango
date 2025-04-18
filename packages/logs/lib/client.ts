@@ -1,127 +1,165 @@
-import type { MessageRow, MessageRowInsert, MessageMeta, OperationRow } from '@nangohq/types';
-import { setRunning, createMessage, setFailed, setCancelled, setTimeouted, setSuccess, update } from './models/messages.js';
-import { getFormattedMessage } from './models/helpers.js';
-import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
-import { isCli, logger } from './utils.js';
+import { report } from '@nangohq/utils';
+
 import { envs } from './env.js';
-import { OtlpSpan } from './otlp/otlpSpan.js';
+import { errorToDocument } from './formatters.js';
+import { setCancelled, setFailed, setRunning, setSuccess, setTimeouted, updateOperation } from './models/messages.js';
+import { ESTransport } from './transport.js';
+import { isCli, logger } from './utils.js';
+
+import type { OtlpSpan } from './otlp/otlpSpan.js';
+import type { LogTransportAbstract } from './transport.js';
+import type { MessageHTTPRequest, MessageHTTPResponse, MessageMeta, MessageRow, MessageRowInsert, OperationRow } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
     logToConsole?: boolean;
+    transport?: LogTransportAbstract;
 }
 
 /**
  * Context without operation (stateless)
+ * Only useful for logging
  */
 export class LogContextStateless {
     id: OperationRow['id'];
+    accountId: OperationRow['accountId'];
     dryRun: boolean;
     logToConsole: boolean;
+    transport: LogTransportAbstract;
 
-    constructor(data: { parentId: OperationRow['id'] }, options: Options = { dryRun: false, logToConsole: true }) {
-        this.id = data.parentId;
+    constructor(data: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options: Options = { dryRun: false, logToConsole: true }) {
+        this.id = data.id;
+        this.accountId = data.accountId;
         this.dryRun = isCli || !envs.NANGO_LOGS_ENABLED ? true : options.dryRun || false;
         this.logToConsole = options.logToConsole ?? true;
+        this.transport = options.transport ?? new ESTransport();
     }
 
-    async log(data: MessageRowInsert): Promise<boolean> {
-        if (this.logToConsole) {
-            const obj: Record<string, any> = {};
-            if (data.error) obj['error'] = data.error;
-            if (data.meta) obj['meta'] = data.meta;
-            logger[data.level!](`${this.dryRun ? '[dry] ' : ''}log: ${data.message}`, Object.keys(obj).length > 0 ? obj : undefined);
-        }
-        if (this.dryRun) {
-            return true;
-        }
-
-        const start = Date.now();
-        try {
-            await createMessage(getFormattedMessage({ ...data, parentId: this.id }));
-            return true;
-        } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_insert_in_es: ${stringifyError(err)}`);
-            return false;
-        } finally {
-            metrics.duration(metrics.Types.LOGS_LOG, Date.now() - start);
-        }
+    async log(msg: MessageRowInsert) {
+        return await this.transport.log(msg, { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId });
     }
 
-    async debug(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+    async debug(message: string, meta?: MessageMeta): Promise<boolean> {
+        return await this.transport.log(
+            { type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
-    async info(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'info', message, meta, source: 'internal' });
+    async info(message: string, meta?: MessageMeta, rest?: Partial<MessageRowInsert>): Promise<boolean> {
+        return await this.transport.log(
+            { type: 'log', level: 'info', message, meta, source: 'internal', createdAt: new Date().toISOString(), ...rest },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
-    async warn(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'warn', message, meta, source: 'internal' });
+    async warn(message: string, meta?: MessageMeta): Promise<boolean> {
+        return await this.transport.log(
+            { type: 'log', level: 'warn', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async error(message: string, meta: (MessageMeta & { error?: unknown; err?: never; e?: never }) | null = null): Promise<boolean> {
         const { error, ...rest } = meta || {};
-        const err = error ? { name: 'Unknown Error', message: 'unknown error', ...errorToObject(error) } : null;
-        return await this.log({
-            type: 'log',
-            level: 'error',
-            message,
-            error: err
-                ? {
-                      name: error instanceof Error ? error.constructor.name : err.name,
-                      message: err.message,
-                      type: 'type' in err ? (err.type as string) : null,
-                      payload: 'payload' in err ? err.payload : null
-                  }
-                : null,
-            meta: Object.keys(rest).length > 0 ? rest : null,
-            source: 'internal'
-        });
+        return await this.transport.log(
+            {
+                type: 'log',
+                level: 'error',
+                message,
+                error: errorToDocument(error),
+                meta: Object.keys(rest).length > 0 ? rest : undefined,
+                source: 'internal',
+                createdAt: new Date().toISOString()
+            },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     async http(
         message: string,
-        data: {
-            request: MessageRow['request'];
-            response: MessageRow['response'];
+        {
+            error,
+            createdAt,
+            endedAt: userDefinedEndedAt,
+            ...data
+        }: {
+            request: MessageHTTPRequest | undefined;
+            response: MessageHTTPResponse | undefined;
+            error?: unknown;
             meta?: MessageRow['meta'];
+            level?: MessageRow['level'];
+            context?: MessageRow['context'];
+            createdAt: Date;
+            endedAt?: Date;
         }
     ): Promise<boolean> {
-        const level: MessageRow['level'] = data.response && data.response.code >= 400 ? 'error' : 'info';
-        return await this.log({ type: 'http', level, message, ...data, source: 'internal' });
+        const level: MessageRow['level'] = data.level ?? (data.response && data.response.code >= 400 ? 'error' : 'info');
+        const endedAt = userDefinedEndedAt || new Date();
+        return await this.transport.log(
+            {
+                type: 'http',
+                level,
+                message,
+                ...data,
+                error: errorToDocument(error),
+                source: 'internal',
+                createdAt: createdAt.toISOString(),
+                endedAt: endedAt.toISOString(),
+                durationMs: endedAt.getTime() - createdAt.getTime()
+            },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
     }
 
     /**
      * @deprecated Only there for retro compat
      */
-    async trace(message: string, meta: MessageMeta | null = null): Promise<boolean> {
-        return await this.log({ type: 'log', level: 'debug', message, meta, source: 'internal' });
+    async trace(message: string, meta?: MessageMeta): Promise<boolean> {
+        return await this.transport.log(
+            { type: 'log', level: 'debug', message, meta, source: 'internal', createdAt: new Date().toISOString() },
+            { dryRun: this.dryRun, logToConsole: this.logToConsole, operationId: this.id, accountId: this.accountId }
+        );
+    }
+
+    async merge(logCtx: LogContextStateless) {
+        await this.transport.merge(logCtx, this);
     }
 }
 
 /**
- * Context with operation (can modify state)
+ * Main class that contain operation level methods
+ * With recent refactor it could be re-grouped with Stateless
  */
 export class LogContext extends LogContextStateless {
-    operation: OperationRow;
-    span: OtlpSpan;
+    /**
+     * This date is used to build the index name since we can update an alias in Elasticsearch
+     */
+    createdAt: string;
+    span?: OtlpSpan;
 
-    constructor(data: { parentId: string; operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
-        super(data, options);
-        this.operation = data.operation;
-        this.span = new OtlpSpan(data.operation);
+    constructor({ id, createdAt, accountId }: { id: string; createdAt: string; accountId: number }, options: Options = { dryRun: false, logToConsole: true }) {
+        super({ id, accountId }, options);
+        this.createdAt = createdAt;
     }
 
     /**
-     * Add more data to the parentId
+     * We are using internal logging system to log to OpenTelemetry
+     * Unfortunately, by design, our logging system is not compatible
+     * so we sometimes have to trick and inject a span because it was started elsewhere
      */
-    async enrichOperation(data: Partial<MessageRow>): Promise<void> {
-        this.span.enrich(data);
+    attachSpan(otlpSpan: OtlpSpan) {
+        this.span = otlpSpan;
+    }
+
+    /**
+     * Add more data to the operation id
+     */
+    async enrichOperation(data: Partial<OperationRow>): Promise<void> {
+        this.span?.enrich(data);
         await this.logOrExec(
             `enrich(${JSON.stringify(data)})`,
-            async () => await update({ id: this.id, data: { ...data, createdAt: this.operation.createdAt } })
+            async () => await updateOperation({ id: this.id, data: { ...data, createdAt: this.createdAt } })
         );
     }
 
@@ -129,34 +167,34 @@ export class LogContext extends LogContextStateless {
      * ------ State
      */
     async start(): Promise<void> {
-        await this.logOrExec('start', async () => await setRunning(this.operation));
+        await this.logOrExec('start', async () => await setRunning({ id: this.id, createdAt: this.createdAt }));
     }
 
     async failed(): Promise<void> {
         await this.logOrExec('failed', async () => {
-            await setFailed(this.operation);
-            this.span.end('failed');
+            await setFailed({ id: this.id, createdAt: this.createdAt });
+            this.span?.end('failed');
         });
     }
 
     async success(): Promise<void> {
         await this.logOrExec('success', async () => {
-            await setSuccess(this.operation);
-            this.span.end('success');
+            await setSuccess({ id: this.id, createdAt: this.createdAt });
+            this.span?.end('success');
         });
     }
 
     async cancel(): Promise<void> {
         await this.logOrExec('cancel', async () => {
-            await setCancelled(this.operation);
-            this.span.end('cancelled');
+            await setCancelled({ id: this.id, createdAt: this.createdAt });
+            this.span?.end('cancelled');
         });
     }
 
     async timeout(): Promise<void> {
         await this.logOrExec('timeout', async () => {
-            await setTimeouted(this.operation);
-            this.span.end('timeout');
+            await setTimeouted({ id: this.id, createdAt: this.createdAt });
+            this.span?.end('timeout');
         });
     }
 
@@ -171,8 +209,21 @@ export class LogContext extends LogContextStateless {
         try {
             await callback();
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_set_${log} ${stringifyError(err)}`);
+            report(new Error(`failed_to_set_${log}`, { cause: err }));
         }
+    }
+}
+
+/**
+ * Small extend that allows code to access the created operation
+ * Only useful for OTLP and debugging.
+ * It should be relied too much upon as we don't have access to the `operation` as soon as an operation becomes multi-services
+ */
+export class LogContextOrigin extends LogContext {
+    operation: OperationRow;
+
+    constructor({ operation }: { operation: OperationRow }, options: Options = { dryRun: false, logToConsole: true }) {
+        super({ id: operation.id, createdAt: operation.createdAt, accountId: operation.accountId }, options);
+        this.operation = operation;
     }
 }

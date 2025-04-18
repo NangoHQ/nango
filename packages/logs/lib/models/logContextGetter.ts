@@ -1,19 +1,18 @@
-import { nanoid, stringifyError } from '@nangohq/utils';
-import type { SetRequired } from 'type-fest';
-import { createOperation, getOperation } from './messages.js';
+import { report } from '@nangohq/utils';
+
+import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js';
 import { envs } from '../env.js';
-import type { FormatMessageData } from './helpers.js';
+import { logger } from '../utils.js';
 import { getFormattedOperation } from './helpers.js';
-import { LogContext, LogContextStateless } from '../client.js';
-import { getKVStore, logger } from '../utils.js';
+import { createOperation } from './messages.js';
+import { BufferTransport } from '../transport.js';
+
+import type { AdditionalOperationData } from './helpers.js';
 import type { OperationRow, OperationRowInsert } from '@nangohq/types';
 
 interface Options {
     dryRun?: boolean;
     logToConsole?: boolean;
-}
-
-export interface OperationContextData extends FormatMessageData {
     start?: boolean;
 }
 
@@ -23,55 +22,51 @@ export const logContextGetter = {
     /**
      * Create an operation and return a Context
      */
-    async create(
-        data: OperationRowInsert,
-        { start, ...rest }: SetRequired<OperationContextData, 'account' | 'environment'>,
-        options?: Options
-    ): Promise<LogContext> {
-        const msg = getFormattedOperation(data, rest);
-        if (typeof start === 'undefined' || start) {
+    async create(data: OperationRowInsert, additionalData: AdditionalOperationData, options?: Options): Promise<LogContextOrigin> {
+        const msg = getFormattedOperation(data, additionalData);
+        if (typeof options?.start === 'undefined' || options.start) {
             msg.startedAt = msg.startedAt ?? new Date().toISOString();
             msg.state = msg.state === 'waiting' ? 'running' : msg.state;
         }
 
         try {
             if (envs.NANGO_LOGS_ENABLED && !options?.dryRun) {
-                const res = await createOperation(msg);
-                const store = await getKVStore();
-                await store.set(`es:operation:${msg.id}:indexName`, res.index, { ttlInMs: 60 * 1000 });
+                // TODO: remove this after full deploy
+                await createOperation(msg);
             } else if (options?.logToConsole !== false) {
                 logger.info(`[debug] operation(${JSON.stringify(msg)})`);
             }
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_create_operation ${stringifyError(err)}`);
+            report(new Error('failed_to_create_operation', { cause: err }), { id: msg.id });
         }
 
-        return new LogContext({ parentId: msg.id, operation: msg }, options);
+        return new LogContextOrigin({ operation: msg }, options);
     },
 
     /**
      * Return a Context without creating an operation
      */
-    async get({ id }: { id: OperationRow['id'] }, options?: Options): Promise<LogContext> {
+    get({ id, accountId }: { id: OperationRow['id']; accountId: number }, options?: Options): LogContext {
+        let createdAt: string | undefined;
         try {
-            if (envs.NANGO_LOGS_ENABLED) {
-                const store = await getKVStore();
-                const indexName = await store.get(`es:operation:${id}:indexName`);
-
-                const operation = await getOperation({ id, indexName });
-                return new LogContext({ parentId: id, operation }, options);
+            const split = id.split('_');
+            if (split[0]) {
+                createdAt = new Date(parseInt(split[0], 10)).toISOString();
             }
         } catch (err) {
-            // TODO: Report error
-            logger.error(`failed_to_get_operation ${stringifyError(err)}`);
+            report(new Error('failed_to_parse_id', { cause: err }), { id });
         }
-
-        // If it failed, we create a fake operation for now
-        return new LogContext({ parentId: id, operation: { id: nanoid(), createdAt: new Date().toISOString() } as OperationRow }, { ...options, dryRun: true });
+        if (!createdAt) {
+            createdAt = new Date().toISOString(); // Fallback to default date
+        }
+        return new LogContext({ id, createdAt, accountId }, { ...options, dryRun: !envs.NANGO_LOGS_ENABLED });
     },
 
-    getStateLess({ id }: { id: OperationRow['id'] }, options?: Options): LogContextStateless {
-        return new LogContextStateless({ parentId: id }, options);
+    getStateLess({ id, accountId }: { id: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
+        return new LogContextStateless({ id, accountId }, options);
+    },
+
+    getBuffer({ id, accountId }: { id?: OperationRow['id']; accountId: OperationRow['accountId'] }, options?: Options): LogContextStateless {
+        return new LogContextStateless({ id: id || '-1', accountId }, { ...options, transport: new BufferTransport() });
     }
 };

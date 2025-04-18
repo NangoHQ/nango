@@ -3,64 +3,119 @@ import path from 'path';
 import fs from 'fs';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
-import { loadStandardConfig } from './nango-config.service.js';
-import type { NangoConfig, NangoIntegration, NangoModelV1, StandardNangoConfig } from '../models/NangoConfig.js';
 import { errorManager } from '../index.js';
 import { stringifyError } from '@nangohq/utils';
-import type { ScriptTypeLiteral } from '@nangohq/types';
-
-export interface Config {
-    integrations: NangoIntegration & NangoModelV1;
-}
+import type { FlowsYaml, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
+import { NangoYamlParserV2 } from '@nangohq/nango-yaml';
 
 class FlowService {
-    // TODO: cache this
-    public getAllAvailableFlows(): Config {
+    flowsRaw: FlowsYaml | undefined;
+    flowsStandard: StandardNangoConfig[] | undefined;
+
+    public getAllAvailableFlows(): FlowsYaml {
+        if (this.flowsRaw) {
+            return this.flowsRaw;
+        }
+
         try {
             const flowPath = path.join(dirname(import.meta.url), '../../flows.yaml');
-            const flows = yaml.load(fs.readFileSync(flowPath).toString()) as Config;
+            this.flowsRaw = yaml.load(fs.readFileSync(flowPath).toString()) as FlowsYaml;
 
-            if (flows === undefined || !('integrations' in flows) || Object.keys(flows.integrations).length <= 0) {
+            if (this.flowsRaw === undefined || !('integrations' in this.flowsRaw) || Object.keys(this.flowsRaw.integrations).length <= 0) {
                 throw new Error('empty_flows');
             }
 
-            return flows;
+            return this.flowsRaw;
         } catch (err) {
             errorManager.report(`failed_to_find_flows, ${stringifyError(err)}`);
-            return {} as Config;
+            return {} as FlowsYaml;
         }
     }
 
-    // TODO: cache this
     public getAllAvailableFlowsAsStandardConfig(): StandardNangoConfig[] {
+        if (this.flowsStandard) {
+            return this.flowsStandard;
+        }
+
         const config = this.getAllAvailableFlows();
         const { integrations: allIntegrations } = config;
 
         const standardConfig: StandardNangoConfig[] = [];
 
         for (const providerConfigKey in allIntegrations) {
-            const integrations = allIntegrations[providerConfigKey] as NangoIntegration & NangoModelV1;
-            const { models, rawName, ...flow } = integrations;
-            const nangoConfig: NangoConfig = {
-                integrations: {
-                    [providerConfigKey]: flow
-                },
-                models: models as NangoModelV1
+            const flow = allIntegrations[providerConfigKey];
+            if (!flow) {
+                continue;
+            }
+
+            const { models, ...rest } = flow;
+            const parser = new NangoYamlParserV2({
+                raw: { integrations: { [providerConfigKey]: rest }, models: models },
+                yaml: ''
+            });
+            parser.parse(); // we assume it's valid because it's coming from a pre-validated CI
+            const parsed = parser.parsed!;
+            const integration = parsed.integrations.find((value) => value.providerConfigKey === providerConfigKey)!;
+
+            const std: StandardNangoConfig = {
+                providerConfigKey,
+                actions: [],
+                syncs: [],
+                [`on-events`]: []
             };
 
-            const { success, response } = loadStandardConfig(nangoConfig);
-
-            if (success && response) {
-                if (rawName) {
-                    const responseWithRaw = response.map((standardConfigItem) => {
-                        return { ...standardConfigItem, rawName };
+            for (const item of [...integration.actions, ...integration.syncs]) {
+                if (item.type === 'action') {
+                    std.actions.push({
+                        name: item.name,
+                        type: item.type,
+                        returns: item.output || [],
+                        description: item.description,
+                        runs: '',
+                        scopes: item.scopes,
+                        version: item.version || null,
+                        is_public: true,
+                        pre_built: true,
+                        endpoints: item.endpoint ? [item.endpoint] : [],
+                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        enabled: false,
+                        models: item.usedModels.map((name) => parsed.models.get(name)!),
+                        last_deployed: null,
+                        webhookSubscriptions: [],
+                        json_schema: null,
+                        metadata: { description: item.description, scopes: item.scopes }
                     });
-                    standardConfig.push(...(responseWithRaw as unknown as StandardNangoConfig[]));
                 } else {
-                    standardConfig.push(...response);
+                    std.syncs.push({
+                        name: item.name,
+                        type: item.type,
+                        returns: item.output || [],
+                        description: item.description,
+                        track_deletes: item.track_deletes,
+                        auto_start: item.auto_start,
+                        sync_type: item.sync_type,
+                        attributes: {},
+                        scopes: item.scopes,
+                        version: item.version || null,
+                        is_public: true,
+                        pre_built: true,
+                        endpoints: item.endpoints,
+                        input: item.input ? parsed.models.get(item.input) : undefined,
+                        runs: item.runs,
+                        enabled: false,
+                        models: item.usedModels.map((name) => parsed.models.get(name)!),
+                        last_deployed: null,
+                        webhookSubscriptions: [],
+                        json_schema: null,
+                        metadata: { description: item.description, scopes: item.scopes }
+                    });
                 }
             }
+
+            standardConfig.push(std);
         }
+
+        this.flowsStandard = standardConfig;
 
         return standardConfig;
     }

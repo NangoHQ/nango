@@ -1,0 +1,26 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Messages">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /messages` | An action that sends a message to a slack channel. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/actions/send-message.md) |
+| `GET /messages` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
+</Accordion>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /users` | Syncs information about all Users on the Slack workspace | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/users.md) |
+| `GET /channels` | Syncs information about all Slack channels. Which channels get synced<br />(public, private, IMs, group DMs) depends on the scopes. If<br />joinPublicChannels is set to true, the bot will automatically join all<br />public channels as well. Scopes: At least one of channels:read,<br />groups:read, mpim:read, im:read. To also join public channels:<br />channels:join | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/channels.md) |
+| `GET /messages-reply` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
+| `GET /messages-reaction` | Syncs Slack messages, thread replies and reactions from messages &<br />thread replies for all channels, group dms and dms the bot is a part<br />of. For every channel it will do an initial full sync on first<br />detection of the channel. For subsequent runs it will sync messages,<br />threads & reactions from the last 10 days. Scopes required:<br />channels:read, and at least one of<br />channels:history, groups:history, mpim:history, im:history | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/slack/syncs/messages.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

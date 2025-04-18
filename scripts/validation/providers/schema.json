@@ -39,7 +39,8 @@
                         "TABLEAU",
                         "JWT",
                         "BILL",
-                        "TWO_STEP"
+                        "TWO_STEP",
+                        "SIGNATURE"
                     ]
                 },
                 "authorization_method": {
@@ -87,12 +88,18 @@
                 "authorization_url": {
                     "type": "string"
                 },
-                "authorization_url_encode": {
-                    "type": "boolean"
+                "authorization_url_skip_encode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "authorization_url_replacements": {
                     "type": "object",
                     "additionalProperties": true
+                },
+                "authorization_code_param_in_callback": {
+                    "type": "string"
                 },
                 "body_format": {
                     "type": "string"
@@ -100,7 +107,38 @@
                 "categories": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "accounting",
+                            "analytics",
+                            "ats",
+                            "banking",
+                            "cms",
+                            "communication",
+                            "crm",
+                            "design",
+                            "dev-tools",
+                            "e-commerce",
+                            "erp",
+                            "gaming",
+                            "hr",
+                            "invoicing",
+                            "knowledge-base",
+                            "legal",
+                            "marketing",
+                            "other",
+                            "payment",
+                            "popular",
+                            "productivity",
+                            "search",
+                            "social",
+                            "sports",
+                            "storage",
+                            "support",
+                            "surveys",
+                            "ticketing",
+                            "video"
+                        ]
                     }
                 },
                 "connection_configuration": {
@@ -133,12 +171,14 @@
                 "proxy": {
                     "type": "object",
                     "additionalProperties": false,
+                    "required": ["base_url"],
                     "properties": {
                         "base_url": {
                             "type": "string"
                         },
-                        "connection_base_url": {
-                            "type": "string"
+                        "connection_config": {
+                            "type": "object",
+                            "additionalProperties": true
                         },
                         "decompress": {
                             "type": "boolean"
@@ -147,7 +187,7 @@
                             "type": "object",
                             "additionalProperties": false,
                             "patternProperties": {
-                                "^[a-zA-Z0-9-]+$": {
+                                "^[a-z0-9_-]+$": {
                                     "type": "string"
                                 }
                             }
@@ -199,24 +239,36 @@
                             "additionalProperties": false,
                             "properties": {
                                 "after": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
                                 },
                                 "at": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
+                                },
+                                "remaining": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9-]+$"
+                                },
+                                "error_code": {
+                                    "type": "number"
                                 }
                             }
                         },
                         "verification": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["endpoint"],
+                            "required": ["endpoints"],
                             "properties": {
                                 "method": {
                                     "type": "string",
                                     "enum": ["GET", "POST"]
                                 },
-                                "endpoint": {
-                                    "type": "string"
+                                "endpoints": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "base_url_override": {
                                     "type": "string"
@@ -229,6 +281,9 @@
                                             "type": "string"
                                         }
                                     }
+                                },
+                                "data": {
+                                    "type": "object"
                                 }
                             }
                         }
@@ -240,7 +295,7 @@
                         "expires_in_ms": {
                             "type": "number"
                         },
-                        "headers": {
+                        "header": {
                             "type": "object",
                             "properties": {
                                 "alg": {
@@ -288,12 +343,63 @@
                 "request_url": {
                     "type": "string"
                 },
+                "additional_steps": {
+                    "type": "array",
+                    "additionalProperties": true,
+                    "properties": {
+                        "body_format": {
+                            "type": "string",
+                            "enum": ["form"]
+                        },
+                        "token_params": {
+                            "type": "object",
+                            "properties": {
+                                "grant_type": {
+                                    "type": "string",
+                                    "enum": ["urn:salesforce:grant-type:external:cdp"]
+                                },
+                                "subject_token": {
+                                    "type": "string"
+                                },
+                                "subject_token_type": {
+                                    "type": "string",
+                                    "enum": ["urn:ietf:params:oauth:token-type:access_token"]
+                                }
+                            },
+                            "required": ["grant_type", "subject_token", "subject_token_type"]
+                        },
+                        "token_headers": {
+                            "type": "object",
+                            "properties": {
+                                "content-type": {
+                                    "type": "string",
+                                    "enum": ["application/x-www-form-urlencoded"]
+                                }
+                            },
+                            "required": ["content-type"]
+                        },
+                        "token_url": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["body_format", "token_params", "token_headers", "token_url"]
+                },
                 "scope_separator": {
                     "type": "string"
                 },
                 "signature_method": {
                     "type": "string",
                     "enum": ["HMAC-SHA1", "PLAINTEXT"]
+                },
+                "signature": {
+                    "type": "object",
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "enum": ["WSSE", "RSA", "HMAC"]
+                        }
+                    },
+                    "required": ["protocol"]
                 },
                 "token_expiration_buffer": {
                     "type": "number"
@@ -304,10 +410,22 @@
                     "properties": {
                         "grant_type": {
                             "type": "string",
-                            "enum": ["authorization_code", "client_credentials"]
+                            "enum": [
+                                "authorization_code",
+                                "client_credentials",
+                                "urn:ietf:params:oauth:grant-type:saml2-bearer",
+                                "urn:ietf:params:oauth:grant-type:jwt-bearer"
+                            ]
                         },
                         "request": {
-                            "type": "string"
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
                         }
                     }
                 },
@@ -347,6 +465,9 @@
                         "type": "string"
                     }
                 },
+                "credentials_verification_script": {
+                    "type": "string"
+                },
                 "token_url": {
                     "oneOf": [
                         {
@@ -384,8 +505,11 @@
                         }
                     ]
                 },
-                "token_url_encode": {
-                    "type": "boolean"
+                "token_url_skip_encode": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "webhook_user_defined_secret": {
                     "type": "boolean"
@@ -422,10 +546,17 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "order": {
                                     "type": "number"
+                                },
+                                "secret": {
+                                    "type": "boolean"
+                                },
+                                "prefix": {
+                                    "type": "string"
                                 },
                                 "suffix": {
                                     "type": "string"
@@ -436,6 +567,9 @@
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
+                                },
+                                "automated": {
+                                    "type": "boolean"
                                 }
                             }
                         }
@@ -467,10 +601,14 @@
                                     "type": "string"
                                 },
                                 "format": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": ["hostname", "uri", "uuid", "email"]
                                 },
                                 "default_value": {
                                     "type": "string"
+                                },
+                                "secret": {
+                                    "type": "boolean"
                                 },
                                 "hidden": {
                                     "type": "boolean"
@@ -481,6 +619,9 @@
                                 "doc_section": {
                                     "type": "string",
                                     "pattern": "^#[a-z0-9-]+$"
+                                },
+                                "optional": {
+                                    "type": "boolean"
                                 }
                             }
                         }

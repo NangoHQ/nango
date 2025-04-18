@@ -1,27 +1,18 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { AuthCredentials, NangoError } from '@nangohq/shared';
-import {
-    environmentService,
-    errorManager,
-    analytics,
-    AnalyticsTypes,
-    configService,
-    connectionService,
-    LogActionEnum,
-    telemetry,
-    LogTypes,
-    getProvider
-} from '@nangohq/shared';
+import db from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { AnalyticsTypes, analytics, configService, connectionService, environmentService, errorManager, getProvider, linkConnection } from '@nangohq/shared';
+import { stringifyError } from '@nangohq/utils';
+
+import publisher from '../clients/publisher.client.js';
+import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
+import { getConnectSession } from '../services/connectSession.service.js';
+import oAuthSessionService from '../services/oauth-session.service.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
-import oAuthSessionService from '../services/oauth-session.service.js';
-import publisher from '../clients/publisher.client.js';
-import { logContextGetter } from '@nangohq/logs';
-import { stringifyError } from '@nangohq/utils';
-import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { linkConnection } from '../services/endUser.service.js';
-import db from '@nangohq/database';
-import { getConnectSession } from '../services/connectSession.service.js';
+
+import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
+import type { AuthCredentials, NangoError } from '@nangohq/shared';
+import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
     async connect(req: Request, res: Response<any, never>, _next: NextFunction) {
@@ -62,7 +53,7 @@ class AppAuthController {
         void analytics.track(AnalyticsTypes.PRE_APP_AUTH, account.id);
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
-        const logCtx = await logContextGetter.get({ id: session.activityLogId });
+        const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
 
         try {
             if (!providerConfigKey) {
@@ -75,7 +66,7 @@ class AppAuthController {
             const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
-                await logCtx.error('Error during API Key auth: config not found');
+                void logCtx.error('Error during API Key auth: config not found');
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -87,7 +78,7 @@ class AppAuthController {
 
             const provider = getProvider(config.provider);
             if (!provider) {
-                await logCtx.error('Unknown provider');
+                void logCtx.error('Unknown provider');
                 await logCtx.failed();
                 res.status(404).send({ error: { code: 'unknown_provider_template' } });
                 return;
@@ -96,7 +87,7 @@ class AppAuthController {
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['APP'] as string);
 
             if (provider.auth_mode !== 'APP') {
-                await logCtx.error('Provider does not support app creation', { provider: config.provider });
+                void logCtx.error('Provider does not support app creation', { provider: config.provider });
                 await logCtx.failed();
 
                 errorManager.errRes(res, 'invalid_auth_mode');
@@ -105,7 +96,7 @@ class AppAuthController {
             }
 
             if (action === 'request') {
-                await logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
+                void logCtx.error('App types do not support the request flow. Please use the github-app-oauth provider for the request flow.', {
                     provider: config.provider,
                     url: req.originalUrl
                 });
@@ -123,10 +114,11 @@ class AppAuthController {
 
             if (missesInterpolationParam(tokenUrl, connectionConfig)) {
                 const error = WSErrBuilder.InvalidConnectionConfig(tokenUrl, JSON.stringify(connectionConfig));
-                await logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
+                void logCtx.error(error.message, { connectionConfig, url: req.originalUrl });
                 await logCtx.failed();
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error);
+                return;
             }
 
             if (!installation_id) {
@@ -138,21 +130,8 @@ class AppAuthController {
             const { success, error, response: credentials } = await connectionService.getAppCredentials(provider, config, connectionConfig);
 
             if (!success || !credentials) {
-                await logCtx.error('Error during app token retrieval call', { error });
+                void logCtx.error('Error during app token retrieval call', { error });
                 await logCtx.failed();
-
-                await telemetry.log(
-                    LogTypes.AUTH_TOKEN_REQUEST_FAILURE,
-                    `App auth token retrieval request process failed ${error?.message}`,
-                    LogActionEnum.AUTH,
-                    {
-                        environmentId: String(environment.id),
-                        providerConfigKey: String(providerConfigKey),
-                        connectionId: String(connectionId),
-                        authMode: String(provider.auth_mode),
-                        level: 'error'
-                    }
-                );
 
                 void connectionCreationFailedHook(
                     {
@@ -166,11 +145,12 @@ class AppAuthController {
                         },
                         operation: 'unknown'
                     },
-                    session.provider,
-                    logCtx
+                    account,
+                    config
                 );
 
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                return;
             }
 
             const [updatedConnection] = await connectionService.upsertConnection({
@@ -183,63 +163,59 @@ class AppAuthController {
                 accountId: account.id
             });
             if (!updatedConnection) {
-                await logCtx.error('Failed to create connection');
+                void logCtx.error('Failed to create connection');
                 await logCtx.failed();
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to create connection'));
+                return;
             }
 
+            let connectSession: ConnectSessionAndEndUser | undefined;
             if (session.connectSessionId) {
-                const connectSession = await getConnectSession(db.knex, { id: session.connectSessionId, accountId: account.id, environmentId: environment.id });
-                if (connectSession.isErr()) {
-                    await logCtx.error('Failed to get session');
+                const connectSessionRes = await getConnectSession(db.knex, {
+                    id: session.connectSessionId,
+                    accountId: account.id,
+                    environmentId: environment.id
+                });
+                if (connectSessionRes.isErr()) {
+                    void logCtx.error('Failed to get session');
                     await logCtx.failed();
-                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    await publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                    return;
                 }
 
-                await linkConnection(db.knex, { endUserId: connectSession.value.endUserId, connection: updatedConnection.connection });
+                connectSession = connectSessionRes.value;
+                await linkConnection(db.knex, { endUserId: connectSession.connectSession.endUserId, connection: updatedConnection.connection });
             }
 
-            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id!, connectionName: updatedConnection.connection.connection_id });
+            await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
                     environment,
                     account,
                     auth_mode: 'APP',
-                    operation: updatedConnection.operation
+                    operation: updatedConnection.operation,
+                    endUser: connectSession?.endUser
                 },
-                session.provider,
+                account,
+                config,
                 logContextGetter,
-                undefined,
-                logCtx
+                undefined
             );
 
-            await logCtx.info('App connection was successful and credentials were saved');
+            void logCtx.info('App connection was successful and credentials were saved');
             await logCtx.success();
 
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_SUCCESS, 'App auth token request succeeded', LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                provider: String(config.provider),
-                connectionId: String(connectionId),
-                authMode: String(provider.auth_mode)
-            });
-
-            return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            await publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            return;
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
             const content = error.message + '\n' + prettyError;
 
-            await logCtx.error(error.message, { error: err, url: req.originalUrl });
+            void logCtx.error(error.message, { error: err, url: req.originalUrl });
             await logCtx.failed();
-
-            await telemetry.log(LogTypes.AUTH_TOKEN_REQUEST_FAILURE, `App auth request process failed ${content}`, LogActionEnum.AUTH, {
-                environmentId: String(environment.id),
-                providerConfigKey: String(providerConfigKey),
-                connectionId: String(receivedConnectionId)
-            });
 
             void connectionCreationFailedHook(
                 {
@@ -253,8 +229,7 @@ class AppAuthController {
                     },
                     operation: 'unknown'
                 },
-                'unknown',
-                logCtx
+                account
             );
 
             return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.UnknownError(prettyError));

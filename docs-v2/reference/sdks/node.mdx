@@ -347,8 +347,21 @@ await nango.listConnections();
 **Parameters**
 
 <Expandable>
-    <ResponseField name="connectionId" type="string" required>
-        Filter the list of connections based on this connection ID. If ommitted, returns all connections.
+    <ResponseField name="connectionId" type="string">
+        Optional. Will exactly match a given connectionId. Can return multiple connections with the same ID across integrations.
+    </ResponseField>
+    <ResponseField name="search" type="string">
+        Optional. Search connections. Will search in connection ID or end user profile.
+    </ResponseField>
+    <ResponseField name="queries" type="object">
+        <Expandable title="queries" defaultOpen>
+            <ResponseField name="endUserId" type="string">
+                Optional. Will exactly match a given end user ID.
+            </ResponseField>
+            <ResponseField name="endUserOrganizationId" type="string">
+                Optional. Will exactly match a given end organization ID.
+            </ResponseField>
+        </Expandable>
     </ResponseField>
 </Expandable>
 
@@ -376,7 +389,14 @@ await nango.listConnections();
             "metadata": {
                 "bot_id": "some-uuid"
             },
-            errors: [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}]
+            "errors": [{ "type": "auth", "log_id": "VrnbtykXJFckCm3HP93t"}],
+            "end_user": {
+                "id": "your-internal-id",
+                "email": "user@example.com",
+                "organization": {
+                    "id": "user-organization-id"
+                }
+            }
         }
     ]
 }
@@ -394,7 +414,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/integrate/guides/proxy-requests-to-an-api)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/proxy-requests)).
 </Info>
 
 <Tip>
@@ -447,7 +467,6 @@ We recommend not caching tokens for longer than 5 minutes to ensure they are fre
         "realmId": "XXXXX",
         "instance_id": "YYYYYYY"
     },
-    "account_id": 0,
     "metadata": {
         "myProperty": "yes",
         "filter": "closed=true"
@@ -782,6 +801,306 @@ const scriptsConfig = await nango.getScriptsConfig();
 ```
 </Expandable>
 
+You can also pass in an optional argument with the value of `nango` or `openai`. The default is `nango`
+
+```ts
+const scriptsConfig = await nango.getScriptsConfig('openai');
+```
+<Expandable>
+```json
+{
+  "data": [
+    {
+      "name": "calendars",
+      "description": "Sync the user's calendar list.\nIncludes all calendars the user has access to.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "events",
+      "description": "Sync calendar events from the primary calendar.\nIncludes events from the past month.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "cancel-event",
+      "description": "Cancel/delete an event by searching for it.\n\nInput parameters:\n- title: The title of the event to cancel\n- date: The date of the event in ISO format\n- time: The time of the event in 24-hour format (HH:mm)\n- calendar: Calendar ID where to search for the event\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to cancel"
+          },
+          "date": {
+            "type": "string",
+            "description": "The date of the event in ISO format"
+          },
+          "time": {
+            "type": "string",
+            "description": "The time of the event in 24-hour format (HH:mm)"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID where to search for the event"
+          }
+        },
+        "required": [
+          "id",
+          "summary"
+        ]
+      }
+    },
+    {
+      "name": "create-event",
+      "description": "Create a new calendar event.\n\nInput parameters:\n- summary: The title/summary of the event\n- description: A detailed description of the event\n- location: The location of the event\n- start: The start time of the event in ISO format\n- end: The end time of the event in ISO format\n- attendees: List of email addresses to invite\n- recurrence: List of recurrence rules in RRULE format\n- calendar: Calendar ID to create the event in\n- id: Calendar identifier\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "The title/summary of the event"
+          },
+          "description": {
+            "type": "string",
+            "description": "A detailed description of the event"
+          },
+          "location": {
+            "type": "string",
+            "description": "The location of the event"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "start": {
+            "type": "string",
+            "description": "The start time of the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The end time of the event in ISO format"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of email addresses to invite"
+          },
+          "recurrence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of recurrence rules in RRULE format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to create the event in"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "move-event",
+      "description": "Move an event to a different time or calendar.\n\nInput parameters:\n- eventId: The ID of the event to move\n- title: The title of the event to move\n- sourceStart: The current start time of the event\n- start: The new start time for the event in ISO format\n- end: The new end time for the event in ISO format\n- calendar: Calendar ID to move the event to\n- id: Calendar identifier\n- summary: Calendar name/title\n- description: Calendar description\n- location: Calendar location\n- timeZone: Time zone of the calendar\n- backgroundColor: Calendar color in UI\n- foregroundColor: Text color in UI\n- selected: Whether the calendar is selected in UI\n- accessRole: User's access role for the calendar\n- primary: Whether this is the primary calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calendar identifier"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Calendar name/title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Calendar description"
+          },
+          "location": {
+            "type": "string",
+            "description": "Calendar location"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "Time zone of the calendar"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Calendar color in UI"
+          },
+          "foregroundColor": {
+            "type": "string",
+            "description": "Text color in UI"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "Whether the calendar is selected in UI"
+          },
+          "accessRole": {
+            "type": "string",
+            "description": "User's access role for the calendar"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary calendar"
+          },
+          "eventId": {
+            "type": "string",
+            "description": "The ID of the event to move"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the event to move"
+          },
+          "sourceStart": {
+            "type": "string",
+            "description": "The current start time of the event"
+          },
+          "start": {
+            "type": "string",
+            "description": "The new start time for the event in ISO format"
+          },
+          "end": {
+            "type": "string",
+            "description": "The new end time for the event in ISO format"
+          },
+          "calendar": {
+            "type": "string",
+            "description": "Calendar ID to move the event to"
+          }
+        },
+        "required": [
+          "id",
+          "summary",
+          "start",
+          "end"
+        ]
+      }
+    },
+    {
+      "name": "whoami",
+      "description": "Get information about the authenticated user.\n\nNo input parameters.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "invite-user-to-repository",
+      "description": "Invite a user to a GitHub repository.\n\nInput parameters:\n- owner: The owner (user or organization) of the repository\n- repo: The name of the repository to invite the user to\n- username: The GitHub username of the user to invite\n- permission: The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "The owner (user or organization) of the repository"
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository to invite the user to"
+          },
+          "username": {
+            "type": "string",
+            "description": "The GitHub username of the user to invite"
+          },
+          "permission": {
+            "type": "string",
+            "description": "The permission level to grant (\"pull\", \"push\", \"admin\", \"maintain\", \"triage\")"
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "username"
+        ]
+      }
+    }
+  ]
+}
+```
+</Expandable>
+
 # Syncs
 
 ### Get records
@@ -798,10 +1117,6 @@ const records = await nango.listRecords<ModelName>({
 });
 ```
 
-<Warning>
-`nango.getRecords()` is deprecated and will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
-</Warning>
-
 **Parameters**
 
 <Expandable>
@@ -817,6 +1132,10 @@ const records = await nango.listRecords<ModelName>({
 
       <ResponseField name="model" type="string" required>
         The name of the model of the data you want to retrieve.
+      </ResponseField>
+
+      <ResponseField name="variant" type="string">
+        The variant of the model to fetch. When omitted, the default base variant is used.
       </ResponseField>
 
       <ResponseField name="cursor" type="string">
@@ -841,6 +1160,10 @@ const records = await nango.listRecords<ModelName>({
 
       <ResponseField name="modifiedAfter" type="string">
         Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+      </ResponseField>
+
+      <ResponseField name="ids" type="string[]">
+        An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
       </ResponseField>
 
       <ResponseField name="delta" type="string">
@@ -884,7 +1207,14 @@ This endpoint returns a list of records, ordered by modification date ascending.
 Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
 ```ts
-const records = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+// Simple usage with sync names
+const result = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>', 'incremental');
+
+// Using variants
+const resultWithVariants = await nango.triggerSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>', 'incremental');
 ```
 
 **Parameters**
@@ -893,11 +1223,20 @@ const records = await nango.triggerSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs to trigger. If the array is empty, all syncs are triggered.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, the sync will trigger for all relevant connections.
+    </ResponseField>
+    <ResponseField name="sync_mode" type="'incremental' | 'full_refresh' | 'full_refresh_and_clear_cache'">
+        The mode in which to trigger the syncs.
+        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
     </ResponseField>
 </Expandable>
 
@@ -909,8 +1248,15 @@ Empty response.
 
 Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
 
-```js
-await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.startSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -919,11 +1265,14 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs that should be triggered.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
-        The connection ID. If ommitted, the sync will trigger for all relevant connections.
+        The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
 </Expandable>
 
@@ -935,8 +1284,15 @@ Empty response.
 
 Pauses the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
-```js
-await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.pauseSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.pauseSync('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -945,11 +1301,14 @@ await nango.startSync('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNEC
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
+    <ResponseField name="syncs" type="Array<string | {name: string, variant: string}>" required>
         The name of the syncs that should be paused.
+        Each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
-        The connection ID. If ommitted, the sync will pause for all relevant connections.
+        The connection ID. If omitted, the sync will pause for all relevant connections.
     </ResponseField>
 </Expandable>
 
@@ -961,8 +1320,18 @@ Empty response.
 
 Get the status of specified sync(s) for a given connection or all applicable connections if no connection is specified.
 
-```js
-await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>')
+```ts
+// Simple usage with sync names
+await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNECTION_ID>');
+
+// Using variants
+await nango.syncStatus('<INTEGRATION-ID>', [
+  { name: 'SYNC_NAME1', variant: 'VARIANT_A' },
+  'SYNC_NAME2' // Uses default base variant
+], '<CONNECTION_ID>');
+
+// Get all syncs
+await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
 ```
 
 **Parameters**
@@ -971,8 +1340,11 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="syncs" type="string[]" required>
-        The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs.
+    <ResponseField name="syncs" type="string | Array<string | {name: string, variant: string}>" required>
+        Either "*" to return all syncs, or an array of syncs to fetch status for.
+        When using an array, each sync can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string">
         The connection ID. If omitted, all connections will be surfaced.
@@ -987,13 +1359,25 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
     "syncs": [
         {
             "id": "<string>",
+            "connection_id": "<string>",
             "name": "<string>",
+            "variant": "<string>",
             "status": "RUNNING",
             "type": "INCREMENTAL",
             "finishedAt": "<string>",
             "nextScheduledSyncAt": "<string>",
             "frequency": "<string>",
-            "latestResult": {}
+            "latestResult": {
+                "<string>": {
+                    "added": <number>,
+                    "updated": <number>,
+                    "deleted": <number>,
+                }
+            },
+            "recordCount": {
+                "<string>": <number>
+                ...
+            }
         }
     ]
 }
@@ -1004,8 +1388,12 @@ await nango.syncStatus('<INTEGRATION-ID>', ['SYNC_NAME1', 'SYNC_NAME2'], '<CONNE
 
 Override a sync's default frequency for a specific connection, or revert to the default frequency.
 
-```js
-await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CONNECTION_ID>', '<FREQUENCY>')
+```ts
+// For base variant
+await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CONNECTION_ID>', '<FREQUENCY>');
+
+// For a specific variant
+await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', { name: 'SYNC_NAME', variant: 'VARIANT_NAME' }, '<CONNECTION_ID>', '<FREQUENCY>');
 ```
 
 **Parameters**
@@ -1014,8 +1402,10 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
     <ResponseField name="providerConfigKey" type="string" required>
         The integration ID.
     </ResponseField>
-    <ResponseField name="sync" type="string" required>
-        The name of the sync.
+    <ResponseField name="sync" type="string | {name: string, variant: string}" required>
+        The sync to update. Can be specified as either:
+        - A string: the sync name (uses the default base variant)
+        - An object: with name and variant properties to target a specific sync variant
     </ResponseField>
     <ResponseField name="connectionId" type="string" required>
         The connection ID.
@@ -1031,6 +1421,96 @@ await nango.updateSyncConnectionFrequency('<INTEGRATION-ID>', 'SYNC_NAME', '<CON
 ```json
 {
     "frequency": "<string>"
+}
+```
+</Expandable>
+
+### Create sync variant
+
+Creates a new sync variant for a specific connection. Sync variants allow you to run multiple instances of the same sync with different configurations.
+
+```ts
+await nango.createSyncVariant({
+  provider_config_key: '<INTEGRATION-ID>',
+  connection_id: '<CONNECTION_ID>',
+  name: 'SYNC_NAME',
+  variant: 'VARIANT_NAME'
+});
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="provider_config_key" type="string" required>
+                The integration ID.
+            </ResponseField>
+            <ResponseField name="connection_id" type="string" required>
+                The connection ID.
+            </ResponseField>
+            <ResponseField name="name" type="string" required>
+                The name of the sync.
+            </ResponseField>
+            <ResponseField name="variant" type="string" required>
+                The name of the variant to create. Cannot be "base" (protected name).
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "id": "12345",
+    "name": "SYNC_NAME",
+    "variant": "VARIANT_NAME"
+}
+```
+</Expandable>
+
+### Delete sync variant
+
+Deletes a sync variant for a specific connection.
+
+```ts
+await nango.deleteSyncVariant({
+  provider_config_key: '<INTEGRATION-ID>',
+  connection_id: '<CONNECTION_ID>',
+  name: 'SYNC_NAME',
+  variant: 'VARIANT_NAME'
+});
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="props" type="object" required>
+        <Expandable title="props" defaultOpen>
+            <ResponseField name="provider_config_key" type="string" required>
+                The integration ID.
+            </ResponseField>
+            <ResponseField name="connection_id" type="string" required>
+                The connection ID.
+            </ResponseField>
+            <ResponseField name="name" type="string" required>
+                The name of the sync.
+            </ResponseField>
+            <ResponseField name="variant" type="string" required>
+                The name of the variant to delete. Cannot be "base" (protected name).
+            </ResponseField>
+        </Expandable>
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "success": true
 }
 ```
 </Expandable>
@@ -1082,7 +1562,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
     <ResponseField name="actionName" type="string" required>
         The name of the action to trigger.
     </ResponseField>
-    <ResponseField name="input" type="unkown" required>
+    <ResponseField name="input" type="unknown" required>
         The necessary input for your action's `runAction` function.
     </ResponseField>
 </Expandable>
@@ -1099,7 +1579,7 @@ await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION_ID>', '<ACTION-NAME>'
 
 # Proxy
 
-Makes an HTTP request using the [proxy](/understand/concepts/proxy):
+Makes an HTTP request using the [proxy](/guides/proxy-requests):
 
 ```js
 const config = {
@@ -1145,7 +1625,7 @@ await nango.delete(config); // DELETE request
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be ommitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
+                The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
             </ResponseField>
             <ResponseField name="decompress" type="boolean">
                 Override the decompress option when making requests. Optional, defaults to false
@@ -1202,7 +1682,7 @@ const { data } = await nango.createConnectSession({
       <ResponseField name="id" type="string" required>
         The unique identifier for the end user.
       </ResponseField>
-      <ResponseField name="email" type="string" required>
+      <ResponseField name="email" type="string">
         The email address of the end user.
       </ResponseField>
       <ResponseField name="display_name" type="string">
@@ -1243,6 +1723,108 @@ const { data } = await nango.createConnectSession({
 }
 ```
 </Expandable>
+
+
+### Create a reconnect session
+
+Create a reconnect session for a given `connection_id`. Optionally, you can set `end_user` and `organization` to update those attributes of the connection.
+Use this method when a user needs to input new credentials or to manually refresh token.
+
+<Info>This method is only compatible with `connection_id` created with a session token.</Info>
+
+```js
+const { data } = await nango.createReconnectSession({
+  // Required
+  connection_id: '<CONNECTION-ID>'
+  integration_id: '<INTEGRATION-ID>',
+
+  // Optional
+  end_user: {
+    id: '<END-USER-ID>',
+    email: '<END-USER-EMAIL>',
+    display_name: '<END-USER-NAME>'
+  },
+  organization: {
+    id: '<ORGANIZATION-ID>',
+    display_name: '<ORGANIZATION-NAME>'
+  },
+  integrations_config_defaults: {
+    <INTEGRATION-ID-1>: {
+      connection_config: {
+        <CONFIG-KEY>: '<VALUE>'
+      }
+    }
+  }
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="connection_id" type="string" required>
+    The unique identifier for the connection.
+  </ResponseField>
+
+  <ResponseField name="integration_id" type="string" required>
+    The unique identifier for the integration.
+  </ResponseField>
+
+  <ResponseField name="end_user" type="object">
+    <Expandable title="end_user">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the end user.
+      </ResponseField>
+      <ResponseField name="email" type="string">
+        The email address of the end user.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the end user.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="organization" type="object">
+    <Expandable title="organization">
+      <ResponseField name="id" type="string" required>
+        The unique identifier for the organization.
+      </ResponseField>
+      <ResponseField name="display_name" type="string">
+        The display name of the organization.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+
+  <ResponseField name="integrations_config_defaults" type="object">
+    Default configuration for specific integrations.
+  </ResponseField>
+</Expandable>
+
+**Returns**
+
+<Expandable>
+```json
+{
+    "data": {
+        "token": "nango_connect_session_4603dbca8a588315ba69b5bfddde52e72d312dc2d2870bd5e45da6357333601c",
+        "expires_at": "2024-09-27T19:49:51.449Z"
+    }
+}
+```
+</Expandable>
+
+# Webhook
+
+### Verify Webhook Signature
+
+Asserts that a Webhook is coming from Nango's backend.
+
+```js
+async (req, res) => {
+    const signature = req.headers['x-nango-signature'];
+    const isValid = nango.verifyWebhookSignature(signature, req.body);
+}
+```
+
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

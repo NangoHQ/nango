@@ -32,9 +32,11 @@ const handler = (scheduler: Scheduler) => {
             scheduleName: req.body.scheduleName
         });
         if (schedule.isErr()) {
-            return res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });
+            res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });
+            return;
         }
-        return res.status(200).json({ scheduleId: schedule.value.id });
+        res.status(200).json({ scheduleId: schedule.value.id });
+        return;
     };
 };
 

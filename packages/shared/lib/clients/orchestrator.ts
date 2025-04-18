@@ -1,11 +1,9 @@
 import ms from 'ms';
 import type { StringValue } from 'ms';
-import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import { Err, Ok, stringifyError, metrics, errorToObject } from '@nangohq/utils';
 import type { Result } from '@nangohq/utils';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
-import telemetry, { LogTypes } from '../utils/telemetry.js';
-import type { NangoConnection } from '../models/Connection.js';
 import { v4 as uuid } from 'uuid';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -14,22 +12,26 @@ import type {
     ExecuteReturn,
     ExecuteActionProps,
     ExecuteWebhookProps,
-    ExecutePostConnectionProps,
+    ExecuteOnEventProps,
     ExecuteSyncProps,
     VoidReturn,
     OrchestratorTask,
     RecurringProps,
     SchedulesReturn,
-    OrchestratorSchedule
+    OrchestratorSchedule,
+    TaskType
 } from '@nangohq/nango-orchestrator';
-import type { NangoIntegrationData, Sync, SyncConfig } from '../models/index.js';
+import type { NangoIntegrationData, Sync } from '../models/index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import tracer from 'dd-trace';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { getSyncConfigRaw, getSyncConfigBySyncId } from '../services/sync/config/config.service.js';
 import environmentService from '../services/environment.service.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { RecordCount } from '@nangohq/records';
+import type { JsonValue } from 'type-fest';
+import { OtlpSpan } from '@nangohq/logs';
 
 export interface RecordsServiceInterface {
     deleteRecordsBySyncId({
@@ -43,13 +45,14 @@ export interface RecordsServiceInterface {
         model: string;
         syncId: string;
     }): Promise<{ totalDeletedRecords: number }>;
+    getRecordCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
 }
 
 export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
-    executePostConnection(props: ExecutePostConnectionProps): Promise<ExecuteReturn>;
+    executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
@@ -95,45 +98,49 @@ export class Orchestrator {
         return Ok(scheduleMap);
     }
 
-    async triggerAction<T = any>({
+    async triggerAction<T = unknown>({
+        accountId,
         connection,
         actionName,
         input,
         logCtx
     }: {
-        connection: NangoConnection;
+        accountId: number;
+        connection: DBConnection | DBConnectionDecrypted;
         actionName: string;
         input: object;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
+            'account.id': accountId,
             'action.name': actionName,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
             'connection.provider_config_key': connection.provider_config_key,
             'connection.environment_id': connection.environment_id
         };
+
         const span = tracer.startSpan('execute.action', {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
         try {
-            let parsedInput = null;
+            let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('action_failure', { error: errorMsg });
                 throw error;
             }
-            const groupKey: string = 'action';
+            const groupKey: TaskType = 'action';
             const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:action:${actionName}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 actionName,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -150,7 +157,10 @@ export class Orchestrator {
             const res = actionResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
-                    new NangoError('action_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                    new NangoError('action_script_failure', {
+                        error: err.message,
+                        ...(err.payload ? { payload: err.payload } : {})
+                    })
                 );
             });
 
@@ -160,26 +170,12 @@ export class Orchestrator {
 
             const content = `The action was successfully run`;
 
-            await logCtx.info(content, {
+            void logCtx.info(content, {
                 action: actionName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key,
-                truncated_response: JSON.stringify(res.value, null, 2)?.slice(0, 100)
+                truncated_response: JSON.stringify(res.value)?.slice(0, 100)
             });
-
-            await telemetry.log(
-                LogTypes.ACTION_SUCCESS,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    input: JSON.stringify(input, null, 2),
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    actionName
-                },
-                `actionName:${actionName}`
-            );
 
             metrics.increment(metrics.Types.ACTION_SUCCESS);
             return res as Result<T, NangoError>;
@@ -192,7 +188,7 @@ export class Orchestrator {
             }
 
             const content = `Action '${actionName}' failed`;
-            await logCtx.error(content, {
+            void logCtx.error(content, {
                 error: formattedError,
                 action: actionName,
                 connection: connection.connection_id,
@@ -211,22 +207,6 @@ export class Orchestrator {
                 }
             });
 
-            await telemetry.log(
-                LogTypes.ACTION_FAILURE,
-                content,
-                LogActionEnum.ACTION,
-                {
-                    error: stringifyError(err),
-                    input: JSON.stringify(input, null, 2),
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    actionName,
-                    level: 'error'
-                },
-                `actionName:${actionName}`
-            );
-
             metrics.increment(metrics.Types.ACTION_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
@@ -238,7 +218,7 @@ export class Orchestrator {
         }
     }
 
-    async triggerWebhook<T = any>({
+    async triggerWebhook<T = unknown>({
         account,
         environment,
         integration,
@@ -251,9 +231,9 @@ export class Orchestrator {
         account: DBTeam;
         environment: DBEnvironment;
         integration: ProviderConfig;
-        connection: NangoConnection;
+        connection: ConnectionJobs;
         webhookName: string;
-        syncConfig: SyncConfig;
+        syncConfig: DBSyncConfig;
         input: object;
         logContextGetter: LogContextGetter;
     }): Promise<Result<T, NangoError>> {
@@ -276,27 +256,28 @@ export class Orchestrator {
                 account,
                 environment,
                 integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id!, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id!, name: syncConfig.sync_name }
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
             }
         );
+        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         try {
             let parsedInput = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
-            } catch (e: unknown) {
-                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(e)}`;
+            } catch (err) {
+                const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('webhook_failure', { error: errorMsg });
                 throw error;
             }
-            const groupKey: string = 'webhook';
+            const groupKey: TaskType = 'webhook';
             const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:webhook:${webhookName}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 webhookName,
                 parentSyncName: syncConfig.sync_name,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -320,7 +301,7 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            await logCtx.info('The webhook was successfully run', {
+            void logCtx.info('The webhook was successfully run', {
                 action: webhookName,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
@@ -328,7 +309,6 @@ export class Orchestrator {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.WEBHOOK_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
@@ -338,7 +318,7 @@ export class Orchestrator {
                 formattedError = new NangoError('webhook_failure', { error: errorToObject(err) });
             }
 
-            await logCtx.error('The webhook failed', {
+            void logCtx.error('The webhook failed', {
                 error: err,
                 webhook: webhookName,
                 connection: connection.connection_id,
@@ -359,7 +339,6 @@ export class Orchestrator {
                 }
             });
 
-            metrics.increment(metrics.Types.WEBHOOK_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
@@ -367,39 +346,44 @@ export class Orchestrator {
         }
     }
 
-    async triggerPostConnectionScript<T = any>({
+    async triggerOnEventScript<T = unknown>({
+        accountId,
         connection,
         version,
         name,
         fileLocation,
+        async,
         logCtx
     }: {
-        connection: NangoConnection;
+        accountId: number;
+        connection: ConnectionJobs;
         version: string;
         name: string;
         fileLocation: string;
+        async: boolean;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
-            'postConnection.name': name,
+            'account.id': accountId,
+            'onEventScript.name': name,
             'connection.id': connection.id,
             'connection.connection_id': connection.connection_id,
             'connection.provider_config_key': connection.provider_config_key,
             'connection.environment_id': connection.environment_id
         };
-        const span = tracer.startSpan('execute.postConnectionScript', {
+        const span = tracer.startSpan('execute.onEventScript', {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         const startTime = Date.now();
         try {
-            const groupKey: string = 'post-connection-script';
-            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:post-connection-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
+            const groupKey: TaskType = 'on-event';
+            const executionId = `${groupKey}:environment:${connection.environment_id}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
-                postConnectionName: name,
+                onEventName: name,
                 connection: {
-                    id: connection.id!,
+                    id: connection.id,
                     connection_id: connection.connection_id,
                     provider_config_key: connection.provider_config_key,
                     environment_id: connection.environment_id
@@ -408,16 +392,17 @@ export class Orchestrator {
                 activityLogId: logCtx.id,
                 fileLocation
             };
-            const result = await this.client.executePostConnection({
+            const result = await this.client.executeOnEvent({
                 name: executionId,
                 groupKey,
-                args
+                args,
+                async
             });
 
             const res = result.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
-                    new NangoError('post_connection_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
+                    new NangoError('on_event_script_failure', { error: err.message, ...(err.payload ? { payload: err.payload } : {}) })
                 );
             });
 
@@ -425,42 +410,29 @@ export class Orchestrator {
                 throw res.error;
             }
 
-            const content = `The post connection script was successfully run.`;
+            const content = `Script was successfully run.`;
 
-            await logCtx.info(content, {
-                postConnection: name,
+            void logCtx.info(content, {
+                onEventScript: name,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
 
-            await telemetry.log(
-                LogTypes.POST_CONNECTION_SCRIPT_SUCCESS,
-                content,
-                LogActionEnum.POST_CONNECTION_SCRIPT,
-                {
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    name
-                },
-                `postConnectionScript:${name}`
-            );
-
-            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_SUCCESS);
+            metrics.increment(metrics.Types.ON_EVENT_SCRIPT_SUCCESS);
             return res as Result<T, NangoError>;
         } catch (err) {
             let formattedError: NangoError;
             if (err instanceof NangoError) {
                 formattedError = err;
             } else {
-                formattedError = new NangoError('post_connection_failure', { error: errorToObject(err) });
+                formattedError = new NangoError('on_event_failure', { error: errorToObject(err) });
             }
 
-            const content = `The post connection script failed`;
+            const content = `Script failed`;
 
-            await logCtx.error(content, {
+            void logCtx.error(content, {
                 error: formattedError,
-                postConnection: name,
+                onEvent: name,
                 connection: connection.connection_id,
                 integration: connection.provider_config_key
             });
@@ -476,27 +448,13 @@ export class Orchestrator {
                 }
             });
 
-            await telemetry.log(
-                LogTypes.POST_CONNECTION_SCRIPT_FAILURE,
-                content,
-                LogActionEnum.POST_CONNECTION_SCRIPT,
-                {
-                    environmentId: String(connection.environment_id),
-                    connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider_config_key,
-                    name,
-                    level: 'error'
-                },
-                `postConnectionScript:${name}`
-            );
-
-            metrics.increment(metrics.Types.POST_CONNECTION_SCRIPT_FAILURE);
+            metrics.increment(metrics.Types.ON_EVENT_SCRIPT_FAILURE);
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
             const endTime = Date.now();
             const totalRunTime = (endTime - startTime) / 1000;
-            metrics.duration(metrics.Types.POST_CONNECTION_SCRIPT_RUNTIME, totalRunTime);
+            metrics.duration(metrics.Types.ON_EVENT_SCRIPT_RUNTIME, totalRunTime);
             span.finish();
         }
     }
@@ -544,7 +502,7 @@ export class Orchestrator {
                 }
             });
         } else {
-            await logCtx?.info(`Sync frequency for "${syncName}" updated to ${interval}`);
+            void logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
     }
@@ -552,19 +510,23 @@ export class Orchestrator {
     async runSyncCommand({
         connectionId,
         syncId,
+        syncVariant,
         command,
         environmentId,
         logCtx,
         recordsService,
-        initiator
+        initiator,
+        delete_records
     }: {
         connectionId: number;
         syncId: string;
+        syncVariant: string;
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
         recordsService: RecordsServiceInterface;
         initiator: string;
+        delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
@@ -597,10 +559,15 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    const syncConfig = await getSyncConfigBySyncId(syncId);
-                    for (const model of syncConfig?.models || []) {
-                        const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
-                        await logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                    if (delete_records) {
+                        const syncConfig = await getSyncConfigBySyncId(syncId);
+                        for (let model of syncConfig?.models || []) {
+                            if (syncVariant !== 'base') {
+                                model = `${model}::${syncVariant}`;
+                            }
+                            const del = await recordsService.deleteRecordsBySyncId({ syncId, connectionId, environmentId, model });
+                            void logCtx.info(`Records for model ${model} were deleted successfully`, del);
+                        }
                     }
 
                     res = await this.client.executeSync({ scheduleName });
@@ -608,11 +575,11 @@ export class Orchestrator {
                 }
             }
             if (res.isErr()) {
-                await logCtx.error(`Sync command '${command}' failed`, { error: res.error, command });
+                void logCtx.error(`Sync command '${command}' failed`, { error: res.error, command });
             }
             return res;
         } catch (err) {
-            await logCtx.error(`Sync command '${command}' failed`, { error: err, command });
+            void logCtx.error(`Sync command '${command}' failed`, { error: err, command });
 
             return Err(err as Error);
         }
@@ -630,25 +597,52 @@ export class Orchestrator {
         }
         return res;
     }
+    async pauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.pauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
 
     async scheduleSync({
         nangoConnection,
         sync,
         providerConfig,
         syncName,
+        syncVariant,
         syncData,
         logContextGetter,
         debug = false
     }: {
-        nangoConnection: NangoConnection;
+        nangoConnection: ConnectionInternal;
         sync: Sync;
         providerConfig: ProviderConfig;
         syncName: string;
-        syncData: NangoIntegrationData;
+        syncVariant: string;
+        syncData: Pick<NangoIntegrationData, 'runs' | 'auto_start'>;
         logContextGetter: LogContextGetter;
         debug?: boolean;
     }): Promise<Result<void>> {
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
 
         try {
             const syncConfig = await getSyncConfigRaw({
@@ -666,16 +660,16 @@ export class Orchestrator {
                     account,
                     environment,
                     integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-                    connection: { id: nangoConnection.id!, name: nangoConnection.connection_id },
-                    syncConfig: { id: syncConfig!.id!, name: syncConfig!.sync_name }
+                    connection: { id: nangoConnection.id, name: nangoConnection.connection_id },
+                    syncConfig: { id: syncConfig!.id, name: syncConfig!.sync_name }
                 }
             );
 
-            const frequencyMs = this.getFrequencyMs(syncData.runs);
+            const frequencyMs = this.getFrequencyMs(syncData.runs!);
 
             if (frequencyMs.isErr()) {
                 const content = `The sync was not scheduled due to an error with the sync interval "${syncData.runs}": ${frequencyMs.error.message}`;
-                await logCtx.error('The sync was not created or started due to an error with the sync interval', {
+                void logCtx.error('The sync was not created or started due to an error with the sync interval', {
                     error: frequencyMs.error,
                     runs: syncData.runs
                 });
@@ -689,6 +683,7 @@ export class Orchestrator {
                         connectionDetails: nangoConnection,
                         providerConfig,
                         syncName,
+                        syncVariant,
                         sync,
                         syncData
                     }
@@ -697,11 +692,12 @@ export class Orchestrator {
                 return Err(frequencyMs.error);
             }
 
+            const groupKey: TaskType = 'sync';
             const schedule = await this.client.recurring({
                 name: ScheduleName.get({ environmentId: nangoConnection.environment_id, syncId: sync.id }),
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: frequencyMs.value,
-                groupKey: 'sync',
+                groupKey,
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {
                     createdToStarted: 60 * 60, // 1 hour
@@ -713,9 +709,10 @@ export class Orchestrator {
                     type: 'sync',
                     syncId: sync.id,
                     syncName,
+                    syncVariant,
                     debug,
                     connection: {
-                        id: nangoConnection.id!,
+                        id: nangoConnection.id,
                         provider_config_key: nangoConnection.provider_config_key,
                         environment_id: nangoConnection.environment_id,
                         connection_id: nangoConnection.connection_id
@@ -727,7 +724,7 @@ export class Orchestrator {
                 throw schedule.error;
             }
 
-            await logCtx.info('Scheduled successfully', { runs: syncData.runs });
+            void logCtx.info('Scheduled successfully', { runs: syncData.runs });
             await logCtx.success();
             return Ok(undefined);
         } catch (err) {
@@ -737,6 +734,7 @@ export class Orchestrator {
                 environmentId: nangoConnection.environment_id,
                 metadata: {
                     syncName,
+                    syncVariant,
                     connectionDetails: JSON.stringify(nangoConnection),
                     syncId: sync.id,
                     providerConfig,
@@ -744,10 +742,10 @@ export class Orchestrator {
                 }
             });
             if (logCtx) {
-                await logCtx.error('Failed to init sync', { error: err });
+                void logCtx.error('Failed to init sync', { error: err });
                 await logCtx.failed();
             }
-            return Err(`Failed to schedule sync: ${err}`);
+            return Err(new Error('Failed to schedule sync', { cause: err }));
         }
     }
 

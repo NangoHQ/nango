@@ -1,11 +1,16 @@
-import get from 'lodash-es/get.js';
-import type { Config as ProviderConfig, Connection, ConnectionConfig, ConnectionUpsertResponse } from '@nangohq/shared';
-import { environmentService, connectionService, getProvider } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
 import crypto from 'crypto';
+
+import get from 'lodash-es/get.js';
+
+import { connectionService, environmentService, getProvider } from '@nangohq/shared';
+import { getLogger } from '@nangohq/utils';
+
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
+
 import type { WebhookHandler } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
+import type { Config as ProviderConfig, ConnectionUpsertResponse } from '@nangohq/shared';
+import type { ConnectionConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubAppOauth');
 
@@ -52,7 +57,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         integration.environment_id
     );
 
-    if (connections?.length === 0) {
+    if (!connections || connections.length === 0) {
         logger.info('No connections found for app_id', get(body, 'installation.app_id'));
         return;
     } else {
@@ -66,7 +71,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         const { environment, account } = environmentAndAccountLookup;
 
         const installationId = get(body, 'installation.id');
-        const [connection] = connections as Connection[];
+        const [connection] = connections;
 
         // if there is no matching connection or if the connection config already has an installation_id, exit
         if (!connection || connection.connection_config['installation_id']) {
@@ -81,15 +86,15 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
         }
 
         const activityLogId = connection.connection_config['pendingLog'];
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+
         delete connection.connection_config['pendingLog'];
 
-        const connectionConfig = {
+        const connectionConfig: ConnectionConfig = {
             ...connection.connection_config,
             installation_id: installationId
         };
 
-        const logCtx = await logContextGetter.get({ id: activityLogId });
+        const logCtx = logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
             void connectionCreatedHook(
@@ -98,12 +103,13 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
                     environment,
                     account,
                     auth_mode: 'APP',
-                    operation: res.operation
+                    operation: res.operation,
+                    endUser: undefined // TODO fix this
                 },
-                integration.provider,
+                account,
+                integration,
                 logContextGetter,
-                { initiateSync: true, runPostConnectionScript: false },
-                logCtx
+                { initiateSync: true, runPostConnectionScript: false }
             );
         };
 
@@ -111,7 +117,7 @@ async function handleCreateWebhook(integration: ProviderConfig, body: any, logCo
             connection.connection_id,
             integration,
             provider,
-            connectionConfig as ConnectionConfig,
+            connectionConfig,
             logCtx,
             connCreatedHook
         );

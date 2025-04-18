@@ -1,3 +1,5 @@
+import type { MergingStrategy } from '@nangohq/types';
+
 type RecordValue = string | number | boolean | null | undefined | object | Record<string, string | boolean | number>;
 
 export interface RecordInput {
@@ -36,6 +38,7 @@ export type ReturnedRecord = {
 } & Record<string, RecordValue> & { id: string };
 
 export type LastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
+export type CombinedFilterAction = `${LastAction},${LastAction}`;
 
 interface RecordMetadata {
     first_seen_at: string;
@@ -54,7 +57,9 @@ export interface UpsertSummary {
     addedKeys: string[];
     updatedKeys: string[];
     deletedKeys?: string[];
+    billedKeys: string[];
     nonUniqueKeys: string[];
+    nextMerging: MergingStrategy;
 }
 
 export interface RecordCount {

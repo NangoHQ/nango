@@ -32,75 +32,70 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
-            - name: Push tag
-              run: |
-                  docker buildx imagetools create nangohq/nango-server:${{ inputs.stage }}-${{ github.sha }} --tag nangohq/nango-server:${{ inputs.stage }}
+
             - name: Deploy server
               run: |
-                  SERVICE_ID=${{ fromJson('{ production: "srv-cfifsvha6gdq1k7u46a0", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  SERVICE_ID=${{ fromJson('{ production: "srv-cvmfsb3e5dus73f54g4g", staging: "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
+
+                  echo "Deploying $IMAGE to $SERVICE_ID"
+
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
+
     deploy_jobs:
         if: inputs.service == 'jobs'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Deploy jobs
               run: |
                   SERVICE_ID=${{ fromJson('{ production: "srv-clvvtdug1b2c73cklps0", staging: "srv-clthttda73kc73ejflg0" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
+
     deploy_runners:
         if: inputs.service == 'runner'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
-            - name: Push tag
-              run: |
-                  docker buildx imagetools create nangohq/nango-runner:${{ github.sha }} --tag nangohq/nango-runner:${{ inputs.stage }}
             - name: Deploy all runners
               env:
                   API_KEY: ${{ secrets.RENDER_API_KEY }}
                   ENVIRONMENT: ${{ inputs.stage }}
                   RUNNER_OWNER_ID: ${{ secrets.RENDER_RUNNER_OWNER_ID }}
+                  INTERNAL_API_KEY: ${{ inputs.stage == 'production' && secrets.PROD_INTERNAL_API_KEY || secrets.STAGING_INTERNAL_API_KEY }}
               run: |
-                  bash ./scripts/deploy/runners.bash
+                  NANGO_API_HOSTNAME=${{ fromJson('{ "production": "api.nango.dev", "staging": "api-staging.nango.dev" }')[inputs.stage] }}
+                  curl -sS --fail-with-body --request POST "https://$NANGO_API_HOSTNAME/internal/fleet/nango_runners/rollout" \
+                    --header "authorization: Bearer $INTERNAL_API_KEY"\
+                    --header "content-type: application/json"\
+                    --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\" }"
+
     deploy_persist:
         if: inputs.service == 'persist'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Deploy persist
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cmt150ol6cac73apstq0", "staging": "srv-cmsfiqqcn0vc73bhcod0" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_orchestrator:
         if: inputs.service == 'orchestrator'
@@ -108,19 +103,16 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Deploy orchestrator
               run: |
                   SERVICE_ID=${{ fromJson('{ "production": "srv-cp6bhl0l6cac738i3dm0", "staging": "srv-cp5qedsf7o1s739kjqtg" }')[inputs.stage] }}
-                  IMAGE_TAG_PREFIX=${{ fromJson('{ "production": "prod", "staging": "staging" }')[inputs.stage] }}
-                  IMAGE="docker.io/nangohq/nango:${IMAGE_TAG_PREFIX}-${{ github.sha }}"
+                  IMAGE="docker.io/nangohq/nango:${{ github.sha }}"
 
                   echo "Deploying $IMAGE to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"imageUrl\": \"$IMAGE\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"imageUrl\": \"$IMAGE\" }"
 
     deploy_connect_ui:
         if: inputs.service == 'connect_ui'
@@ -128,14 +120,13 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - uses: docker/login-action@v3
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
             - name: Deploy connect
               run: |
-                  SERVICE_ID=${{ fromJson('{ "production": "srv-crtut51u0jms73bts8fg", "staging": "srv-cmj6t6da73kc739ol660" }')[inputs.stage] }}
+                  SERVICE_ID=${{ fromJson('{ "production": "srv-crtut51u0jms73bts8fg", "staging": "srv-crv6gi68ii6s738m8u90" }')[inputs.stage] }}
                   COMMIT="${{ github.sha }}"
+
                   echo "Deploying $COMMIT to $SERVICE_ID"
 
-                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}" --data "{ \"commitId\": \"$COMMIT\" }"
+                  curl -sS --fail-with-body --request POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+                    --header "authorization: Bearer ${{ secrets.RENDER_API_KEY }}"\
+                    --data "{ \"commitId\": \"$COMMIT\" }"

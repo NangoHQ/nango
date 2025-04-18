@@ -1,24 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import {
-    SquaresPlusIcon,
+    AdjustmentsHorizontalIcon,
+    ArrowRightOnRectangleIcon as LogoutIcon,
+    EllipsisHorizontalIcon,
     LinkIcon,
     QueueListIcon,
-    AdjustmentsHorizontalIcon,
-    EllipsisHorizontalIcon,
+    SquaresPlusIcon,
     UserCircleIcon,
-    UserGroupIcon,
-    ArrowRightOnRectangleIcon as LogoutIcon
+    UserGroupIcon
 } from '@heroicons/react/24/outline';
-
-import { useStore } from '../store';
-import { useMeta } from '../hooks/useMeta';
-import { useSignout } from '../utils/user';
 import { HomeIcon, RocketIcon } from '@radix-ui/react-icons';
-import { useEnvironment } from '../hooks/useEnvironment';
+import { IconX } from '@tabler/icons-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { EnvironmentPicker } from './EnvironmentPicker';
 import { useConnectionsCount } from '../hooks/useConnections';
+import { useMeta } from '../hooks/useMeta';
+import { apiPatchOnboarding } from '../hooks/useOnboarding';
 import { useUser } from '../hooks/useUser';
+import { useStore } from '../store';
 import { globalEnv } from '../utils/env';
+import { useSignout } from '../utils/user';
+
+import type { MaybePromise } from '@nangohq/types';
 
 export enum LeftNavBarItems {
     Homepage,
@@ -28,7 +32,7 @@ export enum LeftNavBarItems {
     Syncs,
     TeamSettings,
     UserSettings,
-    InteractiveDemo,
+    GettingStarted,
     Logs
 }
 
@@ -40,6 +44,7 @@ interface MenuItem {
     value: LeftNavBarItems;
     icon: React.FC<{ className?: string }>;
     link: string;
+    onClose?: () => MaybePromise<void>;
 }
 
 const navTextColor = 'text-gray-400';
@@ -50,13 +55,11 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
     const navigate = useNavigate();
     const signout = useSignout();
-    const { meta } = useMeta();
+    const { meta, mutate: mutateMeta } = useMeta();
     const { user: me } = useUser();
     const env = useStore((state) => state.env);
     const { data } = useConnectionsCount(env);
-    const setEnv = useStore((state) => state.setEnv);
-    const { mutate } = useEnvironment(env);
-    const showInteractiveDemo = useStore((state) => state.showInteractiveDemo);
+    const showGettingStarted = useStore((state) => state.showGettingStarted);
 
     useEffect(() => {
         const closeUserSettings = (e: MouseEvent) => {
@@ -73,11 +76,21 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, [showUserSettings]);
 
     const items = useMemo(() => {
-        const list: MenuItem[] = [{ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` }];
-        if (meta && showInteractiveDemo && !meta.onboardingComplete) {
-            list.push({ name: 'Interactive Demo', icon: RocketIcon, value: LeftNavBarItems.InteractiveDemo, link: `/${env}/interactive-demo` });
+        const list: MenuItem[] = [];
+        if (meta && showGettingStarted && !meta.onboardingComplete) {
+            list.push({
+                name: 'Getting Started',
+                icon: RocketIcon,
+                value: LeftNavBarItems.GettingStarted,
+                link: `/${env}/getting-started`,
+                onClose: async () => {
+                    await apiPatchOnboarding(env);
+                    void mutateMeta();
+                }
+            });
         }
 
+        list.push({ name: 'Home', icon: HomeIcon, value: LeftNavBarItems.Homepage, link: `/${env}` });
         list.push({ name: 'Integrations', icon: SquaresPlusIcon, value: LeftNavBarItems.Integrations, link: `/${env}/integrations` });
         list.push({ name: 'Connections', icon: LinkIcon, value: LeftNavBarItems.Connections, link: `/${env}/connections` });
         list.push({ name: 'Logs', icon: QueueListIcon, value: LeftNavBarItems.Logs, link: `/${env}/logs` });
@@ -89,28 +102,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         });
 
         return list;
-    }, [env, showInteractiveDemo, meta]);
-
-    const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newEnv = e.target.value;
-        setEnv(newEnv);
-        void mutate();
-
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-
-        pathSegments[0] = newEnv;
-
-        let newPath = `/${pathSegments.join('/')}`;
-
-        // If on 'integration' or 'connections' subpages beyond the second level, redirect to their parent page
-        if (pathSegments[1] === 'integrations' && pathSegments.length > 2) {
-            newPath = `/${newEnv}/integrations`;
-        } else if (pathSegments[1] === 'connections' && pathSegments.length > 2) {
-            newPath = `/${newEnv}/connections`;
-        }
-
-        navigate(newPath);
-    };
+    }, [env, showGettingStarted, meta]);
 
     if (!meta || !me) {
         return null;
@@ -118,57 +110,49 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     return (
         <div className="bg-pure-black h-screen w-full">
-            <div className="flex-1 ml-3 pr-4 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
+            <div className="flex-1 h-full border-r border-border-gray flex flex-col bg-pure-black z-20 justify-between">
                 <div className="mt-4">
-                    <div className="flex items-center mb-8">
+                    <div className="flex items-center mx-4">
                         <img className="h-6" src="/logo-dark.svg" alt="Nango" />
                         <img className="mt-1 h-5 ml-1" src="/logo-text.svg" alt="Nango" />
-                        <span className="ml-3 text-xs text-black mono">{meta.version}</span>
+                        <span className="ml-3 text-xs text-black mono">
+                            {meta.version} {globalEnv.gitHash && `(${globalEnv.gitHash})`}
+                        </span>
                     </div>
-                    {meta.environments.length === 0 && (
-                        <div className="mb-8">
-                            <select className="border-border-gray bg-active-gray text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
-                        </div>
-                    )}
-                    {meta.environments.length > 0 && (
-                        <div className="mb-6">
-                            <select
-                                id="environment"
-                                name="env"
-                                className="border-border-gray bg-active-gray text-sm text-white block w-full appearance-none rounded-md border px-3 py-1 shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                onChange={handleEnvChange}
-                                value={env}
-                            >
-                                {meta.environments.map((env) => (
-                                    <option key={env.name} value={env.name}>
-                                        {env.name.slice(0, 1).toUpperCase() + env.name.slice(1)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-                    <div className="flex flex-col gap-1">
+
+                    <div className="pt-8 pb-8 border-b border-b-grayscale-700 mx-4">
+                        <EnvironmentPicker />
+                    </div>
+
+                    <div className="flex flex-col gap-1 mt-8 mx-4">
                         {items.map((item) => {
                             const Icon = item.icon;
                             return (
                                 <Link
                                     key={item.value}
                                     to={item.link}
-                                    className={`relative flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                    className={`relative flex h-9 p-2 gap-x-3 items-center justify-between rounded-md text-sm ${navTextColor} ${
                                         props.selectedItem === item.value ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                     }`}
                                 >
-                                    <Icon className="w-[18px] h-[18px]" />
-                                    {item.name === 'Connections' && data?.data.withAuthError !== undefined && data.data.withAuthError > 0 && (
-                                        <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="w-[18px] h-[18px]" />
+                                        {item.name === 'Connections' && data?.data.withError !== undefined && data.data.withError > 0 && (
+                                            <span className="absolute top-[9.5px] left-[23px] bg-red-base h-1.5 w-1.5 rounded-full"></span>
+                                        )}
+                                        <p>{item.name}</p>
+                                    </div>
+                                    {item.onClose && (
+                                        <button className="p-2 hover:text-white" onClick={item.onClose}>
+                                            <IconX size={10} />
+                                        </button>
                                     )}
-                                    <p>{item.name}</p>
                                 </Link>
                             );
                         })}
                     </div>
                 </div>
-                <div>
+                <div className="mx-4">
                     <div
                         className="flex mb-5 py-2 w-full user-settings px-2 justify-between relative rounded items-center hover:bg-hover-gray cursor-pointer"
                         onClick={() => setShowUserSettings(!showUserSettings)}
@@ -197,20 +181,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                         <UserGroupIcon className="h-5 w-5 mr-2" />
                                         <span>Team</span>
                                     </li>
-
-                                    {showInteractiveDemo && meta.onboardingComplete && (
+                                    {showGettingStarted && meta.onboardingComplete && (
                                         <Link
-                                            to="/dev/interactive-demo"
+                                            to="/dev/getting-started"
                                             className={`flex h-9 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
-                                                props.selectedItem === LeftNavBarItems.InteractiveDemo
+                                                props.selectedItem === LeftNavBarItems.GettingStarted
                                                     ? `${navActiveBg} text-white`
                                                     : `text-gray-400 ${navHoverBg}`
                                             }`}
                                         >
                                             <RocketIcon />
-                                            <p>Interactive Demo</p>
+                                            <p>Getting Started</p>
                                         </Link>
                                     )}
+
                                     <li
                                         className="flex items-center w-full px-2 py-2.5 hover:text-white hover:bg-hover-gray rounded p-1"
                                         onClick={async () => await signout()}

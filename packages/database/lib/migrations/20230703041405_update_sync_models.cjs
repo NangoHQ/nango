@@ -1,7 +1,7 @@
 const SYNC_TABLE = '_nango_syncs';
 const SYNC_CONFIG = '_nango_sync_configs';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(SYNC_TABLE, function (table) {
         table.dropColumn('models');
     });
@@ -11,7 +11,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(SYNC_TABLE, function (table) {
         table.specificType('models', 'text ARRAY');
     });

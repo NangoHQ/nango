@@ -1,0 +1,44 @@
+---
+title: Notion - How do I link my account?
+sidebarTitle: Notion
+---
+
+
+# Overview
+
+To authenticate with Notion, you need one key piece of information:
+1. **API Key** - A unique identifier for your application on Notion.
+
+
+This guide will walk you through finding or creating those credentials within Notion.
+
+
+### Prerequisites:
+
+- You must set up an Enterprise account with Notion.
+- The logged in user **must** be the workspace owner.
+
+Important: Only workspace owners can generate and view SCIM API tokens.
+
+
+#### Step 1: Finding Your SCIM API Key (token)
+1. Log into your Enterprise Notion account and navigate to **Settings & members** > **Identity & provisioning** > **SCIM Configuration**
+
+
+2. To generate an API key, navigate to the **+Add token** button
+
+<img src="/integrations/all/notion-scim/nango_generate_key.png" />
+
+
+Important: Copy and store your API Token securely.
+
+
+#### Step 2: Connect Your Notion Account
+
+<img src="/integrations/all/notion-scim/nango_connect_ui.png" />
+
+To authenticate using your API credentials, navigate to the Notion authentication form.
+Enter your credentials as follows:
+- API Key: Your API Key
+
+Click "Connect" to complete the authentication.

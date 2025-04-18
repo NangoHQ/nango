@@ -1,31 +1,34 @@
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import type React from 'react';
-import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 import { useSWRConfig } from 'swr';
 import { unstable_serialize } from 'swr/infinite';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
 
-import { LeftNavBarItems } from '../../components/LeftNavBar';
-import DashboardLayout from '../../layout/DashboardLayout';
-import { Info } from '../../components/Info';
-import IntegrationLogo from '../../components/ui/IntegrationLogo';
-import Button from '../../components/ui/button/Button';
-import { useEnvironment } from '../../hooks/useEnvironment';
-import { Syncs } from './Syncs';
 import { Authorization } from './Authorization';
-import { isHosted } from '../../utils/utils';
+import { Syncs } from './Syncs';
+import { EndUserProfile } from './components/EndUserProfile';
+import { AvatarOrganization } from '../../components/AvatarCustom';
+import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { Info } from '../../components/Info';
+import { LeftNavBarItems } from '../../components/LeftNavBar';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../components/ui/Dialog';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Button } from '../../components/ui/button/Button';
+import { apiDeleteConnection, clearConnectionsCache, useConnection } from '../../hooks/useConnections';
+import { useEnvironment } from '../../hooks/useEnvironment';
+import { clearIntegrationsCache } from '../../hooks/useIntegration';
+import { useSyncs } from '../../hooks/useSyncs';
+import { useToast } from '../../hooks/useToast';
+import DashboardLayout from '../../layout/DashboardLayout';
+import { useStore } from '../../store';
+import { getConnectionDisplayName } from '../../utils/endUser';
+import { globalEnv } from '../../utils/env';
 import { connectSlack } from '../../utils/slack-connection';
 
-import { useStore } from '../../store';
-import { apiDeleteConnection, useConnection } from '../../hooks/useConnections';
-import { useLocalStorage } from 'react-use';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { useSyncs } from '../../hooks/useSyncs';
-import { ErrorPageComponent } from '../../components/ErrorComponent';
-import { AvatarOrganization } from '../../components/AvatarCustom';
-import { IconTrash } from '@tabler/icons-react';
-import { useToast } from '../../hooks/useToast';
+import type React from 'react';
 
 export enum Tabs {
     Syncs,
@@ -48,7 +51,7 @@ export const ConnectionShow: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.Syncs);
     const [slackIsConnected, setSlackIsConnected] = useState(true);
     const { data: connection, error, loading } = useConnection({ env, provider_config_key: providerConfigKey! }, { connectionId: connectionId! });
-    const { data: syncs, error: errorSyncs, loading: loadingSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
+    const { data: syncs, error: errorSyncs } = useSyncs({ env, provider_config_key: providerConfigKey!, connection_id: connectionId! });
 
     // Modal delete
     const [open, setOpen] = useState(false);
@@ -64,7 +67,7 @@ export const ConnectionShow: React.FC = () => {
         if (location.hash === '#models' || location.hash === '#syncs') {
             setActiveTab(Tabs.Syncs);
         }
-        if (location.hash === '#authorization' || isHosted()) {
+        if (location.hash === '#authorization' || !globalEnv.features.scripts) {
             setActiveTab(Tabs.Authorization);
         }
     }, [location]);
@@ -88,11 +91,8 @@ export const ConnectionShow: React.FC = () => {
                 undefined,
                 { revalidate: false }
             );
-            for await (const key of cache.keys()) {
-                if (key.startsWith('/api/v1/connections')) {
-                    cache.delete(key);
-                }
-            }
+            clearConnectionsCache(cache, mutate);
+            clearIntegrationsCache(cache, mutate);
 
             navigate(`/${env}/connections`, { replace: true });
         } else {
@@ -103,7 +103,7 @@ export const ConnectionShow: React.FC = () => {
     const createSlackConnection = async () => {
         setSlackIsConnecting(true);
         if (!environmentAndAccount) return;
-        const { uuid: accountUUID, host: hostUrl } = environmentAndAccount;
+        const { uuid: accountUUID } = environmentAndAccount;
         const onFinish = () => {
             void environmentMutate();
             toast({ title: `Slack connection created!`, variant: 'success' });
@@ -114,12 +114,15 @@ export const ConnectionShow: React.FC = () => {
             toast({ title: `Failed to create Slack connection!`, variant: 'error' });
             setSlackIsConnecting(false);
         };
-        await connectSlack({ accountUUID, env, hostUrl, onFinish, onFailure });
+        await connectSlack({ accountUUID, env, hostUrl: globalEnv.apiUrl, onFinish, onFailure });
     };
 
-    if (loading || loadingSyncs) {
+    if (loading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Connection - Nango</title>
+                </Helmet>
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
                         <div className="shrink-0">
@@ -142,15 +145,18 @@ export const ConnectionShow: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.TeamSettings} />;
+        return <ErrorPageComponent title="Connection" error={error || errorSyncs} page={LeftNavBarItems.Connections} />;
     }
 
-    if (!connection || !syncs) {
+    if (!connection) {
         return null;
     }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
+            <Helmet>
+                <title>{connection.endUser?.email || connection.connection.connection_id} - Connection - Nango</title>
+            </Helmet>
             <div className="mx-auto">
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
@@ -167,9 +173,7 @@ export const ConnectionShow: React.FC = () => {
                                 <AvatarOrganization
                                     size={'sm'}
                                     email={connection.endUser?.email ? connection.endUser.email : null}
-                                    displayName={
-                                        connection.endUser ? connection.endUser.displayName || connection.endUser.email : connection.connection.connection_id
-                                    }
+                                    displayName={getConnectionDisplayName({ endUser: connection.endUser, connectionId: connection.connection.connection_id })}
                                 />
                             </div>
                         </div>
@@ -177,14 +181,7 @@ export const ConnectionShow: React.FC = () => {
                         <div className="mt-3">
                             <span className="font-semibold tracking-tight text-gray-400">Connection</span>
                             {connection.endUser ? (
-                                <div className="flex flex-col overflow-hidden">
-                                    <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connection.endUser.email}</h2>
-
-                                    <div className="text-dark-500 text-xs font-code flex gap-2">
-                                        {connection.endUser.displayName && <span>{connection.endUser.displayName}</span>}
-                                        {connection.endUser.organization?.displayName && <span>({connection.endUser.organization?.displayName})</span>}
-                                    </div>
-                                </div>
+                                <EndUserProfile endUser={connection.endUser} connectionId={connection.connection.connection_id} />
                             ) : (
                                 <h2 className="text-3xl font-semibold tracking-tight text-white break-all -mt-2">{connectionId}</h2>
                             )}
@@ -213,17 +210,19 @@ export const ConnectionShow: React.FC = () => {
                 </div>
             </div>
 
-            <section className="mt-14">
-                <ul className="flex text-gray-400 space-x-2 font-semibold text-sm cursor-pointer">
+            <section className="mt-12">
+                <ul className="flex text-gray-400 text-sm cursor-pointer">
                     <li
-                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Syncs ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center px-4 text-test2 py-2 rounded ${activeTab === Tabs.Syncs ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Syncs)}
                     >
                         Syncs
-                        {syncs.some((sync) => sync.active_logs?.log_id) && <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                        {syncs && syncs.some((sync) => sync.active_logs?.log_id) && (
+                            <span className="ml-2 bg-red-base h-1.5 w-1.5 rounded-full inline-block"></span>
+                        )}
                     </li>
                     <li
-                        className={`flex items-center p-2 rounded ${activeTab === Tabs.Authorization ? 'bg-active-gray text-white' : 'hover:bg-hover-gray'}`}
+                        className={`flex items-center px-4 py-2  rounded ${activeTab === Tabs.Authorization ? 'bg-grayscale-900 text-white' : 'hover:bg-grayscale-900'}`}
                         onClick={() => setActiveTab(Tabs.Authorization)}
                     >
                         Authorization
@@ -232,8 +231,12 @@ export const ConnectionShow: React.FC = () => {
                 </ul>
             </section>
 
-            {!slackIsConnected && !isHosted() && showSlackBanner && (
-                <Info className="mt-4" onClose={() => setShowSlackBanner(false)} icon={<IntegrationLogo provider="slack" height={6} width={6} />}>
+            {!slackIsConnected && globalEnv.features.slack && showSlackBanner && (
+                <Info
+                    className="mt-6"
+                    onClose={() => setShowSlackBanner(false)}
+                    icon={<IntegrationLogo provider="slack" height={5} width={5} classNames="mt-0.5" />}
+                >
                     Receive instant monitoring alerts on Slack.{' '}
                     <button
                         disabled={slackIsConnecting}
@@ -245,15 +248,12 @@ export const ConnectionShow: React.FC = () => {
                 </Info>
             )}
 
-            <section className="mt-10">
+            <section className="mt-6">
                 {activeTab === Tabs.Syncs && <Syncs syncs={syncs} connection={connection.connection} provider={connection.provider} />}
                 {activeTab === Tabs.Authorization && (
                     <Authorization endUser={connection.endUser} connection={connection.connection} errorLog={connection.errorLog} />
                 )}
             </section>
-            <Helmet>
-                <style>{'.no-border-modal footer { border-top: none !important; }'}</style>
-            </Helmet>
         </DashboardLayout>
     );
 };

@@ -95,39 +95,23 @@ describe('POST /logs/operations', () => {
                 {
                     accountId: env.account_id,
                     accountName: account.name,
-                    code: null,
-                    integrationId: null,
-                    integrationName: null,
-                    providerName: null,
-                    connectionId: null,
-                    connectionName: null,
                     createdAt: expect.toBeIsoDate(),
                     endedAt: expect.toBeIsoDate(),
                     environmentId: env.id,
                     environmentName: 'dev',
-                    error: null,
                     expiresAt: expect.toBeIsoDate(),
                     id: logCtx.id,
-                    jobId: null,
                     level: 'info',
-                    message: 'Create connection',
-                    meta: null,
+                    message: 'Connection created',
                     operation: {
                         type: 'auth',
                         action: 'create_connection'
                     },
-                    parentId: null,
-                    request: null,
-                    response: null,
                     source: 'internal',
                     startedAt: expect.toBeIsoDate(),
                     state: 'success',
-                    syncConfigId: null,
-                    syncConfigName: null,
-                    title: null,
-                    type: 'log',
-                    updatedAt: expect.toBeIsoDate(),
-                    userId: null
+                    type: 'operation',
+                    updatedAt: expect.toBeIsoDate()
                 }
             ],
             pagination: { total: 1, cursor: null }

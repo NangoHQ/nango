@@ -1,7 +1,5 @@
-import type { JSONSchema7 } from 'json-schema';
-import type { HTTP_METHOD, Timestamps, TimestampsAndDeleted } from './Generic.js';
-import type { NangoConfigMetadata, NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
-import type { LogContext } from '@nangohq/logs';
+import type { TimestampsAndDeleted } from './Generic.js';
+import type { ScriptTypeLiteral, Timestamps } from '@nangohq/types';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -11,11 +9,11 @@ export enum SyncStatus {
     ERROR = 'ERROR'
 }
 
-export enum SyncType {
+export enum SyncJobsType {
     INCREMENTAL = 'INCREMENTAL',
     FULL = 'FULL',
     WEBHOOK = 'WEBHOOK',
-    POST_CONNECTION_SCRIPT = 'POST_CONNECTION_SCRIPT',
+    ON_EVENT_SCRIPT = 'ON_EVENT_SCRIPT',
     ACTION = 'ACTION'
 }
 
@@ -27,10 +25,13 @@ export interface SyncResult {
 
 export type SyncResultByModel = Record<string, SyncResult>;
 
+export type SyncWithConnectionId = Sync & { connection_id: string };
+
 export interface Sync extends TimestampsAndDeleted {
     id: string;
     nango_connection_id: number;
     name: string;
+    variant: string;
     last_sync_date: Date | null;
     futureActionTimes?: {
         seconds?: number;
@@ -45,10 +46,10 @@ export interface Action extends TimestampsAndDeleted {
     name: string;
 }
 
-export interface Job extends TimestampsAndDeleted {
+export interface Job extends Timestamps {
     id: number;
     status: SyncStatus;
-    type: SyncType;
+    type: SyncJobsType;
     sync_id: string;
     job_id: string;
     run_id?: string | null;
@@ -59,15 +60,18 @@ export interface Job extends TimestampsAndDeleted {
 
 export interface ReportedSyncJobStatus {
     id?: string;
-    type: SyncType;
+    type: SyncJobsType | 'INITIAL';
     name?: string;
+    variant?: string;
+    connection_id?: string;
     status: SyncStatus;
-    latestResult?: SyncResultByModel;
+    latestResult?: SyncResultByModel | undefined;
     jobStatus?: SyncStatus;
-    frequency: string;
-    finishedAt: Date;
+    frequency: string | null;
+    finishedAt: Date | undefined;
     nextScheduledSyncAt: Date | null;
-    latestExecutionStatus: SyncStatus;
+    latestExecutionStatus: SyncStatus | undefined;
+    recordCount: Record<string, number>;
 }
 
 // TODO: change that to use Parsed type
@@ -77,61 +81,6 @@ export interface SyncModelSchema {
         name: string;
         type: string;
     }[];
-}
-
-export interface SyncConfig extends TimestampsAndDeleted {
-    id?: number;
-    environment_id: number;
-    sync_name: string;
-    type: ScriptTypeLiteral;
-    file_location: string;
-    nango_config_id: number;
-    models: string[];
-    model_schema: SyncModelSchema[] | NangoModel[];
-    active: boolean;
-    runs: string;
-    track_deletes: boolean;
-    auto_start: boolean;
-    attributes?: object;
-    metadata?: NangoConfigMetadata;
-    version?: string;
-    pre_built?: boolean | null;
-    is_public?: boolean | null;
-    endpoints?: NangoSyncEndpointV2[];
-    input?: string | undefined;
-    sync_type?: SyncType | undefined;
-    webhook_subscriptions: string[] | null;
-    enabled: boolean;
-    models_json_schema?: JSONSchema7 | null;
-}
-
-export interface SyncEndpoint extends Timestamps {
-    id?: number;
-    sync_config_id: number;
-    method: HTTP_METHOD;
-    path: string;
-    model?: string;
-}
-
-export interface SyncDeploymentResult {
-    name: string;
-    version?: string;
-    providerConfigKey: string;
-    type: ScriptTypeLiteral;
-    last_deployed?: Date;
-    input?: string | SyncModelSchema | undefined;
-    models: string | string[];
-    id?: number | undefined;
-
-    /** @deprecated legacy **/
-    sync_name?: string;
-    /** @deprecated legacy **/
-    syncName?: string;
-}
-
-export interface SyncConfigResult {
-    result: SyncDeploymentResult[];
-    logCtx: LogContext;
 }
 
 export enum SyncCommand {

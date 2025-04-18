@@ -16,6 +16,9 @@
             "to": "#012AC3"
         }
     },
+    "modeToggle": {
+        "default": "dark"
+    },
     "feedback": {
         "suggestEdit": true,
         "raiseIssue": true,
@@ -50,7 +53,7 @@
     },
     "anchors": [
         {
-            "name": "APIs & Templates",
+            "name": "APIs & Integrations",
             "icon": "bars",
             "url": "integrations"
         },
@@ -60,6 +63,11 @@
             "url": "reference"
         },
         {
+            "name": "Changelog",
+            "icon": "rss",
+            "url": "changelog"
+        },
+        {
             "name": "Community",
             "icon": "slack",
             "url": "https://nango.dev/slack"
@@ -67,359 +75,369 @@
     ],
     "redirects": [
         {
-            "source": "/guides/custom",
-            "destination": "/customize/guides/create-a-custom-integration"
+            "source": "/introduction",
+            "destination": "/"
         },
         {
-            "source": "/guides/action",
-            "destination": "/integrate/guides/perform-workflows-with-an-api"
+            "source": "/integrate/guides/authorize-an-api",
+            "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
         },
         {
-            "source": "/guides/sync",
-            "destination": "/integrate/guides/sync-data-from-an-api"
+            "source": "/customize/guides/create-a-custom-integration",
+            "destination": "/guides/custom-integrations/overview"
         },
         {
-            "source": "/guides/oauth",
-            "destination": "/integrate/guides/authorize-an-api"
+            "source": "/guides/customize/extend-an-integration-template",
+            "destination": "/guides/custom-integrations/extend-a-pre-built-integration"
         },
         {
-            "source": "/guides/proxy",
-            "destination": "/integrate/guides/proxy-requests-to-an-api"
+            "source": "/guides/customize/contribute-an-api",
+            "destination": "/guides/new-api-support"
         },
         {
-            "source": "/guides/webhooks",
-            "destination": "/understand/concepts/webhooks"
+            "source": "/guides/getting-started/authorize-an-api-from-your-app",
+            "destination": "/guides/api-authorization/authorize-in-your-app-default-ui"
         },
         {
-            "source": "/guides/advanced-auth",
-            "destination": "/integrate/guides/authorize-an-api"
+            "source": "/guides/getting-started/write-to-an-api",
+            "destination": "/guides/actions/use-an-action"
         },
         {
-            "source": "/guides/field-mapping",
-            "destination": "/integrate/guides/advanced/use-custom-field-mappings"
+            "source": "/guides/getting-started/read-from-an-api",
+            "destination": "/guides/syncs/use-a-sync"
         },
         {
-            "source": "/guides/api-key",
-            "destination": "/integrate/guides/authorize-an-api"
+            "source": "/what-is-nango",
+            "destination": "/getting-started/intro-to-nango"
         },
         {
-            "source": "/guides/contribute",
-            "destination": "/customize/guides/contribute-an-api"
+            "source": "/home",
+            "destination": "/"
         },
         {
-            "source": "/integration-templates",
-            "destination": "/integrations/overview"
+            "source": "guides/custom-integration-builder/overview",
+            "destination": "guides/custom-integrations/overview"
         },
         {
-            "source": "/guides/cloud",
-            "destination": "/host/cloud"
+            "source": "guides/custom-integration-builder/build-a-custom-integration",
+            "destination": "guides/custom-integrations/build-a-custom-integration"
         },
         {
-            "source": "/guides/managed-integrations",
-            "destination": "/host/managed-integrations"
+            "source": "guides/custom-integration-builder/extend-a-pre-built-integration",
+            "destination": "guides/custom-integrations/extend-a-pre-built-integration"
+        },
+        {
+            "source": "guides/custom-integration-builder/event-based-scripts",
+            "destination": "guides/custom-integrations/event-based-scripts"
+        },
+        {
+            "source": "guides/services",
+            "destination": "guides/custom-integrations/service"
+        },
+        {
+            "source": "guides/individual-requests",
+            "destination": "guides/proxy-requests"
+        },
+        {
+            "source": "guides/infrastructure",
+            "destination": "guides/self-hosting/infrastructure"
+        },
+        {
+            "source": "guides/new-api-support",
+            "destination": "guides/api-authorization/new-api-support"
         }
     ],
     "navigation": [
         {
-            "group": "Get Started",
+            "group": "Getting Started",
             "pages": [
-                "introduction",
-                "demo",
-                "sample-app"
+                "getting-started/intro-to-nango",
+                "getting-started/quickstart",
+                "guides/ai-use-cases"
             ]
         },
         {
-            "group": "Use Integrations",
+            "group": "Guides",
             "pages": [
-                "integrate/overview",
                 {
-                    "group": "Step-by-step guides",
+                    "group": "API authorization",
                     "pages": [
-                        "integrate/guides/authorize-an-api",
-                        "integrate/guides/sync-data-from-an-api",
-                        "integrate/guides/perform-workflows-with-an-api",
-                        "integrate/guides/proxy-requests-to-an-api",
-                        "integrate/guides/receive-webhooks-from-an-api",
-                        {
-                            "group": "Advanced",
-                            "pages": [
-                                "integrate/guides/advanced/authorize-an-api-headless",
-                                "integrate/guides/advanced/store-customer-specific-data",
-                                "integrate/guides/advanced/use-custom-field-mappings",
-                                "integrate/guides/advanced/secure-frontend-sdk",
-                                "integrate/guides/advanced/verify-webhooks-from-nango"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Build Integrations",
-            "pages": [
-                "customize/overview",
-                {
-                    "group": "Step-by-step guides",
-                    "pages": [
-                        "customize/guides/setup",
-                        "customize/guides/create-a-custom-integration",
-                        "customize/guides/extend-an-integration-template",
-                        "customize/guides/contribute-an-api",
-                        {
-                            "group": "Advanced",
-                            "pages": [
-                                "customize/guides/advanced/handle-rate-limits",
-                                "customize/guides/advanced/handle-large-datasets",
-                                "customize/guides/advanced/migrate-integration-configuration",
-                                "customize/guides/advanced/validate-input-and-output"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Understand Nango",
-            "pages": [
-                "understand/core-concepts",
-                "understand/architecture",
-                {
-                    "group": "All concepts",
-                    "pages": [
-                        "understand/concepts/integrations",
-                        "understand/concepts/connections",
-                        "understand/concepts/scripts",
-                        "understand/concepts/templates",
-                        "understand/concepts/syncs",
-                        "understand/concepts/actions",
-                        "understand/concepts/webhooks",
-                        "understand/concepts/proxy",
-                        "understand/concepts/environments"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Host Nango",
-            "pages": [
-                "host/cloud",
-                "host/managed-integrations",
-                {
-                    "group": "Self-hosting instructions",
-                    "pages": [
-                        "host/self-host/self-hosting-instructions",
-                        "host/self-host/local",
-                        "host/self-host/aws",
-                        "host/self-host/gcp",
-                        "host/self-host/digital-ocean"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "APIs & Templates",
-            "pages": [
-                "integrations/overview",
-                {
-                    "group": "APIs By Category",
-                    "icon": "grid-2",
-                    "pages": [
-                        "integrations/accounting",
-                        "integrations/analytics",
-                        "integrations/ats",
-                        "integrations/banking",
-                        "integrations/cms",
-                        "integrations/communication",
-                        "integrations/crm",
-                        "integrations/design",
-                        "integrations/dev-tools",
-                        "integrations/ecommerce",
-                        "integrations/erp",
-                        "integrations/gaming",
-                        "integrations/invoicing",
-                        "integrations/hr",
-                        "integrations/knowledge-base",
-                        "integrations/legal",
-                        "integrations/marketing",
-                        "integrations/payment",
-                        "integrations/productivity",
-                        "integrations/search",
-                        "integrations/social",
-                        "integrations/sports",
-                        "integrations/storage",
-                        "integrations/support",
-                        "integrations/surveys",
-                        "integrations/ticketing",
-                        "integrations/video",
-                        "integrations/other"
+                        "guides/api-authorization/overview",
+                        "guides/api-authorization/configuration",
+                        "guides/api-authorization/authorize-in-your-app-default-ui",
+                        "guides/api-authorization/authorize-in-your-app-custom-ui",
+                        "guides/api-authorization/re-authorize-a-connection",
+                        "guides/api-authorization/whitelabel-the-oauth-flow",
+                        "guides/api-authorization/credentials-refresh-and-validity",
+                        "guides/api-authorization/public-key-deprecation",
+                        "guides/api-authorization/authorization-logs",
+                        "guides/api-authorization/new-api-support"
                     ]
                 },
                 {
-                    "group": "Integration Templates",
-                    "icon": "sheet-plastic",
+                    "group": "Pre-built integrations",
                     "pages": [
-                        "integrations/integration-templates/algolia",
-                        "integrations/integration-templates/anrok",
-                        "integrations/integration-templates/asana",
-                        "integrations/integration-templates/ashby",
-                        "integrations/integration-templates/bamboohr-basic",
-                        "integrations/integration-templates/calendly",
-                        "integrations/integration-templates/confluence",
-                        "integrations/integration-templates/checkr-partner",
-                        "integrations/integration-templates/checkr-partner-staging",
-                        "integrations/integration-templates/clari-copilot",
-                        "integrations/integration-templates/discourse",
-                        "integrations/integration-templates/expensify",
-                        "integrations/integration-templates/exact-online",
-                        "integrations/integration-templates/evaluagent",
-                        "integrations/integration-templates/fireflies",
-                        "integrations/integration-templates/github",
-                        "integrations/integration-templates/google-calendar",
-                        "integrations/integration-templates/google-drive",
-                        "integrations/integration-templates/google-mail",
-                        "integrations/integration-templates/greenhouse-basic",
-                        "integrations/integration-templates/hackerrank-work",
-                        "integrations/integration-templates/hibob-service-user",
-                        "integrations/integration-templates/hubspot",
-                        "integrations/integration-templates/intercom",
-                        "integrations/integration-templates/instantly",
-                        "integrations/integration-templates/jira",
-                        "integrations/integration-templates/kustomer",
-                        "integrations/integration-templates/lever-basic",
-                        "integrations/integration-templates/linear",
-                        "integrations/integration-templates/luma",
-                        "integrations/integration-templates/sharepoint-online",
-                        "integrations/integration-templates/microsoft-active-directory",
-                        "integrations/integration-templates/microsoft-teams",
-                        "integrations/integration-templates/next-cloud-ocs",
-                        "integrations/integration-templates/netsuite-tba",
-                        "integrations/integration-templates/notion",
-                        "integrations/integration-templates/pipedrive",
-                        "integrations/integration-templates/salesforce",
-                        "integrations/integration-templates/slack",
-                        "integrations/integration-templates/teamtailor",
-                        "integrations/integration-templates/unanet",
-                        "integrations/integration-templates/wildix-pbx",
-                        "integrations/integration-templates/woocommerce",
-                        "integrations/integration-templates/workable",
-                        "integrations/integration-templates/xero",
-                        "integrations/integration-templates/quickbooks",
-                        "integrations/integration-templates/zendesk",
-                        "integrations/integration-templates/zoho-crm",
-                        "integrations/integration-templates/zoho-mail"
+                        "guides/pre-built-integrations/overview",
+                        "guides/pre-built-integrations/use-a-pre-built-integration"
+                    ]
+                },
+                {
+                    "group": "Custom integrations",
+                    "pages": [
+                        "guides/custom-integrations/overview",
+                        "guides/custom-integrations/build-a-custom-integration",
+                        "guides/custom-integrations/extend-a-pre-built-integration",
+                        "guides/custom-integrations/event-based-scripts",
+                        "guides/custom-integrations/service"
+                    ]
+                },
+                {
+                    "group": "Syncs",
+                    "pages": [
+                        "guides/syncs/overview",
+                        "guides/syncs/use-a-sync",
+                        "guides/syncs/large-datasets",
+                        "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
+                        "guides/syncs/sync-partitioning"
+                    ]
+                },
+                {
+                    "group": "Actions",
+                    "pages": [
+                        "guides/actions/overview",
+                        "guides/actions/use-an-action"
+                    ]
+                },
+                "guides/proxy-requests",
+                {
+                    "group": "Webhooks",
+                    "pages": [
+                        "guides/webhooks/webhooks-from-nango",
+                        {
+                            "group": "Webhooks from APIs",
+                            "pages": [
+                                "guides/webhooks/webhooks-from-apis/overview",
+                                "guides/webhooks/webhooks-from-apis/real-time-syncing-with-webhooks",
+                                "guides/webhooks/webhooks-from-apis/webhook-forwarding"
+                            ]
+                        }
+                    ]
+                },
+                "guides/customer-configuration",
+                "guides/api-unification",
+                {
+                    "group": "Logs",
+                    "pages": [
+                        "guides/logs/opentelemetry-exporter",
+                        "guides/api-authorization/authorization-logs"
+                    ]
+                },
+                "guides/data-validation",
+                "guides/rate-limits",
+                "guides/environments",
+                "guides/resource-limits",
+                {
+                    "group": "Self-hosting",
+                    "pages": [
+                        "guides/self-hosting/infrastructure",
+                        {
+                            "group": "Enterprise self-hosting",
+                            "pages": [
+                                "guides/self-hosting/enterprise-self-hosting/overview",
+                                "guides/self-hosting/enterprise-self-hosting/ecs"
+                            ]
+                        },
+                        {
+                            "group": "Free self-hosting",
+                            "pages": [
+                                "guides/self-hosting/free-self-hosting/overview",
+                                "guides/self-hosting/free-self-hosting/configuration",
+                                "guides/self-hosting/free-self-hosting/locally",
+                                "guides/self-hosting/free-self-hosting/aws",
+                                "guides/self-hosting/free-self-hosting/gcp",
+                                "guides/self-hosting/free-self-hosting/digital-ocean"
+                            ]
+                        }
                     ]
                 }
             ]
         },
         {
-            "group": "Pre-Configured APIs",
+            "group": "APIs & Integrations",
             "pages": [
+                "integrations/overview",
+                "integrations/all/1password-scim",
                 "integrations/all/accelo",
+                "integrations/all/acuity-scheduling",
+                "integrations/all/active-campaign",
                 "integrations/all/adobe",
+                "integrations/all/adobe-umapi",
                 "integrations/all/adyen",
                 "integrations/all/affinity",
                 "integrations/all/aircall",
+                "integrations/all/aircall-basic",
                 "integrations/all/airtable",
+                "integrations/all/airtable-pat",
                 "integrations/all/algolia",
                 "integrations/all/amazon",
+                "integrations/all/amazon-selling-partner",
+                "integrations/all/amazon-selling-partner-beta",
+                "integrations/all/amplitude",
                 "integrations/all/anrok",
                 "integrations/all/anthropic",
-                "integrations/all/amplitude",
+                "integrations/all/anthropic-admin",
                 "integrations/all/apaleo",
                 "integrations/all/apollo",
+                "integrations/all/apollo-oauth",
                 "integrations/all/apple-app-store",
+                "integrations/all/appstle-subscriptions",
                 "integrations/all/asana",
+                "integrations/all/asana-scim",
                 "integrations/all/ashby",
+                "integrations/all/atlas-so",
                 "integrations/all/atlassian",
                 "integrations/all/attio",
-                "integrations/all/avalara",
                 "integrations/all/auth0",
-                "integrations/all/aws",
                 "integrations/all/autodesk",
+                "integrations/all/avalara",
+                "integrations/all/avalara-sandbox",
+                "integrations/all/aws",
+                "integrations/all/aws-iam",
                 "integrations/all/bamboohr",
+                "integrations/all/bamboohr-basic",
+                "integrations/all/basecamp",
                 "integrations/all/battlenet",
-                "integrations/all/blandai",
+                "integrations/all/beehiiv",
                 "integrations/all/bigcommerce",
+                "integrations/all/bill",
+                "integrations/all/bill-sandbox",
                 "integrations/all/bitbucket",
                 "integrations/all/bitdefender",
                 "integrations/all/bitly",
-                "integrations/all/bill",
                 "integrations/all/blackbaud",
+                "integrations/all/blackbaud-basic",
+                "integrations/all/blandai",
                 "integrations/all/boldsign",
                 "integrations/all/booking-com",
                 "integrations/all/box",
                 "integrations/all/braintree",
+                "integrations/all/braintree-sandbox",
+                "integrations/all/braze",
+                "integrations/all/brevo-api-key",
                 "integrations/all/brex",
-                "integrations/all/builder-io",
+                "integrations/all/brex-api-key",
+                "integrations/all/brex-staging",
+                "integrations/all/brightcrowd",
+                "integrations/all/builder-io-private",
+                "integrations/all/builder-io-public",
                 "integrations/all/buildium",
+                "integrations/all/builtwith",
+                "integrations/all/cal-com-v1",
+                "integrations/all/cal-com-v2",
                 "integrations/all/calendly",
-                "integrations/all/cal-com",
+                "integrations/all/callrail",
                 "integrations/all/canny",
+                "integrations/all/canva-scim",
                 "integrations/all/certn",
+                "integrations/all/certn-partner",
                 "integrations/all/chargebee",
                 "integrations/all/chattermill",
-                "integrations/all/checkr-partner",
+                "integrations/all/checkhq",
                 "integrations/all/checkout-com",
+                "integrations/all/checkout-com-sandbox",
+                "integrations/all/checkr-partner",
+                "integrations/all/checkr-partner-staging",
                 "integrations/all/chorus",
                 "integrations/all/circle-so",
                 "integrations/all/clari-copilot",
                 "integrations/all/clickup",
                 "integrations/all/close",
                 "integrations/all/cloudentity",
-                "integrations/all/codeclimate",
                 "integrations/all/coda",
+                "integrations/all/codeclimate",
+                "integrations/all/commercetools",
+                "integrations/all/companycam",
                 "integrations/all/connectwise-psa",
                 "integrations/all/confluence",
+                "integrations/all/connectwise-psa",
+                "integrations/all/connectwise-psa-staging",
                 "integrations/all/contentful",
                 "integrations/all/contentstack",
-                "integrations/all/coupa-compass",
+                "integrations/all/copper",
+                "integrations/all/copper-api-key",
                 "integrations/all/coros",
-                "integrations/all/databricks",
-                "integrations/all/datev",
+                "integrations/all/coros-sandbox",
+                "integrations/all/coupa-compass",
+                "integrations/all/databricks-account",
+                "integrations/all/databricks-workspace",
                 "integrations/all/datadog",
+                "integrations/all/datev",
                 "integrations/all/deel",
+                "integrations/all/deel-sandbox",
+                "integrations/all/devin",
                 "integrations/all/dialpad",
+                "integrations/all/dialpad-sandbox",
                 "integrations/all/digitalocean",
                 "integrations/all/discord",
                 "integrations/all/discourse",
                 "integrations/all/dixa",
-                "integrations/all/dropbox",
+                "integrations/all/document360",
                 "integrations/all/docusign",
+                "integrations/all/docusign-sandbox",
+                "integrations/all/dropbox",
+                "integrations/all/drupal",
                 "integrations/all/e-conomic",
-                "integrations/all/elevio",
+                "integrations/all/ebay",
+                "integrations/all/ebay-sandbox",
                 "integrations/all/egnyte",
                 "integrations/all/elevenlabs",
+                "integrations/all/elevio",
+                "integrations/all/emarsys",
+                "integrations/all/emarsys-oauth",
+                "integrations/all/employment-hero",
                 "integrations/all/entrata",
                 "integrations/all/envoy",
                 "integrations/all/epic-games",
                 "integrations/all/evaluagent",
                 "integrations/all/eventbrite",
-                "integrations/all/exact-online",
                 "integrations/all/exa",
-                "integrations/all/expensify",
-                "integrations/all/jotform",
+                "integrations/all/exact-online",
                 "integrations/all/exist",
+                "integrations/all/expensify",
                 "integrations/all/facebook",
                 "integrations/all/factorial",
                 "integrations/all/falai",
                 "integrations/all/figjam",
                 "integrations/all/figma",
+                "integrations/all/figma-scim",
+                "integrations/all/findymail",
                 "integrations/all/firefish",
                 "integrations/all/fireflies",
                 "integrations/all/fiserv",
+                "integrations/all/fiserv-api-key",
                 "integrations/all/fitbit",
+                "integrations/all/fortnox",
                 "integrations/all/freshbooks",
                 "integrations/all/freshdesk",
                 "integrations/all/freshsales",
                 "integrations/all/freshservice",
+                "integrations/all/freshteam",
                 "integrations/all/front",
-                "integrations/all/garmin",
                 "integrations/all/gainsight-cc",
-                "integrations/all/guru",
+                "integrations/all/garmin",
+                "integrations/all/google-gemini",
+                "integrations/all/gebruder-weiss",
+                "integrations/all/gem",
+                "integrations/all/gerrit",
+                "integrations/all/ghost-admin",
+                "integrations/all/ghost-content",
                 "integrations/all/github",
-                "integrations/all/ghost",
+                "integrations/all/github-app",
+                "integrations/all/github-app-oauth",
+                "integrations/all/github-pat",
                 "integrations/all/gitlab",
                 "integrations/all/gong",
+                "integrations/all/gong-oauth",
                 "integrations/all/google",
                 "integrations/all/google-ads",
                 "integrations/all/google-analytics",
@@ -427,146 +445,248 @@
                 "integrations/all/google-docs",
                 "integrations/all/google-drive",
                 "integrations/all/google-mail",
-                "integrations/all/google-sheet",
                 "integrations/all/google-play",
+                "integrations/all/google-sheet",
                 "integrations/all/gorgias",
+                "integrations/all/gorgias-basic",
+                "integrations/all/grain",
+                "integrations/all/grain-api-key",
                 "integrations/all/greenhouse",
+                "integrations/all/greenhouse-assessment",
+                "integrations/all/greenhouse-basic",
+                "integrations/all/greenhouse-harvest",
+                "integrations/all/greenhouse-ingestion",
+                "integrations/all/greenhouse-job-board",
+                "integrations/all/greenhouse-onboarding",
+                "integrations/all/greenhouse-ingestion",
+                "integrations/all/grain",
+                "integrations/all/grafana",
                 "integrations/all/gumroad",
+                "integrations/all/guru",
+                "integrations/all/guru-scim",
                 "integrations/all/gusto",
+                "integrations/all/gusto-demo",
                 "integrations/all/hackerrank-work",
                 "integrations/all/harvest",
-                "integrations/all/healthgorilla",
-                "integrations/all/helpscout",
-                "integrations/all/hibob",
+                "integrations/all/health-gorilla",
+                "integrations/all/helpscout-docs",
+                "integrations/all/helpscout-mailbox",
+                "integrations/all/hibob-service-user",
                 "integrations/all/highlevel",
+                "integrations/all/highlevel-white-label",
                 "integrations/all/holded",
                 "integrations/all/hubspot",
+                "integrations/all/incident-io",
                 "integrations/all/insightly",
                 "integrations/all/instagram",
-                "integrations/all/intercom",
                 "integrations/all/instantly",
+                "integrations/all/intercom",
                 "integrations/all/intuit",
                 "integrations/all/jira",
+                "integrations/all/jira-basic",
+                "integrations/all/jira-data-center-api-key",
+                "integrations/all/jira-data-center",
+                "integrations/all/jira-data-center-basic",
+                "integrations/all/jotform",
                 "integrations/all/keap",
-                "integrations/all/keeper",
+                "integrations/all/keeper-scim",
                 "integrations/all/klaviyo",
+                "integrations/all/klaviyo-oauth",
                 "integrations/all/klipfolio",
                 "integrations/all/kustomer",
+                "integrations/all/lagrowthmachine",
+                "integrations/all/lastpass",
+                "integrations/all/lemlist",
+                "integrations/all/lattice",
                 "integrations/all/lessonly",
                 "integrations/all/lever",
+                "integrations/all/lever-basic",
+                "integrations/all/lever-basic-sandbox",
+                "integrations/all/lever-sandbox",
                 "integrations/all/linear",
                 "integrations/all/linkedin",
+                "integrations/all/linkhut",
                 "integrations/all/listmonk",
+                "integrations/all/loom-scim",
                 "integrations/all/loops-so",
+                "integrations/all/lucid-scim",
                 "integrations/all/luma",
                 "integrations/all/mailchimp",
-                "integrations/all/marketo",
-                "integrations/all/make",
                 "integrations/all/mailgun",
-                "integrations/all/manatal",
+                "integrations/all/make",
                 "integrations/all/malwarebytes",
+                "integrations/all/manatal",
+                "integrations/all/marketo",
                 "integrations/all/medallia",
                 "integrations/all/metabase",
                 "integrations/all/microsoft",
                 "integrations/all/microsoft-ads",
+                "integrations/all/microsoft-business-central",
                 "integrations/all/microsoft-entra-id",
                 "integrations/all/microsoft-power-bi",
                 "integrations/all/microsoft-teams",
                 "integrations/all/microsoft-tenant-specific",
+                "integrations/all/microsoft-oauth2-cc",
+                "integrations/all/mindbody",
+                "integrations/all/minimax",
+                "integrations/all/mip-cloud",
+                "integrations/all/mip-on-premise",
                 "integrations/all/miro",
+                "integrations/all/miro-scim",
                 "integrations/all/mixpanel",
                 "integrations/all/monday",
                 "integrations/all/mural",
                 "integrations/all/nationbuilder",
                 "integrations/all/netsuite",
-                "integrations/all/next-cloud",
+                "integrations/all/netsuite-tba",
+                "integrations/all/next-cloud-ocs",
                 "integrations/all/notion",
+                "integrations/all/notion-scim",
                 "integrations/all/odoo",
+                "integrations/all/odoo-cc",
                 "integrations/all/okta",
+                "integrations/all/okta-preview",
                 "integrations/all/one-drive",
                 "integrations/all/one-note",
                 "integrations/all/openai",
+                "integrations/all/openai-admin",
+                "integrations/all/oracle-hcm",
                 "integrations/all/ory",
                 "integrations/all/osu",
-                "integrations/all/outlook",
                 "integrations/all/oura",
+                "integrations/all/outlook",
                 "integrations/all/outreach",
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
+                "integrations/all/pandadoc-api-key",
                 "integrations/all/payfit",
+                "integrations/all/paylocity",
                 "integrations/all/paypal",
+                "integrations/all/paypal-sandbox",
                 "integrations/all/pendo",
                 "integrations/all/pennylane",
-                "integrations/all/personio",
                 "integrations/all/peopledatalabs",
                 "integrations/all/perimeter81",
                 "integrations/all/perplexity",
+                "integrations/all/personio",
+                "integrations/all/personio-recruiting",
+                "integrations/all/personio-v2",
                 "integrations/all/pingboard",
                 "integrations/all/pinterest",
                 "integrations/all/pipedrive",
                 "integrations/all/pivotaltracker",
-                "integrations/all/productboard",
+                "integrations/all/plain",
                 "integrations/all/podium",
                 "integrations/all/posthog",
+                "integrations/all/prive",
+                "integrations/all/productboard",
                 "integrations/all/qualtrics",
+                "integrations/all/quickbase",
                 "integrations/all/quickbooks",
-                "integrations/all/ramp",
-                "integrations/all/reddit",
+                "integrations/all/quickbooks-sandbox",
                 "integrations/all/ragieai",
-                "integrations/all/refiner",
+                "integrations/all/ramp",
+                "integrations/all/ramp-sandbox",
                 "integrations/all/rapidapi",
+                "integrations/all/readwise",
+                "integrations/all/readwise-reader",
+                "integrations/all/recharge",
+                "integrations/all/reddit",
+                "integrations/all/refiner",
+                "integrations/all/razorpay",
                 "integrations/all/replicate",
+                "integrations/all/retell-ai",
                 "integrations/all/ring-central",
+                "integrations/all/ring-central-sandbox",
+                "integrations/all/rippling",
+                "integrations/all/rippling-shop-app",
+                "integrations/all/rock-gym-pro",
+                "integrations/all/rootly",
                 "integrations/all/sage",
+                "integrations/all/sage-intacct",
+                "integrations/all/sage-intacct-oauth",
                 "integrations/all/salesforce",
                 "integrations/all/salesforce-experience-cloud",
+                "integrations/all/salesforce-cdp",
+                "integrations/all/salesforce-sandbox",
                 "integrations/all/salesloft",
+                "integrations/all/sap-concur",
+                "integrations/all/sap-success-factors",
+                "integrations/all/scrapedo",
                 "integrations/all/sedna",
+                "integrations/all/sedna-basic",
                 "integrations/all/segment",
                 "integrations/all/sendgrid",
+                "integrations/all/sentry",
                 "integrations/all/servicem8",
                 "integrations/all/servicenow",
                 "integrations/all/sharepoint-online",
+                "integrations/all/sharepoint-online-v1",
+                "integrations/all/sharepoint-online-oauth2-cc",
                 "integrations/all/shipstation",
                 "integrations/all/shopify",
+                "integrations/all/shopify-api-key",
+                "integrations/all/shopify-partner",
+                "integrations/all/shopify-scim",
                 "integrations/all/shortcut",
                 "integrations/all/signnow",
+                "integrations/all/signnow-sandbox",
                 "integrations/all/slack",
-                "integrations/all/smartrecruiters",
+                "integrations/all/smartrecruiters-api-key",
+                "integrations/all/smartlead-ai",
                 "integrations/all/smartsheet",
                 "integrations/all/smugmug",
                 "integrations/all/snowflake",
+                "integrations/all/snowflake-jwt",
                 "integrations/all/splitwise",
                 "integrations/all/spotify",
-                "integrations/all/squareup",
+                "integrations/all/spotify-oauth2-cc",
                 "integrations/all/squarespace",
+                "integrations/all/squareup",
+                "integrations/all/squareup-sandbox",
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
+                "integrations/all/strava-web",
                 "integrations/all/stripe",
                 "integrations/all/stripe-app",
+                "integrations/all/stripe-app-sandbox",
                 "integrations/all/stripe-express",
                 "integrations/all/survey-monkey",
                 "integrations/all/tableau",
+                "integrations/all/tapclicks",
                 "integrations/all/teamtailor",
                 "integrations/all/teamwork",
+                "integrations/all/thrivecart-api-key",
+                "integrations/all/thrivecart-oauth",
                 "integrations/all/ticktick",
                 "integrations/all/tiktok-accounts",
                 "integrations/all/tiktok-ads",
                 "integrations/all/timely",
                 "integrations/all/todoist",
+                "integrations/all/trakstar-hire",
                 "integrations/all/trello",
-                "integrations/all/thrivecart",
-                "integrations/all/tsheetsteam",
+                "integrations/all/tldv",
+                "integrations/all/trello-scim",
                 "integrations/all/tremendous",
+                "integrations/all/tremendous-sandbox",
+                "integrations/all/tsheetsteam",
                 "integrations/all/tumblr",
+                "integrations/all/twenty-crm",
+                "integrations/all/twenty-crm-self-hosted",
+                "integrations/all/twilio",
+                "integrations/all/twinfield",
                 "integrations/all/twitch",
                 "integrations/all/twitter",
-                "integrations/all/twinfield",
+                "integrations/all/twitter-oauth2-cc",
+                "integrations/all/twitter-v2",
                 "integrations/all/typeform",
                 "integrations/all/typefully",
                 "integrations/all/uber",
                 "integrations/all/unanet",
+                "integrations/all/unauthenticated",
+                "integrations/all/unipile",
                 "integrations/all/vimeo",
+                "integrations/all/vimeo-basic",
                 "integrations/all/wakatime",
                 "integrations/all/wave-accounting",
                 "integrations/all/wealthbox",
@@ -577,15 +697,20 @@
                 "integrations/all/woocommerce",
                 "integrations/all/wordpress",
                 "integrations/all/workable",
+                "integrations/all/workable-oauth",
                 "integrations/all/workday",
                 "integrations/all/wrike",
+                "integrations/all/xai",
                 "integrations/all/xero",
+                "integrations/all/xero-oauth2-cc",
                 "integrations/all/yahoo",
                 "integrations/all/yandex",
                 "integrations/all/youtube",
+                "integrations/all/zapier",
                 "integrations/all/zapier-nla",
                 "integrations/all/zendesk",
                 "integrations/all/zenefits",
+                "integrations/all/zoho",
                 "integrations/all/zoho-bigin",
                 "integrations/all/zoho-books",
                 "integrations/all/zoho-crm",
@@ -596,7 +721,7 @@
                 "integrations/all/zoho-people",
                 "integrations/all/zoom",
                 "integrations/all/zoominfo",
-                "integrations/all/acuity-scheduling"
+                "integrations/all/zuora"
             ]
         },
         {
@@ -662,7 +787,9 @@
                                 "reference/api/sync/pause",
                                 "reference/api/sync/status",
                                 "reference/api/sync/update-connection-frequency",
-                                "reference/api/sync/environment-variables"
+                                "reference/api/sync/environment-variables",
+                                "reference/api/sync/create-variant",
+                                "reference/api/sync/delete-variant"
                             ]
                         },
                         {
@@ -685,6 +812,7 @@
                             "group": "Connect",
                             "pages": [
                                 "reference/api/connect/sessions/create",
+                                "reference/api/connect/sessions/reconnect",
                                 "reference/api/connect/session/get",
                                 "reference/api/connect/session/delete"
                             ]
@@ -703,8 +831,7 @@
                         "reference/sdks/php"
                     ],
                     "icon": "cubes"
-                },
-                "reference/limits"
+                }
             ]
         },
         {
@@ -714,6 +841,12 @@
                 "reference/api-configuration",
                 "reference/scripts",
                 "reference/integration-configuration"
+            ]
+        },
+        {
+            "group": "",
+            "pages": [
+                "changelog/overview"
             ]
         }
     ],

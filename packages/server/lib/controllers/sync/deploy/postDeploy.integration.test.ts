@@ -45,10 +45,9 @@ describe(`POST ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     { code: 'invalid_type', message: 'Required', path: ['flowConfigs'] },
-                    { code: 'invalid_type', message: 'Required', path: ['postConnectionScriptsByProvider'] },
-                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] },
                     { code: 'invalid_type', message: 'Required', path: ['reconcile'] },
-                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] }
+                    { code: 'invalid_type', message: 'Expected boolean, received string', path: ['debug'] },
+                    { code: 'invalid_type', message: 'Required', path: ['nangoYamlBody'] }
                 ]
             }
         });
@@ -64,7 +63,7 @@ describe(`POST ${endpoint}`, () => {
                 debug: false,
                 flowConfigs: [],
                 nangoYamlBody: '',
-                postConnectionScriptsByProvider: [],
+                onEventScriptsByProvider: [],
                 reconcile: false,
                 singleDeployMode: false,
                 jsonSchema: { $comment: '', $schema: 'http://json-schema.org/draft-07/schema#', definitions: {} }
@@ -122,7 +121,18 @@ describe(`POST ${endpoint}`, () => {
                         }
                     ],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [
+                        {
+                            providerConfigKey: 'unauthenticated',
+                            scripts: [
+                                {
+                                    name: 'test',
+                                    fileBody: { js: 'js file', ts: 'ts file' },
+                                    event: 'post-connection-creation'
+                                }
+                            ]
+                        }
+                    ],
                     reconcile: false,
                     singleDeployMode: false
                 }
@@ -131,7 +141,8 @@ describe(`POST ${endpoint}`, () => {
             isSuccess(res.json);
 
             expect(res.json).toStrictEqual<typeof res.json>([
-                { models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' }
+                { models: ['Output'], name: 'test', providerConfigKey: 'unauthenticated', type: 'sync', version: '1' },
+                { models: [], name: 'test', providerConfigKey: 'unauthenticated', type: 'on-event', version: '0.0.1' }
             ]);
             expect(res.res.status).toBe(200);
 
@@ -141,7 +152,7 @@ describe(`POST ${endpoint}`, () => {
             expect(syncConfigs).toStrictEqual([
                 {
                     actions: [],
-                    postConnectionScripts: [],
+                    'on-events': [],
                     provider: 'unauthenticated',
                     providerConfigKey: 'unauthenticated',
                     syncs: [
@@ -151,21 +162,19 @@ describe(`POST ${endpoint}`, () => {
                             auto_start: false,
                             description: 'a',
                             enabled: true,
-                            endpoints: [{ method: 'GET', path: '/path' }],
+                            endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: {
                                 fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }],
                                 name: 'Input'
                             },
                             is_public: false,
                             last_deployed: expect.toBeIsoDate(),
-                            layout_mode: 'nested',
                             models: [
                                 { name: 'Input', fields: [{ array: false, name: 'id', optional: false, tsType: true, value: 'number' }] },
                                 { name: 'Output', fields: [{ array: false, name: 'ref', optional: false, model: true, value: 'Ref' }] },
                                 { name: 'Ref', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }
                             ],
                             returns: ['Output'],
-                            nango_yaml_version: 'v2',
                             scopes: [],
                             pre_built: false,
                             runs: 'every day',
@@ -206,7 +215,7 @@ describe(`POST ${endpoint}`, () => {
                     },
                     flowConfigs: [],
                     nangoYamlBody: ``,
-                    postConnectionScriptsByProvider: [],
+                    onEventScriptsByProvider: [],
                     reconcile: true,
                     singleDeployMode: false
                 }

@@ -162,19 +162,19 @@ async function getCheckpoint(): Promise<Checkpoint> {
     try {
         const data = await fs.promises.readFile(checkpointFile, 'utf8');
         return JSON.parse(data) as Checkpoint;
-    } catch (error: unknown) {
-        if (error['code'] == 'ENOENT') {
+    } catch (err) {
+        if (err['code'] == 'ENOENT') {
             return { lastUpdatedAt: null, lastId: null };
         }
-        throw error;
+        throw err;
     }
 }
 
 // time execution
 const start = new Date();
 verify()
-    .catch((error: unknown) => {
-        console.error('Error occurred during verification:', error);
+    .catch((err: unknown) => {
+        console.error('Error occurred during verification:', err);
     })
     .finally(async () => {
         await sourceKnex.destroy();

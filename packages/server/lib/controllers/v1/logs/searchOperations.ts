@@ -1,8 +1,11 @@
 import { z } from 'zod';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
+import { envs, model } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+
 import type { SearchOperations } from '@nangohq/types';
-import { model, envs } from '@nangohq/logs';
 
 const validation = z
     .object({
@@ -18,6 +21,7 @@ const validation = z
                     'all',
                     'action',
                     'sync',
+                    'events',
                     'sync:init',
                     'sync:cancel',
                     'sync:pause',
@@ -28,8 +32,15 @@ const validation = z
                     'proxy',
                     'deploy',
                     'auth',
+                    'auth:create_connection',
+                    'auth:refresh_token',
                     'admin',
-                    'webhook'
+                    'webhook',
+                    'webhook:incoming',
+                    'webhook:forward',
+                    'webhook:sync',
+                    'webhook:connection_create',
+                    'webhook:connection_refresh'
                 ])
             )
             .max(20)

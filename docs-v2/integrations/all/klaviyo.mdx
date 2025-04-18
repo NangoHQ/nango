@@ -3,23 +3,36 @@ title: Klaviyo
 sidebarTitle: Klaviyo
 ---
 
-API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oauth`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/klaviyo/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/klaviyo/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | ✅  |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
 
--   [How to generate private & public API keys in your Klaviyo account](https://developers.klaviyo.com/en/docs/retrieve_api_credentials)
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
+
+
+## Useful links
+
+-   [How to generate private & public API keys in your Klaviyo account](https://developers.klaviyo.com/en/docs/authenticate_)
 -   [API docs](https://developers.klaviyo.com/en/reference)
 -   [API Key rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling)
 -   [API Key auth related docs](https://developers.klaviyo.com/en/docs/authenticate_)
@@ -28,7 +41,7 @@ API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oaut
 -   [OAuth related docs](https://developers.klaviyo.com/en/docs/set_up_oauth#oauth-authorization-code-flow)
 -   [List of OAuth scopes](https://developers.klaviyo.com/en/docs/retrieve_api_credentials#scopes)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
 
 ## API gotchas
 
@@ -36,4 +49,8 @@ API configuration: [`klaviyo`](https://nango.dev/providers.yaml), [`klaviyo-oaut
 - If you want to use a different API version than the default one set in Nango you can override the `revision` by adding in the necessary header. For more details check [Klaviyo API versioning](https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy#api-versioning)
 - Rate limiting in `klaviyo-oauth` is different from the [standard API rate limiting](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). For more details check [klaviyo-oauth rate limits](https://developers.klaviyo.com/en/docs/set_up_oauth#rate-limits)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klaviyo.mdx)</Note>
+
+<Card title="Connect to Klaviyo" icon="link" href="/integrations/all/klaviyo/connect" horizontal>
+  Guide to connect to Klaviyo using Nango Connect.
+</Card>

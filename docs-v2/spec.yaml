@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/refs/heads/main/schemas/v3.1/schema.yaml
 openapi: 3.1.0
 info:
     title: 'Nango API'
@@ -254,9 +255,11 @@ paths:
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
+                                                            format: date-time
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
+                                                            format: date-time
                                             syncs:
                                                 type: array
                                                 items:
@@ -268,9 +271,11 @@ paths:
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
+                                                            format: date-time
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
+                                                            format: date-time
                                                         description:
                                                             type: string
                                                             description: Description of what the sync does and details about it
@@ -368,7 +373,7 @@ paths:
                       type: array
                       items:
                           type: string
-                          enum: [webhook]
+                          enum: [webhook, credentials]
                   description: Include additional sensitive data
             responses:
                 '200':
@@ -381,7 +386,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        $ref: '#/components/schemas/Integration'
+                                        $ref: '#/components/schemas/IntegrationFull'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -402,7 +407,17 @@ paths:
                   in: query
                   schema:
                       type: string
-                  description: Search connections. Will search in connection ID or end user profile.
+                  description: Will partially match connection IDs or end user profiles.
+                - name: endUserId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user id.
+                - name: endUserOrganizationId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on the given end user's organization id.
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -413,7 +428,7 @@ paths:
                                 required:
                                     - configs
                                 properties:
-                                    configs:
+                                    connections:
                                         type: array
                                         items:
                                             type: object
@@ -425,6 +440,7 @@ paths:
                                                 - created
                                                 - metadata
                                                 - errors
+                                                - end_user
                                             properties:
                                                 id:
                                                     type: integer
@@ -448,18 +464,14 @@ paths:
                                                 errors:
                                                     type: array
                                                     items:
-                                                        type: object
-                                                        properties:
-                                                            type:
-                                                                type: string
-                                                                example: "'auth' or 'sync'"
-                                                            log_id:
-                                                                type: string
-                                                                example: 'VrnbtykXJFckCm3HP93t'
+                                                        $ref: '#/components/schemas/ConnectionError'
                                                     description: |
                                                         List of connection errors. Ex:
                                                         - Connection credentials are invalid (type=auth)
-                                                        - Last sync for the connnection has failed (type=sync)
+                                                        - Last sync for the connection has failed (type=sync)
+                                                end_user:
+                                                    nullable: true
+                                                    $ref: '#/components/schemas/ConnectionEndUser'
 
         post:
             description: Adds a connection for which you already have credentials.
@@ -563,6 +575,10 @@ paths:
             responses:
                 '200':
                     description: Successfully returned a connection
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConnectionFull'
                 '400':
                     description: Invalid request
                     content:
@@ -824,7 +840,15 @@ paths:
 
     /scripts/config:
         get:
-            description: Return the configuration for all integration scripts
+            description: Return the configuration for all integration scripts.
+            parameters:
+                - name: format
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [nango, openai]
+                  description: The output type of the script configuration
             responses:
                 '200':
                     description: Successfully returned integration scripts config
@@ -840,34 +864,25 @@ paths:
                                         items:
                                             type: object
                                             properties:
+                                                id:
+                                                    type: number
                                                 name:
                                                     type: string
                                                     example: 'github-issues'
+                                                enabled:
+                                                    type: boolean
                                                 type:
                                                     type: string
                                                     example: 'sync'
+                                                json_schema:
+                                                    type: object
                                                 models:
                                                     type: array
                                                     items:
-                                                        type: object
-                                                        properties:
-                                                            name:
-                                                                type: string
-                                                                example: 'GithubIssue'
-                                                            fields:
-                                                                type: array
-                                                                items:
-                                                                    type: object
-                                                                    properties:
-                                                                        name:
-                                                                            type: string
-                                                                            example: 'title'
-                                                                        type:
-                                                                            type: string
-                                                                            example: 'string'
+                                                        $ref: '#/components/schemas/NangoModel'
                                                 sync_type:
                                                     type: string
-                                                    example: 'INCREMENTAL'
+                                                    example: 'full'
                                                 runs:
                                                     type: string
                                                     example: 'every 30 minutes'
@@ -906,9 +921,6 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: 'v2'
                                                 webhookSubscriptions:
                                                     type: array
                                                     items:
@@ -918,31 +930,18 @@ paths:
                                         items:
                                             type: object
                                             properties:
+                                                id:
+                                                    type: number
                                                 name:
                                                     type: string
                                                     example: 'github-issues'
                                                 type:
                                                     type: string
-                                                    example: 'sync'
+                                                    example: 'action'
                                                 models:
                                                     type: array
                                                     items:
-                                                        type: object
-                                                        properties:
-                                                            name:
-                                                                type: string
-                                                                example: 'GithubIssue'
-                                                            fields:
-                                                                type: array
-                                                                items:
-                                                                    type: object
-                                                                    properties:
-                                                                        name:
-                                                                            type: string
-                                                                            example: 'id'
-                                                                        type:
-                                                                            type: string
-                                                                            example: 'integer'
+                                                        $ref: '#/components/schemas/NangoModel'
                                                 last_deployed:
                                                     type: string
                                                     example: '2024-02-28T20:16:38.052Z'
@@ -973,10 +972,7 @@ paths:
                                                     type: array
                                                     items:
                                                         type: object
-                                                nango_yaml_version:
-                                                    type: string
-                                                    example: 'v2'
-                                    postConnectionScripts:
+                                    on-events:
                                         type: array
                                         items:
                                             type: string
@@ -984,14 +980,9 @@ paths:
                                         type: string
                                         example: 'github'
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /records:
         get:
@@ -1028,6 +1019,7 @@ paths:
                   required: false
                   schema:
                       type: string
+                      format: date-time
                   description: A timestamp (e.g., 2023-05-31T11:46:13.390Z) used to fetch records modified after this date and time. If not provided, all records are returned. The modified_after parameter is less precise than cursor, as multiple records may share the same modification timestamp.
                 - name: delta
                   in: query
@@ -1036,6 +1028,21 @@ paths:
                   schema:
                       type: string
                   description: DEPRECATED (use modified_after) Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed, only records modified after this timestamp are returned, otherwise all records are returned.
+                - name: ids
+                  in: query
+                  required: false
+                  description: An array of string containing a list of your records IDs. The list will be filtered to include only the records with a matching ID.
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                      max: 100
+                - name: variant
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: The variant of the model to fetch
                 - name: Connection-Id
                   in: header
                   required: true
@@ -1073,6 +1080,7 @@ paths:
                                                             type: string
                                                             nullable: true
                                                             description: The timestamp at which Nango detected the record as deleted
+                                                            format: date-time
                                                         last_action:
                                                             type: string
                                                             description: The last action seen on this record
@@ -1081,10 +1089,12 @@ paths:
                                                             type: string
                                                             description: The timestamp at which Nango first saw this record
                                                             example: '2023-09-18T15:20:35.941305+00:00'
+                                                            format: date-time
                                                         last_modified_at:
                                                             type: string
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: '2023-09-18T15:20:35.941305+00:00'
+                                                            format: date-time
                                                         cursor:
                                                             type: string
                                                             description: The current cursor of the record. Use this to fetch records updated after this record
@@ -1094,14 +1104,9 @@ paths:
                                         description: The base64-encoded cursor for pagination
                                         example: 'MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=='
                 '400':
-                    description: Invalid request
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
 
     /sync/trigger:
         post:
@@ -1122,17 +1127,52 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: An array of sync names to trigger. If the array is empty, all syncs are triggered.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to pause. If empty, all syncs are triggered
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to trigger. If empty, all syncs are triggered
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
+                                sync_mode:
+                                    type: string
+                                    enum: ['incremental', 'full_refresh', 'full_refresh_and_clear_cache']
+                                    description: |
+                                        The mode in which to trigger the syncs.
+                                        - `incremental`: Triggers a new sync job while preserving the "lastSyncDate".
+                                        - `full_refresh`: Resets the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                        - `full_refresh_and_clear_cache`: Resets the "lastSyncDate" and deletes all records associated with the sync before triggering a new sync job.
                                 full_resync:
+                                    deprecated: true
                                     type: boolean
-                                    description: Clear the records and reset the "lastSyncDate" associated with the sync before triggering a new sync job.
+                                    description: Reset the "lastSyncDate" associated with the sync before triggering a new sync job.
 
             responses:
                 '200':
                     description: Successfully triggered the sync
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:
@@ -1162,13 +1202,39 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be started for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: A list of sync names that you wish to start.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to start.
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to start.
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
             responses:
                 '200':
                     description: Successfully started the sync
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:
@@ -1197,13 +1263,39 @@ paths:
                                     type: string
                                     description: The ID of the connection. If omitted, the syncs will be paused for all relevant connections.
                                 syncs:
-                                    type: array
-                                    description: A list of sync names that you wish to pause.
-                                    items:
-                                        type: string
+                                    oneOf:
+                                        - type: array
+                                          description: A list of sync names that you wish to pause.
+                                          items:
+                                              type: string
+                                              description: Sync name
+                                              example: 'github-issues'
+                                        - type: array
+                                          description: A list of sync object (with a name and variant properties) that you wish to start.
+                                          items:
+                                              type: object
+                                              required:
+                                                  - name
+                                              properties:
+                                                  name:
+                                                      type: string
+                                                      description: The name of the sync
+                                                  variant:
+                                                      type: string
+                                                      description: The variant name
+                                              example: { 'name': 'github-issues', 'variant': 'custom-variant' }
             responses:
                 '200':
                     description: Successfully paused the sync
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
                 '400':
                     description: Invalid request
                     content:
@@ -1229,7 +1321,7 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs per the integration
+                  description: The name of the syncs you want to fetch a status for, as a comma-separated list. Pass in "*" to return all syncs for the integration. For variants, use the format "syncName::variantName".
                 - name: connection_id
                   in: query
                   required: false
@@ -1252,9 +1344,15 @@ paths:
                                                 id:
                                                     type: string
                                                     description: The unique identifier for the sync.
+                                                connection_id:
+                                                    type: string
+                                                    description: The ID of the connection
                                                 name:
                                                     type: string
                                                     description: The name of the sync.
+                                                variant:
+                                                    type: string
+                                                    description: The variant of the sync.
                                                 status:
                                                     type: string
                                                     enum: ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS', 'ERROR']
@@ -1275,6 +1373,9 @@ paths:
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                recordCount:
+                                                    type: object
+                                                    description: Total count of records for each model synced by the sync
                 '400':
                     description: Invalid request
                     content:
@@ -1284,6 +1385,197 @@ paths:
                                 properties:
                                     message:
                                         type: string
+
+    /sync/{name}/variant/{variant}:
+        post:
+            description: Creates a new sync variant for a specific connection
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the sync
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the variant to create. Cannot be "base" (protected name).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - connection_id
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used when creating the connection
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection to create the sync variant for
+            responses:
+                '200':
+                    description: Successfully created the sync variant
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - id
+                                    - name
+                                    - variant
+                                properties:
+                                    id:
+                                        type: string
+                                        description: The unique identifier for the created sync variant
+                                    name:
+                                        type: string
+                                        description: The name of the sync
+                                    variant:
+                                        type: string
+                                        description: The name of the variant
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum:
+                                                    [
+                                                        invalid_body,
+                                                        invalid_uri_params,
+                                                        invalid_query_params,
+                                                        invalid_variant,
+                                                        unknown_connection,
+                                                        unknown_provider_config,
+                                                        unknown_sync,
+                                                        sync_variant_already_exists,
+                                                        resource_capped,
+                                                        feature_disabled
+                                                    ]
+                                            message:
+                                                type: string
+                                            errors:
+                                                type: array
+                                                items:
+                                                    type: object
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [failed_sync_variant_creation]
+                                            message:
+                                                type: string
+        delete:
+            description: Deletes a sync variant for a specific connection
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the sync
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the variant to delete. Cannot be "base" (protected name).
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - connection_id
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID used when creating the connection
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection the sync variant belongs to
+            responses:
+                '200':
+                    description: Successfully deleted the sync variant
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
+                                        description: Indicates if the deletion was successful
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [invalid_body, invalid_uri_params, invalid_query_params, invalid_variant, unknown_connection]
+                                            message:
+                                                type: string
+                                            errors:
+                                                type: array
+                                                items:
+                                                    type: object
+                '404':
+                    description: Sync variant not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [not_found]
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [failed_sync_variant_deletion]
+                                            message:
+                                                type: string
 
     /sync/update-connection-frequency:
         put:
@@ -1309,6 +1601,9 @@ paths:
                                 sync_name:
                                     type: string
                                     description: The name of the sync you want to update
+                                sync_variant:
+                                    type: string
+                                    description: The variant of the sync you want to update
                                 frequency:
                                     type: string
                                     nullable: true
@@ -1388,6 +1683,45 @@ paths:
                                     message:
                                         type: string
 
+                '424':
+                    description: Action http error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            message:
+                                                type: string
+                                            code:
+                                                type: string
+                                            payload:
+                                                type: object
+                                            upstream:
+                                                type: object
+                                                properties:
+                                                    status_code:
+                                                        type: integer
+                                                    headers:
+                                                        type: object
+                                                        properties:
+                                                            content-type:
+                                                                type: string
+                                                        patternProperties:
+                                                            '^x-rate':
+                                                                type: string
+                                                    body:
+                                                        type: object
+                                                        additionalProperties: true
+                                        required:
+                                            - message
+                                            - code
+                                            - payload
+                                    required:
+                                        - error
+
     /environment-variables:
         get:
             description: Retrieve the environment variables as added in the Nango dashboard
@@ -1442,7 +1776,7 @@ paths:
                       type: string
                   description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
                 - in: header
-                  name: Retry On
+                  name: Retry-On
                   schema:
                       type: string
                   description: Comma separated status codes to explicitly retry on in addition to the default 5xx and 429.
@@ -1673,7 +2007,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ConnectSession'
+                            $ref: '#/components/schemas/ConnectSessionInput'
             responses:
                 '201':
                     description: Successfully created a connect session
@@ -1685,18 +2019,35 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        type: object
-                                        required:
-                                            - token
-                                            - expires_at
-                                        properties:
-                                            token:
-                                                type: string
-                                                description: The connect session token
-                                            expires_at:
-                                                type: string
-                                                description: When the token expires
-                                                format: date
+                                        $ref: '#/components/schemas/ConnectSession'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /connect/sessions/reconnect:
+        post:
+            description: |
+                Create a new connect session to reconnect to a specific integration. The token is used like a standard connect session.
+                Only connections created with a connect session are compatible with this endpoint.
+                Use this method when a user needs to input new credentials or to manually refresh token.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ConnectSessionReconnectInput'
+            responses:
+                '201':
+                    description: Successfully created a connect session
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/ConnectSession'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -1825,7 +2176,23 @@ components:
                 auth_mode:
                     type: string
                     enum:
-                        ['OAUTH1', 'OAUTH2', 'OAUTH2_CC', 'BASIC', 'API_KEY', 'APP_STORE', 'CUSTOM', 'APP', 'NONE', 'TBA', 'TABLEAU', 'JWT', 'BILL', 'TWO_STEP']
+                        [
+                            'OAUTH1',
+                            'OAUTH2',
+                            'OAUTH2_CC',
+                            'BASIC',
+                            'API_KEY',
+                            'APP_STORE',
+                            'CUSTOM',
+                            'APP',
+                            'NONE',
+                            'TBA',
+                            'TABLEAU',
+                            'JWT',
+                            'BILL',
+                            'TWO_STEP',
+                            'SIGNATURE'
+                        ]
                 proxy:
                     properties:
                         base_url:
@@ -2058,14 +2425,58 @@ components:
                     description: Absolute path to the logo of this integration (svg)
                 created_at:
                     type: string
-                    format: date
+                    format: date-time
                     description: When it was created
                 updated_at:
                     type: string
-                    format: date
+                    format: date-time
                     description: Last time it was updated
+        IntegrationFull:
+            allOf:
+                - $ref: '#/components/schemas/Integration'
+                - type: object
+                  additionalProperties: false
+                  properties:
+                      webhook_url:
+                          type: string
+                          description: Configure your integration webhooks to point to this URL
+                          nullable: true
+                      credentials:
+                          nullable: true
+                          oneOf:
+                              - type: object
+                                additionalProperties: false
+                                properties:
+                                    type:
+                                        type: string
+                                        enum: ['OAUTH2', 'OAUTH1', 'TBA']
+                                    client_id:
+                                        type: string
+                                        nullable: true
+                                    client_secret:
+                                        type: string
+                                        nullable: true
+                                    scopes:
+                                        type: string
+                                        nullable: true
 
-        ConnectSession:
+                              - type: object
+                                additionalProperties: false
+                                properties:
+                                    type:
+                                        type: string
+                                        enum: ['APP']
+                                    app_id:
+                                        type: string
+                                        nullable: true
+                                    private_key:
+                                        type: string
+                                        nullable: true
+                                    app_link:
+                                        type: string
+                                        nullable: true
+
+        ConnectSessionInput:
             type: object
             required:
                 - end_user
@@ -2074,7 +2485,6 @@ components:
                     type: object
                     required:
                         - id
-                        - email
                     properties:
                         id:
                             type: string
@@ -2085,6 +2495,8 @@ components:
                             type: string
                 organization:
                     type: object
+                    required:
+                        - id
                     properties:
                         id:
                             type: string
@@ -2101,6 +2513,516 @@ components:
                     additionalProperties:
                         type: object
                         description: the unique name of an integration
+                        additionalProperties: false
                         properties:
+                            user_scopes:
+                                type: string
+                                description: User scopes (for Slack only)
+                            authorization_params:
+                                type: object
+                                description: Query params passed to the OAuth flow (for OAuth2 only)
+                                additionalProperties: true
                             connection_config:
                                 type: object
+                                additionalProperties: true
+                                properties:
+                                    oauth_scopes_override:
+                                        type: string
+                                        description: Override oauth scopes
+
+        ConnectSessionReconnectInput:
+            type: object
+            required:
+                - connection_id
+                - integration_id
+            properties:
+                connection_id:
+                    type: string
+                integration_id:
+                    type: string
+                end_user:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/end_user'
+                organization:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/organization'
+                integrations_config_defaults:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/integrations_config_defaults'
+
+        ConnectSession:
+            type: object
+            required:
+                - token
+                - expires_at
+            properties:
+                token:
+                    type: string
+                    description: The connect session token
+                expires_at:
+                    type: string
+                    description: When the token expires
+                    format: date-time
+
+        AllAuthCredentials:
+            anyOf:
+                - $ref: '#/components/schemas/OAuth1Credentials'
+                - $ref: '#/components/schemas/OAuth2Credentials'
+                - $ref: '#/components/schemas/BasicApiCredentials'
+                - $ref: '#/components/schemas/ApiKeyCredentials'
+                - $ref: '#/components/schemas/AppCredentials'
+                - $ref: '#/components/schemas/JwtCredentials'
+                - $ref: '#/components/schemas/OAuth2ClientCredentials'
+                - $ref: '#/components/schemas/AppStoreCredentials'
+                - $ref: '#/components/schemas/UnauthCredentials'
+                - $ref: '#/components/schemas/CustomCredentials'
+                - $ref: '#/components/schemas/TbaCredentials'
+                - $ref: '#/components/schemas/TableauCredentials'
+                - $ref: '#/components/schemas/BillCredentials'
+                - $ref: '#/components/schemas/TwoStepCredentials'
+                - $ref: '#/components/schemas/SignatureCredentials'
+
+        ## ---------------------- Credentials
+        ApiKeyCredentials:
+            type: object
+            title: Api Key
+            additionalProperties: false
+            properties:
+                apiKey:
+                    type: string
+                type:
+                    type: string
+                    enum: [API_KEY]
+            required:
+                - type
+                - apiKey
+        AppCredentials:
+            type: object
+            title: GitHub App
+            additionalProperties: false
+            properties:
+                access_token:
+                    type: string
+                expires_at:
+                    format: date-time
+                    type: string
+                raw:
+                    type: object
+                type:
+                    type: string
+                    enum: [APP]
+            required:
+                - type
+                - access_token
+                - raw
+        AppStoreCredentials:
+            type: object
+            title: App Store
+            additionalProperties: false
+            properties:
+                access_token:
+                    type: string
+                expires_at:
+                    type: string
+                    format: date-time
+                private_key:
+                    type: string
+                raw:
+                    type: object
+                type:
+                    type: string
+                    enum: [APP_STORE]
+            required:
+                - access_token
+                - raw
+                - private_key
+        BasicApiCredentials:
+            type: object
+            title: Basic Auth
+            additionalProperties: false
+            properties:
+                password:
+                    type: string
+                type:
+                    enum: [BASIC]
+                    type: string
+                username:
+                    type: string
+            required:
+                - type
+                - username
+                - password
+        BillCredentials:
+            type: object
+            title: Bill
+            additionalProperties: false
+            properties:
+                dev_key:
+                    type: string
+                expires_at:
+                    type: string
+                    format: date-time
+                organization_id:
+                    type: string
+                password:
+                    type: string
+                raw:
+                    type: object
+                session_id:
+                    type: string
+                type:
+                    type: string
+                    enum: [BILL]
+                user_id:
+                    type: string
+                username:
+                    type: string
+            required:
+                - dev_key
+                - organization_id
+                - password
+                - raw
+                - type
+                - username
+        CustomCredentials:
+            type: object
+            title: Custom
+            additionalProperties: false
+            properties:
+                raw:
+                    type: object
+                type:
+                    type: string
+                    enum: [CUSTOM]
+            required:
+                - raw
+                - type
+        JwtCredentials:
+            type: object
+            title: JWT
+            additionalProperties: false
+            properties:
+                expires_at:
+                    format: date-time
+                    type: string
+                issuerId:
+                    type: string
+                privateKey:
+                    anyOf:
+                        - additionalProperties: false
+                          properties:
+                              id:
+                                  type: string
+                              secret:
+                                  type: string
+                          required:
+                              - id
+                              - secret
+                          type: object
+                        - type: string
+                privateKeyId:
+                    type: string
+                token:
+                    type: string
+                type:
+                    type: string
+                    enum: [JWT]
+            required:
+                - type
+                - privateKey
+        OAuth1Credentials:
+            type: object
+            title: OAuth1
+            additionalProperties: false
+            properties:
+                oauth_token:
+                    type: string
+                oauth_token_secret:
+                    type: string
+                raw:
+                    type: object
+                type:
+                    type: string
+                    enum: [OAUTH1]
+            required:
+                - oauth_token
+                - oauth_token_secret
+                - raw
+                - type
+        OAuth2ClientCredentials:
+            type: object
+            title: OAuth2 Client
+            additionalProperties: false
+            properties:
+                client_id:
+                    type: string
+                client_secret:
+                    type: string
+                expires_at:
+                    type: string
+                    format: date-time
+                raw:
+                    type: object
+                token:
+                    type: string
+                type:
+                    type: string
+                    enum: [OAUTH2_CC]
+            required:
+                - client_id
+                - client_secret
+                - raw
+                - token
+                - type
+        OAuth2Credentials:
+            type: object
+            title: OAuth2
+            additionalProperties: false
+            properties:
+                access_token:
+                    type: string
+                config_override:
+                    additionalProperties: false
+                    properties:
+                        client_id:
+                            type: string
+                        client_secret:
+                            type: string
+                    type: object
+                expires_at:
+                    format: date-time
+                    type: string
+                raw:
+                    type: object
+                refresh_token:
+                    type: string
+                type:
+                    enum: [OAUTH2]
+                    type: string
+            required:
+                - access_token
+                - raw
+                - type
+        SignatureCredentials:
+            type: object
+            title: Signature
+            additionalProperties: false
+            properties:
+                expires_at:
+                    type: string
+                    format: date-time
+                password:
+                    type: string
+                token:
+                    type: string
+                type:
+                    type: string
+                    enum: [SIGNATURE]
+                username:
+                    type: string
+            required:
+                - type
+                - username
+                - password
+        TableauCredentials:
+            type: object
+            title: Tableau
+            additionalProperties: false
+            properties:
+                content_url:
+                    type: string
+                expires_at:
+                    type: string
+                    format: date-time
+                pat_name:
+                    type: string
+                pat_secret:
+                    type: string
+                raw:
+                    type: object
+                token:
+                    type: string
+                type:
+                    type: string
+                    enum: [TABLEAU]
+            required:
+                - pat_name
+                - pat_secret
+                - raw
+                - type
+        TbaCredentials:
+            type: object
+            title: TBA
+            additionalProperties: false
+            properties:
+                config_override:
+                    additionalProperties: false
+                    properties:
+                        client_id:
+                            type: string
+                        client_secret:
+                            type: string
+                    type: object
+                token_id:
+                    type: string
+                token_secret:
+                    type: string
+                type:
+                    type: string
+                    enum: [TBA]
+            required:
+                - type
+                - token_id
+                - token_secret
+                - config_override
+        TwoStepCredentials:
+            type: object
+            title: Two Step
+            additionalProperties: false
+            properties:
+                expires_at:
+                    format: date-time
+                    type: string
+                raw:
+                    type: object
+                token:
+                    type: string
+                type:
+                    type: string
+                    enum: [TWO_STEP]
+            required:
+                - raw
+                - type
+        UnauthCredentials:
+            type: object
+            title: Unauthenticated
+            additionalProperties: false
+
+        ## ---------------------- Connection
+        ConnectionEndUser:
+            type: object
+            required:
+                - id
+            properties:
+                id:
+                    type: string
+                    description: Uniquely identifies the end user.
+                email:
+                    nullable: true
+                    type: string
+                display_name:
+                    nullable: true
+                    type: string
+                organization:
+                    type: object
+                    nullable: true
+                    required:
+                        - id
+                    properties:
+                        id:
+                            type: string
+                            description: Uniquely identifies the organization the end user belongs to
+                        display_name:
+                            type: string
+                            nullable: true
+        ConnectionError:
+            type: object
+            required:
+                - type
+                - log_id
+            properties:
+                type:
+                    type: string
+                    enum: [auth, sync]
+                    example: auth
+                log_id:
+                    type: string
+                    example: VrnbtykXJFckCm3HP93t
+        ConnectionFull:
+            type: object
+            required:
+                - id
+                - connection_id
+                - provider_config_key
+                - provider
+                - errors
+                - end_user
+                - metadata
+                - connection_config
+                - created_at
+                - updated_at
+                - last_fetched_at
+                - credentials
+            properties:
+                id:
+                    type: integer
+                connection_id:
+                    type: string
+                provider_config_key:
+                    type: string
+                provider:
+                    type: string
+                errors:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ConnectionError'
+                end_user:
+                    nullable: true
+                    $ref: '#/components/schemas/ConnectionEndUser'
+                metadata:
+                    type: object
+                    additionalProperties: true
+                connection_config:
+                    type: object
+                    additionalProperties: true
+                created_at:
+                    type: string
+                updated_at:
+                    type: string
+                last_fetched_at:
+                    type: string
+                credentials:
+                    $ref: '#/components/schemas/AllAuthCredentials'
+
+        ## -------- Yaml
+        NangoModel:
+            type: object
+            additionalProperties: false
+            properties:
+                fields:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NangoModelField'
+                isAnon:
+                    type: boolean
+                name:
+                    type: string
+            required:
+                - name
+                - fields
+        NangoModelField:
+            type: object
+            additionalProperties: false
+            required:
+                - name
+                - value
+            properties:
+                array:
+                    type: boolean
+                dynamic:
+                    type: boolean
+                model:
+                    type: boolean
+                name:
+                    type: string
+                optional:
+                    type: boolean
+                tsType:
+                    type: boolean
+                union:
+                    type: boolean
+                value:
+                    anyOf:
+                        - type: string
+                        - type: number
+                        - type: boolean
+                        - items:
+                              type: array
+                              $ref: '#/components/schemas/NangoModelField'

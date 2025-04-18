@@ -25,6 +25,10 @@ function validate(integration: ProviderConfig, headerSignature: string, rawBody:
 
 const route: WebhookHandler = async (nango, integration, headers, body, rawBody, logContextGetter: LogContextGetter) => {
     const signature = headers['linear-signature'];
+    if (!signature) {
+        logger.error('missing signature', { configId: integration.id });
+        return;
+    }
 
     logger.info('received', { configId: integration.id });
 

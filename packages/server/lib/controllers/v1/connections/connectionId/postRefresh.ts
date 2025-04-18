@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 import type { PostConnectionRefresh } from '@nangohq/types';
-import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
+import { connectionService, configService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -70,7 +70,7 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
 
     let connection = connectionRes.response!;
 
-    const credentialResponse = await connectionService.refreshOrTestCredentials({
+    const credentialResponse = await refreshOrTestCredentials({
         account,
         environment,
         connection,
@@ -81,7 +81,7 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
         onRefreshFailed: connectionRefreshFailedHook
     });
     if (credentialResponse.isErr()) {
-        const errorLog = await errorNotificationService.auth.get(connection.id!);
+        const errorLog = await errorNotificationService.auth.get(connection.id);
 
         res.status(400).send({
             error: {
@@ -102,10 +102,10 @@ export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (r
             account,
             environment,
             integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-            connection: { id: connection.id!, name: connection.connection_id }
+            connection: { id: connection.id, name: connection.connection_id }
         }
     );
-    await logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
+    void logCtx.info(`Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`);
     await logCtx.success();
 
     res.status(200).send({

@@ -1,63 +1,12 @@
-import type { ParamsSerializerOptions } from 'axios';
-import type { HTTP_METHOD } from './Generic.js';
-import type { BasicApiCredentials, ApiKeyCredentials, AppCredentials, TbaCredentials, TableauCredentials, JwtCredentials } from './Auth.js';
-import type { Connection } from './Connection.js';
-import type { Provider, TwoStepCredentials } from '@nangohq/types';
-
-export interface File {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    size: number;
-    destination: string;
-    filename: string;
-    path: string;
-    buffer: Buffer;
-}
-
-interface BaseProxyConfiguration {
-    providerConfigKey: string;
-    connectionId: string;
-    endpoint: string;
-    retries?: number;
-    data?: unknown;
-    files?: File[];
-    headers?: Record<string, string>;
-    params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
-    baseUrlOverride?: string;
-    responseType?: ResponseType;
-    retryHeader?: RetryHeaderConfig;
-    retryOn?: number[] | null;
-}
-
-export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
-    decompress?: boolean | string;
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
-    paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
-}
-
-export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
-    decompress?: boolean;
-    method: HTTP_METHOD;
-    providerName: string;
-    token: string | BasicApiCredentials | ApiKeyCredentials | AppCredentials | TbaCredentials | TableauCredentials | JwtCredentials | TwoStepCredentials;
-    provider: Provider;
-    connection: Connection;
-}
+import type { AxiosResponse } from 'axios';
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
-
-export interface InternalProxyConfiguration {
-    providerName: string;
-    connection: Connection;
-    existingActivityLogId?: string | null | undefined;
-}
 
 export interface RetryHeaderConfig {
     at?: string;
     after?: string;
+    remaining?: string;
+    error_code?: number;
 }
 
 export enum PaginationType {
@@ -71,6 +20,8 @@ export interface Pagination {
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }
 
 export interface CursorPagination extends Pagination {

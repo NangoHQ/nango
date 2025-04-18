@@ -1,14 +1,16 @@
-import type React from 'react';
 import { forwardRef } from 'react';
+
 import { cn } from '../../utils/utils';
 
+import type React from 'react';
+
 const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-    <table ref={ref} className={cn('w-full caption-bottom text-sm border-separate border-spacing-0', className)} {...props} />
+    <table ref={ref} className={cn('w-full caption-bottom text-s border-separate border-spacing-0', className)} {...props} />
 ));
 Table.displayName = 'Table';
 
 const Header = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('text-text-light-gray [&>tr]:hover:text-text-light-gray', className)} {...props} />
+    <thead ref={ref} className={cn('text-grayscale-100', className)} {...props} />
 ));
 Header.displayName = 'Header';
 
@@ -26,7 +28,7 @@ const Row = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowEle
     <tr
         ref={ref}
         className={cn(
-            'text-sm transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-row-hover hover:text-white',
+            'text-s transition-colors data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-grayscale-900 hover:text-white',
             className
         )}
         {...props}
@@ -38,7 +40,7 @@ const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCe
     <th
         ref={ref}
         className={cn(
-            'bg-active-gray first-of-type:rounded-l last-of-type:rounded-r px-3 py-1 pt-1.5 text-xs leading-5 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+            'bg-grayscale-900 first-of-type:rounded-l last-of-type:rounded-r px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold [&:has([role=checkbox])]:pr-0',
             className
         )}
         {...props}
@@ -74,4 +76,4 @@ const Empty: React.FC<{ children: React.ReactNode; colSpan?: number }> = ({ chil
     );
 };
 
-export { Table, Header, Body, Footer, Head, Row, Cell, Caption, Empty };
+export { Body, Caption, Cell, Empty, Footer, Head, Header, Row, Table };

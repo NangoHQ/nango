@@ -2,7 +2,7 @@ const SECRETS_TABLE = '_nango_environment_variables';
 const RECORDS_TABLE = '_nango_sync_data_records';
 const DELETED_RECORDS_TABLE = '_nango_sync_data_records_deletes';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(SECRETS_TABLE, function (table) {
         table.string('value_iv');
         table.string('value_tag');
@@ -17,7 +17,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(RECORDS_TABLE, function (table) {
         table.dropColumn('json_iv');
         table.dropColumn('json_tag');

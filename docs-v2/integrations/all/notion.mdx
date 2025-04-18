@@ -3,27 +3,40 @@ title: Notion
 sidebarTitle: Notion
 ---
 
-API configuration: [`notion`](https://nango.dev/providers.yaml), [`notion-scim`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/notion/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/notion/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://developers.notion.com/docs/authorization)
 -   [OAuth-related docs](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up)
 -   [API reference](https://developers.notion.com/reference/intro)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
 
 ## API gotchas
 
@@ -32,4 +45,8 @@ API configuration: [`notion`](https://nango.dev/providers.yaml), [`notion-scim`]
 - No OAuth scope is required by default.
 - Notion SCIM is an enterprise only API that uses an API token. See the Notion [docs](https://www.notion.so/help/provision-users-and-groups-with-scim) for more information
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
+
+<Card title="Connect to notion-scim" icon="link" href="/integrations/all/notion-scim/connect" horizontal>
+  Guide to connect to notion-scim using Nango Connect.
+</Card>

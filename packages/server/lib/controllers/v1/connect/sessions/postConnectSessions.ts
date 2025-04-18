@@ -1,12 +1,17 @@
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
-import { postConnectSessions } from '../../../connect/postSessions.js';
 import { z } from 'zod';
+
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { bodySchema as originalBodySchema, postConnectSessions } from '../../../connect/postSessions.js';
+
+import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
 
 const bodySchema = z
     .object({
-        allowed_integrations: z.array(z.string()).optional()
+        allowed_integrations: originalBodySchema.shape.allowed_integrations,
+        end_user: originalBodySchema.shape.end_user,
+        organization: originalBodySchema.shape.organization
     })
     .strict();
 
@@ -23,15 +28,14 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
         return;
     }
 
-    const { user } = res.locals;
     const body: PostInternalConnectSessions['Body'] = valBody.data;
 
     // req.body is never but we want to fake it on purpose
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     req.body = {
         allowed_integrations: body.allowed_integrations,
-        // @ts-expect-error body does not accept end_user but we still want to set it
-        end_user: { id: `nango_dashboard_${user.id}`, email: user.email, display_name: user.name }
+        end_user: body.end_user,
+        organization: body.organization
     } satisfies PostConnectSessions['Body'];
 
     // @ts-expect-error on internal api we pass ?env= but it's not allowed in public api

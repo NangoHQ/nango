@@ -41,55 +41,28 @@ exports[`buildModelTs > should return empty (with sdk) 1`] = `
 
 // ------ SDK
 
-import { Nango } from '@nangohq/node';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig } from 'axios';
-import type { SyncConfig } from '../models/Sync.js';
-import type { RunnerFlags } from '../services/sync/run.utils.js';
-import type { DBTeam } from '@nangohq/types';
+import type { Nango } from '@nangohq/node';
+import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import type { ApiEndUser, DBSyncConfig, DBTeam, GetPublicIntegration, HTTP_METHOD, RunnerFlags, PostPublicTrigger } from '@nangohq/types';
+import type { ZodSchema, SafeParseSuccess } from 'zod';
+
 export declare const oldLevelToNewLevel: {
-    readonly debug: "debug";
-    readonly info: "info";
-    readonly warn: "warn";
-    readonly error: "error";
-    readonly verbose: "debug";
-    readonly silly: "debug";
-    readonly http: "info";
+    readonly debug: 'debug';
+    readonly info: 'info';
+    readonly warn: 'warn';
+    readonly error: 'error';
+    readonly verbose: 'debug';
+    readonly silly: 'debug';
+    readonly http: 'info';
 };
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
-type ParamEncoder = (value: any, defaultEncoder: (value: any) => any) => any;
-interface GenericFormData {
-    append(name: string, value: any, options?: any): any;
-}
-type SerializerVisitor = (this: GenericFormData, value: any, key: string | number, path: null | (string | number)[], helpers: FormDataVisitorHelpers) => boolean;
-type CustomParamsSerializer = (params: Record<string, any>, options?: ParamsSerializerOptions) => string;
-interface FormDataVisitorHelpers {
-    defaultVisitor: SerializerVisitor;
-    convertValue: (value: any) => any;
-    isVisitable: (value: any) => boolean;
-}
-interface SerializerOptions {
-    visitor?: SerializerVisitor;
-    dots?: boolean;
-    metaTokens?: boolean;
-    indexes?: boolean | null;
-}
-interface ParamsSerializerOptions extends SerializerOptions {
-    encode?: ParamEncoder;
-    serialize?: CustomParamsSerializer;
-}
-export interface AxiosResponse<T = any, D = any> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: any;
-    config: D;
-    request?: any;
-}
 interface Pagination {
     type: string;
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
+    in_body?: boolean;
+    on_page?: (paginationState: { nextPageParam?: string | number | undefined; response: AxiosResponse }) => Promise<void>;
 }
 interface CursorPagination extends Pagination {
     cursor_path_in_response: string;
@@ -115,13 +88,12 @@ export interface ProxyConfiguration {
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
     params?: string | Record<string, string | number>;
-    paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
     retryHeader?: RetryHeaderConfig;
-    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
     retryOn?: number[] | null;
 }
 export interface AuthModes {
@@ -139,6 +111,7 @@ export interface AuthModes {
     Jwt: 'JWT';
     Bill: 'BILL';
     TwoStep: 'TWO_STEP';
+    Signature: 'SIGNATURE';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {
@@ -208,12 +181,7 @@ interface TableauCredentials extends CredentialsCommon {
 }
 interface JwtCredentials {
     type: AuthModes['Jwt'];
-    privateKeyId?: string;
-    issuerId?: string;
-    privateKey: {
-        id: string;
-        secret: string;
-    } | string;
+    [key: string]: any;
     token?: string;
     expires_at?: Date | undefined;
 }
@@ -233,11 +201,33 @@ interface TwoStepCredentials extends CredentialsCommon {
     token?: string;
     expires_at?: Date | undefined;
 }
+interface SignatureCredentials {
+    type: AuthModes['Signature'];
+    username: string;
+    password: string;
+    token?: string;
+    expires_at?: Date | undefined;
+}
 interface CustomCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
 }
 type UnauthCredentials = Record<string, never>;
-type AuthCredentials = OAuth2Credentials | OAuth2ClientCredentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials | CustomCredentials;
+type AuthCredentials =
+    | OAuth2Credentials
+    | OAuth2ClientCredentials
+    | OAuth1Credentials
+    | BasicApiCredentials
+    | ApiKeyCredentials
+    | AppCredentials
+    | AppStoreCredentials
+    | UnauthCredentials
+    | TbaCredentials
+    | TableauCredentials
+    | JwtCredentials
+    | BillCredentials
+    | TwoStepCredentials
+    | SignatureCredentials
+    | CustomCredentials;
 type Metadata = Record<string, unknown>;
 interface MetadataChangeResponse {
     metadata: Metadata;
@@ -245,41 +235,29 @@ interface MetadataChangeResponse {
     connection_id: string | string[];
 }
 interface Connection {
-    id?: number;
-    created_at: Date;
-    updated_at: Date;
+    id: number;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
-    environment_id: number;
-    metadata?: Metadata | null;
-    credentials_iv?: string | null;
-    credentials_tag?: string | null;
+    created_at: string;
+    updated_at: string;
+    last_fetched_at: string;
+    metadata: Record<string, unknown> | null;
+    provider: string;
+    errors: {
+        type: string;
+        log_id: string;
+    }[];
+    end_user: ApiEndUser | null;
     credentials: AuthCredentials;
-    end_user_id: number | null;
 }
 export declare class ActionError<T = Record<string, unknown>> extends Error {
     type: string;
     payload?: Record<string, unknown>;
     constructor(payload?: T);
 }
-interface RunArgs {
-    sync: string;
-    connectionId: string;
-    lastSyncDate?: string;
-    useServerLastSyncDate?: boolean;
-    input?: object;
-    metadata?: Metadata;
-    autoConfirm: boolean;
-    debug: boolean;
-    optionalEnvironment?: string;
-    optionalProviderConfigKey?: string;
-}
-export interface DryRunServiceInterface {
-    run: (options: RunArgs, debug?: boolean) => Promise<string | void>;
-}
 export interface NangoProps {
-    scriptType: 'sync' | 'action' | 'webhook' | 'post-connection-script';
+    scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
     secretKey: string;
     team?: Pick<DBTeam, 'id' | 'name'>;
@@ -296,27 +274,34 @@ export interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
-    logMessages?: {
-        counts: {
-            updated: number;
-            added: number;
-            deleted: number;
-        };
-        messages: unknown[];
-    } | undefined;
+    logMessages?:
+        | {
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
+        | undefined;
     rawSaveOutput?: Map<string, unknown[]> | undefined;
     rawDeleteOutput?: Map<string, unknown[]> | undefined;
     stubbedMetadata?: Metadata | undefined;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
-    syncConfig: SyncConfig;
+    syncConfig: DBSyncConfig;
     runnerFlags: RunnerFlags;
     debug: boolean;
     startedAt: Date;
+    endUser: {
+        id: number;
+        endUserId: string | null;
+        orgId: string | null;
+    } | null;
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected: (value: unknown) => AxiosError | Promise<AxiosError>;
         };
     };
 }
@@ -337,8 +322,7 @@ export declare class NangoAction {
     syncJobId?: number;
     dryRun?: boolean;
     abortSignal?: AbortSignal;
-    dryRunService?: DryRunServiceInterface;
-    syncConfig?: SyncConfig;
+    syncConfig?: DBSyncConfig;
     runnerFlags: RunnerFlags;
     connectionId: string;
     providerConfigKey: string;
@@ -346,19 +330,44 @@ export declare class NangoAction {
     ActionError: typeof ActionError;
     private memoizedConnections;
     private memoizedIntegration;
-    constructor(config: NangoProps, { persistApi }?: {
-        persistApi: AxiosInstance;
-    });
+    constructor(
+        config: NangoProps,
+        {
+            persistApi
+        }?: {
+            persistApi: AxiosInstance;
+        }
+    );
     protected stringify(): string;
     private proxyConfig;
-    protected exitSyncIfAborted(): void;
+    protected throwIfAborted(): void;
     proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>;
     get<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     post<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     put<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     patch<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
     delete<T = any>(config: Omit<ProxyConfiguration, 'method'>): Promise<AxiosResponse<T>>;
-    getToken(): Promise<string | OAuth1Token | OAuth2ClientCredentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials | AppStoreCredentials | UnauthCredentials | CustomCredentials | TbaCredentials | TableauCredentials | JwtCredentials | BillCredentials | TwoStepCredentials>;
+    getToken(): Promise<
+        | string
+        | OAuth1Token
+        | OAuth2ClientCredentials
+        | BasicApiCredentials
+        | ApiKeyCredentials
+        | AppCredentials
+        | AppStoreCredentials
+        | UnauthCredentials
+        | CustomCredentials
+        | TbaCredentials
+        | TableauCredentials
+        | JwtCredentials
+        | BillCredentials
+        | TwoStepCredentials
+        | SignatureCredentials
+    >;
+    /**
+     * Get current integration
+     */
+    getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']>;
     getConnection(providerConfigKeyOverride?: string, connectionIdOverride?: string): Promise<Connection>;
     setMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
     updateMetadata(metadata: Metadata): Promise<AxiosResponse<MetadataChangeResponse>>;
@@ -381,33 +390,62 @@ export declare class NangoAction {
      * await nango.log('This is a log message', { level: 'error' })
      * \`\`\`
      */
-    log(message: any, options?: {
-        level?: LogLevel;
-    } | {
-        [key: string]: any;
-        level?: never;
-    }): Promise<void>;
-    log(message: string, ...args: [any, {
-        level?: LogLevel;
-    }]): Promise<void>;
+    log(
+        message: any,
+        options?:
+            | {
+                  level?: LogLevel;
+              }
+            | {
+                  [key: string]: any;
+                  level?: never;
+              }
+    ): Promise<void>;
+    log(
+        message: string,
+        ...args: [
+            any,
+            {
+                level?: LogLevel;
+            }
+        ]
+    ): Promise<void>;
     getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
     getFlowAttributes<A = object>(): A | null;
     paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void>;
     triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out>;
-    triggerSync(providerConfigKey: string, connectionId: string, syncName: string, fullResync?: boolean): Promise<void | string>;
+    zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: ZodSchema<Z>; input: T }): Promise<SafeParseSuccess<Z>>;
+    triggerSync(
+        providerConfigKey: string,
+        connectionId: string,
+        sync: string | { name: string; variant: string },
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+    ): Promise<void | string>;
+    startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
+    /**
+     * Uncontrolled fetch is a regular fetch without retry or credentials injection.
+     * Only use that method when you want to access resources that are unrelated to the current connection/provider.
+     */
+    uncontrolledFetch(options: { url: URL; method?: HTTP_METHOD; headers?: Record<string, string> | undefined; body?: string | null }): Promise<Response>;
+    tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean>;
+    releaseLock(props: { key: string }): Promise<boolean>;
     private sendLogToPersist;
+    private logAPICall;
 }
 export declare class NangoSync extends NangoAction {
+    variant: string;
     lastSyncDate?: Date;
     track_deletes: boolean;
-    logMessages?: {
-        counts: {
-            updated: number;
-            added: number;
-            deleted: number;
-        };
-        messages: unknown[];
-    } | undefined;
+    logMessages?:
+        | {
+              counts: {
+                  updated: number;
+                  added: number;
+                  deleted: number;
+              };
+              messages: unknown[];
+          }
+        | undefined;
     rawSaveOutput?: Map<string, unknown[]>;
     rawDeleteOutput?: Map<string, unknown[]>;
     stubbedMetadata?: Metadata | undefined;
@@ -416,11 +454,13 @@ export declare class NangoSync extends NangoAction {
     /**
      * @deprecated please use batchSave
      */
-    batchSend<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchSave<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchDelete<T = any>(results: T[], model: string): Promise<boolean | null>;
-    batchUpdate<T = any>(results: T[], model: string): Promise<boolean | null>;
+    batchSend<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchSave<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchDelete<T extends object>(results: T[], model: string): Promise<boolean | null>;
+    batchUpdate<T extends object>(results: T[], model: string): Promise<boolean | null>;
     getMetadata<T = Metadata>(): Promise<T>;
+    setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void>;
+    getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
 }
 /**
  * @internal

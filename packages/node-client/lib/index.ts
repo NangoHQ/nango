@@ -1,32 +1,11 @@
 import crypto from 'node:crypto';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosInterceptorManager } from 'axios';
-import axios from 'axios';
 import https from 'node:https';
 
+import axios from 'axios';
+
+import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+
 import type {
-    ApiKeyCredentials,
-    AppCredentials,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    CredentialsCommon,
-    CustomCredentials,
-    OAuth2ClientCredentials,
-    TbaCredentials,
-    TableauCredentials,
-    UnauthCredentials,
-    BillCredentials,
-    GetPublicProviders,
-    GetPublicProvider,
-    GetPublicListIntegrations,
-    GetPublicListIntegrationsLegacy,
-    GetPublicIntegration,
-    PostConnectSessions,
-    JwtCredentials,
-    TwoStepCredentials,
-    GetPublicConnections
-} from '@nangohq/types';
-import type {
-    Connection,
     CreateConnectionOAuth1,
     CreateConnectionOAuth2,
     Integration,
@@ -35,16 +14,44 @@ import type {
     Metadata,
     MetadataChangeResponse,
     NangoProps,
-    OAuth1Token,
     ProxyConfiguration,
-    RecordMetadata,
     StandardNangoConfig,
     SyncStatusResponse,
     UpdateSyncFrequencyResponse
 } from './types.js';
-import { addQueryParams, getUserAgent, validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
+import type {
+    ApiKeyCredentials,
+    AppCredentials,
+    AppStoreCredentials,
+    BasicApiCredentials,
+    BillCredentials,
+    CredentialsCommon,
+    CustomCredentials,
+    DeleteSyncVariant,
+    GetPublicConnection,
+    GetPublicConnections,
+    GetPublicIntegration,
+    GetPublicListIntegrations,
+    GetPublicListIntegrationsLegacy,
+    GetPublicProvider,
+    GetPublicProviders,
+    JwtCredentials,
+    NangoRecord,
+    OAuth1Token,
+    OAuth2ClientCredentials,
+    OpenAIFunction,
+    PostConnectSessions,
+    PostPublicConnectSessionsReconnect,
+    PostPublicTrigger,
+    PostSyncVariant,
+    SignatureCredentials,
+    TableauCredentials,
+    TbaCredentials,
+    TwoStepCredentials,
+    UnauthCredentials
+} from '@nangohq/types';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-export const stagingHost = 'https://api-staging.nango.dev';
 export const prodHost = 'https://api.nango.dev';
 
 export * from './types.js';
@@ -52,19 +59,15 @@ export { getUserAgent } from './utils.js';
 
 type CustomHeaders = Record<string, string | number | boolean>;
 
-export enum SyncType {
-    INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
-}
-
 const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export interface AdminAxiosProps {
     userAgent?: string;
     interceptors?: {
-        request?: AxiosInterceptorManager<AxiosRequestConfig>;
+        request?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
         response?: {
             onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>;
+            onRejected?: (error: unknown) => unknown;
         };
     };
 }
@@ -122,8 +125,11 @@ export class Nango {
             }
         });
 
+        if (interceptors?.request) {
+            this.http.interceptors.request.use(interceptors.request);
+        }
         if (interceptors?.response) {
-            this.http.interceptors.response.use(interceptors.response.onFulfilled, undefined);
+            this.http.interceptors.response.use(interceptors.response.onFulfilled, interceptors.response.onRejected);
         }
     }
 
@@ -198,15 +204,17 @@ export class Nango {
         params: string | GetPublicIntegration['Params'],
         queries?: boolean | GetPublicIntegration['Querystring']
     ): Promise<{ config: Integration | IntegrationWithCreds } | GetPublicIntegration['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
         if (typeof params === 'string') {
             const url = `${this.serverUrl}/config/${params}`;
-            const response = await this.http.get(url, { headers: this.enrichHeaders({}), params: { include_creds: queries } });
+            const response = await this.http.get(url, { headers: this.enrichHeaders(headers), params: { include_creds: queries } });
             return response.data;
         } else {
             const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}`);
             addQueryParams(url, queries as GetPublicIntegration['Querystring']);
 
-            const response = await this.http.get(url.href, { headers: this.enrichHeaders({}) });
+            const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
             return response.data;
         }
     }
@@ -228,7 +236,7 @@ export class Nango {
     /**
      * Updates an integration with the specified provider and configuration key
      * Only integrations using OAuth 1 & 2 can be updated, not integrations using API keys & Basic auth (because there is nothing to update for them)
-     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/shared/providers.yaml))
+     * @param provider - The Nango API Configuration (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml))
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param credentials - Optional credentials to include, depending on the specific integration that you want to update
      * @returns A promise that resolves with the updated integration configuration object
@@ -269,13 +277,23 @@ export class Nango {
      * @param search - Optional. Search connections. Will search in connection ID or end user profile.
      * @returns A promise that resolves with an array of connection objects
      */
-    public async listConnections(connectionId?: string, search?: string): Promise<GetPublicConnections['Success']> {
+    public async listConnections(
+        connectionId?: string,
+        search?: string,
+        queries?: Omit<GetPublicConnections['Querystring'], 'connectionId' | 'search'>
+    ): Promise<GetPublicConnections['Success']> {
         const url = new URL(`${this.serverUrl}/connection`);
         if (connectionId) {
             url.searchParams.append('connectionId', connectionId);
         }
         if (search) {
             url.searchParams.append('search', search);
+        }
+        if (queries?.endUserId) {
+            url.searchParams.append('endUserId', queries.endUserId);
+        }
+        if (queries?.endUserOrganizationId) {
+            url.searchParams.append('endUserOrganizationId', queries.endUserOrganizationId);
         }
 
         const headers = {
@@ -294,7 +312,12 @@ export class Nango {
      * @param refreshToken - Optional. When set to true, this returns the refresh token as part of the response
      * @returns A promise that resolves with a connection object
      */
-    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean): Promise<Connection> {
+    public async getConnection(
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh?: boolean,
+        refreshToken?: boolean
+    ): Promise<GetPublicConnection['Success']> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
         return response.data;
     }
@@ -341,6 +364,7 @@ export class Nango {
         | JwtCredentials
         | BillCredentials
         | TwoStepCredentials
+        | SignatureCredentials
     > {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
@@ -470,16 +494,22 @@ export class Nango {
 
     /**
      * Retrieves the configuration for all integration scripts
+     * @param format The format to return the configuration in ('nango' | 'openai')
      * @returns A promise that resolves with an array of configuration objects for all integration scripts
      */
-    public async getScriptsConfig(): Promise<StandardNangoConfig[]> {
+    public async getScriptsConfig(format: 'nango' | 'openai' = 'nango'): Promise<StandardNangoConfig[] | { data: OpenAIFunction[] }> {
         const url = `${this.serverUrl}/scripts/config`;
 
         const headers = {
             'Content-Type': 'application/json'
         };
 
-        const response = await this.http.get(url, { headers: this.enrichHeaders(headers) });
+        const response = await this.http.get(url, {
+            headers: this.enrichHeaders(headers),
+            params: {
+                format
+            }
+        });
 
         return response.data;
     }
@@ -504,13 +534,32 @@ export class Nango {
      */
     public async listRecords<T extends Record<string, any> = Record<string, any>>(
         config: ListRecordsRequestConfig
-    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, modifiedAfter, limit, filter, cursor } = config;
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
+        const { connectionId, providerConfigKey, model, variant, delta, modifiedAfter, limit, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
+        const usp = new URLSearchParams({ model });
+        if (variant) {
+            usp.set('variant', variant);
+        }
+        if (modifiedAfter || delta) {
+            usp.set('modified_after', `${modifiedAfter || delta}`);
+        }
+        if (limit) {
+            usp.set('limit', String(limit));
+        }
+        if (filter) {
+            usp.set('filter', filter);
+        }
+        if (cursor) {
+            usp.set('cursor', cursor);
+        }
+        if (config.ids) {
+            for (const id of config.ids) {
+                usp.append('ids', id);
+            }
+        }
 
-        const url = `${this.serverUrl}/records/?model=${model}${delta || modifiedAfter ? `&modified_after=${modifiedAfter || delta}` : ''}${limit ? `&limit=${limit}` : ''}${
-            filter ? `&filter=${filter}` : ''
-        }${cursor ? `&cursor=${cursor}` : ''}`;
+        const url = `${this.serverUrl}/records/?${usp.toString()}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
@@ -529,23 +578,34 @@ export class Nango {
     /**
      * Triggers an additional, one-off execution of specified sync(s) for a given connection or all applicable connections if no connection is specified
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to trigger. If empty, all applicable syncs will be triggered
+     * @param syncs - An optional array of sync names or sync names/variants to trigger. If empty, all applicable syncs will be triggered
      * @param connectionId - An optional ID of the connection for which to trigger the syncs. If not provided, syncs will be triggered for all applicable connections
-     * @param fullResync - An optional flag indicating whether to perform a full resynchronization. Default is false
+     * @param syncMode - An optional flag indicating whether to perform an incremental or full resync. Defaults to 'incremental`
      * @returns A promise that resolves when the sync trigger request is sent
      */
-    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string, fullResync?: boolean): Promise<void> {
+    public async triggerSync(
+        providerConfigKey: string,
+        syncs?: (string | { name: string; variant: string })[],
+        connectionId?: string,
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean // boolean kept for backwards compatibility
+    ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
-        if (typeof syncs === 'string') {
-            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        if (syncs && !Array.isArray(syncs)) {
+            throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
+
+        if (typeof syncMode === 'boolean') {
+            syncMode = syncMode ? 'full_refresh' : 'incremental';
+        }
+
+        syncMode ??= 'incremental';
 
         const body = {
             syncs: syncs || [],
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
-            full_resync: fullResync
+            sync_mode: syncMode
         };
 
         return this.http.post(url, body, { headers: this.enrichHeaders() });
@@ -554,11 +614,11 @@ export class Nango {
     /**
      * Starts the schedule of specified sync(s) for a given connection or all applicable connections if no connection is specified. Upon starting the schedule, the sync will execute immediately and then continue to run at the specified frequency. If the schedule was already started, this will have no effect.
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to start. If empty, all applicable syncs will be started
+     * @param syncs - An optional array of sync names or sync objects to start. If empty, all applicable syncs will be started
      * @param connectionId - An optional ID of the connection for which to start the syncs. If not provided, syncs will be started for all applicable connections
      * @returns A promise that resolves when the sync start request is sent
      */
-    public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
+    public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -567,7 +627,7 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string') {
+        if (!Array.isArray(syncs)) {
             throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
         }
 
@@ -585,11 +645,11 @@ export class Nango {
     /**
      * Pauses the schedule of specified sync(s) for a given connection or all applicable connections
      * @param providerConfigKey -The key identifying the provider configuration on Nango
-     * @param syncs - An optional array of sync names to pause. If empty, all applicable syncs will be paused
+     * @param syncs - An optional array of sync names or sync objects to pause. If empty, all applicable syncs will be paused
      * @param connectionId - An optional ID of the connection for which to pause the syncs. If not provided, syncs will be paused for all applicable connections
      * @returns A promise that resolves when the sync pause request is sent
      */
-    public async pauseSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
+    public async pauseSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -598,7 +658,7 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string') {
+        if (!Array.isArray(syncs)) {
             throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
         }
 
@@ -616,11 +676,15 @@ export class Nango {
     /**
      * Get the status of specified sync(s) for a given connection or all applicable connections
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param syncs - An array of sync names to get status for, or '*' to get status for all syncs
+     * @param syncs - An array of sync names or sync objects to get status for, or '*' to get status for all syncs
      * @param connectionId - An optional ID of the connection for which to get sync status. If not provided, status for all applicable connections will be retrieved
      * @returns A promise that resolves with the status of the specified sync(s)
      */
-    public async syncStatus(providerConfigKey: string, syncs: '*' | string[], connectionId?: string): Promise<SyncStatusResponse> {
+    public async syncStatus(
+        providerConfigKey: string,
+        syncs: '*' | (string | { name: string; variant: string })[],
+        connectionId?: string
+    ): Promise<SyncStatusResponse> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -629,14 +693,26 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        if (typeof syncs === 'string' && syncs !== '*') {
-            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        if (!Array.isArray(syncs) && syncs !== '*') {
+            throw new Error('Syncs must be an array. If it is a single sync, please wrap it in an array.');
         }
 
         const url = `${this.serverUrl}/sync/status`;
 
+        const getSyncFullName = (sync: string | { name: string; variant: string }) => {
+            if (typeof sync === 'string') {
+                return sync;
+            }
+            if (sync.variant) {
+                return `${sync.name}::${sync.variant}`;
+            }
+            return sync.name;
+        };
+
+        const formattedSyncs = syncs === '*' ? '*' : syncs.map(getSyncFullName).join(',');
+
         const params = {
-            syncs: syncs === '*' ? '*' : syncs.join(','),
+            syncs: formattedSyncs,
             provider_config_key: providerConfigKey,
             connection_id: connectionId
         };
@@ -647,16 +723,16 @@ export class Nango {
     }
 
     /**
-     * Override a sync’s default frequency for a specific connection, or revert to the default frequency
+     * Override a sync's default frequency for a specific connection, or revert to the default frequency
      * @param providerConfigKey - The key identifying the provider configuration on Nango
-     * @param sync - The name of the sync to update
+     * @param sync - The name of the sync to update (or an object with name and variant properties)
      * @param connectionId - The ID of the connection for which to update the sync frequency
      * @param frequency - The new frequency to set for the sync, or null to revert to the default frequency
      * @returns A promise that resolves with the response data after updating the sync frequency
      */
     public async updateSyncConnectionFrequency(
         providerConfigKey: string,
-        sync: string,
+        sync: string | { name: string; variant: string },
         connectionId: string,
         frequency: string | null
     ): Promise<UpdateSyncFrequencyResponse> {
@@ -664,11 +740,11 @@ export class Nango {
             throw new Error('Provider Config Key is required');
         }
 
-        if (typeof sync === 'string') {
-            throw new Error('Sync must be a string.');
+        if (!sync) {
+            throw new Error('Sync is required');
         }
 
-        if (typeof connectionId === 'string') {
+        if (typeof connectionId !== 'string') {
             throw new Error('ConnectionId must be a string.');
         }
 
@@ -678,15 +754,49 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/update-connection-frequency`;
 
-        const params = {
-            sync,
+        const body = {
+            ...(typeof sync === 'string' ? { sync_name: sync } : { sync_name: sync.name, sync_variant: sync.variant }),
             provider_config_key: providerConfigKey,
             connection_id: connectionId,
             frequency
         };
 
-        const response = await this.http.put(url, { headers: this.enrichHeaders(), params });
+        const response = await this.http.put(url, body, { headers: this.enrichHeaders() });
 
+        return response.data;
+    }
+
+    /**
+     * Creates a new sync variant
+     * @param props - The properties for the new variant (provider_config_key, connection_id, name, variant)
+     * @returns A promise that resolves with the new sync variant (id, name, variant)
+     */
+    public async createSyncVariant(props: PostSyncVariant['Body'] & PostSyncVariant['Params']): Promise<PostSyncVariant['Success']> {
+        const url = `${this.serverUrl}/sync/${props.name}/variant/${props.variant}`;
+        const body = {
+            provider_config_key: props.provider_config_key,
+            connection_id: props.connection_id
+        };
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders() });
+        return response.data;
+    }
+
+    /**
+     *
+     * Delete an existing sync variant
+     * @param props - The properties of the variant to delete (provider_config_key, connection_id, name, variant)
+     * @returns A promise that resolves with void when the sync variant is deleted
+     */
+    public async deleteSyncVariant(props: DeleteSyncVariant['Body'] & DeleteSyncVariant['Params']): Promise<DeleteSyncVariant['Success']> {
+        const url = `${this.serverUrl}/sync/${props.name}/variant/${props.variant}`;
+
+        const response = await this.http.delete(url, {
+            data: {
+                provider_config_key: props.provider_config_key,
+                connection_id: props.connection_id
+            },
+            headers: this.enrichHeaders()
+        });
         return response.data;
     }
 
@@ -725,6 +835,7 @@ export class Nango {
      * @param input - An optional input data for the action
      * @returns A promise that resolves with an object containing the response data from the triggered action
      */
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         const url = `${this.serverUrl}/action/trigger`;
 
@@ -772,7 +883,7 @@ export class Nango {
 
         const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
 
-        const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
+        let url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
         const customPrefixedHeaders: CustomHeaders =
             customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0
@@ -783,8 +894,8 @@ export class Nango {
                 : ({} as CustomHeaders);
 
         const headers: Record<string, string | number | boolean | CustomHeaders> = {
-            'Connection-Id': connectionId as string,
-            'Provider-Config-Key': providerConfigKey as string,
+            'Connection-Id': connectionId!,
+            'Provider-Config-Key': providerConfigKey!,
             'Base-Url-Override': baseUrlOverride || '',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,
@@ -813,11 +924,18 @@ export class Nango {
         };
 
         if (config.params) {
-            options.params = config.params;
-        }
-
-        if (config.paramsSerializer) {
-            options.paramsSerializer = config.paramsSerializer;
+            if (typeof config.params === 'string') {
+                if (url.includes('?')) {
+                    throw new Error('Can not set query params in endpoint and in params');
+                }
+                url = new URL(`${url}${config.params.startsWith('?') ? config.params : `?${config.params}`}`).href;
+            } else {
+                const tmp = new URL(url);
+                for (const [k, v] of Object.entries(config.params)) {
+                    tmp.searchParams.set(k, v as string);
+                }
+                url = tmp.href;
+            }
         }
 
         if (config.responseType) {
@@ -919,6 +1037,18 @@ export class Nango {
     }
 
     /**
+     * Creates a new connect session dedicated for reconnecting
+     * @param sessionProps - The properties for the new session, including end user information
+     * @returns A promise that resolves with the created session token and expiration date
+     */
+    public async createReconnectSession(sessionProps: PostPublicConnectSessionsReconnect['Body']): Promise<PostPublicConnectSessionsReconnect['Success']> {
+        const url = `${this.serverUrl}/connect/sessions/reconnect`;
+
+        const response = await this.http.post(url, sessionProps, { headers: this.enrichHeaders() });
+        return response.data;
+    }
+
+    /**
      * Retrieves details of a specific connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which to retrieve connection details
@@ -933,7 +1063,7 @@ export class Nango {
         forceRefresh: boolean = false,
         refreshToken: boolean = false,
         additionalHeader: Record<string, any> = {}
-    ): Promise<AxiosResponse<Connection>> {
+    ): Promise<AxiosResponse<GetPublicConnection['Success']>> {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {

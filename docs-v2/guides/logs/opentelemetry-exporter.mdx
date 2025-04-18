@@ -1,0 +1,36 @@
+---
+title: 'OpenTelemetry Exporter'
+sidebarTitle: 'OpenTelemetry Exporter'
+description: 'Guide on how to unify API endpoints & models.'
+---
+
+### Overview
+
+Nango provides OpenTelemetry export to help you monitor and analyze your integration activities. By exporting integration events as traces to your OpenTelemetry collector, you can gain valuable insights into your Nango usage and track various operations in real-time.
+
+<Info>
+This feature is available on Growth plans as a paid add-on, and on Enterprise plans. Reach out on your Slack Connect channel or the [community](https://nango.dev/slack) to enable it.
+</Info>
+
+### Supported Events
+The following integration events are currently exported (as of November 2024):
+- Sync executions
+- Action executions
+- 3rd-party API webhooks executions
+- Proxied requests
+
+### Configuration
+
+**Step 1**: Access your Environment settings
+
+Log into the Nango dashboard and navigate to the Environment settings page.
+
+**Step 2**: Configure OpenTelemetry Export
+
+In the Environment Settings, provide the following information:
+- OpenTelemetry endpoint: The endpoint URL of your OpenTelemetry collector. Ex: https://my.otlp.collector:4318/v1/
+- Headers (Optional): Any authorization headers or additional headers required to access your collector.
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

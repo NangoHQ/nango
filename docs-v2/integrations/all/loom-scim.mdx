@@ -1,0 +1,49 @@
+---
+title: Loom SCIM
+sidebarTitle: Loom SCIM
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/loom-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/loom-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ✅ | Loom SCIM is available on Enterprise plans. |
+| Paid test account | ❓ |  |
+| Partnership | ❓ |  |
+| App review | ❓ |  |
+| Security audit | ❓ |  |
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/loom-scim.mdx)</Note>
+
+## Useful links
+
+- [Loom Admin Console](https://www.loom.com/admin/security)
+- [Loom Authentication and SCIM Setup Guide](https://support.loom.com/hc/en-us/articles/4405130750749-How-to-configure-SSO-and-Directory-Sync-SCIM)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/loom-scim.mdx)</Note>
+
+## API gotchas
+
+- **Loom SCIM requires SAML SSO to be enabled** before a SCIM token can be generated.
+- **SCIM tokens can be reused** across multiple identity providers (IdPs) such as Okta or Entra ID.
+- **User provisioning supports roles**: `Creator`, `Viewer`, and `Admin`.
+
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/loom-scim.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Loom SCIM" icon="link" href="/integrations/all/loom-scim/connect" horizontal> Guide to connect to Loom SCIM using Nango Connect. </Card>

@@ -1,0 +1,47 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Projects">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /projects` | Retrieves all projects for a user | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/projects.md) |
+</Accordion>
+
+
+<Accordion title="Tasks">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /tasks` | Create a task using Asana specific fields and return a unified model task. See https://developers.asana.com/reference/createtask for Asana specific fields | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/create-task.md) |
+| `PATCH /tasks` | Update a task and be able to assign the task to a specific user | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/update-task.md) |
+| `DELETE /tasks` | Delete a task. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/delete-task.md) |
+| `GET /tasks` | Retrieve all tasks that exist in the workspace | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/tasks.md) |
+</Accordion>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /users` | Retrieve all users that exist in the workspace | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/users.md) |
+</Accordion>
+
+
+<Accordion title="Workspaces">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /workspaces` | Retrieve all workspaces for a user | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/syncs/workspaces.md) |
+</Accordion>
+
+
+<Accordion title="Others">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `GET /workspaces/limit` | Fetch the workspaces with a limit (default 10) of a user to allow them to selection of projects to sync | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-workspaces.md) |
+| `GET /projects/limit` | Fetch the projects with a limit (default 10) given a workspace of a user to allow selection when choosing the tasks to sync. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/asana/actions/fetch-projects.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

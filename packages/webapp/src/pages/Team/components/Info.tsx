@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Input } from '../../../components/ui/input/Input';
 import { apiPutTeam, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useToast } from '../../../hooks/useToast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
@@ -19,7 +19,7 @@ export const TeamInfo: React.FC = () => {
     const onSave = async () => {
         const updated = await apiPutTeam(env, { name });
 
-        if ('error' in updated) {
+        if ('error' in updated.json) {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         } else {
             toast({ title: 'Team updated successfully', variant: 'success' });

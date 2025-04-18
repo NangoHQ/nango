@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
-import type { DBConnection, GetConnection } from '@nangohq/types';
-import { connectionService, configService, errorNotificationService } from '@nangohq/shared';
+import type { GetConnection } from '@nangohq/types';
+import { connectionService, configService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -47,8 +47,8 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
 
     const { environment, account } = res.locals;
 
-    const queryParams = queryParamValues.data;
-    const params = paramValue.data;
+    const queryParams: GetConnection['Querystring'] = queryParamValues.data;
+    const params: GetConnection['Params'] = paramValue.data;
 
     const { provider_config_key: providerConfigKey } = queryParams;
     const { connectionId } = params;
@@ -73,7 +73,7 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     let connection = connectionRes.value.connection;
     const endUser = connectionRes.value.end_user;
 
-    const credentialResponse = await connectionService.refreshOrTestCredentials({
+    const credentialResponse = await refreshOrTestCredentials({
         account,
         environment,
         connection,
@@ -83,31 +83,18 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         onRefreshSuccess: connectionRefreshSuccessHook,
         onRefreshFailed: connectionRefreshFailedHook
     });
-    if (credentialResponse.isErr()) {
-        const errorLog = await errorNotificationService.auth.get(connection.id!);
 
-        // When we failed to refresh we still return a 200 because the connection is used in the UI
-        // Ultimately this could be a second endpoint so the UI displays faster and no confusion between error code
-        res.status(200).send({
-            data: {
-                errorLog,
-                provider: integration.provider,
-                connection: connectionFullToApi(connection as DBConnection),
-                endUser: endUserToApi(endUser)
-            }
-        });
-
-        return;
+    if (credentialResponse.isOk()) {
+        connection = credentialResponse.value;
     }
-
-    connection = credentialResponse.value;
+    const errorLog = await errorNotificationService.auth.get(connection.id);
 
     res.status(200).send({
         data: {
             provider: integration.provider,
-            connection: connectionFullToApi(connection as DBConnection),
+            connection: connectionFullToApi(connection),
             endUser: endUserToApi(endUser),
-            errorLog: null
+            errorLog
         }
     });
 });

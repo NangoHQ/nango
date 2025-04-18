@@ -1,27 +1,41 @@
-import { SentryErrorBoundary } from './utils/sentry';
-
-import './utils/env';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
+import posthog from 'posthog-js';
+import { PostHogProvider } from 'posthog-js/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
-import { PostHogProvider } from 'posthog-js/react';
-import { ErrorBoundary } from './components/ErrorBoundary';
 
-const options = {
-    api_host: process.env.REACT_APP_PUBLIC_POSTHOG_HOST,
-    maskAllInputs: true
-};
+import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import reportWebVitals from './reportWebVitals';
+import { queryClient } from './store';
+import { globalEnv } from './utils/env';
+import { SentryErrorBoundary } from './utils/sentry';
+
+import './index.css';
+
+if (globalEnv.publicPosthogKey) {
+    posthog.init(globalEnv.publicPosthogKey, {
+        api_host: globalEnv.publicPosthogHost,
+        mask_personal_data_properties: true,
+        session_recording: {
+            maskAllInputs: true
+        }
+    });
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <React.StrictMode>
         <SentryErrorBoundary fallback={<ErrorBoundary />}>
-            <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
+            <PostHogProvider client={posthog}>
                 <BrowserRouter>
-                    <App />
+                    <NuqsAdapter>
+                        <QueryClientProvider client={queryClient}>
+                            <App />
+                        </QueryClientProvider>
+                    </NuqsAdapter>
                 </BrowserRouter>
             </PostHogProvider>
         </SentryErrorBoundary>

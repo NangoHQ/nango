@@ -1,0 +1,20 @@
+---
+title: 'Create sync variant'
+sidebarTitle: 'Create variant'
+openapi: 'POST /sync/{name}/variant/{variant}'
+---
+
+## Creating a sync variant
+
+Sync variants allow you to create different configurations of the same sync for a specific connection. This is useful when you need to sync the same data with different settings or filters.
+
+### Key features
+- Each variant operates independently with its own sync schedule
+- Variants can be queried separately through the records endpoint using the `variant` query parameter
+- Cannot use "base" as a variant name (protected)
+
+After creating a variant, you can use the `/records` endpoint to access its data by specifying the variant query parameter:
+
+```
+GET /records?model=MyModel&variant=MyVariant
+```

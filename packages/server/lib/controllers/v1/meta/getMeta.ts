@@ -1,6 +1,8 @@
+import { environmentService, getOnboarding } from '@nangohq/shared';
+import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
-import { NANGO_VERSION, environmentService, getOnboardingProgress } from '@nangohq/shared';
+
 import type { GetMeta } from '@nangohq/types';
 
 export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
@@ -10,17 +12,15 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = req.user;
-    if (!sessionUser) {
-        res.status(400).send({ error: { code: 'user_not_found' } });
-        return;
-    }
+    const sessionUser = res.locals.user;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
-    const onboarding = await getOnboardingProgress(sessionUser.id);
+    const onboarding = await getOnboarding(sessionUser.id);
     res.status(200).send({
         data: {
-            environments,
+            environments: environments.map((env) => {
+                return { name: env.name };
+            }),
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,

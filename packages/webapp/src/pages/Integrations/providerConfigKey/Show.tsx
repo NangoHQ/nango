@@ -1,43 +1,39 @@
-import { useParams, Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { LeftNavBarItems } from '../../../components/LeftNavBar';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import Button from '../../../components/ui/button/Button';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
-import IntegrationLogo from '../../../components/ui/IntegrationLogo';
-import { useStore } from '../../../store';
 import { PlusIcon } from '@radix-ui/react-icons';
-import { useGetIntegration } from '../../../hooks/useIntegration';
+import { IconBolt, IconRefresh } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+
 import { Skeleton } from '../../../components/ui/Skeleton';
-import { Info } from '../../../components/Info';
 import PageNotFound from '../../PageNotFound';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { EndpointsShow } from './Endpoints/Show';
 import { SettingsShow } from './Settings/Show';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../../../components/ui/DropdownMenu';
-import { IconChevronDown } from '@tabler/icons-react';
+import { ErrorCircle } from '../../../components/ErrorCircle';
+import { ErrorPageComponent } from '../../../components/ErrorComponent';
+import { LeftNavBarItems } from '../../../components/LeftNavBar';
+import IntegrationLogo from '../../../components/ui/IntegrationLogo';
+import { Button, ButtonLink } from '../../../components/ui/button/Button';
+import { Tag } from '../../../components/ui/label/Tag';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
-import Nango from '@nangohq/frontend';
-import { baseUrl } from '../../../utils/utils';
-import { globalEnv } from '../../../utils/env';
-import { apiConnectSessions } from '../../../hooks/useConnect';
+import { useGetIntegration } from '../../../hooks/useIntegration';
+import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
 
 export const ShowIntegration: React.FC = () => {
+    const { toast } = useToast();
     const { providerConfigKey } = useParams();
-    const toast = useToast();
-    const navigate = useNavigate();
     const location = useLocation();
     const ref = useRef<HTMLDivElement>(null);
 
     const env = useStore((state) => state.env);
 
-    const { environmentAndAccount } = useEnvironment(env);
+    const { plan, mutate } = useEnvironment(env);
     const { data, loading, error } = useGetIntegration(env, providerConfigKey!);
     const [tab, setTab] = useState<string>('');
-
-    const connectUI = useRef<ConnectUI>();
-    const hasConnected = useRef<string | undefined>();
+    const [trialLoading, setTrialLoading] = useState(false);
 
     useEffect(() => {
         if (location.pathname.match(/\/settings/)) {
@@ -55,52 +51,29 @@ export const ShowIntegration: React.FC = () => {
         }
     }, [location]);
 
-    const onEvent: OnConnectEvent = useCallback(
-        (event) => {
-            if (event.type === 'close') {
-                if (hasConnected.current) {
-                    toast.toast({ title: `Connected to ${data?.integration.unique_key}`, variant: 'success' });
-                    navigate(`/${env}/connections/${data?.integration.unique_key}/${hasConnected.current}`);
-                }
-            } else if (event.type === 'connect') {
-                console.log('connected', event);
-                hasConnected.current = event.payload.connectionId;
-            }
-        },
-        [toast]
-    );
+    const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
-    const onClickConnectUI = () => {
-        if (!environmentAndAccount) {
+    const onClickTrialExtend = async () => {
+        setTrialLoading(true);
+        const res = await apiPostPlanExtendTrial(env);
+        setTrialLoading(false);
+
+        if ('error' in res.json) {
+            toast({ title: 'There was an issue extending your trial', variant: 'error' });
             return;
         }
 
-        const nango = new Nango({
-            host: environmentAndAccount.host || baseUrl(),
-            websocketsPath: environmentAndAccount.environment.websockets_path || '',
-            publicKey: environmentAndAccount.environment.public_key
-        });
+        void mutate();
 
-        connectUI.current = nango.openConnectUI({
-            baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
-            onEvent: onEvent
-        });
-
-        // We defer the token creation so the iframe can open and display a loading screen
-        //   instead of blocking the main loop and no visual clue for the end user
-        setTimeout(async () => {
-            const res = await apiConnectSessions(env, { allowed_integrations: [data!.integration.unique_key] });
-            if ('error' in res.json) {
-                return;
-            }
-            connectUI.current!.setSessionToken(res.json.data.token);
-        }, 10);
+        toast({ title: 'Your trial was extended successfully!', variant: 'success' });
     };
 
     if (loading) {
         return (
             <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+                <Helmet>
+                    <title>Integration - Nango</title>
+                </Helmet>
                 <div className="flex gap-4 justify-between">
                     <div className="flex gap-6">
                         <div className="shrink-0">
@@ -123,23 +96,7 @@ export const ShowIntegration: React.FC = () => {
     }
 
     if (error) {
-        if (error.error.code === 'not_found') {
-            return <PageNotFound />;
-        }
-
-        return (
-            <DashboardLayout selectedItem={LeftNavBarItems.TeamSettings}>
-                <h2 className="text-3xl font-semibold text-white mb-16">Integration</h2>
-                <Info variant={'destructive'}>
-                    An error occurred, refresh your page or reach out to the support.{' '}
-                    {error.error.code === 'generic_error_support' && (
-                        <>
-                            (id: <span className="select-all">{error.error.payload}</span>)
-                        </>
-                    )}
-                </Info>
-            </DashboardLayout>
-        );
+        return <ErrorPageComponent title="Integration" error={error} page={LeftNavBarItems.Integrations} />;
     }
 
     if (!data) {
@@ -148,6 +105,9 @@ export const ShowIntegration: React.FC = () => {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations} ref={ref}>
+            <Helmet>
+                <title>{data.integration.unique_key} - Integration - Nango</title>
+            </Helmet>
             <div className="flex gap-4 justify-between">
                 <div className="flex gap-6">
                     <div className="shrink-0">
@@ -160,47 +120,54 @@ export const ShowIntegration: React.FC = () => {
                         <div className="flex gap-4 items-center">
                             <h2 className="text-left text-3xl font-semibold text-white break-all">{data.integration.unique_key}</h2>
                             {data.template.docs && (
-                                <Link to={data.template.docs} target="_blank">
-                                    <Button variant="icon" size={'xs'}>
-                                        <BookOpenIcon className="h-5 w-5" />
-                                    </Button>
-                                </Link>
+                                <ButtonLink to={data.template.docs} target="_blank" variant="icon" size={'xs'}>
+                                    <BookOpenIcon className="h-5 w-5" />
+                                </ButtonLink>
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="shrink-0">
-                    <div className="flex items-center bg-white rounded-md">
-                        <Button onClick={onClickConnectUI} className="rounded-r-none">
-                            <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
-                            Add Connection
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant={'icon'} size={'xs'} className="text-dark-500 hover:text-dark-800 focus:text-dark-800">
-                                    <IconChevronDown stroke={1} size={18} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-white border-white top-1">
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/${env}/connections/create`}>
-                                        <Button className="text-dark-500 hover:text-dark-800">Add Connection (headless)</Button>
-                                    </Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                    <ButtonLink to={`/${env}/connections/create?integration_id=${data.integration.unique_key}`}>
+                        <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
+                        Add Test Connection
+                    </ButtonLink>
                 </div>
             </div>
 
             <nav className="flex gap-2 my-11">
-                <Link to="./">
-                    <Button variant={tab === 'home' ? 'active' : 'zombie'}>Endpoints</Button>
-                </Link>
-                <Link to="./settings">
-                    <Button variant={tab === 'settings' ? 'active' : 'zombie'}>Settings</Button>
-                </Link>
+                <ButtonLink to="./" variant={tab === 'home' ? 'active' : 'zombie'}>
+                    Endpoints
+                </ButtonLink>
+                <ButtonLink to="./settings" variant={tab === 'settings' ? 'active' : 'zombie'}>
+                    Settings
+                    {data.integration.missing_fields.length > 0 && <span className="ml-2 bg-yellow-base h-1.5 w-1.5 rounded-full inline-block"></span>}
+                </ButtonLink>
             </nav>
+            {isTrial && (
+                <div className="mb-7 rounded-md bg-grayscale-900 border border-grayscale-600 p-4 flex gap-2 justify-between items-center">
+                    <div className="flex gap-2 items-center">
+                        <div className="flex gap-3 items-center">
+                            <ErrorCircle icon="clock" variant="warning" />
+                            <Tag variant={'warning'}>{isTrialOver ? 'Trial expired' : 'Trial'}</Tag>
+                            {!isTrialOver && <span className="text-white font-semibold">{daysRemaining} days left!</span>}
+                        </div>
+                        <div className="text-grayscale-400 text-sm">Actions & syncs are subject to a 2-week trial</div>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button size={'sm'} variant={'tertiary'} onClick={onClickTrialExtend} isLoading={trialLoading}>
+                            <IconRefresh stroke={1} size={18} />
+                            {isTrialOver ? 'Restart trial' : 'Extend trial'}
+                        </Button>
+                        <Link to={`mailto:upgrade@nango.dev?subject=Upgrade%20my%20plan%20`}>
+                            <Button size={'sm'} variant={'secondary'}>
+                                <IconBolt stroke={1} size={18} />
+                                Upgrade plan
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
             <Routes>
                 <Route path="/*" element={<EndpointsShow integration={data} />} />
                 <Route path="/settings" element={<SettingsShow data={data} />} />

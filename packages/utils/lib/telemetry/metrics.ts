@@ -17,22 +17,35 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_JOBS = 'nango.jobs.cron.deleteSyncsData.jobs',
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
+    JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
+    CRON_TRIAL = 'nango.cron.trial',
+
     LOGS_LOG = 'nango.logs.log',
+    BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
     PERSIST_RECORDS_SIZE_IN_BYTES = 'nango.persist.records.sizeInBytes',
+    PERSIST_RECORDS_MODIFIED_COUNT = 'nango.persist.records.modified.count',
+    PERSIST_RECORDS_MODIFIED_SIZE_IN_BYTES = 'nango.persist.records.modified.sizeInBytes',
 
-    POST_CONNECTION_SCRIPT_EXECUTION = 'nango.jobs.postConnectionScriptExecution',
-    POST_CONNECTION_SCRIPT_RUNTIME = 'nango.jobs.postConnectionScriptRuntime',
-    POST_CONNECTION_SCRIPT_SUCCESS = 'nango.orch.postConnectionScript.success',
-    POST_CONNECTION_SCRIPT_FAILURE = 'nango.orch.postConnectionScript.failure',
+    ON_EVENT_SCRIPT_EXECUTION = 'nango.jobs.onEventScriptExecution',
+    ON_EVENT_SCRIPT_RUNTIME = 'nango.jobs.onEventScriptRuntime',
+    ON_EVENT_SCRIPT_SUCCESS = 'nango.orch.onEventScript.success',
+    ON_EVENT_SCRIPT_FAILURE = 'nango.orch.onEventScript.failure',
+
+    POST_CONNECTION_SUCCESS = 'nango.postConnection.success',
+    POST_CONNECTION_FAILURE = 'nango.postConnection.failure',
 
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
 
-    REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
-    REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
-    REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
+    CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
+    CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
+    CRON_REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
+    REFRESH_CONNECTIONS_FAILED = 'nango.server.refreshConnections.failed',
+    REFRESH_CONNECTIONS_SUCCESS = 'nango.server.refreshConnections.success',
+    REFRESH_CONNECTIONS_FRESH = 'nango.server.refreshConnections.fresh',
+    REFRESH_CONNECTIONS_UNKNOWN = 'nango.server.refreshConnections.unknown',
 
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_ACTION_INPUT = 'nango.runner.invalidActionInput',
@@ -48,39 +61,71 @@ export enum Types {
     WEBHOOK_TRACK_RUNTIME = 'webhook_track_runtime',
     WEBHOOK_SUCCESS = 'nango.orch.webhook.success',
     WEBHOOK_FAILURE = 'nango.orch.webhook.failure',
+    WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
+    WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
+    WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
+    WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
+    WEBHOOK_OUTGOING_FAILED = 'nango.webhook.outgoing.failed',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
-    ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled'
+    ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
+
+    API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
+
+    AUTH_SUCCESS = 'nango.server.auth.success',
+    AUTH_FAILURE = 'nango.server.auth.failure',
+
+    GET_RECORDS_COUNT = 'nango.server.getRecords.count',
+    GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
+
+    CONNECTIONS_COUNT = 'nango.connections.count',
+    CONNECTIONS_WITH_ACTIONS_COUNT = 'nango.connections.withActions.count',
+    CONNECTIONS_WITH_SYNCS_COUNT = 'nango.connections.withSyncs.count',
+    CONNECTIONS_WITH_WEBHOOKS_COUNT = 'nango.connections.withWebhooks.count',
+
+    RECORDS_TOTAL_COUNT = 'nango.records.total.count'
 }
 
-export function increment(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+type Dimensions = Record<string, string | number> | undefined;
+
+export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
 }
 
-export function decrement(metricName: Types, value = 1, dimensions?: Record<string, string | number>): void {
+export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
+    if (value === 0) {
+        return;
+    }
     tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
 }
 
-export function gauge(metricName: Types, value?: number): void {
-    tracer.dogstatsd.gauge(metricName, value ?? 1);
+export function gauge(metricName: Types, value?: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.gauge(metricName, value ?? 1, dimensions ?? {});
 }
 
-export function duration(metricName: Types, value: number): void {
-    tracer.dogstatsd.distribution(metricName, value);
+export function histogram(metricName: Types, value: number): void {
+    tracer.dogstatsd.histogram(metricName, value);
 }
 
-export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F): F {
+export function duration(metricName: Types, value: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
+}
+
+export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: Types, func: F, dimensions?: Dimensions): F {
     const computeDuration = (start: [number, number]) => {
         const durationComponents = process.hrtime(start);
         const seconds = durationComponents[0];
         const nanoseconds = durationComponents[1];
         const total = seconds * 1000 + nanoseconds / 1e6;
 
-        duration(metricName, total);
+        duration(metricName, total, dimensions);
     };
 
     // This function should handle both async/sync function
@@ -97,7 +142,7 @@ export function time<T, E, F extends (...args: E[]) => Promise<T>>(metricName: T
                         computeDuration(start);
                         return v;
                     },
-                    (err) => {
+                    (err: unknown) => {
                         computeDuration(start);
                         throw err;
                     }

@@ -1,0 +1,18 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Transactions">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /transactions` | Creates a new transaction | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/create-transaction.md) |
+| `PUT /transactions` | Marks a transaction by changing its status to Committed | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/commit-transaction.md) |
+| `DELETE /transactions` | Voids the current transaction uniquely identified by the transactionCode | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/void-transaction.md) |
+| `GET /transactions` | List all transactions with a default backfill date of one year. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/syncs/transactions.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

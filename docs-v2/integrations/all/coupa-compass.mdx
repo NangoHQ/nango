@@ -3,31 +3,44 @@ title: Coupa Compass
 sidebarTitle: Coupa Compass
 ---
 
-API configurations: [`coupa-compass`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/coupa-compass/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/coupa-compass/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
+
+
+## Useful links
 
 -   [How to create a client in Coupa](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-2)
 -   [OAuth related docs](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-5)
 -   [Coupa Core API docs](https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api)
 -   [List of Oauth scopes](https://compass.coupa.com/_dita_/en-us/documentation/plat/integ/coupa_core_api/topics/openid_connect_clients.dita#section-3)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
 
 ## API gotchas
 - Each Coupa Compass customer has their own base url, of the form `{instance_name}.coupahost.com`. For example: `companyname.coupahost.com`, which is the `{instanceDomain}`.
 - Coupa Compass offers various API types, each with its own base URL. To determine your endpoint structure, please refer to the specific API type. For example, the CSO API uses `cso.coupahost.com/api/`, while the Coupa Core API uses `{instanceDomain}/api`
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/coupa-compass.mdx)</Note>

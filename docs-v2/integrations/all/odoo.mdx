@@ -3,30 +3,50 @@ title: Odoo
 sidebarTitle: Odoo
 ---
 
-API configurations: [`odoo`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/odoo/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/odoo/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/odoo.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://odoo-restapi.readthedocs.io/en/latest/connection/configuration.html)
 -   [OAuth related docs](https://odoo-restapi.readthedocs.io/en/latest/connection/logging_in/oauth2_authentication.html)
 -   [Odoo REST API docs](https://odoo-restapi.readthedocs.io/en/latest/)
+-   [Odoo (Client Credentials) OAuth related docs](https://synconics.gitbook.io/rest-api/connection/logging-in/how-you-can-do/basic-authentication)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/odoo.mdx)</Note>
 
 ## API gotchas
 
 -   Nango currently supports the integration of Odoo using the [Odoo REST API by Synconic module](https://apps.odoo.com/apps/modules/17.0/restapi)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/odoo.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/odoo.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Odoo (Client Credentials)" icon="link" href="/integrations/all/odoo-cc/connect" horizontal>
+  Guide to connect to Odoo (Client Credentials) using Connect UI
+</Card>

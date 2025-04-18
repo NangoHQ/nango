@@ -13,7 +13,7 @@ npm install nango -g
 
 In the folder where you want your integration folder (e.g. root of your project), run:
 ```bash
-nango init
+nango init nango-integrations
 ```
 
 This creates the `./nango-integrations` folder with some initial configuration and an example
@@ -56,7 +56,7 @@ nango [command] --help
 
 | Command                        | Description                                                                                                                                       | Details                                                                                              |
 | -                              | -                                                                                                                                                 | -                                                                                                    |
-| `nango init`                   | Creates the `nango-integrations` directory with a demo Github integration.                                                                        | Generates `models.ts`, but not the compiled `.js` files.                                             |
+| `nango init <dir>`             | Creates integrations directory `dir` with a demo Github integration.                                                                        | Generates `models.ts`, but not the compiled `.js` files.                                             |
 | `nango dev`                    | Necessary to edit integration configurations and scripts.                                                                                         | Watches the `nango.yaml` and integration scripts, re-generates `models.ts` and compiled `.js` files. |
 | `nango generate`               | Generates an integration script `.ts` file with initial scaffold when new syncs appear in your `nango.yaml`.                                      | Re-generates `models.ts`, not the compiled `.js` files.                                              |
 | `nango dryrun <params>`        | Lets you test integration scripts locally.                                                                                                        |                                                                                                      |

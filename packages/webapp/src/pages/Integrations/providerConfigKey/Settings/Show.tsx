@@ -1,17 +1,14 @@
-import type { GetIntegration } from '@nangohq/types';
-import { SettingsGeneral } from './components/General';
-import { SettingsOAuth } from './components/OAuth';
-import { useStore } from '../../../../store';
-import { useEnvironment } from '../../../../hooks/useEnvironment';
-import type { EnvironmentAndAccount } from '@nangohq/server';
 import { SettingsApp } from './components/App';
 import { SettingsCustom } from './components/Custom';
 import { SettingsDefault } from './components/Default';
+import { SettingsGeneral } from './components/General';
+import { SettingsOAuth } from './components/OAuth';
+import { useEnvironment } from '../../../../hooks/useEnvironment';
+import { useStore } from '../../../../store';
 
-export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data']; environment: EnvironmentAndAccount['environment'] }> = ({
-    data,
-    environment
-}) => {
+import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
+
+export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
     switch (data.template.auth_mode) {
         case 'OAUTH1':
         case 'OAUTH2':
@@ -30,6 +27,10 @@ export const SettingsSwitch: React.FC<{ data: GetIntegration['Success']['data'];
         case 'TABLEAU':
         case 'NONE':
         case 'OAUTH2_CC':
+        case 'BILL':
+        case 'JWT':
+        case 'SIGNATURE':
+        case 'TWO_STEP':
             return <SettingsDefault data={data} environment={environment} />;
 
         default:

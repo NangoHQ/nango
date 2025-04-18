@@ -1,5 +1,5 @@
 import { Cross1Icon, PlusIcon } from '@radix-ui/react-icons';
-import Button from '../../../components/ui/button/Button';
+import { Button } from '../../../components/ui/button/Button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../../../components/ui/Dialog';
 import type { ApiTeam } from '@nangohq/types';
 import { useState } from 'react';
@@ -55,7 +55,6 @@ export const AddTeamMember: React.FC<{ team: ApiTeam }> = ({ team }) => {
         setEmails((prev) => {
             const copy = [...prev].filter((v) => v.value !== '');
             const next = Array.from(filtered);
-            console.log({ copy, next });
 
             copy.push(...next.map((email) => ({ value: email })));
             copy.push({ value: '' });

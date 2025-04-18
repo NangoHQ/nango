@@ -55,8 +55,8 @@ class RemoteFileService {
             );
 
             return fileName;
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
@@ -103,8 +103,8 @@ class RemoteFileService {
                 }
                 return '_LOCAL_FILE_';
             }
-        } catch (e) {
-            errorManager.report(e, {
+        } catch (err) {
+            errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
@@ -115,6 +115,10 @@ class RemoteFileService {
 
             return null;
         }
+    }
+
+    async getPublicTemplateJsonSchemaFile(integrationName: string, environmentId: number): Promise<string | null> {
+        return this.getFile(`${this.publicRoute}/${integrationName}/.nango/schema.json`, environmentId);
     }
 
     getFile(fileName: string, environmentId: number): Promise<string> {

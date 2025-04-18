@@ -1,6 +1,6 @@
 const syncConfigs = '_nango_sync_configs';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     await knex.schema.alterTable(syncConfigs, function (table) {
         table.dropColumn('provider');
         table.dropColumn('snippet');
@@ -12,7 +12,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     await knex.schema.alterTable(syncConfigs, function (table) {
         table.string('provider');
         table.text('snippet');

@@ -1,0 +1,53 @@
+---
+title: Quickbase
+sidebarTitle: Quickbase
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/quickbase/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/quickbase/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbase.mdx)</Note>
+
+
+## Useful links
+
+-   [How to generate a User Token](https://helpv2.quickbase.com/hc/en-us/articles/4570374095124-Create-and-use-user-tokens)
+-   [Quickbase API docs](https://developer.quickbase.com/auth)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbase.mdx)</Note>
+
+## API gotchas
+
+- Quickbase has different types of Tokens for its API.
+- If you use a user token, you don't need to use an app token
+- Quickbase uses `API_KEY` auth mode with `Authorization: QB-USER-TOKEN {TOKEN}` as a request header to access different endpoints using the user token.
+
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/quickbase.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Quickbase" icon="link" href="/integrations/all/quickbase/connect" horizontal>
+  Guide to connect to Quickbase using Connect UI
+</Card>

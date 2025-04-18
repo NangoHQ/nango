@@ -1,8 +1,11 @@
-import type { Knex } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import type { ConnectSession } from '@nangohq/types';
+import { EndUserMapper } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
+
+import type { Knex } from '@nangohq/database';
+import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, DBEndUser, EndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
 
@@ -11,10 +14,12 @@ interface DBConnectSession {
     readonly end_user_id: number;
     readonly account_id: number;
     readonly environment_id: number;
+    readonly connection_id: number | null;
+    readonly operation_id: string | null;
     readonly created_at: Date;
     readonly updated_at: Date | null;
     readonly allowed_integrations: string[] | null;
-    readonly integrations_config_defaults: Record<string, { connectionConfig: Record<string, unknown> }> | null;
+    readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
 }
 type DbInsertConnectSession = Omit<DBConnectSession, 'id' | 'created_at' | 'updated_at'>;
 
@@ -25,6 +30,8 @@ const ConnectSessionMapper = {
             end_user_id: session.endUserId,
             account_id: session.accountId,
             environment_id: session.environmentId,
+            connection_id: session.connectionId,
+            operation_id: session.operationId || null,
             created_at: session.createdAt,
             updated_at: session.updatedAt,
             allowed_integrations: session.allowedIntegrations || null,
@@ -37,6 +44,8 @@ const ConnectSessionMapper = {
             endUserId: dbSession.end_user_id,
             accountId: dbSession.account_id,
             environmentId: dbSession.environment_id,
+            connectionId: dbSession.connection_id,
+            operationId: dbSession.operation_id || null,
             createdAt: dbSession.created_at,
             updatedAt: dbSession.updated_at,
             allowedIntegrations: dbSession.allowed_integrations || null,
@@ -56,22 +65,37 @@ export class ConnectSessionError extends Error {
     }
 }
 
+export interface ConnectSessionAndEndUser {
+    connectSession: ConnectSession;
+    endUser: EndUser;
+}
+
 export async function createConnectSession(
     db: Knex,
     {
         endUserId,
         accountId,
         environmentId,
+        connectionId,
         allowedIntegrations,
-        integrationsConfigDefaults
-    }: Pick<ConnectSession, 'endUserId' | 'allowedIntegrations' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId'>
+        integrationsConfigDefaults,
+        operationId
+    }: SetOptional<
+        Pick<
+            ConnectSession,
+            'endUserId' | 'allowedIntegrations' | 'connectionId' | 'integrationsConfigDefaults' | 'accountId' | 'environmentId' | 'operationId'
+        >,
+        'connectionId'
+    >
 ): Promise<Result<ConnectSession, ConnectSessionError>> {
     const dbSession: DbInsertConnectSession = {
         end_user_id: endUserId,
         account_id: accountId,
         environment_id: environmentId,
-        allowed_integrations: allowedIntegrations || null,
-        integrations_config_defaults: integrationsConfigDefaults || null
+        connection_id: connectionId || null,
+        allowed_integrations: allowedIntegrations,
+        integrations_config_defaults: integrationsConfigDefaults,
+        operation_id: operationId
     };
     const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
@@ -97,19 +121,32 @@ export async function getConnectSession(
         accountId: number;
         environmentId: number;
     }
-): Promise<Result<ConnectSession, ConnectSessionError>> {
-    const session = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).first();
+): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
+    const session = await db
+        .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
+        .select<{ connect_session: DBConnectSession; end_user: DBEndUser }>(
+            db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`),
+            db.raw('row_to_json(end_users.*) as end_user')
+        )
+        .join('end_users', 'end_users.id', `${CONNECT_SESSIONS_TABLE}.end_user_id`)
+        .where({
+            [`${CONNECT_SESSIONS_TABLE}.id`]: id,
+            [`${CONNECT_SESSIONS_TABLE}.account_id`]: accountId,
+            [`${CONNECT_SESSIONS_TABLE}.environment_id`]: environmentId
+        })
+        .first();
     if (!session) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
-    return Ok(ConnectSessionMapper.from(session));
+    return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session), endUser: EndUserMapper.from(session.end_user) });
 }
 
-export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSession, ConnectSessionError>> {
+export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
     const getSession = await keystore.getPrivateKey(db, token);
     if (getSession.isErr()) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
+
     const privateKey = getSession.value;
     const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
     if (session.isErr()) {
@@ -135,4 +172,16 @@ export async function deleteConnectSession(
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(undefined);
+}
+
+export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+    return await db
+        .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
+        .whereIn('id', function (sub) {
+            sub.select('id').from<DBConnectSession>(CONNECT_SESSIONS_TABLE).where('created_at', '<=', dateThreshold.toISOString()).limit(limit);
+        })
+        .delete();
 }

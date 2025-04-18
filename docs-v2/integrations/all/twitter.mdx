@@ -3,26 +3,39 @@ title: Twitter
 sidebarTitle: Twitter
 ---
 
-API configurations: [`twitter`](https://nango.dev/providers.yaml) for OAuth1, [`twitter-v2`](https://nango.dev/providers.yaml) for OAuth2, [`twitter-oauth2-cc`](https://nango.dev/providers.yaml) for client_credentials flow
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/twitter/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/twitter/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twitter.mdx)</Note>
+
+
+## Useful links
 
 -   [OAuth2-related docs](https://developer.twitter.com/en/docs/authentication/oauth-2-0/user-access-token)
 -   [OAuth2 scopes (scroll down)](https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code#:~:text=a%20public%20client.-,Scopes,-Scopes%20allow%20you)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twitter.mdx)</Note>
 
 ## API gotchas
 
@@ -30,4 +43,4 @@ API configurations: [`twitter`](https://nango.dev/providers.yaml) for OAuth1, [`
 -   For the OAuth 2 API: To get your `client_id` and `client_secret` you need to generate a "user authentication" within your app in the Twitter development portal.
 -   Twitter also offers a client credentials token that authorizes as app instead of a user. This is listed under `twitter-oauth2-cc`. For more details check [twitter client credentials flow](https://developer.x.com/en/docs/authentication/oauth-2-0/application-only)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twitter.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/twitter.mdx)</Note>

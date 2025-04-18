@@ -1,0 +1,72 @@
+---
+title: Mindbody - How to Connect Your Account
+sidebarTitle: Mindbody
+---
+
+# Overview
+
+Mindbody uses API Key authentication to securely connect your account. To integrate Mindbody with your application, you will need the following credentials:
+
+1. **API Key**: A unique key that authenticates your integration.
+2. **Site ID**: Identifies the site associated with your account.
+3. **Staff User Token**: Grants access to your Mindbody account's resources.
+
+This guide will walk you through the steps to generate these credentials and connect your account.
+
+---
+
+### Prerequisites
+
+- Access to a **Mindbody Developer Account**.
+- A valid **Site ID** for your Mindbody account.
+- API access enabled for your account.
+
+---
+
+### Step 1: Create a Mindbody Developer Account
+
+1. Visit the [Mindbody Developer Portal](https://developers.mindbodyonline.com).
+2. Fill out the registration form and submit it to create an account.
+3. Log in to your developer account after registration is complete.
+
+---
+
+### Step 2: Generate API Key
+
+1. Log in to your Mindbody developer account.
+2. Navigate to **Account** in the upper-right menu.
+3. Select **API Credentials** from the sidebar.
+4. Scroll down to the **API Keys** section and click **Create New API Key**.
+
+<img src="/integrations/all/mindbody/nango_mindbody_locate_api_section.png" />
+
+5. Provide a descriptive name for your API Key (e.g., "My App Integration").
+6. Leave the **Active?** checkbox selected if you want the key to be active immediately.
+7. Click **Create** to generate the API Key.
+8. Copy the API Key and store it securely, as it will not be shown again.
+
+---
+
+### Step 3: Obtain Site ID and Staff User Token
+
+#### Site ID
+1. Locate your Site ID from your Mindbody account settings or contact Mindbody support for assistance.
+2. The Site ID is typically a numeric value (e.g., `-99`).
+
+#### Staff User Token
+1. Use your Mindbody account credentials to generate a **Staff User Token**.
+2. Tokens are associated with a staff user in your account and are required for API authentication.
+
+---
+
+### Step 4: Connect Your Mindbody Account
+
+To connect your Mindbody account, you need to provide the following details in the integration form:
+
+1. **API Key**: The key generated in Step 2.
+2. **Site ID**: The identifier of your site.
+3. **Staff User Token**: The token generated in Step 3.
+
+Notes
+-Make sure to store your API Key securely. If lost, you will need to generate a new one.
+-Use different API keys for different integrations to isolate permissions and facilitate debugging.

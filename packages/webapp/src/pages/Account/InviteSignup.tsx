@@ -3,7 +3,7 @@ import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInv
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Info } from '../../components/Info';
-import Button from '../../components/ui/button/Button';
+import { Button, ButtonLink } from '../../components/ui/button/Button';
 import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
@@ -71,11 +71,9 @@ export const InviteSignup: React.FC = () => {
                                     <div className="text-text-light-gray text-sm">This invitation no longer exists or is expired.</div>
                                 </div>
                                 <div className="w-full">
-                                    <Link to={'/signup'}>
-                                        <Button className="w-full justify-center" size={'lg'}>
-                                            Back to signup
-                                        </Button>
-                                    </Link>
+                                    <ButtonLink to={'/signup'} className="w-full justify-center" size={'lg'}>
+                                        Back to signup
+                                    </ButtonLink>
                                 </div>
                             </>
                         ) : (

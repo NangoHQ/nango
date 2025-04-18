@@ -5,7 +5,7 @@
  */
 const DB_TABLE = '_nango_connections';
 
-exports.up = async function (knex, _) {
+exports.up = async function (knex) {
     const existingMetaData = await knex.select('id', 'metadata', 'connection_config').from(DB_TABLE).whereNotNull('metadata').andWhere('metadata', '!=', '{}');
 
     for (const record of existingMetaData) {
@@ -33,7 +33,7 @@ exports.up = async function (knex, _) {
     });
 };
 
-exports.down = async function (knex, _) {
+exports.down = async function (knex) {
     return knex.schema.alterTable(DB_TABLE, function (table) {
         table.jsonb('field_mappings').defaultTo('{}');
     });

@@ -122,3 +122,13 @@ export class ParserErrorTypeSyntax extends ParserError {
         });
     }
 }
+
+export class ParserErrorBothPostConnectionScriptsAndOnEventsPresent extends ParserError {
+    constructor(options: { path: string[] }) {
+        super({
+            code: 'both_post_connection_scripts_and_on_events_present',
+            message: `Both post-connection-scripts and on-events are present. Only one of them can be used at a time.`,
+            path: options.path
+        });
+    }
+}

@@ -6,7 +6,6 @@ async function migrate() {
 
     let id = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
         const environments = await database.knex.select('*').from('_nango_environments').where('id', '>', id).orderBy('id').limit(1000);
 
@@ -37,8 +36,8 @@ async function migrate() {
 const start = new Date();
 
 migrate()
-    .catch((error: unknown) => {
-        console.error('Error occurred during webhook settings migration:', error);
+    .catch((err: unknown) => {
+        console.error('Error occurred during webhook settings migration:', err);
         process.exit(1);
     })
     .finally(() => {

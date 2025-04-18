@@ -3,32 +3,45 @@ title: Klipfolio
 sidebarTitle: Klipfolio
 ---
 
-API configuration: [`klipfolio`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/klipfolio/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/klipfolio/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (API Key)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klipfolio.mdx)</Note>
+
+
+## Useful links
 
 -   [Generate a Klipfolio API key.](https://support.klipfolio.com/hc/en-us/articles/215548478-Generate-a-Klipfolio-API-Key)
 -   [Klipfolio Authentication](https://apidocs.klipfolio.com/reference/getting-started#authentication)
 -   [Klipfolio API docs](https://apidocs.klipfolio.com/reference/)
 -   [API versioning](https://apidocs.klipfolio.com/reference/getting-started#versioning)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klipfolio.mdx)</Note>
 
 ## API gotchas
 
 - Klipfolio uses API_KEY auth mode with `kf-api-key: API_KEY` as a request header to access different endpoints.
 - Klipfolio enforces rate limits for its endpoints based on the subscribed plan. For more details check [Klipfolio rate limits](https://apidocs.klipfolio.com/reference/getting-started#rate-limiting)
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klipfolio.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/klipfolio.mdx)</Note>

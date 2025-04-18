@@ -1,0 +1,66 @@
+---
+
+title: Shopify SCIM
+sidebarTitle: Shopify SCIM
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/shopify-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/shopify-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify-scim.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register an Application](https://shopify.dev/docs/apps/auth/oauth/getting-started#step-1-retrieve-client-credentials)
+-   [OAuth-related docs](https://shopify.dev/docs/apps/auth/oauth)
+-   [List of OAuth scopes](https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes)
+-   [API](https://shopify.dev/docs/api/admin)
+-   [SCIM API Docs](https://help.shopify.com/en/manual/organization-settings/users/security/scim)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify-scim.mdx)</Note>
+
+## Connection configuration in Nango
+
+Shopify requires a user specific subdomain to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('shopify', '<CONNECTION-ID>', {params: {subdomain: '<shopify-subdomain>'}});
+```
+
+For more details, see the [docs here](/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization).
+
+## API gotchas
+
+_None yet, add yours!_
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify-scim.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Shopify SCIM" icon="link" href="/integrations/all/shopify-scim/connect" horizontal>
+  Guide to connect to Shopify SCIM  using Nango Connect UI.
+</Card>

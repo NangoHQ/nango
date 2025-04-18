@@ -1,6 +1,5 @@
-import type { AuthModeType, AuthOperationType } from '@nangohq/types';
+import type { AuthModeType, AuthOperationType, DBConnection } from '@nangohq/types';
 import type { ServiceResponse } from './Generic.js';
-import type { StoredConnection } from './Connection.js';
 
 export enum OAuthAuthorizationMethod {
     BODY = 'body',
@@ -13,7 +12,7 @@ export enum OAuthBodyFormat {
 }
 
 export interface ConnectionUpsertResponse {
-    connection: StoredConnection;
+    connection: DBConnection;
     operation: AuthOperationType;
 }
 
@@ -66,7 +65,11 @@ export type AuthCredentials =
     | TbaCredentials
     | TableauCredentials
     | BillCredentials
-    | TwoStepCredentials;
+    | TwoStepCredentials
+    | SignatureCredentials
+    | JwtCredentials
+    | ApiKeyCredentials
+    | BasicApiCredentials;
 
 export interface AppCredentials {
     type?: 'APP';
@@ -169,6 +172,14 @@ export interface BillCredentials extends CredentialsCommon {
     dev_key: string;
     session_id?: string;
     user_id?: string;
+    expires_at?: Date | undefined;
+}
+
+export interface SignatureCredentials {
+    type: 'SIGNATURE';
+    username: string;
+    password: string;
+    token?: string;
     expires_at?: Date | undefined;
 }
 

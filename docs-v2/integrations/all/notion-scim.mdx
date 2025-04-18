@@ -1,0 +1,52 @@
+---
+title: Notion SCIM
+sidebarTitle: Notion SCIM
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/notion-scim/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/notion-scim/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion-scim.mdx)</Note>
+
+
+## Useful links
+
+-   [How to register an Application](https://developers.notion.com/docs/authorization)
+-   [OAuth-related docs](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up)
+-   [API reference](https://developers.notion.com/reference/intro)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion-scim.mdx)</Note>
+
+## API gotchas
+
+- The Notion OAuth API doesn't support refreshing tokens, and so doesn't return a refresh token. The access token never expires.
+- Your Notion OAuth app will have the status "internal". You need to [make it "public"](https://developers.notion.com/docs/authorization#how-to-make-an-integration-public) to be able to initiate an OAuth flow. Only then, you will be able to get the OAuth client ID/secret and register your callback URL.
+- No OAuth scope is required by default.
+- Notion SCIM is an enterprise only API that uses an API token. See the Notion [docs](https://www.notion.so/help/provision-users-and-groups-with-scim) for more information
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion-scim.mdx)</Note>
+
+<Card title="Connect to notion-scim" icon="link" href="/integrations/all/notion-scim/connect" horizontal>
+  Guide to connect to notion-scim using Nango Connect.
+</Card>

@@ -3,7 +3,7 @@ import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parse, validateYaml } from './config.service';
-import { NangoError } from '@nangohq/shared';
+import { CLIError } from '../utils/errors.js';
 
 function cleanLog(log: any) {
     return typeof log === 'string' ? stripAnsi(log) : log;
@@ -16,24 +16,34 @@ describe('load', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', () => {
-        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v1/valid`));
-        expect(response!.parsed).toMatchSnapshot();
-        expect(response!.parsed).not.toBeNull();
+        const res = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v1/valid`));
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.parsed).toMatchSnapshot();
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', () => {
-        const { response } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/valid`));
-        expect(response!.parsed).toMatchSnapshot();
-        expect(response!.parsed).not.toBeNull();
+        const res = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/valid`));
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.parsed).toMatchSnapshot();
     });
 
     it('should throw a validation error on a nango.yaml file that is not formatted correctly -- missing endpoint', () => {
         const acc: string[] = [];
         consoleMock.mockImplementation((m) => acc.push(cleanLog(m)));
 
-        const { response, error } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
-        expect(response).toBeNull();
-        expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
+        const res = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.1`));
+        if (res.isOk()) {
+            expect(res).toBeInstanceOf(Error);
+            return;
+        }
+
+        expect(res.error).toStrictEqual(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         expect(acc.join('')).toContain('An endpoint property is required to specify how to retrieve the data from the sync');
     });
 
@@ -41,9 +51,13 @@ describe('load', () => {
         const acc: string[] = [];
         consoleMock.mockImplementation((m) => acc.push(stripAnsi(m)));
 
-        const { response, error } = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
-        expect(response).toBeNull();
-        expect(error).toStrictEqual(new NangoError('failed_to_parse_nango_yaml'));
+        const res = parse(path.resolve(__dirname, `../../fixtures/nango-yaml/v2/invalid.2`));
+        if (res.isOk()) {
+            expect(res).toBeInstanceOf(Error);
+            return;
+        }
+
+        expect(res.error).toStrictEqual(new CLIError('failed_to_parse_nango_yaml', 'Your nango.yaml contains some errors'));
         expect(acc.join('')).toContain('additionalProperty: webhook-subscription');
     });
 });
@@ -137,7 +151,11 @@ integrations:
         );
         expect(res).toMatchObject([
             {
-                msg: 'endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e: "GET /tickets/ticket"',
+                msg: `endpoint must be a URL (or an array of URLs) with an HTTP verb, i.e:
+- endpoint: GET /tickets
+- endpoint:
+    method: GET
+    path: /tickets`,
                 path: '/integrations/test/syncs/foobar/endpoint'
             }
         ]);

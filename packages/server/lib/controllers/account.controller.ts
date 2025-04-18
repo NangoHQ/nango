@@ -1,43 +1,16 @@
-import type { Request, Response, NextFunction } from 'express';
-import { isCloud } from '@nangohq/utils';
-import { accountService, userService } from '@nangohq/shared';
-import type { LogContext } from '@nangohq/logs';
 import { logContextGetter } from '@nangohq/logs';
+import { accountService, userService } from '@nangohq/shared';
+import { isCloud } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express.js';
+import type { LogContextOrigin } from '@nangohq/logs';
+import type { NextFunction, Request, Response } from 'express';
 
 export const NANGO_ADMIN_UUID = process.env['NANGO_ADMIN_UUID'];
 export const AUTH_ADMIN_SWITCH_ENABLED = NANGO_ADMIN_UUID && isCloud;
 export const AUTH_ADMIN_SWITCH_MS = 600 * 1000;
 
 class AccountController {
-    async editCustomer(req: Request, res: Response<any, never>, next: NextFunction) {
-        try {
-            const { is_capped, account_uuid: accountUUID } = req.body;
-
-            if (!accountUUID) {
-                res.status(400).send({ error: 'account_uuid property is required' });
-                return;
-            }
-
-            if (is_capped === undefined || is_capped === null) {
-                res.status(400).send({ error: 'is_capped property is required' });
-                return;
-            }
-
-            const account = await accountService.getAccountByUUID(accountUUID);
-
-            if (!account) {
-                res.status(400).send({ error: 'Account not found' });
-                return;
-            }
-
-            await accountService.editCustomer(is_capped, account.id);
-            res.status(200).send({ is_capped, accountUUID });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async switchAccount(
         req: Request<unknown, unknown, { account_uuid?: string; login_reason?: string }>,
         res: Response<any, Required<RequestLocals>>,
@@ -49,7 +22,7 @@ class AccountController {
             return;
         }
 
-        let logCtx: LogContext | undefined;
+        let logCtx: LogContextOrigin | undefined;
         try {
             const { account, environment, user: adminUser } = res.locals;
 
@@ -97,7 +70,7 @@ class AccountController {
                     meta: { loginReason: login_reason, admin: adminUser.email, impersonating: user.id }
                 }
             );
-            await logCtx.info('A Nango admin logged into another account');
+            void logCtx.info('A Nango admin logged into another account');
 
             req.login(user, (err) => {
                 if (err) {
@@ -123,7 +96,7 @@ class AccountController {
             });
         } catch (err) {
             if (logCtx) {
-                await logCtx.error('uncaught error', { error: err });
+                void logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
             next(err);

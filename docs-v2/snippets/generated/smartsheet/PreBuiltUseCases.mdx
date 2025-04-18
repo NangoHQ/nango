@@ -1,0 +1,18 @@
+
+## Pre-built integrations
+
+<AccordionGroup>
+
+
+<Accordion title="Users">
+| Endpoint | Description | Readme |
+| - | - | - |
+| `POST /users` | Creates a user in Smartsheet | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/create-user.md) |
+| `DELETE /users` | Deletes a user from Smartsheet. User is transitioned to a free collaborator with read-only access to owned reports, sheets, Sights, workspaces, and any shared templates (unless those are optionally transferred to another user). | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/delete-user.md) |
+| `POST /users/disable` | Disables a user in an organization account. User will no longer be able to access Smartsheet in any way. User's assets will continue to be owned by this user until they are transferred to another user. | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/disable-user.md) |
+| `GET /users` | Fetches a list of users from Smartsheet | [🔗](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.md) |
+</Accordion>
+
+</AccordionGroup>
+
+<Tip>Not seeing the integration you need? [Build your own](https://docs.nango.dev/guides/custom-integrations/overview) independently.</Tip>

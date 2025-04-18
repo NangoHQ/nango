@@ -4,23 +4,27 @@
  * Copyright (c) 2024 Nango, all rights reserved.
  */
 
-import { Command } from 'commander';
 import fs from 'fs';
-import chalk from 'chalk';
-import figlet from 'figlet';
 import path from 'path';
-import * as dotenv from 'dotenv';
 
-import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
-import deployService from './services/deploy.service.js';
-import { compileAllFiles } from './services/compile.service.js';
-import verificationService from './services/verification.service.js';
-import { DryRunService } from './services/dryrun.service.js';
-import { v1toV2Migration, directoryMigration } from './services/migration.service.js';
-import { getNangoRootPath, upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug, isCI } from './utils.js';
-import type { ENV, DeployOptions } from './types.js';
-import { parse } from './services/config.service.js';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import * as dotenv from 'dotenv';
+import figlet from 'figlet';
+
+import { configWatch, generate, tscWatch, version } from './cli.js';
+import { compileAllFiles } from './services/compile.service.js';
+import { parse } from './services/config.service.js';
+import deployService from './services/deploy.service.js';
+import { generate as generateDocs } from './services/docs.service.js';
+import { DryRunService } from './services/dryrun.service.js';
+import { init } from './services/init.service.js';
+import { directoryMigration, endpointMigration, v1toV2Migration } from './services/migration.service.js';
+import verificationService from './services/verification.service.js';
+import { NANGO_INTEGRATIONS_LOCATION, getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+
+import type { DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -56,7 +60,7 @@ In addition for self-Hosting: set the NANGO_HOSTPORT env variable.
 
 Global flag: --auto-confirm - automatically confirm yes to all prompts.
 
-Available environment variables available:
+Available environment variables:
 
 # Recommendation: in a ".env" file in ./nango-integrations.
 
@@ -87,13 +91,16 @@ program
 
 program
     .command('init')
+    .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
     .action(function (this: Command) {
         const { debug } = this.opts();
-        const fullPath = process.cwd();
-        init({ absolutePath: fullPath, debug });
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const ok = init({ absolutePath, debug });
 
-        console.log(chalk.green(`Nango integrations initialized!`));
+        if (ok) {
+            console.log(chalk.green(`Nango integrations initialized in ${absolutePath}!`));
+        }
     });
 
 program
@@ -113,6 +120,7 @@ program
         '-l, --lastSyncDate [lastSyncDate]',
         'Optional (for syncs only): last sync date to retrieve records greater than this date. The format is any string that can be successfully parsed by `new Date()` in JavaScript'
     )
+    .option('--variant [variant]', 'Optional: The variant of the sync to run for the dryrun. If not provided, the base variant will be used.')
     .option(
         '-i, --input [input]',
         'Optional (for actions only): input to pass to the action script. The `input` can be supplied in either JSON format or as a plain string. For example --input \'{"foo": "bar"}\'  --input \'foobar\'. ' +
@@ -170,13 +178,14 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
         const options: DeployOptions = this.opts();
         const { debug } = options;
         const fullPath = process.cwd();
-        await deployService.prep({ fullPath, options: { ...options, env: 'production' as ENV }, environment, debug });
+        await deployService.prep({ fullPath, options: { ...options, env: 'cloud' }, environment, debug });
     });
 
 program
@@ -194,6 +203,28 @@ program
         await directoryMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION), debug);
     });
 
+program
+    .command('migrate-endpoints')
+    .description('Migrate the endpoint format')
+    .action(function (this: Command) {
+        endpointMigration(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION));
+    });
+
+program
+    .command('generate:docs')
+    .option('-p, --path [path]', 'Optional: The relative path to generate the docs for. Defaults to the same directory as the script.')
+    .option('--integration-templates', 'Optional: for the nango integration templates repo', false)
+    .description('Generate documentation for the integration scripts')
+    .action(async function (this: Command) {
+        const { debug, path: optionalPath, integrationTemplates } = this.opts();
+        const absolutePath = path.resolve(process.cwd(), this.args[0] || '');
+        const ok = await generateDocs({ absolutePath, path: optionalPath, debug, isForIntegrationTemplates: integrationTemplates });
+
+        if (ok) {
+            console.log(chalk.green(`Docs have been generated`));
+        }
+    });
+
 // Hidden commands //
 
 program
@@ -202,6 +233,7 @@ program
     .description('Deploy a Nango integration to local')
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
     .action(async function (this: Command, environment: string) {
@@ -215,20 +247,6 @@ program
     .alias('cli')
     .action(() => {
         getNangoRootPath(true);
-    });
-
-program
-    .command('deploy:staging', { hidden: true })
-    .alias('ds')
-    .description('Deploy a Nango integration to staging')
-    .arguments('environment')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
-    .action(async function (this: Command, environment: string) {
-        const options: DeployOptions = this.opts();
-        const fullPath = process.cwd();
-        await deployService.prep({ fullPath, options: { ...options, env: 'staging' }, environment, debug: options.debug });
     });
 
 program
@@ -253,30 +271,6 @@ program
     });
 
 program
-    .command('sync:dev', { hidden: true })
-    .description('Work locally to develop integration code')
-    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
-    .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm, debug } = this.opts();
-        const fullPath = process.cwd();
-        await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        if (compileInterfaces) {
-            configWatch({ fullPath, debug });
-        }
-
-        tscWatch({ fullPath, debug });
-        await dockerRun(debug);
-    });
-
-program
-    .command('sync:docker.run', { hidden: true })
-    .description('Run the docker container locally')
-    .action(async function (this: Command) {
-        const { debug } = this.opts();
-        await dockerRun(debug);
-    });
-
-program
     .command('sync:config.check', { hidden: true })
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
@@ -284,15 +278,14 @@ program
         const { autoConfirm, debug } = this.opts();
         const fullPath = process.cwd();
         await verificationService.necessaryFilesExist({ fullPath, autoConfirm, debug });
-        const { success, error, response } = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
-
-        if (!success || !response?.parsed) {
-            console.log(chalk.red(error?.message));
+        const parsing = parse(path.resolve(fullPath, NANGO_INTEGRATIONS_LOCATION));
+        if (parsing.isErr()) {
+            console.log(chalk.red(parsing.error.message));
             process.exitCode = 1;
             return;
         }
 
-        console.log(chalk.green(JSON.stringify({ ...response.parsed, models: Array.from(response.parsed.models.values()) }, null, 2)));
+        console.log(chalk.green(JSON.stringify({ ...parsing.value.parsed, models: Array.from(parsing.value.parsed!.models.values()) }, null, 2)));
     });
 
 // admin only commands
@@ -310,11 +303,12 @@ program
     .command('admin:deploy-internal', { hidden: true })
     .description('Deploy a Nango integration to the internal Nango dev account')
     .arguments('environment')
-    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, staging, production).')
+    .option('-nre, --nango-remote-environment [nre]', 'Optional: Set the Nango remote environment (local, cloud).')
+    .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration/provider config key.')
     .action(async function (this: Command, environment: string) {
-        const { debug, nangoRemoteEnvironment } = this.opts();
+        const { debug, nangoRemoteEnvironment, integration } = this.opts();
         const fullPath = process.cwd();
-        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod' } });
+        await deployService.internalDeploy({ fullPath, environment, debug, options: { env: nangoRemoteEnvironment || 'prod', integration } });
     });
 
 program.parse();

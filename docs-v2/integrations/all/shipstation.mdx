@@ -3,30 +3,47 @@ title: ShipStation
 sidebarTitle: ShipStation
 ---
 
-API configuration: [`shipstation`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/shipstation/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/shipstation/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (Basic)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shipstation.mdx)</Note>
+
+
+## Useful links
 
 -   [ShipStation Basic auth related docs](https://www.shipstation.com/docs/api/requirements/#authentication)
 -   [ShipStation API docs](https://www.shipstation.com/docs/api/)
 -   [API rate limiting](https://www.shipstation.com/docs/api/requirements/#api-rate-limits)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shipstation.mdx)</Note>
 
 ## API gotchas
 
 - ShipStation uses `Basic` auth mode to access different endpoints. Use your ShipStation `APIKey` as the username and `APISecret` as the password, both of which can be found in the API settings.
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shipstation.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shipstation.mdx)</Note>
+
+<Card title="Connect to ShipStation" icon="link" href="/integrations/all/shipstation/connect" horizontal>
+  Guide to connect to ShipStation using Nango Connect.
+</Card>

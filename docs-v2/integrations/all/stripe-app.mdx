@@ -3,27 +3,40 @@ title: Stripe App
 sidebarTitle: Stripe App
 ---
 
-API configuration: [`stripe-app`](https://nango.dev/providers.yaml)
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/stripe-app/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/stripe-app/PreBuiltUseCases.mdx"
 
-## Features
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
 
-| Features | Status |
-| - | - |
-| [Auth (OAuth)](/integrate/guides/authorize-an-api) | ✅ |
-| [Sync data](/integrate/guides/sync-data-from-an-api) | ✅ |
-| [Perform workflows](/integrate/guides/perform-workflows-with-an-api) | ✅ |
-| [Proxy requests](/integrate/guides/proxy-requests-to-an-api) | ✅ |
-| [Receive webhooks](/integrate/guides/receive-webhooks-from-an-api) | 🚫 (time to contribute: &lt;48h) |
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❓ |  |
+| Paid test account | ❓ |  |
+| Partnership | ❓ | |
+| App review | ❓ |  |
+| Security audit | ❓ | |
 
-<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 
-## Getting started
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
+
+
+## Useful links
 
 -   [How to register an Application](https://stripe.com/docs/stripe-apps)
 -   [OAuth-related docs](https://stripe.com/docs/stripe-apps/api-authentication/oauth)
 -   [List of OAuth scopes](https://stripe.com/docs/stripe-apps/reference/permissions)
 
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
 
 ## Connection configuration in Nango for external test apps
 
@@ -39,4 +52,4 @@ nango.auth('stripe-app-sandbox', '<CONNECTION-ID>', {params: {appDomain: '<strip
 
 - Stripe app does not return an `expire_at` or `expire_in` value during the exchange of a code for an access token. However, according to the [docs](https://docs.stripe.com/stripe-apps/api-authentication/oauth#refresh-access-token), access tokens expire in one hour, while refresh tokens expire in one year
 
-<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stripe-app.mdx)</Note>
