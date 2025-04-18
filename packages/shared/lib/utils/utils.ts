@@ -1,8 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isEnterprise, isStaging, isProd, localhostUrl, cloudHost, stagingHost } from '@nangohq/utils';
+
 import get from 'lodash-es/get.js';
-import type { Provider, DBConnection } from '@nangohq/types';
+
+import { cloudHost, isEnterprise, isProd, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+
+import type { DBConnection, Provider } from '@nangohq/types';
 
 export enum UserType {
     Local = 'localhost',
@@ -89,18 +92,6 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
 
     // ISO 8601 string
     return new Date(expirationDate);
-}
-
-export function parseTableauTokenExpirationDate(timeStr: string): Date | undefined {
-    // sample estimatedTimeToExpire: "estimatedTimeToExpiration": "177:05:38"
-    const [days, hours, minutes] = timeStr.split(':').map(Number);
-
-    if (days && hours && minutes) {
-        const milliseconds = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
-        return new Date(Date.now() + milliseconds);
-    }
-
-    return undefined;
 }
 
 export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
