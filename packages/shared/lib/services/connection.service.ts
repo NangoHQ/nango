@@ -1308,11 +1308,18 @@ class ConnectionService {
             postBody = interpolateObjectValues(postBody, connectionConfig);
         }
 
-        const headers: Record<string, string> = {};
+        const headers: Record<string, any> | string = {};
 
         if (provider.token_headers) {
             for (const [key, value] of Object.entries(provider.token_headers)) {
-                headers[key] = value;
+                const strippedValue = stripCredential(value);
+                if (typeof strippedValue === 'object' && strippedValue !== null) {
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                } else if (typeof strippedValue === 'string') {
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                } else {
+                    headers[key] = strippedValue;
+                }
             }
         }
 
@@ -1331,7 +1338,12 @@ class ConnectionService {
                       ? new URLSearchParams(postBody).toString()
                       : JSON.stringify(postBody);
 
-            const response = await axios.post(url.toString(), bodyContent, requestOptions);
+            let response: any;
+            if (provider.token_request_method === 'GET') {
+                response = await axios.get(url.toString(), requestOptions);
+            } else {
+                response = await axios.post(url.toString(), bodyContent, requestOptions);
+            }
 
             if (response.status !== 200) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };

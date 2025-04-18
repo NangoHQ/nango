@@ -147,3 +147,81 @@ it('Should not extract metadata from an empty token response', () => {
     const result = utils.getConnectionMetadataFromTokenResponse(params, provider);
     expect(result).toEqual({});
 });
+
+describe('interpolateString', () => {
+    const replacers = {
+        username: 'john',
+        password: 'doe123',
+        apiKey: 'ABC123'
+    };
+
+    it('should interpolate simple variables', () => {
+        const input = 'Hello ${username}, your password is ${password}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toBe('Hello john, your password is doe123');
+    });
+
+    it('should interpolate ${now} with current timestamp', () => {
+        const input = 'Current time: ${now}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toMatch(/^Current time: \d{4}-\d{2}-\d{2}T/);
+    });
+
+    it('should resolve values inside base64 properly', () => {
+        const input = '${base64(${username}:${password})}';
+        const output = utils.interpolateString(input, replacers);
+        const expected = Buffer.from('john:doe123').toString('base64');
+        expect(output).toBe(expected);
+    });
+});
+
+describe('interpolateStringFromObject', () => {
+    const context = {
+        name: 'Alice',
+        age: 30,
+        credentials: {
+            username: 'user123',
+            password: 'pass456',
+            apiKey: 'XYZ-987'
+        },
+        token: 'abc.def.ghi'
+    };
+
+    it('replaces simple placeholders', () => {
+        const input = 'Hello ${name}, you are ${age} years old.';
+        const output = utils.interpolateStringFromObject(input, context);
+        expect(output).toBe('Hello Alice, you are 30 years old.');
+    });
+
+    it('replaces nested object keys', () => {
+        const input = 'User: ${credentials.username}, Pass: ${credentials.password}';
+        const output = utils.interpolateStringFromObject(input, context);
+        expect(output).toBe('User: user123, Pass: pass456');
+    });
+
+    it('returns string unchanged if no placeholders', () => {
+        const input = 'Just a static string';
+        const output = utils.interpolateStringFromObject(input, context);
+        expect(output).toBe(input);
+    });
+
+    it('works with multiple mixed expressions', () => {
+        const input = 'Hi ${name}, auth=${base64(${credentials.username}:${credentials.apiKey})}, age=${age}';
+        const encoded = Buffer.from('user123:XYZ-987').toString('base64');
+        const output = utils.interpolateStringFromObject(input, context);
+        expect(output).toBe(`Hi Alice, auth=${encoded}, age=30`);
+    });
+
+    it('handles plain token interpolation', () => {
+        const input = 'Bearer ${token}';
+        const output = utils.interpolateStringFromObject(input, context);
+        expect(output).toBe('Bearer abc.def.ghi');
+    });
+
+    it('handles base64 encoding of a combined interpolated string', () => {
+        const input = 'Authorization: ${base64(${credentials.apiKey}:${token})}';
+        const output = utils.interpolateStringFromObject(input, context);
+        const expected = Buffer.from('XYZ-987:abc.def.ghi').toString('base64');
+        expect(output).toBe(`Authorization: ${expected}`);
+    });
+});

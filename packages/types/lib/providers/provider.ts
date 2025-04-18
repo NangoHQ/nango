@@ -146,6 +146,7 @@ export interface ProviderTableau extends BaseProvider {
 
 export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'TWO_STEP';
+    token_request_method?: 'GET';
     token_headers?: Record<string, string>;
     token_response: {
         token: string;
