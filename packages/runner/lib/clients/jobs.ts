@@ -27,7 +27,7 @@ class JobsClient {
         return Ok(undefined as PostHeartbeat['Success']);
     }
 
-    async putTask({ taskId, nangoProps, error, output }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
+    async putTask({ taskId, nangoProps, error, output, stats }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
         const res = await retryWithBackoff(async () => {
             const resp = await httpFetch(`${this.baseUrl}/tasks/${taskId}`, {
                 method: 'PUT',
@@ -35,7 +35,8 @@ class JobsClient {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    nangoProps: nangoProps,
+                    nangoProps,
+                    stats,
                     ...(error ? { error } : { output })
                 })
             });

@@ -71,12 +71,13 @@ function startProcedure() {
                     const abortController = new AbortController();
                     abortControllers.set(taskId, abortController);
 
-                    const { error, response: output } = await exec({ nangoProps, code, codeParams, abortController, locks });
+                    const { error, response, stats } = await exec({ nangoProps, code, codeParams, abortController, locks });
 
                     await jobsClient.putTask({
                         taskId,
                         nangoProps,
-                        ...(error ? { error } : { output: output as any })
+                        stats,
+                        ...(error ? { error } : { output: response as any })
                     });
                 } finally {
                     clearInterval(heartbeat);

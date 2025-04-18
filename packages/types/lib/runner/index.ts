@@ -9,6 +9,7 @@ export interface RunnerOutput {
     success: boolean;
     error: RunnerOutputError | null;
     response?: unknown; // TODO: define response type
+    stats: RunnerStats;
 }
 
 export interface RunnerFlags {
@@ -16,4 +17,11 @@ export interface RunnerFlags {
     validateActionOutput: boolean;
     validateSyncRecords: boolean;
     validateSyncMetadata: boolean;
+}
+
+export interface RunnerStats {
+    proxy_success_egress_bytes: number;
+    proxy_success_ingress_bytes: number;
+    proxy_failure_egress_bytes: number;
+    proxy_failure_ingress_bytes: number;
 }
