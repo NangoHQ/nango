@@ -34,6 +34,7 @@ import { getOrchestrator } from '../utils/utils.js';
 import { getInterval } from '@nangohq/nango-yaml';
 import { getPublicRecords } from './records/getRecords.js';
 import type { DBConnectionDecrypted } from '@nangohq/types';
+import { billing } from '@nangohq/billing';
 
 const orchestrator = getOrchestrator();
 
@@ -227,10 +228,13 @@ class SyncController {
                 logCtx
             });
 
+            // Note: all executed actions are billed
             if (actionResponse.isOk()) {
                 span.finish();
                 await logCtx.success();
                 res.status(200).json(actionResponse.value);
+
+                void billing.send('billable_actions', 1, { accountId: account.id, idempotencyKey: logCtx.id });
 
                 return;
             } else {

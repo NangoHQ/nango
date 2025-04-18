@@ -9,6 +9,7 @@ import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nan
 import type { MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
+import { billing } from '@nangohq/billing';
 
 export type PersistType = 'save' | 'delete' | 'update';
 export const recordsPath = '/environment/:environmentId/connection/:nangoConnectionId/sync/:syncId/job/:syncJobId/records';
@@ -148,7 +149,11 @@ export async function persistRecords({
             return acc;
         }, 0);
 
-        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, new Set(summary.billedKeys).size, { accountId });
+        const mar = new Set(summary.billedKeys).size;
+
+        void billing.send('monthly_active_records', mar, { accountId });
+
+        metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_COUNT, records.length);
         metrics.increment(metrics.Types.PERSIST_RECORDS_SIZE_IN_BYTES, recordsSizeInBytes, { accountId });
         metrics.increment(metrics.Types.PERSIST_RECORDS_MODIFIED_COUNT, allModifiedKeys.size);
